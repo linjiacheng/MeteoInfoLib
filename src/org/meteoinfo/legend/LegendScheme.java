@@ -884,7 +884,7 @@ public class LegendScheme {
     public void importFromXMLFile(String aFile, boolean keepShape) throws ParserConfigurationException, SAXException, IOException {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
-        Document doc = db.parse(aFile);
+        Document doc = db.parse(new File(aFile));
 
         Element root = doc.getDocumentElement();
         Node LSNode;

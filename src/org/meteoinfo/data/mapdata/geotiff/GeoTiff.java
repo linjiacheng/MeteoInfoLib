@@ -954,22 +954,5 @@ public class GeoTiff {
         return bout.toString();
     }
 
-    /**
-     * Main
-     *
-     * @param argv argvs
-     */
-    public static void main(String[] argv) {
-        try {
-            GeoTiff geotiff = new GeoTiff("/home/yuanho/tmp/ilatlon_float.tif");
-
-            geotiff.read();
-            geotiff.showInfo(System.out);
-            //geotiff.readData();
-            geotiff.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
     // </editor-fold>
 }

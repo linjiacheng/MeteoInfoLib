@@ -246,6 +246,12 @@ public class ImageLayer extends MapLayer {
         return _worldFilePara.yScale;
     }
 
+    /**
+     * Set y scale
+     *
+     * @param value The y scale value
+     * @throws IOException
+     */
     public void setYScale(double value) throws IOException {
         _worldFilePara.yScale = value;
         Extent aExtent = (Extent) this.getExtent();
@@ -257,8 +263,52 @@ public class ImageLayer extends MapLayer {
         }
     }
 
+    /**
+     * Get x rotate(shear)
+     *
+     * @return X rotate
+     */
+    public double getXRotate() {
+        return _worldFilePara.xRotate;
+    }
+
+    /**
+     * Set x rotate(shear)
+     *
+     * @param value Value
+     * @throws IOException
+     */
+    public void setXRotate(double value) throws IOException {
+        _worldFilePara.xRotate = value;
+        if (new File(_worldFileName).exists()) {
+            writeImageWorldFile(_worldFileName, _worldFilePara);
+        }
+    }
+
+    /**
+     * Get y rotate(shear)
+     *
+     * @return X rotate
+     */
+    public double getYRotate() {
+        return _worldFilePara.yRotate;
+    }
+
+    /**
+     * Set y rotate(shear)
+     *
+     * @param value Value
+     * @throws IOException
+     */
+    public void setYRotate(double value) throws IOException {
+        _worldFilePara.yRotate = value;
+        if (new File(_worldFileName).exists()) {
+            writeImageWorldFile(_worldFileName, _worldFilePara);
+        }
+    }
     // </editor-fold>
     // <editor-fold desc="Methods">
+
     /**
      * Read image world file
      *
@@ -268,8 +318,8 @@ public class ImageLayer extends MapLayer {
         BufferedReader sr = new BufferedReader(new FileReader(new File(aIFile)));
 
         _worldFilePara.xScale = Double.parseDouble(sr.readLine());
-        _worldFilePara.xRotate = Double.parseDouble(sr.readLine());
         _worldFilePara.yRotate = Double.parseDouble(sr.readLine());
+        _worldFilePara.xRotate = Double.parseDouble(sr.readLine());
         _worldFilePara.yScale = Double.parseDouble(sr.readLine());
         _worldFilePara.xUL = Double.parseDouble(sr.readLine());
         _worldFilePara.yUL = Double.parseDouble(sr.readLine());
@@ -286,9 +336,9 @@ public class ImageLayer extends MapLayer {
         BufferedWriter sw = new BufferedWriter(new FileWriter(new File(aFile)));
         sw.write(String.valueOf(aWFP.xScale));
         sw.newLine();
-        sw.write(String.valueOf(aWFP.xRotate));
-        sw.newLine();
         sw.write(String.valueOf(aWFP.yRotate));
+        sw.newLine();
+        sw.write(String.valueOf(aWFP.xRotate));
         sw.newLine();
         sw.write(String.valueOf(aWFP.yScale));
         sw.newLine();
@@ -300,6 +350,7 @@ public class ImageLayer extends MapLayer {
 
     /**
      * Get colors from palette file
+     *
      * @param pFile Palette file path
      * @return Colors
      */
@@ -652,6 +703,50 @@ public class ImageLayer extends MapLayer {
                 writeImageWorldFile(_worldFileName, _worldFilePara);
             }
         }
+
+        /**
+         * Get x rotate(shear)
+         *
+         * @return X rotate
+         */
+        public double getXRotate() {
+            return _worldFilePara.xRotate;
+        }
+
+        /**
+         * Set x rotate(shear)
+         *
+         * @param value Value
+         * @throws IOException
+         */
+        public void setXRotate(double value) throws IOException {
+            _worldFilePara.xRotate = value;
+            if (new File(_worldFileName).exists()) {
+                writeImageWorldFile(_worldFileName, _worldFilePara);
+            }
+        }
+
+        /**
+         * Get y rotate(shear)
+         *
+         * @return X rotate
+         */
+        public double getYRotate() {
+            return _worldFilePara.yRotate;
+        }
+
+        /**
+         * Set y rotate(shear)
+         *
+         * @param value Value
+         * @throws IOException
+         */
+        public void setYRotate(double value) throws IOException {
+            _worldFilePara.yRotate = value;
+            if (new File(_worldFileName).exists()) {
+                writeImageWorldFile(_worldFileName, _worldFilePara);
+            }
+        }
         // </editor-fold>
     }
 
@@ -673,6 +768,8 @@ public class ImageLayer extends MapLayer {
             addProperty("yScale").setCategory("Editable").setDisplayName("Y scale");
             addProperty("xUL").setCategory("Editable").setDisplayName("X upper left");
             addProperty("yUL").setCategory("Editable").setDisplayName("Y upper left");
+            addProperty("xRotate").setCategory("Editable").setDisplayName("X rotate");
+            addProperty("yRotate").setCategory("Editable").setDisplayName("Y rotate");
         }
     }
     // </editor-fold>

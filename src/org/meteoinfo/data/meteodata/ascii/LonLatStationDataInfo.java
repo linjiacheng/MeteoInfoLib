@@ -23,9 +23,11 @@ import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -188,7 +190,39 @@ public class LonLatStationDataInfo extends DataInfo implements IStationDataInfo 
 
     @Override
     public StationInfoData getStationInfoData(int timeIdx, int levelIdx) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        BufferedReader sr = null;
+        try {
+            sr = new BufferedReader(new InputStreamReader(new FileInputStream(this.getFileName()), "gbk"));
+            List<List<String>> dataList = new ArrayList<List<String>>();
+            sr.readLine();
+            String line = sr.readLine();
+            while (line != null) {
+                if (line.isEmpty()) {
+                    line = sr.readLine();
+                    continue;
+                }
+                List<String> aList = Arrays.asList(line.split(","));
+                dataList.add(aList);
+                line = sr.readLine();
+            }
+            sr.close();
+            StationInfoData stInfoData = new StationInfoData();
+            stInfoData.setDataList(dataList);
+            stInfoData.setFields(_fields);
+            stInfoData.setVariables(this.getVariableNames());
+            return stInfoData;
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(LonLatStationDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(LonLatStationDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                sr.close();
+            } catch (IOException ex) {
+                Logger.getLogger(LonLatStationDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return null;
     }
 
     @Override

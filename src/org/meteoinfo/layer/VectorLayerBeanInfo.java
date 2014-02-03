@@ -21,7 +21,7 @@ public class VectorLayerBeanInfo extends BaseBeanInfo {
         addProperty("layerName").setCategory("Editable").setDisplayName("Layer name");
         addProperty("visible").setCategory("Editable").setDisplayName("Visible");
         addProperty("maskout").setCategory("Editable").setDisplayName("Is maskout");
-        addProperty("transparency").setCategory("Editable").setDisplayName("Transparency Percent");
+        //addProperty("transparency").setCategory("Editable").setDisplayName("Transparency Percent");
         addProperty("avoidCollision").setCategory("Editable").setDisplayName("Avoid collision");
     }
 }

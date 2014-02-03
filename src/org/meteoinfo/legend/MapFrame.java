@@ -13,6 +13,7 @@
  */
 package org.meteoinfo.legend;
 
+import com.l2fprod.common.beans.BaseBeanInfo;
 import org.meteoinfo.global.colors.ColorUtil;
 import org.meteoinfo.global.event.ILayersUpdatedListener;
 import org.meteoinfo.global.event.ILayoutBoundsChangedListener;
@@ -40,6 +41,7 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  *
@@ -1731,8 +1733,9 @@ public class MapFrame extends ItemNode {
         } catch (Exception e) {
         } finally {
             addGroup(aGN);
-            for (int i = 0; i < aGroup.getChildNodes().getLength(); i++) {
-                Node aLayerNode = aGroup.getChildNodes().item(i);
+            NodeList layerNodes = ((Element)aGroup).getElementsByTagName("Layer");
+            for (int i = 0; i < layerNodes.getLength(); i++) {
+                Node aLayerNode = layerNodes.item(i);
                 loadLayer(aLayerNode, aGN.getGroupHandle());
             }
             aGN.updateCheckStatus();
@@ -1760,5 +1763,28 @@ public class MapFrame extends ItemNode {
         }
     }
     // </editor-fold>
+    // </editor-fold>
+     // <editor-fold desc="BeanInfo">
+    public class MapFrameBean {
+        public MapFrameBean(){
+            
+        }
+        
+        public String getText(){
+            return MapFrame.this.getText();
+        }
+        
+        public void setText(String value){
+            MapFrame.this.setText(value);
+            MapFrame.this.getLegend().paintGraphics();
+        }
+    }
+    
+    public static class MapFrameBeanBeanInfo extends BaseBeanInfo {
+        public MapFrameBeanBeanInfo() {
+            super(MapFrameBean.class);
+            addProperty("text").setCategory("General").setDisplayName("Text");
+        }
+    }
     // </editor-fold>
 }

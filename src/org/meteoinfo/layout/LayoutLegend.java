@@ -43,6 +43,7 @@ import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.List;
+import org.meteoinfo.global.DataConvert;
 
 /**
  *
@@ -110,6 +111,10 @@ public class LayoutLegend extends LayoutElement {
     // </editor-fold>
     // <editor-fold desc="Events">
     public void onMapViewUpdated(MapViewUpdatedEvent e) {
+        if (_layoutMap.getMapFrame().getMapView().getLayerNum() == 0) {
+            return;
+        }
+
         switch (_layerUpdateType) {
             case FirstExpandedLayer:
                 for (int i = 0; i < _layoutMap.getMapFrame().getMapView().getLayerNum(); i++) {
@@ -426,7 +431,7 @@ public class LayoutLegend extends LayoutElement {
                 Draw.drawPieChartSymbol(aPoint, aCB, g);
                 aPoint.Y += aCB.getHeight();
                 break;
-        }        
+        }
         aPoint.Y += _breakSpace;
 
         //Draw breaks
@@ -568,7 +573,7 @@ public class LayoutLegend extends LayoutElement {
                     if (aLS.getLegendType() == LegendType.UniqueValue) {
                         caption = aPB.getCaption();
                     } else {
-                        caption = String.valueOf(aPB.getEndValue());
+                        caption = DataConvert.doubleToString(Double.parseDouble(aPB.getEndValue().toString()));
                     }
                     break;
                 case Polyline:
@@ -578,7 +583,7 @@ public class LayoutLegend extends LayoutElement {
                     if (aLS.getLegendType() == LegendType.UniqueValue) {
                         caption = aPLB.getCaption();
                     } else {
-                        caption = aPLB.getEndValue().toString();
+                        caption = DataConvert.doubleToString(Double.parseDouble(aPLB.getEndValue().toString()));
                     }
                     break;
                 case Polygon:
@@ -589,7 +594,7 @@ public class LayoutLegend extends LayoutElement {
                     if (aLS.getLegendType() == LegendType.UniqueValue) {
                         caption = aPGB.getCaption();
                     } else {
-                        caption = aPGB.getEndValue().toString();
+                        caption = DataConvert.doubleToString(Double.parseDouble(aPGB.getEndValue().toString()));
                     }
                     break;
                 case Image:
@@ -600,7 +605,7 @@ public class LayoutLegend extends LayoutElement {
                     if (aLS.getLegendType() == LegendType.UniqueValue) {
                         caption = aCB.getCaption();
                     } else {
-                        caption = aCB.getEndValue().toString();
+                        caption = DataConvert.doubleToString(Double.parseDouble(aCB.getEndValue().toString()));
                     }
                     break;
             }
@@ -729,7 +734,7 @@ public class LayoutLegend extends LayoutElement {
                     if (aLS.getLegendType() == LegendType.UniqueValue) {
                         caption = aPB.getCaption();
                     } else {
-                        caption = aPB.getEndValue().toString();
+                        caption = DataConvert.doubleToString(Double.parseDouble(aPB.getEndValue().toString()));
                     }
                     break;
                 case Polyline:
@@ -739,7 +744,7 @@ public class LayoutLegend extends LayoutElement {
                     if (aLS.getLegendType() == LegendType.UniqueValue) {
                         caption = aPLB.getCaption();
                     } else {
-                        caption = aPLB.getEndValue().toString();
+                        caption = DataConvert.doubleToString(Double.parseDouble(aPLB.getEndValue().toString()));
                     }
                     break;
                 case Polygon:
@@ -750,7 +755,7 @@ public class LayoutLegend extends LayoutElement {
                     if (aLS.getLegendType() == LegendType.UniqueValue) {
                         caption = aPGB.getCaption();
                     } else {
-                        caption = aPGB.getEndValue().toString();
+                        caption = DataConvert.doubleToString(Double.parseDouble(aPGB.getEndValue().toString()));
                     }
                     break;
                 case Image:
@@ -761,7 +766,7 @@ public class LayoutLegend extends LayoutElement {
                     if (aLS.getLegendType() == LegendType.UniqueValue) {
                         caption = aCB.getCaption();
                     } else {
-                        caption = aCB.getEndValue().toString();
+                        caption = DataConvert.doubleToString(Double.parseDouble(aCB.getEndValue().toString()));
                     }
                     break;
             }
@@ -996,12 +1001,11 @@ public class LayoutLegend extends LayoutElement {
                             + getTitleHeight(g) + _breakSpace * 2 + aHeight / 2 + 5));
                     if (_legendLayer.getLayerType() == LayerTypes.VectorLayer) {
                         VectorLayer aLayer = (VectorLayer) _legendLayer;
-//                            if (aLayer.getChartSet().getDrawCharts())
-//                            {
-//                                ChartBreak aCB = ((ChartBreak)aLayer.ChartPoints[0].Legend).GetSampleChartBreak();
-//                                this.Height += (int)(_breakSpace * 2 + aCB.GetHeight() +
-//                                    aCB.LegendScheme.BreakNum * (aHeight + _breakSpace) + aHeight / 2 + 5);
-//                            }
+                        if (aLayer.getChartSet().isDrawCharts()) {
+                            ChartBreak aCB = ((ChartBreak) aLayer.getChartPoints().get(0).getLegend()).getSampleChartBreak();
+                            this.setHeight(this.getHeight() + (int) (_breakSpace * 2 + aCB.getHeight()
+                                    + aCB.getLegendScheme().getBreakNum() * (aHeight + _breakSpace) + aHeight / 2 + 5));
+                        }
                     }
                     break;
             }

@@ -304,12 +304,28 @@ public class MIMath {
     public static double[] arrayMinMax(double[] values) {
         double min = values[0];
         double max = values[0];
-        double sum = 0;
 
         for (double value : values) {
             min = Math.min(value, min);
             max = Math.max(value, max);
-            sum += value;
+        }
+
+        return new double[]{min, max};
+    }
+    
+    /**
+     * Get min, max of an array
+     *
+     * @param values array
+     * @return Min, max
+     */
+    public static double[] arrayMinMax(Double[] values) {
+        double min = values[0];
+        double max = values[0];
+
+        for (double value : values) {
+            min = Math.min(value, min);
+            max = Math.max(value, max);
         }
 
         return new double[]{min, max};

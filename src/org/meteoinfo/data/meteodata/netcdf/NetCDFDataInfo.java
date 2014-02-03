@@ -262,7 +262,13 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
         return -1;
     }
 
-    private ucar.nc2.Dimension findNCDimension(String dimName) {
+    /**
+     * Find netCDF dimension by name
+     *
+     * @param dimName Dimension name
+     * @return NetCDF dimension
+     */
+    public ucar.nc2.Dimension findNCDimension(String dimName) {
         for (ucar.nc2.Dimension dim : this._dimensions) {
             if (dim.getShortName().equalsIgnoreCase(dimName)) {
                 return dim;
@@ -272,7 +278,13 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
         return null;
     }
 
-    private Dimension findDimension(String dimName) {
+    /**
+     * Find dimension by name
+     *
+     * @param dimName Dimension name
+     * @return Dimension
+     */
+    public Dimension findDimension(String dimName) {
         for (Dimension dim : this._miDims) {
             if (dim.getDimName().equalsIgnoreCase(dimName)) {
                 return dim;
@@ -558,11 +570,13 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                             + "+lon_0=" + pVar.findAttribute("straight_vertical_longitude_from_pole").getValue(0).toString()
                             + "+lat_0=" + pVar.findAttribute("latitude_of_projection_origin").getValue(0).toString();
 
-                    if (pVar.findAttribute("standard_parallel") != null) {
+                    if (pVar.findAttribute("scaling_factor") != null) {
+                        projStr += "+k=" + pVar.findAttribute("scaling_factor").getValue(0).toString();
+                    } else if (pVar.findAttribute("standard_parallel") != null) {
                         String stPs = pVar.findAttribute("standard_parallel").getValue(0).toString();
                         //projStr += "+lat_ts=" + stPs;                                    
                         double k0 = ProjectionInfo.calScaleFactorFromStandardParallel(Double.parseDouble(stPs));
-                        projStr += "+k=" + String.format("0.00", k0);
+                        projStr += "+k=" + String.format("%1$.2f", k0);
                     } else if (pVar.findAttribute("scale_factor_at_projection_origin") != null) {
                         projStr += "+k_0=" + pVar.findAttribute("scale_factor_at_projection_origin").getValue(0).toString();
                     }
@@ -753,11 +767,20 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 }
             }
         } else {
-            TimeUnit aTU = this.getTimeUnit(unitsStr);
-            Date sTime = this.getStartTime(unitsStr);
-            //getPSDTimeInfo(unitsStr, sTime, aTU);
             Calendar cal = Calendar.getInstance();
-            cal.setTime(sTime);
+            TimeUnit aTU;
+            Date sTime = new Date();
+            if (unitsStr.equalsIgnoreCase("month")) {
+                aTU = TimeUnit.Month;
+                cal.setTime(sTime);
+                cal.set(cal.get(Calendar.YEAR), 0, 1, 0, 0, 0);
+                sTime = cal.getTime();
+            } else {
+                aTU = this.getTimeUnit(unitsStr);
+                sTime = this.getStartTime(unitsStr);
+                cal.setTime(sTime);
+            }
+            //getPSDTimeInfo(unitsStr, sTime, aTU);                        
 
             //Get data time
             double[] DTimes = values;
@@ -768,13 +791,17 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                         times.add(cal.getTime());
                         break;
                     case Month:
-                        cal.add(Calendar.MONTH, (int) DTimes[i]);
+                        if (unitsStr.equalsIgnoreCase("month")) {
+                            cal.add(Calendar.MONTH, (int) DTimes[i] - 1);
+                        } else {
+                            cal.add(Calendar.MONTH, (int) DTimes[i]);
+                        }
                         times.add(cal.getTime());
                         break;
                     case Day:
                         //cal.add(Calendar.DAY_OF_YEAR, (int) DTimes[i]);                        
                         //times.add(cal.getTime());
-                        times.add(DateUtil.addDays(sTime, (float)DTimes[i]));
+                        times.add(DateUtil.addDays(sTime, (float) DTimes[i]));
                         break;
                     case Hour:
                         if (cal.get(Calendar.YEAR) == 1 && cal.get(Calendar.MONTH) == 1
@@ -826,7 +853,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
     private void getDimValues_HDFEOS_SWATH() throws IOException {
         if (this._isSWATH || this._isPROFILE) {
-            ucar.nc2.Variable var = this.getNCVariable("Pressure");
+            ucar.nc2.Variable var = this.findNCVariable("Pressure");
             if (var != null) {
                 Array darray = var.read();
                 int n = (int) darray.getSize();
@@ -842,7 +869,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 //var = this.getNCVariable("")
             }
 
-            var = this.getNCVariable("Time");
+            var = this.findNCVariable("Time");
             if (var != null) {
                 Array darray = var.read();
 //                int n = (int) darray.getSize();
@@ -1234,7 +1261,13 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
         return dataLen;
     }
 
-    private ucar.nc2.Variable getNCVariable(String name) {
+    /**
+     * Find netCDF variable by name
+     *
+     * @param name Variable name
+     * @return NetCDF variable
+     */
+    public ucar.nc2.Variable findNCVariable(String name) {
         for (ucar.nc2.Variable var : this._variables) {
             if (var.getShortName().equals(name)) {
                 return var;
@@ -1312,9 +1345,9 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 }
             } else {
                 String vName = aVar.getShortName().toLowerCase();
-                if (vName.equals("lon") || vName.equals("longitude")) {
+                if (vName.equals("lon") || vName.equals("longitude") || vName.equals("x")) {
                     dimType = DimensionType.X;
-                } else if (vName.equals("lat") || vName.equals("latitude")) {
+                } else if (vName.equals("lat") || vName.equals("latitude") || vName.equals("y")) {
                     dimType = DimensionType.Y;
                 } else if (vName.equals("time")) {
                     dimType = DimensionType.T;
@@ -1380,9 +1413,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
     private Date getStartTime(String tStr) {
         Date sTime = new Date();
         tStr = tStr.trim();
-        String tu;
         String[] dataArray;
-        int i;
 
         dataArray = tStr.split("\\s+");
 
@@ -1398,20 +1429,32 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             dataArray[dataArray.length - 1] = ST.split("T")[1];
             ST = ST.split("T")[0];
         }
-        int year = Integer.parseInt(ST.split("-")[0]);
-        int month = Integer.parseInt(ST.split("-")[1]);
-        int day = Integer.parseInt(ST.split("-")[2]);
-        int hour = 0;
-        int min = 0;
-        int sec = 0;
-        if (dataArray.length >= 4) {
-            String hmsStr = dataArray[3];
-            hmsStr = hmsStr.replace("0.0", "00");
-            try {
-                hour = Integer.parseInt(hmsStr.split(":")[0]);
-                min = Integer.parseInt(hmsStr.split(":")[1]);
-                sec = Integer.parseInt(hmsStr.split(":")[2]);
-            } catch (Exception e) {
+        int year = 2000, month = 1, day = 1;
+        int hour = 0, min = 0, sec = 0;
+        if (ST.contains("-")) {
+            year = Integer.parseInt(ST.split("-")[0]);
+            month = Integer.parseInt(ST.split("-")[1]);
+            day = Integer.parseInt(ST.split("-")[2]);
+            if (dataArray.length >= 4) {
+                String hmsStr = dataArray[3];
+                hmsStr = hmsStr.replace("0.0", "00");
+                try {
+                    hour = Integer.parseInt(hmsStr.split(":")[0]);
+                    min = Integer.parseInt(hmsStr.split(":")[1]);
+                    sec = Integer.parseInt(hmsStr.split(":")[2]);
+                } catch (Exception e) {
+                }
+            }
+        } else {
+            if (ST.contains(":")){
+                String hmsStr = ST;
+                hmsStr = hmsStr.replace("0.0", "00");
+                try {
+                    hour = Integer.parseInt(hmsStr.split(":")[0]);
+                    min = Integer.parseInt(hmsStr.split(":")[1]);
+                    sec = Integer.parseInt(hmsStr.split(":")[2]);
+                } catch (Exception e) {
+                }
             }
         }
 
@@ -1892,7 +1935,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             GridData aGridData = new GridData();
             aGridData.data = gridData;
             aGridData.xArray = this.getYDimension().getValues();
-            aGridData.yArray = this.getTimeDimension().getValues();
+            aGridData.yArray = this.getZDimension().getValues();
             aGridData.missingValue = missingValue;
 
             if (this.isYReverse()) {
@@ -2441,9 +2484,9 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
             //Get long/lat data
             //ucar.nc2.Variable lonvar = ncfile.findVariable("Longitude");
-            ucar.nc2.Variable lonvar = this.getNCVariable("Longitude");
+            ucar.nc2.Variable lonvar = this.findNCVariable("Longitude");
             //ucar.nc2.Variable latvar = ncfile.findVariable("Latitude");
-            ucar.nc2.Variable latvar = this.getNCVariable("Latitude");
+            ucar.nc2.Variable latvar = this.findNCVariable("Latitude");
             lonvar = ncfile.getVariables().get(this._variables.indexOf(lonvar));
             latvar = ncfile.getVariables().get(this._variables.indexOf(latvar));
             Array lonarray = lonvar.read();
@@ -2590,7 +2633,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
         return array;
     }
-    
+
     /**
      * Convert grid data to NetCDF array 3D
      *

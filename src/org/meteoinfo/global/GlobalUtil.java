@@ -27,11 +27,20 @@ import java.awt.image.WritableRaster;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Template
@@ -65,6 +74,127 @@ public class GlobalUtil {
         }
 
         return extension;
+    }
+
+    /**
+     * Get the list of specific file types in a directory
+     *
+     * @param directory The directory
+     * @param ext the file extension
+     * @return File name list
+     */
+    public static List<String> getFiles(String directory, String ext) {
+        List<String> fileNames = new ArrayList<String>();
+        try {
+            File f = new File(directory);
+            boolean flag = f.isDirectory();
+            if (flag) {
+                File fs[] = f.listFiles();
+                for (int i = 0; i < fs.length; i++) {
+                    if (!fs[i].isDirectory()) {
+                        String filename = fs[i].getAbsolutePath();
+                        if (filename.endsWith(ext.trim())) {
+                            fileNames.add(filename);
+                        }
+                    } else {
+                        fileNames.addAll(getFiles(fs[i].getAbsolutePath(), ext));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return fileNames;
+    }
+
+    /**
+     * Get class names in a jar file
+     *
+     * @param jarFileName The jar file name
+     * @return The class names in the jar file
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public static List<String> getClassNames(String jarFileName) throws FileNotFoundException, IOException {
+        List<String> classNames = new ArrayList<String>();
+        ZipInputStream zip = new ZipInputStream(new FileInputStream(jarFileName));
+        for (ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry()) {
+            if (entry.getName().endsWith(".class") && !entry.isDirectory()) {
+                // This ZipEntry represents a class. Now, what class does it represent?
+                StringBuilder className = new StringBuilder();
+                for (String part : entry.getName().split("/")) {
+                    if (className.length() != 0) {
+                        className.append(".");
+                    }
+                    className.append(part);
+                    if (part.endsWith(".class")) {
+                        className.setLength(className.length() - ".class".length());
+                    }
+                }
+                classNames.add(className.toString());
+            }
+        }
+
+        return classNames;
+    }
+
+    /**
+     * Get the class name which implements IPlugin interface
+     *
+     * @param jarFileName The jar file name
+     * @return The class name which implements IPlugin interface
+     */
+    public static String getPluginClassName(String jarFileName) {
+        String pluginClassName = null;
+        try {
+            List<String> classNames = getClassNames(jarFileName);
+            URL url = new URL("file:" + jarFileName);
+            URLClassLoader urlClassLoader = new URLClassLoader(new URL[]{url});
+            for (String name : classNames) {
+                Class<?> clazz = urlClassLoader.loadClass(name);
+                if (isInterface(clazz, "org.meteoinfo.plugin.IPlugin")){
+                    pluginClassName = name;
+                    break;
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(GlobalUtil.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(GlobalUtil.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(GlobalUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return pluginClassName;
+    }
+
+    /**
+     * Determine if a class implements a interface
+     * @param c The class
+     * @param szInterface The interface name
+     * @return Boolean
+     */
+    public static boolean isInterface(Class c, String szInterface) {
+        Class[] face = c.getInterfaces();
+        for (int i = 0, j = face.length; i < j; i++) {
+            if (face[i].getName().equals(szInterface)) {
+                return true;
+            } else {
+                Class[] face1 = face[i].getInterfaces();
+                for (int x = 0; x < face1.length; x++) {
+                    if (face1[x].getName().equals(szInterface)) {
+                        return true;
+                    } else if (isInterface(face1[x], szInterface)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        if (null != c.getSuperclass()) {
+            return isInterface(c.getSuperclass(), szInterface);
+        }
+        return false;
     }
 
     /**
@@ -343,22 +473,24 @@ public class GlobalUtil {
         WritableRaster raster = bi.copyData(null);
         return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
     }
-    
+
     /**
      * Get default font name
-     * 
+     *
      * @return Default font name
      */
-    public static String getDefaultFontName(){
+    public static String getDefaultFontName() {
         String[] fontnames = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
         List<String> fns = Arrays.asList(fontnames);
         String fn = "宋体";
-        if (!fns.contains(fn))
+        if (!fns.contains(fn)) {
             fn = "Arial";
-        
-        if (!fns.contains(fn))
+        }
+
+        if (!fns.contains(fn)) {
             fn = fontnames[0];
-        
+        }
+
         return fn;
     }
     // </editor-fold>

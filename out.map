@@ -933,11 +933,11 @@ org.meteoinfo.data.meteodata.ascii.ASCIIGridDataInfo -> org.meteoinfo.data.meteo
     241:241:org.meteoinfo.data.GridData getGridData_Lat(int,int,int,int) -> getGridData_Lat
 org.meteoinfo.data.meteodata.ascii.LonLatStationDataInfo -> org.meteoinfo.data.meteodata.ascii.LonLatStationDataInfo:
     java.util.List _fields -> a
-    53:89:void readDataInfo(java.lang.String) -> readDataInfo
-    96:103:java.lang.String generateInfoText() -> generateInfoText
-    109:185:org.meteoinfo.data.StationData getStationData(int,int,int) -> getStationData
-    191:191:org.meteoinfo.data.meteodata.StationInfoData getStationInfoData(int,int) -> getStationInfoData
-    196:196:org.meteoinfo.data.meteodata.StationModelData getStationModelData(int,int) -> getStationModelData
+    55:91:void readDataInfo(java.lang.String) -> readDataInfo
+    98:105:java.lang.String generateInfoText() -> generateInfoText
+    111:187:org.meteoinfo.data.StationData getStationData(int,int,int) -> getStationData
+    193:225:org.meteoinfo.data.meteodata.StationInfoData getStationInfoData(int,int) -> getStationInfoData
+    230:230:org.meteoinfo.data.meteodata.StationModelData getStationModelData(int,int) -> getStationModelData
 org.meteoinfo.data.meteodata.ascii.SurferGridDataInfo -> org.meteoinfo.data.meteodata.ascii.SurferGridDataInfo:
     47:104:void readDataInfo(java.lang.String) -> readDataInfo
     109:121:java.lang.String generateInfoText() -> generateInfoText
@@ -1286,35 +1286,35 @@ org.meteoinfo.data.meteodata.netcdf.NetCDFDataInfo -> org.meteoinfo.data.meteoda
     276:281:org.meteoinfo.data.meteodata.Dimension findDimension(java.lang.String) -> a
     285:291:ucar.nc2.Attribute findGlobalAttribute(java.lang.String) -> b
     309:337:org.meteoinfo.data.meteodata.netcdf.Conventions getConvention() -> a
-    359:614:java.lang.String getProjection_CF() -> b
-    720:728:java.lang.String getGlobalAttStr(java.lang.String) -> c
-    735:802:java.util.List getTimes(ucar.nc2.Variable,double[]) -> a
-    828:876:void getDimValues_HDFEOS_SWATH() -> c
-    879:982:void getDimValues_CF() -> d
-    988:1081:void getDimValues_IOAPI() -> e
-    1085:1216:void getDimValues_WRF(ucar.nc2.NetcdfFile) -> a
-    1238:1244:ucar.nc2.Variable getNCVariable(java.lang.String) -> d
-    1381:1426:java.util.Date getStartTime(java.lang.String) -> e
-    1434:1473:java.lang.String generateInfoText() -> generateInfoText
-    1482:1489:java.util.List getPlotVariables() -> getPlotVariables
-    1509:1540:double[] getPackData(ucar.nc2.Variable) -> a
-    1545:1643:org.meteoinfo.data.GridData getGridData_LonLat(int,int,int) -> getGridData_LonLat
-    1650:1735:org.meteoinfo.data.GridData getGridData_TimeLat(int,int,int) -> getGridData_TimeLat
-    1742:1823:org.meteoinfo.data.GridData getGridData_TimeLon(int,int,int) -> getGridData_TimeLon
-    1830:1915:org.meteoinfo.data.GridData getGridData_LevelLat(int,int,int) -> getGridData_LevelLat
-    1922:2003:org.meteoinfo.data.GridData getGridData_LevelLon(int,int,int) -> getGridData_LevelLon
-    2010:2091:org.meteoinfo.data.GridData getGridData_LevelTime(int,int,int) -> getGridData_LevelTime
-    2098:2175:org.meteoinfo.data.GridData getGridData_Time(int,int,int,int) -> getGridData_Time
-    2182:2259:org.meteoinfo.data.GridData getGridData_Level(int,int,int,int) -> getGridData_Level
-    2266:2343:org.meteoinfo.data.GridData getGridData_Lon(int,int,int,int) -> getGridData_Lon
-    2350:2427:org.meteoinfo.data.GridData getGridData_Lat(int,int,int,int) -> getGridData_Lat
-    2434:2531:org.meteoinfo.data.StationData getStationData(int,int,int) -> getStationData
-    2538:2538:org.meteoinfo.data.meteodata.StationInfoData getStationInfoData(int,int) -> getStationInfoData
-    2543:2543:org.meteoinfo.data.meteodata.StationModelData getStationModelData(int,int) -> getStationModelData
-    2553:2570:ucar.ma2.Array read(java.lang.String) -> read
-    2582:2591:ucar.ma2.Array gridToArray2D(org.meteoinfo.data.GridData) -> gridToArray2D
-    2601:2608:ucar.ma2.Array gridToArray3D(org.meteoinfo.data.GridData) -> gridToArray3D
-    2618:2626:ucar.ma2.Array gridToArray4D(org.meteoinfo.data.GridData) -> gridToArray4D
+    359:616:java.lang.String getProjection_CF() -> b
+    722:730:java.lang.String getGlobalAttStr(java.lang.String) -> c
+    737:817:java.util.List getTimes(ucar.nc2.Variable,double[]) -> a
+    843:891:void getDimValues_HDFEOS_SWATH() -> c
+    894:997:void getDimValues_CF() -> d
+    1003:1096:void getDimValues_IOAPI() -> e
+    1100:1231:void getDimValues_WRF(ucar.nc2.NetcdfFile) -> a
+    1253:1259:ucar.nc2.Variable getNCVariable(java.lang.String) -> d
+    1396:1439:java.util.Date getStartTime(java.lang.String) -> e
+    1447:1486:java.lang.String generateInfoText() -> generateInfoText
+    1495:1502:java.util.List getPlotVariables() -> getPlotVariables
+    1522:1553:double[] getPackData(ucar.nc2.Variable) -> a
+    1558:1656:org.meteoinfo.data.GridData getGridData_LonLat(int,int,int) -> getGridData_LonLat
+    1663:1748:org.meteoinfo.data.GridData getGridData_TimeLat(int,int,int) -> getGridData_TimeLat
+    1755:1836:org.meteoinfo.data.GridData getGridData_TimeLon(int,int,int) -> getGridData_TimeLon
+    1843:1928:org.meteoinfo.data.GridData getGridData_LevelLat(int,int,int) -> getGridData_LevelLat
+    1935:2016:org.meteoinfo.data.GridData getGridData_LevelLon(int,int,int) -> getGridData_LevelLon
+    2023:2104:org.meteoinfo.data.GridData getGridData_LevelTime(int,int,int) -> getGridData_LevelTime
+    2111:2188:org.meteoinfo.data.GridData getGridData_Time(int,int,int,int) -> getGridData_Time
+    2195:2272:org.meteoinfo.data.GridData getGridData_Level(int,int,int,int) -> getGridData_Level
+    2279:2356:org.meteoinfo.data.GridData getGridData_Lon(int,int,int,int) -> getGridData_Lon
+    2363:2440:org.meteoinfo.data.GridData getGridData_Lat(int,int,int,int) -> getGridData_Lat
+    2447:2544:org.meteoinfo.data.StationData getStationData(int,int,int) -> getStationData
+    2551:2551:org.meteoinfo.data.meteodata.StationInfoData getStationInfoData(int,int) -> getStationInfoData
+    2556:2556:org.meteoinfo.data.meteodata.StationModelData getStationModelData(int,int) -> getStationModelData
+    2566:2583:ucar.ma2.Array read(java.lang.String) -> read
+    2595:2604:ucar.ma2.Array gridToArray2D(org.meteoinfo.data.GridData) -> gridToArray2D
+    2614:2621:ucar.ma2.Array gridToArray3D(org.meteoinfo.data.GridData) -> gridToArray3D
+    2631:2639:ucar.ma2.Array gridToArray4D(org.meteoinfo.data.GridData) -> gridToArray4D
 org.meteoinfo.data.meteodata.netcdf.NetCDFDataInfo$1 -> org.meteoinfo.data.meteodata.netcdf.NetCDFDataInfo$1:
     int[] $SwitchMap$org$meteoinfo$data$meteodata$netcdf$Conventions -> a
     int[] $SwitchMap$org$meteoinfo$data$meteodata$netcdf$TimeUnit -> b
@@ -1504,14 +1504,16 @@ org.meteoinfo.geoprocess.Spline$Vec2 -> org.meteoinfo.geoprocess.Spline$a:
     50:50:org.meteoinfo.geoprocess.Spline$Vec2 subtract(org.meteoinfo.geoprocess.Spline$Vec2) -> b
     54:54:org.meteoinfo.geoprocess.Spline$Vec2 multiply(float) -> a
 org.meteoinfo.global.DataConvert -> org.meteoinfo.global.DataConvert:
-    34:36:float bytes2float(byte[],java.nio.ByteOrder) -> bytes2float
-    47:49:int bytes2Int(byte[],java.nio.ByteOrder) -> bytes2Int
-    59:63:int bytes2Int(byte[]) -> bytes2Int
-    73:73:int byte2Int(byte) -> byte2Int
-    83:87:java.util.Date fromOADate(double) -> fromOADate
-    97:101:double toOADate(java.util.Date) -> toOADate
-    111:119:java.lang.Object resizeArray(java.lang.Object,int) -> resizeArray
-    129:137:double[][] resizeArray2D(double[][],int) -> resizeArray2D
+    35:37:float bytes2float(byte[],java.nio.ByteOrder) -> bytes2float
+    48:50:int bytes2Int(byte[],java.nio.ByteOrder) -> bytes2Int
+    60:64:int bytes2Int(byte[]) -> bytes2Int
+    74:74:int byte2Int(byte) -> byte2Int
+    84:88:java.util.Date fromOADate(double) -> fromOADate
+    98:102:double toOADate(java.util.Date) -> toOADate
+    113:121:java.lang.Object resizeArray(java.lang.Object,int) -> resizeArray
+    132:140:double[][] resizeArray2D(double[][],int) -> resizeArray2D
+    150:152:java.lang.String doubleToString(double) -> doubleToString
+    161:170:java.lang.String removeTailingZeros(java.lang.String) -> removeTailingZeros
 org.meteoinfo.global.DateUtil -> org.meteoinfo.global.DateUtil:
     38:45:java.util.Date addDays(java.util.Date,float) -> addDays
 org.meteoinfo.global.Direction -> org.meteoinfo.global.Direction:
@@ -1665,21 +1667,25 @@ org.meteoinfo.global.GenericFileFilter -> org.meteoinfo.global.GenericFileFilter
     88:88:java.lang.String getFileExtent() -> getFileExtent
     95:101:java.lang.String getExtension(java.io.File) -> getExtension
 org.meteoinfo.global.GlobalUtil -> org.meteoinfo.global.GlobalUtil:
-    57:63:java.lang.String getFileExtension(java.lang.String) -> getFileExtension
-    77:86:java.lang.String getPathRoot(java.io.File) -> getPathRoot
-    97:156:java.lang.String getRelativePath(java.lang.String,java.lang.String) -> getRelativePath
-    167:172:java.awt.image.BufferedImage imageToBufferedImage(java.awt.Image) -> imageToBufferedImage
-    184:201:java.awt.Image makeColorTransparent(java.awt.image.BufferedImage,java.awt.Color) -> makeColorTransparent
-    211:268:java.lang.String getAppPath(java.lang.Class) -> getAppPath
-    280:284:java.lang.String padLeft(java.lang.String,int,char) -> padLeft
-    296:300:java.lang.String padRight(java.lang.String,int,char) -> padRight
-    311:330:java.lang.Object deepCopy(java.lang.Object) -> deepCopy
-    341:344:java.awt.image.BufferedImage deepCopy(java.awt.image.BufferedImage) -> deepCopy
-    353:362:java.lang.String getDefaultFontName() -> getDefaultFontName
+    66:72:java.lang.String getFileExtension(java.lang.String) -> getFileExtension
+    87:108:java.util.List getFiles(java.lang.String,java.lang.String) -> getFiles
+    120:139:java.util.List getClassNames(java.lang.String) -> getClassNames
+    149:169:java.lang.String getPluginClassName(java.lang.String) -> getPluginClassName
+    179:197:boolean isInterface(java.lang.Class,java.lang.String) -> isInterface
+    207:216:java.lang.String getPathRoot(java.io.File) -> getPathRoot
+    227:286:java.lang.String getRelativePath(java.lang.String,java.lang.String) -> getRelativePath
+    297:302:java.awt.image.BufferedImage imageToBufferedImage(java.awt.Image) -> imageToBufferedImage
+    314:331:java.awt.Image makeColorTransparent(java.awt.image.BufferedImage,java.awt.Color) -> makeColorTransparent
+    341:398:java.lang.String getAppPath(java.lang.Class) -> getAppPath
+    410:414:java.lang.String padLeft(java.lang.String,int,char) -> padLeft
+    426:430:java.lang.String padRight(java.lang.String,int,char) -> padRight
+    441:460:java.lang.Object deepCopy(java.lang.Object) -> deepCopy
+    471:474:java.awt.image.BufferedImage deepCopy(java.awt.image.BufferedImage) -> deepCopy
+    483:494:java.lang.String getDefaultFontName() -> getDefaultFontName
 org.meteoinfo.global.GlobalUtil$1 -> org.meteoinfo.global.GlobalUtil$1:
     int markerRGB -> a
     java.awt.Color val$color -> b
-    190:195:int filterRGB(int,int,int) -> filterRGB
+    320:325:int filterRGB(int,int,int) -> filterRGB
 org.meteoinfo.global.MIMath -> org.meteoinfo.global.MIMath:
     37:41:boolean doubleEquals(double,double) -> doubleEquals
     53:56:boolean doubleEquals_Abs(double,double) -> doubleEquals_Abs
@@ -2259,11 +2265,11 @@ org.meteoinfo.global.table.SQLExpression -> org.meteoinfo.global.table.SQLExpres
     173:190:boolean doAndOr(java.util.Map) -> a
     194:206:boolean doNot(java.util.Map) -> b
 org.meteoinfo.global.ui.CheckBoxList -> org.meteoinfo.global.ui.CheckBoxList:
-    54:72:int[] getCheckedIdexes() -> getCheckedIdexes
-    77:88:java.util.List getCheckedItems() -> getCheckedItems
+    55:73:int[] getCheckedIdexes() -> getCheckedIdexes
+    78:89:java.util.List getCheckedItems() -> getCheckedItems
 org.meteoinfo.global.ui.CheckBoxList$1 -> org.meteoinfo.global.ui.CheckBoxList$1:
     org.meteoinfo.global.ui.CheckBoxList this$0 -> a
-    35:46:void mousePressed(java.awt.event.MouseEvent) -> mousePressed
+    35:47:void mousePressed(java.awt.event.MouseEvent) -> mousePressed
 org.meteoinfo.global.ui.CheckBoxListEntry -> org.meteoinfo.global.ui.CheckBoxListEntry:
     java.lang.Object value -> a
     boolean red -> b
@@ -2275,7 +2281,7 @@ org.meteoinfo.global.ui.CheckBoxListEntry -> org.meteoinfo.global.ui.CheckBoxLis
     46:47:void setRed(boolean) -> setRed
 org.meteoinfo.global.ui.CheckboxCellRenderer -> org.meteoinfo.global.ui.a:
     javax.swing.border.Border noFocusBorder -> a
-    132:149:java.awt.Component getListCellRendererComponent(javax.swing.JList,java.lang.Object,int,boolean,boolean) -> getListCellRendererComponent
+    133:150:java.awt.Component getListCellRendererComponent(javax.swing.JList,java.lang.Object,int,boolean,boolean) -> getListCellRendererComponent
 org.meteoinfo.io.EndianDataInputStream -> org.meteoinfo.io.EndianDataInputStream:
     java.io.DataInputStream inputStream -> a
     byte[] workSpace -> b
@@ -2614,12 +2620,16 @@ org.meteoinfo.layer.ImageLayer -> org.meteoinfo.layer.ImageLayer:
     221:221:double getXScale() -> getXScale
     230:238:void setXScale(double) -> setXScale
     246:246:double getYScale() -> getYScale
-    250:258:void setYScale(double) -> setYScale
-    268:277:void readImageWorldFile(java.lang.String) -> readImageWorldFile
-    286:299:void writeImageWorldFile(java.lang.String,org.meteoinfo.layer.WorldFilePara) -> writeImageWorldFile
-    307:335:java.util.List getColorsFromPaletteFile(java.lang.String) -> getColorsFromPaletteFile
-    345:352:void setPalette(java.util.List) -> setPalette
-    360:363:void setPalette(java.lang.String) -> setPalette
+    256:264:void setYScale(double) -> setYScale
+    272:272:double getXRotate() -> getXRotate
+    282:286:void setXRotate(double) -> setXRotate
+    294:294:double getYRotate() -> getYRotate
+    304:308:void setYRotate(double) -> setYRotate
+    318:327:void readImageWorldFile(java.lang.String) -> readImageWorldFile
+    336:349:void writeImageWorldFile(java.lang.String,org.meteoinfo.layer.WorldFilePara) -> writeImageWorldFile
+    358:386:java.util.List getColorsFromPaletteFile(java.lang.String) -> getColorsFromPaletteFile
+    396:403:void setPalette(java.util.List) -> setPalette
+    411:414:void setPalette(java.lang.String) -> setPalette
     42:42:java.lang.String access$000(org.meteoinfo.layer.ImageLayer) -> a
     42:42:boolean access$100(org.meteoinfo.layer.ImageLayer) -> b
     42:42:boolean access$102(org.meteoinfo.layer.ImageLayer,boolean) -> a
@@ -2630,34 +2640,38 @@ org.meteoinfo.layer.ImageLayer -> org.meteoinfo.layer.ImageLayer:
     42:42:org.meteoinfo.layer.WorldFilePara access$400(org.meteoinfo.layer.ImageLayer) -> e
 org.meteoinfo.layer.ImageLayer$ImageLayerBean -> org.meteoinfo.layer.ImageLayer$ImageLayerBean:
     org.meteoinfo.layer.ImageLayer this$0 -> a
-    379:379:org.meteoinfo.layer.LayerTypes getLayerType() -> getLayerType
-    388:389:void setLayerType(org.meteoinfo.layer.LayerTypes) -> setLayerType
-    397:397:org.meteoinfo.layer.LayerDrawType getLayerDrawType() -> getLayerDrawType
-    406:407:void setLayerDrawType(org.meteoinfo.layer.LayerDrawType) -> setLayerDrawType
-    415:415:java.lang.String getFileName() -> getFileName
-    424:425:void setFileName(java.lang.String) -> setFileName
-    433:433:int getHandle() -> getHandle
-    442:442:java.lang.String getLayerName() -> getLayerName
-    451:452:void setLayerName(java.lang.String) -> setLayerName
-    460:460:boolean isMaskout() -> isMaskout
-    469:470:void setMaskout(boolean) -> setMaskout
-    478:478:boolean isVisible() -> isVisible
-    487:488:void setVisible(boolean) -> setVisible
-    496:496:java.lang.String getWorldFileName() -> getWorldFileName
-    505:505:boolean isUseTransColor() -> isUseTransColor
-    514:519:void setUseTransColor(boolean) -> setUseTransColor
-    527:527:java.awt.Color getTransparencyColor() -> getTransparencyColor
-    536:541:void setTransparencyColor(java.awt.Color) -> setTransparencyColor
-    549:549:int getTransparency() -> getTransparency
-    558:559:void setTransparency(int) -> setTransparency
-    567:567:double getXUL() -> getXUL
-    576:584:void setXUL(double) -> setXUL
-    592:592:double getYUL() -> getYUL
-    601:609:void setYUL(double) -> setYUL
-    617:617:double getXScale() -> getXScale
-    626:634:void setXScale(double) -> setXScale
-    642:642:double getYScale() -> getYScale
-    646:654:void setYScale(double) -> setYScale
+    430:430:org.meteoinfo.layer.LayerTypes getLayerType() -> getLayerType
+    439:440:void setLayerType(org.meteoinfo.layer.LayerTypes) -> setLayerType
+    448:448:org.meteoinfo.layer.LayerDrawType getLayerDrawType() -> getLayerDrawType
+    457:458:void setLayerDrawType(org.meteoinfo.layer.LayerDrawType) -> setLayerDrawType
+    466:466:java.lang.String getFileName() -> getFileName
+    475:476:void setFileName(java.lang.String) -> setFileName
+    484:484:int getHandle() -> getHandle
+    493:493:java.lang.String getLayerName() -> getLayerName
+    502:503:void setLayerName(java.lang.String) -> setLayerName
+    511:511:boolean isMaskout() -> isMaskout
+    520:521:void setMaskout(boolean) -> setMaskout
+    529:529:boolean isVisible() -> isVisible
+    538:539:void setVisible(boolean) -> setVisible
+    547:547:java.lang.String getWorldFileName() -> getWorldFileName
+    556:556:boolean isUseTransColor() -> isUseTransColor
+    565:570:void setUseTransColor(boolean) -> setUseTransColor
+    578:578:java.awt.Color getTransparencyColor() -> getTransparencyColor
+    587:592:void setTransparencyColor(java.awt.Color) -> setTransparencyColor
+    600:600:int getTransparency() -> getTransparency
+    609:610:void setTransparency(int) -> setTransparency
+    618:618:double getXUL() -> getXUL
+    627:635:void setXUL(double) -> setXUL
+    643:643:double getYUL() -> getYUL
+    652:660:void setYUL(double) -> setYUL
+    668:668:double getXScale() -> getXScale
+    677:685:void setXScale(double) -> setXScale
+    693:693:double getYScale() -> getYScale
+    697:705:void setYScale(double) -> setYScale
+    713:713:double getXRotate() -> getXRotate
+    723:727:void setXRotate(double) -> setXRotate
+    735:735:double getYRotate() -> getYRotate
+    745:749:void setYRotate(double) -> setYRotate
 org.meteoinfo.layer.ImageLayer$ImageLayerBeanBeanInfo -> org.meteoinfo.layer.ImageLayer$ImageLayerBeanBeanInfo:
 org.meteoinfo.layer.LabelSet -> org.meteoinfo.layer.LabelSet:
     boolean _drawLabels -> a
@@ -3095,63 +3109,63 @@ org.meteoinfo.layout.LayoutLegend -> org.meteoinfo.layout.LayoutLegend:
     float _vBarWidth -> p
     float _hBarHeight -> q
     int _columnNum -> r
-    113:150:void onMapViewUpdated(org.meteoinfo.global.event.MapViewUpdatedEvent) -> onMapViewUpdated
-    160:160:org.meteoinfo.layout.LayoutMap getLayoutMap() -> getLayoutMap
-    169:169:org.meteoinfo.layer.MapLayer getLegendLayer() -> getLegendLayer
-    178:185:void setLegendLayer(org.meteoinfo.layer.MapLayer) -> setLegendLayer
-    193:193:java.lang.String getLayerName() -> getLayerName
-    202:206:void setLayerName(java.lang.String) -> setLayerName
-    214:214:org.meteoinfo.layout.LayerUpdateTypes getLayerUpdateType() -> getLayerUpdateType
-    223:224:void setLayerUpdateType(org.meteoinfo.layout.LayerUpdateTypes) -> setLayerUpdateType
-    232:232:org.meteoinfo.layout.LegendStyles getLegendStyle() -> getLegendStyle
-    241:245:void setLegendStyle(org.meteoinfo.layout.LegendStyles) -> setLegendStyle
-    253:253:java.lang.String getTitle() -> getTitle
-    262:264:void setTitle(java.lang.String) -> setTitle
-    272:272:boolean isDrawNeatLine() -> isDrawNeatLine
-    281:282:void setDrawNeatLine(boolean) -> setDrawNeatLine
-    290:290:java.awt.Color getNeatLineColor() -> getNeatLineColor
-    299:300:void setNeatLineColor(java.awt.Color) -> setNeatLineColor
-    308:308:float getNeatLineSize() -> getNeatLineSize
-    317:318:void setNeatLineSize(float) -> setNeatLineSize
-    326:326:java.awt.Font getFont() -> getFont
-    335:338:void setFont(java.awt.Font) -> setFont
-    346:346:int getColumnNumber() -> getColumnNumber
-    355:356:void setColumnNumber(int) -> setColumnNumber
-    368:412:void paintGraphics(java.awt.Graphics2D,org.meteoinfo.global.PointF,float) -> paintGraphics
-    453:541:void drawNormalLegend(java.awt.Graphics2D,float,org.meteoinfo.legend.LegendScheme,org.meteoinfo.global.PointF,boolean) -> a
-    544:701:void drawVerticalBarLegend(java.awt.Graphics2D,float) -> a
-    704:862:void drawHorizontalBarLegend(java.awt.Graphics2D,float) -> b
-    865:935:int getLabelWidth(java.awt.Graphics2D) -> a
-    939:946:int getBreakHeight(java.awt.Graphics2D) -> b
-    959:1009:void updateLegendSize() -> updateLegendSize
-    1014:1014:void paint(java.awt.Graphics2D) -> paint
-    1018:1021:void paintOnLayout(java.awt.Graphics2D,org.meteoinfo.global.PointF,float) -> paintOnLayout
-    1025:1025:void moveUpdate() -> moveUpdate
-    1029:1029:void resizeUpdate() -> resizeUpdate
-    1037:1044:java.util.List getLayerNames() -> getLayerNames
-    51:51:org.meteoinfo.layout.LayoutMap access$000() -> a
-    51:51:org.meteoinfo.layer.MapLayer access$100(org.meteoinfo.layout.LayoutLegend) -> a
-    51:51:org.meteoinfo.layer.MapLayer access$102(org.meteoinfo.layout.LayoutLegend,org.meteoinfo.layer.MapLayer) -> a
-    51:51:java.lang.String access$202(org.meteoinfo.layout.LayoutLegend,java.lang.String) -> a
-    51:51:org.meteoinfo.layout.LayerUpdateTypes access$300(org.meteoinfo.layout.LayoutLegend) -> b
-    51:51:org.meteoinfo.layout.LayerUpdateTypes access$302(org.meteoinfo.layout.LayoutLegend,org.meteoinfo.layout.LayerUpdateTypes) -> a
-    51:51:org.meteoinfo.layout.LegendStyles access$400(org.meteoinfo.layout.LayoutLegend) -> c
-    51:51:org.meteoinfo.layout.LegendStyles access$402(org.meteoinfo.layout.LayoutLegend,org.meteoinfo.layout.LegendStyles) -> a
-    51:51:java.lang.String access$200(org.meteoinfo.layout.LayoutLegend) -> d
-    51:51:boolean access$500(org.meteoinfo.layout.LayoutLegend) -> e
-    51:51:boolean access$502(org.meteoinfo.layout.LayoutLegend,boolean) -> a
-    51:51:java.awt.Color access$600(org.meteoinfo.layout.LayoutLegend) -> f
-    51:51:java.awt.Color access$602(org.meteoinfo.layout.LayoutLegend,java.awt.Color) -> a
-    51:51:float access$700(org.meteoinfo.layout.LayoutLegend) -> g
-    51:51:float access$702(org.meteoinfo.layout.LayoutLegend,float) -> a
-    51:51:java.awt.Font access$800(org.meteoinfo.layout.LayoutLegend) -> h
-    51:51:java.awt.Font access$802(org.meteoinfo.layout.LayoutLegend,java.awt.Font) -> a
-    51:51:java.awt.Font access$902(org.meteoinfo.layout.LayoutLegend,java.awt.Font) -> b
-    51:51:int access$1000(org.meteoinfo.layout.LayoutLegend) -> i
-    51:51:int access$1002(org.meteoinfo.layout.LayoutLegend,int) -> a
+    114:154:void onMapViewUpdated(org.meteoinfo.global.event.MapViewUpdatedEvent) -> onMapViewUpdated
+    164:164:org.meteoinfo.layout.LayoutMap getLayoutMap() -> getLayoutMap
+    173:173:org.meteoinfo.layer.MapLayer getLegendLayer() -> getLegendLayer
+    182:189:void setLegendLayer(org.meteoinfo.layer.MapLayer) -> setLegendLayer
+    197:197:java.lang.String getLayerName() -> getLayerName
+    206:210:void setLayerName(java.lang.String) -> setLayerName
+    218:218:org.meteoinfo.layout.LayerUpdateTypes getLayerUpdateType() -> getLayerUpdateType
+    227:228:void setLayerUpdateType(org.meteoinfo.layout.LayerUpdateTypes) -> setLayerUpdateType
+    236:236:org.meteoinfo.layout.LegendStyles getLegendStyle() -> getLegendStyle
+    245:249:void setLegendStyle(org.meteoinfo.layout.LegendStyles) -> setLegendStyle
+    257:257:java.lang.String getTitle() -> getTitle
+    266:268:void setTitle(java.lang.String) -> setTitle
+    276:276:boolean isDrawNeatLine() -> isDrawNeatLine
+    285:286:void setDrawNeatLine(boolean) -> setDrawNeatLine
+    294:294:java.awt.Color getNeatLineColor() -> getNeatLineColor
+    303:304:void setNeatLineColor(java.awt.Color) -> setNeatLineColor
+    312:312:float getNeatLineSize() -> getNeatLineSize
+    321:322:void setNeatLineSize(float) -> setNeatLineSize
+    330:330:java.awt.Font getFont() -> getFont
+    339:342:void setFont(java.awt.Font) -> setFont
+    350:350:int getColumnNumber() -> getColumnNumber
+    359:360:void setColumnNumber(int) -> setColumnNumber
+    372:416:void paintGraphics(java.awt.Graphics2D,org.meteoinfo.global.PointF,float) -> paintGraphics
+    457:545:void drawNormalLegend(java.awt.Graphics2D,float,org.meteoinfo.legend.LegendScheme,org.meteoinfo.global.PointF,boolean) -> a
+    548:705:void drawVerticalBarLegend(java.awt.Graphics2D,float) -> a
+    708:866:void drawHorizontalBarLegend(java.awt.Graphics2D,float) -> b
+    869:939:int getLabelWidth(java.awt.Graphics2D) -> a
+    943:950:int getBreakHeight(java.awt.Graphics2D) -> b
+    963:1013:void updateLegendSize() -> updateLegendSize
+    1018:1018:void paint(java.awt.Graphics2D) -> paint
+    1022:1025:void paintOnLayout(java.awt.Graphics2D,org.meteoinfo.global.PointF,float) -> paintOnLayout
+    1029:1029:void moveUpdate() -> moveUpdate
+    1033:1033:void resizeUpdate() -> resizeUpdate
+    1041:1048:java.util.List getLayerNames() -> getLayerNames
+    52:52:org.meteoinfo.layout.LayoutMap access$000() -> a
+    52:52:org.meteoinfo.layer.MapLayer access$100(org.meteoinfo.layout.LayoutLegend) -> a
+    52:52:org.meteoinfo.layer.MapLayer access$102(org.meteoinfo.layout.LayoutLegend,org.meteoinfo.layer.MapLayer) -> a
+    52:52:java.lang.String access$202(org.meteoinfo.layout.LayoutLegend,java.lang.String) -> a
+    52:52:org.meteoinfo.layout.LayerUpdateTypes access$300(org.meteoinfo.layout.LayoutLegend) -> b
+    52:52:org.meteoinfo.layout.LayerUpdateTypes access$302(org.meteoinfo.layout.LayoutLegend,org.meteoinfo.layout.LayerUpdateTypes) -> a
+    52:52:org.meteoinfo.layout.LegendStyles access$400(org.meteoinfo.layout.LayoutLegend) -> c
+    52:52:org.meteoinfo.layout.LegendStyles access$402(org.meteoinfo.layout.LayoutLegend,org.meteoinfo.layout.LegendStyles) -> a
+    52:52:java.lang.String access$200(org.meteoinfo.layout.LayoutLegend) -> d
+    52:52:boolean access$500(org.meteoinfo.layout.LayoutLegend) -> e
+    52:52:boolean access$502(org.meteoinfo.layout.LayoutLegend,boolean) -> a
+    52:52:java.awt.Color access$600(org.meteoinfo.layout.LayoutLegend) -> f
+    52:52:java.awt.Color access$602(org.meteoinfo.layout.LayoutLegend,java.awt.Color) -> a
+    52:52:float access$700(org.meteoinfo.layout.LayoutLegend) -> g
+    52:52:float access$702(org.meteoinfo.layout.LayoutLegend,float) -> a
+    52:52:java.awt.Font access$800(org.meteoinfo.layout.LayoutLegend) -> h
+    52:52:java.awt.Font access$802(org.meteoinfo.layout.LayoutLegend,java.awt.Font) -> a
+    52:52:java.awt.Font access$902(org.meteoinfo.layout.LayoutLegend,java.awt.Font) -> b
+    52:52:int access$1000(org.meteoinfo.layout.LayoutLegend) -> i
+    52:52:int access$1002(org.meteoinfo.layout.LayoutLegend,int) -> a
 org.meteoinfo.layout.LayoutLegend$1 -> org.meteoinfo.layout.LayoutLegend$1:
     org.meteoinfo.layout.LayoutLegend this$0 -> a
-    91:92:void mapViewUpdatedEvent(org.meteoinfo.global.event.MapViewUpdatedEvent) -> mapViewUpdatedEvent
+    92:93:void mapViewUpdatedEvent(org.meteoinfo.global.event.MapViewUpdatedEvent) -> mapViewUpdatedEvent
 org.meteoinfo.layout.LayoutLegend$2 -> org.meteoinfo.layout.LayoutLegend$2:
     int[] $SwitchMap$org$meteoinfo$layout$LayerUpdateTypes -> a
     int[] $SwitchMap$org$meteoinfo$layout$LegendStyles -> b
@@ -3162,35 +3176,35 @@ org.meteoinfo.layout.LayoutLegend$LayerNameEditor -> org.meteoinfo.layout.Layout
 org.meteoinfo.layout.LayoutLegend$LayerUpdateTypeEditor -> org.meteoinfo.layout.LayoutLegend$LayerUpdateTypeEditor:
 org.meteoinfo.layout.LayoutLegend$LayoutLegendBean -> org.meteoinfo.layout.LayoutLegend$LayoutLegendBean:
     org.meteoinfo.layout.LayoutLegend this$0 -> a
-    1061:1061:org.meteoinfo.layout.LayoutMap getLayoutMap() -> getLayoutMap
-    1070:1070:org.meteoinfo.layer.MapLayer getLegendLayer() -> getLegendLayer
-    1079:1086:void setLegendLayer(org.meteoinfo.layer.MapLayer) -> setLegendLayer
-    1094:1094:java.lang.String getLayerName() -> getLayerName
-    1103:1107:void setLayerName(java.lang.String) -> setLayerName
-    1115:1115:java.lang.String getLayerUpdateType() -> getLayerUpdateType
-    1124:1125:void setLayerUpdateType(java.lang.String) -> setLayerUpdateType
-    1133:1133:java.lang.String getLegendStyle() -> getLegendStyle
-    1142:1146:void setLegendStyle(java.lang.String) -> setLegendStyle
-    1154:1154:java.lang.String getTitle() -> getTitle
-    1163:1165:void setTitle(java.lang.String) -> setTitle
-    1173:1173:boolean isDrawNeatLine() -> isDrawNeatLine
-    1182:1183:void setDrawNeatLine(boolean) -> setDrawNeatLine
-    1191:1191:java.awt.Color getNeatLineColor() -> getNeatLineColor
-    1200:1201:void setNeatLineColor(java.awt.Color) -> setNeatLineColor
-    1209:1209:float getNeatLineSize() -> getNeatLineSize
-    1218:1219:void setNeatLineSize(float) -> setNeatLineSize
-    1227:1227:java.awt.Font getFont() -> getFont
-    1236:1239:void setFont(java.awt.Font) -> setFont
-    1247:1247:int getColumnNumber() -> getColumnNumber
-    1256:1260:void setColumnNumber(int) -> setColumnNumber
-    1268:1268:java.awt.Color getBackColor() -> getBackColor
-    1277:1278:void setBackColor(java.awt.Color) -> setBackColor
-    1286:1286:java.awt.Color getForeColor() -> getForeColor
-    1295:1296:void setForeColor(java.awt.Color) -> setForeColor
-    1304:1304:int getLeft() -> getLeft
-    1313:1314:void setLeft(int) -> setLeft
-    1322:1322:int getTop() -> getTop
-    1331:1332:void setTop(int) -> setTop
+    1065:1065:org.meteoinfo.layout.LayoutMap getLayoutMap() -> getLayoutMap
+    1074:1074:org.meteoinfo.layer.MapLayer getLegendLayer() -> getLegendLayer
+    1083:1090:void setLegendLayer(org.meteoinfo.layer.MapLayer) -> setLegendLayer
+    1098:1098:java.lang.String getLayerName() -> getLayerName
+    1107:1111:void setLayerName(java.lang.String) -> setLayerName
+    1119:1119:java.lang.String getLayerUpdateType() -> getLayerUpdateType
+    1128:1129:void setLayerUpdateType(java.lang.String) -> setLayerUpdateType
+    1137:1137:java.lang.String getLegendStyle() -> getLegendStyle
+    1146:1150:void setLegendStyle(java.lang.String) -> setLegendStyle
+    1158:1158:java.lang.String getTitle() -> getTitle
+    1167:1169:void setTitle(java.lang.String) -> setTitle
+    1177:1177:boolean isDrawNeatLine() -> isDrawNeatLine
+    1186:1187:void setDrawNeatLine(boolean) -> setDrawNeatLine
+    1195:1195:java.awt.Color getNeatLineColor() -> getNeatLineColor
+    1204:1205:void setNeatLineColor(java.awt.Color) -> setNeatLineColor
+    1213:1213:float getNeatLineSize() -> getNeatLineSize
+    1222:1223:void setNeatLineSize(float) -> setNeatLineSize
+    1231:1231:java.awt.Font getFont() -> getFont
+    1240:1243:void setFont(java.awt.Font) -> setFont
+    1251:1251:int getColumnNumber() -> getColumnNumber
+    1260:1264:void setColumnNumber(int) -> setColumnNumber
+    1272:1272:java.awt.Color getBackColor() -> getBackColor
+    1281:1282:void setBackColor(java.awt.Color) -> setBackColor
+    1290:1290:java.awt.Color getForeColor() -> getForeColor
+    1299:1300:void setForeColor(java.awt.Color) -> setForeColor
+    1308:1308:int getLeft() -> getLeft
+    1317:1318:void setLeft(int) -> setLeft
+    1326:1326:int getTop() -> getTop
+    1335:1336:void setTop(int) -> setTop
 org.meteoinfo.layout.LayoutLegend$LayoutLegendBeanBeanInfo -> org.meteoinfo.layout.LayoutLegend$LayoutLegendBeanBeanInfo:
 org.meteoinfo.layout.LayoutLegend$LegendStyleEditor -> org.meteoinfo.layout.LayoutLegend$LegendStyleEditor:
 org.meteoinfo.layout.LayoutMap -> org.meteoinfo.layout.LayoutMap:
@@ -3910,11 +3924,11 @@ org.meteoinfo.legend.FrmLegendSet -> org.meteoinfo.legend.FrmLegendSet:
     javax.swing.JToolBar$Separator jSeparator3 -> p
     javax.swing.JToolBar jToolBar1 -> q
     org.meteoinfo.legend.LegendView legendView1 -> r
-    54:239:void initComponents() -> a
-    438:438:boolean isOK() -> isOK
-    446:449:void setLegendScheme(org.meteoinfo.legend.LegendScheme) -> setLegendScheme
-    456:456:org.meteoinfo.legend.LegendScheme getLegendScheme() -> getLegendScheme
-    469:499:void main(java.lang.String[]) -> main
+    54:240:void initComponents() -> a
+    439:439:boolean isOK() -> isOK
+    447:450:void setLegendScheme(org.meteoinfo.legend.LegendScheme) -> setLegendScheme
+    457:457:org.meteoinfo.legend.LegendScheme getLegendScheme() -> getLegendScheme
+    470:500:void main(java.lang.String[]) -> main
     24:24:void access$000(org.meteoinfo.legend.FrmLegendSet,java.awt.event.ActionEvent) -> a
     24:24:void access$100(org.meteoinfo.legend.FrmLegendSet,java.awt.event.ActionEvent) -> b
     24:24:void access$200(org.meteoinfo.legend.FrmLegendSet,java.awt.event.ActionEvent) -> c
@@ -3928,43 +3942,43 @@ org.meteoinfo.legend.FrmLegendSet -> org.meteoinfo.legend.FrmLegendSet:
     24:24:void access$1000(org.meteoinfo.legend.FrmLegendSet,java.awt.event.ActionEvent) -> k
 org.meteoinfo.legend.FrmLegendSet$1 -> org.meteoinfo.legend.FrmLegendSet$1:
     org.meteoinfo.legend.FrmLegendSet this$0 -> a
-    82:83:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
+    83:84:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
 org.meteoinfo.legend.FrmLegendSet$10 -> org.meteoinfo.legend.FrmLegendSet$2:
     org.meteoinfo.legend.FrmLegendSet this$0 -> a
-    200:201:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
+    201:202:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
 org.meteoinfo.legend.FrmLegendSet$11 -> org.meteoinfo.legend.FrmLegendSet$3:
     org.meteoinfo.legend.FrmLegendSet this$0 -> a
-    208:209:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
+    209:210:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
 org.meteoinfo.legend.FrmLegendSet$12 -> org.meteoinfo.legend.FrmLegendSet$4:
-    489:497:void run() -> run
+    490:498:void run() -> run
 org.meteoinfo.legend.FrmLegendSet$12$1 -> org.meteoinfo.legend.FrmLegendSet$4$1:
-    493:494:void windowClosing(java.awt.event.WindowEvent) -> windowClosing
+    494:495:void windowClosing(java.awt.event.WindowEvent) -> windowClosing
 org.meteoinfo.legend.FrmLegendSet$13 -> org.meteoinfo.legend.FrmLegendSet$5:
     int[] $SwitchMap$org$meteoinfo$shape$ShapeTypes -> a
 org.meteoinfo.legend.FrmLegendSet$2 -> org.meteoinfo.legend.FrmLegendSet$6:
     org.meteoinfo.legend.FrmLegendSet this$0 -> a
-    94:95:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
+    95:96:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
 org.meteoinfo.legend.FrmLegendSet$3 -> org.meteoinfo.legend.FrmLegendSet$7:
     org.meteoinfo.legend.FrmLegendSet this$0 -> a
-    107:108:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
+    108:109:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
 org.meteoinfo.legend.FrmLegendSet$4 -> org.meteoinfo.legend.FrmLegendSet$8:
     org.meteoinfo.legend.FrmLegendSet this$0 -> a
-    119:120:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
+    120:121:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
 org.meteoinfo.legend.FrmLegendSet$5 -> org.meteoinfo.legend.FrmLegendSet$9:
     org.meteoinfo.legend.FrmLegendSet this$0 -> a
-    131:132:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
+    132:133:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
 org.meteoinfo.legend.FrmLegendSet$6 -> org.meteoinfo.legend.FrmLegendSet$10:
     org.meteoinfo.legend.FrmLegendSet this$0 -> a
-    144:145:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
+    145:146:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
 org.meteoinfo.legend.FrmLegendSet$7 -> org.meteoinfo.legend.FrmLegendSet$11:
     org.meteoinfo.legend.FrmLegendSet this$0 -> a
-    156:157:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
+    157:158:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
 org.meteoinfo.legend.FrmLegendSet$8 -> org.meteoinfo.legend.FrmLegendSet$12:
     org.meteoinfo.legend.FrmLegendSet this$0 -> a
-    168:169:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
+    169:170:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
 org.meteoinfo.legend.FrmLegendSet$9 -> org.meteoinfo.legend.FrmLegendSet$13:
     org.meteoinfo.legend.FrmLegendSet this$0 -> a
-    180:181:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
+    181:182:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
 org.meteoinfo.legend.FrmPointSymbolSet -> org.meteoinfo.legend.FrmPointSymbolSet:
     java.lang.Object _parent -> a
     org.meteoinfo.legend.PointBreak _pointBreak -> b
@@ -4070,8 +4084,8 @@ org.meteoinfo.legend.FrmPolygonSymbolSet -> org.meteoinfo.legend.FrmPolygonSymbo
     javax.swing.JSpinner jSpinner_OutlineSize -> q
     javax.swing.JSpinner jSpinner_TransParency -> r
     74:277:void initComponents() -> a
-    384:387:void setPolygonBreak(org.meteoinfo.legend.PolygonBreak) -> setPolygonBreak
-    432:462:void main(java.lang.String[]) -> main
+    385:388:void setPolygonBreak(org.meteoinfo.legend.PolygonBreak) -> setPolygonBreak
+    433:463:void main(java.lang.String[]) -> main
     17:17:void access$000(org.meteoinfo.legend.FrmPolygonSymbolSet,java.awt.event.ActionEvent) -> a
     17:17:void access$100(org.meteoinfo.legend.FrmPolygonSymbolSet,java.awt.event.ActionEvent) -> b
     17:17:void access$200(org.meteoinfo.legend.FrmPolygonSymbolSet,java.awt.event.ActionEvent) -> c
@@ -4089,9 +4103,9 @@ org.meteoinfo.legend.FrmPolygonSymbolSet$10 -> org.meteoinfo.legend.FrmPolygonSy
     org.meteoinfo.legend.FrmPolygonSymbolSet this$0 -> a
     204:205:void stateChanged(javax.swing.event.ChangeEvent) -> stateChanged
 org.meteoinfo.legend.FrmPolygonSymbolSet$11 -> org.meteoinfo.legend.FrmPolygonSymbolSet$3:
-    452:460:void run() -> run
+    453:461:void run() -> run
 org.meteoinfo.legend.FrmPolygonSymbolSet$11$1 -> org.meteoinfo.legend.FrmPolygonSymbolSet$3$1:
-    456:457:void windowClosing(java.awt.event.WindowEvent) -> windowClosing
+    457:458:void windowClosing(java.awt.event.WindowEvent) -> windowClosing
 org.meteoinfo.legend.FrmPolygonSymbolSet$2 -> org.meteoinfo.legend.FrmPolygonSymbolSet$4:
     org.meteoinfo.legend.FrmPolygonSymbolSet this$0 -> a
     103:104:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
@@ -4997,257 +5011,257 @@ org.meteoinfo.map.MapView -> org.meteoinfo.map.MapView:
     java.util.List _gridLabels -> at
     java.util.Date _lastMouseWheelTime -> au
     javax.swing.Timer _mouseWheelDetctionTimer -> av
-    364:364:org.meteoinfo.layer.LayerCollection getLayers() -> getLayers
-    373:374:void setLayers(org.meteoinfo.layer.LayerCollection) -> setLayers
-    382:382:int getLayerNum() -> getLayerNum
-    391:391:int getSelectedLayer() -> getSelectedLayer
-    400:401:void setSelectedLayer(int) -> setSelectedLayer
-    409:416:org.meteoinfo.layer.MapLayer getLastAddedLayer() -> getLastAddedLayer
-    425:425:boolean isLayoutMap() -> isLayoutMap
-    434:435:void setIsLayoutMap(boolean) -> setIsLayoutMap
-    443:443:boolean isGeoMap() -> isGeoMap
-    452:453:void setGeoMap(boolean) -> setGeoMap
-    461:461:org.meteoinfo.global.Extent getExtent() -> getExtent
-    470:471:void setExtent(org.meteoinfo.global.Extent) -> setExtent
-    479:479:org.meteoinfo.global.Extent getViewExtent() -> getViewExtent
-    488:495:void setViewExtent(org.meteoinfo.global.Extent) -> setViewExtent
-    503:503:java.awt.Color getSelectColor() -> getSelectColor
-    512:513:void setSelectColor(java.awt.Color) -> setSelectColor
-    521:521:boolean isMultiGlobalDraw() -> isMultiGlobalDraw
-    530:531:void setMultiGlobalDraw(boolean) -> setMultiGlobalDraw
-    539:539:double getXScale() -> getXScale
-    548:548:double getYScale() -> getYScale
-    557:557:double getXYScaleFactor() -> getXYScaleFactor
-    566:571:void setXYScaleFactor(double) -> setXYScaleFactor
-    579:579:org.meteoinfo.map.MouseTools getMouseTool() -> getMouseTool
-    588:632:void setMouseTool(org.meteoinfo.map.MouseTools) -> setMouseTool
-    640:640:org.meteoinfo.map.ProjectionSet getProjection() -> getProjection
-    649:649:boolean isLockViewUpdate() -> isLockViewUpdate
-    658:659:void setLockViewUpdate(boolean) -> setLockViewUpdate
-    667:667:boolean isAntiAlias() -> isAntiAlias
-    676:680:void setAntiAlias(boolean) -> setAntiAlias
-    688:688:boolean isPointAntiAlias() -> isPointAntiAlias
-    697:698:void setPointAntiAlias(boolean) -> setPointAntiAlias
-    706:706:boolean isHighSpeedWheelZoom() -> isHighSpeedWheelZoom
-    715:716:void setHighSpeedWheelZoom(boolean) -> setHighSpeedWheelZoom
-    724:724:org.meteoinfo.shape.GraphicCollection getSelectedGraphics() -> getSelectedGraphics
-    733:733:org.meteoinfo.legend.PointBreak getDefPointBreak() -> getDefPointBreak
-    742:743:void setDefPointBreak(org.meteoinfo.legend.PointBreak) -> setDefPointBreak
-    751:751:org.meteoinfo.legend.LabelBreak getDefLabelBreak() -> getDefLabelBreak
-    760:761:void setDefLabelBreak(org.meteoinfo.legend.LabelBreak) -> setDefLabelBreak
-    769:769:org.meteoinfo.legend.PolylineBreak getDefPolylineBreak() -> getDefPolylineBreak
-    778:779:void setDefPolylineBreak(org.meteoinfo.legend.PolylineBreak) -> setDefPolylineBreak
-    787:787:org.meteoinfo.legend.PolygonBreak getDefPolygonBreak() -> getDefPolygonBreak
-    796:797:void setDefPolygonBreak(org.meteoinfo.legend.PolygonBreak) -> setDefPolygonBreak
-    805:805:boolean isDrawIdentiferShape() -> isDrawIdentiferShape
-    814:815:void setDrawIdentiferShape(boolean) -> setDrawIdentiferShape
-    823:823:boolean isDrawGridTickLine() -> isDrawGridTickLine
-    832:833:void setDrawGridTickLine(boolean) -> setDrawGridTickLine
-    841:841:java.util.List getGridLabels() -> getGridLabels
-    850:850:java.awt.Color getGridLineColor() -> getGridLineColor
-    859:860:void setGridLineColor(java.awt.Color) -> setGridLineColor
-    868:868:float getGridLineSize() -> getGridLineSize
-    877:878:void setGridLineSize(float) -> setGridLineSize
-    886:886:org.meteoinfo.legend.LineStyles getGridLineStyle() -> getGridLineStyle
-    895:896:void setGridLineStyle(org.meteoinfo.legend.LineStyles) -> setGridLineStyle
-    904:904:boolean isDrawGridLine() -> isDrawGridLine
-    913:914:void setDrawGridLine(boolean) -> setDrawGridLine
-    922:922:float getGridXDelt() -> getGridXDelt
-    931:933:void setGridXDelt(float) -> setGridXDelt
-    941:941:float getGridYDelt() -> getGridYDelt
-    950:952:void setGridYDelt(float) -> setGridYDelt
-    960:960:float getGridXOrigin() -> getGridXOrigin
-    969:971:void setGridXOrigin(float) -> setGridXOrigin
-    979:979:float getGridYOrigin() -> getGridYOrigin
-    988:990:void setGridYOrigin(float) -> setGridYOrigin
-    998:998:java.util.List getXGridStrs() -> getXGridStrs
-    1007:1008:void setXGridStrs(java.util.List) -> setXGridStrs
-    1016:1016:java.util.List getYGridStrs() -> getYGridStrs
-    1025:1026:void setYGridStrs(java.util.List) -> setYGridStrs
-    1034:1034:org.meteoinfo.shape.GraphicCollection getGraphicCollection() -> getGraphicCollection
-    1043:1044:void setGraphicCollection(org.meteoinfo.shape.GraphicCollection) -> setGraphicCollection
-    1052:1052:org.meteoinfo.layer.VectorLayer getLonLatLayer() -> getLonLatLayer
-    1061:1062:void setLonLatLayer(org.meteoinfo.layer.VectorLayer) -> setLonLatLayer
-    1070:1070:org.meteoinfo.layer.VectorLayer getLonLatProjLayer() -> getLonLatProjLayer
-    1079:1080:void setLonLatProjLayer(org.meteoinfo.layer.VectorLayer) -> setLonLatProjLayer
-    1088:1088:org.meteoinfo.global.FrmMeasurement getMeasurementForm() -> getMeasurementForm
-    1097:1098:void setMeasurementForm(org.meteoinfo.global.FrmMeasurement) -> setMeasurementForm
-    1106:1106:org.meteoinfo.map.MaskOut getMaskOut() -> getMaskOut
-    1115:1116:void setMaskOut(org.meteoinfo.map.MaskOut) -> setMaskOut
-    1124:1124:java.awt.image.BufferedImage getViewImage() -> getViewImage
-    1130:1131:void addViewExtentChangedListener(org.meteoinfo.global.event.IViewExtentChangedListener) -> addViewExtentChangedListener
-    1134:1135:void removeViewExtentChangedListener(org.meteoinfo.global.event.IViewExtentChangedListener) -> removeViewExtentChangedListener
-    1138:1139:void fireViewExtentChangedEvent() -> fireViewExtentChangedEvent
-    1151:1152:void addLayersUpdatedListener(org.meteoinfo.global.event.ILayersUpdatedListener) -> addLayersUpdatedListener
-    1155:1156:void removeLayersUpdatedListener(org.meteoinfo.global.event.ILayersUpdatedListener) -> removeLayersUpdatedListener
-    1159:1160:void fireLayersUpdatedEvent() -> fireLayersUpdatedEvent
-    1172:1173:void addGraphicSelectedListener(org.meteoinfo.global.event.IGraphicSelectedListener) -> addGraphicSelectedListener
-    1176:1177:void removeGraphicSelectedListener(org.meteoinfo.global.event.IGraphicSelectedListener) -> removeGraphicSelectedListener
-    1180:1181:void fireGraphicSelectedEvent() -> fireGraphicSelectedEvent
-    1193:1194:void addProjectionChangedListener(org.meteoinfo.global.event.IProjectionChangedListener) -> addProjectionChangedListener
-    1197:1198:void removeViewExtentChangedListener(org.meteoinfo.global.event.IProjectionChangedListener) -> removeViewExtentChangedListener
-    1201:1202:void fireProjectionChangedEvent() -> fireProjectionChangedEvent
-    1214:1215:void onComponentResized$1c0d27a4() -> a
-    1218:1367:void onMousePressed(java.awt.event.MouseEvent) -> a
-    1370:1480:void onMouseDragged(java.awt.event.MouseEvent) -> b
-    1483:1640:void onMouseMoved(java.awt.event.MouseEvent) -> c
-    1643:2020:void onMouseReleased(java.awt.event.MouseEvent) -> d
-    2072:2403:void onMouseClicked(java.awt.event.MouseEvent) -> e
-    2489:2531:void onMouseWheelMoved(java.awt.event.MouseWheelEvent) -> a
-    2534:2534:void onKeyTyped$241b287e() -> b
-    2537:2544:void onKeyPressed(java.awt.event.KeyEvent) -> a
-    2547:2547:void onKeyReleased$241b287e() -> c
-    2559:2578:int addLayer(org.meteoinfo.layer.MapLayer) -> addLayer
-    2590:2614:int addWindLayer(org.meteoinfo.layer.VectorLayer,boolean) -> addWindLayer
-    2688:2696:int getNewLayerHandle() -> getNewLayerHandle
-    2705:2716:org.meteoinfo.global.Extent getLayersWholeExtent() -> getLayersWholeExtent
-    2726:2734:int getLayerHandleFromName(java.lang.String) -> getLayerHandleFromName
-    2744:2744:int getLayerHandleFromIdx(int) -> getLayerHandleFromIdx
-    2754:2762:org.meteoinfo.layer.MapLayer getLayerFromHandle(int) -> getLayerFromHandle
-    2772:2780:org.meteoinfo.layer.MapLayer getLayerFromName(java.lang.String) -> getLayerFromName
-    2790:2798:int getLayerIdxFromHandle(int) -> getLayerIdxFromHandle
-    2809:2820:void moveLayer(int,int) -> moveLayer
-    2828:2830:void removeLayer(int) -> removeLayer
-    2838:2842:void removeLayerHandle(int) -> removeLayerHandle
-    2850:2852:void removeLayer(org.meteoinfo.layer.MapLayer) -> removeLayer
-    2858:2864:void removeAllLayers() -> removeAllLayers
-    2873:2896:int getLineLayerIdx() -> getLineLayerIdx
-    2906:2926:int getPolygonLayerIdx() -> getPolygonLayerIdx
-    2935:2944:int getImageLayerIdx() -> getImageLayerIdx
-    2956:3114:void paintComponent(java.awt.Graphics) -> paintComponent
-    3117:3164:void paintLayers() -> paintLayers
-    3172:3191:void paintGraphics(java.awt.Graphics2D) -> paintGraphics
-    3200:3233:void paintGraphics(java.awt.Graphics2D,java.awt.Rectangle) -> paintGraphics
-    3236:3237:void drawLonLatMap(java.awt.Graphics2D) -> a
-    3241:3274:void drawLonLatMap(java.awt.Graphics2D,int,int) -> a
-    3277:3278:void drawProjectedMap(java.awt.Graphics2D) -> b
-    3282:3292:void drawProjectedMap(java.awt.Graphics2D,int,int) -> b
-    3297:3302:void draw2DMap(java.awt.Graphics2D) -> c
-    3309:3400:void drawLayers(java.awt.Graphics2D,int,int) -> c
-    3403:3455:void drawImage(java.awt.Graphics2D,org.meteoinfo.layer.ImageLayer,double,int,int) -> a
-    3516:3540:void drawRasterLayer(java.awt.Graphics2D,org.meteoinfo.layer.RasterLayer,double) -> a
-    3601:3636:void drawLayerWithLegendScheme(org.meteoinfo.layer.VectorLayer,java.awt.Graphics2D,double) -> drawLayerWithLegendScheme
-    3647:3724:void drawVectLayerWithLegendScheme(org.meteoinfo.layer.VectorLayer,java.awt.Graphics2D,double) -> drawVectLayerWithLegendScheme
-    3735:3893:void drawBarbLayerWithLegendScheme(org.meteoinfo.layer.VectorLayer,java.awt.Graphics2D,double) -> drawBarbLayerWithLegendScheme
-    3907:3927:void drawLonLatLayer(org.meteoinfo.layer.VectorLayer,java.awt.Graphics2D,double) -> a
-    4095:4177:void drawStationModelLayer(org.meteoinfo.layer.VectorLayer,java.awt.Graphics2D,double) -> b
-    4180:4203:void drawPolygonLayer(org.meteoinfo.layer.VectorLayer,java.awt.Graphics2D,double) -> c
-    4206:4257:void drawPolylineLayer(org.meteoinfo.layer.VectorLayer,java.awt.Graphics2D,double) -> d
-    4260:4279:float[] getDashPattern(org.meteoinfo.legend.LineStyles) -> a
-    4284:4285:void drawPolylineShape(java.awt.Graphics2D,org.meteoinfo.shape.PolylineShape,org.meteoinfo.legend.PolylineBreak,double,boolean) -> a
-    4390:4391:void drawPolygonShape(java.awt.Graphics2D,org.meteoinfo.shape.PolygonShape,org.meteoinfo.legend.PolygonBreak,double) -> a
-    4417:4479:java.util.List drawPolygon(java.awt.Graphics2D,org.meteoinfo.shape.Polygon,org.meteoinfo.legend.PolygonBreak,double,boolean) -> a
-    4489:4502:void drawGraphicList(java.awt.Graphics2D,double) -> drawGraphicList
-    4512:4542:void drawGraphic(java.awt.Graphics2D,org.meteoinfo.shape.Graphic,double) -> drawGraphic
-    4545:4578:void getMaskOutGraphicsPath$3516ad91() -> d
-    4582:4589:void setClipRegion(java.awt.Graphics2D) -> d
-    4598:4649:void drawIdShape(java.awt.Graphics2D,org.meteoinfo.shape.Shape) -> drawIdShape
-    4659:4719:void drawIdShape(java.awt.Graphics2D,org.meteoinfo.shape.Shape,java.awt.Rectangle) -> drawIdShape
-    4722:4831:void drawLayerLabels(java.awt.Graphics2D,org.meteoinfo.layer.VectorLayer,double) -> a
-    4834:4914:void drawLayerCharts(java.awt.Graphics2D,org.meteoinfo.layer.VectorLayer,double) -> b
-    5014:5048:void exportToPicture(java.lang.String) -> exportToPicture
-    5058:5058:org.meteoinfo.layer.VectorLayer generateLonLatLayer() -> generateLonLatLayer
-    5068:5270:org.meteoinfo.layer.VectorLayer generateLonLatLayer$709a42c4(float,float,float) -> a
-    5274:5283:void updateLonLatLayer() -> e
-    5286:5573:void getLonLatGridLabels() -> f
-    5585:5588:double[] projToScreen(double,double) -> projToScreen
-    5600:5603:double[] projToScreen(double,double,double) -> projToScreen
-    5614:5636:double[] lonLatToScreen(double,double) -> lonLatToScreen
-    5647:5650:double[] screenToProj(double,double) -> screenToProj
-    5662:5665:double[] screenToProj(double,double,double) -> screenToProj
-    5676:5679:float[] screenToProj(float,float) -> screenToProj
-    5691:5694:float[] screenToProj(float,float,double) -> screenToProj
-    5712:5720:void moveShape(org.meteoinfo.shape.Shape,double,double) -> a
-    5723:5768:void resizeShapeOnScreen(org.meteoinfo.shape.Shape,org.meteoinfo.legend.ColorBreak,java.awt.Rectangle) -> a
-    5777:5785:double getLonShift(org.meteoinfo.global.Extent) -> getLonShift
-    5795:5803:double getLonShift(double) -> getLonShift
-    5814:5820:void zoomToExtent(org.meteoinfo.global.Extent) -> zoomToExtent
-    5831:5838:void zoomToExtent(double,double,double,double) -> zoomToExtent
-    5850:5853:void zoomToExtentScreen(double,double,double,double,double) -> zoomToExtentScreen
-    5861:5877:void zoomToExtentLonLatEx(org.meteoinfo.global.Extent) -> zoomToExtentLonLatEx
-    5886:5909:void setCoordinateGeoMap(org.meteoinfo.global.Extent,int,int) -> a
-    5940:5942:void setCoordinateMap(org.meteoinfo.global.Extent,int,int) -> b
-    5948:5949:void refreshXYScale() -> refreshXYScale
-    5958:5967:void refreshXYScale(int,int) -> refreshXYScale
-    5980:5981:boolean selectGraphics(org.meteoinfo.global.PointF,org.meteoinfo.shape.GraphicCollection,double) -> selectGraphics
-    5985:6006:org.meteoinfo.shape.GraphicCollection getVisibleGraphics() -> g
-    6021:6081:boolean selectGraphics_back(org.meteoinfo.global.PointF,org.meteoinfo.shape.GraphicCollection,org.meteoinfo.shape.GraphicCollection,double,int) -> selectGraphics_back
-    6097:6182:boolean selectGraphics(org.meteoinfo.global.PointF,org.meteoinfo.shape.GraphicCollection,org.meteoinfo.shape.GraphicCollection,double,int) -> selectGraphics
-    6195:6196:boolean selectGraphics(java.awt.Rectangle,org.meteoinfo.shape.GraphicCollection,double) -> selectGraphics
-    6210:6267:boolean selectGraphics_back(java.awt.Rectangle,org.meteoinfo.shape.GraphicCollection,org.meteoinfo.shape.GraphicCollection,double) -> selectGraphics_back
-    6282:6337:boolean selectGraphics(java.awt.Rectangle,org.meteoinfo.shape.GraphicCollection,org.meteoinfo.shape.GraphicCollection,double) -> selectGraphics
-    6384:6441:int selectEditVertices(java.awt.Point,org.meteoinfo.shape.Shape,java.util.List) -> a
-    6453:6496:java.util.List selectShapes(org.meteoinfo.layer.VectorLayer,org.meteoinfo.global.PointF,boolean) -> selectShapes
-    6507:6507:java.util.List selectShapes(org.meteoinfo.layer.VectorLayer,org.meteoinfo.global.PointF) -> selectShapes
-    6518:6562:int[] selectGridCell(org.meteoinfo.layer.RasterLayer,org.meteoinfo.global.PointF) -> selectGridCell
-    6569:6637:java.awt.Rectangle getGraphicRectangle$255eda80(org.meteoinfo.shape.Graphic,double) -> a
-    6646:6659:void removeGraphic(org.meteoinfo.shape.Graphic) -> removeGraphic
-    6665:6670:void removeSelectedGraphics() -> removeSelectedGraphics
-    6681:6698:void exportExtentsElement(org.w3c.dom.Document,org.w3c.dom.Element) -> exportExtentsElement
-    6707:6721:void exportMapPropElement(org.w3c.dom.Document,org.w3c.dom.Element) -> exportMapPropElement
-    6730:6750:void exportGridLineElement(org.w3c.dom.Document,org.w3c.dom.Element) -> exportGridLineElement
-    6759:6770:void exportMaskOutElement(org.w3c.dom.Document,org.w3c.dom.Element) -> exportMaskOutElement
-    6779:6796:void exportProjectionElement(org.w3c.dom.Document,org.w3c.dom.Element) -> exportProjectionElement
-    6808:6861:void exportVectorLayerElement(org.w3c.dom.Document,org.w3c.dom.Element,org.meteoinfo.layer.VectorLayer,java.lang.String) -> exportVectorLayerElement
-    6969:6978:void exportChartGraphics(org.w3c.dom.Document,org.w3c.dom.Element,java.util.List) -> a
-    6988:6996:void exportGraphics(org.w3c.dom.Document,org.w3c.dom.Element,java.util.List) -> exportGraphics
-    7007:7042:void exportImageLayer(org.w3c.dom.Document,org.w3c.dom.Element,org.meteoinfo.layer.ImageLayer,java.lang.String) -> exportImageLayer
-    7050:7057:void loadMapPropElement(org.w3c.dom.Element) -> loadMapPropElement
-    7065:7074:void loadGridLineElement(org.w3c.dom.Element) -> loadGridLineElement
-    7082:7088:void loadMaskOutElement(org.w3c.dom.Element) -> loadMaskOutElement
-    7096:7108:void loadProjectionElement(org.w3c.dom.Element) -> loadProjectionElement
-    7116:7124:void loadExtentsElement(org.w3c.dom.Element) -> loadExtentsElement
-    7133:7195:org.meteoinfo.layer.VectorLayer loadVectorLayer(org.w3c.dom.Node) -> loadVectorLayer
-    7248:7272:org.meteoinfo.layer.ImageLayer loadImageLayer(org.w3c.dom.Node) -> loadImageLayer
-    7281:7282:void loadGraphics(org.w3c.dom.Element) -> loadGraphics
-    7285:7304:org.meteoinfo.shape.GraphicCollection loadChartGraphicCollection(org.w3c.dom.Element) -> a
-    7314:7334:org.meteoinfo.shape.GraphicCollection loadGraphicCollection(org.w3c.dom.Element) -> b
-    7345:7347:void projectLayers(org.meteoinfo.projection.ProjectionInfo) -> projectLayers
-    7353:7367:void showMeasurementForm() -> showMeasurementForm
-    173:173:java.util.Date access$000(org.meteoinfo.map.MapView) -> a
-    173:173:int access$102(org.meteoinfo.map.MapView,int) -> a
-    173:173:int access$202(org.meteoinfo.map.MapView,int) -> b
-    173:173:double access$302(org.meteoinfo.map.MapView,double) -> a
-    173:173:javax.swing.Timer access$400(org.meteoinfo.map.MapView) -> b
-    173:173:boolean access$502(org.meteoinfo.map.MapView,boolean) -> a
-    173:173:void access$600(org.meteoinfo.map.MapView,java.awt.event.ActionEvent) -> a
-    173:173:void access$700(org.meteoinfo.map.MapView,java.awt.event.ActionEvent) -> b
-    173:173:void access$800(org.meteoinfo.map.MapView,java.awt.event.ActionEvent) -> c
-    173:173:void access$900(org.meteoinfo.map.MapView,java.awt.event.ActionEvent) -> d
-    173:173:void access$1000(org.meteoinfo.map.MapView,java.awt.event.ActionEvent) -> e
-    173:173:void access$1100(org.meteoinfo.map.MapView,java.awt.event.ActionEvent) -> f
-    173:173:void access$1200(org.meteoinfo.map.MapView,java.awt.event.ActionEvent) -> g
-    173:173:void access$1300(org.meteoinfo.map.MapView,java.awt.event.ActionEvent) -> h
+    363:363:org.meteoinfo.layer.LayerCollection getLayers() -> getLayers
+    372:373:void setLayers(org.meteoinfo.layer.LayerCollection) -> setLayers
+    381:381:int getLayerNum() -> getLayerNum
+    390:390:int getSelectedLayer() -> getSelectedLayer
+    399:400:void setSelectedLayer(int) -> setSelectedLayer
+    408:415:org.meteoinfo.layer.MapLayer getLastAddedLayer() -> getLastAddedLayer
+    424:424:boolean isLayoutMap() -> isLayoutMap
+    433:434:void setIsLayoutMap(boolean) -> setIsLayoutMap
+    442:442:boolean isGeoMap() -> isGeoMap
+    451:452:void setGeoMap(boolean) -> setGeoMap
+    460:460:org.meteoinfo.global.Extent getExtent() -> getExtent
+    469:470:void setExtent(org.meteoinfo.global.Extent) -> setExtent
+    478:478:org.meteoinfo.global.Extent getViewExtent() -> getViewExtent
+    487:494:void setViewExtent(org.meteoinfo.global.Extent) -> setViewExtent
+    502:502:java.awt.Color getSelectColor() -> getSelectColor
+    511:512:void setSelectColor(java.awt.Color) -> setSelectColor
+    520:520:boolean isMultiGlobalDraw() -> isMultiGlobalDraw
+    529:530:void setMultiGlobalDraw(boolean) -> setMultiGlobalDraw
+    538:538:double getXScale() -> getXScale
+    547:547:double getYScale() -> getYScale
+    556:556:double getXYScaleFactor() -> getXYScaleFactor
+    565:570:void setXYScaleFactor(double) -> setXYScaleFactor
+    578:578:org.meteoinfo.map.MouseTools getMouseTool() -> getMouseTool
+    587:631:void setMouseTool(org.meteoinfo.map.MouseTools) -> setMouseTool
+    639:639:org.meteoinfo.map.ProjectionSet getProjection() -> getProjection
+    648:648:boolean isLockViewUpdate() -> isLockViewUpdate
+    657:658:void setLockViewUpdate(boolean) -> setLockViewUpdate
+    666:666:boolean isAntiAlias() -> isAntiAlias
+    675:679:void setAntiAlias(boolean) -> setAntiAlias
+    687:687:boolean isPointAntiAlias() -> isPointAntiAlias
+    696:697:void setPointAntiAlias(boolean) -> setPointAntiAlias
+    705:705:boolean isHighSpeedWheelZoom() -> isHighSpeedWheelZoom
+    714:715:void setHighSpeedWheelZoom(boolean) -> setHighSpeedWheelZoom
+    723:723:org.meteoinfo.shape.GraphicCollection getSelectedGraphics() -> getSelectedGraphics
+    732:732:org.meteoinfo.legend.PointBreak getDefPointBreak() -> getDefPointBreak
+    741:742:void setDefPointBreak(org.meteoinfo.legend.PointBreak) -> setDefPointBreak
+    750:750:org.meteoinfo.legend.LabelBreak getDefLabelBreak() -> getDefLabelBreak
+    759:760:void setDefLabelBreak(org.meteoinfo.legend.LabelBreak) -> setDefLabelBreak
+    768:768:org.meteoinfo.legend.PolylineBreak getDefPolylineBreak() -> getDefPolylineBreak
+    777:778:void setDefPolylineBreak(org.meteoinfo.legend.PolylineBreak) -> setDefPolylineBreak
+    786:786:org.meteoinfo.legend.PolygonBreak getDefPolygonBreak() -> getDefPolygonBreak
+    795:796:void setDefPolygonBreak(org.meteoinfo.legend.PolygonBreak) -> setDefPolygonBreak
+    804:804:boolean isDrawIdentiferShape() -> isDrawIdentiferShape
+    813:814:void setDrawIdentiferShape(boolean) -> setDrawIdentiferShape
+    822:822:boolean isDrawGridTickLine() -> isDrawGridTickLine
+    831:832:void setDrawGridTickLine(boolean) -> setDrawGridTickLine
+    840:840:java.util.List getGridLabels() -> getGridLabels
+    849:849:java.awt.Color getGridLineColor() -> getGridLineColor
+    858:859:void setGridLineColor(java.awt.Color) -> setGridLineColor
+    867:867:float getGridLineSize() -> getGridLineSize
+    876:877:void setGridLineSize(float) -> setGridLineSize
+    885:885:org.meteoinfo.legend.LineStyles getGridLineStyle() -> getGridLineStyle
+    894:895:void setGridLineStyle(org.meteoinfo.legend.LineStyles) -> setGridLineStyle
+    903:903:boolean isDrawGridLine() -> isDrawGridLine
+    912:913:void setDrawGridLine(boolean) -> setDrawGridLine
+    921:921:float getGridXDelt() -> getGridXDelt
+    930:932:void setGridXDelt(float) -> setGridXDelt
+    940:940:float getGridYDelt() -> getGridYDelt
+    949:951:void setGridYDelt(float) -> setGridYDelt
+    959:959:float getGridXOrigin() -> getGridXOrigin
+    968:970:void setGridXOrigin(float) -> setGridXOrigin
+    978:978:float getGridYOrigin() -> getGridYOrigin
+    987:989:void setGridYOrigin(float) -> setGridYOrigin
+    997:997:java.util.List getXGridStrs() -> getXGridStrs
+    1006:1007:void setXGridStrs(java.util.List) -> setXGridStrs
+    1015:1015:java.util.List getYGridStrs() -> getYGridStrs
+    1024:1025:void setYGridStrs(java.util.List) -> setYGridStrs
+    1033:1033:org.meteoinfo.shape.GraphicCollection getGraphicCollection() -> getGraphicCollection
+    1042:1043:void setGraphicCollection(org.meteoinfo.shape.GraphicCollection) -> setGraphicCollection
+    1051:1051:org.meteoinfo.layer.VectorLayer getLonLatLayer() -> getLonLatLayer
+    1060:1061:void setLonLatLayer(org.meteoinfo.layer.VectorLayer) -> setLonLatLayer
+    1069:1069:org.meteoinfo.layer.VectorLayer getLonLatProjLayer() -> getLonLatProjLayer
+    1078:1079:void setLonLatProjLayer(org.meteoinfo.layer.VectorLayer) -> setLonLatProjLayer
+    1087:1087:org.meteoinfo.global.FrmMeasurement getMeasurementForm() -> getMeasurementForm
+    1096:1097:void setMeasurementForm(org.meteoinfo.global.FrmMeasurement) -> setMeasurementForm
+    1105:1105:org.meteoinfo.map.MaskOut getMaskOut() -> getMaskOut
+    1114:1115:void setMaskOut(org.meteoinfo.map.MaskOut) -> setMaskOut
+    1123:1123:java.awt.image.BufferedImage getViewImage() -> getViewImage
+    1129:1130:void addViewExtentChangedListener(org.meteoinfo.global.event.IViewExtentChangedListener) -> addViewExtentChangedListener
+    1133:1134:void removeViewExtentChangedListener(org.meteoinfo.global.event.IViewExtentChangedListener) -> removeViewExtentChangedListener
+    1137:1138:void fireViewExtentChangedEvent() -> fireViewExtentChangedEvent
+    1150:1151:void addLayersUpdatedListener(org.meteoinfo.global.event.ILayersUpdatedListener) -> addLayersUpdatedListener
+    1154:1155:void removeLayersUpdatedListener(org.meteoinfo.global.event.ILayersUpdatedListener) -> removeLayersUpdatedListener
+    1158:1159:void fireLayersUpdatedEvent() -> fireLayersUpdatedEvent
+    1171:1172:void addGraphicSelectedListener(org.meteoinfo.global.event.IGraphicSelectedListener) -> addGraphicSelectedListener
+    1175:1176:void removeGraphicSelectedListener(org.meteoinfo.global.event.IGraphicSelectedListener) -> removeGraphicSelectedListener
+    1179:1180:void fireGraphicSelectedEvent() -> fireGraphicSelectedEvent
+    1192:1193:void addProjectionChangedListener(org.meteoinfo.global.event.IProjectionChangedListener) -> addProjectionChangedListener
+    1196:1197:void removeViewExtentChangedListener(org.meteoinfo.global.event.IProjectionChangedListener) -> removeViewExtentChangedListener
+    1200:1201:void fireProjectionChangedEvent() -> fireProjectionChangedEvent
+    1213:1214:void onComponentResized$1c0d27a4() -> a
+    1217:1366:void onMousePressed(java.awt.event.MouseEvent) -> a
+    1369:1479:void onMouseDragged(java.awt.event.MouseEvent) -> b
+    1482:1639:void onMouseMoved(java.awt.event.MouseEvent) -> c
+    1642:2019:void onMouseReleased(java.awt.event.MouseEvent) -> d
+    2071:2402:void onMouseClicked(java.awt.event.MouseEvent) -> e
+    2488:2530:void onMouseWheelMoved(java.awt.event.MouseWheelEvent) -> a
+    2533:2533:void onKeyTyped$241b287e() -> b
+    2536:2543:void onKeyPressed(java.awt.event.KeyEvent) -> a
+    2546:2546:void onKeyReleased$241b287e() -> c
+    2558:2577:int addLayer(org.meteoinfo.layer.MapLayer) -> addLayer
+    2589:2613:int addWindLayer(org.meteoinfo.layer.VectorLayer,boolean) -> addWindLayer
+    2687:2695:int getNewLayerHandle() -> getNewLayerHandle
+    2704:2715:org.meteoinfo.global.Extent getLayersWholeExtent() -> getLayersWholeExtent
+    2725:2733:int getLayerHandleFromName(java.lang.String) -> getLayerHandleFromName
+    2743:2743:int getLayerHandleFromIdx(int) -> getLayerHandleFromIdx
+    2753:2761:org.meteoinfo.layer.MapLayer getLayerFromHandle(int) -> getLayerFromHandle
+    2771:2779:org.meteoinfo.layer.MapLayer getLayerFromName(java.lang.String) -> getLayerFromName
+    2789:2797:int getLayerIdxFromHandle(int) -> getLayerIdxFromHandle
+    2808:2819:void moveLayer(int,int) -> moveLayer
+    2827:2829:void removeLayer(int) -> removeLayer
+    2837:2841:void removeLayerHandle(int) -> removeLayerHandle
+    2849:2851:void removeLayer(org.meteoinfo.layer.MapLayer) -> removeLayer
+    2857:2863:void removeAllLayers() -> removeAllLayers
+    2872:2895:int getLineLayerIdx() -> getLineLayerIdx
+    2905:2925:int getPolygonLayerIdx() -> getPolygonLayerIdx
+    2934:2943:int getImageLayerIdx() -> getImageLayerIdx
+    2955:3113:void paintComponent(java.awt.Graphics) -> paintComponent
+    3116:3163:void paintLayers() -> paintLayers
+    3171:3190:void paintGraphics(java.awt.Graphics2D) -> paintGraphics
+    3199:3232:void paintGraphics(java.awt.Graphics2D,java.awt.Rectangle) -> paintGraphics
+    3235:3236:void drawLonLatMap(java.awt.Graphics2D) -> a
+    3240:3273:void drawLonLatMap(java.awt.Graphics2D,int,int) -> a
+    3276:3277:void drawProjectedMap(java.awt.Graphics2D) -> b
+    3281:3291:void drawProjectedMap(java.awt.Graphics2D,int,int) -> b
+    3296:3301:void draw2DMap(java.awt.Graphics2D) -> c
+    3308:3399:void drawLayers(java.awt.Graphics2D,int,int) -> c
+    3402:3462:void drawImage(java.awt.Graphics2D,org.meteoinfo.layer.ImageLayer,double,int,int) -> a
+    3523:3547:void drawRasterLayer(java.awt.Graphics2D,org.meteoinfo.layer.RasterLayer,double) -> a
+    3608:3643:void drawLayerWithLegendScheme(org.meteoinfo.layer.VectorLayer,java.awt.Graphics2D,double) -> drawLayerWithLegendScheme
+    3654:3731:void drawVectLayerWithLegendScheme(org.meteoinfo.layer.VectorLayer,java.awt.Graphics2D,double) -> drawVectLayerWithLegendScheme
+    3742:3900:void drawBarbLayerWithLegendScheme(org.meteoinfo.layer.VectorLayer,java.awt.Graphics2D,double) -> drawBarbLayerWithLegendScheme
+    3914:3934:void drawLonLatLayer(org.meteoinfo.layer.VectorLayer,java.awt.Graphics2D,double) -> a
+    4102:4184:void drawStationModelLayer(org.meteoinfo.layer.VectorLayer,java.awt.Graphics2D,double) -> b
+    4187:4210:void drawPolygonLayer(org.meteoinfo.layer.VectorLayer,java.awt.Graphics2D,double) -> c
+    4213:4264:void drawPolylineLayer(org.meteoinfo.layer.VectorLayer,java.awt.Graphics2D,double) -> d
+    4267:4286:float[] getDashPattern(org.meteoinfo.legend.LineStyles) -> a
+    4291:4292:void drawPolylineShape(java.awt.Graphics2D,org.meteoinfo.shape.PolylineShape,org.meteoinfo.legend.PolylineBreak,double,boolean) -> a
+    4397:4398:void drawPolygonShape(java.awt.Graphics2D,org.meteoinfo.shape.PolygonShape,org.meteoinfo.legend.PolygonBreak,double) -> a
+    4424:4486:java.util.List drawPolygon(java.awt.Graphics2D,org.meteoinfo.shape.Polygon,org.meteoinfo.legend.PolygonBreak,double,boolean) -> a
+    4496:4509:void drawGraphicList(java.awt.Graphics2D,double) -> drawGraphicList
+    4519:4549:void drawGraphic(java.awt.Graphics2D,org.meteoinfo.shape.Graphic,double) -> drawGraphic
+    4552:4585:void getMaskOutGraphicsPath$3516ad91() -> d
+    4589:4596:void setClipRegion(java.awt.Graphics2D) -> d
+    4605:4656:void drawIdShape(java.awt.Graphics2D,org.meteoinfo.shape.Shape) -> drawIdShape
+    4666:4726:void drawIdShape(java.awt.Graphics2D,org.meteoinfo.shape.Shape,java.awt.Rectangle) -> drawIdShape
+    4729:4838:void drawLayerLabels(java.awt.Graphics2D,org.meteoinfo.layer.VectorLayer,double) -> a
+    4841:4921:void drawLayerCharts(java.awt.Graphics2D,org.meteoinfo.layer.VectorLayer,double) -> b
+    5021:5055:void exportToPicture(java.lang.String) -> exportToPicture
+    5065:5065:org.meteoinfo.layer.VectorLayer generateLonLatLayer() -> generateLonLatLayer
+    5075:5277:org.meteoinfo.layer.VectorLayer generateLonLatLayer$709a42c4(float,float,float) -> a
+    5281:5290:void updateLonLatLayer() -> e
+    5293:5580:void getLonLatGridLabels() -> f
+    5592:5595:double[] projToScreen(double,double) -> projToScreen
+    5607:5610:double[] projToScreen(double,double,double) -> projToScreen
+    5621:5643:double[] lonLatToScreen(double,double) -> lonLatToScreen
+    5654:5657:double[] screenToProj(double,double) -> screenToProj
+    5669:5672:double[] screenToProj(double,double,double) -> screenToProj
+    5683:5686:float[] screenToProj(float,float) -> screenToProj
+    5698:5701:float[] screenToProj(float,float,double) -> screenToProj
+    5719:5727:void moveShape(org.meteoinfo.shape.Shape,double,double) -> a
+    5730:5775:void resizeShapeOnScreen(org.meteoinfo.shape.Shape,org.meteoinfo.legend.ColorBreak,java.awt.Rectangle) -> a
+    5784:5792:double getLonShift(org.meteoinfo.global.Extent) -> getLonShift
+    5802:5810:double getLonShift(double) -> getLonShift
+    5821:5827:void zoomToExtent(org.meteoinfo.global.Extent) -> zoomToExtent
+    5838:5845:void zoomToExtent(double,double,double,double) -> zoomToExtent
+    5857:5860:void zoomToExtentScreen(double,double,double,double,double) -> zoomToExtentScreen
+    5868:5884:void zoomToExtentLonLatEx(org.meteoinfo.global.Extent) -> zoomToExtentLonLatEx
+    5893:5916:void setCoordinateGeoMap(org.meteoinfo.global.Extent,int,int) -> a
+    5947:5949:void setCoordinateMap(org.meteoinfo.global.Extent,int,int) -> b
+    5955:5956:void refreshXYScale() -> refreshXYScale
+    5965:5974:void refreshXYScale(int,int) -> refreshXYScale
+    5987:5988:boolean selectGraphics(org.meteoinfo.global.PointF,org.meteoinfo.shape.GraphicCollection,double) -> selectGraphics
+    5992:6013:org.meteoinfo.shape.GraphicCollection getVisibleGraphics() -> g
+    6028:6088:boolean selectGraphics_back(org.meteoinfo.global.PointF,org.meteoinfo.shape.GraphicCollection,org.meteoinfo.shape.GraphicCollection,double,int) -> selectGraphics_back
+    6104:6189:boolean selectGraphics(org.meteoinfo.global.PointF,org.meteoinfo.shape.GraphicCollection,org.meteoinfo.shape.GraphicCollection,double,int) -> selectGraphics
+    6202:6203:boolean selectGraphics(java.awt.Rectangle,org.meteoinfo.shape.GraphicCollection,double) -> selectGraphics
+    6217:6274:boolean selectGraphics_back(java.awt.Rectangle,org.meteoinfo.shape.GraphicCollection,org.meteoinfo.shape.GraphicCollection,double) -> selectGraphics_back
+    6289:6344:boolean selectGraphics(java.awt.Rectangle,org.meteoinfo.shape.GraphicCollection,org.meteoinfo.shape.GraphicCollection,double) -> selectGraphics
+    6391:6448:int selectEditVertices(java.awt.Point,org.meteoinfo.shape.Shape,java.util.List) -> a
+    6460:6503:java.util.List selectShapes(org.meteoinfo.layer.VectorLayer,org.meteoinfo.global.PointF,boolean) -> selectShapes
+    6514:6514:java.util.List selectShapes(org.meteoinfo.layer.VectorLayer,org.meteoinfo.global.PointF) -> selectShapes
+    6525:6569:int[] selectGridCell(org.meteoinfo.layer.RasterLayer,org.meteoinfo.global.PointF) -> selectGridCell
+    6576:6644:java.awt.Rectangle getGraphicRectangle$255eda80(org.meteoinfo.shape.Graphic,double) -> a
+    6653:6666:void removeGraphic(org.meteoinfo.shape.Graphic) -> removeGraphic
+    6672:6677:void removeSelectedGraphics() -> removeSelectedGraphics
+    6688:6705:void exportExtentsElement(org.w3c.dom.Document,org.w3c.dom.Element) -> exportExtentsElement
+    6714:6728:void exportMapPropElement(org.w3c.dom.Document,org.w3c.dom.Element) -> exportMapPropElement
+    6737:6757:void exportGridLineElement(org.w3c.dom.Document,org.w3c.dom.Element) -> exportGridLineElement
+    6766:6777:void exportMaskOutElement(org.w3c.dom.Document,org.w3c.dom.Element) -> exportMaskOutElement
+    6786:6803:void exportProjectionElement(org.w3c.dom.Document,org.w3c.dom.Element) -> exportProjectionElement
+    6815:6868:void exportVectorLayerElement(org.w3c.dom.Document,org.w3c.dom.Element,org.meteoinfo.layer.VectorLayer,java.lang.String) -> exportVectorLayerElement
+    6976:6985:void exportChartGraphics(org.w3c.dom.Document,org.w3c.dom.Element,java.util.List) -> a
+    6995:7003:void exportGraphics(org.w3c.dom.Document,org.w3c.dom.Element,java.util.List) -> exportGraphics
+    7014:7049:void exportImageLayer(org.w3c.dom.Document,org.w3c.dom.Element,org.meteoinfo.layer.ImageLayer,java.lang.String) -> exportImageLayer
+    7057:7064:void loadMapPropElement(org.w3c.dom.Element) -> loadMapPropElement
+    7072:7081:void loadGridLineElement(org.w3c.dom.Element) -> loadGridLineElement
+    7089:7095:void loadMaskOutElement(org.w3c.dom.Element) -> loadMaskOutElement
+    7103:7115:void loadProjectionElement(org.w3c.dom.Element) -> loadProjectionElement
+    7123:7131:void loadExtentsElement(org.w3c.dom.Element) -> loadExtentsElement
+    7140:7202:org.meteoinfo.layer.VectorLayer loadVectorLayer(org.w3c.dom.Node) -> loadVectorLayer
+    7255:7284:org.meteoinfo.layer.ImageLayer loadImageLayer(org.w3c.dom.Node) -> loadImageLayer
+    7293:7294:void loadGraphics(org.w3c.dom.Element) -> loadGraphics
+    7297:7316:org.meteoinfo.shape.GraphicCollection loadChartGraphicCollection(org.w3c.dom.Element) -> a
+    7326:7346:org.meteoinfo.shape.GraphicCollection loadGraphicCollection(org.w3c.dom.Element) -> b
+    7357:7359:void projectLayers(org.meteoinfo.projection.ProjectionInfo) -> projectLayers
+    7365:7379:void showMeasurementForm() -> showMeasurementForm
+    172:172:java.util.Date access$000(org.meteoinfo.map.MapView) -> a
+    172:172:int access$102(org.meteoinfo.map.MapView,int) -> a
+    172:172:int access$202(org.meteoinfo.map.MapView,int) -> b
+    172:172:double access$302(org.meteoinfo.map.MapView,double) -> a
+    172:172:javax.swing.Timer access$400(org.meteoinfo.map.MapView) -> b
+    172:172:boolean access$502(org.meteoinfo.map.MapView,boolean) -> a
+    172:172:void access$600(org.meteoinfo.map.MapView,java.awt.event.ActionEvent) -> a
+    172:172:void access$700(org.meteoinfo.map.MapView,java.awt.event.ActionEvent) -> b
+    172:172:void access$800(org.meteoinfo.map.MapView,java.awt.event.ActionEvent) -> c
+    172:172:void access$900(org.meteoinfo.map.MapView,java.awt.event.ActionEvent) -> d
+    172:172:void access$1000(org.meteoinfo.map.MapView,java.awt.event.ActionEvent) -> e
+    172:172:void access$1100(org.meteoinfo.map.MapView,java.awt.event.ActionEvent) -> f
+    172:172:void access$1200(org.meteoinfo.map.MapView,java.awt.event.ActionEvent) -> g
+    172:172:void access$1300(org.meteoinfo.map.MapView,java.awt.event.ActionEvent) -> h
 org.meteoinfo.map.MapView$1 -> org.meteoinfo.map.MapView$1:
     org.meteoinfo.map.MapView this$0 -> a
-    261:262:void componentResized(java.awt.event.ComponentEvent) -> componentResized
+    260:261:void componentResized(java.awt.event.ComponentEvent) -> componentResized
 org.meteoinfo.map.MapView$10 -> org.meteoinfo.map.MapView$2:
     org.meteoinfo.map.MapView this$0 -> a
-    2226:2227:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
+    2225:2226:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
 org.meteoinfo.map.MapView$11 -> org.meteoinfo.map.MapView$3:
     org.meteoinfo.map.MapView this$0 -> a
-    2235:2236:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
+    2234:2235:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
 org.meteoinfo.map.MapView$12 -> org.meteoinfo.map.MapView$4:
     org.meteoinfo.map.MapView this$0 -> a
-    2244:2245:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
+    2243:2244:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
 org.meteoinfo.map.MapView$13 -> org.meteoinfo.map.MapView$5:
     org.meteoinfo.map.MapView this$0 -> a
-    2255:2256:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
+    2254:2255:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
 org.meteoinfo.map.MapView$14 -> org.meteoinfo.map.MapView$6:
     org.meteoinfo.map.MapView this$0 -> a
-    2266:2267:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
+    2265:2266:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
 org.meteoinfo.map.MapView$15 -> org.meteoinfo.map.MapView$7:
     org.meteoinfo.map.MapView this$0 -> a
-    2277:2278:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
+    2276:2277:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
 org.meteoinfo.map.MapView$16 -> org.meteoinfo.map.MapView$8:
     org.meteoinfo.map.MapView this$0 -> a
-    2291:2292:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
+    2290:2291:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
 org.meteoinfo.map.MapView$17 -> org.meteoinfo.map.MapView$9:
     org.meteoinfo.map.MapView this$0 -> a
-    5024:5035:int print(java.awt.Graphics,java.awt.print.PageFormat,int) -> print
+    5031:5042:int print(java.awt.Graphics,java.awt.print.PageFormat,int) -> print
 org.meteoinfo.map.MapView$18 -> org.meteoinfo.map.MapView$10:
     org.meteoinfo.map.MapView this$0 -> a
-    7358:7360:void windowClosed(java.awt.event.WindowEvent) -> windowClosed
+    7370:7372:void windowClosed(java.awt.event.WindowEvent) -> windowClosed
 org.meteoinfo.map.MapView$19 -> org.meteoinfo.map.MapView$11:
     int[] $SwitchMap$org$meteoinfo$map$MouseTools -> a
     int[] $SwitchMap$org$meteoinfo$shape$ShapeTypes -> b
@@ -5263,32 +5277,32 @@ org.meteoinfo.map.MapView$19 -> org.meteoinfo.map.MapView$11:
     int[] $SwitchMap$org$meteoinfo$projection$ProjectionNames -> l
 org.meteoinfo.map.MapView$2 -> org.meteoinfo.map.MapView$12:
     org.meteoinfo.map.MapView this$0 -> a
-    267:268:void mouseClicked(java.awt.event.MouseEvent) -> mouseClicked
-    272:273:void mousePressed(java.awt.event.MouseEvent) -> mousePressed
-    277:278:void mouseReleased(java.awt.event.MouseEvent) -> mouseReleased
+    266:267:void mouseClicked(java.awt.event.MouseEvent) -> mouseClicked
+    271:272:void mousePressed(java.awt.event.MouseEvent) -> mousePressed
+    276:277:void mouseReleased(java.awt.event.MouseEvent) -> mouseReleased
 org.meteoinfo.map.MapView$3 -> org.meteoinfo.map.MapView$13:
     org.meteoinfo.map.MapView this$0 -> a
-    283:284:void mouseMoved(java.awt.event.MouseEvent) -> mouseMoved
-    288:289:void mouseDragged(java.awt.event.MouseEvent) -> mouseDragged
+    282:283:void mouseMoved(java.awt.event.MouseEvent) -> mouseMoved
+    287:288:void mouseDragged(java.awt.event.MouseEvent) -> mouseDragged
 org.meteoinfo.map.MapView$4 -> org.meteoinfo.map.MapView$14:
     org.meteoinfo.map.MapView this$0 -> a
-    294:295:void mouseWheelMoved(java.awt.event.MouseWheelEvent) -> mouseWheelMoved
+    293:294:void mouseWheelMoved(java.awt.event.MouseWheelEvent) -> mouseWheelMoved
 org.meteoinfo.map.MapView$5 -> org.meteoinfo.map.MapView$15:
     org.meteoinfo.map.MapView this$0 -> a
-    300:301:void keyTyped(java.awt.event.KeyEvent) -> keyTyped
-    305:306:void keyPressed(java.awt.event.KeyEvent) -> keyPressed
-    310:311:void keyReleased(java.awt.event.KeyEvent) -> keyReleased
+    299:300:void keyTyped(java.awt.event.KeyEvent) -> keyTyped
+    304:305:void keyPressed(java.awt.event.KeyEvent) -> keyPressed
+    309:310:void keyReleased(java.awt.event.KeyEvent) -> keyReleased
 org.meteoinfo.map.MapView$6 -> org.meteoinfo.map.MapView$16:
     org.meteoinfo.map.MapView this$0 -> a
-    317:325:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
+    316:324:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
 org.meteoinfo.map.MapView$7 -> org.meteoinfo.map.MapView$17:
     org.meteoinfo.map.MapView this$0 -> a
-    2098:2100:void windowClosed(java.awt.event.WindowEvent) -> windowClosed
+    2097:2099:void windowClosed(java.awt.event.WindowEvent) -> windowClosed
 org.meteoinfo.map.MapView$8 -> org.meteoinfo.map.MapView$18:
-    2125:2125:boolean isCellEditable(int,int) -> isCellEditable
+    2124:2124:boolean isCellEditable(int,int) -> isCellEditable
 org.meteoinfo.map.MapView$9 -> org.meteoinfo.map.MapView$19:
     org.meteoinfo.map.MapView this$0 -> a
-    2217:2218:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
+    2216:2217:void actionPerformed(java.awt.event.ActionEvent) -> actionPerformed
 org.meteoinfo.map.MapViewBeanInfo -> org.meteoinfo.map.MapViewBeanInfo:
 org.meteoinfo.map.MaskOut -> org.meteoinfo.map.MaskOut:
     org.meteoinfo.map.MapView _mapView -> a
@@ -5405,6 +5419,44 @@ org.meteoinfo.plot.MapLayoutPlot -> org.meteoinfo.plot.MapLayoutPlot:
     129:152:void main(java.lang.String[]) -> main
 org.meteoinfo.plot.MapLayoutPlot$1 -> org.meteoinfo.plot.MapLayoutPlot$1:
     149:150:void run() -> run
+org.meteoinfo.plugin.IApplication -> org.meteoinfo.plugin.IApplication:
+    org.meteoinfo.map.MapView getMapView() -> getMapView
+    org.meteoinfo.legend.LayersLegend getMapDocument() -> getMapDocument
+    javax.swing.JMenuBar getMainMenuBar() -> getMainMenuBar
+    javax.swing.JPanel getToolBarPanel() -> getToolBarPanel
+    void addToolBar(javax.swing.JToolBar) -> addToolBar
+    void removeToolBar(javax.swing.JToolBar) -> removeToolBar
+org.meteoinfo.plugin.IPlugin -> org.meteoinfo.plugin.IPlugin:
+    org.meteoinfo.plugin.IApplication getApplication() -> getApplication
+    void setApplication(org.meteoinfo.plugin.IApplication) -> setApplication
+    java.lang.String getName() -> getName
+    void setName(java.lang.String) -> setName
+    java.lang.String getAuthor() -> getAuthor
+    void setAuthor(java.lang.String) -> setAuthor
+    java.lang.String getVersion() -> getVersion
+    void setVersion(java.lang.String) -> setVersion
+    java.lang.String getDescription() -> getDescription
+    void setDescription(java.lang.String) -> setDescription
+    void load() -> load
+    void unload() -> unload
+org.meteoinfo.plugin.PluginBase -> org.meteoinfo.plugin.PluginBase:
+    org.meteoinfo.plugin.IApplication _application -> a
+    java.lang.String _name -> b
+    java.lang.String _author -> c
+    java.lang.String _version -> d
+    java.lang.String _description -> e
+    20:20:org.meteoinfo.plugin.IApplication getApplication() -> getApplication
+    25:26:void setApplication(org.meteoinfo.plugin.IApplication) -> setApplication
+    30:30:java.lang.String getName() -> getName
+    35:36:void setName(java.lang.String) -> setName
+    40:40:java.lang.String getAuthor() -> getAuthor
+    45:46:void setAuthor(java.lang.String) -> setAuthor
+    50:50:java.lang.String getVersion() -> getVersion
+    55:56:void setVersion(java.lang.String) -> setVersion
+    60:60:java.lang.String getDescription() -> getDescription
+    65:66:void setDescription(java.lang.String) -> setDescription
+    71:71:void load() -> load
+    76:76:void unload() -> unload
 org.meteoinfo.projection.CoordinateSystemCategory -> org.meteoinfo.projection.CoordinateSystemCategory:
 org.meteoinfo.projection.GeoGraphicSystem -> org.meteoinfo.projection.GeoGraphicSystem:
     org.meteoinfo.projection.World world -> world
@@ -5436,6 +5488,7 @@ org.meteoinfo.projection.ProjectionNames -> org.meteoinfo.projection.ProjectionN
     org.meteoinfo.projection.ProjectionNames Robinson -> Robinson
     org.meteoinfo.projection.ProjectionNames Molleweide -> Molleweide
     org.meteoinfo.projection.ProjectionNames Orthographic_Azimuthal -> Orthographic_Azimuthal
+    org.meteoinfo.projection.ProjectionNames Geostationary_Satellite -> Geostationary_Satellite
     org.meteoinfo.projection.ProjectionNames Oblique_Stereographic_Alternative -> Oblique_Stereographic_Alternative
     org.meteoinfo.projection.ProjectionNames Transverse_Mercator -> Transverse_Mercator
     org.meteoinfo.projection.ProjectionNames Sinusoidal -> Sinusoidal

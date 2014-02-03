@@ -144,11 +144,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.EventListenerList;
 import javax.swing.table.DefaultTableModel;
-import org.meteoinfo.global.FontUtil;
 import static org.meteoinfo.layer.LayerDrawType.Barb;
 import static org.meteoinfo.layer.LayerDrawType.StationModel;
 import static org.meteoinfo.layer.LayerDrawType.Streamline;
 import static org.meteoinfo.layer.LayerDrawType.Vector;
+import org.meteoinfo.layer.VisibleScale;
 import org.meteoinfo.legend.LegendType;
 import static org.meteoinfo.legend.LegendType.GraduatedColor;
 import static org.meteoinfo.legend.LegendType.SingleSymbol;
@@ -328,7 +328,7 @@ public class MapView extends JPanel {
         this.setBackground(Color.white);
         _maskOut = new MaskOut(this);
         _mouseTool = MouseTools.None;
-        
+
         //FontUtil.registerWeatherFont();
 
         _viewExtent.minX = -180;
@@ -3307,9 +3307,20 @@ public class MapView extends JPanel {
 
     private void drawLayers(Graphics2D g, int width, int height) {
         java.awt.Shape oldRegion = g.getClip();
+        double geoScale = this.getGeoScale();
         for (int i = 0; i < _layers.size(); i++) {
             MapLayer aLayer = _layers.get(i);
             if (aLayer.isVisible()) {
+                if (aLayer.getVisibleScale().isEnableMinVisScale()) {
+                    if (geoScale > aLayer.getVisibleScale().getMinVisScale()) {
+                        continue;
+                    }
+                }
+                if (aLayer.getVisibleScale().isEnableMaxVisScale()) {
+                    if (geoScale < aLayer.getVisibleScale().getMaxVisScale()) {
+                        continue;
+                    }
+                }
                 if (aLayer.isMaskout()) {
                     setClipRegion(g);
                 }
@@ -3428,13 +3439,21 @@ public class MapView extends JPanel {
 //                dg.PixelOffsetMode = PixelOffsetMode.Half;
 
             BufferedImage vImage = aILayer.getImage();
-            float iWidth = vImage.getWidth();
-            float iHeight = vImage.getHeight();
-            float cw = (float) (aWidth / iWidth);
-            float ch = (float) (aHeight / iHeight);
+            double iWidth = vImage.getWidth();
+            double iHeight = vImage.getHeight();
+            double cw = aWidth / iWidth;
+            double ch = aHeight / iHeight;
+            double shx = aILayer.getWorldFilePara().xRotate;
+            double shy = aILayer.getWorldFilePara().yRotate;
             AffineTransform mx = new AffineTransform();
-            mx.translate((float) sX, (float) sY);
-            mx.scale(cw, ch);
+            if (shx == 0.0 && shy == 0.0) {
+                mx.translate(sX, sY);
+                mx.scale(cw, ch);
+            } else {
+                shx = cw / aILayer.getWorldFilePara().xScale * shx;
+                shy = ch / aILayer.getWorldFilePara().yScale * shy;
+                mx = new AffineTransform(cw, shy, shx, ch, sX, sY);
+            }
             dg.setTransform(mx);
             dg.drawImage(vImage, 0, 0, null);
             dg.dispose();
@@ -5966,6 +5985,44 @@ public class MapView extends JPanel {
         _drawExtent = aExtent;
     }
 
+    private double getGeoWidth(double width) {
+        double geoWidth = width / _scaleX;
+        if (_projection.isLonLatMap()) {
+            geoWidth = geoWidth * getLonDistScale();
+        }
+
+        return geoWidth;
+    }
+
+    private double getLonDistScale() {
+        //Get meters of one longitude degree
+        double pY = (_viewExtent.maxY + _viewExtent.minY) / 2;
+        double ProjX = 0, ProjY = pY, pProjX = 1, pProjY = pY;
+        double dx = Math.abs(ProjX - pProjX);
+        double dy = Math.abs(ProjY - pProjY);
+        double dist;
+        double y = (ProjY + pProjY) / 2;
+        double factor = Math.cos(y * Math.PI / 180);
+        dx *= factor;
+        dist = Math.sqrt(dx * dx + dy * dy);
+        dist = dist * 111319.5;
+
+        return dist;
+    }
+
+    /**
+     * Get geographic scale
+     *
+     * @return Geographic scale
+     */
+    public double getGeoScale() {
+        double breakWidth = 1;
+        double geoBreakWidth = getGeoWidth(breakWidth);
+        double scale = geoBreakWidth * 100 / (breakWidth / 96 * 2.539999918);
+
+        return scale;
+    }
+
     // </editor-fold>
     // <editor-fold desc="Select">
     /**
@@ -6857,6 +6914,9 @@ public class MapView extends JPanel {
         //Add charts
         exportChartGraphics(m_Doc, Layer, aVLayer.getChartPoints());
 
+        //Add visible scale
+        exportVisibleScale(m_Doc, Layer, aVLayer.getVisibleScale());
+
         parent.appendChild(Layer);
     }
 
@@ -6995,6 +7055,26 @@ public class MapView extends JPanel {
         parent.appendChild(graphics);
     }
 
+    private void exportVisibleScale(Document m_Doc, Element parent, VisibleScale visibleScale) {
+        Element visibleScaleElem = m_Doc.createElement("VisibleScale");
+        Attr enableMinVisScale = m_Doc.createAttribute("EnableMinVisScale");
+        Attr enableMaxVisScale = m_Doc.createAttribute("EnableMaxVisScale");
+        Attr minVisScale = m_Doc.createAttribute("MinVisScale");
+        Attr maxVisScale = m_Doc.createAttribute("MaxVisScale");
+
+        enableMinVisScale.setValue(String.valueOf(visibleScale.isEnableMinVisScale()));
+        enableMaxVisScale.setValue(String.valueOf(visibleScale.isEnableMaxVisScale()));
+        minVisScale.setValue(String.valueOf(visibleScale.getMinVisScale()));
+        maxVisScale.setValue(String.valueOf(visibleScale.getMaxVisScale()));
+
+        visibleScaleElem.setAttributeNode(enableMinVisScale);
+        visibleScaleElem.setAttributeNode(enableMaxVisScale);
+        visibleScaleElem.setAttributeNode(minVisScale);
+        visibleScaleElem.setAttributeNode(maxVisScale);
+
+        parent.appendChild(visibleScaleElem);
+    }
+
     /**
      * Export image layer element
      *
@@ -7037,6 +7117,9 @@ public class MapView extends JPanel {
         Layer.setAttributeNode(transparencyPerc);
         Layer.setAttributeNode(transparencyColor);
         Layer.setAttributeNode(setTransColor);
+
+        //Add visible scale
+        exportVisibleScale(m_Doc, Layer, aILayer.getVisibleScale());
 
         parent.appendChild(Layer);
     }
@@ -7190,6 +7273,14 @@ public class MapView extends JPanel {
                 aLayer.setChartPoints(gc);
                 aLayer.updateChartsProp();
             }
+
+            //Load visible scale
+            NodeList visScaleNodes = ((Element) aVLayer).getElementsByTagName("VisibleScale");
+            if (visScaleNodes.getLength() > 0) {
+                Node visScaleNode = visScaleNodes.item(0);
+                VisibleScale visScale = aLayer.getVisibleScale();
+                loadVisibleScale(visScaleNode, visScale);
+            }
         }
 
         return aLayer;
@@ -7238,6 +7329,16 @@ public class MapView extends JPanel {
         aChartSet.getLegendScheme().importFromXML(lsNode);
     }
 
+    private void loadVisibleScale(Node visScaleNode, VisibleScale visibleScale) {
+        try {
+            visibleScale.setEnableMinVisScale(Boolean.parseBoolean(visScaleNode.getAttributes().getNamedItem("EnableMinVisScale").getNodeValue()));
+            visibleScale.setEnableMaxVisScale(Boolean.parseBoolean(visScaleNode.getAttributes().getNamedItem("EnableMaxVisScale").getNodeValue()));
+            visibleScale.setMinVisScale(Double.parseDouble(visScaleNode.getAttributes().getNamedItem("MinVisScale").getNodeValue()));
+            visibleScale.setMaxVisScale(Double.parseDouble(visScaleNode.getAttributes().getNamedItem("MaxVisScale").getNodeValue()));
+        } catch (Exception e) {
+        }
+    }
+
     /**
      * Load image layer
      *
@@ -7246,7 +7347,12 @@ public class MapView extends JPanel {
      */
     public ImageLayer loadImageLayer(Node aILayer) {
         String aFile = aILayer.getAttributes().getNamedItem("FileName").getNodeValue();
-        aFile = new File(aFile).getAbsolutePath();
+        File lFile = new File(aFile);
+        String curDir = System.getProperty("user.dir");
+        if (new File(curDir).isFile()) {
+            System.setProperty("user.dir", new File(curDir).getParent());
+        }
+        aFile = lFile.getAbsolutePath();
         ImageLayer aLayer = null;
 
         if (new File(aFile).exists()) {
@@ -7265,6 +7371,14 @@ public class MapView extends JPanel {
                 aLayer.setTransparency(Integer.parseInt(aILayer.getAttributes().getNamedItem("TransparencyPerc").getNodeValue()));
                 aLayer.setTransparencyColor(ColorUtil.parseToColor(aILayer.getAttributes().getNamedItem("TransparencyColor").getNodeValue()));
                 aLayer.setUseTransColor(Boolean.parseBoolean(aILayer.getAttributes().getNamedItem("SetTransColor").getNodeValue()));
+
+                //Load visible scale
+                NodeList visScaleNodes = ((Element) aILayer).getElementsByTagName("VisibleScale");
+                if (visScaleNodes.getLength() > 0) {
+                    Node visScaleNode = visScaleNodes.item(0);
+                    VisibleScale visScale = aLayer.getVisibleScale();
+                    loadVisibleScale(visScaleNode, visScale);
+                }
             } catch (Exception e) {
             }
         }

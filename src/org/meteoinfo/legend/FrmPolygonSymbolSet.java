@@ -369,9 +369,10 @@ public class FrmPolygonSymbolSet extends javax.swing.JDialog {
         int alpha = Integer.parseInt(this.jSpinner_TransParency.getValue().toString());
         alpha = (int)((1 - alpha / 100.0) * 255);
         Color c = _polygonBreak.getColor();
-        _polygonBreak.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), alpha));
+        c = new Color(c.getRed(), c.getGreen(), c.getBlue(), alpha);
+        _polygonBreak.setColor(c);
         if (_parent.getClass() == LegendView.class) {
-            ((LegendView) _parent).setLegendBreak_Alpha(alpha);
+            ((LegendView) _parent).setLegendBreak_Color(c);
         }
     }//GEN-LAST:event_jSpinner_TransParencyStateChanged
 

@@ -13,6 +13,7 @@
  */
 package org.meteoinfo.legend;
 
+import com.l2fprod.common.beans.BaseBeanInfo;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -209,6 +210,40 @@ public class GroupNode extends ItemNode {
         }
 
         return height;
+    }
+    // </editor-fold>
+    
+    // <editor-fold desc="BeanInfo">
+    public class GroupNodeBean {
+        public GroupNodeBean(){
+            
+        }
+        
+        // <editor-fold desc="Get Set Methods">
+        /**
+         * Get text
+         * @return Text
+         */
+        public String getText(){
+            return GroupNode.this.getText();
+        }
+        
+        /**
+         * Set text
+         * @param value Text
+         */
+        public void setText(String value){
+            GroupNode.this.setText(value);
+            GroupNode.this._mapFrame.getLegend().paintGraphics();
+        }
+        // </editor-fold>
+    }
+    
+    public static class GroupNodeBeanBeanInfo extends BaseBeanInfo{
+        public GroupNodeBeanBeanInfo(){
+            super(GroupNodeBean.class);
+            addProperty("text").setCategory("General").setDisplayName("Text");
+        }
     }
     // </editor-fold>
 }

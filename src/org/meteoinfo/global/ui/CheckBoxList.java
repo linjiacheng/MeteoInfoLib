@@ -38,8 +38,9 @@ public class CheckBoxList extends JList {
                     Object obj = getModel().getElementAt(index);
                     if (obj instanceof JCheckBox) {
                         JCheckBox checkbox = (JCheckBox) obj;
-
-                        checkbox.setSelected(!checkbox.isSelected());
+                        if (e.getPoint().getX() < 20){
+                            checkbox.setSelected(!checkbox.isSelected());
+                        }
                         repaint();
                     }
                 }

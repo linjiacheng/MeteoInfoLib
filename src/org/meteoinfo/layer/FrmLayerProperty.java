@@ -577,14 +577,14 @@ public class FrmLayerProperty extends javax.swing.JDialog {
         // TODO add your handling code here:
         this.propertySheetPanel1.writeToObject(_object);
         switch (this.jTabbedPane1.getSelectedIndex()) {
-            case 1:    //Legend
+            case 1:    //Legend                
                 _mapLayer.setLegendScheme(this.legendView1.getLegendScheme());
                 break;
             case 2:    //Chart
                 ((VectorLayer) _mapLayer).removeCharts();
                 addCharts();
                 break;
-        }
+        }        
         _mapFrame.updateLayerNode(_mapLayer);
         _mapFrame.getMapView().paintLayers();
     }//GEN-LAST:event_jButton_ApplyActionPerformed

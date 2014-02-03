@@ -41,6 +41,7 @@ public class MapLayer implements Cloneable {
     private boolean _expanded;
     private int _transparencyPerc;
     private String _tag;
+    private VisibleScale _visibleScale;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -58,6 +59,7 @@ public class MapLayer implements Cloneable {
         _transparencyPerc = 0;
         _layerDrawType = LayerDrawType.Map;
         _tag = "";
+        _visibleScale = new VisibleScale();
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -290,6 +292,38 @@ public class MapLayer implements Cloneable {
      */
     public void setProjInfo(ProjectionInfo projInfo){
         _projInfo = projInfo;
+    }
+    
+    /**
+     * Get tag
+     * @return Tag
+     */
+    public String getTag(){
+        return _tag;
+    }
+    
+    /**
+     * Set tag
+     * @param value Tag value
+     */
+    public void setTag(String value){
+        _tag = value;
+    }
+    
+    /**
+     * Get visible scale
+     * @return Visible scale
+     */
+    public VisibleScale getVisibleScale(){
+        return _visibleScale;
+    }
+    
+    /**
+     * Set visible scale
+     * @param value Visible scale
+     */
+    public void setVisibleScale(VisibleScale value){
+        _visibleScale = value;
     }
     // </editor-fold>
     // <editor-fold desc="Methods">

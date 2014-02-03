@@ -59,6 +59,7 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -66,6 +67,7 @@ import javax.swing.JScrollBar;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
+import org.meteoinfo.global.FrmProperty;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -413,16 +415,15 @@ public class LayersLegend extends JPanel {
                         frmLayerProp.setVisible(true);
                     }
                 } else if (aNode.getNodeType() == NodeTypes.GroupNode) {
-                    //((GroupNode)aNode).SetProperties();
+                    FrmProperty pFrm = new FrmProperty((JFrame) SwingUtilities.getWindowAncestor(this), true, false);
+                    pFrm.setObject(((GroupNode) aNode).new GroupNodeBean());
+                    pFrm.setLocationRelativeTo(this);
+                    pFrm.setVisible(true);
                 } else if (aNode.getNodeType() == NodeTypes.MapFrameNode) {
-//                    object propertyObj = ((MapFrame)aNode).GetNameObject();
-//                    if (propertyObj != null)
-//                    {
-//                        frmProperty aFrmProperty = new frmProperty(true);
-//                        aFrmProperty.SetObject(propertyObj);
-//                        aFrmProperty.SetParent(this);
-//                        aFrmProperty.ShowDialog();
-//                    }
+                    FrmProperty pFrm = new FrmProperty((JFrame) SwingUtilities.getWindowAncestor(this), true, false);
+                    pFrm.setObject(((MapFrame) aNode).new MapFrameBean());
+                    pFrm.setLocationRelativeTo(this);
+                    pFrm.setVisible(true);
                 }
             }
         }
@@ -671,6 +672,38 @@ public class LayersLegend extends JPanel {
                         mnuLayer.add(saveLayerMI);
                     }
                 }
+                JMenu visScaleMenu = new JMenu("Visible Scale");
+                JMenuItem minVisScaleMI = new JMenuItem("Set Minimum Scale");
+                minVisScaleMI.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        onMinVisScaleClick(e);
+                    }
+                });
+                visScaleMenu.add(minVisScaleMI);
+                JMenuItem maxVisScaleMI = new JMenuItem("Set Maximum Scale");
+                maxVisScaleMI.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        onMaxVisScaleClick(e);
+                    }
+                });
+                visScaleMenu.add(maxVisScaleMI);
+                JMenuItem removeVisScaleMI = new JMenuItem("Remove Visible Scale");
+                removeVisScaleMI.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        onRemoveVisScaleClick(e);
+                    }
+                });
+                if (aLayerObj.getVisibleScale().isVisibleScaleEnabled()) {
+                    removeVisScaleMI.setEnabled(true);
+                } else {
+                    removeVisScaleMI.setEnabled(false);
+                }
+                visScaleMenu.add(removeVisScaleMI);
+                mnuLayer.add(visScaleMenu);
+
                 mnuLayer.show(this, e.getX(), e.getY());
             }
         }
@@ -808,6 +841,36 @@ public class LayersLegend extends JPanel {
 //                    aLayer.FileName = bLayer.FileName;
 //                }
         }
+    }
+
+    private void onMinVisScaleClick(ActionEvent e) {
+        LayerNode aLN = (LayerNode) _selectedNode;
+        MapLayer aLayer = aLN.getMapFrame().getMapView().getLayerFromHandle(aLN.getLayerHandle());
+        aLayer.getVisibleScale().setEnableMinVisScale(true);
+        aLayer.getVisibleScale().setMinVisScale(aLN.getMapFrame().getMapView().getGeoScale());
+
+        this.paintGraphics();
+        aLN.getMapFrame().getMapView().paintLayers();
+    }
+
+    private void onMaxVisScaleClick(ActionEvent e) {
+        LayerNode aLN = (LayerNode) _selectedNode;
+        MapLayer aLayer = aLN.getMapFrame().getMapView().getLayerFromHandle(aLN.getLayerHandle());
+        aLayer.getVisibleScale().setEnableMaxVisScale(true);
+        aLayer.getVisibleScale().setMaxVisScale(aLN.getMapFrame().getMapView().getGeoScale());
+
+        this.paintGraphics();
+        aLN.getMapFrame().getMapView().paintLayers();
+    }
+
+    private void onRemoveVisScaleClick(ActionEvent e) {
+        LayerNode aLN = (LayerNode) _selectedNode;
+        MapLayer aLayer = aLN.getMapFrame().getMapView().getLayerFromHandle(aLN.getLayerHandle());
+        aLayer.getVisibleScale().setEnableMinVisScale(false);
+        aLayer.getVisibleScale().setEnableMaxVisScale(false);
+
+        this.paintGraphics();
+        aLN.getMapFrame().getMapView().paintLayers();
     }
 
     private void onMapFrameActiveClick(ActionEvent e) {

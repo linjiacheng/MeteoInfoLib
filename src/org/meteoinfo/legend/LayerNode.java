@@ -163,7 +163,7 @@ public class LayerNode extends ItemNode {
                 if (aLS.getLegendBreaks().get(i).isDrawShape()) {
                     aTN = new LegendNode();
                     aTN.setShapeType(this.getShapeType());
-                    aTN.setLegendBreak(aLS.getLegendBreaks().get(i));
+                    aTN.setLegendBreak(aLS.getLegendBreaks().get(i));                    
                     _legendNodes.add(aTN);
                 }
             }

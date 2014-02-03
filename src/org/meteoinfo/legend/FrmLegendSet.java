@@ -70,6 +70,7 @@ public class FrmLegendSet extends javax.swing.JDialog {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
+        jToolBar1.setFloatable(false);
         jToolBar1.setRollover(true);
 
         jButton_ImportLegend.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/meteoinfo/resources/TSB_Open.Image.png"))); // NOI18N

@@ -462,12 +462,12 @@ public class LegendView extends JPanel {
         this.repaint();
     }
 
-    public void setLegendBreak_Color(Color aColor) {
+    public void setLegendBreak_Color(Color aColor) {        
         for (int rowIdx : _selectedRows) {
             _legendScheme.getLegendBreaks().get(rowIdx).setColor(aColor);
         }
 
-        this.repaint();
+        this.repaint();        
     }
 
     /**
@@ -932,9 +932,9 @@ public class LegendView extends JPanel {
 
         //Draw breaks
         drawBreaks(g, rect.y);
-
+        
         //Draw title            
-        drawTitle(g);
+        drawTitle(g);             
     }
 
     private void drawTitle(Graphics2D g) {
@@ -994,8 +994,8 @@ public class LegendView extends JPanel {
             if (sP.y + _breakHeight > _breakHeight) {
                 ColorBreak aCB = _legendScheme.getLegendBreaks().get(i);
                 Rectangle rect = new Rectangle(sP.x, sP.y, _symbolWidth, _breakHeight);
-                boolean selected = _selectedRows.contains(i);
-                drawBreakSymbol(aCB, rect, selected, g);
+                boolean selected = _selectedRows.contains(i);                
+                drawBreakSymbol(aCB, rect, selected, g);                
                 sP.y += _breakHeight;
             } else if (sP.y > this.getHeight()) {
                 break;
@@ -1046,7 +1046,7 @@ public class LegendView extends JPanel {
                 height = rect.height / 5 * 4;
                 if (aPGB.isDrawShape()) {
                     Draw.drawPolygonSymbol(aP, width, height, aPGB, g);
-                }
+                }                
                 break;
             case ColorBreak:
                 width = rect.width / 3 * 2;

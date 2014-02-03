@@ -259,34 +259,34 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                 int i;
 
                 //Record #1
-                aLine = sr.readLine();
+                sr.readLine();
 
                 //Record #2
                 for (i = 0; i < MeteoFileNums.get(t); i++) {
-                    aLine = sr.readLine();
+                    sr.readLine();
                 }
 
                 //Record #3
-                aLine = sr.readLine();
+                sr.readLine();
 
                 //Record #4             
                 for (i = 0; i < TrajeoryNums.get(t); i++) {
-                    aLine = sr.readLine();
+                    sr.readLine();
                 }
 
                 //Record #5
-                aLine = sr.readLine();
+                sr.readLine();
 
                 //Record #6
                 int TrajIdx;
-                List<PointD> pList = new ArrayList<PointD>();
+                List<PointD> pList;
                 List<List<PointD>> PointList = new ArrayList<List<PointD>>();
                 for (i = 0; i < TrajeoryNums.get(t); i++) {
                     pList = new ArrayList<PointD>();
                     PointList.add(pList);
                 }
-                PointD aPoint = new PointD();
-                ArrayList polylines = new ArrayList();
+                PointD aPoint;
+                //ArrayList polylines = new ArrayList();
                 while (true) {
                     aLine = sr.readLine();
                     if (aLine == null) {

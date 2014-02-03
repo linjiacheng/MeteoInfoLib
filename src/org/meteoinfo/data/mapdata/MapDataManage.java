@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import org.meteoinfo.data.meteodata.bandraster.BILDataInfo;
 import org.meteoinfo.layer.RasterLayer;
 import org.meteoinfo.legend.LegendScheme;
 import org.meteoinfo.legend.LegendType;
@@ -60,7 +61,7 @@ public class MapDataManage {
      */
     public static MapLayer loadLayer(String aFile) throws IOException, FileNotFoundException, Exception {
         MapLayer aLayer = null;
-        String a = "aa";
+        //String a = "aa";
         if (new File(aFile).isFile()) {
             String ext = GlobalUtil.getFileExtension(aFile);
             if (ext.equals("dat")) {
@@ -75,6 +76,8 @@ public class MapDataManage {
                 aLayer = readImageFile(aFile);
             } else if (ext.equals("tif")) {
                 aLayer = readGeoTiffFile(aFile);
+            } else if (ext.equals("bil")) {
+                aLayer = readBILFile(aFile);
             } else {
                 aLayer = readMapFile_GrADS(aFile);
             }
@@ -251,5 +254,21 @@ public class MapDataManage {
             Logger.getLogger(MapDataManage.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }
+    }
+    
+    /**
+     * Read BIL file and create a raster layer
+     * @param fileName BIL file name
+     * @return Raster layer
+     */
+    public static RasterLayer readBILFile(String fileName){
+        BILDataInfo dataInfo = new BILDataInfo();
+        dataInfo.readDataInfo(fileName);
+        GridData gData = dataInfo.getGridData_LonLat(0, 0, 0);
+        LegendScheme aLS = LegendManage.createLegendSchemeFromGridData(gData, LegendType.GraduatedColor,
+                    ShapeTypes.Image);
+            RasterLayer aLayer = DrawMeteoData.createRasterLayer(gData, new File(fileName).getName(), aLS);
+
+            return aLayer;
     }
 }

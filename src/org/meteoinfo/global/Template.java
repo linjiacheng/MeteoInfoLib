@@ -1,4 +1,4 @@
- /* Copyright 2012 Yaqiang Wang,
+ /* Copyright 2012 - Yaqiang Wang,
  * yaqiang.wang@gmail.com
  * 
  * This library is free software; you can redistribute it and/or modify it

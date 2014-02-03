@@ -62,7 +62,7 @@ public enum ProjectionNames {
         /// <summary>
         /// Geostationary
         /// </summary>
-        //Geostationary,
+        Geostationary_Satellite,
         /// <summary>
         /// Oblique stereographic
         /// </summary>        

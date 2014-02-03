@@ -164,7 +164,7 @@ public class MathParser {
 
         _expressionReader.mark(1);
         char p = (char) _expressionReader.read();
-        while (Character.isLetterOrDigit(p) || p == '_' || p == '@') {
+        while (Character.isLetterOrDigit(p) || p == '_' || p == '@' || p == '.') {
             _buffer.append(p);
             _expressionReader.mark(1);
             p = (char) _expressionReader.read();
