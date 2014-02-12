@@ -11,7 +11,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
  * General Public License for more details.
  */
-package org.meteoinfo.data.meteodata;
+package org.meteoinfo.geoprocess.analysis;
 
 /**
  *
@@ -35,5 +35,5 @@ public enum InterpolationMethods {
     /// Assign point to grid
     /// </summary>
     AssignPointToGrid,
-    Bilinear
+    
 }

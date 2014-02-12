@@ -11,7 +11,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
  * General Public License for more details.
  */
-package org.meteoinfo.data.meteodata;
+package org.meteoinfo.geoprocess.analysis;
 
 import org.meteoinfo.data.GridData;
 import org.meteoinfo.data.StationData;
@@ -19,6 +19,7 @@ import org.meteoinfo.drawing.ContourDraw;
 import org.meteoinfo.global.Extent;
 import java.util.ArrayList;
 import java.util.List;
+import org.meteoinfo.data.meteodata.GridDataSetting;
 
 /**
  *

@@ -26,7 +26,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.meteoinfo.data.meteodata.GridDataSetting;
-import org.meteoinfo.data.meteodata.InterpolationMethods;
+import org.meteoinfo.geoprocess.analysis.InterpolationMethods;
+import org.meteoinfo.geoprocess.analysis.ResampleMethods;
 import org.meteoinfo.layer.VectorLayer;
 import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.projection.ProjectionManage;
@@ -57,6 +58,10 @@ public class GridData {
     /// Undef data
     /// </summary>
     public double missingValue;
+    /**
+     * Projection information
+     */
+    public ProjectionInfo projInfo = null;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -784,220 +789,245 @@ public class GridData {
     }
     // </editor-fold>
     // <editor-fold desc="Functions">
+
     /**
      * Calculate abstract grid data
+     *
      * @return Result grid data
      */
-    public GridData abs(){
+    public GridData abs() {
         GridData gridData = new GridData(this);
-        for (int i = 0; i < gridData.getYNum(); i++){
-            for (int j = 0; j < gridData.getXNum(); j++){
-                if (MIMath.doubleEquals(data[i][j], missingValue))
+        for (int i = 0; i < gridData.getYNum(); i++) {
+            for (int j = 0; j < gridData.getXNum(); j++) {
+                if (MIMath.doubleEquals(data[i][j], missingValue)) {
                     gridData.data[i][j] = missingValue;
-                else
+                } else {
                     gridData.data[i][j] = Math.abs(data[i][j]);
+                }
             }
         }
-        
+
         return gridData;
     }
-    
+
     /**
      * Calculate anti-cosine grid data
+     *
      * @return Result grid data
      */
-    public GridData acos(){
+    public GridData acos() {
         GridData gridData = new GridData(this);
-        for (int i = 0; i < gridData.getYNum(); i++){
-            for (int j = 0; j < gridData.getXNum(); j++){
-                if (MIMath.doubleEquals(data[i][j], missingValue))
+        for (int i = 0; i < gridData.getYNum(); i++) {
+            for (int j = 0; j < gridData.getXNum(); j++) {
+                if (MIMath.doubleEquals(data[i][j], missingValue)) {
                     gridData.data[i][j] = missingValue;
-                else
+                } else {
                     gridData.data[i][j] = Math.acos(data[i][j]);
+                }
             }
         }
-        
+
         return gridData;
     }
-    
+
     /**
      * Calculate anti-sine grid data
+     *
      * @return Result grid data
      */
-    public GridData asin(){
+    public GridData asin() {
         GridData gridData = new GridData(this);
-        for (int i = 0; i < gridData.getYNum(); i++){
-            for (int j = 0; j < gridData.getXNum(); j++){
-                if (MIMath.doubleEquals(data[i][j], missingValue))
+        for (int i = 0; i < gridData.getYNum(); i++) {
+            for (int j = 0; j < gridData.getXNum(); j++) {
+                if (MIMath.doubleEquals(data[i][j], missingValue)) {
                     gridData.data[i][j] = missingValue;
-                else
+                } else {
                     gridData.data[i][j] = Math.asin(data[i][j]);
+                }
             }
         }
-        
+
         return gridData;
     }
-    
+
     /**
      * Calculate anti-tangent grid data
+     *
      * @return Result grid data
      */
-    public GridData atan(){
+    public GridData atan() {
         GridData gridData = new GridData(this);
-        for (int i = 0; i < gridData.getYNum(); i++){
-            for (int j = 0; j < gridData.getXNum(); j++){
-                if (MIMath.doubleEquals(data[i][j], missingValue))
+        for (int i = 0; i < gridData.getYNum(); i++) {
+            for (int j = 0; j < gridData.getXNum(); j++) {
+                if (MIMath.doubleEquals(data[i][j], missingValue)) {
                     gridData.data[i][j] = missingValue;
-                else
+                } else {
                     gridData.data[i][j] = Math.atan(data[i][j]);
+                }
             }
         }
-        
+
         return gridData;
     }
-    
+
     /**
      * Calculate cosine grid data
+     *
      * @return Result grid data
      */
-    public GridData cos(){
+    public GridData cos() {
         GridData gridData = new GridData(this);
-        for (int i = 0; i < gridData.getYNum(); i++){
-            for (int j = 0; j < gridData.getXNum(); j++){
-                if (MIMath.doubleEquals(data[i][j], missingValue))
+        for (int i = 0; i < gridData.getYNum(); i++) {
+            for (int j = 0; j < gridData.getXNum(); j++) {
+                if (MIMath.doubleEquals(data[i][j], missingValue)) {
                     gridData.data[i][j] = missingValue;
-                else
+                } else {
                     gridData.data[i][j] = Math.cos(data[i][j]);
+                }
             }
         }
-        
+
         return gridData;
     }
-    
+
     /**
      * Calculate sine grid data
+     *
      * @return Result grid data
      */
-    public GridData sin(){
+    public GridData sin() {
         GridData gridData = new GridData(this);
-        for (int i = 0; i < gridData.getYNum(); i++){
-            for (int j = 0; j < gridData.getXNum(); j++){
-                if (MIMath.doubleEquals(data[i][j], missingValue))
+        for (int i = 0; i < gridData.getYNum(); i++) {
+            for (int j = 0; j < gridData.getXNum(); j++) {
+                if (MIMath.doubleEquals(data[i][j], missingValue)) {
                     gridData.data[i][j] = missingValue;
-                else
+                } else {
                     gridData.data[i][j] = Math.sin(data[i][j]);
+                }
             }
         }
-        
+
         return gridData;
     }
-    
+
     /**
      * Calculate tangent grid data
+     *
      * @return Result grid data
      */
-    public GridData tan(){
+    public GridData tan() {
         GridData gridData = new GridData(this);
-        for (int i = 0; i < gridData.getYNum(); i++){
-            for (int j = 0; j < gridData.getXNum(); j++){
-                if (MIMath.doubleEquals(data[i][j], missingValue))
+        for (int i = 0; i < gridData.getYNum(); i++) {
+            for (int j = 0; j < gridData.getXNum(); j++) {
+                if (MIMath.doubleEquals(data[i][j], missingValue)) {
                     gridData.data[i][j] = missingValue;
-                else
+                } else {
                     gridData.data[i][j] = Math.abs(data[i][j]);
+                }
             }
         }
-        
+
         return gridData;
     }
-    
+
     /**
      * Calculate e raised specific power value of grid data
+     *
      * @return Result grid data
      */
-    public GridData exp(){
+    public GridData exp() {
         GridData gridData = new GridData(this);
-        for (int i = 0; i < gridData.getYNum(); i++){
-            for (int j = 0; j < gridData.getXNum(); j++){
-                if (MIMath.doubleEquals(data[i][j], missingValue))
+        for (int i = 0; i < gridData.getYNum(); i++) {
+            for (int j = 0; j < gridData.getXNum(); j++) {
+                if (MIMath.doubleEquals(data[i][j], missingValue)) {
                     gridData.data[i][j] = missingValue;
-                else
+                } else {
                     gridData.data[i][j] = Math.exp(data[i][j]);
+                }
             }
         }
-        
+
         return gridData;
     }
-    
+
     /**
      * Calculate power grid data
+     *
      * @param p Power value
      * @return Result grid data
      */
-    public GridData pow(double p){
+    public GridData pow(double p) {
         GridData gridData = new GridData(this);
-        for (int i = 0; i < gridData.getYNum(); i++){
-            for (int j = 0; j < gridData.getXNum(); j++){
-                if (MIMath.doubleEquals(data[i][j], missingValue))
+        for (int i = 0; i < gridData.getYNum(); i++) {
+            for (int j = 0; j < gridData.getXNum(); j++) {
+                if (MIMath.doubleEquals(data[i][j], missingValue)) {
                     gridData.data[i][j] = missingValue;
-                else
+                } else {
                     gridData.data[i][j] = Math.pow(data[i][j], p);
+                }
             }
         }
-        
+
         return gridData;
     }
-    
+
     /**
      * Calculate square root grid data
+     *
      * @return Result grid data
      */
-    public GridData sqrt(){
+    public GridData sqrt() {
         GridData gridData = new GridData(this);
-        for (int i = 0; i < gridData.getYNum(); i++){
-            for (int j = 0; j < gridData.getXNum(); j++){
-                if (MIMath.doubleEquals(data[i][j], missingValue))
+        for (int i = 0; i < gridData.getYNum(); i++) {
+            for (int j = 0; j < gridData.getXNum(); j++) {
+                if (MIMath.doubleEquals(data[i][j], missingValue)) {
                     gridData.data[i][j] = missingValue;
-                else
+                } else {
                     gridData.data[i][j] = Math.sqrt(data[i][j]);
+                }
             }
         }
-        
+
         return gridData;
     }
-    
+
     /**
      * Calculate logrithm grid data
+     *
      * @return Result grid data
      */
-    public GridData log(){
+    public GridData log() {
         GridData gridData = new GridData(this);
-        for (int i = 0; i < gridData.getYNum(); i++){
-            for (int j = 0; j < gridData.getXNum(); j++){
-                if (MIMath.doubleEquals(data[i][j], missingValue))
+        for (int i = 0; i < gridData.getYNum(); i++) {
+            for (int j = 0; j < gridData.getXNum(); j++) {
+                if (MIMath.doubleEquals(data[i][j], missingValue)) {
                     gridData.data[i][j] = missingValue;
-                else
+                } else {
                     gridData.data[i][j] = Math.log(data[i][j]);
+                }
             }
         }
-        
+
         return gridData;
     }
-    
+
     /**
      * Calculate base 10 logrithm grid data
+     *
      * @return Result grid data
      */
-    public GridData log10(){
+    public GridData log10() {
         GridData gridData = new GridData(this);
-        for (int i = 0; i < gridData.getYNum(); i++){
-            for (int j = 0; j < gridData.getXNum(); j++){
-                if (MIMath.doubleEquals(data[i][j], missingValue))
+        for (int i = 0; i < gridData.getYNum(); i++) {
+            for (int j = 0; j < gridData.getXNum(); j++) {
+                if (MIMath.doubleEquals(data[i][j], missingValue)) {
                     gridData.data[i][j] = missingValue;
-                else
+                } else {
                     gridData.data[i][j] = Math.abs(data[i][j]);
+                }
             }
         }
-        
+
         return gridData;
     }
     // </editor-fold>
@@ -1176,25 +1206,26 @@ public class GridData {
 
         return aGridData;
     }
-    
+
     /**
      * Set missing value - bigger or smaller than the given value
-     * 
+     *
      * @param value The given value
      * @param isBigger Is bigger or not
      */
-    public void setMissingValue(double value, boolean isBigger){
+    public void setMissingValue(double value, boolean isBigger) {
         int xnum = this.getXNum();
         int ynum = this.getYNum();
-        for (int i = 0; i < ynum; i++){
-            for (int j = 0; j < xnum; j++){
-                if (isBigger){
-                    if (this.data[i][j] > value)
+        for (int i = 0; i < ynum; i++) {
+            for (int j = 0; j < xnum; j++) {
+                if (isBigger) {
+                    if (this.data[i][j] > value) {
                         this.data[i][j] = this.missingValue;
-                }
-                else {
-                    if (this.data[i][j] < value)
+                    }
+                } else {
+                    if (this.data[i][j] < value) {
                         this.data[i][j] = this.missingValue;
+                    }
                 }
             }
         }
@@ -1532,11 +1563,37 @@ public class GridData {
     /**
      * Project grid data
      *
+     * @param toProj To projection
+     * @return Projected grid data
+     */
+    public GridData project(ProjectionInfo toProj) {
+        if (this.projInfo == null) {
+            return null;
+        }
+
+        return project(this.projInfo, toProj, ResampleMethods.NearestNeighbor);
+    }
+
+    /**
+     * Project grid data
+     *
      * @param fromProj From projection
      * @param toProj To projection
      * @return Porjected grid data
      */
     public GridData project(ProjectionInfo fromProj, ProjectionInfo toProj) {
+        return project(fromProj, toProj, ResampleMethods.NearestNeighbor);
+    }
+
+    /**
+     * Project grid data
+     *
+     * @param fromProj From projection
+     * @param toProj To projection
+     * @param interpMethod Interpolation method
+     * @return Porjected grid data
+     */
+    public GridData project(ProjectionInfo fromProj, ProjectionInfo toProj, ResampleMethods resampleMethod) {
         Extent aExtent;
         int xnum = this.getXNum();
         int ynum = this.getYNum();
@@ -1558,9 +1615,43 @@ public class GridData {
             newY[i] = aExtent.minY + i * yDelt;
         }
 
-        GridData pGridData = project(fromProj, toProj, newX, newY);
+        GridData pGridData = project(fromProj, toProj, newX, newY, resampleMethod);
 
         return pGridData;
+    }
+
+    /**
+     * Project grid data
+     *
+     * @param toProj To projection info
+     * @param newX New xArray coordinates
+     * @param newY New yArray coordinates
+     * @return Projected grid data
+     */
+    public GridData project(ProjectionInfo toProj, double[] newX, double[] newY) {
+        if (this.projInfo == null) {
+            return null;
+        }
+
+        return project_Neighbor(this.projInfo, toProj, newX, newY);
+    }
+
+    /**
+     * Project grid data
+     *
+     * @param toProj To projection info
+     * @param newX New xArray coordinates
+     * @param newY New yArray coordinates
+     * @param interpMethod Interpolation method
+     * @return Projected grid data
+     */
+    public GridData project(ProjectionInfo toProj, double[] newX, double[] newY,
+            ResampleMethods resampleMethod) {
+        if (this.projInfo == null) {
+            return null;
+        }
+
+        return project(this.projInfo, toProj, newX, newY, resampleMethod);
     }
 
     /**
@@ -1570,9 +1661,41 @@ public class GridData {
      * @param toProj To projection info
      * @param newX New xArray coordinates
      * @param newY New yArray coordinates
+     * @param interpMethod Interpolation method
      * @return Projected grid data
      */
-    public GridData project(ProjectionInfo fromProj, ProjectionInfo toProj, double[] newX, double[] newY) {
+    public GridData project(ProjectionInfo fromProj, ProjectionInfo toProj, double[] newX, double[] newY,
+            ResampleMethods resampleMethod) {
+        switch (resampleMethod) {
+            case Bilinear:
+                return project_Bilinear(fromProj, toProj, newX, newY);
+            case NearestNeighbor:
+                return project_Neighbor(fromProj, toProj, newX, newY);
+            default:
+                return project_Bilinear(fromProj, toProj, newX, newY);
+        }
+    }
+
+    /**
+     * Project grid data to station data
+     *
+     * @param fromProj From projection info
+     * @param toProj To projection info
+     * @param stData Station data
+     * @param interpMethod Interpolation method
+     * @return Projected station data
+     */
+    public StationData project(ProjectionInfo fromProj, ProjectionInfo toProj, StationData stData,
+            ResampleMethods resampleMethod) {
+        switch (resampleMethod) {
+            case Bilinear:
+                return project_Bilinear(fromProj, toProj, stData);
+            default:
+                return project_Bilinear(fromProj, toProj, stData);
+        }
+    }
+
+    private GridData project_Neighbor(ProjectionInfo fromProj, ProjectionInfo toProj, double[] newX, double[] newY) {
         double[][] newdata = new double[newY.length][newX.length];
         int i, j, xIdx, yIdx;
         double x, y;
@@ -1609,45 +1732,6 @@ public class GridData {
         gData.yArray = newY;
 
         return gData;
-    }
-
-    /**
-     * Project grid data
-     *
-     * @param fromProj From projection info
-     * @param toProj To projection info
-     * @param newX New xArray coordinates
-     * @param newY New yArray coordinates
-     * @param interpMethod Interpolation method
-     * @return Projected grid data
-     */
-    public GridData project(ProjectionInfo fromProj, ProjectionInfo toProj, double[] newX, double[] newY,
-            InterpolationMethods interpMethod) {
-        switch (interpMethod) {
-            case Bilinear:
-                return project_Bilinear(fromProj, toProj, newX, newY);
-            default:
-                return project_Bilinear(fromProj, toProj, newX, newY);
-        }
-    }
-
-    /**
-     * Project grid data to station data
-     *
-     * @param fromProj From projection info
-     * @param toProj To projection info
-     * @param stData Station data
-     * @param interpMethod Interpolation method
-     * @return Projected station data
-     */
-    public StationData project(ProjectionInfo fromProj, ProjectionInfo toProj, StationData stData,
-            InterpolationMethods interpMethod) {
-        switch (interpMethod) {
-            case Bilinear:
-                return project_Bilinear(fromProj, toProj, stData);
-            default:
-                return project_Bilinear(fromProj, toProj, stData);
-        }
     }
 
     private GridData project_Bilinear(ProjectionInfo fromProj, ProjectionInfo toProj, double[] newX, double[] newY) {
@@ -1717,6 +1801,81 @@ public class GridData {
         }
 
         return nsData;
+    }
+
+    /**
+     * Aggregate the grid data to coarser resolution
+     *
+     * @param toGridData To grid data
+     * @param isAverage If is average
+     */
+    public void Aggregate(GridData toGridData, boolean isAverage) {
+        int xnum = this.getXNum();
+        int ynum = this.getYNum();
+        int toXnum = toGridData.getXNum();
+        int toYnum = toGridData.getYNum();
+        int i, j, xIdx, yIdx;
+        int[][] nums = new int[toYnum][toXnum];
+        double x, y;
+        toGridData.setValue(0.0);
+        if (this.projInfo.equals(toGridData.projInfo)) {
+            for (i = 0; i < ynum; i++) {
+                y = yArray[i];
+                if (y < toGridData.yArray[0] || y > toGridData.yArray[toYnum - 1]) {
+                    continue;
+                }
+                for (j = 0; j < xnum; j++) {
+                    x = xArray[j];
+                    if (x < toGridData.xArray[0] || x > toGridData.xArray[toXnum - 1]) {
+                        continue;
+                    }
+                    xIdx = (int) ((x - toGridData.xArray[0]) / toGridData.getXDelt());
+                    yIdx = (int) ((y - toGridData.yArray[0]) / toGridData.getYDelt());
+                    toGridData.data[yIdx][xIdx] += this.data[i][j];
+                    nums[yIdx][xIdx] += 1;
+                }
+            }
+        } else {
+            double[][] points = new double[1][];
+            for (i = 0; i < ynum; i++) {
+                y = yArray[i];
+                for (j = 0; j < xnum; j++) {
+                    x = xArray[j];
+                    points[0] = new double[]{x, y};
+                    try {
+                        Reproject.reprojectPoints(points, this.projInfo, toGridData.projInfo, 0, 1);
+                        x = points[0][0];
+                        y = points[0][1];
+                        if (x < toGridData.xArray[0] || x > toGridData.xArray[toXnum - 1]) {
+                            continue;
+                        }
+                        if (y < toGridData.yArray[0] || y > toGridData.yArray[toYnum - 1]) {
+                            continue;
+                        }
+                        xIdx = (int) ((x - toGridData.xArray[0]) / toGridData.getXDelt());
+                        yIdx = (int) ((y - toGridData.yArray[0]) / toGridData.getYDelt());
+                        toGridData.data[yIdx][xIdx] += this.data[i][j];
+                        nums[yIdx][xIdx] += 1;
+                    } catch (Exception e) {
+                        j++;
+                        continue;
+                    }
+                }
+            }
+        }
+
+        //Average
+        if (isAverage) {
+            for (i = 0; i < toYnum; i++) {
+                for (j = 0; j < toXnum; j++) {
+                    if (nums[i][j] == 0) {
+                        toGridData.data[i][j] = toGridData.missingValue;
+                    } else {
+                        toGridData.data[i][j] = toGridData.data[i][j] / nums[i][j];
+                    }
+                }
+            }
+        }
     }
 
     /**
