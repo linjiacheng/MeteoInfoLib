@@ -85,7 +85,7 @@ public class OperatorExpression extends ExpressionBase {
      * @return The result of the operation
      */
     public Object subtract(Object[] numbers) {
-        Object result = DataMath.subtract(numbers[0], numbers[1]);
+        Object result = DataMath.sub(numbers[0], numbers[1]);
 
         return result;
     }
@@ -97,7 +97,7 @@ public class OperatorExpression extends ExpressionBase {
      * @return The result of the operation
      */
     public Object multiple(Object[] numbers) {
-        Object result = DataMath.multiple(numbers[0], numbers[1]);
+        Object result = DataMath.mul(numbers[0], numbers[1]);
 
         return result;
     }
@@ -109,7 +109,7 @@ public class OperatorExpression extends ExpressionBase {
      * @return The result of the operation
      */
     public Object divide(Object[] numbers) {
-        Object result = DataMath.divide(numbers[0], numbers[1]);
+        Object result = DataMath.div(numbers[0], numbers[1]);
 
         return result;
     }

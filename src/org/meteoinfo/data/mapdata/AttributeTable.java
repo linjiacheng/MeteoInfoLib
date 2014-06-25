@@ -211,7 +211,9 @@ public final class AttributeTable implements Cloneable {
         int year = buffer.get();
         int month = buffer.get();
         int day = buffer.get();
-        _updateDate = new Date(year + 1900, month, day);
+        Calendar cal = Calendar.getInstance();
+        cal.set(year + 1900, month - 1, day);
+        _updateDate = cal.getTime();
 
         // read the number of records.
         _numRecords = buffer.getInt();
@@ -264,11 +266,10 @@ public final class AttributeTable implements Cloneable {
             byte decimalcount = buffer.get();
 
             // read the reserved bytes.
-            //reader.skipBytes(14);
             reader.skipBytes(14);
             int j = 1;
             String tempName = name;
-            while (_dataTable.getColumns().contains(tempName)) {
+            while (_dataTable.getColumnNames().contains(tempName)) {
                 tempName = name + j;
                 j++;
             }
@@ -436,22 +437,22 @@ public final class AttributeTable implements Cloneable {
                 case 'B':
                 case 'N': // number - ESRI uses N for doubles and floats
                     String tempStr = new String(cBuffer);
-                    if (tempStr.trim().isEmpty())
-                        tempStr = "0";
-                    tempObject = null;
-                    DataTypes t = CurrentField.getDataType();
-                    switch (t) {
-                        case Integer:
-                            tempObject = Integer.parseInt(tempStr.trim());
-                            break;
-                        case Float:
-                            tempObject = Float.parseFloat(tempStr);
-                            break;
-                        case Double:                            
-                            tempObject = Double.parseDouble(tempStr);
-                            break;
+                    if (!tempStr.trim().equals("null")){
+                        if (tempStr.trim().isEmpty())
+                            tempStr = "0";
+                        DataTypes t = CurrentField.getDataType();
+                        switch (t) {
+                            case Integer:
+                                tempObject = Integer.parseInt(tempStr.trim());
+                                break;
+                            case Float:
+                                tempObject = Float.parseFloat(tempStr);
+                                break;
+                            case Double:                            
+                                tempObject = Double.parseDouble(tempStr);
+                                break;
+                        }
                     }
-
                     break;
 
                 default:

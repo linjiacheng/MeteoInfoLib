@@ -136,7 +136,7 @@ public class MapFrame extends ItemNode {
     private GridLabelPosition _gridLabelPosition = GridLabelPosition.LeftBottom;
     private Font _gridFont = new Font("Arial", Font.PLAIN, 12);
     private Rectangle _layoutBounds;
-    private boolean _isFireMapViewUpdate = false;
+    //private boolean _isFireMapViewUpdate = false;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -152,9 +152,9 @@ public class MapFrame extends ItemNode {
         _mapView.addViewExtentChangedListener(new IViewExtentChangedListener() {
             @Override
             public void viewExtentChangedEvent(ViewExtentChangedEvent event) {
-                if (_isFireMapViewUpdate) {
+                //if (_isFireMapViewUpdate) {
                     fireMapViewUpdatedEvent();
-                }
+                //}
             }
         });
 //            _mapView.LayersUpdated += MapViewLayersUpdated;
@@ -189,9 +189,9 @@ public class MapFrame extends ItemNode {
         _mapView.addViewExtentChangedListener(new IViewExtentChangedListener() {
             @Override
             public void viewExtentChangedEvent(ViewExtentChangedEvent event) {
-                if (_isFireMapViewUpdate) {
+                //if (_isFireMapViewUpdate) {
                     fireMapViewUpdatedEvent();
-                }
+                //}
             }
         });
 //                _mapView.LayersUpdated += MapViewLayersUpdated;
@@ -695,23 +695,23 @@ public class MapFrame extends ItemNode {
         this.fireLayoutBoundsChangedEvent();
     }
 
-    /**
-     * Get if fire map view upate event
-     *
-     * @return Boolean
-     */
-    public boolean isFireMapViewUpdate() {
-        return this._isFireMapViewUpdate;
-    }
-
-    /**
-     * Set if fire map view update event
-     *
-     * @param b Boolean
-     */
-    public void setIsFireMapViewUpdate(boolean b) {
-        this._isFireMapViewUpdate = b;
-    }
+//    /**
+//     * Get if fire map view upate event
+//     *
+//     * @return Boolean
+//     */
+//    public boolean isFireMapViewUpdate() {
+//        return this._isFireMapViewUpdate;
+//    }
+//
+//    /**
+//     * Set if fire map view update event
+//     *
+//     * @param b Boolean
+//     */
+//    public void setIsFireMapViewUpdate(boolean b) {
+//        this._isFireMapViewUpdate = b;
+//    }
     // </editor-fold>
     // <editor-fold desc="Methods">
 
@@ -814,7 +814,7 @@ public class MapFrame extends ItemNode {
      * @return Layer handle
      */
     public int insertPolygonLayer(MapLayer aLayer) {
-        _mapView.setLockViewUpdate(true);
+        //_mapView.setLockViewUpdate(true);
         int lIdx = _mapView.getPolygonLayerIdx() + 1;
         int handle = addLayer(aLayer);
         if (lIdx < 0) {
@@ -834,7 +834,7 @@ public class MapFrame extends ItemNode {
      * @return Layer handle
      */
     public int insertPolylineLayer(VectorLayer aLayer) {
-        _mapView.setLockViewUpdate(true);
+        //_mapView.setLockViewUpdate(true);
         int lIdx = _mapView.getLineLayerIdx() + 1;
         int handle = addLayer(aLayer);
         if (lIdx < 0) {
@@ -854,7 +854,7 @@ public class MapFrame extends ItemNode {
      * @return Layer handle
      */
     public int insertImageLayer(MapLayer aLayer) {
-        _mapView.setLockViewUpdate(true);
+        //_mapView.setLockViewUpdate(true);
         int lIdx = _mapView.getImageLayerIdx() + 1;
         int handle = addLayer(aLayer);
         if (lIdx < 0) {
@@ -1473,6 +1473,7 @@ public class MapFrame extends ItemNode {
         }
 
         _mapView.paintLayers();
+        this.fireMapViewUpdatedEvent();
     }
 
     @Override

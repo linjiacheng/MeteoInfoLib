@@ -26,6 +26,8 @@ public class FrmPolygonSymbolSet extends javax.swing.JDialog {
     public FrmPolygonSymbolSet(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        
+        this.setTitle("Polygon Symbol Set");
     }
 
     /**
@@ -38,6 +40,7 @@ public class FrmPolygonSymbolSet extends javax.swing.JDialog {
         initComponents();
         this._parent = tparent;
 
+        this.setTitle("Polygon Symbol Set");
         if (tparent.getClass() == LegendView.class) {
             this.jButton_Apply.setVisible(false);
             this.jButton_OK.setVisible(false);
@@ -55,6 +58,7 @@ public class FrmPolygonSymbolSet extends javax.swing.JDialog {
         initComponents();
         this._parent = tparent;
 
+        this.setTitle("Polygon Symbol Set");
         if (tparent.getClass() == LegendView.class) {
             this.jButton_Apply.setVisible(false);
             this.jButton_OK.setVisible(false);
@@ -372,7 +376,7 @@ public class FrmPolygonSymbolSet extends javax.swing.JDialog {
         c = new Color(c.getRed(), c.getGreen(), c.getBlue(), alpha);
         _polygonBreak.setColor(c);
         if (_parent.getClass() == LegendView.class) {
-            ((LegendView) _parent).setLegendBreak_Color(c);
+            ((LegendView) _parent).setLegendBreak_Color_Transparency(alpha);
         }
     }//GEN-LAST:event_jSpinner_TransParencyStateChanged
 

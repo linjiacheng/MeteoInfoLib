@@ -236,7 +236,7 @@ public class BILDataInfo extends DataInfo implements IGridDataInfo {
                     System.arraycopy(byteData, start, bytes, 0, nbytes);
                     start += nbytes;
                     if (this._pixeltype.toLowerCase().equals("float")) {
-                        gData.data[_nrows - 1 - i][j] = DataConvert.bytes2float(bytes, _byteOrder);
+                        gData.data[_nrows - 1 - i][j] = DataConvert.bytes2Float(bytes, _byteOrder);
                     } else {
                         if (nbytes >= 2) {
                             gData.data[_nrows - 1 - i][j] = DataConvert.bytes2Int(bytes, _byteOrder);
@@ -282,7 +282,7 @@ public class BILDataInfo extends DataInfo implements IGridDataInfo {
                     bytes = new byte[nbytes];
                     br.read(bytes);
                     if (this._pixeltype.toLowerCase().equals("float")) {
-                        gData.data[_nrows - 1 - i][j] = DataConvert.bytes2float(bytes, _byteOrder);
+                        gData.data[_nrows - 1 - i][j] = DataConvert.bytes2Float(bytes, _byteOrder);
                     } else {
                         if (nbytes >= 2) {
                             gData.data[_nrows - 1 - i][j] = DataConvert.bytes2Int(bytes, _byteOrder);
@@ -334,7 +334,7 @@ public class BILDataInfo extends DataInfo implements IGridDataInfo {
                     System.arraycopy(byteData, start, bytes, 0, nbytes);
                     start += nbytes;
                     if (this._pixeltype.toLowerCase().equals("float")) {
-                        gData.data[_nrows - 1 - i][j] = DataConvert.bytes2float(bytes, _byteOrder);
+                        gData.data[_nrows - 1 - i][j] = DataConvert.bytes2Float(bytes, _byteOrder);
                     } else {
                         if (nbytes >= 2) {
                             gData.data[_nrows - 1 - i][j] = DataConvert.bytes2Int(bytes, _byteOrder);

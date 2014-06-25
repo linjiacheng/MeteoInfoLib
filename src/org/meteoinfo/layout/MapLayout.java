@@ -93,6 +93,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import javax.imageio.ImageIO;
 import javax.print.DocFlavor;
 import javax.print.DocPrintJob;
@@ -113,13 +114,21 @@ import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 import javax.swing.table.DefaultTableModel;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.meteoinfo.global.GlobalUtil;
+import org.meteoinfo.layer.RasterLayer;
+import org.meteoinfo.legend.VectorBreak;
+import org.meteoinfo.map.FrmIdentiferGrid;
+import org.meteoinfo.map.MapView;
 import org.meteoinfo.shape.Shape;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -130,9 +139,11 @@ public class MapLayout extends JPanel {
     // <editor-fold desc="Variables">
     private EventListenerList _listeners = new EventListenerList();
     private FrmIdentifer _frmIdentifer = null;
+    private FrmIdentiferGrid _frmIdentiferGrid = null;
     private FrmMeasurement _frmMeasure = null;
     private JScrollBar _vScrollBar;
     private JScrollBar _hScrollBar;
+    private boolean _lockViewUpdate = false;
     private List<MapFrame> _mapFrames = new ArrayList<MapFrame>();
     private List<LayoutElement> _layoutElements = new ArrayList<LayoutElement>();
     private LayoutMap _currentLayoutMap;
@@ -400,8 +411,8 @@ public class MapLayout extends JPanel {
 
     void onMousePressed(MouseEvent e) {
         if (e.getButton() == MouseEvent.BUTTON1) {
-            int left = e.getX();
-            int top = e.getY();
+            //int left = e.getX();
+            //int top = e.getY();
             Point pageP = screenToPage(e.getX(), e.getY());
             Graphics2D g = (Graphics2D) this.getGraphics();
             LayoutMap aLM = getLayoutMap(pageP);
@@ -456,6 +467,8 @@ public class MapLayout extends JPanel {
                 case New_Curve:
                 case New_CurvePolygon:
                 case New_Freehand:
+                case Map_SelectFeatures_Polygon:
+                case Map_SelectFeatures_Lasso:
                     if (_startNewGraphic) {
                         _graphicPoints = new ArrayList<PointF>();
                         _startNewGraphic = false;
@@ -569,7 +582,7 @@ public class MapLayout extends JPanel {
         Graphics2D g = (Graphics2D) this.getGraphics();
         //Pen aPen = new Pen(Color.Red);
         //aPen.DashStyle = DashStyle.Dash;
-        Rectangle rect = new Rectangle();
+        //Rectangle rect = new Rectangle();
         _vScrollBar.setCursor(Cursor.getDefaultCursor());
         _hScrollBar.setCursor(Cursor.getDefaultCursor());
         this.setCursor(Cursor.getDefaultCursor());
@@ -631,6 +644,9 @@ public class MapLayout extends JPanel {
                     g.setColor(this.getForeground());
                     g.draw(mapRect);
                 }
+                break;
+            case Map_SelectFeatures_Rectangle:
+                this.repaint();
                 break;
             case MoveSelection:
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
@@ -721,6 +737,9 @@ public class MapLayout extends JPanel {
             case New_Ellipse:
             case New_Freehand:
             case New_Circle:
+            case Map_SelectFeatures_Polygon:
+            case Map_SelectFeatures_Lasso:
+            case Map_SelectFeatures_Circle:
                 this.repaint();
                 break;
             case InEditingVertices:
@@ -730,8 +749,8 @@ public class MapLayout extends JPanel {
     }
 
     void onMouseMoved(MouseEvent e) {
-        int deltaX = e.getX() - _mouseLastPos.x;
-        int deltaY = e.getY() - _mouseLastPos.y;
+        //int deltaX = e.getX() - _mouseLastPos.x;
+        //int deltaY = e.getY() - _mouseLastPos.y;
         _mouseLastPos.x = e.getX();
         _mouseLastPos.y = e.getY();
 
@@ -740,7 +759,7 @@ public class MapLayout extends JPanel {
         Graphics2D g = (Graphics2D) this.getGraphics();
         //Pen aPen = new Pen(Color.Red);
         //aPen.DashStyle = DashStyle.Dash;
-        Rectangle rect = new Rectangle();
+        //Rectangle rect = new Rectangle();
         _vScrollBar.setCursor(Cursor.getDefaultCursor());
         _hScrollBar.setCursor(Cursor.getDefaultCursor());
         this.setCursor(Cursor.getDefaultCursor());
@@ -770,7 +789,10 @@ public class MapLayout extends JPanel {
                             getImage(this.getClass().getResource("/org/meteoinfo/resources/identifer_32x32x32.png")), new Point(8, 8), "Identifer"));
                 }
                 break;
-            case Map_SelectFeatures:
+            case Map_SelectFeatures_Rectangle:
+                //case Map_SelectFeatures_Polygon:
+                //case Map_SelectFeatures_Lasso:
+                //case Map_SelectFeatures_Circle:
                 if (isInLayoutMaps(pageP)) {
                     this.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
                 }
@@ -841,6 +863,7 @@ public class MapLayout extends JPanel {
             case New_Polygon:
             case New_Curve:
             case New_CurvePolygon:
+            case Map_SelectFeatures_Polygon:
                 if (!_startNewGraphic) {
                     this.repaint();
                 }
@@ -995,6 +1018,39 @@ public class MapLayout extends JPanel {
 
         if (e.getButton() == MouseEvent.BUTTON1) {
             switch (_mouseMode) {
+                case Map_SelectFeatures_Rectangle:
+                    if (_currentLayoutMap.getMapFrame().getMapView().getSelectedLayer() < 0) {
+                        return;
+                    }
+                    MapLayer aMLayer = _currentLayoutMap.getMapFrame().getMapView().getLayerFromHandle(_currentLayoutMap.getMapFrame().getMapView().getSelectedLayer());
+                    if (aMLayer == null) {
+                        return;
+                    }
+                    if (aMLayer.getLayerType() != LayerTypes.VectorLayer) {
+                        return;
+                    }
+
+                    VectorLayer aLayer = (VectorLayer) aMLayer;
+                    PointF mapP = pageToScreen(_currentLayoutMap.getLeft(), _currentLayoutMap.getTop());
+                    Point aPoint = new Point(e.getX() - (int) mapP.X, e.getY() - (int) mapP.Y);
+                    Point bPoint = new Point(_mouseDownPoint.x - (int) mapP.X, _mouseDownPoint.y - (int) mapP.Y);
+                    int minx = Math.min(bPoint.x, aPoint.x);
+                    int miny = Math.min(bPoint.y, aPoint.y);
+                    int width = Math.abs(aPoint.x - bPoint.x);
+                    int height = Math.abs(aPoint.y - bPoint.y);
+                    Rectangle.Float rect = new Rectangle.Float(minx, miny, width, height);
+                    List<Integer> selectedShapes = _currentLayoutMap.getMapFrame().getMapView().selectShapes(aLayer, rect);
+                    if (!e.isControlDown() && !e.isShiftDown()) {
+                        aLayer.clearSelectedShapes();
+                    }
+                    if (selectedShapes.size() > 0) {
+                        for (int shapeIdx : selectedShapes) {
+                            aLayer.getShapes().get(shapeIdx).setSelected(true);
+                        }
+                        _currentLayoutMap.getMapFrame().getMapView().fireShapeSelectedEvent();
+                    } 
+                    this.paintGraphics();
+                    break;
                 case CreateSelection:
                     //Remove selected graphics
                     for (LayoutElement aElement : _selectedElements) {
@@ -1079,9 +1135,9 @@ public class MapLayout extends JPanel {
                         _graphicPoints.add(new PointF(e.getX(), e.getY()));
                         _graphicPoints.add(new PointF(e.getX(), _mouseDownPoint.y));
                         List<PointD> points = new ArrayList<PointD>();
-                        for (PointF aPoint : _graphicPoints) {
-                            PointF bPoint = screenToPage(aPoint.X, aPoint.Y);
-                            points.add(new PointD(bPoint.X, bPoint.Y));
+                        for (PointF cPoint : _graphicPoints) {
+                            PointF dPoint = screenToPage(cPoint.X, cPoint.Y);
+                            points.add(new PointD(dPoint.X, dPoint.Y));
                         }
 
                         Graphic aGraphic = null;
@@ -1115,9 +1171,9 @@ public class MapLayout extends JPanel {
                         }
 
                         List<PointD> points = new ArrayList<PointD>();
-                        for (PointF aPoint : _graphicPoints) {
-                            PointF bPoint = screenToPage(aPoint.X, aPoint.Y);
-                            points.add(new PointD(bPoint.X, bPoint.Y));
+                        for (PointF cPoint : _graphicPoints) {
+                            PointF dPoint = screenToPage(cPoint.X, cPoint.Y);
+                            points.add(new PointD(dPoint.X, dPoint.Y));
                         }
 
                         PolylineShape aPLS = new PolylineShape();
@@ -1142,9 +1198,9 @@ public class MapLayout extends JPanel {
                         _graphicPoints.add(new PointF(_mouseDownPoint.x + radius, _mouseDownPoint.y));
                         _graphicPoints.add(new PointF(_mouseDownPoint.x, _mouseDownPoint.y + radius));
                         List<PointD> points = new ArrayList<PointD>();
-                        for (PointF aPoint : _graphicPoints) {
-                            PointF bPoint = screenToPage(aPoint.X, aPoint.Y);
-                            points.add(new PointD(bPoint.X, bPoint.Y));
+                        for (PointF cPoint : _graphicPoints) {
+                            PointF dPoint = screenToPage(cPoint.X, cPoint.Y);
+                            points.add(new PointD(dPoint.X, dPoint.Y));
                         }
 
                         CircleShape aPGS = new CircleShape();
@@ -1234,27 +1290,31 @@ public class MapLayout extends JPanel {
                                 //_currentLayoutMap.getMapFrame().getMapView().drawIdShape(this.createGraphics(), aLayer.getShapes().get(shapeIdx), rect);
                             }
                         }
-//                        else if (aMLayer.LayerType == LayerTypes.RasterLayer)
-//                        {
-//                            RasterLayer aRLayer = (RasterLayer)aMLayer;
-//                            int iIdx = 0;
-//                            int jIdx = 0;
-//                            if (_currentLayoutMap.MapFrame.MapView.SelectGridCell(aRLayer, aPoint, ref iIdx, ref jIdx))
-//                            {
-//                                double aValue = aRLayer.GetCellValue(iIdx, jIdx);
-//                                if (!_frmIdentiferGrid.Visible)
-//                                {
-//                                    _frmIdentiferGrid = new frmIdentiferGrid();
-//                                    _frmIdentiferGrid.Show(this);
-//                                }
-//
-//                                _frmIdentiferGrid.Lab_I.Text = "I = " + iIdx.ToString();
-//                                _frmIdentiferGrid.Lab_J.Text = "J = " + jIdx.ToString();
-//                                _frmIdentiferGrid.Lab_CellValue.Text = "Cell Value: " + aValue.ToString();
-//                            }
-//                        }
+                        else if (aMLayer.getLayerType() == LayerTypes.RasterLayer)
+                        {
+                            RasterLayer aRLayer = (RasterLayer)aMLayer;
+                            int[] ijIdx = _currentLayoutMap.getMapFrame().getMapView().selectGridCell(aRLayer, aPoint);
+                            if (ijIdx != null)
+                            {
+                                int iIdx = ijIdx[0];
+                                int jIdx = ijIdx[1];
+                                double aValue = aRLayer.getCellValue(iIdx, jIdx);
+                                if (_frmIdentiferGrid == null) {
+                                    _frmIdentiferGrid = new FrmIdentiferGrid((JFrame) SwingUtilities.getWindowAncestor(this), false);
+                                }
+
+                                _frmIdentiferGrid.setIIndex(iIdx);
+                                _frmIdentiferGrid.setJIndex(jIdx);
+                                _frmIdentiferGrid.setCellValue(aValue);
+                                if (!this._frmIdentiferGrid.isVisible()) {
+                                    //this._frmIdentiferGrid.setLocation(e.getX(), e.getY());
+                                    this._frmIdentiferGrid.setLocationRelativeTo(this);
+                                    this._frmIdentiferGrid.setVisible(true);
+                                }
+                            }
+                        }
                         break;
-                    case Map_SelectFeatures:
+                    case Map_SelectFeatures_Rectangle:
                         aMLayer = _currentLayoutMap.getMapFrame().getMapView().getLayerFromHandle(_currentLayoutMap.getMapFrame().getMapView().getSelectedLayer());
                         if (aMLayer == null) {
                             return;
@@ -1418,9 +1478,20 @@ public class MapLayout extends JPanel {
                     } else {
                         FrmProperty aFrmProperty = new FrmProperty((JFrame) SwingUtilities.getWindowAncestor(this), true, false);
                         Object object = aElement;
-                        if (aElement.getElementType() == ElementType.LayoutLegend) {
-                            object = ((LayoutLegend) aElement).new LayoutLegendBean();
-                        }
+                        switch (aElement.getElementType()){
+                            case LayoutLegend:
+                                object = ((LayoutLegend) aElement).new LayoutLegendBean();
+                                break;
+                            case LayoutMap:
+                                object = ((LayoutMap) aElement).new LayoutMapBean();
+                                break;
+                            case LayoutNorthArraw:
+                                object = ((LayoutNorthArrow) aElement).new LayoutNorthArrowBean();
+                                break;
+                            case LayoutScaleBar:
+                                object = ((LayoutScaleBar) aElement).new LayoutScaleBarBean();
+                                break;
+                        }                        
                         aFrmProperty.setObject(object);
                         aFrmProperty.setParent(this);
                         aFrmProperty.setLocationRelativeTo(this);
@@ -1434,51 +1505,81 @@ public class MapLayout extends JPanel {
                 case New_Curve:
                 case New_CurvePolygon:
                 case New_Freehand:
+                case Map_SelectFeatures_Polygon:
                     if (!_startNewGraphic) {
                         _startNewGraphic = true;
                         _graphicPoints.remove(_graphicPoints.size() - 1);
-                        List<PointD> points = new ArrayList<PointD>();
-                        for (PointF aPoint : _graphicPoints) {
-                            PointF bPoint = screenToPage(aPoint.X, aPoint.Y);
-                            points.add(new PointD(bPoint.X, bPoint.Y));
-                        }
 
-                        Graphic aGraphic = null;
-                        switch (_mouseMode) {
-                            case New_Polyline:
-                            case New_Freehand:
-                                PolylineShape aPLS = new PolylineShape();
-                                aPLS.setPoints(points);
-                                aGraphic = new Graphic(aPLS, (PolylineBreak) _defPolylineBreak.clone());
-                                break;
-                            case New_Polygon:
-                                if (points.size() > 2) {
-                                    PolygonShape aPGS = new PolygonShape();
-                                    points.add((PointD) points.get(0).clone());
-                                    aPGS.setPoints(points);
-                                    aGraphic = new Graphic(aPGS, (PolygonBreak) _defPolygonBreak.clone());
-                                }
-                                break;
-                            case New_Curve:
-                                CurveLineShape aCLS = new CurveLineShape();
-                                aCLS.setPoints(points);
-                                aGraphic = new Graphic(aCLS, (PolylineBreak) _defPolylineBreak.clone());
-                                break;
-                            case New_CurvePolygon:
-                                if (points.size() > 2) {
-                                    CurvePolygonShape aCPS = new CurvePolygonShape();
-                                    points.add((PointD) points.get(0).clone());
-                                    aCPS.setPoints(points);
-                                    aGraphic = new Graphic(aCPS, (PolygonBreak) _defPolygonBreak.clone());
-                                }
-                                break;
-                        }
+                        if (_mouseMode == MouseMode.Map_SelectFeatures_Polygon) {
+                            PointF mapP = pageToScreen(_currentLayoutMap.getLeft(), _currentLayoutMap.getTop());
+                            List<PointD> points = new ArrayList<PointD>();
+                            MapView currentMapView = _currentLayoutMap.getMapFrame().getMapView();
+                            for (PointF aPoint : _graphicPoints) {
+                                float[] pXY = currentMapView.screenToProj(aPoint.X - mapP.X, aPoint.Y - mapP.Y);
+                                points.add(new PointD(pXY[0], pXY[1]));
+                            }
 
-                        if (aGraphic != null) {
-                            addElement(new LayoutGraphic(aGraphic, this));
-                            this.paintGraphics();
+                            MapLayer aMLayer = _currentLayoutMap.getMapFrame().getMapView().getLayerFromHandle(_currentLayoutMap.getMapFrame().getMapView().getSelectedLayer());
+                            if (aMLayer == null) {
+                                return;
+                            }
+                            if (aMLayer.getLayerType() != LayerTypes.VectorLayer) {
+                                return;
+                            }
+
+                            PolygonShape aPGS = new PolygonShape();
+                            points.add((PointD) points.get(0).clone());
+                            aPGS.setPoints(points);
+                            VectorLayer aLayer = (VectorLayer) aMLayer;
+                            if (!e.isControlDown() && !e.isShiftDown()) {
+                                aLayer.clearSelectedShapes();
+                            }
+                            aLayer.selectShapes(aPGS);
+                            _currentLayoutMap.getMapFrame().getMapView().fireShapeSelectedEvent();
                         } else {
-                            this.repaint();
+                            List<PointD> points = new ArrayList<PointD>();
+                            for (PointF aPoint : _graphicPoints) {
+                                PointF bPoint = screenToPage(aPoint.X, aPoint.Y);
+                                points.add(new PointD(bPoint.X, bPoint.Y));
+                            }
+
+                            Graphic aGraphic = null;
+                            switch (_mouseMode) {
+                                case New_Polyline:
+                                case New_Freehand:
+                                    PolylineShape aPLS = new PolylineShape();
+                                    aPLS.setPoints(points);
+                                    aGraphic = new Graphic(aPLS, (PolylineBreak) _defPolylineBreak.clone());
+                                    break;
+                                case New_Polygon:
+                                    if (points.size() > 2) {
+                                        PolygonShape aPGS = new PolygonShape();
+                                        points.add((PointD) points.get(0).clone());
+                                        aPGS.setPoints(points);
+                                        aGraphic = new Graphic(aPGS, (PolygonBreak) _defPolygonBreak.clone());
+                                    }
+                                    break;
+                                case New_Curve:
+                                    CurveLineShape aCLS = new CurveLineShape();
+                                    aCLS.setPoints(points);
+                                    aGraphic = new Graphic(aCLS, (PolylineBreak) _defPolylineBreak.clone());
+                                    break;
+                                case New_CurvePolygon:
+                                    if (points.size() > 2) {
+                                        CurvePolygonShape aCPS = new CurvePolygonShape();
+                                        points.add((PointD) points.get(0).clone());
+                                        aCPS.setPoints(points);
+                                        aGraphic = new Graphic(aCPS, (PolygonBreak) _defPolygonBreak.clone());
+                                    }
+                                    break;
+                            }
+
+                            if (aGraphic != null) {
+                                addElement(new LayoutGraphic(aGraphic, this));
+                                this.paintGraphics();
+                            } else {
+                                this.repaint();
+                            }
                         }
                     }
                     break;
@@ -1681,6 +1782,24 @@ public class MapLayout extends JPanel {
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
     /**
+     * Get if lock view update
+     *
+     * @return If lock view update
+     */
+    public boolean isLockViewUpdate() {
+        return _lockViewUpdate;
+    }
+
+    /**
+     * Set if lock view update
+     *
+     * @param istrue If lock view update
+     */
+    public void setLockViewUpdate(boolean istrue) {
+        _lockViewUpdate = istrue;
+    }
+    
+    /**
      * Get map frames
      *
      * @return Map frames
@@ -1796,7 +1915,10 @@ public class MapLayout extends JPanel {
             case Map_Measurement:
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
                 break;
-            case Map_SelectFeatures:
+            case Map_SelectFeatures_Rectangle:
+            case Map_SelectFeatures_Polygon:
+            case Map_SelectFeatures_Lasso:
+            case Map_SelectFeatures_Circle:
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
                 this._tempImage = GlobalUtil.deepCopy(this._layoutBitmap);
                 break;
@@ -2132,6 +2254,7 @@ public class MapLayout extends JPanel {
                 case CreateSelection:
                 case New_Rectangle:
                 case New_Ellipse:
+                case Map_SelectFeatures_Rectangle:
                     int sx = Math.min(_mouseDownPoint.x, _mouseLastPos.x);
                     int sy = Math.min(_mouseDownPoint.y, _mouseLastPos.y);
                     g2.setColor(this.getForeground());
@@ -2139,6 +2262,7 @@ public class MapLayout extends JPanel {
                             Math.abs(_mouseLastPos.y - _mouseDownPoint.y)));
                     break;
                 case New_Freehand:
+                case Map_SelectFeatures_Lasso:
                     List<PointF> points = new ArrayList<PointF>(_graphicPoints);
                     points.add(new PointF(_mouseLastPos.x, _mouseLastPos.y));
                     g2.setColor(this.getForeground());
@@ -2146,6 +2270,7 @@ public class MapLayout extends JPanel {
                     Draw.drawPolyline(points, g2);
                     break;
                 case New_Circle:
+                case Map_SelectFeatures_Circle:
                     int radius = (int) Math.sqrt(Math.pow(_mouseLastPos.x - _mouseDownPoint.x, 2)
                             + Math.pow(_mouseLastPos.y - _mouseDownPoint.y, 2));
                     g2.setColor(this.getForeground());
@@ -2176,6 +2301,7 @@ public class MapLayout extends JPanel {
             case New_Polygon:
             case New_Curve:
             case New_CurvePolygon:
+            case Map_SelectFeatures_Polygon:
                 if (!_startNewGraphic) {
                     List<PointF> points = new ArrayList<PointF>(_graphicPoints);
                     points.add(new PointF(_mouseLastPos.x, _mouseLastPos.y));
@@ -2243,13 +2369,17 @@ public class MapLayout extends JPanel {
     }
 
     public void paintGraphics() {
+        if (this._lockViewUpdate){
+            return;
+        }
+        
         if (this.getWidth() < 10 || this.getHeight() < 10) {
             return;
         }
 
         if ((this._pageBounds.width < 2) || (this._pageBounds.height < 2)) {
             return;
-        }
+        }        
 
         _layoutBitmap = new BufferedImage(this.getWidth(),
                 this.getHeight(), BufferedImage.TYPE_INT_ARGB);
@@ -2618,9 +2748,9 @@ public class MapLayout extends JPanel {
             aLM.addMapViewUpdatedListener(new IMapViewUpdatedListener() {
                 @Override
                 public void mapViewUpdatedEvent(MapViewUpdatedEvent event) {
-                    if (aLM.getMapFrame().isFireMapViewUpdate()) {
+                    //if (aLM.getMapFrame().isFireMapViewUpdate()) {
                         paintGraphics();
-                    }
+                    //}
                 }
             });
             if (aLM.getMapFrame().isActive()) {
@@ -2723,6 +2853,22 @@ public class MapLayout extends JPanel {
         addElement(aLayoutGraphic);
 
         return aLayoutGraphic;
+    }
+    
+    public LayoutGraphic addWindArrow(int left, int top){
+        WindArraw aWindArraw = new WindArraw();
+        //aWindArraw.setPoint(new PointD(left, top));
+        aWindArraw.angle = 270;
+        aWindArraw.length = 20;
+        VectorBreak aVB = new VectorBreak();
+        aVB.setColor(Color.black);
+        LayoutGraphic wag = new LayoutGraphic(new Graphic(aWindArraw, aVB), this,
+                this.getActiveLayoutMap());
+        wag.setLeft(left);
+        wag.setTop(top); 
+        addElement(wag);
+        
+        return wag;
     }
 
     /**
@@ -2911,11 +3057,11 @@ public class MapLayout extends JPanel {
             LayoutElement element = baseElements.get(i);
             if (element.isVisible()) {
                 Rectangle rect = (Rectangle) element.getBounds().clone();
-                if (rect.width < 5){
+                if (rect.width < 5) {
                     rect.width = 5;
                     rect.x -= 2.5;
                 }
-                if (rect.height < 5){
+                if (rect.height < 5) {
                     rect.height = 5;
                     rect.y -= 2.5;
                 }
@@ -3183,6 +3329,7 @@ public class MapLayout extends JPanel {
         Attr GridXOrigin = m_Doc.createAttribute("GridXOrigin");
         Attr GridYOrigin = m_Doc.createAttribute("GridYOrigin");
         Attr gridLabelPosition = m_Doc.createAttribute("GridLabelPosition");
+        Attr drawDegreeSymbol = m_Doc.createAttribute("DrawDegreeSymbol");
 
         elementType.setValue(aMap.getElementType().toString());
         left.setValue(String.valueOf(aMap.getLeft()));
@@ -3204,6 +3351,7 @@ public class MapLayout extends JPanel {
         GridXOrigin.setValue(String.valueOf(aMap.getGridXOrigin()));
         GridYOrigin.setValue(String.valueOf(aMap.getGridYOrigin()));
         gridLabelPosition.setValue(aMap.getGridLabelPosition().toString());
+        drawDegreeSymbol.setValue(String.valueOf(aMap.isDrawDegreeSymbol()));
 
         layoutMap.setAttributeNode(elementType);
         layoutMap.setAttributeNode(left);
@@ -3225,6 +3373,7 @@ public class MapLayout extends JPanel {
         layoutMap.setAttributeNode(GridXOrigin);
         layoutMap.setAttributeNode(GridYOrigin);
         layoutMap.setAttributeNode(gridLabelPosition);
+        layoutMap.setAttributeNode(drawDegreeSymbol);
 
         parent.appendChild(layoutMap);
     }
@@ -3249,8 +3398,8 @@ public class MapLayout extends JPanel {
         Attr colNum = doc.createAttribute("ColumnNumber");
 
         elementType.setValue(aLegend.getElementType().toString());
-        layoutMapIndex.setValue(String.valueOf(getLayoutMapIndex(aLegend.getLayoutMap())));
-        legendLayer.setValue(aLegend.getLegendLayer().getLayerName());
+        layoutMapIndex.setValue(String.valueOf(getLayoutMapIndex(aLegend.getLayoutMap())));        
+        legendLayer.setValue(aLegend.getLayerName());
         LegendStyle.setValue(aLegend.getLegendStyle().toString());
         layerUpdateType.setValue(aLegend.getLayerUpdateType().toString());
         BackColor.setValue(ColorUtil.toHexEncoding(aLegend.getBackColor()));
@@ -3412,6 +3561,47 @@ public class MapLayout extends JPanel {
         //Append in parent
         parent.appendChild(layoutGraphic);
     }
+    
+    /**
+     * Load project file
+     *
+     * @param aFile The project file
+     */
+    public void loadProjectFile(String aFile) throws ParserConfigurationException, SAXException, IOException {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        Document doc = db.parse(aFile);
+
+        Element root = doc.getDocumentElement();
+        
+        Properties property = System.getProperties();
+        String path = System.getProperty("user.dir");
+        property.setProperty("user.dir", new File(aFile).getAbsolutePath());
+
+        //Load map frames content
+        List<MapFrame> mfs = new ArrayList<MapFrame>();
+        Element mapFrames = (Element) root.getElementsByTagName("MapFrames").item(0);
+        if (mapFrames == null) {
+            MapFrame mf = new MapFrame();
+            mf.importProjectXML(root);
+            mf.setActive(true);
+            mfs.add(mf);
+        } else {
+            NodeList mfNodes = mapFrames.getElementsByTagName("MapFrame");
+            for (int i = 0; i < mfNodes.getLength(); i++) {
+                Node mapFrame = mfNodes.item(i);
+                MapFrame mf = new MapFrame();
+                mf.importProjectXML((Element) mapFrame);
+                mfs.add(mf);
+            }
+        }
+
+        this.setMapFrames(mfs);
+        //Load MapLayout content
+        this.importProjectXML(root);
+        
+        property.setProperty("user.dir", path);
+    }
 
     /**
      * Import project XML element
@@ -3479,9 +3669,8 @@ public class MapLayout extends JPanel {
                     LayoutGraphic aLG = loadLayoutGraphicElement(elementNode);
                     if (aLG.getGraphic().getShape().getShapeType() == ShapeTypes.WindArraw) {
                         ((WindArraw) aLG.getGraphic().getShape()).angle = 270;
-                    } else {
-                        addElement(aLG);
-                    }
+                    } 
+                    addElement(aLG);
                     break;
                 case LayoutScaleBar:
                     LayoutScaleBar aLSB = loadLayoutScaleBarElement(elementNode);
@@ -3507,9 +3696,9 @@ public class MapLayout extends JPanel {
             aLM.setHeight(Integer.parseInt(LayoutMap.getAttributes().getNamedItem("Height").getNodeValue()));
             aLM.setDrawNeatLine(Boolean.parseBoolean(LayoutMap.getAttributes().getNamedItem("DrawNeatLine").getNodeValue()));
             aLM.setNeatLineColor(ColorUtil.parseToColor(LayoutMap.getAttributes().getNamedItem("NeatLineColor").getNodeValue()));
-            aLM.setNeatLineSize(Integer.parseInt(LayoutMap.getAttributes().getNamedItem("NeatLineSize").getNodeValue()));
+            aLM.setNeatLineSize(Float.parseFloat(LayoutMap.getAttributes().getNamedItem("NeatLineSize").getNodeValue()));
             aLM.setGridLineColor(ColorUtil.parseToColor(LayoutMap.getAttributes().getNamedItem("GridLineColor").getNodeValue()));
-            aLM.setGridLineSize(Integer.parseInt(LayoutMap.getAttributes().getNamedItem("GridLineSize").getNodeValue()));
+            aLM.setGridLineSize(Float.parseFloat(LayoutMap.getAttributes().getNamedItem("GridLineSize").getNodeValue()));
             aLM.setGridLineStyle(LineStyles.valueOf(LayoutMap.getAttributes().getNamedItem("GridLineStyle").getNodeValue()));
             aLM.setDrawGridLine(Boolean.parseBoolean(LayoutMap.getAttributes().getNamedItem("DrawGridLine").getNodeValue()));
             aLM.setDrawGridLabel(Boolean.parseBoolean(LayoutMap.getAttributes().getNamedItem("DrawGridLabel").getNodeValue()));
@@ -3521,6 +3710,7 @@ public class MapLayout extends JPanel {
             aLM.setGridXOrigin(Float.parseFloat(LayoutMap.getAttributes().getNamedItem("GridXOrigin").getNodeValue()));
             aLM.setGridYOrigin(Float.parseFloat(LayoutMap.getAttributes().getNamedItem("GridYOrigin").getNodeValue()));
             aLM.setGridLabelPosition(GridLabelPosition.valueOf(LayoutMap.getAttributes().getNamedItem("GridLabelPosition").getNodeValue()));
+            aLM.setDrawDegreeSymbol(Boolean.parseBoolean(LayoutMap.getAttributes().getNamedItem("DrawDegreeSymbol").getNodeValue()));
         } catch (Exception e) {
         }
     }
@@ -3623,7 +3813,11 @@ public class MapLayout extends JPanel {
         Node graphicNode = ((Element) layoutGraphic).getElementsByTagName("Graphic").item(0);
         aGraphic.importFromXML((Element) graphicNode);
 
-        LayoutGraphic aLG = new LayoutGraphic(aGraphic, this);
+        LayoutGraphic aLG;
+        if (aGraphic.getShape().getShapeType() == ShapeTypes.WindArraw)
+            aLG = new LayoutGraphic(aGraphic, this, this.getActiveLayoutMap());
+        else
+            aLG = new LayoutGraphic(aGraphic, this);
 
         aLG.setIsTitle(Boolean.parseBoolean(layoutGraphic.getAttributes().getNamedItem("IsTitle").getNodeValue()));
 

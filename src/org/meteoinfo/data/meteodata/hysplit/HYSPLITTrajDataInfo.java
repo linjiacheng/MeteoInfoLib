@@ -380,35 +380,33 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                 int i;
 
                 //Record #1
-                aLine = sr.readLine();
+                sr.readLine();
 
                 //Record #2
                 for (i = 0; i < MeteoFileNums.get(t); i++) {
-                    aLine = sr.readLine();
+                    sr.readLine();
                 }
 
                 //Record #3
-                aLine = sr.readLine();
+                sr.readLine();
 
                 //Record #4             
                 for (i = 0; i < TrajeoryNums.get(t); i++) {
-                    aLine = sr.readLine();
+                    sr.readLine();
                 }
 
                 //Record #5
-                aLine = sr.readLine();
+                sr.readLine();
 
                 //Record #6
                 int TrajIdx;
-                List<List<Object>> pList = new ArrayList<List<Object>>();
+                List<List<Object>> pList;
                 List<List<List<Object>>> PointList = new ArrayList<List<List<Object>>>();
                 for (i = 0; i < TrajeoryNums.get(t); i++) {
                     pList = new ArrayList<List<Object>>();
                     PointList.add(pList);
                 }
-                PointD aPoint = new PointD();
-                ArrayList polylines = new ArrayList();
-                Date aDate;
+                PointD aPoint;
                 double Height, Press;
                 while (true) {
                     aLine = sr.readLine();
@@ -422,7 +420,15 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                     dataArray = aLine.split("\\s+");
                     List<Object> dList = new ArrayList<Object>();
                     TrajIdx = Integer.parseInt(dataArray[0]) - 1;
-                    Calendar cal = new GregorianCalendar(Integer.parseInt(dataArray[2]), Integer.parseInt(dataArray[3]) - 1,
+                    int y = Integer.parseInt(dataArray[2]);
+                    if (y < 100) {
+                        if (y > 50) {
+                            y = 1900 + y;
+                        } else {
+                            y = 2000 + y;
+                        }
+                    }
+                    Calendar cal = new GregorianCalendar(y, Integer.parseInt(dataArray[3]) - 1,
                             Integer.parseInt(dataArray[4]), Integer.parseInt(dataArray[5]), 0, 0);
                     aPoint = new PointD();
                     aPoint.X = Double.parseDouble(dataArray[10]);
@@ -503,23 +509,23 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                 int i;
 
                 //Record #1
-                aLine = sr.readLine();
+                sr.readLine();
 
                 //Record #2
                 for (i = 0; i < MeteoFileNums.get(t); i++) {
-                    aLine = sr.readLine();
+                    sr.readLine();
                 }
 
                 //Record #3
-                aLine = sr.readLine();
+                sr.readLine();
 
                 //Record #4             
                 for (i = 0; i < TrajeoryNums.get(t); i++) {
-                    aLine = sr.readLine();
+                    sr.readLine();
                 }
 
                 //Record #5
-                aLine = sr.readLine();
+                sr.readLine();
 
                 //Record #6
                 int TrajIdx;
@@ -530,7 +536,7 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                     PointList.add(aPoint);
                 }
 
-                ArrayList polylines = new ArrayList();
+                //ArrayList polylines = new ArrayList();
                 while (true) {
                     aLine = sr.readLine();
                     if (aLine == null) {

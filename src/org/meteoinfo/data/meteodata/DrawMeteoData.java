@@ -653,9 +653,9 @@ public class DrawMeteoData {
      * @param paletteFile Palette file name
      * @return Raster layer
      */
-    public static RasterLayer createRasterLayer(GridData GridData, String LName, String paletteFile) {
+    public static RasterLayer createRasterLayer(GridData gridData, String LName, String paletteFile) {
         RasterLayer aRLayer = new RasterLayer();
-        aRLayer.setGridData(GridData);
+        aRLayer.setGridData(gridData);
         aRLayer.setPalette(paletteFile);
         aRLayer.setLayerName(LName);
         aRLayer.setVisible(true);

@@ -23,6 +23,8 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import org.meteoinfo.global.BigDecimalUtil;
+import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.layer.VectorLayer;
 import org.meteoinfo.shape.PointShape;
 import org.meteoinfo.shape.PolygonShape;
@@ -411,14 +413,15 @@ public class LegendManage {
                     aPB.setSize((float) i / 2 + 2);
                     aPB.setStyle(PointStyle.Circle);
                     if (aPB.getStartValue() == aPB.getEndValue()) {
-                        aPB.setCaption(aPB.getStartValue().toString());
+                        aPB.setCaption(DataConvert.removeTailingZeros(aPB.getStartValue().toString()));
                     } else {
                         if (i == 0) {
-                            aPB.setCaption("< " + aPB.getEndValue().toString());
+                            aPB.setCaption("< " + DataConvert.removeTailingZeros(aPB.getEndValue().toString()));
                         } else if (i == colors.length - 1) {
-                            aPB.setCaption("> " + aPB.getStartValue().toString());
+                            aPB.setCaption("> " + DataConvert.removeTailingZeros(aPB.getStartValue().toString()));
                         } else {
-                            aPB.setCaption(aPB.getStartValue().toString() + " - " + aPB.getEndValue().toString());
+                            aPB.setCaption(DataConvert.removeTailingZeros(aPB.getStartValue().toString()) +
+                                    " - " + DataConvert.removeTailingZeros(aPB.getEndValue().toString()));
                         }
                     }
 
@@ -460,14 +463,15 @@ public class LegendManage {
                         aPLB.setEndValue(CValues[i]);
                     }
                     if (aPLB.getStartValue() == aPLB.getEndValue()) {
-                        aPLB.setCaption(aPLB.getStartValue().toString());
+                        aPLB.setCaption(DataConvert.removeTailingZeros(aPLB.getStartValue().toString()));
                     } else {
                         if (i == 0) {
-                            aPLB.setCaption("< " + aPLB.getEndValue().toString());
+                            aPLB.setCaption("< " + DataConvert.removeTailingZeros(aPLB.getEndValue().toString()));
                         } else if (i == colors.length - 1) {
-                            aPLB.setCaption("> " + aPLB.getStartValue().toString());
+                            aPLB.setCaption("> " + DataConvert.removeTailingZeros(aPLB.getStartValue().toString()));
                         } else {
-                            aPLB.setCaption(aPLB.getStartValue().toString() + " - " + aPLB.getEndValue().toString());
+                            aPLB.setCaption(DataConvert.removeTailingZeros(aPLB.getStartValue().toString()) +
+                                    " - " + DataConvert.removeTailingZeros(aPLB.getEndValue().toString()));
                         }
                     }
                     aPLB.setSymbolColor(aPLB.getColor());
@@ -499,14 +503,15 @@ public class LegendManage {
                         aPGB.setEndValue(CValues[i]);
                     }
                     if (aPGB.getStartValue() == aPGB.getEndValue()) {
-                        aPGB.setCaption(aPGB.getStartValue().toString());
+                        aPGB.setCaption(DataConvert.removeTailingZeros(aPGB.getStartValue().toString()));
                     } else {
                         if (i == 0) {
-                            aPGB.setCaption("< " + aPGB.getEndValue().toString());
+                            aPGB.setCaption("< " + DataConvert.removeTailingZeros(aPGB.getEndValue().toString()));
                         } else if (i == colors.length - 1) {
-                            aPGB.setCaption("> " + aPGB.getStartValue().toString());
+                            aPGB.setCaption("> " + DataConvert.removeTailingZeros(aPGB.getStartValue().toString()));
                         } else {
-                            aPGB.setCaption(aPGB.getStartValue().toString() + " - " + aPGB.getEndValue().toString());
+                            aPGB.setCaption(DataConvert.removeTailingZeros(aPGB.getStartValue().toString()) +
+                                    " - " + DataConvert.removeTailingZeros(aPGB.getEndValue().toString()));
                         }
                     }
 //                        if (Enum.IsDefined(typeof(HatchStyle), i))
@@ -531,14 +536,15 @@ public class LegendManage {
                         aCB.setEndValue(CValues[i]);
                     }
                     if (aCB.getStartValue() == aCB.getEndValue()) {
-                        aCB.setCaption(aCB.getStartValue().toString());
+                        aCB.setCaption(DataConvert.removeTailingZeros(aCB.getStartValue().toString()));
                     } else {
                         if (i == 0) {
-                            aCB.setCaption("< " + aCB.getEndValue().toString());
+                            aCB.setCaption("< " + DataConvert.removeTailingZeros(aCB.getEndValue().toString()));
                         } else if (i == colors.length - 1) {
-                            aCB.setCaption("> " + aCB.getStartValue().toString());
+                            aCB.setCaption("> " + DataConvert.removeTailingZeros(aCB.getStartValue().toString()));
                         } else {
-                            aCB.setCaption(aCB.getStartValue().toString() + " - " + aCB.getEndValue().toString());
+                            aCB.setCaption(DataConvert.removeTailingZeros(aCB.getStartValue().toString()) +
+                                    " - " + DataConvert.removeTailingZeros(aCB.getEndValue().toString()));
                         }
                     }
 
@@ -606,7 +612,8 @@ public class LegendManage {
 
         cValues = new double[cNum];
         for (i = 0; i < cNum; i++) {
-            cValues[i] = min + i * interval;
+            //cValues[i] = min + i * interval;
+            cValues[i] = BigDecimalUtil.add(min, BigDecimalUtil.mul(i, interval));
         }
 
         return cValues;
@@ -769,7 +776,7 @@ public class LegendManage {
         double cDelt, range, newMin;
         String eStr;
 
-        range = max - min;
+        range = BigDecimalUtil.sub(max, min);
         if (range == 0.0){
             cNum = 1;
             cValues = new double[1];
@@ -798,7 +805,9 @@ public class LegendManage {
             newMin = (int) (min / cDelt + 1) * cDelt;
             cNum++;
         } else {
-            cDelt = aD * Math.pow(10, aE - 1);
+            //cDelt = aD * Math.pow(10, aE - 1);
+            cDelt = BigDecimalUtil.pow(10, aE - 1);
+            cDelt = BigDecimalUtil.mul(aD, cDelt);
             cNum = 10;
             //newMin = Convert.ToInt32((min + cDelt) / Math.Pow(10, aE - 1)) * Math.Pow(10, aE - 1);
             newMin = (int) (min / cDelt + 1) * cDelt;
@@ -809,7 +818,8 @@ public class LegendManage {
         }
         cValues = new double[cNum];
         for (i = 0; i < cNum; i++) {
-            cValues[i] = newMin + i * cDelt;
+            //cValues[i] = newMin + i * cDelt;
+            cValues[i] = BigDecimalUtil.add(newMin, BigDecimalUtil.mul(i, cDelt));
         }
 
         return cValues;

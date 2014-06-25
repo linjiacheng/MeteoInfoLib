@@ -118,7 +118,13 @@ public class Variable {
      * @return Levels
      */
     public List<Double> getLevels() {
-        return _levels;
+        //return _levels;
+        Dimension zDim = this.getZDimension();
+        if (zDim == null) {
+            return _levels;
+        } else {
+            return zDim.getDimValue();
+        }
     }
 
     /**
@@ -128,6 +134,7 @@ public class Variable {
      */
     public void setLevels(List<Double> value) {
         _levels = value;
+        this.updateZDimension();
     }
 
     /**
@@ -784,6 +791,17 @@ public class Variable {
 
         _attributes.add(aAtt);
         _attNumber = _attributes.size();
+    }
+
+    /**
+     * Update z dimension from levels
+     */
+    public void updateZDimension() {
+        if (_levels.size() > 0) {
+            Dimension zdim = new Dimension(DimensionType.Z);
+            zdim.setValues(_levels);
+            this.setZDimension(zdim);
+        }
     }
     // </editor-fold>
 }

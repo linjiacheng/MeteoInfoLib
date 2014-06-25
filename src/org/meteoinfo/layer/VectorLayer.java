@@ -551,6 +551,33 @@ public class VectorLayer extends MapLayer {
     }
 
     /**
+     * Select shapes by a polygon shape
+     *
+     * @param polygonShape The polygon shape
+     * @return Selected shape indexes
+     */
+    public List<Integer> selectShapes(PolygonShape polygonShape) {
+        List<Integer> selIdxs = new ArrayList<Integer>();
+        for (int i = 0; i < _shapeList.size(); i++) {
+            boolean isIn = false;
+            List<PointD> points = (List<PointD>) _shapeList.get(i).getPoints();
+            for (PointD aPoint : points) {
+                if (GeoComputation.pointInPolygon(polygonShape, aPoint)) {
+                    isIn = true;
+                    break;
+                }
+            }
+
+            if (isIn) {
+                _shapeList.get(i).setSelected(true);
+                selIdxs.add(i);
+            }
+        }
+
+        return selIdxs;
+    }
+
+    /**
      * Get selected shape index list
      *
      * @return Index list
@@ -887,9 +914,9 @@ public class VectorLayer extends MapLayer {
         }
 
         newLayer.getAttributeTable().setTable(aTable);
-        newLayer.setLegendScheme((LegendScheme)this.getLegendScheme().clone());
+        newLayer.setLegendScheme((LegendScheme) this.getLegendScheme().clone());
         newLayer.setTransparency(this.getTransparency());
-        
+
         return newLayer;
     }
     // </editor-fold>
@@ -1899,14 +1926,15 @@ public class VectorLayer extends MapLayer {
 
     /**
      * Clone VectorLayer object
+     *
      * @return VectorLayer object
      */
     @Override
     public Object clone() {
         VectorLayer aLayer = new VectorLayer(this.getShapeType());
         aLayer.setExtent((Extent) this.getExtent().clone());
-        //aLayer.setFileName(this.getFileName());
-        //aLayer.setHandle(this.getHandle());
+        aLayer.setFileName(this.getFileName());
+        aLayer.setHandle(this.getHandle());
         aLayer.setLayerName(this.getLayerName());
         aLayer.setProjInfo(this.getProjInfo());
         aLayer.setLegendScheme((LegendScheme) this.getLegendScheme().clone());
@@ -1926,7 +1954,7 @@ public class VectorLayer extends MapLayer {
         aLayer.setExpanded(this.isExpanded());
         aLayer.setAvoidCollision(this._avoidCollision);
         aLayer.setMaskout(this.isMaskout());
-        //aLayer.setTag(this.getTag());
+        aLayer.setTag(this.getTag());
 
         if (_projected) {
             aLayer.setAttributeTable((AttributeTable) _originAttributeTable.clone());
@@ -1936,10 +1964,11 @@ public class VectorLayer extends MapLayer {
 
         return aLayer;
     }
-    
+
     /**
      * Clone VectorLayer object - without attribute table
-     * @return 
+     *
+     * @return
      */
     public Object cloneShapes() {
         VectorLayer aLayer = new VectorLayer(this.getShapeType());
@@ -1969,10 +1998,11 @@ public class VectorLayer extends MapLayer {
 
         return aLayer;
     }
-    
+
     /**
      * Clone VectorLayer object - only parameters
-     * @return 
+     *
+     * @return
      */
     public Object cloneValue() {
         VectorLayer aLayer = new VectorLayer(this.getShapeType());

@@ -31,7 +31,7 @@ public class DataConvert {
      * @param byteOrder Byte order
      * @return Float value
      */
-    public static float bytes2float(byte[] b, ByteOrder byteOrder) {
+    public static float bytes2Float(byte[] b, ByteOrder byteOrder) {
         ByteBuffer buf = ByteBuffer.wrap(b);
         buf.order(byteOrder);
         return buf.getFloat();
@@ -47,10 +47,11 @@ public class DataConvert {
     public static int bytes2Int(byte[] bytes, ByteOrder byteOrder) {
         ByteBuffer buf = ByteBuffer.wrap(bytes);
         buf.order(byteOrder);
-        if (bytes.length == 4)
+        if (bytes.length == 4) {
             return buf.getInt();
-        else
+        } else {
             return buf.getShort();
+        }
     }
 
     /**
@@ -75,6 +76,97 @@ public class DataConvert {
      */
     public static int byte2Int(byte b) {
         return b >= 0 ? (int) b : (int) (b + 256);
+    }
+
+    /**
+     * Convert LittleEndian to BigEndian
+     *
+     * @param bytes
+     * @return
+     */
+    public static byte[] littleToBig(byte[] bytes) {
+        if (bytes == null) {
+            throw new NullPointerException();
+        }
+        byte[] temp = new byte[bytes.length];
+        for (int i = bytes.length - 1; i >= 0; i--) {
+            temp[i] = bytes[bytes.length - 1 - i];
+        }
+        return temp;
+    }
+
+    /**
+     * Convert BigEndian to LittleEndian
+     *
+     * @param bytes
+     * @return
+     */
+    public static byte[] bigToLittle(byte[] bytes) {
+        return littleToBig(bytes);
+    }
+
+    /**
+     * Convert int to byte array.
+     *
+     * @param i Int value
+     * @return
+     */
+    public static byte[] toBytes(int i) {
+        byte[] bytes = new byte[4];
+        bytes[0] = (byte) (i >> 24 & 0xff);
+        bytes[1] = (byte) (i >> 16 & 0xff);
+        bytes[2] = (byte) (i >> 8 & 0xff);
+        bytes[3] = (byte) (i & 0xff);
+        return bytes;
+    }
+
+    /**
+     * Convert int to byte array - LittleEndian
+     *
+     * @param i Int value
+     * @return
+     */
+    public static byte[] toLittleBytes(int i) {
+        byte[] bytes = new byte[4];
+        bytes[3] = (byte) (i >> 24 & 0xff);
+        bytes[2] = (byte) (i >> 16 & 0xff);
+        bytes[1] = (byte) (i >> 8 & 0xff);
+        bytes[0] = (byte) (i & 0xff);
+        return bytes;
+    }
+
+    /**
+     * Convert float to byte array
+     *
+     * @param f Float value
+     * @return Byte array
+     */
+    public static byte[] toBytes(float f) {
+        return toBytes(Float.floatToIntBits(f));
+    }
+
+    /**
+     * Convert float to byte array
+     *
+     * @param f Float value
+     * @param byteOrder ByteOrder
+     * @return Byte array
+     */
+    public static byte[] float2Bytes(float f, ByteOrder byteOrder) {
+        ByteBuffer buf = ByteBuffer.allocate(4);
+        buf.putFloat(f);
+        buf.order(byteOrder);
+        return buf.array();
+    }
+
+    /**
+     * Convert float to byte array
+     *
+     * @param f Float array
+     * @return Byte array
+     */
+    public static byte[] toLittleBytes(float f) {
+        return toLittleBytes(Float.floatToIntBits(f));
     }
 
     /**
@@ -157,19 +249,16 @@ public class DataConvert {
 
     /**
      * Remove tail zero
+     *
      * @param s The string
      * @return Result string
      */
     public static String removeTailingZeros(String s) {
-        int i, len = s.length();
-        for (i = 0; i < len; i++) {
-            if (s.charAt(len - 1 - i) != '0') {
-                break;
-            }
-        }
-        if (s.charAt(len - i - 1) == '.') {
-            return s.substring(0, len - i - 1);
-        }
-        return s.substring(0, len - i);
+        if (s.length() <= 1)
+            return s;
+        if (s.substring(s.length() - 2).equals(".0"))
+            return new BigDecimal(s).stripTrailingZeros().toPlainString();
+        else
+            return s;
     }
 }

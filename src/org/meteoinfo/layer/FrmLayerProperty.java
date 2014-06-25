@@ -121,6 +121,7 @@ public class FrmLayerProperty extends javax.swing.JDialog {
         checkBoxList_Fields = new org.meteoinfo.global.ui.CheckBoxList();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Layer Property");
         setResizable(false);
 
         jButton_Cancel.setText("Cancel");
@@ -163,7 +164,7 @@ public class FrmLayerProperty extends javax.swing.JDialog {
         );
         jPanel_GeneralLayout.setVerticalGroup(
             jPanel_GeneralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(propertySheetPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE)
+            .addComponent(propertySheetPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 441, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("General", jPanel_General);
@@ -289,7 +290,7 @@ public class FrmLayerProperty extends javax.swing.JDialog {
         );
         legendView1Layout.setVerticalGroup(
             legendView1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 312, Short.MAX_VALUE)
+            .addGap(0, 329, Short.MAX_VALUE)
         );
 
         jLabel1.setText("Legend Type:");
@@ -343,7 +344,7 @@ public class FrmLayerProperty extends javax.swing.JDialog {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jComboBox_Field, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(legendView1, javax.swing.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE))
+                .addComponent(legendView1, javax.swing.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Legend", jPanel_Legend);

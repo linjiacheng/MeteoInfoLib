@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -67,7 +68,9 @@ import javax.swing.JScrollBar;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
+import org.meteoinfo.data.mapdata.FrmAttriData;
 import org.meteoinfo.global.FrmProperty;
+import org.meteoinfo.layer.FrmLabelSet;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -99,7 +102,7 @@ public class LayersLegend extends JPanel {
     private ItemNode _dragNode = null;
     private MapFrame _currentMapFrame;
     private List<MapFrame> _mapFrames = new ArrayList<MapFrame>();
-    private boolean _isLayoutView = false;
+    //private boolean _isLayoutView = false;
     private boolean _dragMode = false;
     private int _dragPosY;
 
@@ -277,43 +280,42 @@ public class LayersLegend extends JPanel {
         });
     }
 
-    /**
-     * Get if is layout view
-     *
-     * @return Boolean
-     */
-    public boolean isLayoutView() {
-        return _isLayoutView;
-    }
-
-    /**
-     * Set if is layout view
-     *
-     * @param istrue Boolean
-     */
-    public void setIsLayoutView(boolean istrue) {
-        _isLayoutView = istrue;
-        if (_isLayoutView) {
-            if (_mapLayout != null) {
-                for (MapFrame aMF : _mapFrames) {
-                    aMF.setIsFireMapViewUpdate(true);
-                }
-
-                if (_mapLayout.hasLegendElement()) {
-                    _mapLayout.getActiveLayoutMap().fireMapViewUpdatedEvent();
-                }
-            }
-        } else {
-            if (_mapLayout != null) {
-                for (MapFrame aMF : _mapFrames) {
-                    aMF.setIsFireMapViewUpdate(false);
-                }
-            }
-        }
-    }
+//    /**
+//     * Get if is layout view
+//     *
+//     * @return Boolean
+//     */
+//    public boolean isLayoutView() {
+//        return _isLayoutView;
+//    }
+//
+//    /**
+//     * Set if is layout view
+//     *
+//     * @param istrue Boolean
+//     */
+//    public void setIsLayoutView(boolean istrue) {
+//        _isLayoutView = istrue;
+//        if (_isLayoutView) {
+//            if (_mapLayout != null) {
+//                for (MapFrame aMF : _mapFrames) {
+//                    aMF.setIsFireMapViewUpdate(true);
+//                }
+//
+//                if (_mapLayout.hasLegendElement()) {
+//                    _mapLayout.getActiveLayoutMap().fireMapViewUpdatedEvent();
+//                }
+//            }
+//        } else {
+//            if (_mapLayout != null) {
+//                for (MapFrame aMF : _mapFrames) {
+//                    aMF.setIsFireMapViewUpdate(false);
+//                }
+//            }
+//        }
+//    }
     // </editor-fold>
     // <editor-fold desc="Events">
-
     public void addMapFramesUpdatedListener(IMapFramesUpdatedListener listener) {
         this._listeners.add(IMapFramesUpdatedListener.class, listener);
     }
@@ -651,6 +653,8 @@ public class LayersLegend extends JPanel {
         } else {
             if (e.getButton() == MouseEvent.BUTTON3) {
                 JPopupMenu mnuLayer = new JPopupMenu();
+
+                //Remove/save layer
                 JMenuItem removeLayerMI = new JMenuItem("Remove Layer");
                 removeLayerMI.addActionListener(new ActionListener() {
                     @Override
@@ -662,7 +666,7 @@ public class LayersLegend extends JPanel {
                 if (aLayerObj.getLayerType() == LayerTypes.VectorLayer) {
                     VectorLayer aLayer = (VectorLayer) aLayerObj;
                     if (!new File(aLayer.getFileName()).exists()) {
-                        JMenuItem saveLayerMI = new JMenuItem("Save layer");
+                        JMenuItem saveLayerMI = new JMenuItem("Save Layer");
                         saveLayerMI.addActionListener(new ActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent e) {
@@ -672,6 +676,42 @@ public class LayersLegend extends JPanel {
                         mnuLayer.add(saveLayerMI);
                     }
                 }
+                mnuLayer.addSeparator();
+
+                //Attribute table
+                if (aLayerObj.getLayerType() == LayerTypes.VectorLayer) {
+                    JMenuItem attrTableMI = new JMenuItem("Attribute Table");
+                    ImageIcon icon = null;
+                    try {
+                        icon = new ImageIcon(this.getClass().getResource("/org/meteoinfo/resources/AttributeTable.png"));
+                        attrTableMI.setIcon(icon);
+                    } catch (Exception ex) {
+                    }
+                    attrTableMI.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            onAttrTableClick(e);
+                        }
+                    });
+                    mnuLayer.add(attrTableMI);
+                    mnuLayer.addSeparator();
+                }
+
+                //Zoom to layer and Visible scale
+                JMenuItem zoomToLayerMI = new JMenuItem("Zoom To Layer");
+                ImageIcon icon = null;
+                try {
+                    icon = new ImageIcon(this.getClass().getResource("/org/meteoinfo/resources/ZoomToLayer.png"));
+                    zoomToLayerMI.setIcon(icon);
+                } catch (Exception ex) {
+                }
+                zoomToLayerMI.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        onZoomToLayerClick(e);
+                    }
+                });
+                mnuLayer.add(zoomToLayerMI);
                 JMenu visScaleMenu = new JMenu("Visible Scale");
                 JMenuItem minVisScaleMI = new JMenuItem("Set Minimum Scale");
                 minVisScaleMI.addActionListener(new ActionListener() {
@@ -703,6 +743,40 @@ public class LayersLegend extends JPanel {
                 }
                 visScaleMenu.add(removeVisScaleMI);
                 mnuLayer.add(visScaleMenu);
+                mnuLayer.addSeparator();
+
+                //Label
+                if (aLayerObj.getLayerType() == LayerTypes.VectorLayer) {
+                    JMenuItem labelMI = new JMenuItem("Label");
+                    try {
+                        icon = new ImageIcon(this.getClass().getResource("/org/meteoinfo/resources/Label.png"));
+                        labelMI.setIcon(icon);
+                    } catch (Exception ex) {
+                    }
+                    labelMI.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            onLabelClick(e);
+                        }
+                    });
+                    mnuLayer.add(labelMI);
+                    mnuLayer.addSeparator();
+                }
+
+                //Properties
+                JMenuItem propMI = new JMenuItem("Properties");
+                try {
+                    icon = new ImageIcon(this.getClass().getResource("/org/meteoinfo/resources/Properties.png"));
+                    propMI.setIcon(icon);
+                } catch (Exception ex) {
+                }
+                propMI.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        onPropertiesClick(e);
+                    }
+                });
+                mnuLayer.add(propMI);
 
                 mnuLayer.show(this, e.getX(), e.getY());
             }
@@ -828,19 +902,52 @@ public class LayersLegend extends JPanel {
         if (_selectedNode.getNodeType() == NodeTypes.LayerNode) {
             LayerNode aLN = (LayerNode) _selectedNode;
             VectorLayer aLayer = (VectorLayer) aLN.getMapLayer();
-            aLayer.saveFile();
-//                if (aLN.MapFrame.MapView.Projection.ProjInfo.ToProj4String() == aLayer.ProjInfo.ToProj4String())
-//                {
-//                    aLayer.SaveFile();
-//                }
-//                else
-//                {
-//                    //VectorLayer bLayer = (VectorLayer)aLN.MapFrame.MapView.GetGeoLayerFromHandle(aLN.LayerHandle);
-//                    VectorLayer bLayer = (VectorLayer)aLayer.Clone();
-//                    bLayer.SaveFile();
-//                    aLayer.FileName = bLayer.FileName;
-//                }
+            if (aLN.getMapFrame().getMapView().getProjection().getProjInfo().equals(aLayer.getProjInfo())) {
+                aLayer.saveFile();
+            } else {
+                VectorLayer bLayer = (VectorLayer) aLayer.clone();
+                bLayer.saveFile();
+                aLayer.setFileName(bLayer.getFileName());
+            }
         }
+    }
+
+    private void onAttrTableClick(ActionEvent e) {
+        LayerNode aLN = (LayerNode) _selectedNode;
+        MapLayer aLayer = aLN.getMapFrame().getMapView().getLayerFromHandle(aLN.getLayerHandle());
+        if (aLayer.getLayerType() == LayerTypes.VectorLayer) {
+            JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            FrmAttriData frm = new FrmAttriData();
+            frm.setLayer((VectorLayer) aLayer);
+            frm.setLocationRelativeTo(frame);
+            frm.setVisible(true);
+        }
+    }
+
+    private void onPropertiesClick(ActionEvent e) {
+        LayerNode aLN = (LayerNode) _selectedNode;
+        MapLayer aLayer = aLN.getMapFrame().getMapView().getLayerFromHandle(aLN.getLayerHandle());
+        if (frmLayerProp == null) {
+            JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            frmLayerProp = new FrmLayerProperty(frame, false);
+            frmLayerProp.setMapLayer(aLayer);
+            frmLayerProp.setMapFrame(this.getActiveMapFrame());
+            //frmLayerProp.Legend = this;                        
+            frmLayerProp.setLocationRelativeTo(frame);
+            frmLayerProp.setVisible(true);
+            //frmLayerProp.setAlwaysOnTop(true);
+        } else {
+            frmLayerProp.setMapLayer(aLayer);
+            frmLayerProp.setMapFrame(this.getActiveMapFrame());
+            //frmLayerProp.Legend = this;
+            frmLayerProp.setVisible(true);
+        }
+    }
+
+    private void onZoomToLayerClick(ActionEvent e) {
+        LayerNode aLN = (LayerNode) _selectedNode;
+        MapLayer aLayer = aLN.getMapFrame().getMapView().getLayerFromHandle(aLN.getLayerHandle());
+        aLN.getMapFrame().getMapView().zoomToExtent(aLayer.getExtent());
     }
 
     private void onMinVisScaleClick(ActionEvent e) {
@@ -871,6 +978,21 @@ public class LayersLegend extends JPanel {
 
         this.paintGraphics();
         aLN.getMapFrame().getMapView().paintLayers();
+    }
+
+    private void onLabelClick(ActionEvent e) {
+        LayerNode aLN = (LayerNode) _selectedNode;
+        MapLayer aLayer = aLN.getMapFrame().getMapView().getLayerFromHandle(aLN.getLayerHandle());
+        if (aLayer.getLayerType() == LayerTypes.VectorLayer) {
+            VectorLayer layer = (VectorLayer) aLayer;
+            if (layer.getShapeNum() > 0) {
+                JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
+                FrmLabelSet aFrmLabel = new FrmLabelSet(frame, false, this.getActiveMapFrame().getMapView());
+                aFrmLabel.setLayer(layer);
+                aFrmLabel.setLocationRelativeTo(frame);
+                aFrmLabel.setVisible(true);
+            }
+        }
     }
 
     private void onMapFrameActiveClick(ActionEvent e) {
@@ -1048,13 +1170,12 @@ public class LayersLegend extends JPanel {
 
         if (_mapLayout != null) {
             _mapLayout.updateMapFrames(_mapFrames);
-            if (_isLayoutView) {
-                for (MapFrame aMF : _mapFrames) {
-                    aMF.setIsFireMapViewUpdate(true);
-                }
-
-                _mapLayout.paintGraphics();
-            }
+            _mapLayout.paintGraphics();
+//            if (_isLayoutView) {
+//                for (MapFrame aMF : _mapFrames) {
+//                    aMF.setIsFireMapViewUpdate(true);
+//                }                
+//            }
         }
 
         this.fireMapFramesUpdatedEvent();
@@ -1074,13 +1195,12 @@ public class LayersLegend extends JPanel {
 
         if (_mapLayout != null) {
             _mapLayout.updateMapFrames(_mapFrames);
-            if (_isLayoutView) {
-                for (MapFrame aMF : _mapFrames) {
-                    aMF.setIsFireMapViewUpdate(true);
-                }
-
-                _mapLayout.paintGraphics();
-            }
+            _mapLayout.paintGraphics();
+//            if (_isLayoutView) {
+//                for (MapFrame aMF : _mapFrames) {
+//                    aMF.setIsFireMapViewUpdate(true);
+//                } 
+//            }
         }
 
         this.paintGraphics();

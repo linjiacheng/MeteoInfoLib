@@ -13,6 +13,9 @@
  */
 package org.meteoinfo.layout;
 
+import com.l2fprod.common.beans.BaseBeanInfo;
+import com.l2fprod.common.beans.ExtendedPropertyDescriptor;
+import com.l2fprod.common.beans.editor.ComboBoxPropertyEditor;
 import org.meteoinfo.global.PointF;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -42,6 +45,7 @@ public class LayoutScaleBar extends LayoutElement {
     private Color _neatLineColor;
     private float _neatLineSize;
     private boolean _drawScaleText;
+    private float _yShiftScale = 2.0f;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -358,10 +362,10 @@ public class LayoutScaleBar extends LayoutElement {
         for (int i = 0; i <= _numBreaks; i++) {
             g.draw(new Line2D.Float(leftStart, fontHeight * 1.1f + yShift, leftStart, fontHeight * 1.6f + yShift));
             g.drawString(String.valueOf(Math.abs(geoBreakWidth * i)),
-                    leftStart - (metrics1.stringWidth(String.valueOf(Math.abs(geoBreakWidth * i))) / 2), yShift);
+                    leftStart - (metrics1.stringWidth(String.valueOf(Math.abs(geoBreakWidth * i))) / 2), yShift * _yShiftScale);
             leftStart = leftStart + breakWidth;
         }
-        g.drawString(_unitText, leftStart - breakWidth + (fontHeight / 2), fontHeight * 1.1f + yShift);
+        g.drawString(_unitText, leftStart - breakWidth + (fontHeight / 2), fontHeight * 1.1f + yShift * _yShiftScale);
     }
 
     private void drawScaleLine2(Graphics2D g, float zoom, Font aFont, long breakWidth, long geoBreakWidth) {
@@ -377,10 +381,10 @@ public class LayoutScaleBar extends LayoutElement {
         for (int i = 0; i <= _numBreaks; i++) {
             g.draw(new Line2D.Float(leftStart, fontHeight * 1.1f + yShift, leftStart, fontHeight + (fontHeight * 1.1f) + yShift));
             g.drawString(String.valueOf(Math.abs(geoBreakWidth * i)),
-                    leftStart - (metrics1.stringWidth(String.valueOf(Math.abs(geoBreakWidth * i))) / 2), yShift);
+                    leftStart - (metrics1.stringWidth(String.valueOf(Math.abs(geoBreakWidth * i))) / 2), yShift * _yShiftScale);
             leftStart = leftStart + breakWidth;
         }
-        g.drawString(_unitText, leftStart - breakWidth + (fontHeight / 2), fontHeight * 1.1f + yShift);
+        g.drawString(_unitText, leftStart - breakWidth + (fontHeight / 2), fontHeight * 1.1f + yShift * _yShiftScale);
     }
 
     private void drawAlternatingBar(Graphics2D g, float zoom, Font aFont, long breakWidth, long geoBreakWidth) {
@@ -406,23 +410,301 @@ public class LayoutScaleBar extends LayoutElement {
             g.setColor(this.getForeColor());
             g.setFont(aFont);
             g.drawString(String.valueOf(Math.abs(geoBreakWidth * i)),
-                    leftStart - (metrics1.stringWidth(String.valueOf(Math.abs(geoBreakWidth * i))) / 2), yShift);
+                    leftStart - (metrics1.stringWidth(String.valueOf(Math.abs(geoBreakWidth * i))) / 2), yShift * _yShiftScale);
             leftStart = leftStart + breakWidth;
             isFill = !isFill;
         }
         g.setColor(this.getForeColor());
         g.setFont(aFont);
-        g.drawString(_unitText, leftStart - breakWidth + (fontHeight / 2), fontHeight * 1.1f + yShift);
+        g.drawString(_unitText, leftStart - breakWidth + (fontHeight / 2), fontHeight * 1.1f + yShift * _yShiftScale);
     }
 
     @Override
     public void moveUpdate() {
-        
     }
-    
+
     @Override
     public void resizeUpdate() {
+    }
+    // </editor-fold>
+    // <editor-fold desc="BeanInfo">
+
+    public class LayoutScaleBarBean {
+
+        LayoutScaleBarBean() {
+        }
+        // <editor-fold desc="Get Set Methods">
+
+        /**
+         * Get scale bar type
+         *
+         * @return Scale bar type
+         */
+        public String getScaleBarType() {
+            return _scaleBarType.toString();
+        }
+
+        /**
+         * Set scale bar type
+         *
+         * @param type Scale bar type
+         */
+        public void setScaleBarType(String type) {
+            _scaleBarType = ScaleBarTypes.valueOf(type);
+        }
+
+        /**
+         * Get if draw neat line
+         *
+         * @return If draw neat line
+         */
+        public boolean isDrawNeatLine() {
+            return _drawNeatLine;
+        }
+
+        /**
+         * Set if draw neat line
+         *
+         * @param istrue If draw neat line
+         */
+        public void setDrawNeatLine(boolean istrue) {
+            _drawNeatLine = istrue;
+        }
+
+        /**
+         * Get neat line color
+         *
+         * @return Neat line color
+         */
+        public Color getNeatLineColor() {
+            return _neatLineColor;
+        }
+
+        /**
+         * Set neat line color
+         *
+         * @param color Neat line color
+         */
+        public void setNeatLineColor(Color color) {
+            _neatLineColor = color;
+        }
+
+        /**
+         * Get neat line size
+         *
+         * @return Neat line size
+         */
+        public float getNeatLineSize() {
+            return _neatLineSize;
+        }
+
+        /**
+         * Set neat line size
+         *
+         * @param size Neat line size
+         */
+        public void setNeatLineSize(float size) {
+            _neatLineSize = size;
+        }
+
+        /**
+         * Get font
+         *
+         * @return The font
+         */
+        public Font getFont() {
+            return _font;
+        }
+
+        /**
+         * Set font
+         *
+         * @param font The font
+         */
+        public void setFont(Font font) {
+            _font = font;
+        }
+
+        /**
+         * Get break number
+         *
+         * @return The break number
+         */
+        public int getBreakNumber() {
+            return _numBreaks;
+        }
+
+        /**
+         * Set break number
+         *
+         * @param num Break number
+         */
+        public void setBreakNumber(int num) {
+            _numBreaks = num;
+        }
+
+        /**
+         * Get if draw scale text
+         *
+         * @return If draw scale text
+         */
+        public boolean isDrawScaleText() {
+            return _drawScaleText;
+        }
+
+        /**
+         * Set if draw scale text
+         *
+         * @param istrue If draw scale text
+         */
+        public void setDrawScaleText(boolean istrue) {
+            _drawScaleText = istrue;
+        }
         
+        /**
+         * Get background color
+         *
+         * @return Background color
+         */
+        public Color getBackColor() {
+            return LayoutScaleBar.this.getBackColor();
+        }
+
+        /**
+         * Set background color
+         *
+         * @param c Background color
+         */
+        public void setBackColor(Color c) {
+            LayoutScaleBar.this.setBackColor(c);
+        }
+
+        /**
+         * Get foreground color
+         *
+         * @return Foreground color
+         */
+        public Color getForeColor() {
+            return LayoutScaleBar.this.getForeColor();
+        }
+
+        /**
+         * Set foreground color
+         *
+         * @param c Foreground color
+         */
+        public void setForeColor(Color c) {
+            LayoutScaleBar.this.setForeColor(c);
+        }
+        
+        /**
+         * Get left
+         *
+         * @return Left
+         */
+        public int getLeft() {
+            return LayoutScaleBar.this.getLeft();
+        }
+
+        /**
+         * Set left
+         *
+         * @param left Left
+         */
+        public void setLeft(int left) {
+            LayoutScaleBar.this.setLeft(left);
+        }
+
+        /**
+         * Get top
+         *
+         * @return Top
+         */
+        public int getTop() {
+            return LayoutScaleBar.this.getTop();
+        }
+
+        /**
+         * Set top
+         *
+         * @param top Top
+         */
+        public void setTop(int top) {
+            LayoutScaleBar.this.setTop(top);
+        }
+        
+        /**
+         * Get width
+         *
+         * @return Width
+         */
+        public int getWidth() {
+            return LayoutScaleBar.this.getWidth();
+        }
+
+        /**
+         * Set width
+         *
+         * @param width Width
+         */
+        public void setWidth(int width) {
+            LayoutScaleBar.this.setWidth(width);
+        }
+
+        /**
+         * Get height
+         *
+         * @return Height
+         */
+        public int getHeight() {
+            return LayoutScaleBar.this.getHeight();
+        }
+
+        /**
+         * Set height
+         *
+         * @param height Height
+         */
+        public void setHeight(int height) {
+            LayoutScaleBar.this.setHeight(height);
+        }
+        // </editor-fold>
+    }
+
+    public static class LayoutScaleBarBeanBeanInfo extends BaseBeanInfo {
+
+        public LayoutScaleBarBeanBeanInfo() {
+            super(LayoutScaleBarBean.class);
+            ExtendedPropertyDescriptor e = addProperty("scaleBarType");
+            e.setCategory("General").setDisplayName("Scale Bar Type");
+            e.setPropertyEditorClass(ScaleBarTypeEditor.class);
+            addProperty("backColor").setCategory("General").setDisplayName("Background");
+            addProperty("foreColor").setCategory("General").setDisplayName("Foreground");
+            addProperty("font").setCategory("General").setDisplayName("Font");
+            addProperty("drawScaleText").setCategory("General").setDisplayName("Draw Scale Text");
+            addProperty("drawNeatLine").setCategory("Neat Line").setDisplayName("Draw Neat Line");
+            addProperty("neatLineColor").setCategory("Neat Line").setDisplayName("Neat Line Color");
+            addProperty("neatLineSize").setCategory("Neat Line").setDisplayName("Neat Line Size");
+            addProperty("left").setCategory("Location").setDisplayName("Left");
+            addProperty("top").setCategory("Location").setDisplayName("Top");
+            addProperty("width").setCategory("Location").setDisplayName("Width");
+            addProperty("height").setCategory("Location").setDisplayName("Height");
+        }
+    }
+
+    public static class ScaleBarTypeEditor extends ComboBoxPropertyEditor {
+
+        public ScaleBarTypeEditor() {
+            super();
+            ScaleBarTypes[] lutypes = ScaleBarTypes.values();
+            String[] types = new String[lutypes.length];
+            int i = 0;
+            for (ScaleBarTypes type : lutypes) {
+                types[i] = type.toString();
+                i += 1;
+            }
+            setAvailableValues(types);
+        }
     }
     // </editor-fold>
 }

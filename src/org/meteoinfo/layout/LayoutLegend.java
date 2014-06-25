@@ -41,6 +41,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import org.meteoinfo.global.DataConvert;
@@ -104,7 +105,7 @@ public class LayoutLegend extends LayoutElement {
         _leftSpace = 5;
         _vBarWidth = 10;
         _hBarHeight = 10;
-        _font = new Font("Arial", Font.PLAIN, 10);
+        _font = new Font("宋体", Font.PLAIN, 12);
         _titleFont = new Font("Arial", Font.PLAIN, 12);
     }
 
@@ -180,6 +181,9 @@ public class LayoutLegend extends LayoutElement {
      * @param layer The legend layer
      */
     public void setLegendLayer(MapLayer layer) {
+        if (layer == null)
+            return;
+        
         _legendLayer = layer;
         String aStr = _legendLayer.getLayerName();
         if (aStr.contains("_")) {
@@ -195,7 +199,10 @@ public class LayoutLegend extends LayoutElement {
      * @return Legend layer name
      */
     public String getLayerName() {
-        return _legendLayer.getLayerName();
+        if (_legendLayer != null)
+            return _legendLayer.getLayerName();
+        else
+            return "";
     }
 
     /**
@@ -573,7 +580,7 @@ public class LayoutLegend extends LayoutElement {
                     if (aLS.getLegendType() == LegendType.UniqueValue) {
                         caption = aPB.getCaption();
                     } else {
-                        caption = DataConvert.doubleToString(Double.parseDouble(aPB.getEndValue().toString()));
+                        caption = DataConvert.removeTailingZeros(aPB.getEndValue().toString());
                     }
                     break;
                 case Polyline:
@@ -583,7 +590,7 @@ public class LayoutLegend extends LayoutElement {
                     if (aLS.getLegendType() == LegendType.UniqueValue) {
                         caption = aPLB.getCaption();
                     } else {
-                        caption = DataConvert.doubleToString(Double.parseDouble(aPLB.getEndValue().toString()));
+                        caption = DataConvert.removeTailingZeros(aPLB.getEndValue().toString());
                     }
                     break;
                 case Polygon:
@@ -594,7 +601,7 @@ public class LayoutLegend extends LayoutElement {
                     if (aLS.getLegendType() == LegendType.UniqueValue) {
                         caption = aPGB.getCaption();
                     } else {
-                        caption = DataConvert.doubleToString(Double.parseDouble(aPGB.getEndValue().toString()));
+                        caption = DataConvert.removeTailingZeros(aPGB.getEndValue().toString());
                     }
                     break;
                 case Image:
@@ -605,7 +612,7 @@ public class LayoutLegend extends LayoutElement {
                     if (aLS.getLegendType() == LegendType.UniqueValue) {
                         caption = aCB.getCaption();
                     } else {
-                        caption = DataConvert.doubleToString(Double.parseDouble(aCB.getEndValue().toString()));
+                        caption = DataConvert.removeTailingZeros(aCB.getEndValue().toString());
                     }
                     break;
             }
@@ -733,8 +740,8 @@ public class LayoutLegend extends LayoutElement {
                     FillColor = aPB.getColor();
                     if (aLS.getLegendType() == LegendType.UniqueValue) {
                         caption = aPB.getCaption();
-                    } else {
-                        caption = DataConvert.doubleToString(Double.parseDouble(aPB.getEndValue().toString()));
+                    } else {                        
+                        caption = DataConvert.removeTailingZeros(aPB.getEndValue().toString());
                     }
                     break;
                 case Polyline:
@@ -744,7 +751,7 @@ public class LayoutLegend extends LayoutElement {
                     if (aLS.getLegendType() == LegendType.UniqueValue) {
                         caption = aPLB.getCaption();
                     } else {
-                        caption = DataConvert.doubleToString(Double.parseDouble(aPLB.getEndValue().toString()));
+                        caption = DataConvert.removeTailingZeros(aPLB.getEndValue().toString());
                     }
                     break;
                 case Polygon:
@@ -755,7 +762,7 @@ public class LayoutLegend extends LayoutElement {
                     if (aLS.getLegendType() == LegendType.UniqueValue) {
                         caption = aPGB.getCaption();
                     } else {
-                        caption = DataConvert.doubleToString(Double.parseDouble(aPGB.getEndValue().toString()));
+                        caption = DataConvert.removeTailingZeros(aPGB.getEndValue().toString());
                     }
                     break;
                 case Image:
@@ -766,7 +773,7 @@ public class LayoutLegend extends LayoutElement {
                     if (aLS.getLegendType() == LegendType.UniqueValue) {
                         caption = aCB.getCaption();
                     } else {
-                        caption = DataConvert.doubleToString(Double.parseDouble(aCB.getEndValue().toString()));
+                        caption = DataConvert.removeTailingZeros(aCB.getEndValue().toString());
                     }
                     break;
             }
@@ -887,7 +894,7 @@ public class LayoutLegend extends LayoutElement {
                 case Point:
                     PointBreak aPB = (PointBreak) aLS.getLegendBreaks().get(i);
                     if (aLS.getLegendType() == LegendType.GraduatedColor && _legendStyle != LegendStyles.Normal) {
-                        caption = aPB.getEndValue().toString();
+                        caption = DataConvert.removeTailingZeros(aPB.getEndValue().toString());
                     } else {
                         caption = aPB.getCaption();
                     }
@@ -895,7 +902,7 @@ public class LayoutLegend extends LayoutElement {
                 case Polyline:
                     PolylineBreak aPLB = (PolylineBreak) aLS.getLegendBreaks().get(i);
                     if (aLS.getLegendType() == LegendType.GraduatedColor && _legendStyle != LegendStyles.Normal) {
-                        caption = aPLB.getEndValue().toString();
+                        caption = DataConvert.removeTailingZeros(aPLB.getEndValue().toString());
                     } else {
                         caption = aPLB.getCaption();
                     }
@@ -903,7 +910,7 @@ public class LayoutLegend extends LayoutElement {
                 case Polygon:
                     PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(i);
                     if (aLS.getLegendType() == LegendType.GraduatedColor && _legendStyle != LegendStyles.Normal) {
-                        caption = aPGB.getEndValue().toString();
+                        caption = DataConvert.removeTailingZeros(aPGB.getEndValue().toString());
                     } else {
                         caption = aPGB.getCaption();
                     }
@@ -911,7 +918,7 @@ public class LayoutLegend extends LayoutElement {
                 case Image:
                     ColorBreak aCB = aLS.getLegendBreaks().get(i);
                     if (aLS.getLegendType() == LegendType.GraduatedColor && _legendStyle != LegendStyles.Normal) {
-                        caption = aCB.getEndValue().toString();
+                        caption = DataConvert.removeTailingZeros(aCB.getEndValue().toString());
                     } else {
                         caption = aCB.getCaption();
                     }
@@ -966,7 +973,9 @@ public class LayoutLegend extends LayoutElement {
                 return;
             }
 
-            Graphics2D g = (Graphics2D) _mapLayout.getGraphics();
+            //Graphics2D g = (Graphics2D) _mapLayout.getGraphics();
+            BufferedImage image = new BufferedImage(_mapLayout.getPageBounds().width, _mapLayout.getPageBounds().height, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = image.createGraphics();
             int bNum = _legendLayer.getLegendScheme().getBreakNum();
             if (_legendLayer.getLegendScheme().getLegendBreaks().get(bNum - 1).isNoData()) {
                 bNum -= 1;

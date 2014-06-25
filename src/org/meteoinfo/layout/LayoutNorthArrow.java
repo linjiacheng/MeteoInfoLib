@@ -13,6 +13,7 @@
  */
 package org.meteoinfo.layout;
 
+import com.l2fprod.common.beans.BaseBeanInfo;
 import org.meteoinfo.drawing.Draw;
 import org.meteoinfo.global.PointF;
 import java.awt.BasicStroke;
@@ -237,15 +238,220 @@ public class LayoutNorthArrow extends LayoutElement {
         points[3] = points[0];
         Draw.drawPolyline(points, g);
     }
-    
+
     @Override
     public void moveUpdate() {
-        
     }
-    
+
     @Override
     public void resizeUpdate() {
+    }
+    // </editor-fold>
+    // <editor-fold desc="BeanInfo">
+
+    public class LayoutNorthArrowBean {
+
+        LayoutNorthArrowBean() {
+        }
+        // <editor-fold desc="Get Set Methods">
+
+        /**
+         * Get if draw neat line
+         *
+         * @return If draw neat line
+         */
+        public boolean isDrawNeatLine() {
+            return _drawNeatLine;
+        }
+
+        /**
+         * Set if draw neat line
+         *
+         * @param istrue If draw neat line
+         */
+        public void setDrawNeatLine(boolean istrue) {
+            _drawNeatLine = istrue;
+        }
+
+        /**
+         * Get neat line color
+         *
+         * @return Neat line color
+         */
+        public Color getNeatLineColor() {
+            return _neatLineColor;
+        }
+
+        /**
+         * Set neat line color
+         *
+         * @param color Neat line color
+         */
+        public void setNeatLineColor(Color color) {
+            _neatLineColor = color;
+        }
+
+        /**
+         * Get neat line size
+         *
+         * @return Neat line size
+         */
+        public float getNeatLineSize() {
+            return _neatLineSize;
+        }
+
+        /**
+         * Set neat line size
+         *
+         * @param size Neat line size
+         */
+        public void setNeatLineSize(float size) {
+            _neatLineSize = size;
+        }
+
+        /**
+         * Get angle
+         *
+         * @return Angle
+         */
+        public float getAngle() {
+            return _angle;
+        }
+
+        /**
+         * Set angle
+         *
+         * @param angle The angle
+         */
+        public void setAngle(float angle) {
+            _angle = angle;
+        }
         
+        /**
+         * Get background color
+         *
+         * @return Background color
+         */
+        public Color getBackColor() {
+            return LayoutNorthArrow.this.getBackColor();
+        }
+
+        /**
+         * Set background color
+         *
+         * @param c Background color
+         */
+        public void setBackColor(Color c) {
+            LayoutNorthArrow.this.setBackColor(c);
+        }
+
+        /**
+         * Get foreground color
+         *
+         * @return Foreground color
+         */
+        public Color getForeColor() {
+            return LayoutNorthArrow.this.getForeColor();
+        }
+
+        /**
+         * Set foreground color
+         *
+         * @param c Foreground color
+         */
+        public void setForeColor(Color c) {
+            LayoutNorthArrow.this.setForeColor(c);
+        }
+        
+        /**
+         * Get left
+         *
+         * @return Left
+         */
+        public int getLeft() {
+            return LayoutNorthArrow.this.getLeft();
+        }
+
+        /**
+         * Set left
+         *
+         * @param left Left
+         */
+        public void setLeft(int left) {
+            LayoutNorthArrow.this.setLeft(left);
+        }
+
+        /**
+         * Get top
+         *
+         * @return Top
+         */
+        public int getTop() {
+            return LayoutNorthArrow.this.getTop();
+        }
+
+        /**
+         * Set top
+         *
+         * @param top Top
+         */
+        public void setTop(int top) {
+            LayoutNorthArrow.this.setTop(top);
+        }
+        
+        /**
+         * Get width
+         *
+         * @return Width
+         */
+        public int getWidth() {
+            return LayoutNorthArrow.this.getWidth();
+        }
+
+        /**
+         * Set width
+         *
+         * @param width Width
+         */
+        public void setWidth(int width) {
+            LayoutNorthArrow.this.setWidth(width);
+        }
+
+        /**
+         * Get height
+         *
+         * @return Height
+         */
+        public int getHeight() {
+            return LayoutNorthArrow.this.getHeight();
+        }
+
+        /**
+         * Set height
+         *
+         * @param height Height
+         */
+        public void setHeight(int height) {
+            LayoutNorthArrow.this.setHeight(height);
+        }
+        // </editor-fold>
+    }
+
+    public static class LayoutNorthArrowBeanBeanInfo extends BaseBeanInfo {
+
+        public LayoutNorthArrowBeanBeanInfo() {
+            super(LayoutNorthArrowBean.class);
+            addProperty("backColor").setCategory("General").setDisplayName("Background");
+            addProperty("foreColor").setCategory("General").setDisplayName("Foreground");
+            addProperty("drawNeatLine").setCategory("Neat Line").setDisplayName("Draw Neat Line");
+            addProperty("neatLineColor").setCategory("Neat Line").setDisplayName("Neat Line Color");
+            addProperty("neatLineSize").setCategory("Neat Line").setDisplayName("Neat Line Size");
+            addProperty("angle").setCategory("Location").setDisplayName("Angle");
+            addProperty("left").setCategory("Location").setDisplayName("Left");
+            addProperty("top").setCategory("Location").setDisplayName("Top");
+            addProperty("width").setCategory("Location").setDisplayName("Width");
+            addProperty("height").setCategory("Location").setDisplayName("Height");
+        }
     }
     // </editor-fold>
 }

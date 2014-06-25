@@ -29,6 +29,8 @@ import org.meteoinfo.data.meteodata.micaps.MICAPS4DataInfo;
 import org.meteoinfo.data.meteodata.micaps.MICAPSDataInfo;
 import org.meteoinfo.data.meteodata.netcdf.NetCDFDataInfo;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
 import org.meteoinfo.projection.ProjectionInfo;
 import java.util.List;
 import java.util.logging.Level;
@@ -36,6 +38,10 @@ import java.util.logging.Logger;
 import org.meteoinfo.data.meteodata.micaps.MICAPS11DataInfo;
 import org.meteoinfo.data.meteodata.micaps.MICAPS13DataInfo;
 import org.meteoinfo.data.meteodata.micaps.MICAPS7DataInfo;
+import org.meteoinfo.data.meteodata.mm5.MM5DataInfo;
+import org.meteoinfo.data.meteodata.mm5.MM5IMDataInfo;
+import org.meteoinfo.global.DateUtil;
+import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.mathparser.MathParser;
 import org.meteoinfo.global.mathparser.ParseException;
 
@@ -294,7 +300,7 @@ public class MeteoDataInfo {
      * @return Boolean
      */
     public boolean isGridData() {
-
+        
         switch (_dataType) {
             case ARL_Grid:
             case ASCII_Grid:
@@ -306,6 +312,8 @@ public class MeteoDataInfo {
             case MICAPS_13:
             case MICAPS_4:
             case Sufer_Grid:
+            case MM5:
+            case MM5IM:
                 return true;
             case NetCDF:
                 if (((NetCDFDataInfo) _dataInfo).isSWATH()) {
@@ -418,7 +426,7 @@ public class MeteoDataInfo {
                 dn = 1;
                 break;
         }
-
+        
         return dn;
     }
     // </editor-fold>
@@ -439,7 +447,7 @@ public class MeteoDataInfo {
         if (aDataInfo.DTYPE.equals("Gridded")) {
             _dataType = MeteoDataType.GrADS_Grid;
             yReserve = aDataInfo.OPTIONS.yrev;
-
+            
             if (!aDataInfo.isLatLon) {
                 IsLonLat = false;
                 EarthWind = aDataInfo.EarthWind;
@@ -581,6 +589,30 @@ public class MeteoDataInfo {
         _dataType = MeteoDataType.Sufer_Grid;
         _infoText = _dataInfo.generateInfoText();
     }
+    
+    /**
+     * Open MM5 Output data
+     * 
+     * @param fileName File path
+     */
+    public void openMM5Data(String fileName) {
+        _dataInfo = new MM5DataInfo();
+        _dataInfo.readDataInfo(fileName);
+        _dataType = MeteoDataType.MM5;
+        _infoText = _dataInfo.generateInfoText();
+    }
+    
+    /**
+     * Open MM5 Intermediate data
+     * 
+     * @param fileName File path
+     */
+    public void openMM5IMData(String fileName) {
+        _dataInfo = new MM5IMDataInfo();
+        _dataInfo.readDataInfo(fileName);
+        _dataType = MeteoDataType.MM5IM;
+        _infoText = _dataInfo.generateInfoText();
+    }
 
     /**
      * Open MICAPS data
@@ -592,7 +624,7 @@ public class MeteoDataInfo {
         if (mdType == null) {
             return;
         }
-
+        
         switch (mdType) {
             case MICAPS_1:
                 _dataInfo = new MICAPS1DataInfo();
@@ -654,6 +686,7 @@ public class MeteoDataInfo {
             MathParser mathParser = new MathParser(this);
             try {
                 GridData gridData = (GridData) mathParser.evaluate(varName);
+                gridData.projInfo = this.getProjectionInfo();
                 return gridData;
             } catch (ParseException ex) {
                 Logger.getLogger(MeteoDataInfo.class.getName()).log(Level.SEVERE, null, ex);
@@ -663,7 +696,9 @@ public class MeteoDataInfo {
                 return null;
             }
         } else {
-            return this.getGridData();
+            GridData gridData = this.getGridData();
+            gridData.projInfo = this.getProjectionInfo();
+            return gridData;
         }
     }
 
@@ -676,7 +711,7 @@ public class MeteoDataInfo {
         if (_varIdx < 0) {
             return null;
         }
-
+        
         switch (_dimensionSet) {
             case Lat_Lon:
                 return ((IGridDataInfo) _dataInfo).getGridData_LonLat(_timeIdx, _varIdx, _levelIdx);
@@ -779,8 +814,203 @@ public class MeteoDataInfo {
     public int getVariableIndex(String varName) {
         List<String> varList = _dataInfo.getVariableNames();
         int idx = varList.indexOf(varName);
-
+        
         return idx;
+    }
+
+    /**
+     * Get time of arrial grid data - the time after the start of the simulation
+     * that the concentration exceeds the given threshold concentration
+     *
+     * @param varName Variable name
+     * @param threshold Threshold value
+     * @return Time of arrial grid data
+     */
+    public GridData getArrivalTimeData(String varName, double threshold) {
+        int tnum = this.getDataInfo().getTimeNum();
+        this.setTimeIndex(0);
+        GridData gData = this.getGridData(varName);
+        GridData tData = new GridData(gData);
+        //tData.missingValue = -9999.0;
+        tData = tData.setValue(tData.missingValue);
+        int xnum = gData.getXNum();
+        int ynum = gData.getYNum();
+        Date date = this.getDataInfo().getTimes().get(0);
+        List<Integer> hours = this.getDataInfo().getTimeValues(date, "hours");
+        for (int t = 0; t < tnum; t++) {
+            int hour = hours.get(t);
+            if (t >= 1) {
+                this.setTimeIndex(t);
+                gData = this.getGridData(varName);
+            }
+            for (int i = 0; i < ynum; i++) {
+                for (int j = 0; j < xnum; j++) {
+                    if (gData.data[i][j] >= threshold) {
+                        if (MIMath.doubleEquals(tData.data[i][j], tData.missingValue)) {
+                            tData.data[i][j] = hour;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return tData;
+    }
+
+    /**
+     * Interpolate data to a station point
+     *
+     * @param varName Variable name
+     * @param x X coordinate of the station
+     * @param y Y coordinate of the station
+     * @param z Z coordinate of the station
+     * @param t Time coordinate of the station
+     * @return Interpolated value
+     */
+    public double toStation(String varName, double x, double y, double z, Date t) {
+        List<Date> times = this.getDataInfo().getTimes();
+        int tnum = times.size();
+        if (t.before(times.get(0)) || t.after(times.get(tnum - 1))) {
+            return this.getDataInfo().getMissingValue();
+        }
+        
+        double ivalue = this.getDataInfo().getMissingValue();
+        double v_t1, v_t2;
+        for (int i = 0; i < tnum; i++) {
+            if (t.equals(times.get(i))) {
+                ivalue = this.toStation(varName, x, y, z, i);
+                break;
+            }
+            if (t.before(times.get(i))) {
+                v_t1 = this.toStation(varName, x, y, z, i - 1);
+                v_t2 = this.toStation(varName, x, y, z, i);
+                int h = DateUtil.getTimeDeltaValue(t, times.get(i - 1), "hours");
+                int th = DateUtil.getTimeDeltaValue(times.get(i), times.get(i - 1), "hours");
+                ivalue = (v_t2 - v_t1) * h / th + v_t1;
+            }
+        }
+        
+        return ivalue;
+    }
+    
+    /**
+     * Interpolate data to a station point
+     *
+     * @param varNames Variable names
+     * @param x X coordinate of the station
+     * @param y Y coordinate of the station
+     * @param z Z coordinate of the station
+     * @param t Time coordinate of the station
+     * @return Interpolated values
+     */
+    public List<Double> toStation(List<String> varNames, double x, double y, double z, Date t) {
+        List<Date> times = this.getDataInfo().getTimes();
+        int tnum = times.size();
+        if (t.before(times.get(0)) || t.after(times.get(tnum - 1))) {
+            return null;
+        }
+
+        List<Double> ivalues = new ArrayList<Double>();
+        double v_t1, v_t2;
+        List<Double> v_t1s, v_t2s;
+        for (int i = 0; i < tnum; i++) {
+            if (t.equals(times.get(i))) {
+                ivalues = this.toStation(varNames, x, y, z, i);
+                break;
+            }
+            if (t.before(times.get(i))) {
+                v_t1s = this.toStation(varNames, x, y, z, i - 1);
+                v_t2s = this.toStation(varNames, x, y, z, i);
+                int h = DateUtil.getTimeDeltaValue(t, times.get(i - 1), "hours");
+                int th = DateUtil.getTimeDeltaValue(times.get(i), times.get(i - 1), "hours");
+                for (int j = 0; j < v_t1s.size(); j ++){
+                    v_t1 = v_t1s.get(j);
+                    v_t2 = v_t2s.get(j);
+                    ivalues.add((v_t2 - v_t1) * h / th + v_t1);
+                }                
+            }
+        }
+        
+        return ivalues;
+    }
+
+    /**
+     * Interpolate data to a station point
+     *
+     * @param varName Variable name
+     * @param x X coordinate of the station
+     * @param y Y coordinate of the station
+     * @param z Z coordinate of the station
+     * @param tidx Time index
+     * @return Interpolated value
+     */
+    public double toStation(String varName, double x, double y, double z, int tidx) {
+        double ivalue = this.getDataInfo().getMissingValue();
+        Variable var = this.getDataInfo().getVariable(varName);
+        List<Double> levels = var.getZDimension().getDimValue();
+        int znum = levels.size();
+        double v_z1, v_z2;
+        this.setTimeIndex(tidx);
+        for (int j = 0; j < znum; j++) {
+            if (MIMath.doubleEquals(z, levels.get(j))) {
+                this.setLevelIndex(j);
+                ivalue = this.getGridData(varName).toStation(x, y);
+                break;
+            }
+            if (z < levels.get(j)) {
+                if (j == 0)
+                    j = 1;
+                this.setLevelIndex(j - 1);
+                v_z1 = this.getGridData(varName).toStation(x, y);
+                this.setLatIndex(j);
+                v_z2 = this.getGridData(varName).toStation(x, y);
+                ivalue = (v_z2 - v_z1) * (z - levels.get(j - 1)) / (levels.get(j) - levels.get(j - 1)) + v_z1;
+                break;
+            }
+        }
+        
+        return ivalue;
+    }
+
+    /**
+     * Interpolate data to a station point
+     *
+     * @param varNames Variable names
+     * @param x X coordinate of the station
+     * @param y Y coordinate of the station
+     * @param z Z coordinate of the station
+     * @param tidx Time index
+     * @return Interpolated values
+     */
+    public List<Double> toStation(List<String> varNames, double x, double y, double z, int tidx) {
+        List<Double> ivalues = new ArrayList<Double>();
+        double ivalue;
+        Variable var = this.getDataInfo().getVariable(varNames.get(0));
+        List<Double> levels = var.getZDimension().getDimValue();
+        int znum = levels.size();
+        double v_z1, v_z2;
+        this.setTimeIndex(tidx);
+        for (int j = 0; j < znum; j++) {
+            for (String varName : varNames) {
+                if (MIMath.doubleEquals(z, levels.get(j))) {
+                    this.setLevelIndex(j);
+                    ivalue = this.getGridData(varName).toStation(x, y);
+                    ivalues.add(ivalue);
+                    break;
+                }
+                if (z < levels.get(j)) {
+                    this.setLevelIndex(j - 1);
+                    v_z1 = this.getGridData(varName).toStation(x, y);
+                    this.setLatIndex(j);
+                    v_z2 = this.getGridData(varName).toStation(x, y);
+                    ivalue = (v_z2 - v_z1) * (z - levels.get(j - 1)) / (levels.get(j) - levels.get(j - 1)) + v_z1;
+                    ivalues.add(ivalue);
+                    break;
+                }
+            }
+        }
+        
+        return ivalues;
     }
     // </eidtor-fold>
     // </editor-fold>

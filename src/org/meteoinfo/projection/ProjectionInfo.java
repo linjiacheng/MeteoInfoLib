@@ -13,10 +13,10 @@
  */
 package org.meteoinfo.projection;
 
-import org.osgeo.proj4j.CRSFactory;
-import org.osgeo.proj4j.CoordinateReferenceSystem;
-import org.osgeo.proj4j.datum.Datum;
-import org.osgeo.proj4j.proj.Projection;
+import org.meteoinfo.projection.proj4j.CRSFactory;
+import org.meteoinfo.projection.proj4j.CoordinateReferenceSystem;
+import org.meteoinfo.projection.proj4j.datum.Datum;
+import org.meteoinfo.projection.proj4j.proj.Projection;
 
 /**
  *
@@ -146,10 +146,31 @@ public class ProjectionInfo {
         if (this._projName == ProjectionNames.LongLat && projInfo._projName == ProjectionNames.LongLat)
             return true;
         else {
-            if (this.toProj4String().equals(projInfo.toProj4String()))
+            String proj4Str1 = this.toProj4String();
+            String proj4Str2 = projInfo.toProj4String();
+            if (proj4Str1.equals(proj4Str2))
                 return true;
-            else
-                return false;
+            else {
+                boolean eq = true;
+                String[] params = proj4Str1.split("\\s+");
+                for (String param : params){
+                    if (!proj4Str2.contains(param)) {
+                        eq = false;
+                        break;
+                    }
+                }
+                if (eq){
+                    params = proj4Str2.split("\\s+");
+                    for (String param : params){
+                        if (!proj4Str1.contains(param)) {
+                            eq = false;
+                            break;
+                        }
+                    }
+                }
+                
+                return eq;
+            }
         }            
     }
 

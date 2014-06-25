@@ -17,7 +17,7 @@ import java.awt.Rectangle;
 
 /**
  * Template
- * 
+ *
  * @author Yaqiang Wang
  */
 public class Extent {
@@ -50,6 +50,7 @@ public class Extent {
 
     /**
      * Constructor
+     *
      * @param xMin Minimum X
      * @param xMax Maximum X
      * @param yMin Minimum Y
@@ -61,12 +62,13 @@ public class Extent {
         minY = yMin;
         maxY = yMax;
     }
-    
+
     /**
      * Constructor
+     *
      * @param aExtent The extent
      */
-    public Extent(Extent aExtent){
+    public Extent(Extent aExtent) {
         this.minX = aExtent.minX;
         this.maxX = aExtent.maxX;
         this.minY = aExtent.minY;
@@ -87,6 +89,7 @@ public class Extent {
 
     /**
      * Judge if this extent include another extent
+     *
      * @param bExtent extent
      * @return is included
      */
@@ -100,26 +103,40 @@ public class Extent {
 
     /**
      * Convert to rectangle
+     *
      * @return rectangel
      */
     public Rectangle convertToRectangle() {
         return new Rectangle((int) minX, (int) minY, (int) getWidth(), (int) getHeight());
     }
-    
+
     /**
      * Get center point
+     *
      * @return Center point
      */
-    public PointD getCenterPoint(){
+    public PointD getCenterPoint() {
         return new PointD((maxX - minX) / 2 + minX, (maxY - minY) / 2 + minY);
     }
-    
+
+    /**
+     * Shift extent
+     *
+     * @param dx X shift value
+     * @param dy Y shift value
+     * @return Shifted extent
+     */
+    public Extent shift(double dx, double dy) {
+        return new Extent(minX + dx, maxX + dx, minY + dy, maxY + dy);
+    }
+
     /**
      * Clone
+     *
      * @return Extent object
      */
     @Override
-    public Object clone(){
+    public Object clone() {
         Extent aExtent = new Extent(this.minX, this.maxX, this.minY, this.maxY);
         return aExtent;
     }

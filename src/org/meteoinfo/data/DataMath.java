@@ -13,6 +13,7 @@
  */
 package org.meteoinfo.data;
 
+import java.util.ArrayList;
 import org.meteoinfo.global.MIMath;
 import java.util.Arrays;
 import java.util.List;
@@ -63,28 +64,80 @@ public abstract class DataMath {
      * @param b Object b
      * @return Result object
      */
-    public static Object subtract(Object a, Object b) {
+    public static Object sub(Object a, Object b) {
         if (a.getClass() == GridData.class) {
             if (b.getClass() == GridData.class) {
-                return ((GridData) a).subtract((GridData) b);
+                return ((GridData) a).sub((GridData) b);
             } else {
-                return ((GridData) a).subtract((Double) b);
+                return ((GridData) a).sub((Double) b);
             }
         } else if (a.getClass() == StationData.class) {
             if (b.getClass() == StationData.class) {
-                return ((StationData) a).subtract((StationData) b);
+                return ((StationData) a).sub((StationData) b);
             } else {
-                return ((StationData) a).subtract((Double) b);
+                return ((StationData) a).sub((Double) b);
             }
         } else {
             if (b.getClass() == GridData.class) {
-                return ((GridData) b).subtract((Double) a);
+                return sub((Double) a, (GridData) b);
             } else if (b.getClass() == StationData.class) {
-                return ((StationData) b).subtract((Double) a);
+                return sub((Double) a, (StationData) b);
             } else {
                 return (Double) a - (Double) b;
             }
         }
+    }
+
+    /**
+     * Subtract operation between a double value and a grid data
+     *
+     * @param value Double value
+     * @param gridData Grid data
+     * @return Result grid data
+     */
+    public static GridData sub(double value, GridData gridData) {
+        int xNum = gridData.getXNum();
+        int yNum = gridData.getYNum();
+
+        GridData cGrid = new GridData(gridData);
+        for (int i = 0; i < yNum; i++) {
+            for (int j = 0; j < xNum; j++) {
+                if (MIMath.doubleEquals(gridData.data[i][j], gridData.missingValue)) {
+                    cGrid.data[i][j] = gridData.missingValue;
+                } else {
+                    cGrid.data[i][j] = value - gridData.data[i][j];
+                }
+            }
+        }
+
+        return cGrid;
+    }
+
+    /**
+     * Subtract operator between a double value and a station data
+     *
+     * @param value The value
+     * @param stData Station data
+     * @return Result station data
+     */
+    public static StationData sub(double value, StationData stData) {
+        StationData cStData = new StationData();
+        String aStid;
+        double x, y;
+        for (int i = 0; i < stData.stations.size(); i++) {
+            aStid = stData.stations.get(i);
+
+            double aValue = stData.getValue(i);
+            x = stData.getX(i);
+            y = stData.getY(i);
+            if (MIMath.doubleEquals(aValue, stData.missingValue)) {
+                cStData.addData(aStid, x, y, aValue);
+            } else {
+                cStData.addData(aStid, x, y, value - aValue);
+            }
+        }
+
+        return cStData;
     }
 
     /**
@@ -94,24 +147,24 @@ public abstract class DataMath {
      * @param b Object b
      * @return Result object
      */
-    public static Object multiple(Object a, Object b) {
+    public static Object mul(Object a, Object b) {
         if (a.getClass() == GridData.class) {
             if (b.getClass() == GridData.class) {
-                return ((GridData) a).multiply((GridData) b);
+                return ((GridData) a).mul((GridData) b);
             } else {
-                return ((GridData) a).multiply((Double) b);
+                return ((GridData) a).mul((Double) b);
             }
         } else if (a.getClass() == StationData.class) {
             if (b.getClass() == StationData.class) {
-                return ((StationData) a).multiply((StationData) b);
+                return ((StationData) a).mul((StationData) b);
             } else {
-                return ((StationData) a).multiply((Double) b);
+                return ((StationData) a).mul((Double) b);
             }
         } else {
             if (b.getClass() == GridData.class) {
-                return ((GridData) b).multiply((Double) a);
+                return ((GridData) b).mul((Double) a);
             } else if (b.getClass() == StationData.class) {
-                return ((StationData) b).multiply((Double) a);
+                return ((StationData) b).mul((Double) a);
             } else {
                 return (Double) a * (Double) b;
             }
@@ -125,28 +178,80 @@ public abstract class DataMath {
      * @param b Object b
      * @return Result object
      */
-    public static Object divide(Object a, Object b) {
+    public static Object div(Object a, Object b) {
         if (a.getClass() == GridData.class) {
             if (b.getClass() == GridData.class) {
-                return ((GridData) a).divide((GridData) b);
+                return ((GridData) a).div((GridData) b);
             } else {
-                return ((GridData) a).divide((Double) b);
+                return ((GridData) a).div((Double) b);
             }
         } else if (a.getClass() == StationData.class) {
             if (b.getClass() == StationData.class) {
-                return ((StationData) a).divide((StationData) b);
+                return ((StationData) a).div((StationData) b);
             } else {
-                return ((StationData) a).divide((Double) b);
+                return ((StationData) a).div((Double) b);
             }
         } else {
             if (b.getClass() == GridData.class) {
-                return ((GridData) b).divide((Double) a);
+                return div((Double) a, (GridData) b);
             } else if (b.getClass() == StationData.class) {
-                return ((StationData) b).divide((Double) a);
+                return div((Double) a, (StationData) b);
             } else {
                 return (Double) a / (Double) b;
             }
         }
+    }
+
+    /**
+     * Divide operation between a double value and a grid data
+     *
+     * @param value Double value
+     * @param gridData Grid data
+     * @return Result grid data
+     */
+    public static GridData div(double value, GridData gridData) {
+        int xNum = gridData.getXNum();
+        int yNum = gridData.getYNum();
+
+        GridData cGrid = new GridData(gridData);
+        for (int i = 0; i < yNum; i++) {
+            for (int j = 0; j < xNum; j++) {
+                if (MIMath.doubleEquals(gridData.data[i][j], gridData.missingValue)) {
+                    cGrid.data[i][j] = gridData.missingValue;
+                } else {
+                    cGrid.data[i][j] = value / gridData.data[i][j];
+                }
+            }
+        }
+
+        return cGrid;
+    }
+
+    /**
+     * Divide operator between a double value and a station data
+     *
+     * @param value The value
+     * @param stData Station data
+     * @return Result station data
+     */
+    public static StationData div(double value, StationData stData) {
+        StationData cStData = new StationData();
+        String aStid;
+        double x, y;
+        for (int i = 0; i < stData.stations.size(); i++) {
+            aStid = stData.stations.get(i);
+
+            double aValue = stData.getValue(i);
+            x = stData.getX(i);
+            y = stData.getY(i);
+            if (MIMath.doubleEquals(aValue, stData.missingValue)) {
+                cStData.addData(aStid, x, y, aValue);
+            } else {
+                cStData.addData(aStid, x, y, value / aValue);
+            }
+        }
+
+        return cStData;
     }
 
     // </editor-fold>
@@ -347,7 +452,7 @@ public abstract class DataMath {
             return Math.asin((Double) a);
         }
     }
-    
+
     /**
      * Take anti-cosine value
      *
@@ -364,7 +469,7 @@ public abstract class DataMath {
             return Math.acos((Double) a);
         }
     }
-    
+
     /**
      * Take anti-tangent value
      *
@@ -381,7 +486,7 @@ public abstract class DataMath {
             return Math.atan((Double) a);
         }
     }
-    
+
     /**
      * Take sine value
      *
@@ -398,7 +503,7 @@ public abstract class DataMath {
             return Math.sin((Double) a);
         }
     }
-    
+
     /**
      * Take cosine value
      *
@@ -415,7 +520,7 @@ public abstract class DataMath {
             return Math.cos((Double) a);
         }
     }
-    
+
     /**
      * Take tangent value
      *
@@ -432,7 +537,7 @@ public abstract class DataMath {
             return Math.tan((Double) a);
         }
     }
-    
+
     /**
      * Take e base power value
      *
@@ -449,7 +554,7 @@ public abstract class DataMath {
             return Math.exp((Double) a);
         }
     }
-    
+
     /**
      * Take power value
      *
@@ -467,7 +572,7 @@ public abstract class DataMath {
             return Math.pow((Double) a, p);
         }
     }
-    
+
     /**
      * Take logrithm value
      *
@@ -484,7 +589,7 @@ public abstract class DataMath {
             return Math.log((Double) a);
         }
     }
-    
+
     /**
      * Take 10 base logrithm value
      *
@@ -501,7 +606,7 @@ public abstract class DataMath {
             return Math.log10((Double) a);
         }
     }
-    
+
     /**
      * Take squre root value
      *
@@ -518,6 +623,105 @@ public abstract class DataMath {
             return Math.sqrt((Double) a);
         }
     }
+
+    /**
+     * Calculate average grid data from grid data list
+     *
+     * @param gDataList Grid data list
+     * @return Averaged grid data
+     */
+    public static GridData average(List<GridData> gDataList) {
+        GridData rData = gDataList.get(0);
+        for (int i = 1; i < gDataList.size(); i++) {
+            rData = rData.add(gDataList.get(i));
+        }
+        rData = rData.div(gDataList.size());
+
+        return rData;
+    }
+
+    /**
+     * Calculate average grid data from grid data list
+     *
+     * @param gDataList Grid data list
+     * @param ignoreUndef If ignore missing data
+     * @return Averaged grid data
+     */
+    public static GridData average(List<GridData> gDataList, boolean ignoreUndef) {
+        if (ignoreUndef) {
+            return average(gDataList);
+        } else {
+            GridData rData = new GridData(gDataList.get(0));
+            GridData numData = new GridData(gDataList.get(0));
+            rData.setValue(0);
+            numData.setValue(0);
+            for (int d = 0; d < gDataList.size(); d++) {
+                GridData aGrid = gDataList.get(d);
+                for (int i = 0; i < rData.getYNum(); i++) {
+                    for (int j = 0; j < rData.getXNum(); j++) {
+                        if (!MIMath.doubleEquals(aGrid.data[i][j], aGrid.missingValue)) {
+                            rData.data[i][j] = aGrid.data[i][j] + rData.data[i][j];
+                            numData.data[i][j] += 1;
+                        }
+                    }
+                }
+            }
+
+            for (int i = 0; i < rData.getYNum(); i++) {
+                for (int j = 0; j < rData.getXNum(); j++) {
+                    if (rData.data[i][j] == 0) {
+                        rData.data[i][j] = rData.missingValue;
+                    }
+                }
+            }
+            rData = rData.div(numData);
+
+            return rData;
+        }
+    }
+
+    /**
+     * Calculate average grid data from grid data list
+     *
+     * @param gDataList Grid data list
+     * @param ignoreUndef If ignore missing value
+     * @param validNum Valid number
+     * @return Averaged grid data
+     */
+    public static GridData average(List<GridData> gDataList, boolean ignoreUndef, int validNum) {
+        if (ignoreUndef) {
+            return average(gDataList);
+        } else {
+            GridData rData = new GridData(gDataList.get(0));
+            GridData numData = new GridData(gDataList.get(0));
+            rData.setValue(0);
+            numData.setValue(0);
+            for (int d = 0; d < gDataList.size(); d++) {
+                GridData aGrid = gDataList.get(d);
+                for (int i = 0; i < rData.getYNum(); i++) {
+                    for (int j = 0; j < rData.getXNum(); j++) {
+                        if (!MIMath.doubleEquals(aGrid.data[i][j], aGrid.missingValue)) {
+                            rData.data[i][j] = aGrid.data[i][j] + rData.data[i][j];
+                            numData.data[i][j] += 1;
+                        }
+                    }
+                }
+            }
+
+            for (int i = 0; i < rData.getYNum(); i++) {
+                for (int j = 0; j < rData.getXNum(); j++) {
+                    if (rData.data[i][j] == 0) {
+                        rData.data[i][j] = rData.missingValue;
+                    }
+                }
+            }
+            numData.replaceValue(validNum, 0, false);
+            rData = rData.div(numData);
+
+            return rData;
+        }
+    }
+
     // </editor-fold>
     // <editor-fold desc="Statistics">
     /**
@@ -669,6 +873,383 @@ public abstract class DataMath {
         }
 
         return new double[]{u, beta};
+    }
+    // </editor-fold>
+    // <editor-fold desc="Spatial">
+
+    /**
+     * Take magnitude value from U/V grid data
+     *
+     * @param uData U grid data
+     * @param vData V grid data
+     * @return Magnitude grid data
+     */
+    public static GridData magnitude(GridData uData, GridData vData) {
+        int xNum = uData.getXNum();
+        int yNum = uData.getYNum();
+
+        GridData cGrid = new GridData(uData);
+        for (int i = 0; i < yNum; i++) {
+            for (int j = 0; j < xNum; j++) {
+                if (Math.abs(uData.data[i][j] / uData.missingValue - 1) < 0.01
+                        || Math.abs(vData.data[i][j] / vData.missingValue - 1) < 0.01) {
+                    cGrid.data[i][j] = uData.missingValue;
+                } else {
+                    cGrid.data[i][j] = Math.sqrt(uData.data[i][j] * uData.data[i][j] + vData.data[i][j]
+                            * vData.data[i][j]);
+                }
+            }
+        }
+
+        return cGrid;
+    }
+
+    /**
+     * Take magnitude value from U/V station data
+     *
+     * @param uData U station data
+     * @param vData V station data
+     * @return Magnitude station data
+     */
+    public static StationData magnitude(StationData uData, StationData vData) {
+        if (!MIMath.isExtentCross(uData.dataExtent, vData.dataExtent)) {
+            return null;
+        }
+
+        StationData cStData = new StationData();
+        List<double[]> cData = new ArrayList<double[]>();
+        String aStid;
+        int stIdx = -1;
+        double minX, maxX, minY, maxY;
+        minX = 0;
+        maxX = 0;
+        minY = 0;
+        maxY = 0;
+        for (int i = 0; i < uData.stations.size(); i++) {
+            aStid = uData.stations.get(i);
+            if (aStid.equals("99999")) {
+                continue;
+            }
+
+            double aValue = uData.data[2][i];
+            if (aValue == uData.missingValue) {
+                continue;
+            }
+
+            stIdx = vData.stations.indexOf(aStid);
+            if (stIdx >= 0) {
+                double bValue = vData.data[2][stIdx];
+                if (bValue == vData.missingValue) {
+                    continue;
+                }
+
+                cStData.stations.add(aStid);
+                double[] theData = new double[3];
+                theData[0] = uData.data[0][i];
+                theData[1] = uData.data[1][i];
+                theData[2] = Math.sqrt(aValue * aValue + bValue * bValue);
+                cData.add(theData);
+
+                if (cStData.stations.size() == 1) {
+                    minX = theData[0];
+                    maxX = minX;
+                    minY = theData[1];
+                    maxY = minY;
+                } else {
+                    if (minX > theData[0]) {
+                        minX = theData[0];
+                    } else if (maxX < theData[0]) {
+                        maxX = theData[0];
+                    }
+                    if (minY > theData[1]) {
+                        minY = theData[1];
+                    } else if (maxY < theData[1]) {
+                        maxY = theData[1];
+                    }
+                }
+            }
+        }
+        cStData.dataExtent.minX = minX;
+        cStData.dataExtent.maxX = maxX;
+        cStData.dataExtent.minY = minY;
+        cStData.dataExtent.maxY = maxY;
+        cStData.data = new double[3][cData.size()];
+        for (int i = 0; i < cData.size(); i++) {
+            cStData.data[0][i] = cData.get(i)[0];
+            cStData.data[1][i] = cData.get(i)[1];
+            cStData.data[2][i] = cData.get(i)[2];
+        }
+
+        return cStData;
+    }
+
+    /**
+     * Performs a centered difference operation on a grid data in the x or y
+     * direction
+     *
+     * @param aData The grid data
+     * @param isX If is x direction
+     * @return Result grid data
+     */
+    public static GridData cdiff(GridData aData, boolean isX) {
+        int xnum = aData.getXNum();
+        int ynum = aData.getYNum();
+        GridData bData = new GridData(aData);
+        for (int i = 0; i < ynum; i++) {
+            for (int j = 0; j < xnum; j++) {
+                if (i == 0 || i == ynum - 1 || j == 0 || j == xnum - 1) {
+                    bData.data[i][j] = aData.missingValue;
+                } else {
+                    double a, b;
+                    if (isX) {
+                        a = aData.data[i][j + 1];
+                        b = aData.data[i][j - 1];
+                    } else {
+                        a = aData.data[i + 1][j];
+                        b = aData.data[i - 1][j];
+                    }
+                    if (MIMath.doubleEquals(a, aData.missingValue) || MIMath.doubleEquals(b, aData.missingValue)) {
+                        bData.data[i][j] = aData.missingValue;
+                    } else {
+                        bData.data[i][j] = a - b;
+                    }
+                }
+            }
+        }
+
+        return bData;
+    }
+
+    /**
+     * Calculates the vertical component of the curl (ie, vorticity)
+     *
+     * @param uData U component
+     * @param vData V component
+     * @return Curl
+     */
+    public static GridData hcurl(GridData uData, GridData vData) {
+        GridData lonData = new GridData(uData);
+        GridData latData = new GridData(vData);
+        int i, j;
+        for (i = 0; i < uData.getYNum(); i++) {
+            for (j = 0; j < uData.getXNum(); j++) {
+                lonData.data[i][j] = uData.xArray[j];
+                latData.data[i][j] = uData.yArray[i];
+            }
+        }
+        GridData dv = cdiff(vData, true);
+        GridData dx = cdiff(lonData, true).mul(Math.PI / 180);
+        GridData du = cdiff(uData.mul((GridData) cos(latData.mul(Math.PI / 180))), false);
+        GridData dy = cdiff(latData, false).mul(Math.PI / 180);
+        GridData gData = (dv.div(dx).sub(du.div(dy))).div(((GridData) (cos(latData.mul(Math.PI / 180)))).mul(6.37e6));
+
+        return gData;
+    }
+
+    /**
+     * Calculates the horizontal divergence using finite differencing
+     *
+     * @param uData U component
+     * @param vData V component
+     * @return Divergence
+     */
+    public static GridData hdivg(GridData uData, GridData vData) {
+        GridData lonData = new GridData(uData);
+        GridData latData = new GridData(uData);
+        int i, j;
+        for (i = 0; i < uData.getYNum(); i++) {
+            for (j = 0; j < uData.getXNum(); j++) {
+                lonData.data[i][j] = uData.xArray[j];
+                latData.data[i][j] = uData.yArray[i];
+            }
+        }
+        GridData du = cdiff(uData, true);
+        GridData dx = cdiff(lonData, true).mul(Math.PI / 180);
+        GridData dv = cdiff(vData.mul((GridData) cos(latData.mul(Math.PI / 180))), false);
+        GridData dy = cdiff(latData, false).mul(Math.PI / 180);
+        GridData gData = (du.div(dx).add(dv.div(dy))).div(((GridData) cos(latData.mul(Math.PI / 180))).mul(6.37e6));
+
+        return gData;
+    }
+    // </editor-fold>
+    // <editor-fold desc="Gaussian">
+
+    /**
+     * This function provides latitudes on a Gaussian grid from the number of
+     * latitude lines
+     *
+     * @param nlat the number of latitude lines
+     * @return The latitudes of hemisphere
+     */
+    public static Object[] gauss2Lats(int nlat) {
+        double acon = 180.0 / Math.PI;
+
+        // convergence criterion for iteration of cos latitude
+        double xlim = 1.0e-7;
+
+        // initialise arrays
+        int i;
+        //int iNum = 720;
+        int iNum = nlat;
+        double[] cosc = new double[iNum];
+        double[] gwt = new double[iNum];
+        double[] sinc = new double[iNum];
+        double[] colat = new double[iNum];
+        double[] wos2 = new double[iNum];
+        for (i = 0; i < iNum; i++) {
+            cosc[i] = 0.0;
+            gwt[i] = 0.0;
+            sinc[i] = 0.0;
+            colat[i] = 0.0;
+            wos2[i] = 0.0;
+        }
+
+        // the number of zeros between pole and equator
+        int nzero = nlat / 2;
+
+        // set first guess for cos(colat)
+        for (i = 1; i <= nzero; i++) {
+            cosc[i - 1] = Math.sin((i - 0.5) * Math.PI / nlat + Math.PI * 0.5);
+        }
+
+        // constants for determining the derivative of the polynomial
+        int fi = nlat;
+        double fi1 = fi + 1.0;
+        double a = fi * fi1 / Math.sqrt(4.0 * fi1 * fi1 - 1.0);
+        double b = fi1 * fi / Math.sqrt(4.0 * fi * fi - 1.0);
+
+        //loop over latitudes, iterating the search for each root
+        double c, d;
+        for (i = 0; i < nzero; i++) {
+            // determine the value of the ordinary Legendre polynomial for the current guess root
+            double g = gord(nlat, cosc[i]);
+            // determine the derivative of the polynomial at this point
+            double gm = gord(nlat - 1, cosc[i]);
+            double gp = gord(nlat + 1, cosc[i]);
+            double gt = (cosc[i] * cosc[i] - 1.0) / (a * gp - b * gm);
+            // update the estimate of the root
+            double delta = g * gt;
+            cosc[i] = cosc[i] - delta;
+
+            // if convergence criterion has not been met, keep trying
+            while (Math.abs(delta) > xlim) {
+                g = gord(nlat, cosc[i]);
+                gm = gord(nlat - 1, cosc[i]);
+                gp = gord(nlat + 1, cosc[i]);
+                gt = (cosc[i] * cosc[i] - 1.0) / (a * gp - b * gm);
+                delta = g * gt;
+                cosc[i] = cosc[i] - delta;
+            }
+            // determine the Gaussian weights
+            c = 2.0 * (1.0 - cosc[i] * cosc[i]);
+            d = gord(nlat - 1, cosc[i]);
+            d = d * d * fi * fi;
+            gwt[i] = c * (fi - 0.5) / d;
+        }
+
+        // determine the colatitudes and sin(colat) and weights over sin**2
+        for (i = 0; i < nzero; i++) {
+            colat[i] = Math.acos(cosc[i]);
+            sinc[i] = Math.sin(colat[i]);
+            wos2[i] = gwt[i] / (sinc[i] * sinc[i]);
+        }
+
+        // if nlat is odd, set values at the equator
+        if (nlat % 2 != 0) {
+            i = nzero;
+            cosc[i] = 0.0;
+            c = 2.0;
+            d = gord(nlat - 1, cosc[i]);
+            d = d * d * fi * fi;
+            gwt[i] = c * (fi - 0.5) / d;
+            colat[i] = Math.PI * 0.5;
+            sinc[i] = 1.0;
+            wos2[i] = gwt[i];
+        }
+
+        // determine the southern hemisphere values by symmetry
+        for (i = nlat - nzero; i < nlat; i++) {
+            int j = nlat - i - 1;
+            cosc[i] = -cosc[j];
+            gwt[i] = gwt[j];
+            colat[i] = Math.PI - colat[j];
+            sinc[i] = sinc[j];
+            wos2[i] = wos2[j];
+        }
+
+        double ylat = -90.0;
+
+        // calculate latitudes and latitude spacing
+        double[] xlat = new double[nlat];
+        double[] dlat = new double[nlat];
+        for (i = 0; i < nzero; i++) {
+            xlat[i] = -Math.acos(sinc[i]) * acon;
+            dlat[i] = xlat[i] - ylat;
+            ylat = xlat[i];
+        }
+
+        if (nlat % 2 != 0) {
+            i = nzero;
+            xlat[i] = 0;
+            dlat[i] = xlat[i] - ylat;
+        }
+
+        for (i = nlat - nzero; i < nlat; i++) {
+            xlat[i] = Math.acos(sinc[i]) * acon;
+            dlat[i] = xlat[i] - ylat;
+            ylat = xlat[i];
+        }
+
+        //// calculate latitudes and latitude spacing
+        //double[] xlat = new double[nlat];
+        //double[] dlat = new double[nlat];
+        //for (i = 0; i < nlat; i++)
+        //{
+        //    xlat[i] = Math.Acos(sinc[i]) * acon;
+        //    dlat[i] = xlat[i] - ylat;
+        //    ylat = xlat[i];
+        //}
+
+        return new Object[]{xlat, dlat};
+    }
+
+    /**
+     * Calculates the value of an ordinary Legendre polynomial at a latitude
+     *
+     * @param n The degree of the polynomial
+     * @param x Cos(colatitude)
+     * @return The value of the Legendre polynomial of degree n at latitude
+     * asin(x)
+     */
+    private static double gord(int n, double x) {
+        //determine the colatitude
+        double colat = Math.acos(x);
+        double c1 = Math.sqrt(2.0);
+
+        for (int i = 1; i <= n; i++) {
+            c1 = c1 * Math.sqrt(1.0 - 1.0 / (4 * i * i));
+        }
+
+        int fn = n;
+        double ang = fn * colat;
+        double s1 = 0.0;
+        double c4 = 1.0;
+        double a = -1.0;
+        double b = 0.0;
+
+        for (int k = 0; k <= n; k = k + 2) {
+            if (k == n) {
+                c4 = 0.5 * c4;
+            }
+
+            s1 = s1 + c4 * Math.cos(ang);
+            a = a + 2.0;
+            b = b + 1.0;
+            int fk = k;
+            ang = colat * (fn - fk - 2.0);
+            c4 = (a * (fn - b + 1.0) / (b * (fn + fn - a))) * c4;
+        }
+        return s1 * c1;
     }
     // </editor-fold>
 }

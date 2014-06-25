@@ -37,6 +37,7 @@ import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -51,7 +52,6 @@ import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.projection.Reproject;
 import ucar.ma2.Array;
-import ucar.ma2.ArrayDouble;
 import ucar.ma2.InvalidRangeException;
 import ucar.nc2.NetcdfFile;
 
@@ -151,6 +151,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
     // </editor-fold>
     // <editor-fold desc="Methods">
+    // <editor-fold desc="Read Data">
     @Override
     public void readDataInfo(String fileName) {
         this.setFileName(fileName);
@@ -159,6 +160,9 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             ncfile = NetcdfFile.open(fileName);
             _fileTypeStr = ncfile.getFileTypeDescription();
             _fileTypeId = ncfile.getFileTypeId();
+//            if (_fileTypeId.equals("GRIB2")){
+//                ncfile.getIosp().
+//            }
 
             //Read dimensions
             _dimensions = ncfile.getDimensions();
@@ -166,8 +170,15 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 _isHDFEOS = true;
                 for (ucar.nc2.Dimension dim : _dimensions) {
                     if (dim.getShortName().contains("_")) {
-                        int idx = dim.getShortName().lastIndexOf("_");
-                        String newName = dim.getShortName().substring(idx + 1);
+                        String newName;
+                        //int idx = dim.getShortName().lastIndexOf("_");
+                        int idx = dim.getShortName().indexOf("Data_Fields_");
+                        if (idx >= 0) {
+                            newName = dim.getShortName().substring(idx + 12);
+                        } else {
+                            idx = dim.getShortName().indexOf("_");
+                            newName = dim.getShortName().substring(idx + 1);
+                        }
                         dim.setShortName(newName);
                     }
                 }
@@ -229,7 +240,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 //                        ndim.setDimLength(dim.getLength());
 //                    }
                 }
-
+                
                 vars.add(nvar);
             }
             this.setVariables(vars);
@@ -251,14 +262,28 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             }
         }
     }
-
+    
     private int getDimensionIndex(ucar.nc2.Dimension dim) {
         for (int i = 0; i < _dimensions.size(); i++) {
-            if (_dimensions.get(i).getShortName().equals(dim.getShortName())) {
+            ucar.nc2.Dimension idim = _dimensions.get(i);
+            if (idim.getShortName().equals(dim.getShortName())) {
                 return i;
             }
         }
-
+        
+        for (int i = 0; i < _dimensions.size(); i++) {
+            ucar.nc2.Dimension idim = _dimensions.get(i);
+            if (idim.getLength() == (dim.getLength())) {
+                String name1 = idim.getShortName();
+                String name2 = dim.getShortName();
+                int len1 = name1.length();
+                int len2 = name2.length();
+                if (name1.substring(len1 - len2).equals(name2)) {
+                    return i;
+                }
+            }
+        }
+        
         return -1;
     }
 
@@ -274,7 +299,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 return dim;
             }
         }
-
+        
         return null;
     }
 
@@ -292,17 +317,17 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
         }
         return null;
     }
-
+    
     private ucar.nc2.Attribute findGlobalAttribute(String attName) {
         for (ucar.nc2.Attribute att : this._gAtts) {
             if (att.getShortName().equalsIgnoreCase(attName)) {
                 return att;
             }
         }
-
+        
         return null;
     }
-
+    
     private Dimension findCoordDimension(ucar.nc2.Dimension dim) {
         if (dim.getShortName().equals(this.getXDimension().getDimName())) {
             return this.getXDimension();
@@ -316,7 +341,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             return null;
         }
     }
-
+    
     private Conventions getConvention() {
         Conventions convention = _convention;
         boolean isIOAPI = false;
@@ -333,22 +358,26 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 if (title.toUpperCase().contains("OUTPUT FROM WRF") || title.toUpperCase().contains("OUTPUT FROM GEOGRID")
                         || title.toUpperCase().contains("OUTPUT FROM GRIDGEN") || title.toUpperCase().contains("OUTPUT FROM METGRID")) {
                     isWRFOOUT = true;
+                    break;
                 }
-                break;
+                if (title.toUpperCase().contains("OUTPUT FROM") && title.toUpperCase().contains("WRF")) {
+                    isWRFOOUT = true;
+                    break;
+                }
             }
         }
-
+        
         if (isIOAPI) {
             convention = Conventions.IOAPI;
         }
-
+        
         if (isWRFOOUT) {
             convention = Conventions.WRFOUT;
         }
-
+        
         return convention;
     }
-
+    
     private void getProjection() {
         String projStr = this.getProjectionInfo().toProj4String();
         switch (_convention) {
@@ -366,7 +395,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             this.setProjectionInfo(new ProjectionInfo(projStr));
         }
     }
-
+    
     private String getProjection_CF() {
         String projStr = this.getProjectionInfo().toProj4String();
         if (this._isHDFEOS) {
@@ -376,7 +405,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                     pVar = aVar;
                 }
             }
-
+            
             if (pVar != null) {
                 ucar.nc2.Attribute projAtt = pVar.findAttributeIgnoreCase("Projection");
                 String proj = projAtt.getStringValue();
@@ -395,7 +424,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                         //+ "+y_0=" + params.getObject(7).toString();                        
                     }
                 }
-
+                
                 ucar.nc2.Attribute ulAtt = pVar.findAttributeIgnoreCase("UpperLeftPointMtrs");
                 ucar.nc2.Attribute lrAtt = pVar.findAttributeIgnoreCase("LowerRightMtrs");
                 double xmin = ulAtt.getValues().getDouble(0);
@@ -422,7 +451,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                         this.setYReverse(true);
                     }
                 }
-
+                
                 Dimension xDim = this.findDimension("XDim");
                 Dimension yDim = this.findDimension("YDim");
                 int xnum = xDim.getDimLength();
@@ -455,7 +484,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                     break;
                 }
             }
-
+            
             if (pVar != null) {
                 ucar.nc2.Attribute pAtt = pVar.getAttributes().get(pvIdx);
                 String attStr = pAtt.getStringValue();
@@ -472,7 +501,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                     if (!sp2.isEmpty()) {
                         projStr += "+lat_2=" + sp2;
                     }
-
+                    
                     projStr += "+lon_0=" + pVar.findAttribute("longitude_of_central_meridian").getValue(0).toString()
                             + "+lat_0=" + pVar.findAttribute("latitude_of_projection_origin").getValue(0).toString();
                     if (pVar.findAttribute("false_easting") != null) {
@@ -514,7 +543,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                     if (!sp2.isEmpty()) {
                         projStr += "+lat_2=" + sp2;
                     }
-
+                    
                     projStr += "+lon_0=" + pVar.findAttribute("longitude_of_central_meridian").getValue(0).toString()
                             + "+lat_0=" + pVar.findAttribute("latitude_of_projection_origin").getValue(0).toString();
                     if (pVar.findAttribute("false_easting") != null) {
@@ -526,13 +555,13 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 } else if (attStr.equals("lambert_cylindrical_equal_area")) {
                     projStr = "+proj=cea"
                             + "+lon_0=" + pVar.findAttribute("longitude_of_central_meridian").getValue(0).toString();
-
+                    
                     if (pVar.findAttribute("standard_parallel") != null) {
                         projStr += "+lat_ts=" + pVar.findAttribute("standard_parallel").getValue(0).toString();
                     } else if (pVar.findAttribute("scale_factor_at_projection_origin") != null) {
                         projStr += "+k_0=" + pVar.findAttribute("scale_factor_at_projection_origin").getValue(0).toString();
                     }
-
+                    
                     if (pVar.findAttribute("false_easting") != null) {
                         projStr += "+x_0=" + pVar.findAttribute("false_easting").getValue(0).toString();
                     }
@@ -542,13 +571,13 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 } else if (attStr.equals("mercator")) {
                     projStr = "+proj=merc"
                             + "+lon_0=" + pVar.findAttribute("longitude_of_projection_origin").getValue(0).toString();
-
+                    
                     if (pVar.findAttribute("standard_parallel") != null) {
                         projStr += "+lat_ts=" + pVar.findAttribute("standard_parallel").getValue(0).toString();
                     } else if (pVar.findAttribute("scale_factor_at_projection_origin") != null) {
                         projStr += "+k_0=" + pVar.findAttribute("scale_factor_at_projection_origin").getValue(0).toString();
                     }
-
+                    
                     if (pVar.findAttribute("false_easting") != null) {
                         projStr += "+x_0=" + pVar.findAttribute("false_easting").getValue(0).toString();
                     }
@@ -567,9 +596,12 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                     }
                 } else if (attStr.equals("polar_stereographic")) {
                     projStr = "+proj=stere"
-                            + "+lon_0=" + pVar.findAttribute("straight_vertical_longitude_from_pole").getValue(0).toString()
+                            + "+lon_0=" + pVar.findAttribute("longitude_of_projection_origin").getValue(0).toString()
                             + "+lat_0=" + pVar.findAttribute("latitude_of_projection_origin").getValue(0).toString();
-
+                    
+                    if (pVar.findAttribute("standard_parallel") != null) {
+                        projStr += "+lat_ts=" + pVar.findAttribute("standard_parallel").getValue(0).toString();
+                    }
                     if (pVar.findAttribute("scaling_factor") != null) {
                         projStr += "+k=" + pVar.findAttribute("scaling_factor").getValue(0).toString();
                     } else if (pVar.findAttribute("standard_parallel") != null) {
@@ -580,7 +612,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                     } else if (pVar.findAttribute("scale_factor_at_projection_origin") != null) {
                         projStr += "+k_0=" + pVar.findAttribute("scale_factor_at_projection_origin").getValue(0).toString();
                     }
-
+                    
                     if (pVar.findAttribute("false_easting") != null) {
                         projStr += "+x_0=" + pVar.findAttribute("false_easting").getValue(0).toString();
                     }
@@ -624,10 +656,10 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 }
             }
         }
-
+        
         return projStr;
     }
-
+    
     private String getProjection_IOAPI() {
         String projStr = this.getProjectionInfo().toProj4String();
         int gridType = Integer.parseInt(getGlobalAttStr("GDTYP"));
@@ -692,10 +724,10 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                         + "+lon_0=" + getGlobalAttStr("P_GAM");
                 break;
         }
-
+        
         return projStr;
     }
-
+    
     private String getProjection_WRFOUT() {
         String projStr = this.getProjectionInfo().toProj4String();
         int mapProj = Integer.parseInt(getGlobalAttStr("MAP_PROJ"));
@@ -726,10 +758,10 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                         + "+lon_0=" + getGlobalAttStr("STAND_LON");
                 break;
         }
-
+        
         return projStr;
     }
-
+    
     private String getGlobalAttStr(String attName) {
         String attStr = "";
         for (ucar.nc2.Attribute aAttS : this._gAtts) {
@@ -738,16 +770,16 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 break;
             }
         }
-
+        
         return attStr;
     }
-
+    
     private List<Date> getTimes(ucar.nc2.Variable aVar, double[] values) {
         //Get start time
         String unitsStr;
         int i;
         ucar.nc2.Attribute unitAtt = aVar.findAttribute("units");
-
+        
         unitsStr = unitAtt.getStringValue();
         List<Date> times = new ArrayList<Date>();
         if (unitsStr.contains("as")) {
@@ -825,10 +857,10 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 cal.setTime(sTime);
             }
         }
-
+        
         return times;
     }
-
+    
     private boolean getDimensionValues(NetcdfFile ncfile) throws IOException, ParseException {
         switch (_convention) {
             case CF:
@@ -847,10 +879,10 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             default:
                 return false;
         }
-
+        
         return true;
     }
-
+    
     private void getDimValues_HDFEOS_SWATH() throws IOException {
         if (this._isSWATH || this._isPROFILE) {
             ucar.nc2.Variable var = this.findNCVariable("Pressure");
@@ -868,7 +900,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             } else {
                 //var = this.getNCVariable("")
             }
-
+            
             var = this.findNCVariable("Time");
             if (var != null) {
                 Array darray = var.read();
@@ -893,7 +925,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 for (Date t : times) {
                     ts.add(DataConvert.toOADate(t));
                 }
-
+                
                 Dimension tDim = this.findDimension(var.getDimension(0).getShortName());
                 tDim.setDimType(DimensionType.T);
                 tDim.setValues(ts);
@@ -901,15 +933,97 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             }
         }
     }
-
+    
     private void getDimValues_CF() throws IOException {
+        for (ucar.nc2.Variable var : _variables) {
+            if (var.getRank() == 1) {
+                int idx = this.getDimensionIndex(var.getDimension(0));
+                Dimension dim = this._miDims.get(idx);
+                DimensionType dimType = getDimType(var);
+                dim.setDimType(dimType);
+                Array darray = var.read();
+                double[] values = new double[(int) darray.getSize()];
+                BigDecimal b;
+                for (int i = 0; i < values.length; i++) {
+                    b = new BigDecimal(Float.toString(darray.getFloat(i)));
+                    values[i] = b.doubleValue();
+                }
+                //aDim.setValues(values);
+                switch (dimType) {
+                    case X:
+                        double[] X = values;
+                        if (X[0] > X[1]) {
+                            MIMath.arrayReverse(X);
+                            this.setXReverse(true);
+                        }
+                        double XDelt = X[1] - X[0];
+                        if (this.getProjectionInfo().isLonLat()) {
+                            if (X[X.length - 1] + XDelt
+                                    - X[0] == 360) {
+                                this.setGlobal(true);
+                            }
+                        } else {
+                            ucar.nc2.Attribute unitAtt = var.findAttribute("units");
+                            if (unitAtt != null) {
+                                if (unitAtt.getStringValue().trim().toLowerCase().equals("km")) {
+                                    for (int i = 0; i < X.length; i++) {
+                                        X[i] = X[i] * 1000;
+                                    }
+                                }
+                            }
+                        }
+                        dim.setValues(X);
+                        this.setXDimension(dim);
+                        break;
+                    case Y:
+                        double[] Y = values;
+                        if (Y[0] > Y[1]) {
+                            MIMath.arrayReverse(Y);
+                            this.setYReverse(true);
+                        }
+                        if (!this.getProjectionInfo().isLonLat()) {
+                            ucar.nc2.Attribute unitAtt = var.findAttribute("units");
+                            if (unitAtt != null) {
+                                if (unitAtt.getStringValue().trim().toLowerCase().equals("km")) {
+                                    for (int i = 0; i < Y.length; i++) {
+                                        Y[i] = Y[i] * 1000;
+                                    }
+                                }
+                            }
+                        }
+                        dim.setValues(Y);
+                        this.setYDimension(dim);
+                        break;
+                    case Z:
+                        double[] levels = values;
+                        dim.setValues(levels);
+                        this.setZDimension(dim);
+                        break;
+                    case T:
+                        List<Date> times = this.getTimes(var, values);
+                        List<Double> ts = new ArrayList<Double>();
+                        for (Date t : times) {
+                            ts.add(DataConvert.toOADate(t));
+                        }
+                        dim.setValues(ts);
+                        this.setTimeDimension(dim);
+                        break;
+                    default:
+                        dim.setValues(values);
+                        break;
+                }
+            }
+        }
+    }
+    
+    private void getDimValues_CF_old() throws IOException {
         List<ucar.nc2.Variable> oneDimVars = new ArrayList<ucar.nc2.Variable>();
         for (ucar.nc2.Variable aVar : _variables) {
             if (aVar.getRank() == 1) {
                 oneDimVars.add(aVar);
             }
         }
-
+        
         for (Dimension aDim : _miDims) {
             boolean isFind = false;
             ucar.nc2.Variable aVar = null;
@@ -920,7 +1034,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                     break;
                 }
             }
-
+            
             if (!isFind) {
                 for (ucar.nc2.Variable var : oneDimVars) {
                     if (aDim.getDimName().equals(var.getDimensions().get(0).getShortName())) {
@@ -930,15 +1044,17 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                     }
                 }
             }
-
+            
             if (isFind) {
                 //aVar.setCoorVar(true);
                 DimensionType dimType = getDimType(aVar);
                 aDim.setDimType(dimType);
                 Array darray = aVar.read();
                 double[] values = new double[(int) darray.getSize()];
+                BigDecimal b;
                 for (int i = 0; i < values.length; i++) {
-                    values[i] = darray.getDouble(i);
+                    b = new BigDecimal(Float.toString(darray.getFloat(i)));
+                    values[i] = b.doubleValue();
                 }
                 //aDim.setValues(values);
                 switch (dimType) {
@@ -1007,7 +1123,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             }
         }
     }
-
+    
     private void getDimValues_IOAPI() {
         int i;
 
@@ -1106,15 +1222,17 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             this.setYDimension(yDim);
         }
     }
-
+    
     private void getDimValues_WRF(NetcdfFile ncfile) throws ParseException, IOException {
         int dimLen, i;
         double orgLon = 0,
                 orgLat = 0,
-                orgX,
-                orgY;
+                orgX = 0,
+                orgY = 0;
         Dimension xDim = this.findDimension("west_east");
         Dimension yDim = this.findDimension("south_north");
+        xDim.setDimType(DimensionType.X);
+        yDim.setDimType(DimensionType.Y);
         int xNum = xDim.getDimLength();
         int yNum = yDim.getDimLength();
 
@@ -1123,15 +1241,20 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
         if (_yVar == null) {
             _yVar = ncfile.findVariable("XLAT_M");
         }
-
+        
         _xVar = ncfile.findVariable("XLONG");
         if (_xVar == null) {
             _xVar = ncfile.findVariable("XLONG_M");
         }
-
+        
         _levelVar = ncfile.findVariable("ZNU");
 
-        if (_yVar != null) {
+        //Get X/Y Array
+        double dx = Double.parseDouble(getGlobalAttStr("DX"));
+        double dy = Double.parseDouble(getGlobalAttStr("DY"));
+        ProjectionInfo fromProj = KnownCoordinateSystems.geographic.world.WGS1984;
+        double[][] points = new double[1][];
+        if (_yVar != null && _xVar != null) {
             dimLen = yNum;
             Array yarray = _yVar.read().reduce();
             double[] xlat = new double[dimLen];
@@ -1139,12 +1262,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 xlat[i] = yarray.getDouble(i);
             }
             orgLat = xlat[0];
-            yDim.setDimType(DimensionType.Y);
-            //yDim.setDimName(_yVar.getShortName());
-            yDim.setValues(xlat);
-            this.setYDimension(yDim);
-        }
-        if (_xVar != null) {
+            
             dimLen = xNum;
             Array xarray = _xVar.read().reduce();
             double[] xlon = new double[dimLen];
@@ -1152,11 +1270,33 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 xlon[i] = xarray.getDouble(i);
             }
             orgLon = xlon[0];
-            xDim.setDimType(DimensionType.X);
-            //xDim.setDimName(_xVar.getShortName());
-            xDim.setValues(xlon);
-            this.setXDimension(xDim);
+            
+            points[0] = new double[]{orgLon, orgLat};
+            Reproject.reprojectPoints(points, fromProj, this.getProjectionInfo(), 0, 1);
+            orgX = points[0][0];
+            orgY = points[0][1];
+        } else {
+            double clon = Double.parseDouble(getGlobalAttStr("CEN_LON"));
+            double clat = Double.parseDouble(getGlobalAttStr("CEN_LAT"));
+            points[0] = new double[]{clon, clat};
+            Reproject.reprojectPoints(points, fromProj, this.getProjectionInfo(), 0, 1);
+            double cx = points[0][0];
+            double cy = points[0][1];
+            orgX = cx - dx * xNum * 0.5;
+            orgY = cy - dy * yNum * 0.5;
         }
+        double[] X = new double[xNum];
+        for (i = 0; i < xNum; i++) {
+            X[i] = orgX + dx * i;
+        }
+        xDim.setValues(X);
+        this.setXDimension(xDim);
+        double[] Y = new double[yNum];
+        for (i = 0; i < yNum; i++) {
+            Y[i] = orgY + dy * i;
+        }
+        yDim.setValues(Y);
+        this.setYDimension(yDim);
 
         //Get levels
         Dimension zDim = this.findDimension("bottom_up");
@@ -1182,7 +1322,54 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 this.setZDimension(zDim);
             }
         }
-
+        
+        zDim = this.findDimension("bottom_up_stag");
+        if (zDim == null) {
+            zDim = this.findDimension("bottom_top_stag");
+        }
+        if (zDim != null) {
+            int lNum = zDim.getDimLength();
+            ucar.nc2.Variable levelVar = ncfile.findVariable("ZNW");
+            if (levelVar != null) {
+                dimLen = lNum;
+                Array larray = levelVar.read().reduce();
+                double[] levels = new double[lNum];
+                for (i = 0; i < lNum; i++) {
+                    if (i < dimLen) {
+                        levels[i] = larray.getDouble(i);
+                    } else {
+                        break;
+                    }
+                }
+                zDim.setDimType(DimensionType.Z);
+                //zDim.setDimName(_levelVar.getShortName());
+                zDim.setValues(levels);
+                //this.setZDimension(zDim);
+            }
+        }
+        
+        zDim = this.findDimension("soil_layers_stag");
+        if (zDim != null) {
+            int lNum = zDim.getDimLength();
+            ucar.nc2.Variable levelVar = ncfile.findVariable("ZS");
+            if (levelVar != null) {
+                dimLen = lNum;
+                Array larray = levelVar.read().reduce();
+                double[] levels = new double[lNum];
+                for (i = 0; i < lNum; i++) {
+                    if (i < dimLen) {
+                        levels[i] = larray.getDouble(i);
+                    } else {
+                        break;
+                    }
+                }
+                zDim.setDimType(DimensionType.Z);
+                //zDim.setDimName(_levelVar.getShortName());
+                zDim.setValues(levels);
+                //this.setZDimension(zDim);
+            }
+        }
+        
         for (ucar.nc2.Variable aVarS : _variables) {
             //dimLen = aVarS.getShape(0);
             //Get times
@@ -1196,7 +1383,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 for (i = 0; i < tNum * strLen; i++) {
                     charData[i] = tarray.getChar(i);
                 }
-
+                
                 String tStr;
                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
                 List<Date> times = new ArrayList<Date>();
@@ -1222,42 +1409,44 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 break;
             }
         }
-        ProjectionInfo fromProj = KnownCoordinateSystems.geographic.world.WGS1984;
-        double[][] points = new double[1][];
-        points[0] = new double[]{orgLon, orgLat};
-        Reproject.reprojectPoints(points, fromProj, this.getProjectionInfo(), 0, 1);
-        orgX = points[0][0];
-        orgY = points[0][1];
-        double dx = Double.parseDouble(getGlobalAttStr("DX"));
-        double dy = Double.parseDouble(getGlobalAttStr("DY"));
-        double[] X = new double[xNum];
-        for (i = 0; i < xNum; i++) {
-            X[i] = orgX + dx * i;
+        
+        Dimension xsdim = findDimension("west_east_stag");
+        Dimension ysdim = findDimension("south_north_stag");
+        if (xsdim != null && ysdim != null) {
+            xsdim.setDimType(DimensionType.X);
+            double[] nX = new double[xNum + 1];
+            double norgX = orgX - dx * 0.5;
+            for (i = 0; i <= xNum; i++) {
+                nX[i] = norgX + dx * i;
+            }
+            xsdim.setValues(nX);
+            
+            ysdim.setDimType(DimensionType.Y);
+            double[] nY = new double[yNum + 1];
+            double norgY = orgY - dx * 0.5;
+            for (i = 0; i <= yNum; i++) {
+                nY[i] = norgY + dy * i;
+            }
+            ysdim.setValues(nY);
         }
-        xDim.setValues(X);
-        double[] Y = new double[yNum];
-        for (i = 0; i < yNum; i++) {
-            Y[i] = orgY + dy * i;
-        }
-        yDim.setValues(Y);
     }
-
+    
     private int getDimensionLength(String dimName) {
         for (ucar.nc2.Dimension aDimS : _dimensions) {
             if (aDimS.getShortName().equals(dimName)) {
                 return aDimS.getLength();
             }
         }
-
+        
         return -1;
     }
-
+    
     private int getVarLength(Variable aVarS) {
         int dataLen = 1;
         for (int i = 0; i < aVarS.getDimNumber(); i++) {
             dataLen = dataLen * aVarS.getDimensions().get(i).getDimLength();
         }
-
+        
         return dataLen;
     }
 
@@ -1273,10 +1462,10 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 return var;
             }
         }
-
+        
         return null;
     }
-
+    
     private DimensionType getDimType(ucar.nc2.Variable aVar) {
         String sName;
         DimensionType dimType = DimensionType.Other;
@@ -1292,23 +1481,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 dimType = DimensionType.T;
             }
         } else {
-            if (aVar.findAttributeIgnoreCase("axis") != null) {
-                ucar.nc2.Attribute axisAtt = aVar.findAttributeIgnoreCase("axis");
-                sName = axisAtt.getStringValue().trim().toLowerCase();
-                if (sName.equals("x")) {
-                    dimType = DimensionType.X;
-                } else if (sName.equals("y")) {
-                    dimType = DimensionType.Y;
-                } else if (sName.equals("z")) {
-                    dimType = DimensionType.Z;
-                } else if (sName.equals("t")) {
-                    dimType = DimensionType.T;
-                }
-            } else if (aVar.findAttributeIgnoreCase("GRIB_level_type") != null) {
-                dimType = DimensionType.Z;
-            } else if (aVar.findAttributeIgnoreCase("Grib2_level_type") != null) {
-                dimType = DimensionType.Z;
-            } else if (aVar.findAttributeIgnoreCase("standard_name") != null) {
+            if (aVar.findAttributeIgnoreCase("standard_name") != null) {
                 ucar.nc2.Attribute axisAtt = aVar.findAttributeIgnoreCase("standard_name");
                 sName = axisAtt.getStringValue().trim().toLowerCase();
                 if (sName.equals("longitude") || sName.equals("projection_x_coordinate") || sName.equals("longitude_east")) {
@@ -1320,30 +1493,62 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 } else if (sName.equals("level")) {
                     dimType = DimensionType.Z;
                 }
-            } else if (aVar.findAttributeIgnoreCase("long_name") != null) {
-                ucar.nc2.Attribute axisAtt = aVar.findAttributeIgnoreCase("long_name");
-                sName = axisAtt.getStringValue().trim().toLowerCase();
-                if (sName.equals("longitude") || sName.equals("coordinate longitude") || sName.equals("x")) {
-                    dimType = DimensionType.X;
-                } else if (sName.equals("latitude") || sName.equals("coordinate latitude") || sName.equals("y")) {
-                    dimType = DimensionType.Y;
-                } else if (sName.equals("time") || sName.equals("initial time")) {
-                    dimType = DimensionType.T;
-                } else if (sName.equals("level") || sName.equals("pressure_level")) {
-                    dimType = DimensionType.Z;
-                } else {
-                    if (sName.contains("level") || sName.contains("depths")) {
+            }
+            if (dimType == DimensionType.Other) {
+                if (aVar.findAttributeIgnoreCase("long_name") != null) {
+                    ucar.nc2.Attribute axisAtt = aVar.findAttributeIgnoreCase("long_name");
+                    sName = axisAtt.getStringValue().trim().toLowerCase();
+                    if (sName.equals("longitude") || sName.equals("coordinate longitude") || sName.equals("x")) {
+                        dimType = DimensionType.X;
+                    } else if (sName.equals("latitude") || sName.equals("coordinate latitude") || sName.equals("y")) {
+                        dimType = DimensionType.Y;
+                    } else if (sName.equals("time") || sName.equals("initial time")) {
+                        dimType = DimensionType.T;
+                    } else if (sName.equals("level") || sName.equals("pressure_level")) {
                         dimType = DimensionType.Z;
+                    } else {
+                        if (sName.contains("level") || sName.contains("depths")) {
+                            dimType = DimensionType.Z;
+                        }
                     }
                 }
-            } else if (aVar.findAttributeIgnoreCase("unitsCategory") != null) {
-                sName = aVar.findAttributeIgnoreCase("unitsCategory").getStringValue().trim().toLowerCase();
-                if (sName.equals("longitude")) {
-                    dimType = DimensionType.X;
-                } else if (sName.equals("latitude")) {
-                    dimType = DimensionType.Y;
+            }
+            if (dimType == DimensionType.Other) {
+                if (aVar.findAttributeIgnoreCase("axis") != null) {
+                    ucar.nc2.Attribute axisAtt = aVar.findAttributeIgnoreCase("axis");
+                    sName = axisAtt.getStringValue().trim().toLowerCase();
+                    if (sName.equals("x")) {
+                        dimType = DimensionType.X;
+                    } else if (sName.equals("y")) {
+                        dimType = DimensionType.Y;
+                    } else if (sName.equals("z")) {
+                        dimType = DimensionType.Z;
+                    } else if (sName.equals("t")) {
+                        dimType = DimensionType.T;
+                    }
                 }
-            } else {
+            }
+            if (dimType == DimensionType.Other) {
+                if (aVar.findAttributeIgnoreCase("GRIB_level_type") != null) {
+                    dimType = DimensionType.Z;
+                }
+            }
+            if (dimType == DimensionType.Other) {
+                if (aVar.findAttributeIgnoreCase("Grib2_level_type") != null) {
+                    dimType = DimensionType.Z;
+                }
+            }
+            if (dimType == DimensionType.Other) {
+                if (aVar.findAttributeIgnoreCase("unitsCategory") != null) {
+                    sName = aVar.findAttributeIgnoreCase("unitsCategory").getStringValue().trim().toLowerCase();
+                    if (sName.equals("longitude")) {
+                        dimType = DimensionType.X;
+                    } else if (sName.equals("latitude")) {
+                        dimType = DimensionType.Y;
+                    }
+                }
+            }
+            if (dimType == DimensionType.Other) {
                 String vName = aVar.getShortName().toLowerCase();
                 if (vName.equals("lon") || vName.equals("longitude") || vName.equals("x")) {
                     dimType = DimensionType.X;
@@ -1356,19 +1561,19 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 }
             }
         }
-
+        
         return dimType;
     }
-
+    
     private TimeUnit getTimeUnit(String tStr) {
         TimeUnit aTU = TimeUnit.Second;
         tStr = tStr.trim();
         String tu;
         String[] dataArray;
         int i;
-
+        
         dataArray = tStr.split("\\s+");
-
+        
         if (dataArray.length < 2) {
             return aTU;
         }
@@ -1406,17 +1611,17 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 }
             }
         }
-
+        
         return aTU;
     }
-
+    
     private Date getStartTime(String tStr) {
         Date sTime = new Date();
         tStr = tStr.trim();
         String[] dataArray;
-
+        
         dataArray = tStr.split("\\s+");
-
+        
         if (dataArray.length < 2) {
             return sTime;
         }
@@ -1446,7 +1651,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 }
             }
         } else {
-            if (ST.contains(":")){
+            if (ST.contains(":")) {
                 String hmsStr = ST;
                 hmsStr = hmsStr.replace("0.0", "00");
                 try {
@@ -1457,18 +1662,18 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 }
             }
         }
-
+        
         if (year == 0) {
             year = 1;
         }
-
+        
         Calendar cal = Calendar.getInstance();
         cal.set(year, month - 1, day, hour, min, sec);
         sTime = cal.getTime();
-
+        
         return sTime;
     }
-
+    
     @Override
     public String generateInfoText() {
         String dataInfo;
@@ -1481,13 +1686,13 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             dataInfo += System.getProperty("line.separator") + "\t" + _dimensions.get(i).getShortName() + " = "
                     + String.valueOf(_dimensions.get(i).getLength()) + ";";
         }
-
+        
         dataInfo += System.getProperty("line.separator") + "Global Attributes: " + this._gAtts;
         for (i = 0; i < _gAtts.size(); i++) {
             aAttS = _gAtts.get(i);
             dataInfo += System.getProperty("line.separator") + "\t: " + aAttS.toString();
         }
-
+        
         dataInfo += System.getProperty("line.separator") + "Variations: " + _variables.size();
         for (i = 0; i < _variables.size(); i++) {
             dataInfo += System.getProperty("line.separator") + "\t" + _variables.get(i).getDataType().toString()
@@ -1505,33 +1710,17 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                         + ": " + aAttS.toString();
             }
         }
-
+        
         for (ucar.nc2.Dimension dim : _dimensions) {
             if (dim.isUnlimited()) {
                 dataInfo += System.getProperty("line.separator") + "Unlimited dimension: " + dim.getShortName();
             }
             break;
         }
-
+        
         return dataInfo;
     }
-
-    /**
-     * Get plottable data variables
-     *
-     * @return Data variables
-     */
-    public List<Variable> getPlotVariables() {
-        List<Variable> vars = new ArrayList<Variable>();
-        for (Variable var : this.getVariables()) {
-            if (var.isPlottable()) {
-                vars.add(var);
-            }
-        }
-
-        return vars;
-    }
-
+    
     private int getTrueVarIndex(int varIdx) {
         int tVarIdx = varIdx;
         for (int i = 0; i < this.getVariables().size(); i++) {
@@ -1539,15 +1728,15 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             if (tVarIdx > i || (tVarIdx == i && var.isPlottable())) {
                 break;
             }
-
+            
             if (!var.isPlottable()) {
                 tVarIdx += 1;
             }
         }
-
+        
         return tVarIdx;
     }
-
+    
     private double[] getPackData(ucar.nc2.Variable var) {
         double add_offset, scale_factor, missingValue = this.getMissingValue();
         add_offset = 0;
@@ -1558,11 +1747,11 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             if (attName.equals("add_offset")) {
                 add_offset = Double.parseDouble(att.getValue(0).toString());
             }
-
+            
             if (attName.equals("scale_factor")) {
                 scale_factor = Double.parseDouble(att.getValue(0).toString());
             }
-
+            
             if (attName.equals("missing_value")) {
                 missingValue = Double.parseDouble(att.getValue(0).toString());
             }
@@ -1579,21 +1768,16 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
         } else {
             missingValue = missingValue * scale_factor + add_offset;
         }
-
+        
         return new double[]{add_offset, scale_factor, missingValue};
     }
-
+    
     @Override
     public GridData getGridData_LonLat(int timeIdx, int varIdx, int levelIdx) {
         NetcdfFile ncfile = null;
         try {
             ncfile = NetcdfFile.open(this.getFileName());
-
-            int xNum, yNum;
-            xNum = this.getXDimension().getDimLength();
-            yNum = this.getYDimension().getDimLength();
-            double[][] gridData = new double[yNum][xNum];
-
+            
             int i, j;
             //int tVarIdx = this.getTrueVarIndex(varIdx);
             int tVarIdx = varIdx;
@@ -1610,6 +1794,11 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
             //Read grid data
             Variable nvar = this.getVariables().get(tVarIdx);
+            int xNum, yNum;
+            xNum = nvar.getXDimension().getDimLength();
+            yNum = nvar.getYDimension().getDimLength();
+            double[][] gridData = new double[yNum][xNum];
+            
             int rank = var.getRank();
             int[] origin = new int[rank];
             int[] size = new int[rank];
@@ -1643,9 +1832,9 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                         break;
                 }
             }
-
+            
             Array data2D = var.read(origin, size).reduce();
-
+            
             if (ydimIdx < xdimIdx) {
                 for (i = 0; i < yNum; i++) {
                     for (j = 0; j < xNum; j++) {
@@ -1659,17 +1848,27 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                     }
                 }
             }
-
+            
             GridData aGridData = new GridData();
             aGridData.data = gridData;
-            aGridData.xArray = this.getXDimension().getValues();
-            aGridData.yArray = this.getYDimension().getValues();
+            aGridData.xArray = nvar.getXDimension().getValues();
+            aGridData.yArray = nvar.getYDimension().getValues();
             aGridData.missingValue = missingValue;
-
+            
             if (this.isYReverse()) {
                 aGridData.yReverse();
             }
-
+            
+            if (this._convention == Conventions.WRFOUT) {
+                if (nvar.getName().equals("U")) {
+                    aGridData.setXStagger(true);
+                }
+                
+                if (nvar.getName().equals("V")) {
+                    aGridData.setYStagger(true);
+                }
+            }
+            
             return aGridData;
         } catch (IOException ex) {
             Logger.getLogger(NetCDFDataInfo.class.getName()).log(Level.SEVERE, null, ex);
@@ -1687,18 +1886,18 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             }
         }
     }
-
+    
     @Override
     public GridData getGridData_TimeLat(int lonIdx, int varIdx, int levelIdx) {
         NetcdfFile ncfile = null;
         try {
             ncfile = NetcdfFile.open(this.getFileName());
-
+            
             int xNum, yNum;
             xNum = this.getYDimension().getDimLength();
             yNum = this.getTimeDimension().getDimLength();
             double[][] gridData = new double[yNum][xNum];
-
+            
             int i, j;
             //int tVarIdx = this.getTrueVarIndex(varIdx);
             int tVarIdx = varIdx;
@@ -1743,25 +1942,25 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                         break;
                 }
             }
-
+            
             Array data2D = var.read(origin, size).reduce();
-
+            
             for (i = 0; i < yNum; i++) {
                 for (j = 0; j < xNum; j++) {
                     gridData[i][j] = data2D.getDouble(i * xNum + j) * scale_factor + add_offset;
                 }
             }
-
+            
             GridData aGridData = new GridData();
             aGridData.data = gridData;
             aGridData.xArray = this.getYDimension().getValues();
             aGridData.yArray = this.getTimeDimension().getValues();
             aGridData.missingValue = missingValue;
-
+            
             if (this.isYReverse()) {
                 aGridData.yReverse();
             }
-
+            
             return aGridData;
         } catch (IOException ex) {
             Logger.getLogger(NetCDFDataInfo.class.getName()).log(Level.SEVERE, null, ex);
@@ -1779,18 +1978,18 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             }
         }
     }
-
+    
     @Override
     public GridData getGridData_TimeLon(int latIdx, int varIdx, int levelIdx) {
         NetcdfFile ncfile = null;
         try {
             ncfile = NetcdfFile.open(this.getFileName());
-
+            
             int xNum, yNum;
             xNum = this.getXDimension().getDimLength();
             yNum = this.getTimeDimension().getDimLength();
             double[][] gridData = new double[yNum][xNum];
-
+            
             int i, j;
             //int tVarIdx = this.getTrueVarIndex(varIdx);
             int tVarIdx = varIdx;
@@ -1835,21 +2034,21 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                         break;
                 }
             }
-
+            
             Array data2D = var.read(origin, size).reduce();
-
+            
             for (i = 0; i < yNum; i++) {
                 for (j = 0; j < xNum; j++) {
                     gridData[i][j] = data2D.getDouble(i * xNum + j) * scale_factor + add_offset;
                 }
             }
-
+            
             GridData aGridData = new GridData();
             aGridData.data = gridData;
             aGridData.xArray = this.getYDimension().getValues();
             aGridData.yArray = this.getTimeDimension().getValues();
             aGridData.missingValue = missingValue;
-
+            
             return aGridData;
         } catch (IOException ex) {
             Logger.getLogger(NetCDFDataInfo.class.getName()).log(Level.SEVERE, null, ex);
@@ -1867,18 +2066,18 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             }
         }
     }
-
+    
     @Override
     public GridData getGridData_LevelLat(int lonIdx, int varIdx, int timeIdx) {
         NetcdfFile ncfile = null;
         try {
             ncfile = NetcdfFile.open(this.getFileName());
-
+            
             int xNum, yNum;
             xNum = this.getYDimension().getDimLength();
             yNum = this.getZDimension().getDimLength();
             double[][] gridData = new double[yNum][xNum];
-
+            
             int i, j;
             //int tVarIdx = this.getTrueVarIndex(varIdx);
             int tVarIdx = varIdx;
@@ -1923,25 +2122,25 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                         break;
                 }
             }
-
+            
             Array data2D = var.read(origin, size).reduce();
-
+            
             for (i = 0; i < yNum; i++) {
                 for (j = 0; j < xNum; j++) {
                     gridData[i][j] = data2D.getDouble(i * xNum + j) * scale_factor + add_offset;
                 }
             }
-
+            
             GridData aGridData = new GridData();
             aGridData.data = gridData;
             aGridData.xArray = this.getYDimension().getValues();
             aGridData.yArray = this.getZDimension().getValues();
             aGridData.missingValue = missingValue;
-
+            
             if (this.isYReverse()) {
                 aGridData.yReverse();
             }
-
+            
             return aGridData;
         } catch (IOException ex) {
             Logger.getLogger(NetCDFDataInfo.class.getName()).log(Level.SEVERE, null, ex);
@@ -1959,18 +2158,18 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             }
         }
     }
-
+    
     @Override
     public GridData getGridData_LevelLon(int latIdx, int varIdx, int timeIdx) {
         NetcdfFile ncfile = null;
         try {
             ncfile = NetcdfFile.open(this.getFileName());
-
+            
             int xNum, yNum;
             xNum = this.getXDimension().getDimLength();
             yNum = this.getZDimension().getDimLength();
             double[][] gridData = new double[yNum][xNum];
-
+            
             int i, j;
             //int tVarIdx = this.getTrueVarIndex(varIdx);
             int tVarIdx = varIdx;
@@ -2015,21 +2214,21 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                         break;
                 }
             }
-
+            
             Array data2D = var.read(origin, size).reduce();
-
+            
             for (i = 0; i < yNum; i++) {
                 for (j = 0; j < xNum; j++) {
                     gridData[i][j] = data2D.getDouble(i * xNum + j) * scale_factor + add_offset;
                 }
             }
-
+            
             GridData aGridData = new GridData();
             aGridData.data = gridData;
             aGridData.xArray = this.getYDimension().getValues();
             aGridData.yArray = this.getTimeDimension().getValues();
             aGridData.missingValue = missingValue;
-
+            
             return aGridData;
         } catch (IOException ex) {
             Logger.getLogger(NetCDFDataInfo.class.getName()).log(Level.SEVERE, null, ex);
@@ -2047,18 +2246,18 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             }
         }
     }
-
+    
     @Override
     public GridData getGridData_LevelTime(int latIdx, int varIdx, int lonIdx) {
         NetcdfFile ncfile = null;
         try {
             ncfile = NetcdfFile.open(this.getFileName());
-
+            
             int xNum, yNum;
             xNum = this.getTimeDimension().getDimLength();
             yNum = this.getZDimension().getDimLength();
             double[][] gridData = new double[yNum][xNum];
-
+            
             int i, j;
             //int tVarIdx = this.getTrueVarIndex(varIdx);
             int tVarIdx = varIdx;
@@ -2103,21 +2302,21 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                         break;
                 }
             }
-
+            
             Array data2D = var.read(origin, size).reduce();
-
+            
             for (i = 0; i < yNum; i++) {
                 for (j = 0; j < xNum; j++) {
                     gridData[i][j] = data2D.getDouble(i * xNum + j) * scale_factor + add_offset;
                 }
             }
-
+            
             GridData aGridData = new GridData();
             aGridData.data = gridData;
             aGridData.xArray = this.getYDimension().getValues();
             aGridData.yArray = this.getTimeDimension().getValues();
             aGridData.missingValue = missingValue;
-
+            
             return aGridData;
         } catch (IOException ex) {
             Logger.getLogger(NetCDFDataInfo.class.getName()).log(Level.SEVERE, null, ex);
@@ -2135,16 +2334,16 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             }
         }
     }
-
+    
     @Override
     public GridData getGridData_Time(int lonIdx, int latIdx, int varIdx, int levelIdx) {
         NetcdfFile ncfile = null;
         try {
             ncfile = NetcdfFile.open(this.getFileName());
-
+            
             int dNum = this.getTimeDimension().getDimLength();
             double[][] gridData = new double[1][dNum];
-
+            
             int i, j;
             //int tVarIdx = this.getTrueVarIndex(varIdx);
             int tVarIdx = varIdx;
@@ -2189,19 +2388,19 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                         break;
                 }
             }
-
+            
             Array data1D = var.read(origin, size).reduce();
-
+            
             for (i = 0; i < dNum; i++) {
                 gridData[0][i] = data1D.getDouble(i) * scale_factor + add_offset;
             }
-
+            
             GridData aGridData = new GridData();
             aGridData.data = gridData;
             aGridData.xArray = this.getTimeDimension().getValues();
             aGridData.yArray = new double[1];
             aGridData.missingValue = missingValue;
-
+            
             return aGridData;
         } catch (IOException ex) {
             Logger.getLogger(NetCDFDataInfo.class.getName()).log(Level.SEVERE, null, ex);
@@ -2219,16 +2418,16 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             }
         }
     }
-
+    
     @Override
     public GridData getGridData_Level(int lonIdx, int latIdx, int varIdx, int timeIdx) {
         NetcdfFile ncfile = null;
         try {
             ncfile = NetcdfFile.open(this.getFileName());
-
+            
             int dNum = this.getZDimension().getDimLength();
             double[][] gridData = new double[1][dNum];
-
+            
             int i, j;
             //int tVarIdx = this.getTrueVarIndex(varIdx);
             int tVarIdx = varIdx;
@@ -2273,19 +2472,19 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                         break;
                 }
             }
-
+            
             Array data1D = var.read(origin, size).reduce();
-
+            
             for (i = 0; i < dNum; i++) {
                 gridData[0][i] = data1D.getDouble(i) * scale_factor + add_offset;
             }
-
+            
             GridData aGridData = new GridData();
             aGridData.data = gridData;
             aGridData.xArray = this.getZDimension().getValues();
             aGridData.yArray = new double[1];
             aGridData.missingValue = missingValue;
-
+            
             return aGridData;
         } catch (IOException ex) {
             Logger.getLogger(NetCDFDataInfo.class.getName()).log(Level.SEVERE, null, ex);
@@ -2303,16 +2502,16 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             }
         }
     }
-
+    
     @Override
     public GridData getGridData_Lon(int timeIdx, int latIdx, int varIdx, int levelIdx) {
         NetcdfFile ncfile = null;
         try {
             ncfile = NetcdfFile.open(this.getFileName());
-
+            
             int dNum = this.getXDimension().getDimLength();
             double[][] gridData = new double[1][dNum];
-
+            
             int i, j;
             //int tVarIdx = this.getTrueVarIndex(varIdx);
             int tVarIdx = varIdx;
@@ -2357,19 +2556,19 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                         break;
                 }
             }
-
+            
             Array data1D = var.read(origin, size).reduce();
-
+            
             for (i = 0; i < dNum; i++) {
                 gridData[0][i] = data1D.getDouble(i) * scale_factor + add_offset;
             }
-
+            
             GridData aGridData = new GridData();
             aGridData.data = gridData;
             aGridData.xArray = this.getXDimension().getValues();
             aGridData.yArray = new double[1];
             aGridData.missingValue = missingValue;
-
+            
             return aGridData;
         } catch (IOException ex) {
             Logger.getLogger(NetCDFDataInfo.class.getName()).log(Level.SEVERE, null, ex);
@@ -2387,16 +2586,16 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             }
         }
     }
-
+    
     @Override
     public GridData getGridData_Lat(int timeIdx, int lonIdx, int varIdx, int levelIdx) {
         NetcdfFile ncfile = null;
         try {
             ncfile = NetcdfFile.open(this.getFileName());
-
+            
             int dNum = this.getYDimension().getDimLength();
             double[][] gridData = new double[1][dNum];
-
+            
             int i, j;
             //int tVarIdx = this.getTrueVarIndex(varIdx);
             int tVarIdx = varIdx;
@@ -2441,19 +2640,19 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                         break;
                 }
             }
-
+            
             Array data1D = var.read(origin, size).reduce();
-
+            
             for (i = 0; i < dNum; i++) {
                 gridData[0][i] = data1D.getDouble(i) * scale_factor + add_offset;
             }
-
+            
             GridData aGridData = new GridData();
             aGridData.data = gridData;
             aGridData.xArray = this.getYDimension().getValues();
             aGridData.yArray = new double[1];
             aGridData.missingValue = missingValue;
-
+            
             return aGridData;
         } catch (IOException ex) {
             Logger.getLogger(NetCDFDataInfo.class.getName()).log(Level.SEVERE, null, ex);
@@ -2471,13 +2670,13 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             }
         }
     }
-
+    
     @Override
     public StationData getStationData(int timeIdx, int varIdx, int levelIdx) {
         NetcdfFile ncfile = null;
         try {
             ncfile = NetcdfFile.open(this.getFileName());
-
+            
             int i, j;
             int tVarIdx = varIdx;
             ucar.nc2.Variable var = ncfile.getVariables().get(tVarIdx);
@@ -2492,7 +2691,8 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             Array lonarray = lonvar.read();
             Array latarray = latvar.read();
             int stNum = (int) lonarray.getSize();
-            double[][] discretedData = new double[3][stNum];
+            double[][] discretedData = new double[stNum][3];
+            List<ucar.nc2.Dimension> lldims = lonvar.getDimensions();
 
             //Get pack info
             double add_offset, scale_factor, missingValue;
@@ -2508,24 +2708,30 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             int[] size = new int[rank];
             for (i = 0; i < rank; i++) {
                 Dimension ndim = nvar.getDimensions().get(i);
+                ucar.nc2.Dimension dim = var.getDimension(i);
                 switch (ndim.getDimType()) {
                     case T:
                         origin[i] = 0;
-                        size[i] = this.findNCDimension(ndim.getDimName()).getLength();
+                        size[i] = dim.getLength();
                         break;
                     case Xtrack:
                         origin[i] = levelIdx;
-                        size[i] = ndim.getDimLength();
+                        size[i] = dim.getLength();
                         break;
                     default:
-                        origin[i] = 0;
-                        size[i] = 1;
+                        if (lldims.contains(dim)) {
+                            origin[i] = 0;
+                            size[i] = dim.getLength();
+                        } else {
+                            origin[i] = 0;
+                            size[i] = 1;
+                        }
                         break;
                 }
             }
-
+            
             Array darray = var.read(origin, size).reduce();
-
+            
             double minx, maxx, miny, maxy;
             minx = maxx = lonarray.getDouble(i);
             miny = maxy = latarray.getDouble(i);
@@ -2533,9 +2739,9 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             for (i = 0; i < stNum; i++) {
                 lon = lonarray.getDouble(i);
                 lat = latarray.getDouble(i);
-                discretedData[0][i] = lon;
-                discretedData[1][i] = lat;
-                discretedData[2][i] = darray.getDouble(i) * scale_factor + add_offset;
+                discretedData[i][0] = lon;
+                discretedData[i][1] = lat;
+                discretedData[i][2] = darray.getDouble(i) * scale_factor + add_offset;
                 if (minx > lon) {
                     minx = lon;
                 } else if (maxx < lon) {
@@ -2547,7 +2753,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                     maxy = lat;
                 }
             }
-
+            
             StationData stData = new StationData();
             stData.data = discretedData;
             stData.dataExtent = new Extent(minx, maxx, miny, maxy);
@@ -2557,7 +2763,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 stations.add((String.valueOf(i + 1)));
             }
             stData.stations = stations;
-
+            
             return stData;
         } catch (IOException ex) {
             Logger.getLogger(NetCDFDataInfo.class.getName()).log(Level.SEVERE, null, ex);
@@ -2575,12 +2781,12 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             }
         }
     }
-
+    
     @Override
     public StationInfoData getStationInfoData(int timeIdx, int levelIdx) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
+    
     @Override
     public StationModelData getStationModelData(int timeIdx, int levelIdx) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -2597,9 +2803,9 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
         try {
             ncfile = NetcdfFile.open(this.getFileName());
             ucar.nc2.Variable var = ncfile.findVariable(varName);
-
+            
             Array data = var.read();
-
+            
             return data;
         } catch (IOException ex) {
             Logger.getLogger(NetCDFDataInfo.class.getName()).log(Level.SEVERE, null, ex);
@@ -2622,16 +2828,13 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
      * @return NetCDF array 2D
      */
     public static Array gridToArray2D(GridData gData) {
-        int xnum = gData.getXNum();
-        int ynum = gData.getYNum();
-        ArrayDouble.D2 array = new ArrayDouble.D2(ynum, xnum);
-        for (int i = 0; i < ynum; i++) {
-            for (int j = 0; j < xnum; j++) {
-                array.set(i, j, gData.data[i][j]);
-            }
-        }
-
-        return array;
+        Array a = Array.factory(gData.data);
+        int[] shape = new int[2];
+        shape[0] = gData.getYNum();
+        shape[1] = gData.getXNum();
+        a = a.reshape(shape);
+        
+        return a;
     }
 
     /**
@@ -2647,7 +2850,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
         shape[1] = gData.getYNum();
         shape[2] = gData.getXNum();
         a = a.reshape(shape);
-
+        
         return a;
     }
 
@@ -2665,8 +2868,12 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
         shape[2] = gData.getYNum();
         shape[3] = gData.getXNum();
         a = a.reshape(shape);
-
+        
         return a;
     }
+    // </editor-fold>
+    // <editor-fold desc="Write Data">
+    //public ucar.nc2.Dimension 
+    // </editor-fold>
     // </editor-fold>
 }

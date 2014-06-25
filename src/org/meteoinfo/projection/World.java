@@ -13,7 +13,7 @@
  */
 package org.meteoinfo.projection;
 
-import org.osgeo.proj4j.CRSFactory;
+import org.meteoinfo.projection.proj4j.CRSFactory;
 
 /**
  *

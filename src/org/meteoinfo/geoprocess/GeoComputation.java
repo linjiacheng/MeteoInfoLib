@@ -2317,7 +2317,7 @@ public class GeoComputation {
      */
     public static List<GridLabel> getGridLabels_StraightLine(Polyline inPolyLine, Extent clipExtent, boolean isVertical) {
         List<GridLabel> gridLabels = new ArrayList<GridLabel>();
-        List<PointD> aPList = (List<PointD>) inPolyLine.getPointList();
+        //List<PointD> aPList = (List<PointD>) inPolyLine.getPointList();
 
         PointD aPoint = inPolyLine.getPointList().get(0);
         if (isVertical) {

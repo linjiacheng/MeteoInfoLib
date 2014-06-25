@@ -330,7 +330,8 @@ public class MapLayer implements Cloneable {
     @Override
     public Object clone() throws CloneNotSupportedException {
         MapLayer aLayer = (MapLayer)super.clone();
-        aLayer._legendScheme = (LegendScheme)this._legendScheme.clone();
+        if (_legendScheme != null)
+            aLayer._legendScheme = (LegendScheme)this._legendScheme.clone();
         
         return aLayer;
     }

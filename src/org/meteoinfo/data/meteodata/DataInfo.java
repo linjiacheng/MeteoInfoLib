@@ -77,6 +77,20 @@ public abstract class DataInfo {
     }
     
     /**
+     * Get plottable variables
+     * @return Plottable variables
+     */
+    public List<Variable> getPlottableVariables() {
+        List<Variable> vars = new ArrayList<Variable>();
+        for (Variable var : _variables){
+            if (var.isPlottable())
+                vars.add(var);
+        }
+        
+        return vars;
+    }
+    
+    /**
      * Get dimensions
      * @return Dimensions
      */

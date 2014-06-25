@@ -41,8 +41,10 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import org.meteoinfo.global.DataConvert;
 
 /**
  *
@@ -253,7 +255,9 @@ public class LayoutGraphic extends LayoutElement {
                     this.setHeight((int) Math.ceil(aPB.getSize()));
                 } else if (_graphic.getLegend().getBreakType() == BreakTypes.LabelBreak) {
                     LabelBreak aLB = (LabelBreak) _graphic.getLegend();
-                    FontMetrics metrics = _mapLayout.getGraphics().getFontMetrics(aLB.getFont());
+                    //FontMetrics metrics = _mapLayout.getGraphics().getFontMetrics(aLB.getFont());
+                    BufferedImage image = new BufferedImage(_mapLayout.getPageBounds().width, _mapLayout.getPageBounds().height, BufferedImage.TYPE_INT_ARGB);
+                    FontMetrics metrics = image.getGraphics().getFontMetrics(aLB.getFont());
                     Dimension aSF = new Dimension(metrics.stringWidth(aLB.getText()), metrics.getHeight());
                     this.setLeft(this.getLeft() - (int) (aSF.width / 2));
                     this.setTop(this.getTop() - (int) (aSF.height / 2));
@@ -262,11 +266,14 @@ public class LayoutGraphic extends LayoutElement {
                 }
                 break;
             case WindArraw:
-//                    WindArraw aWA = (WindArraw)_graphic.Shape;
-//                    this.Left = (int)aWA.Point.X;
-//                    this.Top = (int)aWA.Point.Y;
-//                    this.Width = (int)(aWA.length * ((VectorBreak)_graphic.Legend).Zoom);
-//                    this.Height = 20;
+                    WindArraw aWA = (WindArraw)_graphic.getShape();
+                    this.setLeft((int)aWA.getPoint().X);
+                    this.setTop((int)aWA.getPoint().Y);
+                    if (aWA.length == 0){
+                        aWA.length = 20;
+                    }
+                    this.setWidth((int)(aWA.length * ((VectorBreak)_graphic.getLegend()).getZoom()));
+                    this.setHeight(20);
                 break;
             case Polyline:
             case Polygon:
@@ -379,10 +386,13 @@ public class LayoutGraphic extends LayoutElement {
                 WindArraw aArraw = (WindArraw) _graphic.getShape();
                 VectorBreak aVB = (VectorBreak) _graphic.getLegend();
                 Draw.drawArraw(aVB.getColor(), aPoint, aArraw, g, aVB.getZoom() * zoom);
-                Font drawFont = new Font("Arial", Font.PLAIN, (int) (8 * zoom));
+                Font drawFont = new Font("Arial", Font.PLAIN, (int) (12 * zoom));
+                FontMetrics metrics = g.getFontMetrics(drawFont);
+                String drawStr = DataConvert.removeTailingZeros(String.valueOf(aArraw.length));
+                Dimension fsize = new Dimension(metrics.stringWidth(drawStr), metrics.getHeight());
                 g.setColor(aVB.getColor());
                 g.setFont(drawFont);
-                g.drawString(String.valueOf(aArraw.length), aPoint.X, aPoint.Y);
+                g.drawString(drawStr, aPoint.X, aPoint.Y + fsize.height);
                 break;
             case Polyline:
             case Polygon:
@@ -518,6 +528,14 @@ public class LayoutGraphic extends LayoutElement {
                     break;
             }
         }
+    }
+    
+    @Override
+    public void fireLocationChangedEvent() {
+        super.fireLocationChangedEvent();
+        
+        if (!this._updatingSize)
+            this.moveUpdate();
     }
     // </editor-fold>        
 }

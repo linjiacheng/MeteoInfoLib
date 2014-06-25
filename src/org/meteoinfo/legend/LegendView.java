@@ -469,6 +469,16 @@ public class LegendView extends JPanel {
 
         this.repaint();        
     }
+    
+    public void setLegendBreak_Color_Transparency(int alpha){
+        for (int rowIdx : _selectedRows) {
+            Color c = _legendScheme.getLegendBreaks().get(rowIdx).getColor();
+            c = new Color(c.getRed(), c.getGreen(), c.getBlue(), alpha);
+            _legendScheme.getLegendBreaks().get(rowIdx).setColor(c);
+        }
+        
+        this.repaint();
+    }
 
     /**
      * Set legend break outline color

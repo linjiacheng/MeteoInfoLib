@@ -215,7 +215,7 @@ public class StationData {
      * @param bStData Station data
      * @return Result station data
      */
-    public StationData subtract(StationData bStData) {
+    public StationData sub(StationData bStData) {
         if (!MIMath.isExtentCross(this.dataExtent, bStData.dataExtent)) {
             return null;
         }
@@ -257,7 +257,7 @@ public class StationData {
      * @param value The value
      * @return Result station data
      */
-    public StationData subtract(double value) {
+    public StationData sub(double value) {
         StationData cStData = new StationData();
         String aStid;
         double x, y;
@@ -283,7 +283,7 @@ public class StationData {
      * @param bStData Station data
      * @return Result station data
      */
-    public StationData multiply(StationData bStData) {
+    public StationData mul(StationData bStData) {
         if (!MIMath.isExtentCross(this.dataExtent, bStData.dataExtent)) {
             return null;
         }
@@ -325,7 +325,7 @@ public class StationData {
      * @param value The value
      * @return Result station data
      */
-    public StationData multiply(double value) {
+    public StationData mul(double value) {
         StationData cStData = new StationData();
         String aStid;
         double x, y;
@@ -351,7 +351,7 @@ public class StationData {
      * @param bStData Station data
      * @return Result station data
      */
-    public StationData divide(StationData bStData) {
+    public StationData div(StationData bStData) {
         if (!MIMath.isExtentCross(this.dataExtent, bStData.dataExtent)) {
             return null;
         }
@@ -393,7 +393,7 @@ public class StationData {
      * @param value The value
      * @return Result station data
      */
-    public StationData divide(double value) {
+    public StationData div(double value) {
         StationData cStData = new StationData();
         String aStid;
         double x, y;

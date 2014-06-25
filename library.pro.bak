@@ -12,10 +12,10 @@
 -outjars ./dist/MeteoInfoLib1.jar
 
 -libraryjars  <java.home>/lib/rt.jar
--libraryjars ./dist/L2FProd.jar
--libraryjars ./dist/proj4j.jar
--libraryjars ./dist/wContour.jar
--libraryjars ./dist/netcdfAll-4.3.16.jar
+-libraryjars ./dist/lib/L2FProd.jar
+-libraryjars ./dist/lib/proj4j.jar
+-libraryjars ./dist/lib/wContour.jar
+-libraryjars ./dist/lib/netcdfAll-4.3.16.jar
 
 # Save the obfuscation mapping to a file, so we can de-obfuscate any stack
 # traces later on. Keep a fixed source file attribute and all line number

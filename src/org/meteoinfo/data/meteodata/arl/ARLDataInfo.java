@@ -37,7 +37,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.osgeo.proj4j.proj.Projection;
+import org.meteoinfo.projection.proj4j.proj.Projection;
 import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.projection.ProjectionNames;

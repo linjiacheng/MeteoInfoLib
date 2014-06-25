@@ -39,6 +39,8 @@ public class FrmPolylineSymbolSet extends javax.swing.JDialog {
     public FrmPolylineSymbolSet(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        
+        this.setTitle("Polyline Symbol Set");
     }
 
     /**
@@ -48,6 +50,7 @@ public class FrmPolylineSymbolSet extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
         
+        this.setTitle("Polyline Symbol Set");
         if (tparent.getClass() == LegendView.class){
             this.jButton_Apply.setVisible(false);
             this.jButton_OK.setVisible(false);
@@ -71,6 +74,7 @@ public class FrmPolylineSymbolSet extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
         
+        this.setTitle("Polyline Symbol Set");
         if (tparent.getClass() == LegendView.class){
             this.jButton_Apply.setVisible(false);
             this.jButton_OK.setVisible(false);

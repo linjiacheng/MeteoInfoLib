@@ -158,7 +158,7 @@ public class MICAPS4DataInfo extends DataInfo implements IGridDataInfo {
             tdim.setValues(values);
             this.setTimeDimension(tdim);
             Dimension zdim = new Dimension(DimensionType.Z);
-            zdim.setValues(new double[_level]);
+            zdim.setValues(new double[]{_level});
             Dimension xdim = new Dimension(DimensionType.X);
             xdim.setValues(_xArray);
             this.setXDimension(xdim);
@@ -218,6 +218,8 @@ public class MICAPS4DataInfo extends DataInfo implements IGridDataInfo {
                     break;
                 }
                 aLine = aLine.trim();
+                if (aLine.isEmpty())
+                    continue;
                 dataArray = aLine.split("\\s+");
                 dataList.addAll(Arrays.asList(dataArray));
                 if (col == 0) {

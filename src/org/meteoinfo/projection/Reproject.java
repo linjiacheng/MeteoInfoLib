@@ -13,9 +13,9 @@
  */
 package org.meteoinfo.projection;
 
-import org.osgeo.proj4j.CoordinateTransform;
-import org.osgeo.proj4j.CoordinateTransformFactory;
-import org.osgeo.proj4j.ProjCoordinate;
+import org.meteoinfo.projection.proj4j.CoordinateTransform;
+import org.meteoinfo.projection.proj4j.CoordinateTransformFactory;
+import org.meteoinfo.projection.proj4j.ProjCoordinate;
 
 /**
  *

@@ -122,7 +122,10 @@ public enum MouseMode {
     /// <summary>
     /// Map select Features
     /// </summary>
-    Map_SelectFeatures,
+    Map_SelectFeatures_Rectangle,
+    Map_SelectFeatures_Polygon,
+    Map_SelectFeatures_Lasso,
+    Map_SelectFeatures_Circle,
     /// <summary>
     /// Map measurement
     /// </summary>

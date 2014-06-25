@@ -24,15 +24,15 @@ public class WindArraw extends PointShape {
     /**
      * Size
      */
-    public float size;
+    public float size = 6;
     /**
      * Length
      */
-    public float length;
+    public float length = 20;
     /**
      * Angle
      */
-    public double angle;
+    public double angle = 270;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 

@@ -117,5 +117,7 @@ public enum MeteoDataType {
         /// <summary>
         /// HRIT/LRIT satellite data format
         /// </summary>
-        HRIT
+        HRIT,
+        MM5,
+        MM5IM,
 }

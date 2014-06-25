@@ -50,7 +50,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.EventListenerList;
-import org.osgeo.proj4j.CRSFactory;
+import org.meteoinfo.projection.proj4j.CRSFactory;
 
 /**
  *

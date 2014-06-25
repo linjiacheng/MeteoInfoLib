@@ -13,6 +13,9 @@
  */
 package org.meteoinfo.layout;
 
+import com.l2fprod.common.beans.BaseBeanInfo;
+import com.l2fprod.common.beans.ExtendedPropertyDescriptor;
+import com.l2fprod.common.beans.editor.ComboBoxPropertyEditor;
 import org.meteoinfo.global.event.ILayersUpdatedListener;
 import org.meteoinfo.global.event.IMapViewUpdatedListener;
 import org.meteoinfo.global.event.LayersUpdatedEvent;
@@ -67,6 +70,7 @@ public class LayoutMap extends LayoutElement {
     // <editor-fold desc="Variables">
     private EventListenerList _listeners = new EventListenerList();
     private MapFrame _mapFrame = null;
+    private boolean _drawDegreeSymbol = false;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -485,6 +489,24 @@ public class LayoutMap extends LayoutElement {
     }
 
     /**
+     * Get if draw degree symbol
+     *
+     * @return Boolean
+     */
+    public boolean isDrawDegreeSymbol() {
+        return _drawDegreeSymbol;
+    }
+
+    /**
+     * Set if draw degree symbol
+     *
+     * @param value Boolean
+     */
+    public void setDrawDegreeSymbol(boolean value) {
+        _drawDegreeSymbol = value;
+    }
+
+    /**
      * Get grid label font
      *
      * @return Grid label font
@@ -842,6 +864,13 @@ public class LayoutMap extends LayoutElement {
                     sP.Y = labY;
 
                     drawStr = aGL.getLabString();
+                    if (_drawDegreeSymbol)
+                        {
+                            if (drawStr.endsWith("E") || drawStr.endsWith("W") || drawStr.endsWith("N") || drawStr.endsWith("S"))
+                                drawStr = drawStr.substring(0, drawStr.length() - 1) + String.valueOf((char)186) + drawStr.substring(drawStr.length() - 1);
+                            else
+                                drawStr = drawStr + String.valueOf((char)186);
+                        }
                     FontMetrics metrics = g.getFontMetrics(font);
                     aSF = new Dimension(metrics.stringWidth(drawStr), metrics.getHeight());
                     switch (aGL.getLabDirection()) {
@@ -867,7 +896,8 @@ public class LayoutMap extends LayoutElement {
                             break;
                         case North:
                             labX = labX - aSF.width / 2;
-                            labY = labY - aSF.height - space;
+                            //labY = labY - aSF.height / 3 - space;
+                            labY = labY - space;
                             eP.X = sP.X;
                             if (_mapFrame.isInsideTickLine()) {
                                 eP.Y = sP.Y + len;
@@ -877,7 +907,7 @@ public class LayoutMap extends LayoutElement {
                             break;
                         case East:
                             labX = labX + space;
-                            labY = labY - aSF.height / 2;
+                            labY = labY + aSF.height / 3;
                             eP.Y = sP.Y;
                             if (_mapFrame.isInsideTickLine()) {
                                 eP.X = sP.X - len;
@@ -899,10 +929,10 @@ public class LayoutMap extends LayoutElement {
                     //Judge extent                                        
                     if (extentList.isEmpty()) {
                         maxExtent = (Extent) aExtent.clone();
-                        extentList.add((Extent)aExtent.clone());
+                        extentList.add((Extent) aExtent.clone());
                     } else {
                         if (!MIMath.isExtentCross(aExtent, maxExtent)) {
-                            extentList.add((Extent)aExtent.clone());
+                            extentList.add((Extent) aExtent.clone());
                             maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
                         } else {
                             for (int j = 0; j < extentList.size(); j++) {
@@ -944,4 +974,553 @@ public class LayoutMap extends LayoutElement {
     public void resizeUpdate() {
     }
     // </editor-fold>   
+    // <editor-fold desc="BeanInfo">
+
+    public class LayoutMapBean {
+
+        LayoutMapBean() {
+        }
+        // <editor-fold desc="Get Set Methods">
+
+        /**
+         * Get left
+         *
+         * @return Left
+         */
+        public int getLeft() {
+            return _mapFrame.getLayoutBounds().x;
+        }
+
+        /**
+         * Set left
+         *
+         * @param left Left
+         */
+        public void setLeft(int left) {
+            _mapFrame.setLayoutBounds(new Rectangle(left, _mapFrame.getLayoutBounds().y, _mapFrame.getLayoutBounds().width,
+                    _mapFrame.getLayoutBounds().height));
+        }
+
+        /**
+         * Get top
+         *
+         * @return Top
+         */
+        public int getTop() {
+            return _mapFrame.getLayoutBounds().y;
+        }
+
+        /**
+         * Set top
+         *
+         * @param top Top
+         */
+        public void setTop(int top) {
+            _mapFrame.setLayoutBounds(new Rectangle(_mapFrame.getLayoutBounds().x, top, _mapFrame.getLayoutBounds().width,
+                    _mapFrame.getLayoutBounds().height));
+        }
+
+        /**
+         * Get width
+         *
+         * @return Width
+         */
+        public int getWidth() {
+            return _mapFrame.getLayoutBounds().width;
+        }
+
+        /**
+         * Set width
+         *
+         * @param width Width
+         */
+        public void setWidth(int width) {
+            _mapFrame.setLayoutBounds(new Rectangle(_mapFrame.getLayoutBounds().x, _mapFrame.getLayoutBounds().y, width,
+                    _mapFrame.getLayoutBounds().height));
+        }
+
+        /**
+         * Get height
+         *
+         * @return Height
+         */
+        public int getHeight() {
+            return _mapFrame.getLayoutBounds().height;
+        }
+
+        /**
+         * Set height
+         *
+         * @param height Height
+         */
+        public void setHeight(int height) {
+            _mapFrame.setLayoutBounds(new Rectangle(_mapFrame.getLayoutBounds().x, _mapFrame.getLayoutBounds().y,
+                    _mapFrame.getLayoutBounds().width, height));
+        }
+
+        /**
+         * Get bounds rectangle
+         *
+         * @return The bounds rectangle
+         */
+        public Rectangle getBounds() {
+            return _mapFrame.getLayoutBounds();
+        }
+
+        /**
+         * Set bounds rectangle
+         *
+         * @param rect Bounds rectangle
+         */
+        public void setBounds(Rectangle rect) {
+            _mapFrame.setLayoutBounds(rect);
+        }
+
+        /**
+         * Get background color
+         *
+         * @return Background color
+         */
+        public Color getBackColor() {
+            return _mapFrame.getBackColor();
+        }
+
+        /**
+         * Set background color
+         *
+         * @param color Background color
+         */
+        public void setBackColor(Color color) {
+            _mapFrame.setBackColor(color);
+        }
+
+        /**
+         * Get foreground color
+         *
+         * @return Foreground color
+         */
+        public Color getForeColor() {
+            return _mapFrame.getForeColor();
+        }
+
+        /**
+         * Set foreground color
+         *
+         * @param color
+         */
+        public void setForeColor(Color color) {
+            _mapFrame.setForeColor(color);
+        }
+
+        /**
+         * Get if draw map view neat line
+         *
+         * @return Boolean
+         */
+        public boolean isDrawNeatLine() {
+            return _mapFrame.isDrawNeatLine();
+        }
+
+        /**
+         * Set if draw map view neat line
+         *
+         * @param istrue Boolean
+         */
+        public void setDrawNeatLine(boolean istrue) {
+            _mapFrame.setDrawNeatLine(istrue);
+        }
+
+        /**
+         * Get map view neat line color
+         *
+         * @return Neat line color
+         */
+        public Color getNeatLineColor() {
+            return _mapFrame.getNeatLineColor();
+        }
+
+        /**
+         * Set map view neat line color
+         *
+         * @param color Neat line color
+         */
+        public void setNeatLineColor(Color color) {
+            _mapFrame.setNeatLineColor(color);
+        }
+
+        /**
+         * Get map view neat line size
+         *
+         * @return Neat line size
+         */
+        public float getNeatLineSize() {
+            return _mapFrame.getNeatLineSize();
+        }
+
+        /**
+         * Set map view neat line size
+         *
+         * @param size Neat line size
+         */
+        public void setNeatLineSize(float size) {
+            _mapFrame.setNeatLineSize(size);
+        }
+
+        /**
+         * Get grid line color
+         *
+         * @return Grid line color
+         */
+        public Color getGridLineColor() {
+            return _mapFrame.getGridLineColor();
+        }
+
+        /**
+         * Set grid line color
+         *
+         * @param color Grid line color
+         */
+        public void setGridLineColor(Color color) {
+            _mapFrame.setGridLineColor(color);
+        }
+
+        /**
+         * Get grid line size
+         *
+         * @return Grid line size
+         */
+        public float getGridLineSize() {
+            return _mapFrame.getGridLineSize();
+        }
+
+        /**
+         * Set grid line size
+         *
+         * @param size Grid line size
+         */
+        public void setGridLineSize(float size) {
+            _mapFrame.setGridLineSize(size);
+        }
+
+        /**
+         * Get grid line style
+         *
+         * @return Grid line style
+         */
+        public String getGridLineStyle() {
+            return _mapFrame.getGridLineStyle().toString();
+        }
+
+        /**
+         * Set grid line style
+         *
+         * @param style Grid line style
+         */
+        public void setGridLineStyle(String style) {
+            _mapFrame.setGridLineStyle(LineStyles.valueOf(style));
+        }
+
+        /**
+         * Get if draw grid labels
+         *
+         * @return If draw grid labels
+         */
+        public boolean isDrawGridLabel() {
+            return _mapFrame.isDrawGridLabel();
+        }
+
+        /**
+         * Set if draw grid labels
+         *
+         * @param istrue Boolean
+         */
+        public void setDrawGridLabel(boolean istrue) {
+            _mapFrame.setDrawGridLabel(istrue);
+        }
+
+        /**
+         * Get if draw grid tick line inside
+         *
+         * @return Booelan
+         */
+        public boolean isInsideTickLine() {
+            return _mapFrame.isInsideTickLine();
+        }
+
+        /**
+         * Set if draw grid tick line inside
+         *
+         * @param istrue Boolean
+         */
+        public void setInsideTickLine(boolean istrue) {
+            _mapFrame.setInsideTickLine(istrue);
+        }
+
+        /**
+         * Get grid tick line length
+         *
+         * @return Grid tick line length
+         */
+        public int getTickLineLength() {
+            return _mapFrame.getTickLineLength();
+        }
+
+        /**
+         * Set grid tick line length
+         *
+         * @param Grid tick line length
+         */
+        public void setTickLineLength(int value) {
+            _mapFrame.setTickLineLength(value);
+        }
+
+        /**
+         * Get grid label shift
+         *
+         * @return Grid label shift
+         */
+        public int getGridLabelShift() {
+            return _mapFrame.getGridLabelShift();
+        }
+
+        /**
+         * Set grid label shift
+         *
+         * @param value Grid label shift
+         */
+        public void setGridLabelShift(int value) {
+            _mapFrame.setGridLabelShift(value);
+        }
+
+        /// <summary>
+        /// Get or set grid label position
+        /**
+         * Get grid label position
+         *
+         * @return Grid label position
+         */
+        public String getGridLabelPosition() {
+            return _mapFrame.getGridLabelPosition().toString();
+        }
+
+        /**
+         * Set grid label positiont
+         *
+         * @param value Grid label position
+         */
+        public void setGridLabelPosition(String value) {
+            _mapFrame.setGridLabelPosition(GridLabelPosition.valueOf(value));
+        }
+
+        /**
+         * Get if draw grid line
+         *
+         * @return If draw grid line
+         */
+        public boolean isDrawGridLine() {
+            return _mapFrame.isDrawGridLine();
+        }
+
+        /**
+         * Set if draw grid line
+         *
+         * @param istrue If draw grid line
+         */
+        public void setDrawGridLine(boolean istrue) {
+            _mapFrame.setDrawGridLine(istrue);
+        }
+
+        /**
+         * Get if draw grid tick line
+         *
+         * @return Boolean
+         */
+        public boolean isDrawGridTickLine() {
+            return _mapFrame.isDrawGridTickLine();
+        }
+
+        /**
+         * Set if draw grid tick line
+         *
+         * @param istrue Boolean
+         */
+        public void setDrawGridTickLine(boolean istrue) {
+            _mapFrame.setDrawGridTickLine(istrue);
+        }
+
+        /**
+         * Get if draw degree symbol
+         *
+         * @return Boolean
+         */
+        public boolean isDrawDegreeSymbol() {
+            return _drawDegreeSymbol;
+        }
+
+        /**
+         * Set if draw degree symbol
+         *
+         * @param value Boolean
+         */
+        public void setDrawDegreeSymbol(boolean value) {
+            _drawDegreeSymbol = value;
+        }
+
+        /**
+         * Get grid label font
+         *
+         * @return Grid label font
+         */
+        public Font getGridFont() {
+            return _mapFrame.getGridFont();
+        }
+
+        /**
+         * Set grid label font
+         *
+         * @param font Grid label font
+         */
+        public void setGridFont(Font font) {
+            _mapFrame.setGridFont(font);
+        }
+
+        /**
+         * Get grid x delt
+         *
+         * @return Grid x delt
+         */
+        public float getGridXDelt() {
+            return _mapFrame.getGridXDelt();
+        }
+
+        /**
+         * Set grid x delt
+         *
+         * @param value The value
+         */
+        public void setGridXDelt(float value) {
+            _mapFrame.setGridXDelt(value);
+        }
+
+        /**
+         * Get grid y delt
+         *
+         * @return Grid y delt
+         */
+        public float getGridYDelt() {
+            return _mapFrame.getGridYDelt();
+        }
+
+        /**
+         * Set grid y delt
+         *
+         * @param value Grid y delt
+         */
+        public void setGridYDelt(float value) {
+            _mapFrame.setGridYDelt(value);
+        }
+
+        /**
+         * Get grid x origin
+         *
+         * @return Grid x origin
+         */
+        public float getGridXOrigin() {
+            return _mapFrame.getGridXOrigin();
+        }
+
+        /**
+         * Set grid x origin
+         *
+         * @param value Grid x origin
+         */
+        public void setGridXOrigin(float value) {
+            _mapFrame.setGridXOrigin(value);
+        }
+
+        /**
+         * Get grid y origin
+         *
+         * @return Grid y origin
+         */
+        public float getGridYOrigin() {
+            return _mapFrame.getGridYOrigin();
+        }
+
+        /**
+         * Set grid y origin
+         *
+         * @param value Grid y origin
+         */
+        public void setGridYOrigin(float value) {
+            _mapFrame.setGridYOrigin(value);
+        }
+        // </editor-fold>
+    }
+
+    public static class LayoutMapBeanBeanInfo extends BaseBeanInfo {
+
+        public LayoutMapBeanBeanInfo() {
+            super(LayoutMapBean.class);
+            addProperty("backColor").setCategory("General").setDisplayName("Background");
+            addProperty("foreColor").setCategory("General").setDisplayName("Foreground");
+            addProperty("drawNeatLine").setCategory("Neat Line").setDisplayName("Draw Neat Line");
+            addProperty("neatLineColor").setCategory("Neat Line").setDisplayName("Neat Line Color");
+            addProperty("neatLineSize").setCategory("Neat Line").setDisplayName("Neat Line Size");
+            addProperty("drawGridLine").setCategory("Grid Line").setDisplayName("Draw Grid Line");
+            addProperty("drawGridLabel").setCategory("Grid Line").setDisplayName("Draw Grid Label");
+            addProperty("gridXDelt").setCategory("Grid Line").setDisplayName("Grid X Interval");
+            addProperty("gridYDelt").setCategory("Grid Line").setDisplayName("Grid Y Interval");
+            addProperty("gridXOrigin").setCategory("Grid Line").setDisplayName("Grid X Origin");
+            addProperty("gridYOrigin").setCategory("Grid Line").setDisplayName("Grid Y Origin");
+            addProperty("gridFont").setCategory("Grid Line").setDisplayName("Grid Label Font");
+            addProperty("gridLabelShift").setCategory("Grid Line").setDisplayName("Grid Label Shift");
+            ExtendedPropertyDescriptor e = addProperty("gridLabelPosition");
+            e.setCategory("Grid Line").setDisplayName("Grid Label Position");
+            e.setPropertyEditorClass(GridLabelPositionEditor.class);
+            addProperty("drawDegreeSymbol").setCategory("Grid Line").setDisplayName("Draw Degree Symbol");
+            addProperty("gridLineColor").setCategory("Grid Line").setDisplayName("Grid Line Color");
+            addProperty("gridLineSize").setCategory("Grid Line").setDisplayName("Grid Line Size");
+            e = addProperty("gridLineStyle");
+            e.setCategory("Grid Line").setDisplayName("Grid Line Style");
+            e.setPropertyEditorClass(LineStyleEditor.class);
+            addProperty("insideTickLine").setCategory("Grid Line").setDisplayName("Inside Tick Line");
+            addProperty("tickLineLength").setCategory("Grid Line").setDisplayName("Tick Line Length");
+            addProperty("left").setCategory("Location").setDisplayName("Left");
+            addProperty("top").setCategory("Location").setDisplayName("Top");
+            addProperty("width").setCategory("Location").setDisplayName("Width");
+            addProperty("height").setCategory("Location").setDisplayName("Height");
+        }
+    }
+
+    public static class GridLabelPositionEditor extends ComboBoxPropertyEditor {
+
+        public GridLabelPositionEditor() {
+            super();
+            GridLabelPosition[] lutypes = GridLabelPosition.values();
+            String[] types = new String[lutypes.length];
+            int i = 0;
+            for (GridLabelPosition type : lutypes) {
+                types[i] = type.toString();
+                i += 1;
+            }
+            setAvailableValues(types);
+        }
+    }
+
+    public static class LineStyleEditor extends ComboBoxPropertyEditor {
+
+        public LineStyleEditor() {
+            super();
+            LineStyles[] lutypes = LineStyles.values();
+            String[] types = new String[lutypes.length];
+            int i = 0;
+            for (LineStyles type : lutypes) {
+                types[i] = type.toString();
+                i += 1;
+            }
+            setAvailableValues(types);
+        }
+    }
+    // </editor-fold>
 }

@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.meteoinfo.data.meteodata.GridDataSetting;
-import org.meteoinfo.geoprocess.analysis.InterpolationMethods;
 import org.meteoinfo.geoprocess.analysis.ResampleMethods;
+import org.meteoinfo.global.BigDecimalUtil;
 import org.meteoinfo.layer.VectorLayer;
 import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.projection.ProjectionManage;
@@ -62,6 +62,8 @@ public class GridData {
      * Projection information
      */
     public ProjectionInfo projInfo = null;
+    private boolean _xStag = false;
+    private boolean _yStag = false;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -78,6 +80,7 @@ public class GridData {
      * @param aGridData The grid data
      */
     public GridData(GridData aGridData) {
+        projInfo = aGridData.projInfo;
         xArray = aGridData.xArray.clone();
         yArray = aGridData.yArray.clone();
         missingValue = aGridData.missingValue;
@@ -98,10 +101,10 @@ public class GridData {
         xArray = new double[xNum];
         yArray = new double[yNum];
         for (int i = 0; i < xNum; i++) {
-            xArray[i] = xStart + xDelt * i;
+            xArray[i] = BigDecimalUtil.add(xStart, BigDecimalUtil.mul(xDelt, i));
         }
         for (int i = 0; i < yNum; i++) {
-            yArray[i] = yStart + yDelt * i;
+            yArray[i] = BigDecimalUtil.add(yStart, BigDecimalUtil.mul(yDelt, i));
         }
 
         missingValue = -9999;
@@ -174,6 +177,42 @@ public class GridData {
 
         return isGlobal;
     }
+
+    /**
+     * Get if is x stagger
+     *
+     * @return Boolean
+     */
+    public boolean isXStagger() {
+        return _xStag;
+    }
+
+    /**
+     * Set if is x stagger
+     *
+     * @param value Boolean
+     */
+    public void setXStagger(boolean value) {
+        _xStag = value;
+    }
+
+    /**
+     * Get if is y stagger
+     *
+     * @return Boolean
+     */
+    public boolean isYStagger() {
+        return _yStag;
+    }
+
+    /**
+     * Set if is y stagger
+     *
+     * @param value Boolean
+     */
+    public void setYStagger(boolean value) {
+        _yStag = value;
+    }
     // </editor-fold>
     // <editor-fold desc="Methods">
 
@@ -188,11 +227,7 @@ public class GridData {
         int xNum = this.getXNum();
         int yNum = this.getYNum();
 
-        GridData cGrid = new GridData();
-        cGrid.xArray = xArray;
-        cGrid.yArray = yArray;
-        cGrid.data = new double[yNum][xNum];
-        cGrid.missingValue = missingValue;
+        GridData cGrid = new GridData(this);
         for (int i = 0; i < yNum; i++) {
             for (int j = 0; j < xNum; j++) {
                 if (MIMath.doubleEquals(data[i][j], missingValue)
@@ -217,11 +252,7 @@ public class GridData {
         int xNum = this.getXNum();
         int yNum = this.getYNum();
 
-        GridData cGrid = new GridData();
-        cGrid.xArray = xArray;
-        cGrid.yArray = yArray;
-        cGrid.data = new double[yNum][xNum];
-        cGrid.missingValue = missingValue;
+        GridData cGrid = new GridData(this);
         for (int i = 0; i < yNum; i++) {
             for (int j = 0; j < xNum; j++) {
                 if (MIMath.doubleEquals(data[i][j], missingValue)) {
@@ -241,15 +272,11 @@ public class GridData {
      * @param bGrid The grid data
      * @return Subtracted grid data
      */
-    public GridData subtract(GridData bGrid) {
+    public GridData sub(GridData bGrid) {
         int xNum = this.getXNum();
         int yNum = this.getYNum();
 
-        GridData cGrid = new GridData();
-        cGrid.xArray = xArray;
-        cGrid.yArray = yArray;
-        cGrid.data = new double[yNum][xNum];
-        cGrid.missingValue = missingValue;
+        GridData cGrid = new GridData(this);
         for (int i = 0; i < yNum; i++) {
             for (int j = 0; j < xNum; j++) {
                 if (MIMath.doubleEquals(data[i][j], missingValue)
@@ -270,15 +297,11 @@ public class GridData {
      * @param value The double value
      * @return Subtracted grid data
      */
-    public GridData subtract(double value) {
+    public GridData sub(double value) {
         int xNum = this.getXNum();
         int yNum = this.getYNum();
 
-        GridData cGrid = new GridData();
-        cGrid.xArray = xArray;
-        cGrid.yArray = yArray;
-        cGrid.data = new double[yNum][xNum];
-        cGrid.missingValue = missingValue;
+        GridData cGrid = new GridData(this);
         for (int i = 0; i < yNum; i++) {
             for (int j = 0; j < xNum; j++) {
                 if (MIMath.doubleEquals(data[i][j], missingValue)) {
@@ -298,15 +321,11 @@ public class GridData {
      * @param bGrid The grid data
      * @return Result grid data
      */
-    public GridData multiply(GridData bGrid) {
+    public GridData mul(GridData bGrid) {
         int xNum = this.getXNum();
         int yNum = this.getYNum();
 
-        GridData cGrid = new GridData();
-        cGrid.xArray = xArray;
-        cGrid.yArray = yArray;
-        cGrid.data = new double[yNum][xNum];
-        cGrid.missingValue = missingValue;
+        GridData cGrid = new GridData(this);
         for (int i = 0; i < yNum; i++) {
             for (int j = 0; j < xNum; j++) {
                 if (MIMath.doubleEquals(data[i][j], missingValue)
@@ -327,15 +346,11 @@ public class GridData {
      * @param value Double value
      * @return Result grid data
      */
-    public GridData multiply(double value) {
+    public GridData mul(double value) {
         int xNum = this.getXNum();
         int yNum = this.getYNum();
 
-        GridData cGrid = new GridData();
-        cGrid.xArray = xArray;
-        cGrid.yArray = yArray;
-        cGrid.data = new double[yNum][xNum];
-        cGrid.missingValue = missingValue;
+        GridData cGrid = new GridData(this);
         for (int i = 0; i < yNum; i++) {
             for (int j = 0; j < xNum; j++) {
                 if (MIMath.doubleEquals(data[i][j], missingValue)) {
@@ -355,15 +370,11 @@ public class GridData {
      * @param bGrid The grid data
      * @return Result grid data
      */
-    public GridData divide(GridData bGrid) {
+    public GridData div(GridData bGrid) {
         int xNum = this.getXNum();
         int yNum = this.getYNum();
 
-        GridData cGrid = new GridData();
-        cGrid.xArray = xArray;
-        cGrid.yArray = yArray;
-        cGrid.data = new double[yNum][xNum];
-        cGrid.missingValue = missingValue;
+        GridData cGrid = new GridData(this);
         for (int i = 0; i < yNum; i++) {
             for (int j = 0; j < xNum; j++) {
                 if (MIMath.doubleEquals(data[i][j], missingValue)
@@ -384,15 +395,11 @@ public class GridData {
      * @param value Double value
      * @return Result grid data
      */
-    public GridData divide(double value) {
+    public GridData div(double value) {
         int xNum = this.getXNum();
         int yNum = this.getYNum();
 
-        GridData cGrid = new GridData();
-        cGrid.xArray = xArray;
-        cGrid.yArray = yArray;
-        cGrid.data = new double[yNum][xNum];
-        cGrid.missingValue = missingValue;
+        GridData cGrid = new GridData(this);
         for (int i = 0; i < yNum; i++) {
             for (int j = 0; j < xNum; j++) {
                 if (MIMath.doubleEquals(data[i][j], missingValue)) {
@@ -639,6 +646,30 @@ public class GridData {
     }
 
     /**
+     * Replace grid data value by a threshold - the values bigger/smaller than
+     * the threshold value will be replaced by the new value
+     *
+     * @param aValue Threshold value
+     * @param bValue New value
+     * @param bigger Bigger or smaller
+     */
+    public void replaceValue(double aValue, double bValue, boolean bigger) {
+        for (int i = 0; i < getYNum(); i++) {
+            for (int j = 0; j < getXNum(); j++) {
+                if (bigger) {
+                    if (data[i][j] > aValue) {
+                        data[i][j] = bValue;
+                    }
+                } else {
+                    if (data[i][j] < aValue) {
+                        data[i][j] = bValue;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Merge grid values by anthor grid data - the two grids should have same
      * extent replace missing value with valid data
      *
@@ -655,6 +686,56 @@ public class GridData {
                 if (MIMath.doubleEquals(data[i][j], missingValue)
                         && (!MIMath.doubleEquals(bGrid.data[i][j], bGrid.missingValue))) {
                     cGrid.data[i][j] = bGrid.data[i][j];
+                }
+            }
+        }
+
+        return cGrid;
+    }
+
+    /**
+     * Maximum operation with another grid data
+     *
+     * @param bGrid The grid data
+     * @return Maximum grid data
+     */
+    public GridData max(GridData bGrid) {
+        int xNum = this.getXNum();
+        int yNum = this.getYNum();
+
+        GridData cGrid = new GridData(this);
+        for (int i = 0; i < yNum; i++) {
+            for (int j = 0; j < xNum; j++) {
+                if (MIMath.doubleEquals(data[i][j], missingValue)
+                        || MIMath.doubleEquals(bGrid.data[i][j], bGrid.missingValue)) {
+                    cGrid.data[i][j] = missingValue;
+                } else {
+                    cGrid.data[i][j] = Math.max(data[i][j], bGrid.data[i][j]);
+                }
+            }
+        }
+
+        return cGrid;
+    }
+
+    /**
+     * Minimum operation with another grid data
+     *
+     * @param bGrid The grid data
+     * @return Minimum grid data
+     */
+    public GridData min(GridData bGrid) {
+        int xNum = this.getXNum();
+        int yNum = this.getYNum();
+
+        GridData cGrid = new GridData(this);
+        for (int i = 0; i < yNum; i++) {
+            for (int j = 0; j < xNum; j++) {
+                if (MIMath.doubleEquals(data[i][j], missingValue)
+                        || MIMath.doubleEquals(bGrid.data[i][j], bGrid.missingValue)) {
+                    cGrid.data[i][j] = missingValue;
+                } else {
+                    cGrid.data[i][j] = Math.min(data[i][j], bGrid.data[i][j]);
                 }
             }
         }
@@ -1091,6 +1172,7 @@ public class GridData {
         }
 
         GridData aGridData = new GridData();
+        aGridData.projInfo = projInfo;
         aGridData.missingValue = missingValue;
         int sXidx = 0, eXidx = xNum - 1, sYidx = 0, eYidx = yNum - 1;
 
@@ -1180,6 +1262,7 @@ public class GridData {
      */
     public GridData extract(int sXIdx, int sYIdx, int xNum, int yNum) {
         GridData aGridData = new GridData();
+        aGridData.projInfo = projInfo;
         aGridData.missingValue = missingValue;
         int eXIdx = sXIdx + xNum - 1, eYIdx = sYIdx + yNum - 1;
         double[] newX = new double[xNum];
@@ -1267,8 +1350,156 @@ public class GridData {
 
         return gdata;
     }
+
+    /**
+     * Get a cell value by X/Y coordinate - nearest cell
+     *
+     * @param x X coordinate
+     * @param y Y coordinate
+     * @return Cell value
+     */
+    public double getValue(double x, double y) {
+        double iValue = missingValue;
+        int xnum = this.getXNum();
+        int ynum = this.getYNum();
+        if (x < xArray[0] || x > xArray[xnum - 1] || y < yArray[0] || y > yArray[ynum - 1]) {
+            return iValue;
+        }
+
+        //Get x/y index
+        int xIdx = 0, yIdx = 0;
+        xIdx = (int) ((x - xArray[0]) / this.getXDelt());
+        yIdx = (int) ((y - yArray[0]) / this.getYDelt());
+        if (xIdx == xnum - 1) {
+            xIdx = xnum - 2;
+        }
+
+        if (yIdx == ynum - 1) {
+            yIdx = ynum - 2;
+        }
+
+        int i1 = yIdx;
+        int j1 = xIdx;
+        int i2 = i1 + 1;
+        int j2 = j1 + 1;
+
+        if (x - xArray[j1] < xArray[j2] - x) {
+            xIdx = j1;
+            if (y - yArray[i1] < yArray[i2] - y) {
+                yIdx = i1;
+            } else {
+                yIdx = i2;
+            }
+        } else {
+            xIdx = j2;
+            if (y - yArray[i1] < yArray[i2] - y) {
+                yIdx = i1;
+            } else {
+                yIdx = i2;
+            }
+        }
+
+        iValue = data[yIdx][xIdx];
+        return iValue;
+    }
     // </editor-fold>
     // <editor-fold desc="Others">
+
+    /**
+     * Get minimum x
+     *
+     * @return Minimum x
+     */
+    public double getXMin() {
+        return xArray[0];
+    }
+
+    /**
+     * Get maximum x
+     *
+     * @return Maximum x
+     */
+    public double getXMax() {
+        return xArray[xArray.length - 1];
+    }
+
+    /**
+     * Get minimum y
+     *
+     * @return Minimum y
+     */
+    public double getYMin() {
+        return yArray[0];
+    }
+
+    /**
+     * Get maximum y
+     *
+     * @return Maximum y
+     */
+    public double getYMax() {
+        return yArray[yArray.length - 1];
+    }
+
+    /**
+     * Get minimum x of the grid border
+     *
+     * @return Minimum x of the grid border
+     */
+    public double getBorderXMin() {
+        return this.getXMin() - this.getXDelt() / 2;
+    }
+
+    /**
+     * Get maximum x of the grid border
+     *
+     * @return Maximum x of the grid border
+     */
+    public double getBorderXMax() {
+        return this.getXMax() + this.getXDelt() / 2;
+    }
+
+    /**
+     * Get minimum y of the grid border
+     *
+     * @return Minimum y of the grid border
+     */
+    public double getBorderYMin() {
+        return this.getYMin() - this.getYDelt() / 2;
+    }
+
+    /**
+     * Get maximum y of the grid border
+     *
+     * @return Maximum y of the grid border
+     */
+    public double getBorderYMax() {
+        return this.getYMax() + this.getYDelt() / 2;
+    }
+
+    /**
+     * Get i/j index of a point in the grid
+     *
+     * @param x The x coordinate
+     * @param y The y coordinate
+     * @return I/J index array
+     */
+    public int[] getIJIndex(double x, double y) {
+        int xidx = -1;
+        int yidx = -1;
+        if (x >= this.getBorderXMin() && x <= this.getBorderXMax()) {
+            if (y >= this.getBorderYMin() && y <= this.getBorderYMax()) {
+                xidx = (int) ((x - this.getBorderXMin()) / this.getXDelt());
+                yidx = (int) ((y - this.getBorderYMin()) / this.getYDelt());
+            }
+        }
+        if (xidx >= this.getXNum() || yidx >= this.getYNum()){
+            xidx = -1;
+            yidx = -1;
+        }
+
+        return new int[]{xidx, yidx};
+    }
 
     /**
      * Save as Surfer ASCII data file
@@ -1439,11 +1670,7 @@ public class GridData {
         int xNum = this.getXNum();
         int yNum = this.getYNum();
 
-        GridData cGrid = new GridData();
-        cGrid.xArray = xArray;
-        cGrid.yArray = yArray;
-        cGrid.data = new double[yNum][xNum];
-        cGrid.missingValue = missingValue;
+        GridData cGrid = new GridData(this);
         for (int i = 0; i < yNum; i++) {
             if (yArray[i] >= aPGS.getExtent().minY && yArray[i] <= aPGS.getExtent().maxY) {
                 for (int j = 0; j < xNum; j++) {
@@ -1477,11 +1704,7 @@ public class GridData {
         int xNum = this.getXNum();
         int yNum = this.getYNum();
 
-        GridData cGrid = new GridData();
-        cGrid.xArray = xArray;
-        cGrid.yArray = yArray;
-        cGrid.data = new double[yNum][xNum];
-        cGrid.missingValue = missingValue;
+        GridData cGrid = new GridData(this);
         for (int i = 0; i < yNum; i++) {
             for (int j = 0; j < xNum; j++) {
                 if (GeoComputation.pointInPolygons(polygons, new PointD(xArray[j], yArray[i]))) {
@@ -1508,12 +1731,7 @@ public class GridData {
 
         int xNum = this.getXNum();
         int yNum = this.getYNum();
-        GridData cGrid = new GridData();
-        cGrid.xArray = xArray;
-        cGrid.yArray = yArray;
-        cGrid.data = new double[yNum][xNum];
-        cGrid.missingValue = missingValue;
-
+        GridData cGrid = new GridData(this);
         for (int i = 0; i < yNum; i++) {
             if (yArray[i] >= maskLayer.getExtent().minY && yArray[i] <= maskLayer.getExtent().maxY) {
                 for (int j = 0; j < xNum; j++) {
@@ -1558,6 +1776,93 @@ public class GridData {
         }
 
         return cGrid;
+    }
+
+    /**
+     * Resample grid data
+     *
+     * @param toGridData The grid data
+     * @param method The resample method
+     */
+    public GridData resample(GridData toGridData, ResampleMethods method) {
+        GridData gridData;
+        if (this.projInfo.equals(toGridData.projInfo)) {
+            switch (method) {
+                case NearestNeighbor:
+                    gridData = resample_Neighbor(toGridData.xArray, toGridData.yArray);
+                    break;
+                default:
+                    gridData = resample_Bilinear(toGridData.xArray, toGridData.yArray);
+                    break;
+            }
+        } else {
+            gridData = this.project(toGridData.projInfo, toGridData.xArray, toGridData.yArray, method);
+        }
+
+        gridData.projInfo = toGridData.projInfo;
+
+        return gridData;
+    }
+
+    private GridData resample_Neighbor(double[] newX, double[] newY) {
+        double[][] newdata = new double[newY.length][newX.length];
+        int i, j, xIdx, yIdx;
+        double x, y;
+
+        double[][] points = new double[1][];
+        for (i = 0; i < newY.length; i++) {
+            y = newY[i];
+            for (j = 0; j < newX.length; j++) {
+                points[0] = new double[]{newX[j], newY[i]};
+                x = newX[j];
+                if (x < xArray[0] || x > xArray[xArray.length - 1]) {
+                    newdata[i][j] = missingValue;
+                } else if (y < yArray[0] || y > yArray[yArray.length - 1]) {
+                    newdata[i][j] = missingValue;
+                } else {
+                    xIdx = (int) ((x - xArray[0]) / getXDelt());
+                    yIdx = (int) ((y - yArray[0]) / getYDelt());
+                    newdata[i][j] = data[yIdx][xIdx];
+                }
+            }
+        }
+
+        GridData gData = new GridData(this);
+        gData.data = newdata;
+        gData.xArray = newX;
+        gData.yArray = newY;
+
+        return gData;
+    }
+
+    private GridData resample_Bilinear(double[] newX, double[] newY) {
+        //PointD[][] pos = new PointD[newY.length][newX.length];
+        double[][] newdata = new double[newY.length][newX.length];
+        int i, j;
+        double x, y;
+
+        double[][] points = new double[1][];
+        for (i = 0; i < newY.length; i++) {
+            y = newY[i];
+            for (j = 0; j < newX.length; j++) {
+                points[0] = new double[]{newX[j], newY[i]};
+                x = newX[j];
+                if (x < xArray[0] || x > xArray[xArray.length - 1]) {
+                    newdata[i][j] = missingValue;
+                } else if (y < yArray[0] || y > yArray[yArray.length - 1]) {
+                    newdata[i][j] = missingValue;
+                } else {
+                    newdata[i][j] = this.toStation(x, y);
+                }
+            }
+        }
+
+        GridData gData = new GridData(this);
+        gData.data = newdata;
+        gData.xArray = newX;
+        gData.yArray = newY;
+
+        return gData;
     }
 
     /**
@@ -1809,53 +2114,52 @@ public class GridData {
      * @param toGridData To grid data
      * @param isAverage If is average
      */
-    public void Aggregate(GridData toGridData, boolean isAverage) {
+    public void aggregate(GridData toGridData, boolean isAverage) {
         int xnum = this.getXNum();
         int ynum = this.getYNum();
         int toXnum = toGridData.getXNum();
         int toYnum = toGridData.getYNum();
         int i, j, xIdx, yIdx;
         int[][] nums = new int[toYnum][toXnum];
-        double x, y;
+        double x, y, y0;
         toGridData.setValue(0.0);
         if (this.projInfo.equals(toGridData.projInfo)) {
             for (i = 0; i < ynum; i++) {
                 y = yArray[i];
-                if (y < toGridData.yArray[0] || y > toGridData.yArray[toYnum - 1]) {
-                    continue;
-                }
                 for (j = 0; j < xnum; j++) {
                     x = xArray[j];
-                    if (x < toGridData.xArray[0] || x > toGridData.xArray[toXnum - 1]) {
-                        continue;
+                    int[] ij = toGridData.getIJIndex(x, y);
+                    xIdx = ij[0];
+                    yIdx = ij[1];
+                    if (xIdx >= 0 && yIdx >= 0) {
+                        toGridData.data[yIdx][xIdx] += this.data[i][j];
+                        nums[yIdx][xIdx] += 1;
                     }
-                    xIdx = (int) ((x - toGridData.xArray[0]) / toGridData.getXDelt());
-                    yIdx = (int) ((y - toGridData.yArray[0]) / toGridData.getYDelt());
-                    toGridData.data[yIdx][xIdx] += this.data[i][j];
-                    nums[yIdx][xIdx] += 1;
                 }
             }
         } else {
             double[][] points = new double[1][];
             for (i = 0; i < ynum; i++) {
-                y = yArray[i];
+                y0 = yArray[i];
                 for (j = 0; j < xnum; j++) {
                     x = xArray[j];
+                    y = y0;
                     points[0] = new double[]{x, y};
                     try {
                         Reproject.reprojectPoints(points, this.projInfo, toGridData.projInfo, 0, 1);
                         x = points[0][0];
                         y = points[0][1];
-                        if (x < toGridData.xArray[0] || x > toGridData.xArray[toXnum - 1]) {
+                        if (Double.isNaN(x) || Double.isNaN(y)) {
                             continue;
                         }
-                        if (y < toGridData.yArray[0] || y > toGridData.yArray[toYnum - 1]) {
-                            continue;
+
+                        int[] ij = toGridData.getIJIndex(x, y);
+                        xIdx = ij[0];
+                        yIdx = ij[1];
+                        if (xIdx >= 0 && yIdx >= 0) {
+                            toGridData.data[yIdx][xIdx] += this.data[i][j];
+                            nums[yIdx][xIdx] += 1;
                         }
-                        xIdx = (int) ((x - toGridData.xArray[0]) / toGridData.getXDelt());
-                        yIdx = (int) ((y - toGridData.yArray[0]) / toGridData.getYDelt());
-                        toGridData.data[yIdx][xIdx] += this.data[i][j];
-                        nums[yIdx][xIdx] += 1;
                     } catch (Exception e) {
                         j++;
                         continue;
@@ -1876,6 +2180,58 @@ public class GridData {
                 }
             }
         }
+    }
+
+    /**
+     * Un stag grid data through x dimension
+     *
+     * @return Un stagged grid data
+     */
+    public GridData unStagger_X() {
+        int xn = this.getXNum();
+        int yn = this.getYNum();
+        double dx = this.getXDelt();
+        int xn_us = xn - 1;
+        int i, j;
+        GridData usData = new GridData(this);
+        usData.xArray = new double[xn_us];
+        usData.data = new double[yn][xn_us];
+        for (i = 0; i < yn; i++) {
+            for (j = 0; j < xn_us; j++) {
+                if (i == 0) {
+                    usData.xArray[j] = xArray[j] + dx;
+                }
+                usData.data[i][j] = (this.data[i][j] + this.data[i][j + 1]) * 0.5;
+            }
+        }
+
+        return usData;
+    }
+
+    /**
+     * Un stag grid data through y dimension
+     *
+     * @return Un stagged grid data
+     */
+    public GridData unStagger_Y() {
+        int xn = this.getXNum();
+        int yn = this.getYNum();
+        double dy = this.getYDelt();
+        int yn_us = yn - 1;
+        int i, j;
+        GridData usData = new GridData(this);
+        usData.yArray = new double[yn_us];
+        usData.data = new double[yn_us][xn];
+        for (i = 0; i < yn_us; i++) {
+            for (j = 0; j < xn; j++) {
+                if (j == 0) {
+                    usData.yArray[i] = yArray[i] + dy;
+                }
+                usData.data[i][j] = (this.data[i][j] + this.data[i + 1][j]) * 0.5;
+            }
+        }
+
+        return usData;
     }
 
     /**

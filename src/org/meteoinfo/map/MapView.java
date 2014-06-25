@@ -144,6 +144,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.EventListenerList;
 import javax.swing.table.DefaultTableModel;
+import org.meteoinfo.global.DataConvert;
+import org.meteoinfo.global.event.IShapeSelectedListener;
+import org.meteoinfo.global.event.ShapeSelectedEvent;
 import static org.meteoinfo.layer.LayerDrawType.Barb;
 import static org.meteoinfo.layer.LayerDrawType.StationModel;
 import static org.meteoinfo.layer.LayerDrawType.Streamline;
@@ -607,7 +610,7 @@ public class MapView extends JPanel {
                 image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/resources/identifer_32x32x32.png"));
                 customCursor = toolkit.createCustomCursor(image, new Point(8, 8), "Identifer");
                 break;
-            case SelectFeatures:
+            case SelectFeatures_Rectangle:
                 customCursor = Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR);
                 this._tempImage = GlobalUtil.deepCopy(_mapBitmap);
                 break;
@@ -1189,6 +1192,28 @@ public class MapView extends JPanel {
         }
     }
 
+    public void addShapeSelectedListener(IShapeSelectedListener listener) {
+        this._listeners.add(IShapeSelectedListener.class, listener);
+    }
+
+    public void removeShapeSelectedListener(IShapeSelectedListener listener) {
+        this._listeners.remove(IShapeSelectedListener.class, listener);
+    }
+
+    public void fireShapeSelectedEvent() {
+        this.paintLayers();
+        fireShapeSelectedEvent(new ShapeSelectedEvent(this));
+    }
+
+    private void fireShapeSelectedEvent(ShapeSelectedEvent event) {
+        Object[] listeners = _listeners.getListenerList();
+        for (int i = 0; i < listeners.length; i = i + 2) {
+            if (listeners[i] == IShapeSelectedListener.class) {
+                ((IShapeSelectedListener) listeners[i + 1]).shapeSelectedEvent(event);
+            }
+        }
+    }
+
     public void addProjectionChangedListener(IProjectionChangedListener listener) {
         this._listeners.add(IProjectionChangedListener.class, listener);
     }
@@ -1267,6 +1292,8 @@ public class MapView extends JPanel {
                 case New_Curve:
                 case New_CurvePolygon:
                 case New_Freehand:
+                case SelectFeatures_Polygon:
+                case SelectFeatures_Lasso:
                     if (_startNewGraphic) {
                         _graphicPoints = new ArrayList<PointF>();
                         _startNewGraphic = false;
@@ -1374,7 +1401,7 @@ public class MapView extends JPanel {
         _mouseLastPos.y = e.getY();
 
         Graphics2D g = (Graphics2D) this.getGraphics();
-        int aWidth, aHeight, aX, aY;
+        //int aWidth, aHeight, aX, aY;
         g.setColor(this.getForeground());
         switch (_mouseTool) {
             case Zoom_In:
@@ -1386,6 +1413,7 @@ public class MapView extends JPanel {
                 this.repaint();
                 break;
             case CreateSelection:
+            case SelectFeatures_Rectangle:
                 this.repaint();
                 break;
             case MoveSelection:
@@ -1471,6 +1499,8 @@ public class MapView extends JPanel {
             case New_Ellipse:
             case New_Freehand:
             case New_Circle:
+            case SelectFeatures_Lasso:
+            case SelectFeatures_Circle:
                 this.repaint();
                 break;
             case InEditingVertices:
@@ -1480,13 +1510,13 @@ public class MapView extends JPanel {
     }
 
     void onMouseMoved(MouseEvent e) {
-        int deltaX = e.getX() - _mouseLastPos.x;
-        int deltaY = e.getY() - _mouseLastPos.y;
+        //int deltaX = e.getX() - _mouseLastPos.x;
+        //int deltaY = e.getY() - _mouseLastPos.y;
         _mouseLastPos.x = e.getX();
         _mouseLastPos.y = e.getY();
 
         Graphics2D g = (Graphics2D) this.getGraphics();
-        float aWidth, aHeight, aX, aY;
+        //float aWidth, aHeight, aX, aY;
         g.setColor(this.getForeground());
         switch (_mouseTool) {
             case SelectElements:
@@ -1563,6 +1593,7 @@ public class MapView extends JPanel {
             case New_Curve:
             case New_CurvePolygon:
             case New_Freehand:
+            case SelectFeatures_Polygon:
                 if (!_startNewGraphic) {
                     this.repaint();
                 }
@@ -1710,6 +1741,40 @@ public class MapView extends JPanel {
                     MaxY = _drawExtent.maxY - (mouseLat - lat);
 
                     zoomToExtent(MinX, MaxX, MinY, MaxY);
+                }
+                break;
+            case SelectFeatures_Rectangle:
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    if (_selectedLayer < 0) {
+                        return;
+                    }
+                    MapLayer aMLayer = this.getLayerFromHandle(_selectedLayer);
+                    if (aMLayer == null) {
+                        return;
+                    }
+                    if (aMLayer.getLayerType() != LayerTypes.VectorLayer) {
+                        return;
+                    }
+
+                    VectorLayer aLayer = (VectorLayer) aMLayer;
+                    int minx = Math.min(_mouseDownPoint.x, e.getX());
+                    int miny = Math.min(_mouseDownPoint.y, e.getY());
+                    int width = Math.abs(e.getX() - _mouseDownPoint.x);
+                    int height = Math.abs(e.getY() - _mouseDownPoint.y);
+                    Rectangle.Float rect = new Rectangle.Float(minx, miny, width, height);
+                    List<Integer> selectedShapes = selectShapes(aLayer, rect);
+                    if (!(e.isControlDown() || e.isShiftDown())) {
+                        aLayer.clearSelectedShapes();
+                    }
+                    if (selectedShapes.size() > 0) {
+                        for (int shapeIdx : selectedShapes) {
+                            aLayer.getShapes().get(shapeIdx).setSelected(true);
+                        }
+
+                        this.fireShapeSelectedEvent();
+                    } else {
+                        this.paintLayers();
+                    }
                 }
                 break;
             case CreateSelection:
@@ -1949,6 +2014,7 @@ public class MapView extends JPanel {
                 }
                 break;
             case New_Freehand:
+            case SelectFeatures_Lasso:
                 if (e.getButton() == MouseEvent.BUTTON1) {
                     _startNewGraphic = true;
                     if (_graphicPoints.size() < 2) {
@@ -1962,20 +2028,35 @@ public class MapView extends JPanel {
                         points.add(new PointD(pXY[0], pXY[1]));
                     }
 
-                    Graphic aGraphic;
-                    PolylineShape aPLS = new PolylineShape();
-                    aPLS.setPoints(points);
-                    aGraphic = new Graphic(aPLS, (PolylineBreak) _defPolylineBreak.clone());
-
-                    if (aGraphic != null) {
+                    if (_mouseTool == MouseTools.New_Freehand) {
+                        PolylineShape aPLS = new PolylineShape();
+                        aPLS.setPoints(points);
+                        Graphic aGraphic = new Graphic(aPLS, (PolylineBreak) _defPolylineBreak.clone());
                         _graphicCollection.add(aGraphic);
                         paintLayers();
                     } else {
-                        this.repaint();
+                        MapLayer aMLayer = getLayerFromHandle(_selectedLayer);
+                        if (aMLayer == null) {
+                            return;
+                        }
+                        if (aMLayer.getLayerType() != LayerTypes.VectorLayer) {
+                            return;
+                        }
+
+                        PolygonShape aPGS = new PolygonShape();
+                        points.add((PointD) points.get(0).clone());
+                        aPGS.setPoints(points);
+                        VectorLayer aLayer = (VectorLayer) aMLayer;
+                        if (!(e.isControlDown() || e.isShiftDown())) {
+                            aLayer.clearSelectedShapes();
+                        }
+                        aLayer.selectShapes(aPGS);
+                        this.fireShapeSelectedEvent();
                     }
                 }
                 break;
             case New_Circle:
+            case SelectFeatures_Circle:
                 if (e.getButton() == MouseEvent.BUTTON1) {
                     if (e.getX() - _mouseDownPoint.x < 2 || e.getY() - _mouseDownPoint.y < 2) {
                         return;
@@ -1996,16 +2077,27 @@ public class MapView extends JPanel {
                         points.add(new PointD(pXY[0], pXY[1]));
                     }
 
-                    Graphic aGraphic;
                     CircleShape aPGS = new CircleShape();
                     aPGS.setPoints(points);
-                    aGraphic = new Graphic(aPGS, (PolygonBreak) _defPolygonBreak.clone());
-
-                    if (aGraphic != null) {
+                    if (_mouseTool == MouseTools.New_Circle) {
+                        Graphic aGraphic = new Graphic(aPGS, (PolygonBreak) _defPolygonBreak.clone());
                         _graphicCollection.add(aGraphic);
                         paintLayers();
                     } else {
-                        this.repaint();
+                        MapLayer layer = this.getLayerFromHandle(_selectedLayer);
+                        if (layer == null) {
+                            return;
+                        }
+                        if (layer.getLayerType() != LayerTypes.VectorLayer) {
+                            return;
+                        }
+
+                        VectorLayer aLayer = (VectorLayer) layer;
+                        if (!(e.isControlDown() || e.isShiftDown())) {
+                            aLayer.clearSelectedShapes();
+                        }
+                        aLayer.selectShapes(aPGS);
+                        this.fireShapeSelectedEvent();
                     }
                 }
                 break;
@@ -2111,10 +2203,16 @@ public class MapView extends JPanel {
                                 valueStr = String.valueOf(shapeIdx);
                                 tData[0][0] = fieldStr;
                                 tData[0][1] = valueStr;
+                                Object value;
                                 if (aLayer.getShapeNum() > 0) {
                                     for (int i = 0; i < aLayer.getFieldNumber(); i++) {
                                         fieldStr = aLayer.getFieldName(i);
-                                        valueStr = aLayer.getCellValue(i, shapeIdx).toString();
+                                        value = aLayer.getCellValue(i, shapeIdx);
+                                        if (value == null) {
+                                            valueStr = "";
+                                        } else {
+                                            valueStr = aLayer.getCellValue(i, shapeIdx).toString();
+                                        }
                                         tData[i + 1][0] = fieldStr;
                                         tData[i + 1][1] = valueStr;
                                     }
@@ -2157,7 +2255,7 @@ public class MapView extends JPanel {
                             }
                         }
                         break;
-                    case SelectFeatures:
+                    case SelectFeatures_Rectangle:
                         if (_selectedLayer < 0) {
                             return;
                         }
@@ -2175,26 +2273,24 @@ public class MapView extends JPanel {
                         }
                         aPoint = new PointF(e.getX(), e.getY());
                         List<Integer> selectedShapes = this.selectShapes(aLayer, aPoint);
-                        this._mapBitmap = GlobalUtil.deepCopy(this._tempImage);
+                        //this._mapBitmap = GlobalUtil.deepCopy(this._tempImage);
                         if (selectedShapes.size() > 0) {
                             int shapeIdx = selectedShapes.get(0);
                             Shape selShape = aLayer.getShapes().get(shapeIdx);
                             if (!e.isControlDown() && !e.isShiftDown()) {
                                 selShape.setSelected(true);
-                                //this.repaint();
-                                drawIdShape((Graphics2D) this._mapBitmap.getGraphics(), selShape);
+                                //drawIdShape((Graphics2D) this._mapBitmap.getGraphics(), selShape);
                             } else {
                                 selShape.setSelected(!selShape.isSelected());
-                                //this.repaint();
-                                for (int sIdx : aLayer.getSelectedShapeIndexes()) {
-                                    drawIdShape((Graphics2D) this._mapBitmap.getGraphics(), aLayer.getShapes().get(sIdx));
-                                }
+//                                for (int sIdx : aLayer.getSelectedShapeIndexes()) {
+//                                    drawIdShape((Graphics2D) this._mapBitmap.getGraphics(), aLayer.getShapes().get(sIdx));
+//                                }
                             }
-                            this.repaint();
-                            //OnShapeSelected();
+
+                            this.fireShapeSelectedEvent();
                         } else {
                             if (!e.isControlDown() && !e.isShiftDown()) {
-                                this.repaint();
+                                this.paintLayers();
                             }
                         }
                         break;
@@ -2348,6 +2444,7 @@ public class MapView extends JPanel {
                 case New_Curve:
                 case New_CurvePolygon:
                 case New_Freehand:
+                case SelectFeatures_Polygon:
                     if (!_startNewGraphic) {
                         _startNewGraphic = true;
                         //_graphicPoints.Add(new PointF(e.getX(), e.getY()));
@@ -2390,11 +2487,31 @@ public class MapView extends JPanel {
                                 break;
                         }
 
-                        if (aGraphic != null) {
-                            _graphicCollection.add(aGraphic);
-                            paintLayers();
+                        if (_mouseTool == MouseTools.SelectFeatures_Polygon) {
+                            MapLayer layer = this.getLayerFromHandle(_selectedLayer);
+                            if (layer == null) {
+                                return;
+                            }
+                            if (layer.getLayerType() != LayerTypes.VectorLayer) {
+                                return;
+                            }
+
+                            PolygonShape aPGS = new PolygonShape();
+                            points.add((PointD) points.get(0).clone());
+                            aPGS.setPoints(points);
+                            VectorLayer aLayer = (VectorLayer) layer;
+                            if (!(e.isControlDown() || e.isShiftDown())) {
+                                aLayer.clearSelectedShapes();
+                            }
+                            aLayer.selectShapes(aPGS);
+                            this.fireShapeSelectedEvent();
                         } else {
-                            this.repaint();
+                            if (aGraphic != null) {
+                                _graphicCollection.add(aGraphic);
+                                paintLayers();
+                            } else {
+                                this.repaint();
+                            }
                         }
                     }
                     break;
@@ -3003,6 +3120,7 @@ public class MapView extends JPanel {
                 case CreateSelection:
                 case New_Rectangle:
                 case New_Ellipse:
+                case SelectFeatures_Rectangle:
                     int sx = Math.min(_mouseDownPoint.x, _mouseLastPos.x);
                     int sy = Math.min(_mouseDownPoint.y, _mouseLastPos.y);
                     g2.setColor(this.getForeground());
@@ -3010,6 +3128,7 @@ public class MapView extends JPanel {
                             Math.abs(_mouseLastPos.y - _mouseDownPoint.y)));
                     break;
                 case New_Freehand:
+                case SelectFeatures_Lasso:
                     List<PointF> points = new ArrayList<PointF>(_graphicPoints);
                     points.add(new PointF(_mouseLastPos.x, _mouseLastPos.y));
                     g2.setColor(this.getForeground());
@@ -3017,6 +3136,7 @@ public class MapView extends JPanel {
                     Draw.drawPolyline(points, g2);
                     break;
                 case New_Circle:
+                case SelectFeatures_Circle:
                     int radius = (int) Math.sqrt(Math.pow(_mouseLastPos.x - _mouseDownPoint.x, 2)
                             + Math.pow(_mouseLastPos.y - _mouseDownPoint.y, 2));
                     g2.setColor(this.getForeground());
@@ -3047,6 +3167,7 @@ public class MapView extends JPanel {
             case New_Polygon:
             case New_Curve:
             case New_CurvePolygon:
+            case SelectFeatures_Polygon:
                 //case New_Freehand:
                 if (!_startNewGraphic) {
                     //this.repaint();
@@ -3058,6 +3179,7 @@ public class MapView extends JPanel {
                             Draw.drawPolyline(points, g2);
                             break;
                         case New_Polygon:
+                        case SelectFeatures_Polygon:
                             points.add(points.get(0));
                             Draw.drawPolyline(points, g2);
                             break;
@@ -3169,10 +3291,28 @@ public class MapView extends JPanel {
      * @param g Graphics2D
      */
     public void paintGraphics(Graphics2D g) {
+        if (this._lockViewUpdate)
+            return;
+        
         getMaskOutGraphicsPath(g);
 
-        //g.SmoothingMode = _smoothingMode;
-        //g.TextRenderingHint = TextRenderingHint.AntiAlias;
+        if (_antiAlias) {
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+            g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+            g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+        } else {
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
+            g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_DEFAULT);
+            g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_OFF);
+            g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_DEFAULT);
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+            g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_DEFAULT);
+        }
 
         _xGridPosLabel.clear();
         _yGridPosLabel.clear();
@@ -3197,6 +3337,9 @@ public class MapView extends JPanel {
      * @param rect Target rectangle
      */
     public void paintGraphics(Graphics2D g, Rectangle rect) {
+        if (this._lockViewUpdate)
+            return;
+        
         refreshXYScale(rect.width, rect.height);
 
         AffineTransform oldMatrix = g.getTransform();
@@ -3210,8 +3353,23 @@ public class MapView extends JPanel {
         g.translate(rect.x, rect.y);
         _maskOutGraphicsPath.transform(g.getTransform());
 
-        //g.SmoothingMode = _smoothingMode;
-        //g.TextRenderingHint = TextRenderingHint.AntiAlias;
+        if (_antiAlias) {
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+            g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+            g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+        } else {
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
+            g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_DEFAULT);
+            g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_OFF);
+            g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_DEFAULT);
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+            g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_DEFAULT);
+        }
 
         _xGridPosLabel.clear();
         _yGridPosLabel.clear();
@@ -3582,18 +3740,18 @@ public class MapView extends JPanel {
                     case VectorLayer:
                         VectorLayer aVLayer = (VectorLayer) aLayer;
                         switch (aLayer.getLayerDrawType()) {
-//                                case Vector:                                    
-//                                    drawVectLayerWithLegendScheme(aLayer, g, 0);                                    
-//                                    break;
-//                                case Barb:                                    
-//                                    drawBarbLayerWithLegendScheme(aLayer, g, 0);                                    
-//                                    break;
+                            case Vector:
+                                drawVectLayerWithLegendScheme(aVLayer, g, 0);
+                                break;
+                            case Barb:
+                                drawBarbLayerWithLegendScheme(aVLayer, g, 0);
+                                break;
 //                                case WeatherSymbol:                                    
 //                                    drawWeatherLayerWithLegendScheme(aLayer, g, 0);                                    
 //                                    break;
-//                                case StationModel:                                    
-//                                    drawStationModelLayerWithLegendScheme(aLayer, g, 0);                                    
-//                                    break;
+                            case StationModel:
+                                drawStationModelLayer(aVLayer, g, 0);
+                                break;
                             default:
                                 drawLayerWithLegendScheme(aVLayer, g, 0);
                                 break;
@@ -4070,6 +4228,12 @@ public class MapView extends JPanel {
                     if (aPS.isSelected()) {
                         PointBreak newPB = (PointBreak) aPB.clone();
                         newPB.setColor(_selectColor);
+                        newPB.setSize(10);
+                        if (aPB.getSize() > 10) {
+                            newPB.setSize(aPB.getSize());
+                        } else {
+                            newPB.setDrawOutline(false);
+                        }
                         Draw.drawPoint(aPoint, newPB, g);
                     } else {
                         Draw.drawPoint(aPoint, aPB, g);
@@ -5312,9 +5476,7 @@ public class MapView extends JPanel {
                 for (int i = 0; i < _lonLatLayer.getShapeNum(); i++) {
                     PolylineShape aPLS = (PolylineShape) _lonLatLayer.getShapes().get(i);
                     String labStr = _lonLatLayer.getCellValue(0, i).toString().trim();
-                    if (labStr.endsWith(".0")) {
-                        labStr = labStr.substring(0, labStr.length() - 2);
-                    }
+                    labStr = DataConvert.removeTailingZeros(labStr);
                     float value = Float.parseFloat(labStr);
                     String isLonStr = _lonLatLayer.getCellValue(1, i).toString();
                     boolean isLon = ("Y".equals(isLonStr));
@@ -5343,10 +5505,11 @@ public class MapView extends JPanel {
                         gLabels.addAll(GeoComputation.getGridLabels_StraightLine(aPL, _drawExtent, isLon));
 
                         if (isLon) {
-                            List<PointD> aPList = new ArrayList<PointD>(aPL.getPointList());
-                            for (int j = 0; j < aPList.size(); j++) {
-                                PointD aP = (PointD) aPList.get(j).clone();
+                            List<PointD> aPList = new ArrayList<PointD>();
+                            for (int j = 0; j < aPL.getPointList().size(); j++) {
+                                PointD aP = (PointD) aPL.getPointList().get(j).clone();
                                 aP.X = aP.X + 360;
+                                aPList.add(aP);
                             }
                             aPL = new Polyline();
                             aPL.setPointList(aPList);
@@ -5376,6 +5539,7 @@ public class MapView extends JPanel {
                 for (int i = 0; i < _lonLatProjLayer.getShapeNum(); i++) {
                     PolylineShape aPLS = (PolylineShape) _lonLatProjLayer.getShapes().get(i);
                     String labStr = _lonLatProjLayer.getCellValue(0, i).toString().trim();
+                    labStr = DataConvert.removeTailingZeros(labStr);
                     float value = Float.parseFloat(labStr);
                     if (value == -9999.0) {
                         continue;
@@ -6023,6 +6187,28 @@ public class MapView extends JPanel {
         return scale;
     }
 
+    /**
+     * Get view center point
+     *
+     * @return The view center point
+     */
+    public PointD getViewCenter() {
+        return _viewExtent.getCenterPoint();
+    }
+
+    /**
+     * Set view center point
+     *
+     * @param center The view center point
+     */
+    public void setViewCenter(PointD center) {
+        PointD oldCenter = this.getViewCenter();
+        double dx = center.X - oldCenter.X;
+        double dy = center.Y - oldCenter.Y;
+        Extent extent = _viewExtent.shift(dx, dy);
+        this.zoomToExtent(extent);
+    }
+
     // </editor-fold>
     // <editor-fold desc="Select">
     /**
@@ -6565,6 +6751,56 @@ public class MapView extends JPanel {
     }
 
     /**
+     * Select shapes
+     *
+     * @param aLayer The vector layer
+     * @param rect Select rectangle
+     * @param isSel if the selected shapes will be set as selected
+     * @return Selected shapes
+     */
+    public List<Integer> selectShapes(VectorLayer aLayer, Rectangle.Float rect, boolean isSel) {
+        Extent aExtent = new Extent();
+        double[] projs = this.screenToProj(rect.getMinX(), rect.getMinY());
+        aExtent.minX = projs[0];
+        aExtent.maxY = projs[1];
+        projs = this.screenToProj(rect.getMaxX(), rect.getMaxY());
+        aExtent.maxX = projs[0];
+        aExtent.minY = projs[1];
+        if (_projection.isLonLatMap()) {
+            if (aExtent.maxX < aLayer.getExtent().minX) {
+                if (aLayer.getExtent().minX > -360 && aLayer.getExtent().maxX > 0) {
+                    aExtent = MIMath.shiftExtentLon(aExtent, 360);
+                }
+            }
+            if (aExtent.minX > aLayer.getExtent().maxX) {
+                if (aLayer.getExtent().maxX < 360 && aLayer.getExtent().minX < 0) {
+                    aExtent = MIMath.shiftExtentLon(aExtent, -360);
+                }
+            }
+        }
+
+        List<Integer> selectedShapes = aLayer.selectShapes(aExtent, false);
+        if (isSel) {
+            for (int i : selectedShapes) {
+                aLayer.getShapes().get(i).setSelected(true);
+            }
+        }
+
+        return selectedShapes;
+    }
+
+    /**
+     * Select shapes by rectangle
+     *
+     * @param aLayer The vector layer
+     * @param rect Select rectangle
+     * @return Selected shapes
+     */
+    public List<Integer> selectShapes(VectorLayer aLayer, Rectangle.Float rect) {
+        return selectShapes(aLayer, rect, false);
+    }
+
+    /**
      * Select grid cell
      *
      * @param aLayer Raster layer
@@ -6761,20 +6997,35 @@ public class MapView extends JPanel {
      * @param parent Parent XML element
      */
     public void exportMapPropElement(Document m_Doc, Element parent) {
-        Element MapProperty = m_Doc.createElement("MapProperty");
+        Element mapProperty = m_Doc.createElement("MapProperty");
         Attr BackColor = m_Doc.createAttribute("BackColor");
         Attr ForeColor = m_Doc.createAttribute("ForeColor");
         Attr SmoothingMode = m_Doc.createAttribute("SmoothingMode");
+        Attr pointSmoothingMode = m_Doc.createAttribute("PointSmoothingMode");
+        Attr xyScaleFactor = m_Doc.createAttribute("XYScaleFactor");
+        Attr multiGlobalDraw = m_Doc.createAttribute("MultiGlobalDraw");
+        Attr selectColor = m_Doc.createAttribute("SelectColor");
+        Attr highSpeedWheelZoom = m_Doc.createAttribute("HighSpeedWheelZoom");
 
         BackColor.setValue(ColorUtil.toHexEncoding(this.getBackground()));
         ForeColor.setValue(ColorUtil.toHexEncoding(this.getForeground()));
         SmoothingMode.setValue(String.valueOf(_antiAlias));
+        pointSmoothingMode.setValue(String.valueOf(this._pointAntiAlias));
+        xyScaleFactor.setValue(String.valueOf(this._XYScaleFactor));
+        multiGlobalDraw.setValue(String.valueOf(this._multiGlobalDraw));
+        selectColor.setValue(ColorUtil.toHexEncoding(_selectColor));
+        highSpeedWheelZoom.setValue(String.valueOf(this._highSpeedWheelZoom));
 
-        MapProperty.setAttributeNode(BackColor);
-        MapProperty.setAttributeNode(ForeColor);
-        MapProperty.setAttributeNode(SmoothingMode);
+        mapProperty.setAttributeNode(BackColor);
+        mapProperty.setAttributeNode(ForeColor);
+        mapProperty.setAttributeNode(SmoothingMode);
+        mapProperty.setAttributeNode(pointSmoothingMode);
+        mapProperty.setAttributeNode(xyScaleFactor);
+        mapProperty.setAttributeNode(multiGlobalDraw);
+        mapProperty.setAttributeNode(selectColor);
+        mapProperty.setAttributeNode(highSpeedWheelZoom);
 
-        parent.appendChild(MapProperty);
+        parent.appendChild(mapProperty);
     }
 
     /**
@@ -7130,11 +7381,16 @@ public class MapView extends JPanel {
      * @param parent Parent XML element
      */
     public void loadMapPropElement(Element parent) {
-        Node MapProperty = parent.getElementsByTagName("MapProperty").item(0);
+        Node mapProperty = parent.getElementsByTagName("MapProperty").item(0);
         try {
-            this.setBackground(ColorUtil.parseToColor(MapProperty.getAttributes().getNamedItem("BackColor").getNodeValue()));
-            this.setForeground(ColorUtil.parseToColor(MapProperty.getAttributes().getNamedItem("ForeColor").getNodeValue()));
-            _antiAlias = Boolean.parseBoolean(MapProperty.getAttributes().getNamedItem("SmoothingMode").getNodeValue());
+            this.setBackground(ColorUtil.parseToColor(mapProperty.getAttributes().getNamedItem("BackColor").getNodeValue()));
+            this.setForeground(ColorUtil.parseToColor(mapProperty.getAttributes().getNamedItem("ForeColor").getNodeValue()));
+            _antiAlias = Boolean.parseBoolean(mapProperty.getAttributes().getNamedItem("SmoothingMode").getNodeValue());
+            this._pointAntiAlias = Boolean.parseBoolean(mapProperty.getAttributes().getNamedItem("PointSmoothingMode").getNodeValue());
+            this._XYScaleFactor = Double.parseDouble(mapProperty.getAttributes().getNamedItem("XYScaleFactor").getNodeValue());
+            this._multiGlobalDraw = Boolean.parseBoolean(mapProperty.getAttributes().getNamedItem("MultiGlobalDraw").getNodeValue());
+            this._selectColor = ColorUtil.parseToColor(mapProperty.getAttributes().getNamedItem("SelectColor").getNodeValue());
+            this._highSpeedWheelZoom = Boolean.parseBoolean(mapProperty.getAttributes().getNamedItem("HighSpeedWheelZoom").getNodeValue());
         } catch (Exception e) {
         }
     }

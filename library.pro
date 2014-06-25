@@ -13,7 +13,6 @@
 
 -libraryjars  <java.home>/lib/rt.jar
 -libraryjars ./dist/lib/L2FProd.jar
--libraryjars ./dist/lib/proj4j.jar
 -libraryjars ./dist/lib/wContour.jar
 -libraryjars ./dist/lib/netcdfAll-4.3.16.jar
 

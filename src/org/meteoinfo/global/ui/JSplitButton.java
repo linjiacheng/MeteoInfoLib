@@ -1,720 +1,428 @@
- /* Copyright 2012 - Yaqiang Wang,
- * yaqiang.wang@gmail.com
- * 
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation; either version 2.1 of the License, or (at
- * your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
- * General Public License for more details.
- */
 package org.meteoinfo.global.ui;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.Insets;
-import java.awt.Point;
-import java.awt.Polygon;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.*;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
-
-import javax.accessibility.Accessible;
-import javax.accessibility.AccessibleContext;
-import javax.accessibility.AccessibleRole;
-import javax.swing.AbstractButton;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.DefaultButtonModel;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JPopupMenu;
-import javax.swing.JSeparator;
-import javax.swing.UIManager;
-import javax.swing.event.ChangeListener;
-import javax.swing.plaf.ButtonUI;
+import java.io.Serializable;
+import javax.swing.*;
 
 /**
- * A split button. The user can either click the text, which executes an action,
- * or click the icon, which opens a popup menu.
- *
- * @author eoogbe
+ * An implementation of a "split" button.The left side acts like a normal button, right side has a jPopupMenu attached. <br />
+ * This class raises two events.<br />
+ * <ol>
+ * <li>buttonClicked(e); //when the button is clicked</li>
+ * <li>splitButtonClicked(e; //when the split part of the button is clicked) </li>
+ * </ol>
+ * You need to subscribe to SplitButtonActionListener to handle these events.<br /><br />
+ * 
+ * Use as you wish, but an acknowlegement would be appreciated, ;) <br /><br />
+ * <b>Known Issue:</b><br />
+ * The 'button part' of the splitbutton is being drawn without the border??? and this is only happening in CDE/Motif and Metal Look and Feels.
+ * GTK+ and nimbus works perfect. No Idea why? if anybody could point out the mistake that'd be nice.My email naveedmurtuza[at]gmail.com<br /><br />
+ * P.S. The fireXXX methods has been directly plagarized from JDK source code, and yes even the javadocs..;)<br /><br />
+ * The border bug in metal L&F is now fixed. Thanks to Hervé Guillaume.
+ * @author Naveed Quadri
  */
-public class JSplitButton extends AbstractButton implements Accessible {
+public class JSplitButton extends JButton implements MouseMotionListener, MouseListener, ActionListener,Serializable {
 
-    protected class AccessibleJSplitButton extends AccessibleAbstractButton {
-
-        private static final long serialVersionUID = 1L;
-
-        /* (non-Javadoc)
-         * @see javax.swing.JComponent.
-         * AccessibleJComponent#getAccessibleRole()
-         */
-        @Override
-        public AccessibleRole getAccessibleRole() {
-            return AccessibleRole.PUSH_BUTTON;
-        }
-    }
-
-    private class PopupAction implements ActionListener {
-
-        private JPopupMenu popupMenu;
-
-        public PopupAction(JPopupMenu popupMenu) {
-            this.popupMenu = popupMenu;
-        }
-
-        /* (non-Javadoc)
-         * @see java.awt.event.ActionListener#actionPerformed(
-         * java.awt.event.ActionEvent)
-         */
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            Component comp = (Component) e.getSource();
-            Point popupLocation = getPopupLocationRelativeTo(comp);
-            popupMenu.show(comp, popupLocation.x, popupLocation.y);
-        }
-
-        public JPopupMenu getPopupMenu() {
-            return popupMenu;
-        }
-    }
-    private static final long serialVersionUID = 1L;
-    private static final String uiClassID = "ButtonUI";
-    private static final int DEFAULT_POPUP_ICON_LENGTH = 5;
-    private static final String ALWAYS_SHOWS_POPUP_CHANGED_PROPERTY =
-            "alwaysShowPopup";
-    private static final String SPLIT_GAP_CHANGED_PROPERTY = "splitGap";
-    private static final String POPUP_ICON_CHANGED_PROPERTY = "popupIcon";
-    private static final String DISABLED_POPUP_ICON_CHANGED_PROPERTY =
-            "disabledPopupIcon";
-    private static final String DISABLED_SELECTED_POPUP_ICON_CHANGED_PROPERTY = "disabledSelectedPopupIcon";
-    private static final String PRESSED_POPUP_ICON_CHANGED_PROPERTY =
-            "pressedPopupIcon";
-    private static final String ROLLOVER_POPUP_ICON_CHANGED_PROPERTY =
-            "rolloverPopupIcon";
-    private static final String ROLLOVER_SELECTED_POPUP_ICON_CHANGED_PROPERTY = "rolloverSelectedPopupIcon";
-    private static final String SELECTED_POPUP_ICON_CHANGED_PROPERTY =
-            "selectedPopupIcon";
-    private static final String MAIN_TEXT_CHANGED_PROPERTY = "mainText";
-    private PopupAction popupAction;
-    private JButton mainButton, popupButton;
-    private boolean alwaysShowPopup;
-    private int splitGap = 5;
+    private int separatorSpacing = 4;
+    private int splitWidth = 22;
+    private int arrowSize = 8;
+    private boolean onSplit;
+    private Rectangle splitRectangle;
+    private JPopupMenu popupMenu;
+    private boolean alwaysDropDown;
+    private Color arrowColor = Color.BLACK;
+    private Color disabledArrowColor = Color.GRAY;
+    private Image image;
+    protected SplitButtonActionListener splitButtonActionListener = null;
 
     /**
-     * Creates a new JSplitButton with no set text.
-     */
-    public JSplitButton() {
-        this("");
-    }
-
-    /**
-     * Creates a new JSplitButton with initial text.
+     * Creates a button with initial text and an icon.
      *
-     * @param text the text displayed on this JSplitButton
+     * @param text  the text of the button
+     * @param icon  the Icon image to display on the button
+     */
+    public JSplitButton(String text, Icon icon) {
+        super(text, icon);
+        addMouseMotionListener(this);
+        addMouseListener(this);
+        addActionListener(this);
+    }
+
+    /**
+     * Creates a button with text.
+     *
+     * @param text  the text of the button
      */
     public JSplitButton(String text) {
-        mainButton = new JButton(text);
-        popupButton = new JButton(createDefaultPopupIcon());
+        this(text, null);
+    }
 
-        setModel(new DefaultButtonModel());
+    /**
+     * Creates a button with an icon.
+     *
+     * @param icon  the Icon image to display on the button
+     */
+    public JSplitButton(Icon icon) {
+        this(null, icon);
+    }
 
-        mainButton.setBorder(BorderFactory.createEmptyBorder());
-        popupButton.setBorder(BorderFactory.createEmptyBorder());
+    /**
+     * Creates a button with no set text or icon.
+     */
+    public JSplitButton() {
+        this(null, null);
+    }
 
-        mainButton.setContentAreaFilled(false);
+    /**
+     * Returns the JPopupMenu if set, null otherwise.
+     * @return JPopupMenu
+     */
+    public JPopupMenu getPopupMenu() {
+        return popupMenu;
+    }
 
-        mainButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                doClick();
-            }
-        });
+    /**
+     * Sets the JPopupMenu to be displayed, when the split part of the button is clicked.
+     * @param popupMenu
+     */
+    public void setPopupMenu(JPopupMenu popupMenu) {
+        this.popupMenu = popupMenu;
+        image = null; //to repaint the arrow image
+    }
 
-        mainButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                if (isRolloverEnabled()) {
-                    model.setRollover(true);
+    /**
+     * Returns the separatorSpacing. Separator spacing is the space above and below the separator( the line drawn when you hover your mouse
+     * over the split part of the button).
+     * @return separatorSpacingimage = null; //to repaint the image with the new size
+     */
+    public int getSeparatorSpacing() {
+        return separatorSpacing;
+    }
+
+    /**
+     * Sets the separatorSpacing.Separator spacing is the space above and below the separator( the line drawn when you hover your mouse
+     * over the split part of the button).
+     * @param separatorSpacing
+     */
+    public void setSeparatorSpacing(int separatorSpacing) {
+        this.separatorSpacing = separatorSpacing;
+    }
+
+    /**
+     * Show the dropdown menu, if attached, even if the button part is clicked.
+     * @return true if alwaysDropdown, false otherwise.
+     */
+    public boolean isAlwaysDropDown() {
+        return alwaysDropDown;
+    }
+
+    /**
+     * Show the dropdown menu, if attached, even if the button part is clicked.
+     * @param alwaysDropDown true to show the attached dropdown even if the button part is clicked, false otherwise
+     */
+    public void setAlwaysDropDown(boolean alwaysDropDown) {
+        this.alwaysDropDown = alwaysDropDown;
+    }
+
+    /**
+     * Gets the color of the arrow.
+     * @return arrowColor
+     */
+    public Color getArrowColor() {
+        return arrowColor;
+    }
+
+    /**
+     * Set the arrow color.
+     * @param arrowColor
+     */
+    public void setArrowColor(Color arrowColor) {
+        this.arrowColor = arrowColor;
+        image = null; //to repaint the image with the new color
+    }
+
+    /**
+     *  gets the disabled arrow color
+     * @return disabledArrowColor color of the arrow if no popup attached.
+     */
+    public Color getDisabledArrowColor() {
+        return disabledArrowColor;
+    }
+
+    /**
+     * sets the disabled arrow color
+     * @param disabledArrowColor color of the arrow if no popup attached.
+     */
+    public void setDisabledArrowColor(Color disabledArrowColor) {
+        this.disabledArrowColor = disabledArrowColor;
+        image = null; //to repaint the image with the new color
+    }
+
+    /**
+     * Splitwidth is the  width of the split part of the button.
+     * @return splitWidth
+     */
+    public int getSplitWidth() {
+        return splitWidth;
+    }
+
+    /**
+     * Splitwidth is the  width of the split part of the button.
+     * @param splitWidth
+     */
+    public void setSplitWidth(int splitWidth) {
+        this.splitWidth = splitWidth;
+    }
+
+    /**
+     * gets the size of the arrow.
+     * @return size of the arrow
+     */
+    public int getArrowSize() {
+        return arrowSize;
+    }
+
+    /**
+     * sets the size of the arrow
+     * @param arrowSize
+     */
+    public void setArrowSize(int arrowSize) {
+        this.arrowSize = arrowSize;
+        image = null; //to repaint the image with the new size
+    }
+
+    /**
+     * Gets the image to be drawn in the split part. If no is set, a new image is created with the triangle.
+     * @return image
+     */
+    public Image getImage() {
+        if (image != null) {
+            return image;
+        } else {
+            Graphics2D g = null;
+            BufferedImage img = new BufferedImage(arrowSize, arrowSize, BufferedImage.TYPE_INT_RGB);
+            g = (Graphics2D) img.createGraphics();
+            g.setColor(Color.WHITE);
+            g.fillRect(0, 0, img.getWidth(), img.getHeight());
+            g.setColor(popupMenu != null ? arrowColor : disabledArrowColor);
+            //this creates a triangle facing right >
+            g.fillPolygon(new int[]{0, 0, arrowSize / 2}, new int[]{0, arrowSize, arrowSize / 2}, 3);
+            g.dispose();
+            //rotate it to face downwards
+            img = rotate(img, 90);
+            BufferedImage dimg = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_INT_ARGB);
+            g = (Graphics2D) dimg.createGraphics();
+            g.setComposite(AlphaComposite.Src);
+            g.drawImage(img, null, 0, 0);
+            g.dispose();
+            for (int i = 0; i < dimg.getHeight(); i++) {
+                for (int j = 0; j < dimg.getWidth(); j++) {
+                    if (dimg.getRGB(j, i) == Color.WHITE.getRGB()) {
+                        dimg.setRGB(j, i, 0x8F1C1C);
+                    }
                 }
             }
 
-            @Override
-            public void mouseExited(MouseEvent e) {
-                model.setRollover(false);
-            }
-        });
-
-        setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
-        resetComponents();
-
-        init(null, null);
-    }
-
-    /**
-     * Creates a new JSplitButton with properties taken from the Action
-     * supplied.
-     *
-     * @param action used to specify the properties of this JSplitButton
-     */
-    public JSplitButton(Action action) {
-        this();
-        setAction(action);
-    }
-
-    private Icon createDefaultPopupIcon() {
-        Image image = new BufferedImage(DEFAULT_POPUP_ICON_LENGTH,
-                DEFAULT_POPUP_ICON_LENGTH, BufferedImage.TYPE_INT_ARGB);
-        Graphics g = image.getGraphics();
-
-        g.setColor(new Color(255, 255, 255, 0));
-        g.fillRect(0, 0, DEFAULT_POPUP_ICON_LENGTH,
-                DEFAULT_POPUP_ICON_LENGTH);
-
-        g.setColor(Color.BLACK);
-        Polygon traingle = new Polygon(
-                new int[]{0, DEFAULT_POPUP_ICON_LENGTH,
-            DEFAULT_POPUP_ICON_LENGTH / 2, 0},
-                new int[]{0, 0, DEFAULT_POPUP_ICON_LENGTH, 0}, 4);
-        g.fillPolygon(traingle);
-
-        g.dispose();
-        return new ImageIcon(image);
-    }
-
-    private void resetComponents() {
-        removeAll();
-        add(mainButton);
-        add(Box.createRigidArea(new Dimension(splitGap, 0)));
-        add(new JSeparator(VERTICAL));
-        add(Box.createRigidArea(new Dimension(splitGap, 0)));
-        add(popupButton);
-        revalidate();
-    }
-
-    /**
-     * Returns true if this JSplitButton shows the popup menu for every click.
-     *
-     * @return true if this JSplitButton shows the popup menu for every click
-     * @see JSplitButton#setAlwaysShowPopup(boolean)
-     */
-    public boolean isAlwaysShowPopup() {
-        return alwaysShowPopup;
-    }
-
-    /**
-     * Sets whether this JSplitButton shows the popup menu for every click.
-     *
-     * @param alwaysShowPopup true if this JSplitButton shows the popup menu for
-     * every click
-     * @see JSplitButton#isAlwaysShowPopup()
-     */
-    public void setAlwaysShowPopup(boolean alwaysShowPopup) {
-        boolean oldValue = this.alwaysShowPopup;
-        this.alwaysShowPopup = alwaysShowPopup;
-        firePropertyChange(ALWAYS_SHOWS_POPUP_CHANGED_PROPERTY, oldValue,
-                alwaysShowPopup);
-
-        if (popupAction != null && oldValue != alwaysShowPopup) {
-            setComponentPopupMenu(popupAction.getPopupMenu());
+            image = Toolkit.getDefaultToolkit().createImage(dimg.getSource());
+            return image;
         }
     }
 
     /**
-     * Returns the gap between the separator and the labels on each side
-     *
-     * @return the gap between the separator and the labels on each side
-     * @see JSplitButton#setSplitGap(int)
+     * Sets the image to draw instead of the triangle.
+     * @param image
      */
-    public int getSplitGap() {
-        return splitGap;
+    public void setImage(Image image) {
+        this.image = image;
     }
 
     /**
-     * Sets the gap between the separator and the labels on each side.
-     *
-     * @param splitGap the gap set
-     * @see JSplitButton#getSplitGap()
-     */
-    public void setSplitGap(int splitGap) {
-        int oldValue = this.splitGap;
-        this.splitGap = splitGap;
-        firePropertyChange(SPLIT_GAP_CHANGED_PROPERTY, oldValue, splitGap);
-
-        if (oldValue != splitGap) {
-            resetComponents();
-        }
-    }
-
-    /**
-     * Returns the Icon used on the popup side. This Icon is also used as the
-     * "pressed" and "disabled" Icon if they are not explicitly set.
-     *
-     * @return the popupIcon property
-     * @see AbstractButton#getIcon()
-     * @see JSplitButton#setPopupIcon(Icon)
-     */
-    public Icon getPopupIcon() {
-        return popupButton.getIcon();
-    }
-
-    /**
-     * Sets the Icon used on the popup side. If null, the Icon will be set to a
-     * default value. This Icon is also used as the "pressed" and "disabled"
-     * Icon if they are not explicitly set.
-     *
-     * @param icon the Icon set
-     * @see AbstractButton#setIcon(Icon)
-     * @see JSplitButton#getPopupIcon()
-     */
-    public void setPopupIcon(Icon icon) {
-        Icon oldValue = getPopupIcon();
-        if (icon == null) {
-            icon = createDefaultPopupIcon();
-        }
-        firePropertyChange(POPUP_ICON_CHANGED_PROPERTY, oldValue, icon);
-
-        if (!oldValue.equals(icon)) {
-            popupButton.setIcon(icon);
-        }
-    }
-
-    /**
-     * Returns the icon used on the popup side when this JSplitButton is
-     * disabled. If no disabled icon has been set this will forward the call to
-     * the look and feel to construct an appropriate disabled Icon. Some look
-     * and feels might not render the disabled Icon, in which case they will
-     * ignore this.
-     *
-     * @return the disabledPopupIcon property
-     * @see AbstractButton#getDisabledIcon()
-     * @see JSplitButton#setDisabledPopupIcon(Icon)
-     */
-    public Icon getDisabledPopupIcon() {
-        return popupButton.getDisabledIcon();
-    }
-
-    /**
-     * Sets the icon used on the popup side when this JSplitButton is disabled.
-     * Some look and feels might not render the disabled Icon, in which case
-     * they will ignore this.
-     *
-     * @param icon the icon set
-     * @see AbstractButton#setDisabledIcon(Icon)
-     * @see JSplitButton#getDisabledPopupIcon()
-     */
-    public void setDisabledPopupIcon(Icon icon) {
-        Icon oldValue = getDisabledPopupIcon();
-        firePropertyChange(DISABLED_POPUP_ICON_CHANGED_PROPERTY, oldValue,
-                icon);
-
-        if (!oldValue.equals(icon)) {
-            popupButton.setDisabledIcon(icon);
-        }
-    }
-
-    /**
-     * Returns the icon used on the popup side when this JSplitButton is
-     * disabled and selected. If no disabled selected Icon has been set, this
-     * will forward the call to the LookAndFeel to construct an appropriate
-     * disabled Icon from the selection icon if it has been set and to
-     * getDisabledPopupIcon() otherwise.
-     *
-     * @return the disabledSelctedPopupIcon property
-     * @see AbstractButton#getDisabledSelectedIcon()
-     * @see JSplitButton#setDisabledSelectedPopupIcon(Icon)
-     */
-    public Icon getDisabledSelectedPopupIcon() {
-        return popupButton.getDisabledSelectedIcon();
-    }
-
-    /**
-     * Sets the icon used on the popup side when this JSplitButton is disabled
-     * and selected.
-     *
-     * @param icon the icon set
-     * @see AbstractButton#setDisabledSelectedIcon(Icon)
-     * @see JSplitButton#getDisabledSelectedPopupIcon()
-     */
-    public void setDisabledSelectedPopupIcon(Icon icon) {
-        Icon oldValue = getDisabledSelectedPopupIcon();
-        firePropertyChange(DISABLED_SELECTED_POPUP_ICON_CHANGED_PROPERTY,
-                oldValue, icon);
-
-        if (!oldValue.equals(icon)) {
-            popupButton.setDisabledSelectedIcon(icon);
-        }
-    }
-
-    /**
-     * Returns the icon used on the popup side when this JSpitButton is pressed.
-     *
-     * @return the pressedPopupIcon property
-     * @see AbstractButton#getPressedIcon()
-     * @see JSplitButton#setPressedPopupIcon(Icon)
-     */
-    public Icon getPressedPopupIcon() {
-        return popupButton.getPressedIcon();
-    }
-
-    /**
-     * Sets the icon used on the popup side when this JSplitButton is pressed.
-     *
-     * @param icon the icon set
-     * @see AbstractButton#setPressedIcon(Icon)
-     * @see JSplitButton#getPressedPopupIcon()
-     */
-    public void setPressedPopupIcon(Icon icon) {
-        Icon oldValue = getPressedPopupIcon();
-        firePropertyChange(PRESSED_POPUP_ICON_CHANGED_PROPERTY, oldValue,
-                icon);
-
-        if (!oldValue.equals(icon)) {
-            popupButton.setPressedIcon(icon);
-        }
-    }
-
-    /**
-     * Returns the rollover icon used on the popup side.
-     *
-     * @return the rolloverPopupIcon property
-     * @see AbstractButton#getRolloverIcon()
-     * @see JSplitButton#setRolloverPopupIcon(Icon)
-     */
-    public Icon getRolloverPopupIcon() {
-        return popupButton.getRolloverIcon();
-    }
-
-    /**
-     * Sets the rollover icon used on the popup side.
-     *
-     * @param icon the icon set
-     * @see AbstractButton#setRolloverIcon(Icon)
-     * @see JSplitButton#getRolloverPopupIcon()
-     */
-    public void setRolloverPopupIcon(Icon icon) {
-        Icon oldValue = getRolloverPopupIcon();
-        firePropertyChange(ROLLOVER_POPUP_ICON_CHANGED_PROPERTY, oldValue,
-                icon);
-
-        if (!oldValue.equals(icon)) {
-            popupButton.setRolloverIcon(icon);
-        }
-    }
-
-    /**
-     * Returns the rollover selection icon used on the popup side.
-     *
-     * @return the rolloverSelectedPopupIcon property
-     * @see AbstractButton#getRolloverSelectedIcon()
-     * @see JSplitButton#setRolloverSelectedPopupIcon(Icon)
-     */
-    public Icon getRolloverSelectedPopupIcon() {
-        return popupButton.getRolloverSelectedIcon();
-    }
-
-    /**
-     * Sets the rollover selection icon used on the popup side.
-     *
-     * @param icon the icon set
-     * @see AbstractButton#setRolloverSelectedIcon(Icon)
-     * @see JSplitButton#getRolloverSelectedPopupIcon()
-     */
-    public void setRolloverSelectedPopupIcon(Icon icon) {
-        Icon oldValue = getRolloverSelectedPopupIcon();
-        firePropertyChange(ROLLOVER_SELECTED_POPUP_ICON_CHANGED_PROPERTY,
-                oldValue, icon);
-
-        if (!oldValue.equals(icon)) {
-            popupButton.setRolloverSelectedIcon(icon);
-        }
-    }
-
-    /**
-     * Returns the selected icon used on the popup side.
-     *
-     * @return the selectedPopupIcon property
-     * @see AbstractButton#getSelectedIcon()
-     * @see JSplitButton#setSelectedPopupIcon(Icon)
-     */
-    public Icon getSelectedPopupIcon() {
-        return popupButton.getSelectedIcon();
-    }
-
-    /**
-     * Sets the selected icon used on the popup side.
-     *
-     * @param icon the icon set
-     * @see AbstractButton#setSelectedIcon(Icon)
-     * @see JSplitButton#getSelectedPopupIcon()
-     */
-    public void setSelectedPopupIcon(Icon icon) {
-        Icon oldValue = getSelectedPopupIcon();
-        firePropertyChange(SELECTED_POPUP_ICON_CHANGED_PROPERTY, oldValue,
-                icon);
-
-        if (!oldValue.equals(icon)) {
-            popupButton.setSelectedIcon(icon);
-        }
-    }
-
-    /**
-     * Returns the text of the main part of this JSplitButton. Use this method
-     * instead of {@link AbstractButton#getText()}.
-     *
-     * @return the text of the main part of this JSplitButton
-     * @see AbstractButton#getText()
-     * @see JSplitButton#setMainText(String)
-     */
-    public String getMainText() {
-        return mainButton.getText();
-    }
-
-    /**
-     * Sets the text of the main part of this JSplitButton. Use this method
-     * instead of {@link AbstractButton#setText(String)}.
-     *
-     * @param text the text set
-     */
-    public void setMainText(String text) {
-        String oldValue = getMainText();
-        firePropertyChange(MAIN_TEXT_CHANGED_PROPERTY, oldValue, text);
-
-        if (!oldValue.equals(text)) {
-            mainButton.setText(text);
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see javax.swing.AbstractButton#addActionListener(java.awt.event.ActionListener)
+     * 
+     * @param g 
      */
     @Override
-    public void addActionListener(ActionListener listener) {
-        mainButton.addActionListener(listener);
-        super.addActionListener(listener);
-    }
-
-    /* (non-Javadoc)
-     * @see javax.swing.AbstractButton#removeActionListener(java.awt.event.ActionListener)
-     */
-    @Override
-    public void removeActionListener(ActionListener listener) {
-        mainButton.removeActionListener(listener);
-        super.removeActionListener(listener);
-    }
-
-    /* (non-Javadoc)
-     * @see javax.swing.AbstractButton#addChangeListener(javax.swing.event.ChangeListener)
-     */
-    @Override
-    public void addChangeListener(ChangeListener listener) {
-        mainButton.addChangeListener(listener);
-        super.addChangeListener(listener);
-    }
-
-    /* (non-Javadoc)
-     * @see javax.swing.AbstractButton#removeChangeListener(javax.swing.event.ChangeListener)
-     */
-    @Override
-    public void removeChangeListener(ChangeListener listener) {
-        mainButton.removeChangeListener(listener);
-        super.removeChangeListener(listener);
-    }
-
-    /* (non-Javadoc)
-     * @see javax.swing.AbstractButton#addItemListener(java.awt.event.ItemListener)
-     */
-    @Override
-    public void addItemListener(ItemListener listener) {
-        mainButton.addItemListener(listener);
-        super.addItemListener(listener);
-    }
-
-    /* (non-Javadoc)
-     * @see javax.swing.AbstractButton#removeItemListener(java.awt.event.ItemListener)
-     */
-    @Override
-    public void removeItemListener(ItemListener listener) {
-        mainButton.removeItemListener(listener);
-        super.removeItemListener(listener);
-    }
-
-    /* (non-Javadoc)
-     * @see javax.swing.AbstractButton#getAction()
-     */
-    @Override
-    public Action getAction() {
-        return mainButton.getAction();
-    }
-
-    /* (non-Javadoc)
-     * @see javax.swing.AbstractButton#setAction(javax.swing.Action)
-     */
-    @Override
-    public void setAction(Action action) {
-        Action oldValue = getAction();
-        firePropertyChange("action", oldValue, action);
-        mainButton.setAction(action);
-    }
-
-    /* (non-Javadoc)
-     * @see javax.swing.JComponent#getAccessibleContext()
-     */
-    @Override
-    public AccessibleContext getAccessibleContext() {
-        if (accessibleContext == null) {
-            accessibleContext = new AccessibleJSplitButton();
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+  Graphics gClone = g.create();//EDIT: Hervé Guillaume
+        Color oldColor = gClone.getColor();
+        splitRectangle = new Rectangle(getWidth() - splitWidth, 0, splitWidth, getHeight());
+        gClone.translate(splitRectangle.x, splitRectangle.y);
+        int mh = getHeight() / 2;
+        int mw = splitWidth / 2;
+        gClone.drawImage(getImage(), mw - arrowSize / 2, mh + 2 - arrowSize / 2, null);
+        if (onSplit && !alwaysDropDown && popupMenu != null) {
+            gClone.setColor(UIManager.getLookAndFeelDefaults().getColor("Button.background"));
+            gClone.drawLine(1, separatorSpacing + 2, 1, getHeight() - separatorSpacing - 2);
+            gClone.setColor(UIManager.getLookAndFeelDefaults().getColor("Button.shadow"));
+            gClone.drawLine(2, separatorSpacing + 2, 2, getHeight() - separatorSpacing - 2);
         }
-
-        return accessibleContext;
+        gClone.setColor(oldColor);
     }
 
-    /* (non-Javadoc)
-     * @see javax.swing.JComponent#getComponentPopupMenu()
+    /**
+     * Rotates the given image with the specified angle.
+     * @param img image to rotate
+     * @param angle angle of rotation
+     * @return rotated image
      */
-    @Override
-    public JPopupMenu getComponentPopupMenu() {
-        return (popupAction == null) ? null : popupAction.getPopupMenu();
+    private BufferedImage rotate(BufferedImage img, int angle) {
+        int w = img.getWidth();
+        int h = img.getHeight();
+        BufferedImage dimg = dimg = new BufferedImage(w, h, img.getType());
+        Graphics2D g = dimg.createGraphics();
+        g.rotate(Math.toRadians(angle), w / 2, h / 2);
+        g.drawImage(img, null, 0, 0);
+        return dimg;
     }
 
-    /* (non-Javadoc)
-     * @see javax.swing.JComponent#setComponentPopupMenu(javax.swing.JPopupMenu)
+    /**
+     * Adds an <code>SplitButtonActionListener</code> to the button.
+     * @param l the <code>ActionListener</code> to be added
      */
-    @Override
-    public void setComponentPopupMenu(JPopupMenu popupMenu) {
-        if (popupAction != null) {
-            super.removeActionListener(popupAction);
-            mainButton.removeActionListener(popupAction);
-            popupButton.removeActionListener(popupAction);
-            popupAction = null;
-        }
-
-        if (popupMenu != null) {
-            popupAction = new PopupAction(popupMenu);
-            popupButton.addActionListener(popupAction);
-
-            if (alwaysShowPopup) {
-                super.addActionListener(popupAction);
-                mainButton.addActionListener(popupAction);
-            }
-        }
+    public void addSplitButtonActionListener(SplitButtonActionListener l) {
+        listenerList.add(SplitButtonActionListener.class, l);
     }
 
-    /* (non-Javadoc)
-     * @see javax.swing.JComponent#getPopupLocation(java.awt.event.MouseEvent)
+    /**
+     * Removes an <code>SplitButtonActionListener</code> from the button.
+     * If the listener is the currently set <code>Action</code>
+     * for the button, then the <code>Action</code>
+     * is set to <code>null</code>.
+     *
+     * @param l the listener to be removed
      */
-    @Override
-    public Point getPopupLocation(MouseEvent event) {
-        return getPopupLocationRelativeTo(event.getComponent());
-    }
-
-    /* (non-Javadoc)
-     * @see javax.swing.AbstractButton#getSelectedObjects()
-     */
-    @Override
-    public Object[] getSelectedObjects() {
-        Object[] result = new Object[1];
-
-        if (mainButton.isSelected()) {
-            result[0] = mainButton;
-        } else if (popupButton.isSelected()) {
-            result[0] = popupButton;
+    public void removeSplitButtonActionListener(SplitButtonActionListener l) {
+        if ((l != null) && (getAction() == l)) {
+            setAction(null);
         } else {
-            return null;
+            listenerList.remove(SplitButtonActionListener.class, l);
         }
-
-        return result;
     }
 
-    /* (non-Javadoc)
-     * @see javax.swing.AbstractButton#getMnemonic()
+    /**
+     * 
+     * @param e
      */
-    @Override
-    public int getMnemonic() {
-        return mainButton.getMnemonic();
-    }
-
-    /* (non-Javadoc)
-     * @see javax.swing.AbstractButton#setMnemonic(int)
-     */
-    @Override
-    public void setMnemonic(int mnemonic) {
-        int oldValue = getMnemonic();
-        firePropertyChange(MNEMONIC_CHANGED_PROPERTY, oldValue, mnemonic);
-        mainButton.setMnemonic(mnemonic);
-    }
-
-    /* (non-Javadoc)
-     * @see javax.swing.AbstractButton#getDisplayedMnemonicIndex()
-     */
-    @Override
-    public int getDisplayedMnemonicIndex() {
-        return mainButton.getDisplayedMnemonicIndex();
-    }
-
-    /* (non-Javadoc)
-     * @see javax.swing.AbstractButton#setDisplayedMnemonicIndex(int)
-     */
-    @Override
-    public void setDisplayedMnemonicIndex(int index)
-            throws IllegalArgumentException {
-        int oldValue = getDisplayedMnemonicIndex();
-        mainButton.setDisplayedMnemonicIndex(index);
-        firePropertyChange("displayedMnemonicIndex", oldValue, index);
-    }
-
-    /* (non-Javadoc)
-     * @see javax.swing.AbstractButton#setHideActionText(boolean)
-     */
-    @Override
-    public void setHideActionText(boolean hideActionText) {
-        mainButton.setHideActionText(hideActionText);
-        super.setHideActionText(hideActionText);
-    }
-
-    /* (non-Javadoc)
-     * @see javax.swing.JComponent#getUIClassID()
-     */
-    @Override
-    public String getUIClassID() {
-        return uiClassID;
-    }
-
-    /* (non-Javadoc)
-     * @see javax.swing.AbstractButton#updateUI()
-     */
-    @Override
-    public void updateUI() {
-        setUI((ButtonUI) UIManager.getUI(this));
-    }
-
-    private Point getPopupLocationRelativeTo(Component comp) {
-        Insets insets = getInsets();
-        int height = getHeight();
-
-        if (comp == popupButton) {
-            return new Point(-splitGap, height);
+    public void mouseMoved(MouseEvent e) {
+        if (splitRectangle.contains(e.getPoint())) {
+            onSplit = true;
         } else {
-            Insets mainButtonInsets = mainButton.getInsets();
-            int width = mainButton.getWidth() + mainButtonInsets.left
-                    + mainButtonInsets.right + splitGap;
-            if (comp == this) {
-                width += insets.left;
+            onSplit = false;
+        }
+        repaint(splitRectangle);
+    }
+
+    /**
+     * 
+     * @param e
+     */
+    public void actionPerformed(ActionEvent e) {
+        if (popupMenu == null) {
+            fireButtonClicked(e);
+        } else if (alwaysDropDown) {
+            popupMenu.show(this, getWidth() - (int) popupMenu.getPreferredSize().getWidth(), getHeight());
+            fireButtonClicked(e);
+        } else if (onSplit) {
+            popupMenu.show(this, getWidth() - (int) popupMenu.getPreferredSize().getWidth(), getHeight());
+            fireSplitbuttonClicked(e);
+        } else {
+            fireButtonClicked(e);
+        }
+    }
+
+    /**
+     * 
+     * @param e
+     */
+    public void mouseExited(MouseEvent e) {
+        onSplit = false;
+        repaint(splitRectangle);
+    }
+// <editor-fold defaultstate="collapsed" desc="Unused Listeners">
+
+    public void mouseDragged(MouseEvent e) {
+    }
+
+    public void mouseClicked(MouseEvent e) {
+    }
+
+    public void mousePressed(MouseEvent e) {
+    }
+
+    public void mouseReleased(MouseEvent e) {
+    }
+
+    public void mouseEntered(MouseEvent e) {
+    }
+// </editor-fold>
+
+    /**
+     * Notifies all listeners that have registered interest for
+     * notification on this event type.  The event instance
+     * is lazily created using the <code>event</code>
+     * parameter.
+     *
+     * @param event  the <code>ActionEvent</code> object
+     * @see EventListenerList
+     */
+    private void fireButtonClicked(ActionEvent event) {
+        // Guaranteed to return a non-null array
+        Object[] listeners = listenerList.getListenerList();
+        ActionEvent e = null;
+        // Process the listeners last to first, notifying
+        // those that are interested in this event
+        for (int i = listeners.length - 2; i >= 0; i -= 2) {
+            if (listeners[i] == SplitButtonActionListener.class) {
+                // Lazily create the event:
+                if (e == null) {
+                    String actionCommand = event.getActionCommand();
+                    if (actionCommand == null) {
+                        actionCommand = getActionCommand();
+                    }
+                    e = new ActionEvent(JSplitButton.this,
+                            ActionEvent.ACTION_PERFORMED,
+                            actionCommand,
+                            event.getWhen(),
+                            event.getModifiers());
+                }
+                ((SplitButtonActionListener) listeners[i + 1]).buttonClicked(e);
             }
-            return new Point(width, height);
+        }
+    }
+
+    /**
+     * Notifies all listeners that have registered interest for
+     * notification on this event type.  The event instance
+     * is lazily created using the <code>event</code>
+     * parameter.
+     *
+     * @param event  the <code>ActionEvent</code> object
+     * @see EventListenerList
+     */
+    private void fireSplitbuttonClicked(ActionEvent event) {
+        // Guaranteed to return a non-null array
+        Object[] listeners = listenerList.getListenerList();
+        ActionEvent e = null;
+        // Process the listeners last to first, notifying
+        // those that are interested in this event
+        for (int i = listeners.length - 2; i >= 0; i -= 2) {
+            if (listeners[i] == SplitButtonActionListener.class) {
+                // Lazily create the event:
+                if (e == null) {
+                    String actionCommand = event.getActionCommand();
+                    if (actionCommand == null) {
+                        actionCommand = getActionCommand();
+                    }
+                    e = new ActionEvent(JSplitButton.this,
+                            ActionEvent.ACTION_PERFORMED,
+                            actionCommand,
+                            event.getWhen(),
+                            event.getModifiers());
+                }
+                ((SplitButtonActionListener) listeners[i + 1]).splitButtonClicked(e);
+            }
         }
     }
 }

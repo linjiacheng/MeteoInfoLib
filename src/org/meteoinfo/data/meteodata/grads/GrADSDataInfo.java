@@ -233,6 +233,28 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
     public List<Date> getTimes() {
         return TDEF.times;
     }
+
+    /**
+     * Get if is big endian
+     *
+     * @return Boolean
+     */
+    public boolean isBigEndian() {
+        return _byteOrder == ByteOrder.BIG_ENDIAN;
+    }
+
+    /**
+     * Set if is big endian
+     *
+     * @param value Boolean
+     */
+    public void setBigEndian(boolean value) {
+        if (value) {
+            _byteOrder = ByteOrder.BIG_ENDIAN;
+        } else {
+            _byteOrder = ByteOrder.LITTLE_ENDIAN;
+        }
+    }
     // </editor-fold>
     // <editor-fold desc="Methods">
     // <editor-fold desc="Read and write data">
@@ -737,7 +759,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                         aVar.setDescription(dataArray[3]);
                     }
                     aVar.setDimension(this.getXDimension());
-                    aVar.setDimension(this.getYDimension());                    
+                    aVar.setDimension(this.getYDimension());
                     if (lNum > 1) {
                         Dimension zDim = new Dimension(DimensionType.Z);
                         zDim.setValues(levs);
@@ -1159,7 +1181,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
 //                if (OPTIONS.big_endian || OPTIONS.byteswapped) {
 //                    Collections.reverse(Arrays.asList(aBytes));
 //                }
-                gridData[i][j] = DataConvert.bytes2float(aBytes, _byteOrder);
+                gridData[i][j] = DataConvert.bytes2Float(aBytes, _byteOrder);
             }
         }
 
@@ -1209,7 +1231,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
 //                            if (OPTIONS.big_endian || OPTIONS.byteswapped) {
 //                                Collections.reverse(Arrays.asList(aBytes));
 //                            }
-                            gridData[t][i] = DataConvert.bytes2float(aBytes, _byteOrder);
+                            gridData[t][i] = DataConvert.bytes2Float(aBytes, _byteOrder);
                         }
                     }
                 }
@@ -1274,7 +1296,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
 //                    if (OPTIONS.big_endian || OPTIONS.byteswapped) {
 //                        Collections.reverse(Arrays.asList(aBytes));
 //                    }
-                    gridData[t][j] = DataConvert.bytes2float(aBytes, _byteOrder);
+                    gridData[t][j] = DataConvert.bytes2Float(aBytes, _byteOrder);
                 }
                 br.seek(aTPosition);
             }
@@ -1337,7 +1359,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
 //                    if (OPTIONS.big_endian || OPTIONS.byteswapped) {
 //                        Collections.reverse(Arrays.asList(aBytes));
 //                    }
-                    gridData[i][j] = DataConvert.bytes2float(aBytes, _byteOrder);
+                    gridData[i][j] = DataConvert.bytes2Float(aBytes, _byteOrder);
 
                     br.skipBytes((XNum - lonIdx - 1) * 4);
                 }
@@ -1402,7 +1424,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
 //                    if (OPTIONS.big_endian || OPTIONS.byteswapped) {
 //                        Collections.reverse(Arrays.asList(aBytes));
 //                    }
-                    gridData[i][j] = DataConvert.bytes2float(aBytes, _byteOrder);
+                    gridData[i][j] = DataConvert.bytes2Float(aBytes, _byteOrder);
                 }
                 br.seek(br.getFilePointer() + (YNum - latIdx - 1) * xNum * 4);
             }
@@ -1468,7 +1490,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
 //                    if (OPTIONS.big_endian || OPTIONS.byteswapped) {
 //                        Collections.reverse(Arrays.asList(aBytes));
 //                    }
-                    gridData[i][t] = DataConvert.bytes2float(aBytes, _byteOrder);
+                    gridData[i][t] = DataConvert.bytes2Float(aBytes, _byteOrder);
 
                     br.seek(br.getFilePointer() + (XNum - lonIdx - 1) * 4 + (YNum - latIdx - 1) * xNum * 4);
                 }
@@ -1539,7 +1561,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
 //                if (OPTIONS.big_endian || OPTIONS.byteswapped) {
 //                    Collections.reverse(Arrays.asList(aBytes));
 //                }
-                aValue = DataConvert.bytes2float(aBytes, _byteOrder);
+                aValue = DataConvert.bytes2Float(aBytes, _byteOrder);
                 aGridData.xArray[t] = DataConvert.toOADate(TDEF.times.get(t));
                 aGridData.data[0][t] = aValue;
             }
@@ -1592,7 +1614,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
 //                if (OPTIONS.big_endian || OPTIONS.byteswapped) {
 //                    Collections.reverse(Arrays.asList(aBytes));
 //                }
-                aValue = DataConvert.bytes2float(aBytes, _byteOrder);
+                aValue = DataConvert.bytes2Float(aBytes, _byteOrder);
                 aGridData.xArray[i] = ZDEF.ZLevels[i];
                 aGridData.data[0][i] = aValue;
             }
@@ -1641,7 +1663,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
 //                if (OPTIONS.big_endian || OPTIONS.byteswapped) {
 //                    Collections.reverse(Arrays.asList(aBytes));
 //                }
-                aValue = DataConvert.bytes2float(aBytes, _byteOrder);
+                aValue = DataConvert.bytes2Float(aBytes, _byteOrder);
                 aGridData.data[0][i] = aValue;
             }
 
@@ -1690,7 +1712,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
 //                if (OPTIONS.big_endian || OPTIONS.byteswapped) {
 //                    Collections.reverse(Arrays.asList(aBytes));
 //                }
-                aValue = DataConvert.bytes2float(aBytes, _byteOrder);
+                aValue = DataConvert.bytes2Float(aBytes, _byteOrder);
                 aGridData.data[0][i] = aValue;
             }
 
@@ -1749,13 +1771,13 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                 aSTDH.STID = new String(aBytes, "UTF-8");
 
                 aBytes = getByteArray(br, 4);
-                aSTDH.Lat = DataConvert.bytes2float(aBytes, _byteOrder);
+                aSTDH.Lat = DataConvert.bytes2Float(aBytes, _byteOrder);
 
                 aBytes = getByteArray(br, 4);
-                aSTDH.Lon = DataConvert.bytes2float(aBytes, _byteOrder);
+                aSTDH.Lon = DataConvert.bytes2Float(aBytes, _byteOrder);
 
                 aBytes = getByteArray(br, 4);
-                aSTDH.T = DataConvert.bytes2float(aBytes, _byteOrder);
+                aSTDH.T = DataConvert.bytes2Float(aBytes, _byteOrder);
 
                 aBytes = getByteArray(br, 4);
                 aSTDH.NLev = DataConvert.bytes2Int(aBytes);
@@ -1773,7 +1795,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                             aSTLevData.data = new float[varNum];
                             for (i = 0; i < varNum; i++) {
                                 aBytes = getByteArray(br, 4);
-                                aSTLevData.data[i] = DataConvert.bytes2float(aBytes, _byteOrder);
+                                aSTLevData.data[i] = DataConvert.bytes2Float(aBytes, _byteOrder);
                             }
                             aSTLevData.lev = 0;
                             aSTData.dataList.add(aSTLevData);
@@ -1787,7 +1809,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                             for (i = 0; i < aSTDH.NLev - aSTDH.Flag; i++) {
                                 br.skipBytes(4 + vIdx * 4);
                                 aBytes = getByteArray(br, 4);
-                                gData.data[i][tNum] = DataConvert.bytes2float(aBytes, _byteOrder);
+                                gData.data[i][tNum] = DataConvert.bytes2Float(aBytes, _byteOrder);
                                 br.skipBytes((uVarNum - vIdx - 1) * 4);
                             }
                         } else {
@@ -1879,13 +1901,13 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
             aSTDH.STID = new String(aBytes);
 
             aBytes = getByteArray(br, 4);
-            aSTDH.Lat = DataConvert.bytes2float(aBytes, _byteOrder);
+            aSTDH.Lat = DataConvert.bytes2Float(aBytes, _byteOrder);
 
             aBytes = getByteArray(br, 4);
-            aSTDH.Lon = DataConvert.bytes2float(aBytes, _byteOrder);
+            aSTDH.Lon = DataConvert.bytes2Float(aBytes, _byteOrder);
 
             aBytes = getByteArray(br, 4);
-            aSTDH.T = DataConvert.bytes2float(aBytes, _byteOrder);
+            aSTDH.T = DataConvert.bytes2Float(aBytes, _byteOrder);
 
             aBytes = getByteArray(br, 4);
             aSTDH.NLev = DataConvert.bytes2Int(aBytes, _byteOrder);
@@ -1903,7 +1925,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                     aSTLevData.data = new float[varNum];
                     for (i = 0; i < varNum; i++) {
                         aBytes = getByteArray(br, 4);
-                        aSTLevData.data[i] = DataConvert.bytes2float(aBytes, _byteOrder);
+                        aSTLevData.data[i] = DataConvert.bytes2Float(aBytes, _byteOrder);
                     }
                     aSTLevData.lev = 0;
                     aSTData.dataList.add(aSTLevData);
@@ -1913,11 +1935,11 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                     for (i = 0; i < aSTDH.NLev - aSTDH.Flag; i++) {
                         aBytes = getByteArray(br, 4);
                         aSTLevData = new STLevData();
-                        aSTLevData.lev = DataConvert.bytes2float(aBytes, _byteOrder);
+                        aSTLevData.lev = DataConvert.bytes2Float(aBytes, _byteOrder);
                         aSTLevData.data = new float[uVarNum];
                         for (j = 0; j < uVarNum; j++) {
                             aBytes = getByteArray(br, 4);
-                            aSTLevData.data[j] = DataConvert.bytes2float(aBytes, _byteOrder);
+                            aSTLevData.data[j] = DataConvert.bytes2Float(aBytes, _byteOrder);
                         }
                         aSTData.dataList.add(aSTLevData);
                     }
@@ -2075,6 +2097,15 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
             }
             sw.write("TITLE " + TITLE);
             sw.newLine();
+            String line = "OPTIONS";
+            if (OPTIONS.sequential)
+                line += " sequential";
+            if (OPTIONS.big_endian)
+                line += " big_endian";
+            if (line.length() > "OPTIONS".length()){
+                sw.write(line);
+                sw.newLine();
+            }
             sw.write("UNDEF " + String.valueOf(this.getMissingValue()));
             sw.newLine();
 
@@ -2134,8 +2165,8 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
             sw.write("VARS " + String.valueOf(VARDEF.getVNum()));
             sw.newLine();
             for (i = 0; i < VARDEF.getVNum(); i++) {
-                sw.write("  " + VARDEF.getVars().get(i).getName() + " " + VARDEF.getVars().get(i).getLevelNum() + " "
-                        + VARDEF.getVars().get(i).getUnits() + "  " + VARDEF.getVars().get(i).getDescription());
+                sw.write("  " + VARDEF.getVars().get(i).getName() + " " + VARDEF.getVars().get(i).getLevelNum() + " 99 "
+                        + VARDEF.getVars().get(i).getDescription() + " (" + VARDEF.getVars().get(i).getUnits() + ")");
                 sw.newLine();
             }
             sw.write("ENDVARS");
@@ -2197,27 +2228,53 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
      * @param gridData Grid data array
      */
     public void writeGrADSData_Grid(DataOutputStream bw, double[][] gridData) throws IOException {
-        int i, j;
-        float aData;
+        int i, j, k;
+        int ynum = gridData.length;
+        int xnum = gridData[0].length;
 
         EndianDataOutputStream ebw = new EndianDataOutputStream(bw);
         if (this.OPTIONS.sequential) {
-            ebw.writeFloatLE(0.0f);
+            ebw.writeIntBE(xnum * ynum * 4);
+            //ebw.writeFloatLE(0.0f);
         }
-
-        for (i = 0; i < gridData.length; i++) {
-            for (j = 0; j < gridData[0].length; j++) {
-                aData = (float) gridData[i][j];
-                if (this.OPTIONS.big_endian) {
-                    ebw.writeFloatBE(aData);
-                } else {
-                    ebw.writeFloatLE(aData);
+        
+        byte[] bytes = new byte[ynum * xnum * 4];
+        byte[] bs;
+        int p = 0;
+        for (i = 0; i < ynum; i++) {
+            for (j = 0; j < xnum; j++) {
+                bs = DataConvert.float2Bytes((float) gridData[i][j], _byteOrder);
+                for (k = 0; k < 4; k++) {
+                    bytes[p + k] = bs[k];
                 }
+                p += 4;
             }
         }
+//        if (this._byteOrder == ByteOrder.BIG_ENDIAN){
+//            for (i = 0; i < ynum; i++){
+//                for (j = 0; j < xnum; j++){
+//                    //bs = DataConvert.toBytes((float) gridData[i][j]);
+//                    bs = DataConvert.float2Bytes((float)gridData[i][j], _byteOrder);
+//                    for (k = 0; k < 4; k++)
+//                        bytes[p + k] = bs[k];
+//                    p += 4;
+//                }
+//            }
+//        } else {
+//            for (i = 0; i < ynum; i++){
+//                for (j = 0; j < xnum; j++){
+//                    bs = DataConvert.toLittleBytes((float) gridData[i][j]);
+//                    for (k = 0; k < 4; k++)
+//                        bytes[p + k] = bs[k];
+//                    p += 4;
+//                }
+//            }
+//        }
+        ebw.write(bytes, 0, bytes.length);
 
         if (this.OPTIONS.sequential) {
-            ebw.writeFloatLE(0.0f);
+            ebw.writeIntBE(xnum * ynum * 4);
+            //ebw.writeFloatLE(0.0f);
         }
     }
 

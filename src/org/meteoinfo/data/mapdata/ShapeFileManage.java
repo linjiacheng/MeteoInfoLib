@@ -46,8 +46,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.meteoinfo.projection.ProjectionInfo;
-import org.osgeo.proj4j.CRSFactory;
-import org.osgeo.proj4j.CoordinateReferenceSystem;
+import org.meteoinfo.projection.proj4j.CRSFactory;
+import org.meteoinfo.projection.proj4j.CoordinateReferenceSystem;
 
 /**
  * Shape file read and write

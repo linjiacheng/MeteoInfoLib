@@ -29,7 +29,7 @@ public class Dimension {
     private DimensionType _dimType;
     private List<Double> _dimValue;
     private int _dimId;
-    private int _dimLength;
+    private int _dimLength = 1;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 

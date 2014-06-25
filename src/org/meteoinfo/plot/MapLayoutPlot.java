@@ -13,11 +13,8 @@ import javax.swing.JFrame;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.meteoinfo.global.event.ILayersUpdatedListener;
-import org.meteoinfo.global.event.LayersUpdatedEvent;
 import org.meteoinfo.layout.MapLayout;
 import org.meteoinfo.legend.MapFrame;
-import org.meteoinfo.map.MapView;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -145,6 +142,7 @@ public class MapLayoutPlot extends javax.swing.JFrame {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 new MapLayoutPlot().setVisible(true);
             }

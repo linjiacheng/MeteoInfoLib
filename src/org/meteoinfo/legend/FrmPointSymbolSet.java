@@ -45,6 +45,8 @@ public class FrmPointSymbolSet extends javax.swing.JDialog {
     public FrmPointSymbolSet(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        
+        this.setTitle("Point Symbol Set");
     }
 
     /**
@@ -54,6 +56,7 @@ public class FrmPointSymbolSet extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
         
+        this.setTitle("Point Symbol Set");
         if (tparent.getClass() == LegendView.class){
             this.jButton_Apply.setVisible(false);
             this.jButton_OK.setVisible(false);
@@ -77,6 +80,7 @@ public class FrmPointSymbolSet extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
         
+        this.setTitle("Point Symbol Set");
         if (tparent.getClass() == LegendView.class){
             this.jButton_Apply.setVisible(false);
             this.jButton_OK.setVisible(false);

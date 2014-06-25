@@ -9,6 +9,7 @@ import org.meteoinfo.shape.ShapeTypes;
 import java.awt.Color;
 import javax.swing.JColorChooser;
 import javax.swing.JOptionPane;
+import org.meteoinfo.global.BigDecimalUtil;
 
 /**
  *
@@ -18,7 +19,7 @@ public class FrmLegendBreaks extends javax.swing.JDialog {
 
     private java.awt.Dialog _parent;
     private LegendScheme _legendScheme = null;
-    private double m_MinContourValue, m_MaxContourValue, m_Interval;
+    private double _minContourValue, _maxContourValue, _interval;
     private boolean _isUniqueValue = false;
 
     /**
@@ -42,28 +43,28 @@ public class FrmLegendBreaks extends javax.swing.JDialog {
         int bnum = _legendScheme.getBreakNum();
         if (bnum > 2) {
             ColorBreak aCB = _legendScheme.getLegendBreaks().get(0);
-            m_MinContourValue = Double.parseDouble(aCB.getEndValue().toString());
+            _minContourValue = Double.parseDouble(aCB.getEndValue().toString());
             if (_legendScheme.getHasNoData()) {
                 aCB = _legendScheme.getLegendBreaks().get(bnum - 2);
-                m_MaxContourValue = Double.parseDouble(aCB.getStartValue().toString());
-                m_Interval = (m_MaxContourValue - m_MinContourValue) / (bnum - 3);
+                _maxContourValue = Double.parseDouble(aCB.getStartValue().toString());
+                _interval = BigDecimalUtil.div((BigDecimalUtil.sub(_maxContourValue, _minContourValue)), (bnum - 3));
             } else {
                 aCB = _legendScheme.getLegendBreaks().get(bnum - 1);
-                m_MaxContourValue = Double.parseDouble(aCB.getStartValue().toString());
+                _maxContourValue = Double.parseDouble(aCB.getStartValue().toString());
                 switch (_legendScheme.getShapeType()) {
                     case Polyline:
                     case PolylineZ:
-                        m_Interval = (m_MaxContourValue - m_MinContourValue) / (bnum - 1);
+                        _interval = BigDecimalUtil.div((BigDecimalUtil.sub(_maxContourValue, _minContourValue)), (bnum - 1));
                         break;
                     default:
-                        m_Interval = (m_MaxContourValue - m_MinContourValue) / (bnum - 2);
+                        _interval = BigDecimalUtil.div((BigDecimalUtil.sub(_maxContourValue, _minContourValue)), (bnum - 2));
                         break;
                 }
             }
 
-            this.jTextField_StartValue.setText(String.valueOf(m_MinContourValue));
-            this.jTextField_EndValue.setText(String.valueOf(m_MaxContourValue));
-            this.jTextField_Interval.setText(String.valueOf(m_Interval));
+            this.jTextField_StartValue.setText(String.valueOf(_minContourValue));
+            this.jTextField_EndValue.setText(String.valueOf(_maxContourValue));
+            this.jTextField_Interval.setText(String.valueOf(_interval));
         }
         this.jRadioButton_RainbowColors.setSelected(true);
         this.jLabel_StartColor.setEnabled(false);
@@ -297,18 +298,18 @@ public class FrmLegendBreaks extends javax.swing.JDialog {
 
     private void jButton_NewLegendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_NewLegendActionPerformed
         // TODO add your handling code here:
-        m_Interval = Double.parseDouble(this.jTextField_Interval.getText());
-        m_MinContourValue = Double.parseDouble(this.jTextField_StartValue.getText());
-        m_MaxContourValue = Double.parseDouble(this.jTextField_EndValue.getText());
+        _interval = Double.parseDouble(this.jTextField_Interval.getText());
+        _minContourValue = Double.parseDouble(this.jTextField_StartValue.getText());
+        _maxContourValue = Double.parseDouble(this.jTextField_EndValue.getText());
 
-        if ((int) ((m_MaxContourValue - m_MinContourValue) / m_Interval) < 2) {
+        if ((int) ((_maxContourValue - _minContourValue) / _interval) < 2) {
             JOptionPane.showMessageDialog(null, "Please reset the data!", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         double[] cValues;
-        cValues = LegendManage.createContourValuesInterval(m_MinContourValue, m_MaxContourValue,
-                m_Interval);
+        cValues = LegendManage.createContourValuesInterval(_minContourValue, _maxContourValue,
+                _interval);
 
         Color[] colors = createColors(cValues.length + 1);
 

@@ -13,8 +13,10 @@
  */
 package org.meteoinfo.global;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 /**
  *
@@ -28,21 +30,94 @@ public class DateUtil {
     // <editor-fold desc="Get Set Methods">
     // </editor-fold>
     // <editor-fold desc="Methods">
+
     /**
      * Add days to a date
+     *
      * @param sDate Start date
      * @param days Days
      * @return Added date
      */
-    public static Date addDays(Date sDate, float days){
+    public static Date addDays(Date sDate, float days) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(sDate);
-        int intDays = (int)days;
+        int intDays = (int) days;
         cal.add(Calendar.DAY_OF_YEAR, intDays);
-        int hours = (int)((days - intDays) * 24);
+        int hours = (int) ((days - intDays) * 24);
         cal.add(Calendar.HOUR, hours);
-        
+
         return cal.getTime();
+    }
+
+    /**
+     * Get days of a month
+     *
+     * @param year The year
+     * @param month The month
+     * @return The days in the month
+     */
+    public static int getDaysInMonth(int year, int month) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(year, month, 1);
+
+        return cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+    }
+
+    /**
+     * Get time values - Time delta values of base date
+     *
+     * @param times Time list
+     * @param baseDate Base date
+     * @param tDelta Time delta type - days/hours/...
+     * @return The time delta values
+     */
+    public static List<Integer> getTimeDeltaValues(List<Date> times, Date baseDate, String tDelta) {
+        List<Integer> values = new ArrayList<Integer>();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(baseDate);
+        long sl = cal.getTimeInMillis();
+        long el, delta;
+        int value;
+        for (int i = 0; i < times.size(); i++) {
+            cal.setTime(times.get(i));
+            el = cal.getTimeInMillis();
+            delta = el - sl;
+            if (tDelta.equalsIgnoreCase("hours")) {
+                value = (int) (delta / (60 * 60 * 1000));
+                values.add(value);
+            } else if (tDelta.equalsIgnoreCase("days")) {
+                value = (int) (delta / (24 * 60 * 60 * 1000));
+                values.add(value);
+            }
+        }
+
+        return values;
+    }
+
+    /**
+     * Get time value - Time delta value of base date
+     *
+     * @param t The time
+     * @param baseDate Base date
+     * @param tDelta Time delta type - days/hours/...
+     * @return The time delta value
+     */
+    public static int getTimeDeltaValue(Date t, Date baseDate, String tDelta) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(baseDate);
+        long sl = cal.getTimeInMillis();
+        long el, delta;
+        int value = 0;
+        cal.setTime(t);
+        el = cal.getTimeInMillis();
+        delta = el - sl;
+        if (tDelta.equalsIgnoreCase("hours")) {
+            value = (int) (delta / (60 * 60 * 1000));
+        } else if (tDelta.equalsIgnoreCase("days")) {
+            value = (int) (delta / (24 * 60 * 60 * 1000));
+        }
+
+        return value;
     }
     // </editor-fold>
 }
