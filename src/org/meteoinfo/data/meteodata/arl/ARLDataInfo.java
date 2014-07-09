@@ -20,7 +20,7 @@ import org.meteoinfo.data.meteodata.DimensionType;
 import org.meteoinfo.data.meteodata.IGridDataInfo;
 import org.meteoinfo.data.meteodata.Variable;
 import org.meteoinfo.global.DataConvert;
-import org.meteoinfo.global.GlobalUtil;
+import org.meteoinfo.global.util.GlobalUtil;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;

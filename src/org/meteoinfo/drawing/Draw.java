@@ -174,7 +174,13 @@ public class Draw {
 //        g.draw(path);
     }
     
-    private static void drawArraw(Graphics2D g, PointF sP, double angle) {
+    /**
+     * Draw arraw
+     * @param g Graphics2D
+     * @param sP Start point
+     * @param angle Angle
+     */
+    public static void drawArraw(Graphics2D g, PointF sP, double angle) {
         GeneralPath path = new GeneralPath(GeneralPath.WIND_EVEN_ODD, 5);
         Rectangle.Float rect = new Rectangle.Float(-4, -4, 8, 8);
         PointF[] pt = new PointF[5];

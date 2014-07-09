@@ -69,8 +69,10 @@ import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 import org.meteoinfo.data.mapdata.FrmAttriData;
+import org.meteoinfo.data.mapdata.webmap.WebMapProvider;
 import org.meteoinfo.global.FrmProperty;
 import org.meteoinfo.layer.FrmLabelSet;
+import org.meteoinfo.layer.WebMapLayer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -398,24 +400,28 @@ public class LayersLegend extends JPanel {
             ItemNode aNode = getNodeByPosition(e.getX(), e.getY(), mPos);
             if (aNode != null) {
                 if (aNode.getNodeType() == NodeTypes.LayerNode) {
-                    LayerNode aLN = (LayerNode) aNode;
-                    MapLayer aLayer = aLN.getMapLayer();
-
-                    if (frmLayerProp == null) {
-                        //frmLayerProp = new frmLayerProperty(aLayerObj, aLN.getMapFrame());
-                        frmLayerProp = new FrmLayerProperty((JFrame) SwingUtilities.getWindowAncestor(this), false);
-                        frmLayerProp.setMapLayer(aLayer);
-                        frmLayerProp.setMapFrame(this.getActiveMapFrame());
-                        //frmLayerProp.Legend = this;                        
-                        frmLayerProp.setLocationRelativeTo(this);
-                        frmLayerProp.setVisible(true);
-                        //frmLayerProp.setAlwaysOnTop(true);
-                    } else {
-                        frmLayerProp.setMapLayer(aLayer);
-                        frmLayerProp.setMapFrame(this.getActiveMapFrame());
-                        //frmLayerProp.Legend = this;
-                        frmLayerProp.setVisible(true);
-                    }
+                    this.onPropertiesClick(null);
+//                    LayerNode aLN = (LayerNode) aNode;
+//                    MapLayer aLayer = aLN.getMapLayer();
+//                    if (aLayer.getLayerType() == LayerTypes.WebMapLayer) {
+//                        return;
+//                    }
+//                    
+//                    if (frmLayerProp == null) {
+//                        //frmLayerProp = new frmLayerProperty(aLayerObj, aLN.getMapFrame());
+//                        frmLayerProp = new FrmLayerProperty((JFrame) SwingUtilities.getWindowAncestor(this), false);
+//                        frmLayerProp.setMapLayer(aLayer);
+//                        frmLayerProp.setMapFrame(this.getActiveMapFrame());
+//                        //frmLayerProp.Legend = this;                        
+//                        frmLayerProp.setLocationRelativeTo(this);
+//                        frmLayerProp.setVisible(true);
+//                        //frmLayerProp.setAlwaysOnTop(true);
+//                    } else {
+//                        frmLayerProp.setMapLayer(aLayer);
+//                        frmLayerProp.setMapFrame(this.getActiveMapFrame());
+//                        //frmLayerProp.Legend = this;
+//                        frmLayerProp.setVisible(true);
+//                    }
                 } else if (aNode.getNodeType() == NodeTypes.GroupNode) {
                     FrmProperty pFrm = new FrmProperty((JFrame) SwingUtilities.getWindowAncestor(this), true, false);
                     pFrm.setObject(((GroupNode) aNode).new GroupNodeBean());
@@ -828,6 +834,14 @@ public class LayersLegend extends JPanel {
                     }
                 });
                 mnuMapFrame.add(addLayerMI);
+                JMenuItem addWebLayerMI = new JMenuItem("Add Web Layer");
+                addWebLayerMI.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        onAddWebLayerClick(e);
+                    }
+                });
+                mnuMapFrame.add(addWebLayerMI);
                 mnuMapFrame.add(new JSeparator());
                 JMenuItem activeMI = new JMenuItem("Active");
                 activeMI.addActionListener(new ActionListener() {
@@ -874,6 +888,15 @@ public class LayersLegend extends JPanel {
                 Logger.getLogger(LayersLegend.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+    }
+
+    private void onAddWebLayerClick(ActionEvent e) {
+        WebMapLayer layer = new WebMapLayer();
+        layer.setWebMapProvider(WebMapProvider.OpenStreetMap);
+        //layer.setDefaultProvider(DefaultProviders.OpenStreetMapQuestSattelite);
+        //layer.setDefaultProvider(DefaultProviders.ArcGISImage);
+
+        _currentMapFrame.addLayer(0, layer);
     }
 
     private void onAddGroupClick(ActionEvent e) {
@@ -927,6 +950,9 @@ public class LayersLegend extends JPanel {
     private void onPropertiesClick(ActionEvent e) {
         LayerNode aLN = (LayerNode) _selectedNode;
         MapLayer aLayer = aLN.getMapFrame().getMapView().getLayerFromHandle(aLN.getLayerHandle());
+//        if (aLayer.getLayerType() == LayerTypes.WebMapLayer)
+//            return;
+        
         if (frmLayerProp == null) {
             JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
             frmLayerProp = new FrmLayerProperty(frame, false);

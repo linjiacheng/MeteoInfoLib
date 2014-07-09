@@ -31,7 +31,7 @@ import org.meteoinfo.global.event.ViewExtentChangedEvent;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.FrmMeasurement;
 import org.meteoinfo.global.FrmMeasurement.MeasureTypes;
-import org.meteoinfo.global.GlobalUtil;
+import org.meteoinfo.global.util.GlobalUtil;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
 import org.meteoinfo.global.PointF;
@@ -109,11 +109,14 @@ import java.awt.event.WindowEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -144,14 +147,19 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.EventListenerList;
 import javax.swing.table.DefaultTableModel;
+import org.meteoinfo.data.mapdata.webmap.GeoPosition;
+import org.meteoinfo.data.mapdata.webmap.Tile;
+import org.meteoinfo.data.mapdata.webmap.TileFactoryInfo;
 import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.event.IShapeSelectedListener;
 import org.meteoinfo.global.event.ShapeSelectedEvent;
+import org.meteoinfo.global.util.GeoUtil;
 import static org.meteoinfo.layer.LayerDrawType.Barb;
 import static org.meteoinfo.layer.LayerDrawType.StationModel;
 import static org.meteoinfo.layer.LayerDrawType.Streamline;
 import static org.meteoinfo.layer.LayerDrawType.Vector;
 import org.meteoinfo.layer.VisibleScale;
+import org.meteoinfo.layer.WebMapLayer;
 import org.meteoinfo.legend.LegendType;
 import static org.meteoinfo.legend.LegendType.GraduatedColor;
 import static org.meteoinfo.legend.LegendType.SingleSymbol;
@@ -193,6 +201,7 @@ public class MapView extends JPanel {
     private Extent _drawExtent = new Extent();
     private double _scaleX = 1.0;
     private double _scaleY = 1.0;
+    private double _webMapScale;
     private double _XYScaleFactor = 1.0;
     private Color _selectColor = Color.yellow;
     private boolean _isGeoMap = true;
@@ -200,7 +209,7 @@ public class MapView extends JPanel {
     private ProjectionSet _projection = new ProjectionSet();
     private MouseTools _mouseTool = MouseTools.None;
     private VectorLayer _lonLatLayer = null;
-    private VectorLayer _lonLatProjLayer = null;
+    //private VectorLayer _lonLatProjLayer = null;
     private GraphicCollection _graphicCollection = new GraphicCollection();
     private GraphicCollection _selectedGraphics = new GraphicCollection();
     private GraphicCollection _visibleGraphics = new GraphicCollection();
@@ -1064,23 +1073,23 @@ public class MapView extends JPanel {
         _lonLatLayer = layer;
     }
 
-    /**
-     * Get lon/lat projected layer
-     *
-     * @return The lon/lat projected layer
-     */
-    public VectorLayer getLonLatProjLayer() {
-        return _lonLatProjLayer;
-    }
-
-    /**
-     * Set lon/lat projected layer
-     *
-     * @param layer The lon/lat projected layer
-     */
-    public void setLonLatProjLayer(VectorLayer layer) {
-        _lonLatProjLayer = layer;
-    }
+//    /**
+//     * Get lon/lat projected layer
+//     *
+//     * @return The lon/lat projected layer
+//     */
+//    public VectorLayer getLonLatProjLayer() {
+//        return _lonLatProjLayer;
+//    }
+//
+//    /**
+//     * Set lon/lat projected layer
+//     *
+//     * @param layer The lon/lat projected layer
+//     */
+//    public void setLonLatProjLayer(VectorLayer layer) {
+//        _lonLatProjLayer = layer;
+//    }
 
     /**
      * Get measurement form
@@ -2662,6 +2671,38 @@ public class MapView extends JPanel {
 
     void onKeyReleased(KeyEvent e) {
     }
+    // a property change listener which forces repaints when tiles finish loading
+    private TileLoadListener tileLoadListener = new TileLoadListener();
+
+    private final class TileLoadListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if ("loaded".equals(evt.getPropertyName())
+                    && Boolean.TRUE.equals(evt.getNewValue())) {
+                Tile t = (Tile) evt.getSource();
+                if (t.getZoom() == MapView.this.getWebMapLayer().getZoom()) {
+                    repaint();
+                    MapView.this.paintLayers();
+                    /* this optimization doesn't save much and it doesn't work if you
+                     * wrap around the world
+                     Rectangle viewportBounds = getViewportBounds();
+                     TilePoint tilePoint = t.getLocation();
+                     Point point = new Point(tilePoint.getX() * getTileFactory().getTileSize(), tilePoint.getY() * getTileFactory().getTileSize());
+                     Rectangle tileRect = new Rectangle(point, new Dimension(getTileFactory().getTileSize(), getTileFactory().getTileSize()));
+                     if (viewportBounds.intersects(tileRect)) {
+                     //convert tileRect from world space to viewport space
+                     repaint(new Rectangle(
+                     tileRect.x - viewportBounds.x,
+                     tileRect.y - viewportBounds.y,
+                     tileRect.width,
+                     tileRect.height
+                     ));
+                     }*/
+                }
+            }
+        }
+    }
 
     // </editor-fold>
     // <editor-fold desc="Methods">
@@ -2673,19 +2714,45 @@ public class MapView extends JPanel {
      * @return Layer handle
      */
     public int addLayer(MapLayer aLayer) {
-        int handle = -1;
+        int handle = getNewLayerHandle();
+        aLayer.setHandle(handle);
         switch (aLayer.getLayerType()) {
             case VectorLayer:
-                handle = addVectorLayer((VectorLayer) aLayer);
-                break;
             case RasterLayer:
-                handle = addRasterLayer((RasterLayer) aLayer);
-                break;
-            case ImageLayer:
-                handle = addImageLayer((ImageLayer) aLayer);
+                this.projectLayer(aLayer);
                 break;
         }
 
+        _layers.add(aLayer);
+        this.fireLayersUpdatedEvent();
+        _extent = getLayersWholeExtent();
+        if (_layers.size() == 1) {
+            this.zoomToExtent(_extent);
+        } else {
+            this.paintLayers();
+        }
+        return handle;
+    }
+
+    /**
+     * Add a layer
+     *
+     * @param index The index
+     * @param aLayer The layer
+     * @return Layer handle
+     */
+    public int addLayer(int index, MapLayer aLayer) {
+        int handle = getNewLayerHandle();
+        aLayer.setHandle(handle);
+        switch (aLayer.getLayerType()) {
+            case VectorLayer:
+            case RasterLayer:
+                this.projectLayer(aLayer);
+                break;
+        }
+
+        _layers.add(index, aLayer);
+        this.fireLayersUpdatedEvent();
         _extent = getLayersWholeExtent();
         if (_layers.size() == 1) {
             this.zoomToExtent(_extent);
@@ -2732,68 +2799,30 @@ public class MapView extends JPanel {
     }
 
     /**
-     * Add a vector layer
+     * Project a layer
      *
      * @param aLayer The vector layer
-     * @return The layer handle
      */
-    private int addVectorLayer(VectorLayer aLayer) {
-        int handle = getNewLayerHandle();
-        aLayer.setHandle(handle);
-        boolean projectLabels = true;
-        if (aLayer.getLabelPoints().size() > 0) {
-            projectLabels = false;
+    private void projectLayer(MapLayer layer) {
+        switch (layer.getLayerType()) {
+            case VectorLayer:
+                VectorLayer aLayer = (VectorLayer) layer;
+                boolean projectLabels = true;
+                if (aLayer.getLabelPoints().size() > 0) {
+                    projectLabels = false;
+                }
+
+                if (!aLayer.getProjInfo().equals(_projection.getProjInfo())) {
+                    _projection.projectLayer(aLayer, _projection.getProjInfo(), projectLabels);
+                }
+                break;
+            case RasterLayer:
+                RasterLayer rLayer = (RasterLayer) layer;
+                if (!rLayer.getProjInfo().equals(_projection.getProjInfo())) {
+                    _projection.projectLayer(rLayer, _projection.getProjInfo());
+                }
+                break;
         }
-
-        if (!aLayer.getProjInfo().equals(_projection.getProjInfo())) {
-            _projection.projectLayer(aLayer, _projection.getProjInfo(), projectLabels);
-        }
-
-        _layers.add(aLayer);
-
-        this.fireLayersUpdatedEvent();
-
-        return handle;
-    }
-
-    /**
-     * Add image layer
-     *
-     * @param aLayer Image layer
-     * @return Layer handle
-     */
-    private int addImageLayer(ImageLayer aLayer) {
-        int handle;
-        handle = getNewLayerHandle();
-        aLayer.setHandle(handle);
-        _layers.add(aLayer);
-
-        this.paintLayers();
-        this.fireLayersUpdatedEvent();
-
-        return handle;
-    }
-
-    /**
-     * Add raster layer
-     *
-     * @param aLayer Raster layer
-     * @return Layer handle
-     */
-    private int addRasterLayer(RasterLayer aLayer) {
-        int handle = getNewLayerHandle();
-        aLayer.setHandle(handle);
-
-        if (!aLayer.getProjInfo().equals(_projection.getProjInfo())) {
-            _projection.projectLayer(aLayer, _projection.getProjInfo());
-        }
-
-        _layers.add(aLayer);
-
-        this.paintLayers();
-        this.fireLayersUpdatedEvent();
-
-        return handle;
     }
 
     /**
@@ -3291,9 +3320,10 @@ public class MapView extends JPanel {
      * @param g Graphics2D
      */
     public void paintGraphics(Graphics2D g) {
-        if (this._lockViewUpdate)
+        if (this._lockViewUpdate) {
             return;
-        
+        }
+
         getMaskOutGraphicsPath(g);
 
         if (_antiAlias) {
@@ -3337,9 +3367,10 @@ public class MapView extends JPanel {
      * @param rect Target rectangle
      */
     public void paintGraphics(Graphics2D g, Rectangle rect) {
-        if (this._lockViewUpdate)
+        if (this._lockViewUpdate) {
             return;
-        
+        }
+
         refreshXYScale(rect.width, rect.height);
 
         AffineTransform oldMatrix = g.getTransform();
@@ -3557,14 +3588,16 @@ public class MapView extends JPanel {
                                 break;
                         }
                         break;
+                    case WebMapLayer:
+                        WebMapLayer webLayer = (WebMapLayer) aLayer;
+                        this.drawWebMapLayer(webLayer, g, width, height);
+                        break;
                 }
 
                 if (aLayer.isMaskout()) {
                     g.setClip(oldRegion);
                 }
-
             }
-
         }
     }
 
@@ -3756,6 +3789,10 @@ public class MapView extends JPanel {
                                 drawLayerWithLegendScheme(aVLayer, g, 0);
                                 break;
                         }
+                        break;
+                    case WebMapLayer:
+                        WebMapLayer webLayer = (WebMapLayer) aLayer;
+                        this.drawWebMapLayer(webLayer, g, width, height);
                         break;
                 }
 
@@ -4069,16 +4106,16 @@ public class MapView extends JPanel {
         }
     }
 
-    private void drawProjectedLonLat(Graphics2D g) {
-        if (_lonLatProjLayer != null) {
-            LegendScheme aLS = _lonLatProjLayer.getLegendScheme();
-            PolylineBreak aPLB = (PolylineBreak) aLS.getLegendBreaks().get(0);
-            aPLB.setColor(_gridLineColor);
-            aPLB.setSize(_gridLineSize);
-            aPLB.setStyle(_gridLineStyle);
-            drawLonLatLayer(_lonLatProjLayer, g, 0);
-        }
-    }
+//    private void drawProjectedLonLat(Graphics2D g) {
+//        if (_lonLatProjLayer != null) {
+//            LegendScheme aLS = _lonLatProjLayer.getLegendScheme();
+//            PolylineBreak aPLB = (PolylineBreak) aLS.getLegendBreaks().get(0);
+//            aPLB.setColor(_gridLineColor);
+//            aPLB.setSize(_gridLineSize);
+//            aPLB.setStyle(_gridLineStyle);
+//            drawLonLatLayer(_lonLatProjLayer, g, 0);
+//        }
+//    }
 
     private void drawLonLatLayer(VectorLayer aLayer, Graphics2D g, double LonShift) {
         Extent lExtent = MIMath.shiftExtentLon(aLayer.getExtent(), LonShift);
@@ -4527,17 +4564,19 @@ public class MapView extends JPanel {
                                 angle = angle - 360;
                             }
 
-                            PointF eP1 = new PointF();
-                            double aSize = 8;
-                            eP1.X = (int) (aPoint.X - aSize * Math.sin((angle + 20.0) * Math.PI / 180));
-                            eP1.Y = (int) (aPoint.Y + aSize * Math.cos((angle + 20.0) * Math.PI / 180));
-                            path.moveTo(aPoint.X, aPoint.Y);
-                            path.lineTo(eP1.X, eP1.Y);
+                            Draw.drawArraw(g, aPoint, angle);
 
-                            eP1.X = (int) (aPoint.X - aSize * Math.sin((angle - 20.0) * Math.PI / 180));
-                            eP1.Y = (int) (aPoint.Y + aSize * Math.cos((angle - 20.0) * Math.PI / 180));
-                            path.moveTo(aPoint.X, aPoint.Y);
-                            path.lineTo(eP1.X, eP1.Y);
+//                            PointF eP1 = new PointF();
+//                            double aSize = 8;
+//                            eP1.X = (int) (aPoint.X - aSize * Math.sin((angle + 20.0) * Math.PI / 180));
+//                            eP1.Y = (int) (aPoint.Y + aSize * Math.cos((angle + 20.0) * Math.PI / 180));
+//                            path.moveTo(aPoint.X, aPoint.Y);
+//                            path.lineTo(eP1.X, eP1.Y);
+//
+//                            eP1.X = (int) (aPoint.X - aSize * Math.sin((angle - 20.0) * Math.PI / 180));
+//                            eP1.Y = (int) (aPoint.Y + aSize * Math.cos((angle - 20.0) * Math.PI / 180));
+//                            path.moveTo(aPoint.X, aPoint.Y);
+//                            path.lineTo(eP1.X, eP1.Y);
                         }
                     }
                 }
@@ -4660,6 +4699,141 @@ public class MapView extends JPanel {
         }
 
         return rPoints;
+    }
+
+    private void drawWebMapLayer(WebMapLayer layer, Graphics2D g, int width, int height) {
+        PointD geoCenter = this.getGeoCenter();
+        layer.setAddressLocation(new GeoPosition(geoCenter.Y, geoCenter.X));
+        int zoom = layer.getZoom();
+        if (!MIMath.doubleEquals(_scaleX, _webMapScale)) {
+            int minZoom = layer.getTileFactory().getInfo().getMinimumZoomLevel();
+            int maxZoom = layer.getTileFactory().getInfo().getMaximumZoomLevel();
+            //int totalZoom = layer.getTileFactory().getInfo().getTotalMapZoom();
+            zoom = minZoom;
+            double scale;
+            for (int i = maxZoom; i >= minZoom; i--) {
+                //int z = totalZoom - i;
+                //double res = GeoUtil.getResolution(z, geoCenter.Y);
+                //double scale = 1.0 / res;
+                //layer.setAddressLocation(new GeoPosition(geoCenter.Y, geoCenter.X), i);
+                layer.setZoom(i);
+                scale = getWebMapScale(layer, i, width, height);
+                if (_scaleX < scale || MIMath.doubleEquals(_scaleX, scale)) {
+                    this.setScale(scale, width, height);
+                    zoom = i;
+                    _webMapScale = scale;
+                    break;
+                }
+            }
+        }
+
+        //layer.setZoom(zoom);
+        //layer.drawMapTiles(g, zoom, width, height);        
+        Rectangle viewportBounds = layer.calculateViewportBounds(g, width, height);
+        int size = layer.getTileFactory().getTileSize(zoom);
+        Dimension mapSize = layer.getTileFactory().getMapSize(zoom);
+
+        //calculate the "visible" viewport area in tiles
+        int numWide = viewportBounds.width / size + 2;
+        int numHigh = viewportBounds.height / size + 2;
+
+        //TilePoint topLeftTile = getTileFactory().getTileCoordinate(
+        //        new Point2D.Double(viewportBounds.x, viewportBounds.y));
+        TileFactoryInfo info = layer.getTileFactory().getInfo();
+        int tpx = (int) Math.floor(viewportBounds.getX() / info.getTileSize(0));
+        int tpy = (int) Math.floor(viewportBounds.getY() / info.getTileSize(0));
+        //TilePoint topLeftTile = new TilePoint(tpx, tpy);
+
+        //p("top tile = " + topLeftTile);
+        //fetch the tiles from the factory and store them in the tiles cache
+        //attach the tileLoadListener
+        String language = layer.getTileFactory().getInfo().getLanguage();
+        for (int x = 0; x <= numWide; x++) {
+            for (int y = 0; y <= numHigh; y++) {
+                int itpx = x + tpx;//topLeftTile.getX();
+                int itpy = y + tpy;//topLeftTile.getY();
+                //TilePoint point = new TilePoint(x + topLeftTile.getX(), y + topLeftTile.getY());
+                //only proceed if the specified tile point lies within the area being painted
+                //if (g.getClipBounds().intersects(new Rectangle(itpx * size - viewportBounds.x,
+                //itpy * size - viewportBounds.y, size, size))) {
+                Tile tile = layer.getTileFactory().getTile(itpx, itpy, zoom);
+                tile.addUniquePropertyChangeListener("loaded", tileLoadListener); //this is a filthy hack
+                int ox = ((itpx * layer.getTileFactory().getTileSize(zoom)) - viewportBounds.x);
+                int oy = ((itpy * layer.getTileFactory().getTileSize(zoom)) - viewportBounds.y);
+
+                //if the tile is off the map to the north/south, then just don't paint anything                    
+                if (layer.isTileOnMap(itpx, itpy, mapSize)) {
+//                        if (isOpaque()) {
+//                            g.setColor(getBackground());
+//                            g.fillRect(ox,oy,size,size);
+//                        }
+                } else if (tile.isLoaded()) {
+                    g.drawImage(tile.getImage(), ox, oy, null);
+                } else {
+                    //int imageX = (getTileFactory().getTileSize(zoom) - getLoadingImage().getWidth(null)) / 2;
+                    //int imageY = (getTileFactory().getTileSize(zoom) - getLoadingImage().getHeight(null)) / 2;
+                    int imageX = (layer.getTileFactory().getTileSize(zoom) - layer.getLoadingImage().getWidth(null)) / 2;
+                    int imageY = (layer.getTileFactory().getTileSize(zoom) - layer.getLoadingImage().getHeight(null)) / 2;
+                    g.setColor(Color.GRAY);
+                    g.fillRect(ox, oy, size, size);
+                    g.drawImage(layer.getLoadingImage(), ox + imageX, oy + imageY, null);
+                }
+                if (layer.isDrawTileBorders()) {
+
+                    g.setColor(Color.black);
+                    g.drawRect(ox, oy, size, size);
+                    g.drawRect(ox + size / 2 - 5, oy + size / 2 - 5, 10, 10);
+                    g.setColor(Color.white);
+                    g.drawRect(ox + 1, oy + 1, size, size);
+
+                    String text = itpx + ", " + itpy + ", " + layer.getZoom();
+                    g.setColor(Color.BLACK);
+                    g.drawString(text, ox + 10, oy + 30);
+                    g.drawString(text, ox + 10 + 2, oy + 30 + 2);
+                    g.setColor(Color.WHITE);
+                    g.drawString(text, ox + 10 + 1, oy + 30 + 1);
+                }
+                //}
+            }
+        }
+    }
+
+    private double getWebMapScale(WebMapLayer layer, int zoom, int width, int height) {
+        Point2D center = layer.getCenter();
+        double minx = center.getX() - width / 2;
+        double miny = center.getY() - height / 2;
+        double maxx = center.getX() + width / 2;
+        double maxy = center.getY() + height / 2;
+        GeoPosition pos1 = GeoUtil.getPosition(new Point2D.Double(minx, miny), zoom, layer.getTileFactory().getInfo());
+        GeoPosition pos2 = GeoUtil.getPosition(new Point2D.Double(maxx, maxy), zoom, layer.getTileFactory().getInfo());
+        PointD p1 = Reproject.reprojectPoint(new PointD(pos1.getLongitude(), pos1.getLatitude()),
+                KnownCoordinateSystems.geographic.world.WGS1984, this.getProjection().getProjInfo());
+        PointD p2 = Reproject.reprojectPoint(new PointD(pos2.getLongitude(), pos2.getLatitude()),
+                KnownCoordinateSystems.geographic.world.WGS1984, this.getProjection().getProjInfo());
+        if (pos2.getLongitude() - pos1.getLongitude() < 360.0) {
+            double xlen = p2.X - p1.X;
+//        if (pos2.getLongitude() - pos1.getLongitude() > 360)
+//            xlen += 2.0037497210840166E7 * 2;
+            return (double) width / xlen;
+        } else {
+            double ylen = Math.abs(p2.Y - p1.Y);
+            return (double) height / ylen;
+        }
+    }
+
+    /**
+     * Get web map layer
+     *
+     * @return The web map layer
+     */
+    public WebMapLayer getWebMapLayer() {
+        for (MapLayer layer : this._layers) {
+            if (layer.getLayerType() == LayerTypes.WebMapLayer) {
+                return (WebMapLayer) layer;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -5531,21 +5705,21 @@ public class MapView extends JPanel {
                     _gridLabels.addAll(gLabels);
                 }
             } else {
-                if (_lonLatProjLayer == null) {
+                if (_lonLatLayer == null) {
                     return;
                 }
 
                 List<GridLabel> gridLabels = new ArrayList<GridLabel>();
-                for (int i = 0; i < _lonLatProjLayer.getShapeNum(); i++) {
-                    PolylineShape aPLS = (PolylineShape) _lonLatProjLayer.getShapes().get(i);
-                    String labStr = _lonLatProjLayer.getCellValue(0, i).toString().trim();
+                for (int i = 0; i < _lonLatLayer.getShapeNum(); i++) {
+                    PolylineShape aPLS = (PolylineShape) _lonLatLayer.getShapes().get(i);
+                    String labStr = _lonLatLayer.getCellValue(0, i).toString().trim();
                     labStr = DataConvert.removeTailingZeros(labStr);
                     float value = Float.parseFloat(labStr);
                     if (value == -9999.0) {
                         continue;
                     }
 
-                    String isLonStr = _lonLatProjLayer.getCellValue(1, i).toString();
+                    String isLonStr = _lonLatLayer.getCellValue(1, i).toString();
                     boolean isLon = (isLonStr.equals("Y"));
                     if (isLon) {
                         if (value == -180) {
@@ -6124,6 +6298,21 @@ public class MapView extends JPanel {
         _scaleY = height / (aExtent.maxY - aExtent.minY);
     }
 
+    private void setScale(double scale, int width, int height) {
+        this._scaleX = scale;
+        this._scaleY = scale;
+        //PointD center = (PointD)this._drawExtent.getCenterPoint().clone();
+        PointD center = (PointD) this._viewExtent.getCenterPoint().clone();
+        //center.X -= g.getTransform().getTranslateX();
+        //center.Y -= g.getTransform().getTranslateY();        
+        double xlen = width / scale * 0.5;
+        double ylen = height / scale * 0.5;
+        this._drawExtent.minX = center.X - xlen;
+        this._drawExtent.maxX = center.X + xlen;
+        this._drawExtent.minY = center.Y - ylen;
+        this._drawExtent.maxY = center.Y + ylen;
+    }
+
     /**
      * Refresh X/Y scale
      */
@@ -6185,6 +6374,17 @@ public class MapView extends JPanel {
         double scale = geoBreakWidth * 100 / (breakWidth / 96 * 2.539999918);
 
         return scale;
+    }
+
+    /**
+     * Get geographic center with longitude/latitude
+     *
+     * @return Geogrphic center
+     */
+    public PointD getGeoCenter() {
+        PointD viewCenter = this.getViewCenter();
+        return Reproject.reprojectPoint(viewCenter, this.getProjection().getProjInfo(),
+                KnownCoordinateSystems.geographic.world.WGS1984);
     }
 
     /**

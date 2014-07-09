@@ -193,9 +193,9 @@ public abstract class DataMath {
             }
         } else {
             if (b.getClass() == GridData.class) {
-                return div((Double) a, (GridData) b);
+                return div_1((Double) a, (GridData) b);
             } else if (b.getClass() == StationData.class) {
-                return div((Double) a, (StationData) b);
+                return div_1((Double) a, (StationData) b);
             } else {
                 return (Double) a / (Double) b;
             }
@@ -209,7 +209,7 @@ public abstract class DataMath {
      * @param gridData Grid data
      * @return Result grid data
      */
-    public static GridData div(double value, GridData gridData) {
+    public static GridData div_1(double value, GridData gridData) {
         int xNum = gridData.getXNum();
         int yNum = gridData.getYNum();
 
@@ -217,6 +217,8 @@ public abstract class DataMath {
         for (int i = 0; i < yNum; i++) {
             for (int j = 0; j < xNum; j++) {
                 if (MIMath.doubleEquals(gridData.data[i][j], gridData.missingValue)) {
+                    cGrid.data[i][j] = gridData.missingValue;
+                } else if (gridData.data[i][j] == 0) {
                     cGrid.data[i][j] = gridData.missingValue;
                 } else {
                     cGrid.data[i][j] = value / gridData.data[i][j];
@@ -234,7 +236,7 @@ public abstract class DataMath {
      * @param stData Station data
      * @return Result station data
      */
-    public static StationData div(double value, StationData stData) {
+    public static StationData div_1(double value, StationData stData) {
         StationData cStData = new StationData();
         String aStid;
         double x, y;
@@ -244,7 +246,7 @@ public abstract class DataMath {
             double aValue = stData.getValue(i);
             x = stData.getX(i);
             y = stData.getY(i);
-            if (MIMath.doubleEquals(aValue, stData.missingValue)) {
+            if (aValue == 0 || MIMath.doubleEquals(aValue, stData.missingValue)) {
                 cStData.addData(aStid, x, y, aValue);
             } else {
                 cStData.addData(aStid, x, y, value / aValue);

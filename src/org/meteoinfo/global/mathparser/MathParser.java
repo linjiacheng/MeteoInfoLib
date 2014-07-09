@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Stack;
 import org.meteoinfo.data.meteodata.MeteoDataInfo;
+import org.meteoinfo.global.MIMath;
 
 /**
  *
@@ -305,8 +306,10 @@ public class MathParser {
             for (int i = 0; i < expression.getArgumentCount(); i++) {
                 _parameters.push(_calculationStack.pop());
             }
-
-            _calculationStack.push(expression.evaluate(_parameters.toArray()));
+            
+            Object[] parameters = _parameters.toArray();
+            MIMath.arrayReverse(parameters);
+            _calculationStack.push(expression.evaluate(parameters));
         }
 
         result = _calculationStack.pop();

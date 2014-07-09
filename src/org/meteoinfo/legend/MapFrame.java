@@ -774,6 +774,18 @@ public class MapFrame extends ItemNode {
         this.selectLayer(aLN);
         return addLayerNode(aLN);
     }
+    
+    /**
+     * Add a layer
+     * @param index The index
+     * @param layer The layer
+     * @return The layer handle
+     */
+    public int addLayer(int index, MapLayer layer) {
+        LayerNode ln = new LayerNode(layer);
+        this.selectLayer(ln);
+        return addLayerNode(index, ln);
+    }
 
     /**
      * Add wind layer

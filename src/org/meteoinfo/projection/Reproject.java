@@ -13,6 +13,7 @@
  */
 package org.meteoinfo.projection;
 
+import org.meteoinfo.global.PointD;
 import org.meteoinfo.projection.proj4j.CoordinateTransform;
 import org.meteoinfo.projection.proj4j.CoordinateTransformFactory;
 import org.meteoinfo.projection.proj4j.ProjCoordinate;
@@ -25,6 +26,22 @@ public class Reproject {
 
     private static CoordinateTransformFactory ctFactory = new CoordinateTransformFactory();
 
+    /**
+     * Reproject a point
+     * @param point The point
+     * @param source Source projection info
+     * @param dest Destination projection info
+     * @return Projected point
+     */
+    public static PointD reprojectPoint(PointD point, ProjectionInfo source, ProjectionInfo dest) {
+        double[][] points = new double[1][];
+        points[0] = new double[]{point.X, point.Y};
+        Reproject.reprojectPoints(points, source, dest, 0, points.length);
+        PointD rPoint = new PointD(points[0][0], points[0][1]);
+        
+        return rPoint;
+    }
+    
     /**
      * Reproject points
      *

@@ -156,35 +156,38 @@ public class LayerNode extends ItemNode {
      * @param aLS The legend scheme
      */
     public void updateLegendScheme(LegendScheme aLS) {
-        if (_mapLayer.getLayerType() != LayerTypes.ImageLayer) {
-            _legendNodes.clear();
-            LegendNode aTN;
-            for (int i = 0; i < aLS.getBreakNum(); i++) {
-                if (aLS.getLegendBreaks().get(i).isDrawShape()) {
-                    aTN = new LegendNode();
-                    aTN.setShapeType(this.getShapeType());
-                    aTN.setLegendBreak(aLS.getLegendBreaks().get(i));                    
-                    _legendNodes.add(aTN);
-                }
-            }
-
-            if (_mapLayer.getLayerType() == LayerTypes.VectorLayer) {
-                VectorLayer aLayer = (VectorLayer) _mapLayer;
-                if (aLayer.getChartSet().isDrawCharts() && aLayer.getChartPoints().size() > 0) {
-                    LegendNode aLN = new LegendNode();
-                    aLN.setShapeType(ShapeTypes.Polygon);
-                    ChartBreak aCB = ((ChartBreak) aLayer.getChartPoints().get(0).getLegend()).getSampleChartBreak();
-                    aLN.setLegendBreak(aCB);
-                    aLN.setHeight(((ChartBreak) aLN.getLegendBreak()).getHeight() + 10);
-                    _legendNodes.add(aLN);
-                    for (int i = 0; i < aLayer.getChartSet().getLegendScheme().getBreakNum(); i++) {
-                        aLN = new LegendNode();
-                        aLN.setShapeType(ShapeTypes.Polygon);
-                        aLN.setLegendBreak(aLayer.getChartSet().getLegendScheme().getLegendBreaks().get(i));
-                        _legendNodes.add(aLN);
+        switch (_mapLayer.getLayerType()) {
+            case VectorLayer:
+            case RasterLayer:
+                _legendNodes.clear();
+                LegendNode aTN;
+                for (int i = 0; i < aLS.getBreakNum(); i++) {
+                    if (aLS.getLegendBreaks().get(i).isDrawShape()) {
+                        aTN = new LegendNode();
+                        aTN.setShapeType(this.getShapeType());
+                        aTN.setLegendBreak(aLS.getLegendBreaks().get(i));
+                        _legendNodes.add(aTN);
                     }
                 }
-            }
+
+                if (_mapLayer.getLayerType() == LayerTypes.VectorLayer) {
+                    VectorLayer aLayer = (VectorLayer) _mapLayer;
+                    if (aLayer.getChartSet().isDrawCharts() && aLayer.getChartPoints().size() > 0) {
+                        LegendNode aLN = new LegendNode();
+                        aLN.setShapeType(ShapeTypes.Polygon);
+                        ChartBreak aCB = ((ChartBreak) aLayer.getChartPoints().get(0).getLegend()).getSampleChartBreak();
+                        aLN.setLegendBreak(aCB);
+                        aLN.setHeight(((ChartBreak) aLN.getLegendBreak()).getHeight() + 10);
+                        _legendNodes.add(aLN);
+                        for (int i = 0; i < aLayer.getChartSet().getLegendScheme().getBreakNum(); i++) {
+                            aLN = new LegendNode();
+                            aLN.setShapeType(ShapeTypes.Polygon);
+                            aLN.setLegendBreak(aLayer.getChartSet().getLegendScheme().getLegendBreaks().get(i));
+                            _legendNodes.add(aLN);
+                        }
+                    }
+                }
+                break;
         }
     }
 

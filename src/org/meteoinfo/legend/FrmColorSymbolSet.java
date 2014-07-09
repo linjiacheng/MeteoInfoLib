@@ -105,12 +105,12 @@ public class FrmColorSymbolSet extends javax.swing.JDialog {
 
     private void jSpinner_TransParencyStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSpinner_TransParencyStateChanged
         // TODO add your handling code here:
-        int trans = Integer.parseInt(this.jSpinner_TransParency.getValue().toString());
-        trans = (int)((1 - trans / 100.0) * 255);
+        int alpha = Integer.parseInt(this.jSpinner_TransParency.getValue().toString());
+        alpha = (int)((1 - alpha / 100.0) * 255);
         Color c = _colorBreak.getColor();
-        _colorBreak.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), trans));
+        _colorBreak.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), alpha));
         if (_parent.getClass() == LegendView.class) {
-            ((LegendView) _parent).setLegendBreak_Color(new Color(c.getRed(), c.getGreen(), c.getBlue(), trans));
+            ((LegendView) _parent).setLegendBreak_Color_Transparency(alpha);
         }
     }//GEN-LAST:event_jSpinner_TransParencyStateChanged
 

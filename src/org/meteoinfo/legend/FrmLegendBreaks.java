@@ -9,7 +9,7 @@ import org.meteoinfo.shape.ShapeTypes;
 import java.awt.Color;
 import javax.swing.JColorChooser;
 import javax.swing.JOptionPane;
-import org.meteoinfo.global.BigDecimalUtil;
+import org.meteoinfo.global.util.BigDecimalUtil;
 
 /**
  *

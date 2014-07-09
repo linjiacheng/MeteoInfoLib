@@ -1155,6 +1155,8 @@ public class FrmLayerProperty extends javax.swing.JDialog {
             case ImageLayer:
                 _object = ((ImageLayer) aLayer).new ImageLayerBean();
                 break;
+            case WebMapLayer:
+                _object = ((WebMapLayer) aLayer).new WebMapLayerBean();
         }
 
         DefaultBeanInfoResolver resolver = new DefaultBeanInfoResolver();
@@ -1188,11 +1190,7 @@ public class FrmLayerProperty extends javax.swing.JDialog {
         switch (_mapLayer.getLayerType()) {
             case VectorLayer:
             case RasterLayer:
-                //this.jTabbedPane1.setEnabledAt(1, true);
                 this.jTabbedPane1.addTab("Legend", jPanel_Legend);
-                break;
-            case ImageLayer:
-                //this.jTabbedPane1.setEnabledAt(2, false);
                 break;
         }
 

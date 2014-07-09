@@ -19,7 +19,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.util.HashMap;
 import javax.swing.event.EventListenerList;
-import org.meteoinfo.global.GlobalUtil;
+import org.meteoinfo.global.util.GlobalUtil;
 
 /**
  * Label break class

@@ -117,7 +117,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.meteoinfo.global.GlobalUtil;
+import org.meteoinfo.global.util.GlobalUtil;
 import org.meteoinfo.layer.RasterLayer;
 import org.meteoinfo.legend.VectorBreak;
 import org.meteoinfo.map.FrmIdentiferGrid;

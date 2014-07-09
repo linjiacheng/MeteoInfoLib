@@ -276,9 +276,9 @@ public class ProjectionSet {
         Extent aExten = aMapView.getExtent();
         aMapView.setLonLatLayer(aMapView.generateLonLatLayer());
         projectLayer(aMapView.getLonLatLayer(), toProj);
-        aMapView.setLonLatProjLayer(aMapView.getLonLatLayer());
-        for (int i = 0; i < aMapView.getLonLatProjLayer().getShapeNum(); i++) {
-            PolylineShape aPLS = (PolylineShape) aMapView.getLonLatProjLayer().getShapes().get(i);
+        //aMapView.setLonLatProjLayer(aMapView.getLonLatLayer());
+        for (int i = 0; i < aMapView.getLonLatLayer().getShapeNum(); i++) {
+            PolylineShape aPLS = (PolylineShape) aMapView.getLonLatLayer().getShapes().get(i);
             if (aPLS.getPolylines().size() == 2) {
                 PointD aP = aPLS.getPolylines().get(0).getPointList().get(aPLS.getPolylines().get(0).getPointList().size() - 1);
                 PointD bP = aPLS.getPolylines().get(1).getPointList().get(aPLS.getPolylines().get(1).getPointList().size() - 1);
@@ -434,6 +434,10 @@ public class ProjectionSet {
                                     continue;
                                 }
                                 break;
+                            case Mercator:
+                                if (aPS.getPoint().Y > 85.0511 || aPS.getPoint().Y < -85.0511)
+                                    continue;
+                                break;
                         }
                     }
                     aPS = projectPointShape(aPS, fromProj, toProj);
@@ -478,6 +482,12 @@ public class ProjectionSet {
                                     //continue;
                                     aPLS = GeoComputation.clipPolylineShape_Lat(aPLS, 0, false);
                                 }
+                                break;
+                            case Mercator:
+                                if (aPLS.getExtent().maxY > 85.0511)
+                                    aPLS = GeoComputation.clipPolylineShape_Lat(aPLS, 85.0511, false);
+                                if (aPLS.getExtent().minY < -85.0511)
+                                    aPLS = GeoComputation.clipPolylineShape_Lat(aPLS, -85.0511, true);
                                 break;
                         }
                         if (aPLS == null) {
@@ -547,6 +557,12 @@ public class ProjectionSet {
                                     //continue;
                                     aPGS = GeoComputation.clipPolygonShape_Lat(aPGS, 0, false);
                                 }
+                                break;
+                            case Mercator:
+                                if (aPGS.getExtent().maxY > 85.0511)
+                                    aPGS = GeoComputation.clipPolygonShape_Lat(aPGS, 85.0511, false);
+                                if (aPGS.getExtent().minY < -85.0511)
+                                    aPGS = GeoComputation.clipPolygonShape_Lat(aPGS, -85.0511, true);
                                 break;
                         }
                         if (aPGS == null) {

@@ -327,6 +327,20 @@ public class MapLayer implements Cloneable {
     }
     // </editor-fold>
     // <editor-fold desc="Methods">
+    /**
+     * If the layer has legend schem or not
+     * @return Boolean
+     */
+    public boolean hasLegendScheme(){
+        switch (this._layerType){
+            case VectorLayer:
+            case RasterLayer:
+                return true;
+            default:
+                return false;
+        }
+    }
+    
     @Override
     public Object clone() throws CloneNotSupportedException {
         MapLayer aLayer = (MapLayer)super.clone();

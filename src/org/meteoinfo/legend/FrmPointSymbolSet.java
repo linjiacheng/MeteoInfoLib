@@ -6,7 +6,7 @@ package org.meteoinfo.legend;
 
 import org.meteoinfo.drawing.MarkerType;
 import org.meteoinfo.drawing.PointStyle;
-import org.meteoinfo.global.GlobalUtil;
+import org.meteoinfo.global.util.GlobalUtil;
 import org.meteoinfo.global.event.ISelectedCellChangedListener;
 import org.meteoinfo.global.event.SelectedCellChangedEvent;
 import org.meteoinfo.layout.MapLayout;
@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JColorChooser;
 import org.meteoinfo.drawing.Draw;
-import org.meteoinfo.global.FontUtil;
+import org.meteoinfo.global.util.FontUtil;
 
 /**
  *

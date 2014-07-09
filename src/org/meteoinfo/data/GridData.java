@@ -27,7 +27,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.meteoinfo.data.meteodata.GridDataSetting;
 import org.meteoinfo.geoprocess.analysis.ResampleMethods;
-import org.meteoinfo.global.BigDecimalUtil;
+import org.meteoinfo.global.util.BigDecimalUtil;
 import org.meteoinfo.layer.VectorLayer;
 import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.projection.ProjectionManage;
@@ -379,6 +379,8 @@ public class GridData {
             for (int j = 0; j < xNum; j++) {
                 if (MIMath.doubleEquals(data[i][j], missingValue)
                         || MIMath.doubleEquals(bGrid.data[i][j], bGrid.missingValue)) {
+                    cGrid.data[i][j] = missingValue;
+                } else if (bGrid.data[i][j] == 0) {
                     cGrid.data[i][j] = missingValue;
                 } else {
                     cGrid.data[i][j] = data[i][j] / bGrid.data[i][j];

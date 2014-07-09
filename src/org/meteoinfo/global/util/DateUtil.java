@@ -11,7 +11,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
  * General Public License for more details.
  */
-package org.meteoinfo.global;
+package org.meteoinfo.global.util;
 
 import java.util.ArrayList;
 import java.util.Calendar;

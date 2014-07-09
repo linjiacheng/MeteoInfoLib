@@ -294,6 +294,27 @@ public class MIMath {
             right--;
         }
     }
+    
+    /**
+     * Array reverse
+     *
+     * @param values Object array
+     */
+    public static void arrayReverse(Object[] values) {
+        int left = 0;          // index of leftmost element
+        int right = values.length - 1; // index of rightmost element
+
+        while (left < right) {
+            // exchange the left and right elements
+            Object temp = values[left];
+            values[left] = values[right];
+            values[right] = temp;
+
+            // move the bounds toward the center
+            left++;
+            right--;
+        }
+    }
 
     /**
      * Get min, max of an array

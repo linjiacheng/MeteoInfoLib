@@ -21,5 +21,6 @@ package org.meteoinfo.layer;
 public enum LayerTypes {
     VectorLayer,
     ImageLayer,
-    RasterLayer
+    RasterLayer,
+    WebMapLayer
 }

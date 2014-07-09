@@ -16,7 +16,7 @@ package org.meteoinfo.layer;
 import org.meteoinfo.legend.AlignType;
 import java.awt.Color;
 import java.awt.Font;
-import org.meteoinfo.global.GlobalUtil;
+import org.meteoinfo.global.util.GlobalUtil;
 
 /**
  * Template

@@ -23,7 +23,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import org.meteoinfo.global.BigDecimalUtil;
+import org.meteoinfo.global.util.BigDecimalUtil;
 import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.layer.VectorLayer;
 import org.meteoinfo.shape.PointShape;

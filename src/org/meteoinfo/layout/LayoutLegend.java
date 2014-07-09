@@ -120,8 +120,8 @@ public class LayoutLegend extends LayoutElement {
             case FirstExpandedLayer:
                 for (int i = 0; i < _layoutMap.getMapFrame().getMapView().getLayerNum(); i++) {
                     MapLayer aLayer = _layoutMap.getMapFrame().getMapView().getLayers().
-                            get(_layoutMap.getMapFrame().getMapView().getLayerNum() - 1 - i);
-                    if (aLayer.getLayerType() != LayerTypes.ImageLayer) {
+                            get(_layoutMap.getMapFrame().getMapView().getLayerNum() - 1 - i);                    
+                    if (aLayer.hasLegendScheme()) {
                         if (aLayer.isVisible() && aLayer.isExpanded() && aLayer.getLegendScheme().getLegendType() != LegendType.SingleSymbol) {
                             this.setVisible(true);
                             this.setLegendLayer(aLayer);
@@ -134,7 +134,7 @@ public class LayoutLegend extends LayoutElement {
                 for (int i = 0; i < _layoutMap.getMapFrame().getMapView().getLayerNum(); i++) {
                     MapLayer aLayer = _layoutMap.getMapFrame().getMapView().getLayers().
                             get(_layoutMap.getMapFrame().getMapView().getLayerNum() - 1 - i);
-                    if (aLayer.getLayerType() != LayerTypes.ImageLayer) {
+                    if (aLayer.hasLegendScheme()) {
                         if (aLayer.isVisible() && aLayer.getLayerDrawType() != LayerDrawType.Map
                                 && aLayer.getLegendScheme().getLegendType() != LegendType.SingleSymbol) {
                             this.setVisible(true);
@@ -145,7 +145,7 @@ public class LayoutLegend extends LayoutElement {
                 }
                 break;
             case LastAddedLayer:
-                if (_layoutMap.getMapFrame().getMapView().getLastAddedLayer().getLayerType() != LayerTypes.ImageLayer) {
+                if (_layoutMap.getMapFrame().getMapView().getLastAddedLayer().hasLegendScheme()) {
                     this.setVisible(true);
                     this.setLegendLayer(_layoutMap.getMapFrame().getMapView().getLastAddedLayer());
                 }
