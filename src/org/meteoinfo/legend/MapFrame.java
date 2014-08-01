@@ -1335,7 +1335,7 @@ public class MapFrame extends ItemNode {
         this.unSelectNodes();
         aLN.setSelected(true);
         this.setSelectedLayer(aLN.getLayerHandle());
-        _mapView.setSelectedLayer(this._selectedLayerHandle);
+        _mapView.setSelectedLayerHandle(this._selectedLayerHandle);
         if (_legend != null) {
             //_legend.selectNode(aLN);
             _legend.setSelectedNode(aLN);

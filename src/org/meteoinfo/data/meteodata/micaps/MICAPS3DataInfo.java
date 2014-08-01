@@ -37,6 +37,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.meteoinfo.data.meteodata.MeteoDataType;
 
 /**
  *
@@ -57,6 +58,7 @@ public class MICAPS3DataInfo extends DataInfo implements IStationDataInfo {
      */
     public MICAPS3DataInfo() {
         this.setMissingValue(9999.0);
+        this.setDataType(MeteoDataType.MICAPS_3);
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">

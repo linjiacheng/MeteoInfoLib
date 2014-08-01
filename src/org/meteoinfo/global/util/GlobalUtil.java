@@ -223,17 +223,18 @@ public class GlobalUtil {
      * @param projFile Project file path
      * @return Relative path
      */
-    public static String getRelativePath(String fileName, String projFile) {
+    public static String getRelativePath(String fileName, String projFile) throws IOException {
         String RelativePath = "";
         File aFile = new File(fileName);
         File pFile = new File(projFile);
+        fileName = aFile.getCanonicalPath();
 
 
         if (!getPathRoot(aFile).toLowerCase().equals(getPathRoot(pFile).toLowerCase())) {
             RelativePath = fileName;
         } else {
             List<String> aList = new ArrayList<String>();
-            aList.add(aFile.getAbsolutePath());
+            aList.add(fileName);
             do {
                 aList.add("");
                 File tempFile = new File(aList.get(aList.size() - 2));
@@ -245,7 +246,7 @@ public class GlobalUtil {
             } while (!"".equals(aList.get(aList.size() - 1)));
 
             List<String> bList = new ArrayList<String>();
-            bList.add(pFile.getAbsolutePath());
+            bList.add(pFile.getCanonicalPath());
             do {
                 bList.add("");
                 File tempFile = new File(bList.get(bList.size() - 2));

@@ -59,6 +59,7 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
+import org.meteoinfo.global.table.DataColumnCollection;
 import org.meteoinfo.global.table.DataTable;
 import org.meteoinfo.legend.LegendManage;
 import org.meteoinfo.legend.LegendScheme;
@@ -652,6 +653,20 @@ public class VectorLayer extends MapLayer {
         }
         return FNList;
     }
+    
+    /**
+     * Get fields
+     * @return Fields
+     */
+    public List<Field> getFields(){
+        DataColumnCollection cols = _attributeTable.getTable().getColumns();
+        List<Field> fields = new ArrayList<Field>();
+        for (DataColumn col : cols){
+            fields.add(new Field(col));
+        }
+        
+        return fields;
+    }
 
     /**
      * Get field by index
@@ -671,6 +686,24 @@ public class VectorLayer extends MapLayer {
      */
     public Field getField(String fieldName) {
         return (Field) _attributeTable.getTable().getColumns().get(fieldName);
+    }
+
+    /**
+     * Get field index by name
+     *
+     * @param fieldName The field name
+     * @return Field index
+     */
+    public int getFieldIdxByName(String fieldName) {
+        int fieldIdx = -1;
+        for (int i = 0; i < this.getFieldNumber(); i++) {
+            if (_attributeTable.getTable().getColumns().get(i).getColumnName().equals(fieldName)) {
+                fieldIdx = i;
+                break;
+            }
+        }
+
+        return fieldIdx;
     }
 
     /**
@@ -718,7 +751,7 @@ public class VectorLayer extends MapLayer {
     public void editAddField(String fieldName, DataTypes fieldType) {
         Field aField = new Field(fieldName, fieldType);
         editAddField(aField);
-    }
+    }        
 
     private void insertRecord(int position) throws Exception {
         DataRow aDR = _attributeTable.getTable().newRow();

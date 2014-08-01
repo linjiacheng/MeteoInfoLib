@@ -547,15 +547,14 @@ public class WebMapLayer extends MapLayer {
 //                        }
                 } else if (tile.isLoaded()) {
                     g.drawImage(tile.getImage(), ox, oy, null);
-                } else {
-                    //int imageX = (getTileFactory().getTileSize(zoom) - getLoadingImage().getWidth(null)) / 2;
-                    //int imageY = (getTileFactory().getTileSize(zoom) - getLoadingImage().getHeight(null)) / 2;
-                    int imageX = (getTileFactory().getTileSize(zoom) - getLoadingImage().getWidth(null)) / 2;
-                    int imageY = (getTileFactory().getTileSize(zoom) - getLoadingImage().getHeight(null)) / 2;
-                    g.setColor(Color.GRAY);
-                    g.fillRect(ox, oy, size, size);
-                    g.drawImage(getLoadingImage(), ox + imageX, oy + imageY, null);
-                }
+                } 
+//                  else {
+//                    int imageX = (getTileFactory().getTileSize(zoom) - getLoadingImage().getWidth(null)) / 2;
+//                    int imageY = (getTileFactory().getTileSize(zoom) - getLoadingImage().getHeight(null)) / 2;
+//                    g.setColor(Color.GRAY);
+//                    g.fillRect(ox, oy, size, size);
+//                    g.drawImage(getLoadingImage(), ox + imageX, oy + imageY, null);
+//                }
                 if (isDrawTileBorders()) {
 
                     g.setColor(Color.black);

@@ -1405,6 +1405,130 @@ public class GridData {
         return iValue;
     }
     // </editor-fold>
+    // <editor-fold desc="Gaussian grid">
+
+    /**
+     * Interpolate grid data to a station point
+     *
+     * @param x X coordinate of the station
+     * @param y Y coordinate of the station
+     * @return Interpolated value
+     */
+    public double toStation_Gaussian(double x, double y) {
+        double iValue = missingValue;
+        double xmin = this.getXMin();
+        double xmax = this.getXMax();
+        double ymin = this.getYMin();
+        double ymax = this.getYMax();
+        if (x < xmin || x > xmax || y < ymin || y > ymax) {
+            return iValue;
+        }
+
+        //Get x/y index
+        double xdelta = this.getXDelt();
+        int xIdx = (int) ((x - xmin) / xdelta);
+        int yIdx = 0;
+        int i;
+        int xnum = this.getXNum();
+        int ynum = this.getYNum();
+
+        if (xIdx == xnum - 1) {
+            xIdx = xnum - 2;
+        }
+
+        for (i = 0; i < ynum - 1; i++) {
+            if (y >= yArray[i] && y <= yArray[i + 1]) {
+                yIdx = i;
+                break;
+            }
+        }
+        if (yIdx == ynum - 1) {
+            yIdx = ynum - 2;
+        }
+
+        int i1 = yIdx;
+        int j1 = xIdx;
+        int i2 = i1 + 1;
+        int j2 = j1 + 1;
+        double a = data[i1][j1];
+        double b = data[i1][j2];
+        double c = data[i2][j1];
+        double d = data[i2][j2];
+        List<Double> dList = new ArrayList<Double>();
+        if (a != missingValue) {
+            dList.add(a);
+        }
+        if (b != missingValue) {
+            dList.add(b);
+        }
+        if (c != missingValue) {
+            dList.add(c);
+        }
+        if (d != missingValue) {
+            dList.add(d);
+        }
+
+        if (dList.isEmpty()) {
+            return iValue;
+        } else if (dList.size() == 1) {
+            iValue = dList.get(0);
+        } else if (dList.size() <= 3) {
+            double aSum = 0;
+            for (double dd : dList) {
+                aSum += dd;
+            }
+            iValue = aSum / dList.size();
+        } else {
+            double ydelta = yArray[i2] - yArray[i1];
+            double x1val = a + (c - a) * (y - yArray[i1]) / ydelta;
+            double x2val = b + (d - b) * (y - yArray[i1]) / ydelta;
+            iValue = x1val + (x2val - x1val) * (x - xArray[j1]) / xdelta;
+        }
+
+        return iValue;
+    }
+
+    /**
+     * Convert Gassian grid to lat/lon grid
+     */
+    public void gassianToLatLon() {
+        double ymin = this.getYMin();
+        double ymax = this.getYMax();
+        int xnum = this.getXNum();
+        int ynum = this.getYNum();
+        double delta = (ymax - ymin) / (ynum - 1);
+        double[] newY = new double[ynum];
+        for (int i = 0; i < ynum; i++) {
+            newY[i] = ymin + i * delta;
+        }
+
+        double[][] newData = new double[ynum][xnum];
+        for (int i = 0; i < ynum; i++) {
+            for (int j = 0; j < xnum; j++) {
+                newData[i][j] = toStation_Gaussian(xArray[j], newY[i]);
+            }
+        }
+
+        this.yArray = newY;
+        this.data = newData;
+    }
+
+    /**
+     * Convert Gassian grid to lat/lon grid - only convert Y coordinate
+     */
+    public void GassianToLatLon_Simple() {
+        double ymin = this.getYMin();
+        double ymax = this.getYMax();
+        int ynum = this.getYNum();
+        double delta = (ymax - ymin) / (ynum - 1);
+        double[] newY = new double[ynum];
+        for (int i = 0; i < ynum; i++) {
+            newY[i] = ymin + i * delta;
+        }
+
+        this.yArray = newY;
+    }
+    // </editor-fold>
     // <editor-fold desc="Others">
 
     /**
@@ -1495,7 +1619,7 @@ public class GridData {
                 yidx = (int) ((y - this.getBorderYMin()) / this.getYDelt());
             }
         }
-        if (xidx >= this.getXNum() || yidx >= this.getYNum()){
+        if (xidx >= this.getXNum() || yidx >= this.getYNum()) {
             xidx = -1;
             yidx = -1;
         }

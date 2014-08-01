@@ -31,15 +31,16 @@ public abstract class DataInfo {
     private String _fileName;
     private List<Variable> _variables = new ArrayList<Variable>();
     private List<Dimension> _dimensions = new ArrayList<Dimension>();
-    private Dimension _tDim = new Dimension(DimensionType.T);   
-    private Dimension _xDim = new Dimension(DimensionType.X);
-    private Dimension _yDim = new Dimension(DimensionType.Y);
-    private Dimension _zDim = new Dimension(DimensionType.Z);    
+    private Dimension _tDim = null;   
+    private Dimension _xDim = null;
+    private Dimension _yDim = null;
+    private Dimension _zDim = null;    
     private boolean _xReverse = false;
     private boolean _yReverse = false;
     private boolean _isGlobal = false;
     private double _missingValue = -9999.0;
     private ProjectionInfo _projInfo = KnownCoordinateSystems.geographic.world.WGS1984;
+    private MeteoDataType dataType;
     // </editor-fold>
     // <editor-fold desc="Constructor">
     // </editor-fold>
@@ -335,6 +336,22 @@ public abstract class DataInfo {
      */
     public void setProjectionInfo(ProjectionInfo projInfo){
         _projInfo = projInfo;
+    }
+    
+    /**
+     * Get data type
+     * @return The data type
+     */
+    public MeteoDataType getDataType(){
+        return dataType;
+    }
+    
+    /**
+     * Set data type
+     * @param value The data type
+     */
+    public void setDataType(MeteoDataType value){
+        dataType = value;
     }
     // </editor-fold>
     // <editor-fold desc="Methods">

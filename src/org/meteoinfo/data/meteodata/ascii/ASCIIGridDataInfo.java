@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.meteoinfo.data.meteodata.MeteoDataType;
 
 /**
  *
@@ -38,6 +39,12 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
     // <editor-fold desc="Variables">
     // </editor-fold>
     // <editor-fold desc="Constructor">
+    /**
+     * Constructor
+     */
+    public ASCIIGridDataInfo(){
+        this.setDataType(MeteoDataType.ASCII_Grid);
+    }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
     // </editor-fold>

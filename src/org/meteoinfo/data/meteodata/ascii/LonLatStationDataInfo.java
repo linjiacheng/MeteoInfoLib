@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import org.meteoinfo.data.meteodata.MeteoDataType;
 
 /**
  *
@@ -45,6 +46,12 @@ public class LonLatStationDataInfo extends DataInfo implements IStationDataInfo 
     private List<String> _fields = new ArrayList<String>();
     // </editor-fold>
     // <editor-fold desc="Constructor">
+    /**
+     * Constructor
+     */
+    public LonLatStationDataInfo(){
+        this.setDataType(MeteoDataType.LonLatStation);
+    }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
     // </editor-fold>

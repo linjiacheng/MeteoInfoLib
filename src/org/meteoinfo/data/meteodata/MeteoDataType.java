@@ -120,4 +120,5 @@ public enum MeteoDataType {
         HRIT,
         MM5,
         MM5IM,
+        BIL
 }

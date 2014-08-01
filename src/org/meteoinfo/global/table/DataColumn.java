@@ -186,6 +186,20 @@ public class DataColumn {
      * @param Value
      */
     public Object convertTo(Object value) {
+        switch (this.dataType){
+            case Integer:
+                if (!(value instanceof Integer))
+                    return Integer.valueOf(value.toString());
+                break;
+            case Double:
+                if (!(value instanceof Double))
+                    return Double.valueOf(value.toString());
+                break;
+            case Float:
+                if (!(value instanceof Float))
+                    return Float.valueOf(value.toString());
+                break;
+        }
         return value;
     }
 

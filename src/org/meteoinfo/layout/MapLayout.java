@@ -500,8 +500,7 @@ public class MapLayout extends JPanel {
                                 _graphicPoints.add(new PointF(e.getX(), e.getY()));
                                 break;
                             case Feature:
-                                MapLayer aMLayer = _currentLayoutMap.getMapFrame().getMapView().getLayerFromHandle(
-                                        _currentLayoutMap.getMapFrame().getMapView().getSelectedLayer());
+                                MapLayer aMLayer = _currentLayoutMap.getMapFrame().getMapView().getSelectedLayer();
                                 if (aMLayer != null) {
                                     if (aMLayer.getLayerType() == LayerTypes.VectorLayer) {
                                         VectorLayer aLayer = (VectorLayer) aMLayer;
@@ -1019,10 +1018,10 @@ public class MapLayout extends JPanel {
         if (e.getButton() == MouseEvent.BUTTON1) {
             switch (_mouseMode) {
                 case Map_SelectFeatures_Rectangle:
-                    if (_currentLayoutMap.getMapFrame().getMapView().getSelectedLayer() < 0) {
+                    if (_currentLayoutMap.getMapFrame().getMapView().getSelectedLayerHandle() < 0) {
                         return;
                     }
-                    MapLayer aMLayer = _currentLayoutMap.getMapFrame().getMapView().getLayerFromHandle(_currentLayoutMap.getMapFrame().getMapView().getSelectedLayer());
+                    MapLayer aMLayer = _currentLayoutMap.getMapFrame().getMapView().getSelectedLayer();
                     if (aMLayer == null) {
                         return;
                     }
@@ -1226,8 +1225,7 @@ public class MapLayout extends JPanel {
             if (e.getButton() == MouseEvent.BUTTON1) {
                 switch (_mouseMode) {
                     case Map_Identifer:
-                        MapLayer aMLayer = _currentLayoutMap.getMapFrame().getMapView().
-                                getLayerFromHandle(_currentLayoutMap.getMapFrame().getMapView().getSelectedLayer());
+                        MapLayer aMLayer = _currentLayoutMap.getMapFrame().getMapView().getSelectedLayer();
                         if (aMLayer == null) {
                             return;
                         }
@@ -1315,7 +1313,7 @@ public class MapLayout extends JPanel {
                         }
                         break;
                     case Map_SelectFeatures_Rectangle:
-                        aMLayer = _currentLayoutMap.getMapFrame().getMapView().getLayerFromHandle(_currentLayoutMap.getMapFrame().getMapView().getSelectedLayer());
+                        aMLayer = _currentLayoutMap.getMapFrame().getMapView().getSelectedLayer();
                         if (aMLayer == null) {
                             return;
                         }
@@ -1519,7 +1517,7 @@ public class MapLayout extends JPanel {
                                 points.add(new PointD(pXY[0], pXY[1]));
                             }
 
-                            MapLayer aMLayer = _currentLayoutMap.getMapFrame().getMapView().getLayerFromHandle(_currentLayoutMap.getMapFrame().getMapView().getSelectedLayer());
+                            MapLayer aMLayer = _currentLayoutMap.getMapFrame().getMapView().getSelectedLayer();
                             if (aMLayer == null) {
                                 return;
                             }
@@ -2355,7 +2353,7 @@ public class MapLayout extends JPanel {
 
         if (this._currentLayoutMap != null) {
             if (this._currentLayoutMap.getMapFrame().getMapView().isDrawIdentiferShape()) {
-                int selLayerHandle = this._currentLayoutMap.getMapFrame().getMapView().getSelectedLayer();
+                int selLayerHandle = this._currentLayoutMap.getMapFrame().getMapView().getSelectedLayerHandle();
                 if (selLayerHandle >= 0) {
                     MapLayer aLayer = this._currentLayoutMap.getMapFrame().getMapView().getLayerFromHandle(selLayerHandle);
                     if (aLayer.getLayerType() == LayerTypes.VectorLayer) {

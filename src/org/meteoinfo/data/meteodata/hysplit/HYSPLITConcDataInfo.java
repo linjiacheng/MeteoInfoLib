@@ -31,6 +31,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.meteoinfo.data.meteodata.MeteoDataType;
 
 /**
  *
@@ -43,6 +44,12 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
     private int _loc_num;
     // </editor-fold>
     // <editor-fold desc="Constructor">
+    /**
+     * Constructor
+     */
+    public HYSPLITConcDataInfo(){
+        this.setDataType(MeteoDataType.HYSPLIT_Conc);
+    }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
     // </editor-fold>

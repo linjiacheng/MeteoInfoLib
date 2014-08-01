@@ -33,6 +33,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.meteoinfo.data.meteodata.MeteoDataType;
 
 /**
  *
@@ -44,6 +45,12 @@ public class HYSPLITPartDataInfo extends DataInfo implements IStationDataInfo {
     private List<List<Integer>> _parameters = new ArrayList<List<Integer>>();
     // </editor-fold>
     // <editor-fold desc="Constructor">
+    /**
+     * Constructor
+     */
+    public HYSPLITPartDataInfo(){
+        this.setDataType(MeteoDataType.HYSPLIT_Particle);
+    }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
     // </editor-fold>

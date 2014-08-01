@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.meteoinfo.data.StationData;
 import org.meteoinfo.data.meteodata.IStationDataInfo;
+import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.data.meteodata.StationInfoData;
 import org.meteoinfo.data.meteodata.StationModelData;
 import org.meteoinfo.global.Extent;
@@ -174,6 +175,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
         PDEF = new PDEFS();
         //ProjInfo = KnownCoordinateSystems.geographic.world.WGS1984;
         EarthWind = true;
+        this.setDataType(MeteoDataType.GrADS_Grid);
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -348,7 +350,9 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                     errorStr = "The data type is not supported at present!" + System.getProperty("line.separator")
                             + DTYPE;
                     //goto ERROR;
-                }
+                }                
+                if (DTYPE.toUpperCase().equals("STATION"))
+                    this.setDataType(MeteoDataType.GrADS_Station);
             } else if (hStr.equals("OPTIONS")) {
                 for (i = 1; i < dataArray.length; i++) {
                     String oStr = dataArray[i].toLowerCase();
@@ -1001,8 +1005,15 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
         if (DTYPE.toUpperCase().equals("STATION")) {
             dataInfo += System.getProperty("line.separator") + "Tsize = " + String.valueOf(TDEF.getTimeNum());
         } else {
-            dataInfo += System.getProperty("line.separator") + "Xsize = " + String.valueOf(XDEF.XNum)
-                    + "  Ysize = " + String.valueOf(YDEF.YNum) + "  Zsize = " + String.valueOf(ZDEF.ZNum)
+            Dimension xdim = this.getXDimension();
+            dataInfo += System.getProperty("line.separator") + "X Dimension: Xmin = " + String.valueOf(xdim.getMinValue())
+                    + "; Xmax = " + String.valueOf(xdim.getMaxValue()) + "; Xsize = "
+                    + String.valueOf(xdim.getDimLength()) + "; Xdelta = " + String.valueOf(xdim.getDeltaValue());
+            Dimension ydim = this.getYDimension();
+            dataInfo += System.getProperty("line.separator") + "Y Dimension: Ymin = " + String.valueOf(ydim.getMinValue())
+                    + "; Ymax = " + String.valueOf(ydim.getMaxValue()) + "; Ysize = "
+                    + String.valueOf(ydim.getDimLength()) + "; Ydelta = " + String.valueOf(ydim.getDeltaValue());
+            dataInfo += System.getProperty("line.separator") + "Zsize = " + String.valueOf(ZDEF.ZNum)
                     + "  Tsize = " + String.valueOf(TDEF.getTimeNum());
         }
         dataInfo += System.getProperty("line.separator") + "Number of Variables = " + String.valueOf(VARDEF.getVNum());

@@ -20,6 +20,7 @@ import org.meteoinfo.data.meteodata.DataInfo;
 import org.meteoinfo.data.meteodata.Dimension;
 import org.meteoinfo.data.meteodata.DimensionType;
 import org.meteoinfo.data.meteodata.IGridDataInfo;
+import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.data.meteodata.Variable;
 import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.util.GlobalUtil;
@@ -37,6 +38,12 @@ public class MM5IMDataInfo extends DataInfo implements IGridDataInfo {
     private List<DataHead> _dataHeads = new ArrayList<DataHead>();
     // </editor-fold>
     // <editor-fold desc="Constructor">
+    /**
+     * Constructor
+     */
+    public MM5IMDataInfo(){
+        this.setDataType(MeteoDataType.MM5IM);
+    }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
     // </editor-fold>

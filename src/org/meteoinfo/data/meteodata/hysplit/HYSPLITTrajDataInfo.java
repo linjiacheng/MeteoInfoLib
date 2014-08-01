@@ -36,6 +36,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.layer.LayerDrawType;
 import org.meteoinfo.layer.VectorLayer;
 import org.meteoinfo.legend.LegendManage;
@@ -91,7 +92,11 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
+    /**
+     * Constructor
+     */
     public HYSPLITTrajDataInfo() {
+        this.setDataType(MeteoDataType.HYSPLIT_Traj);
         initVariables();
     }
 

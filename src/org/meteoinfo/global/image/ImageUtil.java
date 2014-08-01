@@ -34,10 +34,11 @@ public class ImageUtil {
      * Create gif animator file from image files
      *
      * @param inImageFiles Input image files
-     * @param outGifFile Output gif files
+     * @param outGifFile Output gif file
      * @param delay Delay time in milliseconds between each frame
+     * @param repeat Repeat times, 0 means unlimite repeat
      */
-    public static void createGifAnimator(List<String> inImageFiles, String outGifFile, int delay) {
+    public static void createGifAnimator(List<String> inImageFiles, String outGifFile, int delay, int repeat) {
         try {
             AnimatedGifEncoder e = new AnimatedGifEncoder();
             e.setRepeat(0);
@@ -45,6 +46,39 @@ public class ImageUtil {
             e.start(outGifFile);
             for (String infn : inImageFiles){
                 e.addFrame(ImageIO.read(new File(infn)));
+            }
+            e.finish();
+        } catch (Exception e) {
+            System.out.println("Create gif animator failed:");
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Create gif animator file from image files
+     *
+     * @param inImageFiles Input image files
+     * @param outGifFile Output gif file
+     * @param delay Delay time in milliseconds between each frame
+     */
+    public static void createGifAnimator(List<String> inImageFiles, String outGifFile, int delay) {
+        createGifAnimator(inImageFiles, outGifFile, delay, 0);
+    }
+    
+    /**
+     * Create gif animator file from image files
+     * @param infiles Input image files
+     * @param outfile Output gif file
+     * @param delay Delay time in milliseconds between each frame
+     */
+    public static void createGifAnimator(File[] infiles, File outfile, int delay) {
+        try {
+            AnimatedGifEncoder e = new AnimatedGifEncoder();
+            e.setRepeat(0);
+            e.setDelay(delay);
+            e.start(outfile.getCanonicalPath());
+            for (File inf : infiles){
+                e.addFrame(ImageIO.read(inf));
             }
             e.finish();
         } catch (Exception e) {

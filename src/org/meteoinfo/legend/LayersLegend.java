@@ -1280,9 +1280,9 @@ public class LayersLegend extends JPanel {
         aNode.setSelected(true);
         MapFrame aMF = getMapFrame(aNode);
         if (aNode.getNodeType() == NodeTypes.LayerNode) {
-            aMF.getMapView().setSelectedLayer(((LayerNode) aNode).getLayerHandle());
+            aMF.getMapView().setSelectedLayerHandle(((LayerNode) aNode).getLayerHandle());
         } else {
-            aMF.getMapView().setSelectedLayer(-1);
+            aMF.getMapView().setSelectedLayerHandle(-1);
         }
     }
     //</editor-fold>  

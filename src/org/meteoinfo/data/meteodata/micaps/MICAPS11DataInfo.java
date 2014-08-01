@@ -31,6 +31,7 @@ import org.meteoinfo.data.meteodata.DataInfo;
 import org.meteoinfo.data.meteodata.Dimension;
 import org.meteoinfo.data.meteodata.DimensionType;
 import org.meteoinfo.data.meteodata.IGridDataInfo;
+import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.data.meteodata.Variable;
 import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.MIMath;
@@ -56,6 +57,7 @@ public class MICAPS11DataInfo extends DataInfo implements IGridDataInfo {
      * Constructor
      */
     public MICAPS11DataInfo() {
+        this.setDataType(MeteoDataType.MICAPS_11);
         this.setMissingValue(9999.0);
     }
     // </editor-fold>

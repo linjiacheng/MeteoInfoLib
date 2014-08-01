@@ -33,6 +33,20 @@ public class Field extends DataColumn {
 
     /**
      * Constructor
+     * @param fName Field name
+     * @param type Data type
+     * @param fLen Field length
+     * @param fNumDec Field decimal number
+     */
+    public Field(String fName, DataTypes type, int fLen, int fNumDec){
+        this.setColumnName(fName);
+        this.setDataType(type);
+        this.fieldLen = fLen;
+        this.fieldNumDec = fNumDec;
+    }
+    
+    /**
+     * Constructor
      */
     public Field(String fName, DataTypes type) {
         this.setColumnName(fName);
@@ -90,7 +104,7 @@ public class Field extends DataColumn {
                 this.setDataType(DataTypes.Float);
                 break;
             case 'N':
-                if (fNumDec == 0 && fLen <= 8){
+                if (fNumDec == 0 && fLen <= 11){
                     this.setDataType(DataTypes.Integer);
                 }
                 else

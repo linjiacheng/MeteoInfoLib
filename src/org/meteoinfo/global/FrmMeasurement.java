@@ -84,6 +84,7 @@ public class FrmMeasurement extends javax.swing.JDialog {
         jToolBar1.setRollover(true);
 
         jButton_Feature.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/meteoinfo/resources/TSB_Feature.Image.png"))); // NOI18N
+        jButton_Feature.setToolTipText("Feature");
         jButton_Feature.setFocusable(false);
         jButton_Feature.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         jButton_Feature.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -95,6 +96,7 @@ public class FrmMeasurement extends javax.swing.JDialog {
         jToolBar1.add(jButton_Feature);
 
         jButton_Distance.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/meteoinfo/resources/TSB_Distance.Image.png"))); // NOI18N
+        jButton_Distance.setToolTipText("Distance");
         jButton_Distance.setFocusable(false);
         jButton_Distance.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         jButton_Distance.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -106,6 +108,7 @@ public class FrmMeasurement extends javax.swing.JDialog {
         jToolBar1.add(jButton_Distance);
 
         jButton_Area.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/meteoinfo/resources/TSB_Area.Image.png"))); // NOI18N
+        jButton_Area.setToolTipText("Area");
         jButton_Area.setFocusable(false);
         jButton_Area.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         jButton_Area.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);

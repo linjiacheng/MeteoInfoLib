@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.meteoinfo.data.meteodata.MeteoDataType;
 
 /**
  *
@@ -36,6 +37,12 @@ public class SurferGridDataInfo extends DataInfo implements IGridDataInfo {
     // <editor-fold desc="Variables">
     // </editor-fold>
     // <editor-fold desc="Constructor">
+    /**
+     * Constructor
+     */
+    public SurferGridDataInfo(){
+        this.setDataType(MeteoDataType.Sufer_Grid);
+    }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
     // </editor-fold>

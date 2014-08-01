@@ -37,6 +37,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.projection.proj4j.proj.Projection;
 import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
@@ -130,6 +131,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         missingValue = -9999;
         isGlobal = false;
         projInfo = KnownCoordinateSystems.geographic.world.WGS1984;
+        this.setDataType(MeteoDataType.ARL_Grid);
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">

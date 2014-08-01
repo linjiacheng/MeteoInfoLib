@@ -29,6 +29,7 @@ import org.meteoinfo.data.meteodata.DataInfo;
 import org.meteoinfo.data.meteodata.Dimension;
 import org.meteoinfo.data.meteodata.DimensionType;
 import org.meteoinfo.data.meteodata.IGridDataInfo;
+import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.data.meteodata.Variable;
 import org.meteoinfo.global.DataConvert;
 
@@ -51,6 +52,9 @@ public class BILDataInfo extends DataInfo implements IGridDataInfo {
     private int _totalrowbytes = 0;
     // </editor-fold>
     // <editor-fold desc="Constructor">
+    public BILDataInfo(){
+        this.setDataType(MeteoDataType.BIL);
+    }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
     // </editor-fold>

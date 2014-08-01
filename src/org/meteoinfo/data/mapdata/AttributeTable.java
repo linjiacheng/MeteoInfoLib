@@ -32,6 +32,7 @@ import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -656,8 +657,6 @@ public final class AttributeTable implements Cloneable {
                 switch (currentField.getTypeCharacter()) {
                     case 'C':
                     case 'c':
-                    case 'D': //Added by [Jon Aquino]
-                    //case 'L': moved to the end by mmichaud
                     case 'M':
                     case 'G':
                         //chars
@@ -671,6 +670,12 @@ public final class AttributeTable implements Cloneable {
                         tmps.setLength(currentField.getLength());
                         //patch from Hisaji Ono for Double byte characters
                         _writer.write(tmps.toString().getBytes(Charset.forName("GB2312")), 0, currentField.getLength());  // [Matthias Scholz 04.Sept.2010] Charset added
+                        break;
+                    case 'D':
+                        //Date
+                        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+                        String ds = format.format(columnValue);
+                        _writer.write(ds.getBytes(), 0, ds.length());
                         break;
                     case 'N':
                     case 'n':

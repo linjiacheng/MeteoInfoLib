@@ -728,6 +728,12 @@ public class FrmLayerProperty extends javax.swing.JDialog {
             } else if (fext.equals("lgs")) {
                 try {
                     _legendScheme.importFromXMLFile(aFile.getAbsolutePath());
+                    if (this._mapLayer.getLayerType() == LayerTypes.VectorLayer){
+                        VectorLayer layer = (VectorLayer)this._mapLayer;
+                        if (layer.getField(_legendScheme.getFieldName()) == null){
+                            _legendScheme.setFieldName(this.jComboBox_Field.getSelectedItem().toString());
+                        }
+                    }
                 } catch (ParserConfigurationException ex) {
                     Logger.getLogger(FrmLayerProperty.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (SAXException ex) {

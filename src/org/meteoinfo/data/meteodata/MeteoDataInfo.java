@@ -57,11 +57,7 @@ public class MeteoDataInfo {
     private int _timeIdx;
     private int _levelIdx;
     private int _latIdx;
-    private int _lonIdx;
-    /// <summary>
-    /// Meteological data type
-    /// </summary>
-    private MeteoDataType _dataType;
+    private int _lonIdx;    
     /// <summary>
     /// Is Lont/Lat
     /// </summary>
@@ -121,6 +117,7 @@ public class MeteoDataInfo {
      */
     public void setDataInfo(DataInfo value) {
         _dataInfo = value;
+        _infoText = _dataInfo.generateInfoText();
     }
 
     /**
@@ -138,16 +135,7 @@ public class MeteoDataInfo {
      * @return Meteo data type
      */
     public MeteoDataType getDataType() {
-        return this._dataType;
-    }
-
-    /**
-     * Set meteo data type
-     *
-     * @param type Meteo data type
-     */
-    public void setDataType(MeteoDataType type) {
-        _dataType = type;
+        return this._dataInfo.getDataType();
     }
 
     /**
@@ -301,7 +289,7 @@ public class MeteoDataInfo {
      */
     public boolean isGridData() {
         
-        switch (_dataType) {
+        switch (this.getDataType()) {
             case ARL_Grid:
             case ASCII_Grid:
             case GrADS_Grid:
@@ -346,7 +334,7 @@ public class MeteoDataInfo {
      * @return Boolean
      */
     public boolean isStationData() {
-        switch (_dataType) {
+        switch (this.getDataType()) {
             case GrADS_Station:
             case ISH:
             case METAR:
@@ -378,7 +366,7 @@ public class MeteoDataInfo {
      * @return Boolean
      */
     public boolean isTrajData() {
-        switch (_dataType) {
+        switch (this.getDataType()) {
             case HYSPLIT_Traj:
             case MICAPS_7:
                 return true;
@@ -393,7 +381,7 @@ public class MeteoDataInfo {
      * @return Boolean
      */
     public boolean isSWATHData() {
-        switch (_dataType) {
+        switch (this.getDataType()) {
             case NetCDF:
                 if (((NetCDFDataInfo) _dataInfo).isSWATH()) {
                     return true;
@@ -445,15 +433,12 @@ public class MeteoDataInfo {
         _infoText = _dataInfo.generateInfoText();
         GrADSDataInfo aDataInfo = (GrADSDataInfo) _dataInfo;
         if (aDataInfo.DTYPE.equals("Gridded")) {
-            _dataType = MeteoDataType.GrADS_Grid;
             yReserve = aDataInfo.OPTIONS.yrev;
             
             if (!aDataInfo.isLatLon) {
                 IsLonLat = false;
                 EarthWind = aDataInfo.EarthWind;
             }
-        } else {
-            _dataType = MeteoDataType.GrADS_Station;
         }
     }
 
@@ -465,7 +450,6 @@ public class MeteoDataInfo {
     public void openARLData(String aFile) {
         ARLDataInfo aDataInfo = new ARLDataInfo();
         aDataInfo.readDataInfo(aFile);
-        _dataType = MeteoDataType.ARL_Grid;
         _dataInfo = aDataInfo;
         IsLonLat = aDataInfo.isLatLon;
 
@@ -481,7 +465,6 @@ public class MeteoDataInfo {
     public void openASCIIGridData(String aFile) {
         ASCIIGridDataInfo aDataInfo = new ASCIIGridDataInfo();
         aDataInfo.readDataInfo(aFile);
-        _dataType = MeteoDataType.ARL_Grid;
         _dataInfo = aDataInfo;
         //ProjInfo = aDataInfo.projInfo;
         //IsLonLat = aDataInfo.isLatLon;
@@ -498,7 +481,6 @@ public class MeteoDataInfo {
     public void openHYSPLITConcData(String aFile) {
         HYSPLITConcDataInfo aDataInfo = new HYSPLITConcDataInfo();
         aDataInfo.readDataInfo(aFile);
-        _dataType = MeteoDataType.HYSPLIT_Conc;
         _dataInfo = aDataInfo;
         //ProjInfo = aDataInfo.projInfo;
         //IsLonLat = aDataInfo.isLatLon;
@@ -516,7 +498,6 @@ public class MeteoDataInfo {
         //Read data info                            
         HYSPLITTrajDataInfo aDataInfo = new HYSPLITTrajDataInfo();
         aDataInfo.readDataInfo(aFile);
-        _dataType = MeteoDataType.HYSPLIT_Traj;
         _dataInfo = aDataInfo;
         _infoText = aDataInfo.generateInfoText();
     }
@@ -531,7 +512,6 @@ public class MeteoDataInfo {
             //Read data info                            
             HYSPLITTrajDataInfo aDataInfo = new HYSPLITTrajDataInfo();
             aDataInfo.readDataInfo(trajFiles);
-            _dataType = MeteoDataType.HYSPLIT_Traj;
             _dataInfo = aDataInfo;
             _infoText = aDataInfo.generateInfoText();
         } catch (IOException ex) {
@@ -548,7 +528,6 @@ public class MeteoDataInfo {
         //Read data info                            
         HYSPLITPartDataInfo aDataInfo = new HYSPLITPartDataInfo();
         aDataInfo.readDataInfo(fileName);
-        _dataType = MeteoDataType.HYSPLIT_Particle;
         _dataInfo = aDataInfo;
         _infoText = aDataInfo.generateInfoText();
     }
@@ -561,7 +540,6 @@ public class MeteoDataInfo {
     public void openNetCDFData(String fileName) {
         NetCDFDataInfo aDataInfo = new NetCDFDataInfo();
         aDataInfo.readDataInfo(fileName);
-        _dataType = MeteoDataType.NetCDF;
         _dataInfo = aDataInfo;
         _infoText = aDataInfo.generateInfoText();
     }
@@ -574,7 +552,6 @@ public class MeteoDataInfo {
     public void openLonLatData(String fileName) {
         _dataInfo = new LonLatStationDataInfo();
         _dataInfo.readDataInfo(fileName);
-        _dataType = MeteoDataType.LonLatStation;
         _infoText = _dataInfo.generateInfoText();
     }
 
@@ -586,7 +563,6 @@ public class MeteoDataInfo {
     public void openSurferGridData(String fileName) {
         _dataInfo = new SurferGridDataInfo();
         _dataInfo.readDataInfo(fileName);
-        _dataType = MeteoDataType.Sufer_Grid;
         _infoText = _dataInfo.generateInfoText();
     }
     
@@ -598,7 +574,6 @@ public class MeteoDataInfo {
     public void openMM5Data(String fileName) {
         _dataInfo = new MM5DataInfo();
         _dataInfo.readDataInfo(fileName);
-        _dataType = MeteoDataType.MM5;
         _infoText = _dataInfo.generateInfoText();
     }
     
@@ -610,7 +585,6 @@ public class MeteoDataInfo {
     public void openMM5IMData(String fileName) {
         _dataInfo = new MM5IMDataInfo();
         _dataInfo.readDataInfo(fileName);
-        _dataType = MeteoDataType.MM5IM;
         _infoText = _dataInfo.generateInfoText();
     }
 
@@ -628,7 +602,6 @@ public class MeteoDataInfo {
         switch (mdType) {
             case MICAPS_1:
                 _dataInfo = new MICAPS1DataInfo();
-                _dataType = MeteoDataType.MICAPS_1;
                 _meteoUVSet.setUV(false);
                 _meteoUVSet.setFixUVStr(true);
                 _meteoUVSet.setUStr("WindDirection");
@@ -636,7 +609,6 @@ public class MeteoDataInfo {
                 break;
             case MICAPS_3:
                 _dataInfo = new MICAPS3DataInfo();
-                _dataType = MeteoDataType.MICAPS_3;
                 _meteoUVSet.setUV(false);
                 _meteoUVSet.setFixUVStr(true);
                 _meteoUVSet.setUStr("WindDirection");
@@ -644,19 +616,15 @@ public class MeteoDataInfo {
                 break;
             case MICAPS_4:
                 _dataInfo = new MICAPS4DataInfo();
-                _dataType = MeteoDataType.MICAPS_4;
                 break;
             case MICAPS_7:
                 _dataInfo = new MICAPS7DataInfo();
-                _dataType = MeteoDataType.MICAPS_7;
                 break;
             case MICAPS_11:
                 _dataInfo = new MICAPS11DataInfo();
-                _dataType = MeteoDataType.MICAPS_11;
                 break;
             case MICAPS_13:
                 _dataInfo = new MICAPS13DataInfo();
-                _dataType = MeteoDataType.MICAPS_13;
                 break;
         }
         _dataInfo.readDataInfo(fileName);

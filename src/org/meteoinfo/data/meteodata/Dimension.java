@@ -225,5 +225,29 @@ public class Dimension {
         _dimValue.add(value);
         _dimLength = _dimValue.size();
     }
+    
+    /**
+     * Get minimum dimension value
+     * @return Minimum dimension value
+     */
+    public double getMinValue(){
+        return _dimValue.get(0);
+    }
+    
+    /**
+     * Get maximum dimension value
+     * @return Maximum dimension value
+     */
+    public double getMaxValue(){
+        return _dimValue.get(_dimValue.size() - 1);
+    }
+    
+    /**
+     * Get delta value
+     * @return Delta value
+     */
+    public double getDeltaValue(){
+        return _dimValue.get(1) - _dimValue.get(0);
+    }
     // </editor-fold>
 }

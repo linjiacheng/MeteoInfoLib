@@ -349,6 +349,15 @@ public class MapLayer implements Cloneable {
         
         return aLayer;
     }
+    
+    /**
+     * To string
+     * @return The layer name string
+     */
+    @Override
+    public String toString(){
+        return this._layerName;
+    }
     // </editor-fold>
 
 }

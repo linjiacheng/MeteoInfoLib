@@ -30,6 +30,7 @@ import org.meteoinfo.data.mapdata.Field;
 import org.meteoinfo.data.meteodata.DataInfo;
 import org.meteoinfo.data.meteodata.Dimension;
 import org.meteoinfo.data.meteodata.DimensionType;
+import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.data.meteodata.TrajDataInfo;
 import org.meteoinfo.data.meteodata.Variable;
 import org.meteoinfo.data.meteodata.hysplit.TrajectoryInfo;
@@ -93,6 +94,7 @@ public class MICAPS7DataInfo extends DataInfo implements TrajDataInfo {
      * Constructor
      */
     public MICAPS7DataInfo() {
+        this.setDataType(MeteoDataType.MICAPS_7);
         initVariables();
     }
 

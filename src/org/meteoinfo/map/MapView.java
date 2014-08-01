@@ -399,7 +399,7 @@ public class MapView extends JPanel {
      *
      * @return
      */
-    public int getSelectedLayer() {
+    public int getSelectedLayerHandle() {
         return this._selectedLayer;
     }
 
@@ -408,7 +408,7 @@ public class MapView extends JPanel {
      *
      * @param handle
      */
-    public void setSelectedLayer(int handle) {
+    public void setSelectedLayerHandle(int handle) {
         this._selectedLayer = handle;
     }
 
@@ -2841,6 +2841,14 @@ public class MapView extends JPanel {
 
         return handle;
     }
+    
+    /**
+     * Get selected layer
+     * @return Selected layer
+     */
+    public MapLayer getSelectedLayer(){
+        return this.getLayerFromHandle(this._selectedLayer);
+    }
 
     /**
      * Get layers whole extent
@@ -3250,8 +3258,8 @@ public class MapView extends JPanel {
         }
 
         if (this._drawIdentiferShape) {
-            if (this.getSelectedLayer() >= 0) {
-                MapLayer aLayer = this.getLayerFromHandle(this.getSelectedLayer());
+            if (this.getSelectedLayerHandle() >= 0) {
+                MapLayer aLayer = this.getSelectedLayer();
                 if (aLayer != null) {
                     if (aLayer.getLayerType() == LayerTypes.VectorLayer) {
                         VectorLayer vLayer = (VectorLayer) aLayer;
@@ -4769,9 +4777,7 @@ public class MapView extends JPanel {
 //                        }
                 } else if (tile.isLoaded()) {
                     g.drawImage(tile.getImage(), ox, oy, null);
-                } else {
-                    //int imageX = (getTileFactory().getTileSize(zoom) - getLoadingImage().getWidth(null)) / 2;
-                    //int imageY = (getTileFactory().getTileSize(zoom) - getLoadingImage().getHeight(null)) / 2;
+                } else {                    
                     int imageX = (layer.getTileFactory().getTileSize(zoom) - layer.getLoadingImage().getWidth(null)) / 2;
                     int imageY = (layer.getTileFactory().getTileSize(zoom) - layer.getLoadingImage().getHeight(null)) / 2;
                     g.setColor(Color.GRAY);
@@ -7328,7 +7334,11 @@ public class MapView extends JPanel {
 
         Handle.setValue(String.valueOf(aVLayer.getHandle()));
         LayerName.setValue(aVLayer.getLayerName());
-        FileName.setValue(GlobalUtil.getRelativePath(aVLayer.getFileName(), projectFilePath));
+        try {
+            FileName.setValue(GlobalUtil.getRelativePath(aVLayer.getFileName(), projectFilePath));
+        } catch (IOException ex) {
+            Logger.getLogger(MapView.class.getName()).log(Level.SEVERE, null, ex);
+        }
         Visible.setValue(String.valueOf(aVLayer.isVisible()));
         IsMaskout.setValue(String.valueOf(aVLayer.isMaskout()));
         LayerType.setValue(aVLayer.getLayerType().toString());
@@ -7549,7 +7559,11 @@ public class MapView extends JPanel {
 
         Handle.setValue(String.valueOf(aILayer.getHandle()));
         LayerName.setValue(aILayer.getLayerName());
-        FileName.setValue(GlobalUtil.getRelativePath(aILayer.getFileName(), projectFilePath));
+        try {
+            FileName.setValue(GlobalUtil.getRelativePath(aILayer.getFileName(), projectFilePath));
+        } catch (IOException ex) {
+            Logger.getLogger(MapView.class.getName()).log(Level.SEVERE, null, ex);
+        }
         Visible.setValue(String.valueOf(aILayer.isVisible()));
         IsMaskout.setValue(String.valueOf(aILayer.isMaskout()));
         LayerType.setValue(aILayer.getLayerType().toString());
