@@ -1,4 +1,4 @@
-package org.meteoinfo.global.ui;
+package org.meteoinfo.ui;
 
 import java.awt.*;
 import java.awt.event.*;

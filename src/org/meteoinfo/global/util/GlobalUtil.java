@@ -229,8 +229,9 @@ public class GlobalUtil {
         File pFile = new File(projFile);
         fileName = aFile.getCanonicalPath();
 
-
-        if (!getPathRoot(aFile).toLowerCase().equals(getPathRoot(pFile).toLowerCase())) {
+        String layerPathRoot = getPathRoot(aFile);
+        String projPathRoot = getPathRoot(pFile);
+        if (!layerPathRoot.equalsIgnoreCase(projPathRoot)) {
             RelativePath = fileName;
         } else {
             List<String> aList = new ArrayList<String>();
@@ -250,7 +251,7 @@ public class GlobalUtil {
             do {
                 bList.add("");
                 File tempFile = new File(bList.get(bList.size() - 2));
-                if (tempFile.exists() && tempFile.getParent() != null) {
+                if (tempFile.getParent() != null) {
                     bList.set(bList.size() - 1, tempFile.getParent());
                 } else {
                     break;
@@ -493,6 +494,34 @@ public class GlobalUtil {
         }
 
         return fn;
+    }
+    
+    /**
+     * Get separator
+     * @param line The string line
+     * @return Separator string
+     */
+    public static String getSeparator(String line){
+        String separator = null;
+        if (line.contains(","))
+            separator = ",";
+        else if (line.contains(";"))
+            separator = ";";
+        
+        return separator;
+    }
+    
+    /**
+     * Split a string line by separator
+     * @param line The string line
+     * @param separator The separator
+     * @return Splitted string array
+     */
+    public static String[] split(String line, String separator){
+        if (separator == null)
+            return line.split("\\s+");
+        else
+            return line.split(separator);
     }
     // </editor-fold>
 }

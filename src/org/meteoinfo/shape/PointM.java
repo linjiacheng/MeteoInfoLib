@@ -19,13 +19,8 @@ import org.meteoinfo.global.PointD;
  *
  * @author yaqiang
  */
-public class PointZ extends PointD {
+public class PointM extends PointD {
     // <editor-fold desc="Variables">
-
-    /**
-     * Z coordinate
-     */
-    public double Z;
     /**
      * Measure
      */
@@ -36,7 +31,7 @@ public class PointZ extends PointD {
     /**
      * Constructor
      */
-    public PointZ() {
+    public PointM() {
     }
 
     /**
@@ -44,13 +39,11 @@ public class PointZ extends PointD {
      *
      * @param x X
      * @param y Y
-     * @param z Z
      * @param m M
      */
-    public PointZ(double x, double y, double z, double m) {
+    public PointM(double x, double y, double m) {
         X = x;
         Y = y;
-        Z = z;
         M = m;
     }
     // </editor-fold>

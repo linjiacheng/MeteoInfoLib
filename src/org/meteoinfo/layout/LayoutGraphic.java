@@ -260,7 +260,7 @@ public class LayoutGraphic extends LayoutElement {
                     FontMetrics metrics = image.getGraphics().getFontMetrics(aLB.getFont());
                     Dimension aSF = new Dimension(metrics.stringWidth(aLB.getText()), metrics.getHeight());
                     this.setLeft(this.getLeft() - (int) (aSF.width / 2));
-                    this.setTop(this.getTop() - (int) (aSF.height / 2));
+                    this.setTop(this.getTop() - (int) (aSF.height * 2 / 3));
                     this.setWidth((int) Math.ceil(aSF.width));
                     this.setHeight((int) Math.ceil(aSF.getHeight()));
                 }
@@ -465,7 +465,10 @@ public class LayoutGraphic extends LayoutElement {
             double minY = aExtent.minY;
             if (_graphic.getShape().getShapeType() == ShapeTypes.Point) {
                 minX -= this.getWidth() / 2;
-                minY -= this.getHeight() / 2;
+                if (_graphic.getLegend().getBreakType() == BreakTypes.PointBreak)
+                    minY -= this.getHeight() / 2;
+                else if (_graphic.getLegend().getBreakType() == BreakTypes.LabelBreak)
+                    minY -= this.getHeight() * 2 / 3;
             }
             int shiftX = this.getLeft() - (int) minX;
             int shiftY = this.getTop() - (int) minY;

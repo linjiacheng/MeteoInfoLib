@@ -121,6 +121,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -2215,12 +2216,17 @@ public class MapView extends JPanel {
                                 Object value;
                                 if (aLayer.getShapeNum() > 0) {
                                     for (int i = 0; i < aLayer.getFieldNumber(); i++) {
-                                        fieldStr = aLayer.getFieldName(i);
+                                        Field field = aLayer.getField(i);
+                                        fieldStr = field.getColumnName();
                                         value = aLayer.getCellValue(i, shapeIdx);
                                         if (value == null) {
                                             valueStr = "";
                                         } else {
-                                            valueStr = aLayer.getCellValue(i, shapeIdx).toString();
+                                            if (field.getDataType() == DataTypes.Date){
+                                                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                                                valueStr = format.format((Date)value);
+                                            } else                                        
+                                                valueStr = value.toString();
                                         }
                                         tData[i + 1][0] = fieldStr;
                                         tData[i + 1][1] = valueStr;
@@ -3838,6 +3844,7 @@ public class MapView extends JPanel {
                 drawPointLayer(aLayer, g, LonShift);
                 break;
             case Polygon:
+            case PolygonM:
                 drawPolygonLayer(aLayer, g, LonShift);
                 break;
             case Polyline:
@@ -5137,11 +5144,12 @@ public class MapView extends JPanel {
             }
 
             boolean ifDraw = true;
+            Rectangle rect = this.getGraphicRectangle(g, aLP, LonShift);
             aExtent = new Extent();
-            aExtent.minX = aPoint.X;
-            aExtent.maxX = aPoint.X + labSize.width;
-            aExtent.minY = aPoint.Y - labSize.height;
-            aExtent.maxY = aPoint.Y;
+            aExtent.minX = rect.x;
+            aExtent.maxX = rect.x + rect.width;
+            aExtent.minY = rect.y;
+            aExtent.maxY = rect.y + rect.height;
             if (aLayer.getLabelSet().isAvoidCollision()) {
                 //Judge extent                                        
                 if (extentList.isEmpty()) {
@@ -7097,7 +7105,7 @@ public class MapView extends JPanel {
                                 break;
                         }
                         aY -= aLB.getYShift();
-                        aY -= labSize.height / 2;
+                        aY -= labSize.height / 3;
                         rect.x = (int) aX;
                         rect.y = (int) aY;
                         rect.width = (int) labSize.width;
@@ -7690,6 +7698,7 @@ public class MapView extends JPanel {
             System.setProperty("user.dir", new File(curDir).getParent());
         }
         aFile = lFile.getAbsolutePath();
+        System.out.println(aFile);
         VectorLayer aLayer = null;
 
         if (new File(aFile).isFile()) {
@@ -7700,7 +7709,9 @@ public class MapView extends JPanel {
             } catch (Exception ex) {
                 Logger.getLogger(MapView.class.getName()).log(Level.SEVERE, null, ex);
             }
-
+            if (aLayer == null)
+                return aLayer;
+            
             try {
                 aLayer.setHandle(Integer.parseInt(aVLayer.getAttributes().getNamedItem("Handle").getNodeValue()));
                 aLayer.setLayerName(aVLayer.getAttributes().getNamedItem("LayerName").getNodeValue());

@@ -431,7 +431,7 @@ public final class AttributeTable implements Cloneable {
                     dBuffer = Arrays.copyOfRange(cBuffer, 6, 8);
                     tempString = new String(dBuffer);
                     int day = Integer.parseInt(tempString);
-                    Calendar cal = new GregorianCalendar(year, month, day);
+                    Calendar cal = new GregorianCalendar(year, month - 1, day);
                     tempObject = cal.getTime();
                     break;
                 case 'F':

@@ -292,10 +292,12 @@ public final class DataTable {
     public List<DataRow> select (String expression){
         SQLExpression e = new SQLExpression(expression);
         List<DataRow> dataRows = new ArrayList<DataRow>();
-
-        for(DataRow row : this.rows)
-          if(e.eval(row.getItemMap()))
+        for (int i = 0; i < this.rows.size(); i++){
+            DataRow row = this.rows.get(i);
+            row.setRowIndex(i);
+            if(e.eval(row.getItemMap()))
               dataRows.add(row);
+        }        
               
         return dataRows;
     }

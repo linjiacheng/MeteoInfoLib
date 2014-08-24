@@ -2927,6 +2927,22 @@ public class MapLayout extends JPanel {
 
         return aLNA;
     }
+    
+    /**
+     * Add a layout chart
+     * 
+     * @param left Left
+     * @param top Top
+     * @return Layout chart
+     */
+    public LayoutChart addChart(int left, int top) {
+        LayoutChart chart = new LayoutChart();
+        chart.setLeft(left);
+        chart.setTop(top);
+        addElement(chart);
+        
+        return chart;
+    }
 
     /**
      * Get layout graphic list

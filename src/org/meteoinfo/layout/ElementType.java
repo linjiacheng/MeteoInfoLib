@@ -24,5 +24,6 @@ public enum ElementType {
     LayoutLegend,
     LayoutGraphic,
     LayoutScaleBar,
-    LayoutNorthArraw
+    LayoutNorthArraw,
+    LayoutChart
 }

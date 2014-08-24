@@ -60,6 +60,10 @@ public class StationData {
     /// Undef data
     /// </summary>
     public double missingValue;
+    /**
+     * Projection information
+     */
+    public ProjectionInfo projInfo = null;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -79,11 +83,12 @@ public class StationData {
      * @param aStData Station data
      */
     public StationData(StationData aStData) {
+        projInfo = aStData.projInfo;
         stations = aStData.stations;
         dataExtent = aStData.dataExtent;
         missingValue = aStData.missingValue;
         data = new double[aStData.data.length][aStData.data[0].length];
-        for (int i = 0; i < getStNum(); i++) {
+        for (int i = 0; i < aStData.getStNum(); i++) {
             data[i][0] = aStData.data[i][0];
             data[i][1] = aStData.data[i][1];
         }
@@ -153,6 +158,7 @@ public class StationData {
         }
 
         StationData cStData = new StationData();
+        cStData.projInfo = bStData.projInfo;
         String aStid;
         int stIdx;
         double x, y;
@@ -191,6 +197,7 @@ public class StationData {
      */
     public StationData add(double value) {
         StationData cStData = new StationData();
+        cStData.projInfo = this.projInfo;
         String aStid;
         double x, y;
         for (int i = 0; i < stations.size(); i++) {
@@ -760,6 +767,7 @@ public class StationData {
      */
     public StationData maskout(PolygonShape polygonShape) {
         StationData stData = new StationData();
+        stData.projInfo = this.projInfo;
         stData.missingValue = this.missingValue;
         for (int i = 0; i < this.getStNum(); i++) {
             if (GeoComputation.pointInPolygon(polygonShape, new PointD(this.getX(i), this.getY(i)))) {

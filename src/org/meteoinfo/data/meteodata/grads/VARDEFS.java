@@ -59,14 +59,14 @@ public class VARDEFS {
     }
     // </editor-fold>
     // <editor-fold desc="Methods">
+
     /**
      * Add var
+     *
      * @param aVar The var
      */
-        public void addVar(Variable aVar)
-        {
-            _vars.add(aVar);
-        }
-    
+    public void addVar(Variable aVar) {
+        _vars.add(aVar);
+    }
     // </editor-fold>
 }

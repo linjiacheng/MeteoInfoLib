@@ -34,7 +34,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.xml.parsers.ParserConfigurationException;
-import org.meteoinfo.global.ui.CheckBoxListEntry;
+import org.meteoinfo.ui.CheckBoxListEntry;
 import org.meteoinfo.legend.AlignType;
 import org.meteoinfo.legend.ChartTypes;
 import org.xml.sax.SAXException;
@@ -118,7 +118,7 @@ public class FrmLayerProperty extends javax.swing.JDialog {
         jLabel10 = new javax.swing.JLabel();
         jTextField_Thickness = new javax.swing.JTextField();
         jScrollPane2 = new javax.swing.JScrollPane();
-        checkBoxList_Fields = new org.meteoinfo.global.ui.CheckBoxList();
+        checkBoxList_Fields = new org.meteoinfo.ui.JCheckBoxList();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Layer Property");
@@ -1350,7 +1350,7 @@ public class FrmLayerProperty extends javax.swing.JDialog {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private org.meteoinfo.global.ui.CheckBoxList checkBoxList_Fields;
+    private org.meteoinfo.ui.JCheckBoxList checkBoxList_Fields;
     private javax.swing.JButton jButton_AddBreak;
     private javax.swing.JButton jButton_Apply;
     private javax.swing.JButton jButton_Cancel;

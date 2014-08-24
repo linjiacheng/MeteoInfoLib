@@ -504,8 +504,12 @@ public class GridData {
      */
     public StationData toStation(StationData stData) {
         StationData nstData = new StationData(stData);
-        for (int i = 0; i < nstData.getStNum(); i++) {
-            nstData.setValue(i, this.toStation(nstData.getX(i), nstData.getY(i)));
+        if (this.projInfo.equals(stData.projInfo)){
+            for (int i = 0; i < nstData.getStNum(); i++) {
+                nstData.setValue(i, this.toStation(nstData.getX(i), nstData.getY(i)));
+            }
+        } else {
+            nstData = this.project(projInfo, stData.projInfo, stData, ResampleMethods.Bilinear);
         }
 
         return nstData;

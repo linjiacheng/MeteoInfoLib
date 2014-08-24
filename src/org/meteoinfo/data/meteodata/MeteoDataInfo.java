@@ -680,30 +680,44 @@ public class MeteoDataInfo {
             return null;
         }
         
+        GridData gdata = null;
         switch (_dimensionSet) {
             case Lat_Lon:
-                return ((IGridDataInfo) _dataInfo).getGridData_LonLat(_timeIdx, _varIdx, _levelIdx);
+                gdata = ((IGridDataInfo) _dataInfo).getGridData_LonLat(_timeIdx, _varIdx, _levelIdx);
+                break;
             case Time_Lon:
-                return ((IGridDataInfo) _dataInfo).getGridData_TimeLon(_latIdx, _varIdx, _levelIdx);
+                gdata = ((IGridDataInfo) _dataInfo).getGridData_TimeLon(_latIdx, _varIdx, _levelIdx);
+                break;
             case Time_Lat:
-                return ((IGridDataInfo) _dataInfo).getGridData_TimeLat(_lonIdx, _varIdx, _levelIdx);
+                gdata = ((IGridDataInfo) _dataInfo).getGridData_TimeLat(_lonIdx, _varIdx, _levelIdx);
+                break;
             case Level_Lon:
-                return ((IGridDataInfo) _dataInfo).getGridData_LevelLon(_latIdx, _varIdx, _timeIdx);
+                gdata = ((IGridDataInfo) _dataInfo).getGridData_LevelLon(_latIdx, _varIdx, _timeIdx);
+                break;
             case Level_Lat:
-                return ((IGridDataInfo) _dataInfo).getGridData_LevelLat(_lonIdx, _varIdx, _timeIdx);
+                gdata = ((IGridDataInfo) _dataInfo).getGridData_LevelLat(_lonIdx, _varIdx, _timeIdx);
+                break;
             case Level_Time:
-                return ((IGridDataInfo) _dataInfo).getGridData_LevelTime(_latIdx, _varIdx, _lonIdx);
+                gdata = ((IGridDataInfo) _dataInfo).getGridData_LevelTime(_latIdx, _varIdx, _lonIdx);
+                break;
             case Lat:
-                return ((IGridDataInfo) _dataInfo).getGridData_Lat(_timeIdx, _lonIdx, _varIdx, _levelIdx);
+                gdata = ((IGridDataInfo) _dataInfo).getGridData_Lat(_timeIdx, _lonIdx, _varIdx, _levelIdx);
+                break;
             case Level:
-                return ((IGridDataInfo) _dataInfo).getGridData_Level(_lonIdx, _latIdx, _varIdx, _timeIdx);
+                gdata = ((IGridDataInfo) _dataInfo).getGridData_Level(_lonIdx, _latIdx, _varIdx, _timeIdx);
+                break;
             case Lon:
-                return ((IGridDataInfo) _dataInfo).getGridData_Lon(_timeIdx, _latIdx, _varIdx, _levelIdx);
+                gdata = ((IGridDataInfo) _dataInfo).getGridData_Lon(_timeIdx, _latIdx, _varIdx, _levelIdx);
+                break;
             case Time:
-                return ((IGridDataInfo) _dataInfo).getGridData_Time(_lonIdx, _latIdx, _varIdx, _levelIdx);
-            default:
-                return null;
+                gdata = ((IGridDataInfo) _dataInfo).getGridData_Time(_lonIdx, _latIdx, _varIdx, _levelIdx);
+                break;
         }
+        
+        if (gdata != null)
+            gdata.projInfo = this.getProjectionInfo();
+        
+        return gdata;
     }
 
     /**
@@ -720,6 +734,7 @@ public class MeteoDataInfo {
             MathParser mathParser = new MathParser(this);
             try {
                 StationData stationData = (StationData) mathParser.evaluate(varName);
+                stationData.projInfo = this.getProjectionInfo();
                 return stationData;
             } catch (ParseException ex) {
                 Logger.getLogger(MeteoDataInfo.class.getName()).log(Level.SEVERE, null, ex);
@@ -739,6 +754,7 @@ public class MeteoDataInfo {
     public StationData getStationData() {
         if (_varIdx >= 0) {
             StationData stData = ((IStationDataInfo) _dataInfo).getStationData(_timeIdx, _varIdx, _levelIdx);
+            stData.projInfo = this.getProjectionInfo();
             return stData;
         } else {
             return null;

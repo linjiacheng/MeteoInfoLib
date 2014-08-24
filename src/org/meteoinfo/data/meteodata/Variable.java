@@ -614,6 +614,9 @@ public class Variable {
      * @param aDim The dimension
      */
     public void setDimension(Dimension aDim) {
+        if (aDim == null)
+            return;
+        
         if (aDim.getDimType() == DimensionType.Other) {
             _dimensions.add(aDim);
         } else {

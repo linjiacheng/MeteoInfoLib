@@ -74,7 +74,7 @@ public class PolylineZ {
     private List<PointD> getPointDList() {
         List<PointD> pList = new ArrayList<PointD>();
         for (PointZ aP : _pointList) {
-            pList.add(aP.ToPointD());
+            pList.add(aP.toPointD());
         }
 
         return pList;

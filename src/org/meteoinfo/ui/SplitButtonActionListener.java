@@ -1,5 +1,5 @@
 
-package org.meteoinfo.global.ui;
+package org.meteoinfo.ui;
 
 import java.awt.event.ActionEvent;
 import java.util.EventListener;

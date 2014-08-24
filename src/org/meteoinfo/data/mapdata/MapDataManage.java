@@ -48,6 +48,7 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import org.meteoinfo.data.meteodata.bandraster.BILDataInfo;
+import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.table.DataColumn;
 import org.meteoinfo.layer.RasterLayer;
 import org.meteoinfo.legend.LegendScheme;
@@ -158,9 +159,9 @@ public class MapDataManage {
                 continue;
             }
             b = br.readByte();    // Line type: country, river ...
-            lType = b;
+            lType = (short) DataConvert.byte2Int(b);
             b = br.readByte();   // Point number
-            N = b;
+            N = (short) DataConvert.byte2Int(b);
             for (i = 0; i < N; i++) {
                 bytes = new byte[3];
                 br.read(bytes);    //Longitude

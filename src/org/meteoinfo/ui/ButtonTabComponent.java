@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.meteoinfo.global.ui;
+package org.meteoinfo.ui;
 
 import java.awt.BasicStroke;
 import java.awt.Color;

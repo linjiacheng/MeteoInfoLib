@@ -35,6 +35,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.meteoinfo.data.meteodata.MeteoDataType;
+import org.meteoinfo.global.util.GlobalUtil;
 
 /**
  *
@@ -44,6 +45,9 @@ public class LonLatStationDataInfo extends DataInfo implements IStationDataInfo 
     // <editor-fold desc="Variables">
 
     private List<String> _fields = new ArrayList<String>();
+    private String separator = null;
+    //private int lonIdx = 1;
+    //private int latIdx = 2;
     // </editor-fold>
     // <editor-fold desc="Constructor">
     /**
@@ -65,9 +69,10 @@ public class LonLatStationDataInfo extends DataInfo implements IStationDataInfo 
 
             sr = new BufferedReader(new FileReader(new File(fileName)));
             String[] dataArray, fieldArray;
-            String aLine = sr.readLine();    //Title
-            fieldArray = aLine.split(",");
-            if (fieldArray.length < 3) {
+            String aLine = sr.readLine().trim();    //Title
+            separator = GlobalUtil.getSeparator(aLine);
+            fieldArray = GlobalUtil.split(aLine, separator);
+            if (fieldArray.length < 4) {
                 JOptionPane.showMessageDialog(null, "The data should have at least four fields!");
                 return;
             }
@@ -75,7 +80,7 @@ public class LonLatStationDataInfo extends DataInfo implements IStationDataInfo 
 
             //Judge field type
             aLine = sr.readLine();    //First line
-            dataArray = aLine.split(",");
+            dataArray = GlobalUtil.split(aLine, separator);
             List<Variable> variables = new ArrayList<Variable>();
             for (int i = 3; i < dataArray.length; i++) {
                 if (MIMath.isNumeric(dataArray[i])) {
@@ -124,7 +129,8 @@ public class LonLatStationDataInfo extends DataInfo implements IStationDataInfo 
                     line = sr.readLine();
                     continue;
                 }
-                dataList.add(line.split(","));
+                line = line.trim();
+                dataList.add(GlobalUtil.split(line, separator));
                 line = sr.readLine();
             }
             sr.close();
@@ -208,7 +214,8 @@ public class LonLatStationDataInfo extends DataInfo implements IStationDataInfo 
                     line = sr.readLine();
                     continue;
                 }
-                List<String> aList = Arrays.asList(line.split(","));
+                line = line.trim();
+                List<String> aList = Arrays.asList(GlobalUtil.split(line, separator));
                 dataList.add(aList);
                 line = sr.readLine();
             }

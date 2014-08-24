@@ -770,6 +770,8 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                         aVar.setDimension(zDim);
                     }
                     aVar.setDimension(this.getTimeDimension());
+                    if (this.getDataType() == MeteoDataType.GrADS_Station)
+                        aVar.setStation(true);
 
                     VARDEF.addVar(aVar);
                 }

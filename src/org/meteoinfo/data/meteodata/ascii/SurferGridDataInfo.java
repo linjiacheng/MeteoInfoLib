@@ -151,6 +151,14 @@ public class SurferGridDataInfo extends DataInfo implements IGridDataInfo {
                 for (String dstr : dataArray){
                     ii = d / xNum;
                     jj = d % xNum;
+                    if (ii >= yNum){
+                        d += 1;
+                        break;
+                    }
+                    if (jj >= xNum){
+                        d += 1;
+                        break;
+                    }
                     theData[ii][jj] = Double.parseDouble(dstr);
                     d += 1;
                 }
