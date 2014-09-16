@@ -54,6 +54,7 @@ public enum MeteoDataType {
         /// MICAPS 13
         /// </summary>
         MICAPS_13,
+        MICAPS_120,
         /// <summary>
         /// HYSPLIT concentration
         /// </summary>
@@ -120,5 +121,25 @@ public enum MeteoDataType {
         HRIT,
         MM5,
         MM5IM,
-        BIL
+        BIL;
+        
+        /**
+         * If is MICAPS data
+         * @return Is or not MICAPS data
+         */
+        public boolean isMICAPS(){
+            switch (this){
+                case MICAPS_1:
+                case MICAPS_2:
+                case MICAPS_3:
+                case MICAPS_4:
+                case MICAPS_7:
+                case MICAPS_11:
+                case MICAPS_13:
+                case MICAPS_120:
+                    return true;
+                default:
+                    return false;
+            }
+        }
 }

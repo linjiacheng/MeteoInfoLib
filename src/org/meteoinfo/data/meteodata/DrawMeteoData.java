@@ -704,6 +704,7 @@ public class DrawMeteoData {
         aLayer.setLayerName(LName);
         aLS.setFieldName(fieldName);
         aLayer.setLegendScheme((LegendScheme) aLS.clone());
+        aLayer.setAvoidCollision(true);
         aLayer.setLayerDrawType(LayerDrawType.StationPoint);
 
         return aLayer;
@@ -756,6 +757,7 @@ public class DrawMeteoData {
 
         aLayer.setLayerName(layerName);
         aLayer.setLegendScheme(aLS);
+        aLayer.setAvoidCollision(true);
         aLayer.setLayerDrawType(LayerDrawType.StationPoint);
 
         return aLayer;
@@ -1168,6 +1170,7 @@ public class DrawMeteoData {
         aLayer.setLayerName(layerName);
         aLS.setFieldName("");
         aLayer.setLegendScheme(aLS);
+        aLayer.setAvoidCollision(true);
         aLayer.setLayerDrawType(LayerDrawType.StationModel);
 
         return aLayer;

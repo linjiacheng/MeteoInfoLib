@@ -19,7 +19,7 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-package org.meteoinfo.ui.calendar;
+package org.meteoinfo.ui.calendar.components;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;

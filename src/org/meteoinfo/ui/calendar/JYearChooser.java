@@ -20,7 +20,7 @@
  */
 package org.meteoinfo.ui.calendar;
 
-import com.toedter.components.JSpinField;
+import org.meteoinfo.ui.calendar.components.JSpinField;
 
 import java.util.Calendar;
 

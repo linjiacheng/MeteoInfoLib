@@ -2092,6 +2092,14 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
 
     // <editor-fold desc="Write data">
     /**
+     * Add a time
+     * @param time The time 
+     */
+    public void addTime(Date time){
+        this.TDEF.times.add(time);
+    }
+    
+    /**
      * Write GrADS control file
      */
     public void writeGrADSCTLFile() {

@@ -109,11 +109,12 @@ public class MICAPS4DataInfo extends DataInfo implements IGridDataInfo {
                     year = 1900 + year;
                 }
             }
+            _preHours = Integer.parseInt(dataList.get(4));
             Calendar cal = new GregorianCalendar(year, Integer.parseInt(dataList.get(1)) - 1, Integer.parseInt(dataList.get(2)),
                     Integer.parseInt(dataList.get(3)), 0, 0);
+            cal.add(Calendar.HOUR_OF_DAY, _preHours);
             Date time = cal.getTime();
-
-            _preHours = Integer.parseInt(dataList.get(4));
+            
             _level = Integer.parseInt(dataList.get(5));
             float XDelt = Float.parseFloat(dataList.get(6));
             float YDelt = Float.parseFloat(dataList.get(7));

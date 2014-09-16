@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.meteoinfo.data.meteodata.micaps.MICAPS11DataInfo;
+import org.meteoinfo.data.meteodata.micaps.MICAPS120DataInfo;
 import org.meteoinfo.data.meteodata.micaps.MICAPS13DataInfo;
 import org.meteoinfo.data.meteodata.micaps.MICAPS7DataInfo;
 import org.meteoinfo.data.meteodata.mm5.MM5DataInfo;
@@ -341,6 +342,7 @@ public class MeteoDataInfo {
             case MICAPS_1:
             case MICAPS_2:
             case MICAPS_3:
+            case MICAPS_120:
             case LonLatStation:
             case SYNOP:
             case HYSPLIT_Particle:
@@ -625,6 +627,9 @@ public class MeteoDataInfo {
                 break;
             case MICAPS_13:
                 _dataInfo = new MICAPS13DataInfo();
+                break;
+            case MICAPS_120:
+                _dataInfo = new MICAPS120DataInfo();
                 break;
         }
         _dataInfo.readDataInfo(fileName);

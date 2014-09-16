@@ -2190,7 +2190,7 @@ public class MapView extends JPanel {
                         PointF aPoint = new PointF(e.getX(), e.getY());
                         if (aMLayer.getLayerType() == LayerTypes.VectorLayer) {
                             VectorLayer aLayer = (VectorLayer) aMLayer;
-                            List<Integer> selectedShapes = selectShapes(aLayer, aPoint);
+                            List<Integer> selectedShapes = selectShapes(aLayer, aPoint, true, false);
                             if (selectedShapes.size() > 0) {
                                 if (_frmIdentifer == null) {
                                     _frmIdentifer = new FrmIdentifer((JFrame) SwingUtilities.getWindowAncestor(this), false, this);
@@ -3292,9 +3292,10 @@ public class MapView extends JPanel {
             Graphics2D g = this._mapBitmap.createGraphics();
             g.setColor(this.getBackground());
             g.fillRect(0, 0, this.getWidth(), this.getHeight());
+            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             if (_antiAlias) {
                 g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                //g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
                 g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
                 g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
                 g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
@@ -3302,7 +3303,7 @@ public class MapView extends JPanel {
                 g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
             } else {
                 g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-                g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
+                //g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
                 g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_DEFAULT);
                 g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_OFF);
                 g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_DEFAULT);
@@ -3831,9 +3832,11 @@ public class MapView extends JPanel {
             return;
         }
 
-        boolean hasDrawCharts = false;
+        //boolean hasDrawCharts = false;
         switch (aLayer.getShapeType()) {
             case Point:
+            case PointM:
+            case PointZ:
                 //Draw layer charts
 //                    if (aLayer.getChartSet().isDrawCharts())
 //                    {
@@ -3845,9 +3848,11 @@ public class MapView extends JPanel {
                 break;
             case Polygon:
             case PolygonM:
+            case PolygonZ:
                 drawPolygonLayer(aLayer, g, LonShift);
                 break;
             case Polyline:
+            case PolylineM:
             case PolylineZ:
                 drawPolylineLayer(aLayer, g, LonShift);
                 break;
@@ -4232,6 +4237,9 @@ public class MapView extends JPanel {
         Extent maxExtent = new Extent();
         Extent aExtent;
         for (PointShape aPS : (List<PointShape>) aLayer.getShapes()) {
+            if (!aPS.isVisible())
+                continue;
+            
             if (aPS.getPoint().X + LonShift < _drawExtent.minX || aPS.getPoint().X + LonShift > _drawExtent.maxX
                     || aPS.getPoint().Y < _drawExtent.minY || aPS.getPoint().Y > _drawExtent.maxY) {
                 continue;
@@ -4416,6 +4424,9 @@ public class MapView extends JPanel {
 
         for (int s = 0; s < aLayer.getShapeNum(); s++) {
             PolygonShape aPGS = (PolygonShape) aLayer.getShapes().get(s);
+            if (!aPGS.isVisible())
+                continue;
+            
             if (aPGS.getLegendIndex() < 0) {
                 continue;
             }
@@ -4516,11 +4527,11 @@ public class MapView extends JPanel {
 
     private void drawPolylineShape(Graphics2D g, PolylineShape aPLS, PolylineBreak aPLB, double LonShift,
             boolean isStreamline) {
-        drawPolylineShape(g, aPLS, aPLB, LonShift, isStreamline, false);
+        drawPolylineShape(g, aPLS, aPLB, LonShift, isStreamline, false, false);
     }
 
     private void drawPolylineShape(Graphics2D g, PolylineShape aPLS, PolylineBreak aPLB, double LonShift,
-            boolean isStreamline, boolean isSelected) {
+            boolean isStreamline, boolean isSelected, boolean isIdentifer) {
         Extent shapeExtent = MIMath.shiftExtentLon(aPLS.getExtent(), LonShift);
         if (!MIMath.isExtentCross(shapeExtent, _drawExtent)) {
             return;
@@ -4530,8 +4541,10 @@ public class MapView extends JPanel {
         GeneralPath path = new GeneralPath(GeneralPath.WIND_EVEN_ODD, len1);
 
         Color aColor = aPLB.getColor();
-        if (aPLS.isSelected()) {
-            aColor = _selectColor;
+        if (!isIdentifer){
+            if (aPLS.isSelected()) {
+                aColor = _selectColor;
+            }
         }
         float[] dashPattern = getDashPattern(aPLB.getStyle());
         BasicStroke pen = new BasicStroke(aPLB.getSize(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dashPattern, 0.0f);
@@ -5003,10 +5016,11 @@ public class MapView extends JPanel {
                     PolylineBreak aPLB = new PolylineBreak();
                     aPLB.setColor(Color.red);
                     aPLB.setSize(2);
-                    drawPolylineShape(g, aPLS, aPLB, LonShift, false);
+                    drawPolylineShape(g, aPLS, aPLB, LonShift, false, false, true);
                     break;
                 case Polygon:
                 case PolygonM:
+                case PolygonZ:
                     PolygonShape aPGS = (PolygonShape) aShape;
                     PolygonBreak aPGB = new PolygonBreak();
                     aPGB.setOutlineColor(Color.red);
@@ -6573,7 +6587,7 @@ public class MapView extends JPanel {
                     case Polyline:
                     case CurveLine:
                         PolylineShape aPLS = (PolylineShape) aGraphic.getShape();
-                        if (GeoComputation.selectPolylineShape(pp, aPLS, buffer)) {
+                        if (GeoComputation.selectPolylineShape(pp, aPLS, buffer) != null) {
                             selectedGraphics.add(aGraphic);
                         }
                         break;
@@ -6617,7 +6631,7 @@ public class MapView extends JPanel {
                     case Polyline:
                     case CurveLine:
                         PolylineShape aPLS = (PolylineShape) aGraphic.getShape();
-                        if (GeoComputation.selectPolylineShape(pp, aPLS, buffer)) {
+                        if (GeoComputation.selectPolylineShape(pp, aPLS, buffer) != null) {
                             selectedGraphics.add(aGraphic);
                         }
                         break;
@@ -6903,10 +6917,11 @@ public class MapView extends JPanel {
      *
      * @param aLayer Vector layer
      * @param aPoint The point
+     * @param onlyVisible If only select the shapes from visible shapes
      * @param isSel If the selected shapes will be set as selected
      * @return Selected shapes
      */
-    public List<Integer> selectShapes(VectorLayer aLayer, PointF aPoint, boolean isSel) {
+    public List<Integer> selectShapes(VectorLayer aLayer, PointF aPoint, boolean onlyVisible, boolean isSel) {
         float sX = aPoint.X;
         float sY = aPoint.Y;
         double[] projXY = screenToProj((double) aPoint.X, aPoint.Y);
@@ -6943,11 +6958,11 @@ public class MapView extends JPanel {
         aExtent.maxX = ProjX;
         aExtent.maxY = ProjY;
 
-        List<Integer> selectedShapes = aLayer.selectShapes(aExtent, true);
-        if (isSel) {
-            for (int i : selectedShapes) {
-                aLayer.getShapes().get(i).setSelected(true);
-            }
+        List<Integer> selectedShapes;
+        if (onlyVisible){
+            selectedShapes = aLayer.selectShapes(aExtent, aLayer.getVisibleShapes(), isSel);           
+        } else {
+            selectedShapes = aLayer.selectShapes(aExtent, isSel);
         }
 
         return selectedShapes;
@@ -6961,7 +6976,7 @@ public class MapView extends JPanel {
      * @return Selected shapes
      */
     public List<Integer> selectShapes(VectorLayer aLayer, PointF aPoint) {
-        return selectShapes(aLayer, aPoint, false);
+        return selectShapes(aLayer, aPoint, false, false);
     }
 
     /**

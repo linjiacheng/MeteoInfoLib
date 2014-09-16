@@ -20,8 +20,6 @@
 
 package org.meteoinfo.ui.calendar;
 
-import org.meteoinfo.ui.calendar.DateUtil;
-import org.meteoinfo.ui.calendar.IDateEditor;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;

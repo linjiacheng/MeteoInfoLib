@@ -32,6 +32,7 @@ import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -55,7 +56,8 @@ import javax.swing.event.ChangeListener;
  */
 public class JDateChooser extends JPanel implements ActionListener,
 		PropertyChangeListener {
-    private static final long serialVersionUID = -4306412745720670722L;
+
+	private static final long serialVersionUID = -4306412745720670722L;
 
 	protected IDateEditor dateEditor;
 
@@ -586,4 +588,5 @@ public class JDateChooser extends JPanel implements ActionListener,
 
 		dateChooser.requestFocusInWindow();
 	}
+
 }

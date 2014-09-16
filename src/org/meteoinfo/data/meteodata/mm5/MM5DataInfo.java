@@ -226,6 +226,14 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
                         br.skipBytes(xn * yn * 4 + 8);
                     } else if (sh.ordering.equals("CA")) {
                         br.skipBytes(sh.end_index[0] * sh.end_index[1] * 4 + 8);
+                    } else if (sh.ordering.equals("XSB")) {
+                        br.skipBytes(yn * zn * 5 * 4 + 8);
+                    } else if (sh.ordering.equals("YSB")) {
+                        br.skipBytes(xn * zn * 5 * 4 + 8);
+                    } else if (sh.ordering.equals("XWB")) {
+                        br.skipBytes(yn * (zn + 1) * 5 * 4 + 8);
+                    } else if (sh.ordering.equals("YWB")) {
+                        br.skipBytes(xn * (zn + 1) * 5 * 4 + 8);
                     } else if (sh.ordering.equals("S")) {
                         br.skipBytes(zn * 4 + 8);
                     } else if (sh.ordering.equals("P")) {

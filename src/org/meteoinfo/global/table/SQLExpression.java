@@ -178,7 +178,7 @@ public class SQLExpression {
         while ((op = this.currentToken()).equalsIgnoreCase("and") || op.equalsIgnoreCase("or")) {
             this.nextToken();
 
-            if (op.equals("and")) {
+            if (op.equalsIgnoreCase("and")) {
                 result_right = this.doNot(dr);
                 result = result && result_right;
             } else {
@@ -199,7 +199,7 @@ public class SQLExpression {
 
         boolean result = this.doBrackets(dr);
 
-        if (op.equals("not")) {
+        if (op.equalsIgnoreCase("not")) {
             return !result;
         }
 

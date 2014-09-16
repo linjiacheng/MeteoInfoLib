@@ -189,6 +189,22 @@ public class Field extends DataColumn {
                 return 'C';
         }
     }
+    
+    /**
+     * If the field is numeric
+     * @return Boolean
+     */
+    public boolean isNumeric(){
+        switch (this.getDataType()){
+            case Integer:
+            case Float:
+            case Double:
+            case Decimal:
+                return true;
+            default:
+                return false;
+        }
+    }
     // </editor-fold>
     // <editor-fold desc="Methods">   
 

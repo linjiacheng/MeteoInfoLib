@@ -18,6 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+
 package org.meteoinfo.ui.calendar;
 
 import java.awt.BorderLayout;
@@ -38,6 +39,8 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import org.meteoinfo.ui.calendar.components.UTF8ResourceBundle;
+
 /**
  * JCalendar is a bean for entering a date by choosing the year, month and day.
  * 
@@ -45,8 +48,8 @@ import javax.swing.JPanel;
  * @version $LastChangedRevision: 159 $
  * @version $LastChangedDate: 2011-06-22 21:07:24 +0200 (Mi, 22 Jun 2011) $
  */
-public class JCalendar extends JPanel implements PropertyChangeListener{
-    private static final long serialVersionUID = 8913369762644440133L;
+public class JCalendar extends JPanel implements PropertyChangeListener {
+	private static final long serialVersionUID = 8913369762644440133L;
 
 	private Calendar calendar;
 	private boolean initialized = false;
@@ -69,7 +72,7 @@ public class JCalendar extends JPanel implements PropertyChangeListener{
 	protected Locale locale;
 
 	/** the month chooser */
-	protected JMonthChooser monthChooser;
+	public JMonthChooser monthChooser;
 
 	/** the year chooser */
 	protected JYearChooser yearChooser;

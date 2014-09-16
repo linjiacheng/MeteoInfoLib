@@ -1,18 +1,11 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.meteoinfo.ui.calendar;
 
 import java.awt.Color;
 import java.util.Date;
 
-/**
- *
- * @author yaqiang
- */
 public class MinMaxDateEvaluator implements IDateEvaluator {
-    private DateUtil dateUtil = new DateUtil();
+
+	private DateUtil dateUtil = new DateUtil();
 	
 	public boolean isSpecial(Date date) {
 		return false;
@@ -89,4 +82,5 @@ public class MinMaxDateEvaluator implements IDateEvaluator {
 	public Date getMinSelectableDate() {
 		return dateUtil.getMinSelectableDate();
 	}
+
 }

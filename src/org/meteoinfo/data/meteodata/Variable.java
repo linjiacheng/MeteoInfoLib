@@ -274,7 +274,7 @@ public class Variable {
      *
      * @return Z dimension
      */
-    public Dimension getZDimension() {
+     public Dimension getZDimension() {
         return getDimension(DimensionType.Z);
     }
 

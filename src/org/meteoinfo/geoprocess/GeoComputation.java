@@ -307,35 +307,34 @@ public class GeoComputation {
      * @param buffer Buffer
      * @return Is the polyline shape selected
      */
-    public static boolean selectPolylineShape(PointD sp, PolylineShape aPLS, double buffer) {
+    public static Object selectPolylineShape(PointD sp, PolylineShape aPLS, double buffer) {
         Extent aExtent = new Extent();
         aExtent.minX = sp.X - buffer;
         aExtent.maxX = sp.X + buffer;
         aExtent.minY = sp.Y - buffer;
         aExtent.maxY = sp.Y + buffer;
-        boolean isSelected = false;
+        double dis;
         if (MIMath.isExtentCross(aExtent, aPLS.getExtent())) {
             for (int j = 0; j < aPLS.getPointNum(); j++) {
                 PointD aPoint = aPLS.getPoints().get(j);
                 if (MIMath.pointInExtent(aPoint, aExtent)) {
-                    isSelected = true;
-                    break;
+                    return GeoComputation.distance(sp, aPoint);
                 }
                 if (j < aPLS.getPointNum() - 1) {
                     PointD bPoint = aPLS.getPoints().get(j + 1);
                     if (Math.abs(sp.Y - aPoint.Y) <= Math.abs(bPoint.Y - aPoint.Y)
                             || Math.abs(sp.X - aPoint.X) <= Math.abs(bPoint.X - aPoint.X)) {
-                        if (GeoComputation.dis_PointToLine(sp, aPoint, bPoint) < aExtent.getWidth()) {
-                            isSelected = true;
-                            break;
+                        dis = GeoComputation.dis_PointToLine(sp, aPoint, bPoint);
+                        if (dis < aExtent.getWidth()) {
+                            return dis;
                         }
                     }
                 }
             }
         }
 
-        return isSelected;
-    }
+        return null;
+    }       
 
     // </editor-fold>
     // <editor-fold desc="Earth">

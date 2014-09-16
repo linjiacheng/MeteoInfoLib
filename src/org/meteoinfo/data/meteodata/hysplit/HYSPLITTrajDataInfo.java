@@ -44,7 +44,6 @@ import org.meteoinfo.legend.LegendScheme;
 import org.meteoinfo.legend.LegendType;
 import org.meteoinfo.shape.PointShape;
 import org.meteoinfo.shape.PointZ;
-import org.meteoinfo.shape.PolylineShape;
 import org.meteoinfo.shape.PolylineZShape;
 import org.meteoinfo.shape.ShapeTypes;
 
@@ -254,13 +253,15 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
 
     @Override
     public VectorLayer createTrajLineLayer() {
-        VectorLayer aLayer = new VectorLayer(ShapeTypes.Polyline);
+        VectorLayer aLayer = new VectorLayer(ShapeTypes.PolylineZ);
         aLayer.editAddField(new Field("TrajID", DataTypes.Integer));
-        aLayer.editAddField(new Field("StartDate", DataTypes.String));
+        aLayer.editAddField(new Field("StartDate", DataTypes.Date));
+        aLayer.editAddField(new Field("StartHour", DataTypes.Integer));
         aLayer.editAddField(new Field("StartLon", DataTypes.Double));
         aLayer.editAddField(new Field("StartLat", DataTypes.Double));
         aLayer.editAddField(new Field("StartHeight", DataTypes.Double));
 
+        Calendar cal = Calendar.getInstance();
         int TrajNum = 0;
         for (int t = 0; t < fileNames.size(); t++) {
             try {
@@ -329,7 +330,7 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                     PointList.get(TrajIdx).add(aPoint);
                 }
 
-                SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHH");
+                //SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHH");
                 for (i = 0; i < trajeoryNums.get(t); i++) {
                     PolylineZShape aPolyline = new PolylineZShape();
                     TrajNum += 1;
@@ -339,8 +340,10 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
 
                     int shapeNum = aLayer.getShapeNum();
                     if (aLayer.editInsertShape(aPolyline, shapeNum)) {
+                        cal.setTime(trajInfos.get(t).get(i).startTime);
                         aLayer.editCellValue("TrajID", shapeNum, TrajNum);
-                        aLayer.editCellValue("StartDate", shapeNum, format.format(trajInfos.get(t).get(i).startTime));
+                        aLayer.editCellValue("StartDate", shapeNum, cal.getTime());
+                        aLayer.editCellValue("StartHour", shapeNum, cal.get(Calendar.HOUR_OF_DAY));
                         aLayer.editCellValue("StartLat", shapeNum, trajInfos.get(t).get(i).startLat);
                         aLayer.editCellValue("StartLon", shapeNum, trajInfos.get(t).get(i).startLon);
                         aLayer.editCellValue("StartHeight", shapeNum, trajInfos.get(t).get(i).startHeight);

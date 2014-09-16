@@ -258,7 +258,13 @@ public abstract class DataMath {
 
     // </editor-fold>
     // <editor-fold desc="Wind U/V">
-    private static double[] getUVFromDS(double windDir, double windSpeed) {
+    /**
+     * Get wind U/V from wind direction/speed
+     * @param windDir The wind direction
+     * @param windSpeed The wind speed
+     * @return Wind U/V
+     */
+    public static double[] getUVFromDS(double windDir, double windSpeed) {
         double dir = windDir + 180;
         if (dir > 360) {
             dir = dir - 360;
@@ -324,7 +330,13 @@ public abstract class DataMath {
         return new StationData[]{uData, vData};
     }
 
-    private static double[] getDSFromUV(double U, double V) {
+    /**
+     * Get wind direction/speed from U/V
+     * @param U The U value
+     * @param V The V value
+     * @return Wind direction/speed array
+     */
+    public static double[] getDSFromUV(double U, double V) {
         double windSpeed = Math.sqrt(U * U + V * V);
         double windDir;
         if (windSpeed == 0) {

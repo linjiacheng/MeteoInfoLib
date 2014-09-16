@@ -54,8 +54,8 @@ import javax.swing.UIManager;
  * @version $LastChangedDate: 2011-06-06 20:36:53 +0200 (Mo, 06 Jun 2011) $
  */
 public class JDayChooser extends JPanel implements ActionListener, KeyListener,
-		FocusListener{
-    private static final long serialVersionUID = 5876398337018781820L;
+		FocusListener {
+	private static final long serialVersionUID = 5876398337018781820L;
 
 	protected JButton[] days;
 

@@ -353,7 +353,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
     private Conventions getConvention() {
         Conventions convention = _convention;
         boolean isIOAPI = false;
-        boolean isWRFOOUT = false;
+        boolean isWRFOUT = false;
         //List<String> WRFStrings = new ArrayList<String>();
 
         for (ucar.nc2.Attribute aAtts : _gAtts) {
@@ -365,13 +365,17 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 String title = aAtts.getStringValue();
                 if (title.toUpperCase().contains("OUTPUT FROM WRF") || title.toUpperCase().contains("OUTPUT FROM GEOGRID")
                         || title.toUpperCase().contains("OUTPUT FROM GRIDGEN") || title.toUpperCase().contains("OUTPUT FROM METGRID")) {
-                    isWRFOOUT = true;
+                    isWRFOUT = true;
                     break;
                 }
                 if (title.toUpperCase().contains("OUTPUT FROM") && title.toUpperCase().contains("WRF")) {
-                    isWRFOOUT = true;
+                    isWRFOUT = true;
                     break;
-                }
+                }                
+            }
+            if (aAtts.getShortName().toUpperCase().equals("WEST-EAST_GRID_DIMENSION")){
+                isWRFOUT = true;
+                break;
             }
         }
 
@@ -379,7 +383,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             convention = Conventions.IOAPI;
         }
 
-        if (isWRFOOUT) {
+        if (isWRFOUT) {
             convention = Conventions.WRFOUT;
         }
 
@@ -957,6 +961,8 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
         for (ucar.nc2.Variable var : _variables) {
             if (var.getRank() == 1) {
                 int idx = this.getDimensionIndex(var.getDimension(0));
+                if (idx == -1)
+                    continue;
                 Dimension dim = this._miDims.get(idx);
                 if (dim.getDimType() != DimensionType.Other) {
                     continue;

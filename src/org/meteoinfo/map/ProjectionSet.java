@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.EventListenerList;
 import org.meteoinfo.projection.proj4j.CRSFactory;
+import org.meteoinfo.shape.PointZ;
 
 /**
  *
@@ -435,8 +436,9 @@ public class ProjectionSet {
                                 }
                                 break;
                             case Mercator:
-                                if (aPS.getPoint().Y > 85.0511 || aPS.getPoint().Y < -85.0511)
+                                if (aPS.getPoint().Y > 85.0511 || aPS.getPoint().Y < -85.0511) {
                                     continue;
+                                }
                                 break;
                         }
                     }
@@ -484,10 +486,12 @@ public class ProjectionSet {
                                 }
                                 break;
                             case Mercator:
-                                if (aPLS.getExtent().maxY > 85.0511)
+                                if (aPLS.getExtent().maxY > 85.0511) {
                                     aPLS = GeoComputation.clipPolylineShape_Lat(aPLS, 85.0511, false);
-                                if (aPLS.getExtent().minY < -85.0511)
+                                }
+                                if (aPLS.getExtent().minY < -85.0511) {
                                     aPLS = GeoComputation.clipPolylineShape_Lat(aPLS, -85.0511, true);
+                                }
                                 break;
                         }
                         if (aPLS == null) {
@@ -559,10 +563,12 @@ public class ProjectionSet {
                                 }
                                 break;
                             case Mercator:
-                                if (aPGS.getExtent().maxY > 85.0511)
+                                if (aPGS.getExtent().maxY > 85.0511) {
                                     aPGS = GeoComputation.clipPolygonShape_Lat(aPGS, 85.0511, false);
-                                if (aPGS.getExtent().minY < -85.0511)
+                                }
+                                if (aPGS.getExtent().minY < -85.0511) {
                                     aPGS = GeoComputation.clipPolygonShape_Lat(aPGS, -85.0511, true);
+                                }
                                 break;
                         }
                         if (aPGS == null) {
@@ -835,7 +841,7 @@ public class ProjectionSet {
                 try {
                     Reproject.reprojectPoints(points, fromProj, toProj, 0, points.length);
                     if (!Double.isNaN(points[0][0]) && !Double.isNaN(points[0][1])) {
-                        wPoint = new PointD();
+                        //wPoint = new PointD();
                         wPoint.X = points[0][0];
                         wPoint.Y = points[0][1];
                         newPoints.add(wPoint);
