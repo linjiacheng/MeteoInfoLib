@@ -387,6 +387,7 @@ public class Draw {
             aP.Y = 0;
         }
         
+        g.setStroke(new BasicStroke(1.0f));
         int[] xPoints;
         int[] yPoints;
         float aSize = aPB.getSize();
@@ -929,7 +930,7 @@ public class Draw {
      * Draw graphic
      *
      * @param points The points
-     * @param aGrahpic The graphic
+     * @param aGraphic The graphic
      * @param g Graphics2D
      * @param isEditingVertice Is editing vertice
      */
@@ -1093,8 +1094,6 @@ public class Draw {
      * @param points The points
      * @param aColor Fill oclor
      * @param outlineColor Outline color
-     * @param width
-     * @param height
      * @param drawFill
      * @param drawOutline
      * @param g
@@ -1795,11 +1794,23 @@ public class Draw {
         Font font = new Font("Arial", Font.PLAIN, 8);
         drawBarChartSymbol(aPoint, aCB, g, false, font);
     }
-
+    
     /**
      * Draw bar chart symbol
      *
      * @param aPoint Start point
+     * @param aCB Chart break
+     * @param g Graphics2D
+     * @param drawValue If draw value
+     */
+    public static void drawBarChartSymbol(PointF aPoint, ChartBreak aCB, Graphics2D g, boolean drawValue) {
+        drawBarChartSymbol(aPoint, aCB, g, drawValue, g.getFont());
+    }
+
+    /**
+     * Draw bar chart symbol
+     *
+     * @param sPoint Start point
      * @param aCB Chart break
      * @param g Graphics2D
      * @param drawValue If draw value
@@ -1844,11 +1855,12 @@ public class Draw {
             
             if (i == heights.size() - 1) {
                 if (drawValue) {
-                    String vstr = String.valueOf(aCB.getChartData().get(i));
+                    //String vstr = String.valueOf(aCB.getChartData().get(i));
+                    String vstr = String.format("%1$.0f", aCB.getChartData().get(i));
                     FontMetrics metrics = g.getFontMetrics(font);
                     Dimension labSize = new Dimension(metrics.stringWidth(vstr), metrics.getHeight());
-                    aPoint.X += 2;
-                    aPoint.Y = (float) (y - heights.get(i) / 2 - labSize.getHeight() / 2);
+                    aPoint.X += 5;
+                    aPoint.Y = (float) (y - heights.get(i) / 2);
                     g.setColor(Color.black);
                     g.setFont(font);
                     g.drawString(vstr, aPoint.X, aPoint.Y + metrics.getHeight() / 2);

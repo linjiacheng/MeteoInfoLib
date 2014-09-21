@@ -1565,7 +1565,7 @@ public class LayersLegend extends JPanel {
                 aP.Y = rect.y + rect.height - 5;
                 switch (aChB.getChartType()) {
                     case BarChart:
-                        Draw.drawBarChartSymbol(aP, aChB, g);
+                        Draw.drawBarChartSymbol(aP, aChB, g, true);
                         break;
                     case PieChart:
                         Draw.drawPieChartSymbol(aP, aChB, g);

@@ -166,6 +166,7 @@ import static org.meteoinfo.legend.LegendType.GraduatedColor;
 import static org.meteoinfo.legend.LegendType.SingleSymbol;
 import static org.meteoinfo.legend.LegendType.UniqueValue;
 import org.meteoinfo.projection.Reproject;
+import org.meteoinfo.shape.ChartGraphic;
 import static org.meteoinfo.shape.ShapeTypes.CurveLine;
 import static org.meteoinfo.shape.ShapeTypes.Polyline;
 import org.meteoinfo.shape.StationModelShape;
@@ -185,12 +186,12 @@ import org.meteoinfo.shape.WindBarb;
 public class MapView extends JPanel {
     // <editor-fold desc="Variables">
 
-    private EventListenerList _listeners = new EventListenerList();
+    private final EventListenerList _listeners = new EventListenerList();
     private FrmIdentifer _frmIdentifer = null;
     private FrmIdentiferGrid _frmIdentiferGrid = null;
     private FrmMeasurement _frmMeasure = null;
     private BufferedImage _mapBitmap = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
-    private BufferedImage _tempImage = null;
+    //private BufferedImage _tempImage = null;
     private boolean _antiAlias = false;
     private boolean _pointAntiAlias = true;
     private boolean _highSpeedWheelZoom = true;
@@ -207,12 +208,12 @@ public class MapView extends JPanel {
     private Color _selectColor = Color.yellow;
     private boolean _isGeoMap = true;
     private boolean _isLayoutMap = false;
-    private ProjectionSet _projection = new ProjectionSet();
+    private final ProjectionSet _projection = new ProjectionSet();
     private MouseTools _mouseTool = MouseTools.None;
     private VectorLayer _lonLatLayer = null;
     //private VectorLayer _lonLatProjLayer = null;
     private GraphicCollection _graphicCollection = new GraphicCollection();
-    private GraphicCollection _selectedGraphics = new GraphicCollection();
+    private final GraphicCollection _selectedGraphics = new GraphicCollection();
     private GraphicCollection _visibleGraphics = new GraphicCollection();
     private Rectangle _selectedRectangle = new Rectangle();
     private Edge _resizeSelectedEdge = Edge.None;
@@ -231,21 +232,21 @@ public class MapView extends JPanel {
     private FrmPolylineSymbolSet _frmPolylineSymbolSet = null;
     private FrmPolygonSymbolSet _frmPolygonSymbolSet = null;
     private FrmLabelSymbolSet _frmLabelSymbolSet = null;
-    private FrmColorSymbolSet _frmColorSymbolSet = null;
+    //private final FrmColorSymbolSet _frmColorSymbolSet = null;
     private boolean _startNewGraphic = true;
     private List<PointF> _graphicPoints = new ArrayList<PointF>();
     private PointBreak _defPointBreak = new PointBreak();
     private LabelBreak _defLabelBreak = new LabelBreak();
     private PolylineBreak _defPolylineBreak = new PolylineBreak();
     private PolygonBreak _defPolygonBreak = new PolygonBreak();
-    private List<PointD> _editingVertices = new ArrayList<PointD>();
+    private final List<PointD> _editingVertices = new ArrayList<PointD>();
     private int _editingVerticeIndex;
     private boolean _dragMode = false;
     private boolean _multiGlobalDraw = true;
     private List<String> _xGridStrs = new ArrayList<String>();
     private List<String> _yGridStrs = new ArrayList<String>();
-    private List<Object[]> _xGridPosLabel = new ArrayList<Object[]>();
-    private List<Object[]> _yGridPosLabel = new ArrayList<Object[]>();
+    private final List<Object[]> _xGridPosLabel = new ArrayList<Object[]>();
+    private final List<Object[]> _yGridPosLabel = new ArrayList<Object[]>();
     private boolean _drawGridTickLine = false;
     private Color _gridLineColor = Color.gray;
     private float _gridLineSize = 1;
@@ -343,7 +344,6 @@ public class MapView extends JPanel {
         _mouseTool = MouseTools.None;
 
         //FontUtil.registerWeatherFont();
-
         _viewExtent.minX = -180;
         _viewExtent.maxX = 180;
         _viewExtent.minY = -90;
@@ -622,7 +622,7 @@ public class MapView extends JPanel {
                 break;
             case SelectFeatures_Rectangle:
                 customCursor = Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR);
-                this._tempImage = GlobalUtil.deepCopy(_mapBitmap);
+                //this._tempImage = GlobalUtil.deepCopy(_mapBitmap);
                 break;
             case New_Label:
             case New_Point:
@@ -1091,7 +1091,6 @@ public class MapView extends JPanel {
 //    public void setLonLatProjLayer(VectorLayer layer) {
 //        _lonLatProjLayer = layer;
 //    }
-
     /**
      * Get measurement form
      *
@@ -2222,11 +2221,12 @@ public class MapView extends JPanel {
                                         if (value == null) {
                                             valueStr = "";
                                         } else {
-                                            if (field.getDataType() == DataTypes.Date){
+                                            if (field.getDataType() == DataTypes.Date) {
                                                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-                                                valueStr = format.format((Date)value);
-                                            } else                                        
+                                                valueStr = format.format((Date) value);
+                                            } else {
                                                 valueStr = value.toString();
+                                            }
                                         }
                                         tData[i + 1][0] = fieldStr;
                                         tData[i + 1][1] = valueStr;
@@ -2367,7 +2367,6 @@ public class MapView extends JPanel {
                                 }
                             });
                             jPopupMenu_Graphic.add(jMenuItem_Remove);
-
 
                             if (aGraphic.getLegend().getBreakType() == BreakTypes.PolylineBreak || aGraphic.getLegend().getBreakType() == BreakTypes.PolygonBreak) {
                                 JMenuItem jMenuItem_Reverse = new JMenuItem("Reverse");
@@ -2794,7 +2793,6 @@ public class MapView extends JPanel {
                 _projection.projectLayer(aLayer, _projection.getProjInfo());
             }
 
-
         }
         _layers.add(aLayer);
         _extent = getLayersWholeExtent();
@@ -2847,12 +2845,13 @@ public class MapView extends JPanel {
 
         return handle;
     }
-    
+
     /**
      * Get selected layer
+     *
      * @return Selected layer
      */
-    public MapLayer getSelectedLayer(){
+    public MapLayer getSelectedLayer() {
         return this.getLayerFromHandle(this._selectedLayer);
     }
 
@@ -3341,9 +3340,10 @@ public class MapView extends JPanel {
 
         getMaskOutGraphicsPath(g);
 
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         if (_antiAlias) {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            //g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
             g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
             g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
@@ -3351,7 +3351,7 @@ public class MapView extends JPanel {
             g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
         } else {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
+            //g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
             g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_DEFAULT);
             g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_OFF);
             g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_DEFAULT);
@@ -3399,9 +3399,10 @@ public class MapView extends JPanel {
         g.translate(rect.x, rect.y);
         _maskOutGraphicsPath.transform(g.getTransform());
 
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         if (_antiAlias) {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            //g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
             g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
             g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
@@ -3409,7 +3410,7 @@ public class MapView extends JPanel {
             g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
         } else {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
+            //g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
             g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_DEFAULT);
             g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_OFF);
             g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_DEFAULT);
@@ -3832,17 +3833,16 @@ public class MapView extends JPanel {
             return;
         }
 
-        //boolean hasDrawCharts = false;
+        boolean hasDrawCharts = false;
         switch (aLayer.getShapeType()) {
             case Point:
             case PointM:
             case PointZ:
                 //Draw layer charts
-//                    if (aLayer.getChartSet().isDrawCharts())
-//                    {
-//                        drawLayerCharts(g, aLayer, LonShift);
-//                        hasDrawCharts = true;
-//                    }
+                if (aLayer.getChartSet().isDrawCharts()) {
+                    drawLayerCharts(g, aLayer, LonShift);
+                    hasDrawCharts = true;
+                }
 
                 drawPointLayer(aLayer, g, LonShift);
                 break;
@@ -3864,8 +3864,10 @@ public class MapView extends JPanel {
         }
 
         //Draw layer charts
-        if (aLayer.getChartSet().isDrawCharts()) {
-            drawLayerCharts(g, aLayer, LonShift);
+        if (!hasDrawCharts) {
+            if (aLayer.getChartSet().isDrawCharts()) {
+                drawLayerCharts(g, aLayer, LonShift);
+            }
         }
     }
 
@@ -4136,7 +4138,6 @@ public class MapView extends JPanel {
 //            drawLonLatLayer(_lonLatProjLayer, g, 0);
 //        }
 //    }
-
     private void drawLonLatLayer(VectorLayer aLayer, Graphics2D g, double LonShift) {
         Extent lExtent = MIMath.shiftExtentLon(aLayer.getExtent(), LonShift);
         if (!MIMath.isExtentCross(lExtent, _drawExtent)) {
@@ -4223,12 +4224,12 @@ public class MapView extends JPanel {
         RenderingHints rend = g.getRenderingHints();
         if (this._pointAntiAlias) {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-            g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
-            g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-            g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-            g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+            //g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            //g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+            //g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+            //g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            //g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            //g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
         }
 
         PointF aPoint = new PointF();
@@ -4237,9 +4238,10 @@ public class MapView extends JPanel {
         Extent maxExtent = new Extent();
         Extent aExtent;
         for (PointShape aPS : (List<PointShape>) aLayer.getShapes()) {
-            if (!aPS.isVisible())
+            if (!aPS.isVisible()) {
                 continue;
-            
+            }
+
             if (aPS.getPoint().X + LonShift < _drawExtent.minX || aPS.getPoint().X + LonShift > _drawExtent.maxX
                     || aPS.getPoint().Y < _drawExtent.minY || aPS.getPoint().Y > _drawExtent.maxY) {
                 continue;
@@ -4316,7 +4318,6 @@ public class MapView extends JPanel {
 //
 //            Draw.drawPoint(aPoint, aPB, g);
 //        }
-
         if (this._pointAntiAlias) {
             g.setRenderingHints(rend);
         }
@@ -4413,7 +4414,6 @@ public class MapView extends JPanel {
 //
 //            Draw.drawPoint(aPoint, aPB, g);
 //        }
-
 //        if (this._pointAntiAlias) {
 //            g.setRenderingHints(rend);
 //        }
@@ -4424,9 +4424,10 @@ public class MapView extends JPanel {
 
         for (int s = 0; s < aLayer.getShapeNum(); s++) {
             PolygonShape aPGS = (PolygonShape) aLayer.getShapes().get(s);
-            if (!aPGS.isVisible())
+            if (!aPGS.isVisible()) {
                 continue;
-            
+            }
+
             if (aPGS.getLegendIndex() < 0) {
                 continue;
             }
@@ -4541,7 +4542,7 @@ public class MapView extends JPanel {
         GeneralPath path = new GeneralPath(GeneralPath.WIND_EVEN_ODD, len1);
 
         Color aColor = aPLB.getColor();
-        if (!isIdentifer){
+        if (!isIdentifer) {
             if (aPLS.isSelected()) {
                 aColor = _selectColor;
             }
@@ -4797,7 +4798,7 @@ public class MapView extends JPanel {
 //                        }
                 } else if (tile.isLoaded()) {
                     g.drawImage(tile.getImage(), ox, oy, null);
-                } else {                    
+                } else {
                     int imageX = (layer.getTileFactory().getTileSize(zoom) - layer.getLoadingImage().getWidth(null)) / 2;
                     int imageY = (layer.getTileFactory().getTileSize(zoom) - layer.getLoadingImage().getHeight(null)) / 2;
                     g.setColor(Color.GRAY);
@@ -5221,26 +5222,25 @@ public class MapView extends JPanel {
             return;
         }
 
-        LegendScheme aLS = aLayer.getLegendScheme();
-        List<Shape> shapeList = new ArrayList<Shape>(aLayer.getShapes());
-
+        //LegendScheme aLS = aLayer.getLegendScheme();
+        //List<Shape> shapeList = new ArrayList<Shape>(aLayer.getShapes());
         //Font drawFont = aLayer.LabelSet.LabelFont;
         //SolidBrush labelBrush = new SolidBrush(aLayer.LabelSet.LabelColor);
-
         List<Extent> extentList = new ArrayList<Extent>();
         Extent maxExtent = new Extent();
-        Extent aExtent = new Extent();
+        Extent aExtent;
         int i, j;
-        List<Graphic> chartPoints = aLayer.getChartPoints();
+        List<ChartGraphic> chartPoints = aLayer.getChartPoints();
         PointF aPoint = new PointF();
-        float X, Y;
-        X = 0;
-        Y = 0;
+        //float X, Y;
+        //X = 0;
+        //Y = 0;
 
         for (i = 0; i < chartPoints.size(); i++) {
-            Graphic aCP = chartPoints.get(i);
+            ChartGraphic aCP = chartPoints.get(i);
             PointShape aPS = (PointShape) aCP.getShape();
             ChartBreak aCB = (ChartBreak) aCP.getLegend();
+            PointD startPos = aCP.getStartPosition();
             aPS.setVisible(true);
             aPoint.X = (float) aPS.getPoint().X;
             aPoint.Y = (float) aPS.getPoint().Y;
@@ -5284,6 +5284,11 @@ public class MapView extends JPanel {
             }
 
             if (ifDraw) {
+                xy = projToScreen(startPos.X, startPos.Y, LonShift);
+                PointF sP = new PointF((float) xy[0], (float) xy[1]);
+                if (Math.abs(sP.X - aPoint.X) > 5 || Math.abs(sP.Y - aPoint.Y) > 5) {
+                    g.drawLine((int) sP.X, (int) sP.Y, (int) aPoint.X, (int) aPoint.Y);
+                }
                 Draw.drawChartPoint(aPoint, aCB, g);
 
                 //Draw selected rectangle
@@ -6959,8 +6964,8 @@ public class MapView extends JPanel {
         aExtent.maxY = ProjY;
 
         List<Integer> selectedShapes;
-        if (onlyVisible){
-            selectedShapes = aLayer.selectShapes(aExtent, aLayer.getVisibleShapes(), isSel);           
+        if (onlyVisible) {
+            selectedShapes = aLayer.selectShapes(aExtent, aLayer.getVisibleShapes(), isSel);
         } else {
             selectedShapes = aLayer.selectShapes(aExtent, isSel);
         }
@@ -7109,7 +7114,8 @@ public class MapView extends JPanel {
                         break;
                     case LabelBreak:
                         LabelBreak aLB = (LabelBreak) aGraphic.getLegend();
-                        FontMetrics metrics = this.getGraphics().getFontMetrics(aLB.getFont());
+                        //FontMetrics metrics = this.getGraphics().getFontMetrics(aLB.getFont());
+                        FontMetrics metrics = g.getFontMetrics(aLB.getFont());
                         Dimension labSize = new Dimension(metrics.stringWidth(aLB.getText()), metrics.getHeight());
                         switch (aLB.getAlignType()) {
                             case Center:
@@ -7509,7 +7515,7 @@ public class MapView extends JPanel {
         parent.appendChild(chartSet);
     }
 
-    private void exportChartGraphics(Document m_Doc, Element parent, List<Graphic> graphicList) {
+    private void exportChartGraphics(Document m_Doc, Element parent, List<ChartGraphic> graphicList) {
         Element graphics = m_Doc.createElement("ChartGraphics");
 
         //Add graphics
@@ -7724,9 +7730,10 @@ public class MapView extends JPanel {
             } catch (Exception ex) {
                 Logger.getLogger(MapView.class.getName()).log(Level.SEVERE, null, ex);
             }
-            if (aLayer == null)
+            if (aLayer == null) {
                 return aLayer;
-            
+            }
+
             try {
                 aLayer.setHandle(Integer.parseInt(aVLayer.getAttributes().getNamedItem("Handle").getNodeValue()));
                 aLayer.setLayerName(aVLayer.getAttributes().getNamedItem("LayerName").getNodeValue());
@@ -7765,8 +7772,8 @@ public class MapView extends JPanel {
                 aLayer.setChartSet(aChartSet);
 
                 //Load chart graphics
-                gc = loadChartGraphicCollection((Element) aVLayer);
-                aLayer.setChartPoints(gc);
+                List<ChartGraphic> cgc = loadChartGraphicCollection((Element) aVLayer);
+                aLayer.setChartPoints(cgc);
                 aLayer.updateChartsProp();
             }
 
@@ -7891,8 +7898,8 @@ public class MapView extends JPanel {
         _graphicCollection = loadGraphicCollection(parent);
     }
 
-    private GraphicCollection loadChartGraphicCollection(Element parent) {
-        GraphicCollection gc = new GraphicCollection();
+    private List<ChartGraphic> loadChartGraphicCollection(Element parent) {
+        List<ChartGraphic> gc = new ArrayList<ChartGraphic>();
         Element graphics = (Element) parent.getElementsByTagName("ChartGraphics").item(0);
 //        for (int i = 0; i < parent.getChildNodes().getLength(); i++) {
 //            Node aNode = parent.getChildNodes().item(i);
@@ -7905,7 +7912,7 @@ public class MapView extends JPanel {
             NodeList nList = graphics.getElementsByTagName("Graphic");
             for (int i = 0; i < nList.getLength(); i++) {
                 Node graphicNode = nList.item(i);
-                Graphic aGraphic = new Graphic();
+                ChartGraphic aGraphic = new ChartGraphic();
                 aGraphic.importFromXML((Element) graphicNode);
                 gc.add(aGraphic);
             }

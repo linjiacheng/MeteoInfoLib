@@ -25,7 +25,7 @@ public class DataRow {
     private int rowIndex = -1;
     private DataColumnCollection columns;
     private DataTable table;
-    private Map<String, Object> itemMap = new LinkedHashMap<String, Object>();
+    private final Map<String, Object> itemMap = new LinkedHashMap<String, Object>();
 
     /**
      * Constructor

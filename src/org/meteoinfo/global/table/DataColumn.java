@@ -59,7 +59,7 @@ public class DataColumn {
      * @param dataType Data type
      */
     public DataColumn(String columnName, DataTypes dataType) {
-        this.setDataType(dataType);
+        this.dataType = dataType;
         this.columnName = columnName;
     }
 

@@ -432,7 +432,7 @@ public class LayoutLegend extends LayoutElement {
         aPoint.Y += aCB.getHeight();
         switch (aCB.getChartType()) {
             case BarChart:
-                Draw.drawBarChartSymbol(aPoint, aCB, g);
+                Draw.drawBarChartSymbol(aPoint, aCB, g, true);
                 break;
             case PieChart:
                 Draw.drawPieChartSymbol(aPoint, aCB, g);
@@ -545,7 +545,8 @@ public class LayoutLegend extends LayoutElement {
                 aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());
                 g.setColor(this.getForeColor());
                 g.setFont(lFont);
-                g.drawString(caption, sP.X + 5, sP.Y + aSF.height / 2);
+                //g.drawString(caption, sP.X + 5, sP.Y + aSF.height / 3);
+                g.drawString(caption, sP.X + 5, sP.Y + aSF.height / 4);
 
                 i += 1;
             }

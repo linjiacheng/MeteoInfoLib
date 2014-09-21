@@ -98,7 +98,7 @@ public final class DataTable {
     /**
      * Get table name
      *
-     * @param
+     * @return Table name  
      */
     public String getTableName() {
         return this.tableName;
@@ -107,7 +107,7 @@ public final class DataTable {
     /**
      * Set tabel name
      *
-     * @param
+     * @param tableName Table name
      */
     public void setTableName(String tableName) {
         this.tableName = tableName;
@@ -165,6 +165,7 @@ public final class DataTable {
      * Create a new data row
      *
      * @return: DataRow The new data row
+     * @throws java.lang.Exception
      */
     public DataRow newRow() throws Exception {
         DataRow tempRow = new DataRow(this);
@@ -282,6 +283,15 @@ public final class DataTable {
         row.setRowIndex(nextRowIndex++);
         row.setTable(this);
         return this.rows.add(row);
+    }
+    
+    /**
+     * Add data row
+     * @throws Exception 
+     */
+    public void addRow() throws Exception{
+        DataRow row = new DataRow();
+        this.addRow(row);
     }
     
     /**
@@ -424,8 +434,8 @@ public final class DataTable {
     }
 
     private List<DataColumn> getColumns(String colString) {
-        List<DataColumn> columns = new ArrayList<DataColumn>();
-        return columns;
+        List<DataColumn> cols = new ArrayList<DataColumn>();
+        return cols;
     }
     
     /**

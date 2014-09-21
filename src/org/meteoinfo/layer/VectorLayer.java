@@ -64,6 +64,7 @@ import org.meteoinfo.global.table.DataTable;
 import org.meteoinfo.legend.LegendManage;
 import org.meteoinfo.legend.LegendScheme;
 import org.meteoinfo.legend.PointBreak;
+import org.meteoinfo.shape.ChartGraphic;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 import org.meteoinfo.shape.PointZShape;
@@ -79,21 +80,21 @@ import org.meteoinfo.shape.PolylineZShape;
 public class VectorLayer extends MapLayer {
     // <editor-fold desc="Variables">
 
-    private boolean _isEditing;
+    //private final boolean _isEditing;
     private boolean _avoidCollision;
     private List<Shape> _shapeList;
     private AttributeTable _attributeTable;
     private LabelSet _labelSet;
     private List<Graphic> _labelPoints;
     private ChartSet _chartSet;
-    private List<Graphic> _chartPoints;
+    private List<ChartGraphic> _chartPoints;
     //private int _numFields;
     private int _identiferShape;
     private float _drawingZoom = 1.0f;
     private List<Shape> _originShapes = null;
     private AttributeTable _originAttributeTable = null;
     private List<Graphic> _originLabelPoints = null;
-    private List<Graphic> _originChartPoints = null;
+    private List<ChartGraphic> _originChartPoints = null;
     private boolean _projected = false;
     // </editor-fold>
 
@@ -112,9 +113,9 @@ public class VectorLayer extends MapLayer {
         _labelSet = new LabelSet();
         _labelPoints = new ArrayList<Graphic>();
         _chartSet = new ChartSet();
-        _chartPoints = new ArrayList<Graphic>();
+        _chartPoints = new ArrayList<ChartGraphic>();
         _shapeList = new ArrayList<Shape>();
-        _isEditing = false;
+        //_isEditing = false;
     }
     // </editor-fold>
 
@@ -290,7 +291,7 @@ public class VectorLayer extends MapLayer {
      *
      * @return The chart points
      */
-    public List<Graphic> getChartPoints() {
+    public List<ChartGraphic> getChartPoints() {
         return this._chartPoints;
     }
 
@@ -299,7 +300,7 @@ public class VectorLayer extends MapLayer {
      *
      * @param cps The chart points
      */
-    public void setChartPoints(List<Graphic> cps) {
+    public void setChartPoints(List<ChartGraphic> cps) {
         this._chartPoints = cps;
     }
 
@@ -411,13 +412,13 @@ public class VectorLayer extends MapLayer {
                 case Point:
                 case PointM:
                 case PointZ:
-                    aPS.setPoint(((PointShape) aShape).getPoint());
+                    aPS.setPoint((PointD)((PointShape) aShape).getPoint().clone());
                     break;
                 case Polyline:
                 case PolylineM:
                 case PolylineZ:
                     int pIdx = ((PolylineShape) aShape).getPoints().size() / 2;
-                    aPS.setPoint(((PolylineShape) aShape).getPoints().get(pIdx - 1));
+                    aPS.setPoint((PointD)((PolylineShape) aShape).getPoints().get(pIdx - 1).clone());
                     break;
                 case Polygon:
                 case PolygonM:
@@ -445,7 +446,7 @@ public class VectorLayer extends MapLayer {
             aCP.setThickness(_chartSet.getThickness());
             aCP.setShapeIndex(shapeIdx);
 
-            Graphic aGraphic = new Graphic(aPS, aCP);
+            ChartGraphic aGraphic = new ChartGraphic(aPS, aCP);
             addChart(aGraphic);
         }
         _chartSet.setDrawCharts(true);
@@ -456,7 +457,7 @@ public class VectorLayer extends MapLayer {
      *
      * @param aCP Chart point
      */
-    public void addChart(Graphic aCP) {
+    public void addChart(ChartGraphic aCP) {
         _chartPoints.add(aCP);
     }
 
@@ -883,6 +884,7 @@ public class VectorLayer extends MapLayer {
      * @param aShape The shape
      * @param position The position index
      * @return If success
+     * @throws java.lang.Exception
      */
     public boolean editInsertShape(Shape aShape, int position) throws Exception {
         _shapeList.add(position, aShape);
@@ -1261,7 +1263,7 @@ public class VectorLayer extends MapLayer {
         }
 
         _originLabelPoints = new ArrayList<Graphic>(_labelPoints);
-        _originChartPoints = new ArrayList<Graphic>(_chartPoints);
+        _originChartPoints = new ArrayList<ChartGraphic>(_chartPoints);
         _projected = true;
     }
 

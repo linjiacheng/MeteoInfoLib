@@ -175,12 +175,12 @@ public class Graphic {
         //points.set(vIdx, aP);
         _shape.setPoints(points);
     }
-
-    /// <summary>
-    /// Export to XML document
-    /// </summary>
-    /// <param name="doc">xml document</param>
-    /// <param name="parent">parent xml element</param>
+    
+    /**
+     * Export to XML document
+     * @param doc XML document
+     * @param parent Parent XML element
+     */
     public void exportToXML(Document doc, Element parent) {
         Element graphic = doc.createElement("Graphic");
         addShape(doc, graphic, _shape);
@@ -189,7 +189,13 @@ public class Graphic {
         parent.appendChild(graphic);
     }
 
-    private void addShape(Document doc, Element parent, Shape aShape) {
+    /**
+     * Add shape to XML document
+     * @param doc XML document
+     * @param parent Parent XML element
+     * @param aShape The shape
+     */
+    protected void addShape(Document doc, Element parent, Shape aShape) {
         Element shape = doc.createElement("Shape");
 
         //Add general attribute
@@ -226,7 +232,14 @@ public class Graphic {
         parent.appendChild(shape);
     }
 
-    private void addLegend(Document doc, Element parent, ColorBreak aLegend, ShapeTypes shapeType) {
+    /**
+     * Add legend to XML document
+     * @param doc XML document
+     * @param parent Parent XML element
+     * @param aLegend The legend
+     * @param shapeType The shape type
+     */
+    protected void addLegend(Document doc, Element parent, ColorBreak aLegend, ShapeTypes shapeType) {
         Element legend = doc.createElement("Legend");
         Attr color = doc.createAttribute("Color");
         color.setValue(ColorUtil.toHexEncoding(aLegend.getColor()));
@@ -418,7 +431,7 @@ public class Graphic {
         updateResizeAbility();
     }
 
-    private Shape loadShape(Node shapeNode) {
+    protected Shape loadShape(Node shapeNode) {
         Shape aShape = new Shape();
         try {
             ShapeTypes shapeType = ShapeTypes.valueOf(shapeNode.getAttributes().getNamedItem("ShapeType").getNodeValue());
@@ -469,7 +482,7 @@ public class Graphic {
         return aShape;
     }
 
-    private ColorBreak loadLegend(Node legendNode, ShapeTypes shapeType) {
+    protected ColorBreak loadLegend(Node legendNode, ShapeTypes shapeType) {
         ColorBreak legend = new ColorBreak();
         try {
             Color color = ColorUtil.parseToColor(legendNode.getAttributes().getNamedItem("Color").getNodeValue());

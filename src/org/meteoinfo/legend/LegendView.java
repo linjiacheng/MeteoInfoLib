@@ -823,11 +823,20 @@ public class LegendView extends JPanel {
          */
         public void setLegendBreak_DrawSymbol(boolean drawSymbol)
         {
-            for (int rowIdx : _selectedRows)
-            {                
-                PolylineBreak aPLB = (PolylineBreak)_legendScheme.getLegendBreaks().get(rowIdx);
+            if (_selectedRows.size() > 1) {
+                int i = 0;
+                for (int rowIdx : _selectedRows)
+                {                
+                    PolylineBreak aPLB = (PolylineBreak)_legendScheme.getLegendBreaks().get(rowIdx);
+                    aPLB.setDrawSymbol(drawSymbol);
+                    aPLB.setSymbolStyle(PointStyle.values()[i]);
+                    i ++;
+                    if (i == PointStyle.values().length)
+                        i = 0;
+                }
+            } else {
+                PolylineBreak aPLB = (PolylineBreak)_legendScheme.getLegendBreaks().get(_selectedRows.get(0));
                 aPLB.setDrawSymbol(drawSymbol);
-                //_legendScheme.LegendBreaks[rowIdx] = aPLB;
             }
 
             this.repaint();
@@ -1010,8 +1019,7 @@ public class LegendView extends JPanel {
             } else if (sP.y > this.getHeight()) {
                 break;
             } else {
-                sP.y += _breakHeight;
-                continue;
+                sP.y += _breakHeight;                
             }
         }
     }
