@@ -11,8 +11,12 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
  * General Public License for more details.
  */
-package org.meteoinfo.global.table;
+package org.meteoinfo.table;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -215,6 +219,20 @@ public final class DataTable {
     public Object getTag() {
         return tag;
     }
+    
+    /**
+     * Find column by name
+     * @param colName The column name
+     * @return The data column
+     */
+    public DataColumn findColumn(String colName){
+        for (DataColumn col : this.columns){
+            if (col.getColumnName().equals(colName))
+                return col;
+        }
+        
+        return null;
+    }
 
     /**
      * Add a data column
@@ -287,11 +305,46 @@ public final class DataTable {
     
     /**
      * Add data row
+     * @return Data row
      * @throws Exception 
      */
-    public void addRow() throws Exception{
+    public DataRow addRow() throws Exception{
         DataRow row = new DataRow();
         this.addRow(row);
+        return row;
+    }
+    
+    /**
+     * Get column data
+     * @param colName The column name
+     * @return Column data
+     */
+    public List<String> getColumnData(String colName){
+        return this.getColumnData(this.getRows(), colName);
+    }
+    
+    /**
+     * Get column data
+     * @param col The data column
+     * @return Column data
+     */
+    public List<String> getColumnData(DataColumn col) {
+        return this.getColumnData(col.getColumnName());
+    }
+    
+    /**
+     * Get column data
+     * @param rows The data row list
+     * @param colName The data column name
+     * @return Column values
+     */
+    public List<String> getColumnData(List<DataRow> rows, String colName){
+        List<String> values = new ArrayList<String>();
+        for (DataRow row : rows){
+            values.add(row.getValue(colName).toString());
+        }
+        
+        return values;
     }
     
     /**
@@ -432,11 +485,6 @@ public final class DataTable {
             String groupBy) {
         return null;
     }
-
-    private List<DataColumn> getColumns(String colString) {
-        List<DataColumn> cols = new ArrayList<DataColumn>();
-        return cols;
-    }
     
     /**
      * Clone
@@ -466,5 +514,188 @@ public final class DataTable {
         }
         
         return table;
+    }
+    
+    /**
+     * Convert to string
+     * @return The string
+     */
+    @Override
+    public String toString(){
+        String str = "";
+        for (DataColumn col : this.columns){
+            str += "," + col.getColumnName();
+        }
+        str = str.substring(1);                
+        for (DataRow row : this.rows){
+            String line = "";
+            for (DataColumn col : this.columns){
+                line += "," + row.getValue(col.getColumnName()).toString();
+            }
+            line = line.substring(1);
+            str += System.getProperty("line.separator") + line;
+        }
+        
+        return str;
+    }
+    
+    /**
+     * Convert to string
+     * @param decimalNum Decimal number
+     * @return The string
+     */
+    public String toString(int decimalNum){
+        String dFormat = "%1$." + String.valueOf(decimalNum) + "f";
+        String str = "";
+        for (DataColumn col : this.columns){
+            str += "," + col.getColumnName();
+        }
+        str = str.substring(1);                
+        for (DataRow row : this.rows){
+            String line = "";
+            for (DataColumn col : this.columns){
+                switch(col.getDataType()){
+                    case Float:
+                    case Double:
+                        line += "," + String.format(dFormat, Double.parseDouble(row.getValue(col.getColumnName()).toString()));
+                        break;
+                    default:
+                        line += "," + row.getValue(col.getColumnName()).toString();
+                        break;
+                }                
+            }
+            line = line.substring(1);
+            str += System.getProperty("line.separator") + line;
+        }
+        
+        return str;
+    }
+    
+    /**
+     * Save as csv file
+     * @param fileName File name
+     * @throws java.io.IOException
+     */
+    public void saveAsCSVFile(String fileName) throws IOException{
+        if (!fileName.endsWith(".csv")){
+            fileName = fileName + ".csv";
+        }
+        
+        BufferedWriter sw = new BufferedWriter(new FileWriter(new File(fileName)));
+        String str = "";
+        for (DataColumn col : this.columns){
+            str += "," + col.getColumnName();
+        }
+        str = str.substring(1);
+        sw.write(str);
+        
+        for (DataRow row : this.rows){
+            String line = "";
+            for (DataColumn col : this.columns){
+                line += "," + row.getValue(col.getColumnName()).toString();
+            }
+            line = line.substring(1);
+            sw.newLine();
+            sw.write(line);
+        }
+        sw.flush();
+        sw.close();
+    }
+    
+    /**
+     * Join data table
+     * @param dataTable The input data table
+     * @param colName The column name for join
+     */
+    public void join(DataTable dataTable, String colName){
+        DataColumn col_this = this.findColumn(colName);
+        if (col_this == null){
+            System.out.println("There is no column of " + colName + " in this table");
+            return;
+        }
+        DataColumn col_in = dataTable.findColumn(colName);
+        if (col_in == null){
+            System.out.println("There is no column of " + colName + " in this table");
+            return;
+        }
+        
+        List<String> values_this = this.getColumnData(colName);
+        List<String> values_in = dataTable.getColumnData(colName);
+        
+        List<String> colNames = this.getColumnNames(); 
+        List<String> newColNames = new ArrayList<String>();
+        for (DataColumn col : dataTable.columns){
+            if (!colNames.contains(col.getColumnName())){
+                DataColumn newCol = new DataColumn(col.getColumnName(), col.getDataType());
+                newCol.setJoined(true);
+                this.addColumn(newCol);
+                newColNames.add(col.getColumnName());
+            }
+        }
+        String value;
+        int idx;
+        for (int i = 0; i < this.getRowCount(); i++){
+            value = values_this.get(i);
+            idx = values_in.indexOf(value);
+            if (idx >= 0){
+                for (String cn : newColNames){
+                    this.setValue(i, cn, dataTable.getValue(idx, cn));
+                }
+            }
+        }
+    }
+    
+    /**
+     * Join data table
+     * @param dataTable The input data table
+     * @param colName_this The column name of this data table for join
+     * @param colName_in The column name of the input data table for join
+     */
+    public void join(DataTable dataTable, String colName_this, String colName_in){
+        DataColumn col_this = this.findColumn(colName_this);
+        if (col_this == null){
+            System.out.println("There is no column of " + colName_this + " in this table");
+            return;
+        }
+        DataColumn col_in = dataTable.findColumn(colName_in);
+        if (col_in == null){
+            System.out.println("There is no column of " + colName_in + " in this table");
+            return;
+        }
+        
+        List<String> values_this = this.getColumnData(colName_this);
+        List<String> values_in = dataTable.getColumnData(colName_in);
+        
+        List<String> colNames = this.getColumnNames(); 
+        List<String> newColNames = new ArrayList<String>();
+        for (DataColumn col : dataTable.columns){
+            if (!colNames.contains(col.getColumnName())){
+                DataColumn newCol = new DataColumn(col.getColumnName(), col.getDataType());
+                newCol.setJoined(true);
+                this.addColumn(newCol);
+                newColNames.add(col.getColumnName());
+            }
+        }
+        String value;
+        int idx;
+        for (int i = 0; i < this.getRowCount(); i++){
+            value = values_this.get(i);
+            idx = values_in.indexOf(value);
+            if (idx >= 0){
+                for (String cn : newColNames){
+                    this.setValue(i, cn, dataTable.getValue(idx, cn));
+                }
+            }
+        }
+    }
+    
+    /**
+     * Remove joined data columns
+     */
+    public void removeJoin(){
+        for (DataColumn col : this.columns){
+            if (col.isJoined())
+                this.removeColumn(col);
+        }
     }
 }

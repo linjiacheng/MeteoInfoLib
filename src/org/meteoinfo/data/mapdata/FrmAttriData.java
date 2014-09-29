@@ -23,11 +23,11 @@ import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.table.JTableHeader;
-import org.meteoinfo.global.table.DataTable;
-import org.meteoinfo.global.table.DataTableModel;
-import org.meteoinfo.global.table.DataTypes;
-import org.meteoinfo.global.table.MyCellEditor;
-import org.meteoinfo.global.table.RowHeaderTable;
+import org.meteoinfo.table.DataTable;
+import org.meteoinfo.table.DataTableModel;
+import org.meteoinfo.table.DataTypes;
+import org.meteoinfo.table.MyCellEditor;
+import org.meteoinfo.table.RowHeaderTable;
 import org.meteoinfo.layer.VectorLayer;
 
 /**

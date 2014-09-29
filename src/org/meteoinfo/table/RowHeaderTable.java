@@ -11,7 +11,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
  * General Public License for more details.
  */
-package org.meteoinfo.global.table;
+package org.meteoinfo.table;
 
 import java.awt.Dimension;
 import javax.swing.JTable;

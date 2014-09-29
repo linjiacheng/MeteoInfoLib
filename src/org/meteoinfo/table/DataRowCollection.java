@@ -11,18 +11,22 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
  * General Public License for more details.
  */
-package org.meteoinfo.global.table;
+package org.meteoinfo.table;
+
+import java.util.ArrayList;
 
 /**
  *
  * @author Yaqiang Wang
  */
-public enum DataTypes {
-    Integer,
-    Float,
-    Decimal,
-    Double,
-    String,
-    Boolean,
-    Date
+public class DataRowCollection extends ArrayList<DataRow> {
+    DataColumnCollection columns;
+    
+    /**
+     * Set data columns
+     * @param columns Data columns
+     */
+    public void setColumns(DataColumnCollection columns){
+        this.columns = columns;
+    }            
 }

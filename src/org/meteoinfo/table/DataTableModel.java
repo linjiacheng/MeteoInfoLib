@@ -11,50 +11,60 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
  * General Public License for more details.
  */
-package org.meteoinfo.global.table;
+package org.meteoinfo.table;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableColumn;
 
 /**
  *
  * @author yaqiang
  */
-public class RowHeaderTableModel extends AbstractTableModel {
-    
+public class DataTableModel extends AbstractTableModel {
+
     // <editor-fold desc="Variables">
-    private int _rowCount;
+    private DataTable _dataTable;
     // </editor-fold>
     // <editor-fold desc="Constructor">
     /**
      * Constructor
-     * @param model The table model
+     * @param dataTable Data table
      */
-    public RowHeaderTableModel (int rowCount){
-        _rowCount = rowCount;
+    public DataTableModel(DataTable dataTable){
+        _dataTable = dataTable;        
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
     // </editor-fold>
-    // <editor-fold desc="Methods">
+    // <editor-fold desc="Methods">    
     @Override
     public int getRowCount() {
-        return _rowCount;
+        return _dataTable.getRowCount();
     }
 
     @Override
     public int getColumnCount() {
-        return 1;
+        return _dataTable.getColumnCount();
     }
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        return rowIndex;
+        if (_dataTable.getColumns().get(columnIndex).getDataType() == DataTypes.Date){
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+            return format.format((Date)_dataTable.getValue(rowIndex, columnIndex));
+        } else 
+            return _dataTable.getValue(rowIndex, columnIndex);
+    }    
+    
+    @Override
+    public void setValueAt(Object value, int row, int column){
+        _dataTable.setValue(row, column, value);
     }
     
     @Override
-    public String getColumnName(int col){
-        return "";
+    public String getColumnName(int columnIndex){
+        return _dataTable.getColumns().get(columnIndex).getColumnName();
     }
     
     @Override
@@ -62,8 +72,8 @@ public class RowHeaderTableModel extends AbstractTableModel {
         return false;
     }
     
-    public void setRowCount(int rowCount){
-        this._rowCount = rowCount;
+    public void addColumn(DataColumn col){
+        this._dataTable.addColumn(col);
     }
     // </editor-fold>
 }

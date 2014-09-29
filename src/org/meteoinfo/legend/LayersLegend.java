@@ -594,7 +594,7 @@ public class LayersLegend extends JPanel {
 
                 for (LayerNode aLN : aNode.getLayers()) {
                     aLN.setChecked(aNode.isChecked());
-                    MapLayer aLayer = aLN.getMapFrame().getMapView().getLayerFromHandle(aLN.getLayerHandle());
+                    MapLayer aLayer = aLN.getMapFrame().getMapView().getLayerByHandle(aLN.getLayerHandle());
                     aLayer.setVisible(aNode.isChecked());
                 }
 
@@ -937,7 +937,7 @@ public class LayersLegend extends JPanel {
 
     private void onAttrTableClick(ActionEvent e) {
         LayerNode aLN = (LayerNode) _selectedNode;
-        MapLayer aLayer = aLN.getMapFrame().getMapView().getLayerFromHandle(aLN.getLayerHandle());
+        MapLayer aLayer = aLN.getMapFrame().getMapView().getLayerByHandle(aLN.getLayerHandle());
         if (aLayer.getLayerType() == LayerTypes.VectorLayer) {
             JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
             FrmAttriData frm = new FrmAttriData();
@@ -949,7 +949,7 @@ public class LayersLegend extends JPanel {
 
     private void onPropertiesClick(ActionEvent e) {
         LayerNode aLN = (LayerNode) _selectedNode;
-        MapLayer aLayer = aLN.getMapFrame().getMapView().getLayerFromHandle(aLN.getLayerHandle());
+        MapLayer aLayer = aLN.getMapFrame().getMapView().getLayerByHandle(aLN.getLayerHandle());
 //        if (aLayer.getLayerType() == LayerTypes.WebMapLayer)
 //            return;
         
@@ -972,13 +972,13 @@ public class LayersLegend extends JPanel {
 
     private void onZoomToLayerClick(ActionEvent e) {
         LayerNode aLN = (LayerNode) _selectedNode;
-        MapLayer aLayer = aLN.getMapFrame().getMapView().getLayerFromHandle(aLN.getLayerHandle());
+        MapLayer aLayer = aLN.getMapFrame().getMapView().getLayerByHandle(aLN.getLayerHandle());
         aLN.getMapFrame().getMapView().zoomToExtent(aLayer.getExtent());
     }
 
     private void onMinVisScaleClick(ActionEvent e) {
         LayerNode aLN = (LayerNode) _selectedNode;
-        MapLayer aLayer = aLN.getMapFrame().getMapView().getLayerFromHandle(aLN.getLayerHandle());
+        MapLayer aLayer = aLN.getMapFrame().getMapView().getLayerByHandle(aLN.getLayerHandle());
         aLayer.getVisibleScale().setEnableMinVisScale(true);
         aLayer.getVisibleScale().setMinVisScale(aLN.getMapFrame().getMapView().getGeoScale());
 
@@ -988,7 +988,7 @@ public class LayersLegend extends JPanel {
 
     private void onMaxVisScaleClick(ActionEvent e) {
         LayerNode aLN = (LayerNode) _selectedNode;
-        MapLayer aLayer = aLN.getMapFrame().getMapView().getLayerFromHandle(aLN.getLayerHandle());
+        MapLayer aLayer = aLN.getMapFrame().getMapView().getLayerByHandle(aLN.getLayerHandle());
         aLayer.getVisibleScale().setEnableMaxVisScale(true);
         aLayer.getVisibleScale().setMaxVisScale(aLN.getMapFrame().getMapView().getGeoScale());
 
@@ -998,7 +998,7 @@ public class LayersLegend extends JPanel {
 
     private void onRemoveVisScaleClick(ActionEvent e) {
         LayerNode aLN = (LayerNode) _selectedNode;
-        MapLayer aLayer = aLN.getMapFrame().getMapView().getLayerFromHandle(aLN.getLayerHandle());
+        MapLayer aLayer = aLN.getMapFrame().getMapView().getLayerByHandle(aLN.getLayerHandle());
         aLayer.getVisibleScale().setEnableMinVisScale(false);
         aLayer.getVisibleScale().setEnableMaxVisScale(false);
 
@@ -1008,7 +1008,7 @@ public class LayersLegend extends JPanel {
 
     private void onLabelClick(ActionEvent e) {
         LayerNode aLN = (LayerNode) _selectedNode;
-        MapLayer aLayer = aLN.getMapFrame().getMapView().getLayerFromHandle(aLN.getLayerHandle());
+        MapLayer aLayer = aLN.getMapFrame().getMapView().getLayerByHandle(aLN.getLayerHandle());
         if (aLayer.getLayerType() == LayerTypes.VectorLayer) {
             VectorLayer layer = (VectorLayer) aLayer;
             if (layer.getShapeNum() > 0) {

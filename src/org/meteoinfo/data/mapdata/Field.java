@@ -13,8 +13,8 @@
  */
 package org.meteoinfo.data.mapdata;
 
-import org.meteoinfo.global.table.DataColumn;
-import org.meteoinfo.global.table.DataTypes;
+import org.meteoinfo.table.DataColumn;
+import org.meteoinfo.table.DataTypes;
 
 /**
  * The field in attribute table of shape file

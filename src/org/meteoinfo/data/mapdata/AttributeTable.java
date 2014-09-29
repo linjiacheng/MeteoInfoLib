@@ -13,10 +13,10 @@
  */
 package org.meteoinfo.data.mapdata;
 
-import org.meteoinfo.global.table.DataColumn;
-import org.meteoinfo.global.table.DataRow;
-import org.meteoinfo.global.table.DataTable;
-import org.meteoinfo.global.table.DataTypes;
+import org.meteoinfo.table.DataColumn;
+import org.meteoinfo.table.DataRow;
+import org.meteoinfo.table.DataTable;
+import org.meteoinfo.table.DataTypes;
 import org.meteoinfo.io.EndianDataOutputStream;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;

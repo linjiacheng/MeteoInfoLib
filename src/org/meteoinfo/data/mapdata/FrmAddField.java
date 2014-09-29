@@ -4,7 +4,7 @@
  */
 package org.meteoinfo.data.mapdata;
 
-import org.meteoinfo.global.table.DataTypes;
+import org.meteoinfo.table.DataTypes;
 
 /**
  *

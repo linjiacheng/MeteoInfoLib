@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.meteoinfo.global.table;
+package org.meteoinfo.table;
 
 import java.awt.Component;
 import javax.swing.DefaultCellEditor;

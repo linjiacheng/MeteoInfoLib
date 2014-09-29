@@ -32,6 +32,8 @@ import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -81,6 +83,15 @@ public class LegendView extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 onMouseClicked(e);
+            }
+        });
+        
+        this._textField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e){
+                if (e.getKeyCode() == KeyEvent.VK_ENTER){
+                    LegendView.this.afterCellEdit();
+                }
             }
         });
     }

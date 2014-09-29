@@ -23,9 +23,9 @@ import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
 import org.meteoinfo.global.PointF;
 import org.meteoinfo.global.colors.ColorUtil;
-import org.meteoinfo.global.table.DataColumn;
-import org.meteoinfo.global.table.DataRow;
-import org.meteoinfo.global.table.DataTypes;
+import org.meteoinfo.table.DataColumn;
+import org.meteoinfo.table.DataRow;
+import org.meteoinfo.table.DataTypes;
 import org.meteoinfo.legend.ChartBreak;
 import org.meteoinfo.legend.ColorBreak;
 import org.meteoinfo.legend.LabelBreak;
@@ -59,8 +59,8 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
-import org.meteoinfo.global.table.DataColumnCollection;
-import org.meteoinfo.global.table.DataTable;
+import org.meteoinfo.table.DataColumnCollection;
+import org.meteoinfo.table.DataTable;
 import org.meteoinfo.legend.LegendManage;
 import org.meteoinfo.legend.LegendScheme;
 import org.meteoinfo.legend.PointBreak;
@@ -429,7 +429,7 @@ public class VectorLayer extends MapLayer {
                     break;
             }
 
-            ChartBreak aCP = new ChartBreak(_chartSet.getChartType());
+            ChartBreak aCP = new ChartBreak(_chartSet.getChartType());            
             for (String fn : _chartSet.getFieldNames()) {
                 aCP.getChartData().add(Float.parseFloat(getCellValue(fn, shapeIdx).toString()));
             }
@@ -448,6 +448,33 @@ public class VectorLayer extends MapLayer {
 
             ChartGraphic aGraphic = new ChartGraphic(aPS, aCP);
             addChart(aGraphic);
+        }
+        _chartSet.setDrawCharts(true);
+    }
+    
+    /**
+     * Update charts
+     */
+    public void updateCharts() {
+        int shapeIdx;
+        for (ChartGraphic cg : this._chartPoints) {                       
+            ChartBreak aCP = (ChartBreak)cg.getLegend();
+            shapeIdx = aCP.getShapeIndex();
+            aCP.getChartData().clear();
+            for (String fn : _chartSet.getFieldNames()) {
+                aCP.getChartData().add(Float.parseFloat(getCellValue(fn, shapeIdx).toString()));
+            }
+            aCP.setXShift(_chartSet.getXShift());
+            aCP.setYShift(_chartSet.getYShift());
+            aCP.setLegendScheme(_chartSet.getLegendScheme());
+            aCP.setMinSize(_chartSet.getMinSize());
+            aCP.setMaxSize(_chartSet.getMaxSize());
+            aCP.setMinValue(_chartSet.getMinValue());
+            aCP.setMaxValue(_chartSet.getMaxValue());
+            aCP.setBarWidth(_chartSet.getBarWidth());
+            aCP.setAlignType(_chartSet.getAlignType());
+            aCP.setView3D(_chartSet.isView3D());
+            aCP.setThickness(_chartSet.getThickness());
         }
         _chartSet.setDrawCharts(true);
     }
@@ -882,6 +909,61 @@ public class VectorLayer extends MapLayer {
             return min;
         } else {
             return 0;
+        }
+    }
+    
+    /**
+     * Join data table
+     * @param dataTable The input data table
+     * @param colName The column name for join
+     */
+    public void joinTable(DataTable dataTable, String colName){
+        DataTable thisTable = this._attributeTable.getTable();
+        DataColumn col_this = thisTable.findColumn(colName);
+        if (col_this == null){
+            System.out.println("There is no column of " + colName + " in this table");
+            return;
+        }
+        DataColumn col_in = dataTable.findColumn(colName);
+        if (col_in == null){
+            System.out.println("There is no column of " + colName + " in this table");
+            return;
+        }
+        
+        List<String> values_this = thisTable.getColumnData(colName);
+        List<String> values_in = dataTable.getColumnData(colName);
+        
+        List<String> colNames = thisTable.getColumnNames(); 
+        List<String> newColNames = new ArrayList<String>();
+        for (DataColumn col : dataTable.getColumns()){
+            if (!colNames.contains(col.getColumnName())){
+                Field newCol = new Field(col.getColumnName(), col.getDataType());
+                newCol.setJoined(true);
+                thisTable.addColumn(newCol);
+                newColNames.add(col.getColumnName());
+            }
+        }
+        String value;
+        int idx;
+        for (int i = 0; i < thisTable.getRowCount(); i++){
+            value = values_this.get(i);
+            idx = values_in.indexOf(value);
+            if (idx >= 0){
+                for (String cn : newColNames){
+                    thisTable.setValue(i, cn, dataTable.getValue(idx, cn));
+                }
+            }
+        }
+    }
+    
+    /**
+     * Remove joined data columns
+     */
+    public void removeJoins(){
+        DataTable thisTable = this._attributeTable.getTable();
+        for (DataColumn col : thisTable.getColumns()){
+            if (col.isJoined())
+                thisTable.removeColumn(col);
         }
     }
     // </editor-fold>

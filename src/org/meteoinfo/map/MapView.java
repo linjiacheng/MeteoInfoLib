@@ -35,7 +35,7 @@ import org.meteoinfo.global.util.GlobalUtil;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
 import org.meteoinfo.global.PointF;
-import org.meteoinfo.global.table.DataTypes;
+import org.meteoinfo.table.DataTypes;
 import org.meteoinfo.layer.ChartSet;
 import org.meteoinfo.layer.ImageLayer;
 import org.meteoinfo.layer.LabelSet;
@@ -426,7 +426,7 @@ public class MapView extends JPanel {
             }
         }
 
-        return getLayerFromHandle(hnd);
+        return getLayerByHandle(hnd);
     }
 
     /**
@@ -1334,7 +1334,7 @@ public class MapView extends JPanel {
                                 _graphicPoints.add(new PointF(e.getX(), e.getY()));
                                 break;
                             case Feature:
-                                MapLayer aMLayer = getLayerFromHandle(_selectedLayer);
+                                MapLayer aMLayer = getLayerByHandle(_selectedLayer);
                                 if (aMLayer != null) {
                                     if (aMLayer.getLayerType() == LayerTypes.VectorLayer) {
                                         VectorLayer aLayer = (VectorLayer) aMLayer;
@@ -1757,7 +1757,7 @@ public class MapView extends JPanel {
                     if (_selectedLayer < 0) {
                         return;
                     }
-                    MapLayer aMLayer = this.getLayerFromHandle(_selectedLayer);
+                    MapLayer aMLayer = this.getLayerByHandle(_selectedLayer);
                     if (aMLayer == null) {
                         return;
                     }
@@ -2044,7 +2044,7 @@ public class MapView extends JPanel {
                         _graphicCollection.add(aGraphic);
                         paintLayers();
                     } else {
-                        MapLayer aMLayer = getLayerFromHandle(_selectedLayer);
+                        MapLayer aMLayer = getLayerByHandle(_selectedLayer);
                         if (aMLayer == null) {
                             return;
                         }
@@ -2093,7 +2093,7 @@ public class MapView extends JPanel {
                         _graphicCollection.add(aGraphic);
                         paintLayers();
                     } else {
-                        MapLayer layer = this.getLayerFromHandle(_selectedLayer);
+                        MapLayer layer = this.getLayerByHandle(_selectedLayer);
                         if (layer == null) {
                             return;
                         }
@@ -2178,7 +2178,7 @@ public class MapView extends JPanel {
                         if (_selectedLayer < 0) {
                             return;
                         }
-                        MapLayer aMLayer = getLayerFromHandle(_selectedLayer);
+                        MapLayer aMLayer = getLayerByHandle(_selectedLayer);
                         if (aMLayer == null) {
                             return;
                         }
@@ -2270,45 +2270,45 @@ public class MapView extends JPanel {
                             }
                         }
                         break;
-                    case SelectFeatures_Rectangle:
-                        if (_selectedLayer < 0) {
-                            return;
-                        }
-                        aMLayer = getLayerFromHandle(_selectedLayer);
-                        if (aMLayer == null) {
-                            return;
-                        }
-                        if (aMLayer.getLayerType() != LayerTypes.VectorLayer) {
-                            return;
-                        }
-
-                        VectorLayer aLayer = (VectorLayer) aMLayer;
-                        if (!e.isControlDown() && !e.isShiftDown()) {
-                            aLayer.clearSelectedShapes();
-                        }
-                        aPoint = new PointF(e.getX(), e.getY());
-                        List<Integer> selectedShapes = this.selectShapes(aLayer, aPoint);
-                        //this._mapBitmap = GlobalUtil.deepCopy(this._tempImage);
-                        if (selectedShapes.size() > 0) {
-                            int shapeIdx = selectedShapes.get(0);
-                            Shape selShape = aLayer.getShapes().get(shapeIdx);
-                            if (!e.isControlDown() && !e.isShiftDown()) {
-                                selShape.setSelected(true);
-                                //drawIdShape((Graphics2D) this._mapBitmap.getGraphics(), selShape);
-                            } else {
-                                selShape.setSelected(!selShape.isSelected());
-//                                for (int sIdx : aLayer.getSelectedShapeIndexes()) {
-//                                    drawIdShape((Graphics2D) this._mapBitmap.getGraphics(), aLayer.getShapes().get(sIdx));
-//                                }
-                            }
-
-                            this.fireShapeSelectedEvent();
-                        } else {
-                            if (!e.isControlDown() && !e.isShiftDown()) {
-                                this.paintLayers();
-                            }
-                        }
-                        break;
+//                    case SelectFeatures_Rectangle:
+//                        if (_selectedLayer < 0) {
+//                            return;
+//                        }
+//                        aMLayer = getLayerFromHandle(_selectedLayer);
+//                        if (aMLayer == null) {
+//                            return;
+//                        }
+//                        if (aMLayer.getLayerType() != LayerTypes.VectorLayer) {
+//                            return;
+//                        }
+//
+//                        VectorLayer aLayer = (VectorLayer) aMLayer;
+//                        if (!e.isControlDown() && !e.isShiftDown()) {
+//                            aLayer.clearSelectedShapes();
+//                        }
+//                        aPoint = new PointF(e.getX(), e.getY());
+//                        List<Integer> selectedShapes = this.selectShapes(aLayer, aPoint, true, false);
+//                        //this._mapBitmap = GlobalUtil.deepCopy(this._tempImage);
+//                        if (selectedShapes.size() > 0) {
+//                            int shapeIdx = selectedShapes.get(0);
+//                            Shape selShape = aLayer.getShapes().get(shapeIdx);
+//                            if (!e.isControlDown() && !e.isShiftDown()) {
+//                                selShape.setSelected(true);
+//                                //drawIdShape((Graphics2D) this._mapBitmap.getGraphics(), selShape);
+//                            } else {
+//                                selShape.setSelected(!selShape.isSelected());
+////                                for (int sIdx : aLayer.getSelectedShapeIndexes()) {
+////                                    drawIdShape((Graphics2D) this._mapBitmap.getGraphics(), aLayer.getShapes().get(sIdx));
+////                                }
+//                            }
+//
+//                            this.fireShapeSelectedEvent();
+//                        } else {
+//                            if (!e.isControlDown() && !e.isShiftDown()) {
+//                                this.paintLayers();
+//                            }
+//                        }
+//                        break;
                 }
             } else if (e.getButton() == MouseEvent.BUTTON3) {
                 switch (_mouseTool) {
@@ -2502,7 +2502,7 @@ public class MapView extends JPanel {
                         }
 
                         if (_mouseTool == MouseTools.SelectFeatures_Polygon) {
-                            MapLayer layer = this.getLayerFromHandle(_selectedLayer);
+                            MapLayer layer = this.getLayerByHandle(_selectedLayer);
                             if (layer == null) {
                                 return;
                             }
@@ -2852,7 +2852,7 @@ public class MapView extends JPanel {
      * @return Selected layer
      */
     public MapLayer getSelectedLayer() {
-        return this.getLayerFromHandle(this._selectedLayer);
+        return this.getLayerByHandle(this._selectedLayer);
     }
 
     /**
@@ -2904,12 +2904,12 @@ public class MapView extends JPanel {
     }
 
     /**
-     * Get layer from handle
+     * Get layer by handle
      *
      * @param handle The layer handle
      * @return The layer object
      */
-    public MapLayer getLayerFromHandle(int handle) {
+    public MapLayer getLayerByHandle(int handle) {
         MapLayer aLayer = null;
         for (int i = 0; i < _layers.size(); i++) {
             if (_layers.get(i).getHandle() == handle) {
@@ -2922,12 +2922,12 @@ public class MapView extends JPanel {
     }
 
     /**
-     * Get layer from layer name
+     * Get layer by layer name
      *
      * @param name The layer name
      * @return The layer
      */
-    public MapLayer getLayerFromName(String name) {
+    public MapLayer getLayer(String name) {
         MapLayer aLayer = null;
         for (MapLayer ml : _layers) {
             if (ml.getLayerName().equals(name)) {
@@ -4930,7 +4930,7 @@ public class MapView extends JPanel {
             int aLayerHandle = getLayerHandleFromName(_maskOut.getMaskLayer());
             if (aLayerHandle > 0) {
                 GeneralPath tPath = new GeneralPath();
-                VectorLayer aLayer = (VectorLayer) getLayerFromHandle(aLayerHandle);
+                VectorLayer aLayer = (VectorLayer) getLayerByHandle(aLayerHandle);
                 double[] lonShiftList = new double[]{0};
                 if (_projection.isLonLatMap()) {
                     lonShiftList = new double[]{0, 360, -360};

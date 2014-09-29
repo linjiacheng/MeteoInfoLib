@@ -6,7 +6,7 @@ package org.meteoinfo.layer;
 
 import org.meteoinfo.global.GenericFileFilter;
 import org.meteoinfo.global.MIMath;
-import org.meteoinfo.global.table.DataTypes;
+import org.meteoinfo.table.DataTypes;
 import org.meteoinfo.legend.ColorBreak;
 import org.meteoinfo.legend.FrmLegendBreaks;
 import org.meteoinfo.legend.LegendManage;
@@ -160,7 +160,7 @@ public class FrmLayerProperty extends javax.swing.JDialog {
         jPanel_General.setLayout(jPanel_GeneralLayout);
         jPanel_GeneralLayout.setHorizontalGroup(
             jPanel_GeneralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(propertySheetPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 378, Short.MAX_VALUE)
+            .addComponent(propertySheetPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE)
         );
         jPanel_GeneralLayout.setVerticalGroup(
             jPanel_GeneralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -315,8 +315,8 @@ public class FrmLayerProperty extends javax.swing.JDialog {
         jPanel_Legend.setLayout(jPanel_LegendLayout);
         jPanel_LegendLayout.setHorizontalGroup(
             jPanel_LegendLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 378, Short.MAX_VALUE)
-            .addComponent(legendView1, javax.swing.GroupLayout.DEFAULT_SIZE, 378, Short.MAX_VALUE)
+            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE)
+            .addComponent(legendView1, javax.swing.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE)
             .addGroup(jPanel_LegendLayout.createSequentialGroup()
                 .addGap(56, 56, 56)
                 .addGroup(jPanel_LegendLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -374,18 +374,21 @@ public class FrmLayerProperty extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel4)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jTextField_Minimum, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel5)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jTextField_Maximum, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel_BarWidth)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTextField_BarWidth)))
-                .addGap(16, 16, 16))
+                        .addComponent(jTextField_BarWidth))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(8, 8, 8)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel5)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jTextField_Maximum))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel4)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jTextField_Minimum, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                .addGap(24, 24, 24))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -407,7 +410,7 @@ public class FrmLayerProperty extends javax.swing.JDialog {
 
         jLabel8.setText("Y Shift:");
 
-        jCheckBox_CollisionAvoidance.setText("Collision Avoidance");
+        jCheckBox_CollisionAvoidance.setText("Avoid collision");
         jCheckBox_CollisionAvoidance.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jCheckBox_CollisionAvoidanceActionPerformed(evt);
@@ -467,9 +470,6 @@ public class FrmLayerProperty extends javax.swing.JDialog {
         jPanel_Chart.setLayout(jPanel_ChartLayout);
         jPanel_ChartLayout.setHorizontalGroup(
             jPanel_ChartLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel_ChartLayout.createSequentialGroup()
-                .addGap(197, 197, 197)
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(jPanel_ChartLayout.createSequentialGroup()
                 .addGroup(jPanel_ChartLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel_ChartLayout.createSequentialGroup()
@@ -479,36 +479,37 @@ public class FrmLayerProperty extends javax.swing.JDialog {
                         .addComponent(jComboBox_ChartType, javax.swing.GroupLayout.PREFERRED_SIZE, 197, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel_ChartLayout.createSequentialGroup()
                         .addGap(6, 6, 6)
-                        .addGroup(jPanel_ChartLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel_ChartLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(jPanel_ChartLayout.createSequentialGroup()
                                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(22, 22, 22)
-                                .addGroup(jPanel_ChartLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addGroup(jPanel_ChartLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(jPanel_ChartLayout.createSequentialGroup()
-                                        .addComponent(jLabel8)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(jTextField_YShift, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGap(34, 34, 34)
+                                        .addGroup(jPanel_ChartLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                            .addComponent(jLabel7)
+                                            .addComponent(jLabel8))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addGroup(jPanel_ChartLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                            .addComponent(jTextField_YShift, javax.swing.GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE)
+                                            .addComponent(jTextField_XShift)))
                                     .addGroup(jPanel_ChartLayout.createSequentialGroup()
-                                        .addComponent(jLabel7)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(jTextField_XShift, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 189, javax.swing.GroupLayout.PREFERRED_SIZE))))
                             .addGroup(jPanel_ChartLayout.createSequentialGroup()
                                 .addComponent(legendView_Chart, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addGroup(jPanel_ChartLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addGroup(jPanel_ChartLayout.createSequentialGroup()
-                                        .addGroup(jPanel_ChartLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addGroup(jPanel_ChartLayout.createSequentialGroup()
-                                                .addGap(20, 20, 20)
-                                                .addComponent(jLabel9)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(jComboBox_Align, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                            .addGroup(jPanel_ChartLayout.createSequentialGroup()
-                                                .addGap(12, 12, 12)
-                                                .addComponent(jCheckBox_CollisionAvoidance)))
-                                        .addGap(0, 0, Short.MAX_VALUE)))))))
-                .addGap(14, 14, 14))
+                                        .addGap(34, 34, 34)
+                                        .addComponent(jLabel9)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jComboBox_Align, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(jPanel_ChartLayout.createSequentialGroup()
+                                        .addGap(26, 26, 26)
+                                        .addComponent(jCheckBox_CollisionAvoidance))
+                                    .addGroup(jPanel_ChartLayout.createSequentialGroup()
+                                        .addGap(14, 14, 14)
+                                        .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel_ChartLayout.setVerticalGroup(
             jPanel_ChartLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -550,14 +551,15 @@ public class FrmLayerProperty extends javax.swing.JDialog {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 383, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(53, 53, 53)
-                .addComponent(jButton_Apply, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(46, Short.MAX_VALUE)
+                .addComponent(jButton_Apply, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(26, 26, 26)
-                .addComponent(jButton_OK, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jButton_OK, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(jButton_Cancel, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jButton_Cancel, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(61, 61, 61))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -582,15 +584,25 @@ public class FrmLayerProperty extends javax.swing.JDialog {
                 _mapLayer.setLegendScheme(this.legendView1.getLegendScheme());
                 break;
             case 2:    //Chart
-                ((VectorLayer) _mapLayer).removeCharts();
-                addCharts();
+                if (((VectorLayer) _mapLayer).getChartPoints().size() > 0) {
+                    updateCharts();
+                    ((VectorLayer) _mapLayer).updateCharts();
+                } else {
+                    //((VectorLayer) _mapLayer).removeCharts();
+                    addCharts();
+                }
                 break;
-        }        
+        }
         _mapFrame.updateLayerNode(_mapLayer);
         _mapFrame.getMapView().paintLayers();
     }//GEN-LAST:event_jButton_ApplyActionPerformed
 
     private void addCharts() {
+        this.updateCharts();
+        ((VectorLayer) _mapLayer).addCharts();
+    }
+
+    private void updateCharts() {
         if (this.checkBoxList_Fields.getCheckedIdexes().length < 1) {
             return;
         }
@@ -601,7 +613,7 @@ public class FrmLayerProperty extends javax.swing.JDialog {
         List<String> fieldNames = new ArrayList<String>();
         int i, j;
         for (i = 0; i < this.checkBoxList_Fields.getCheckedIdexes().length; i++) {
-            fieldNames.add(((CheckBoxListEntry)this.checkBoxList_Fields.getCheckedItems().get(i)).getValue().toString());
+            fieldNames.add(((CheckBoxListEntry) this.checkBoxList_Fields.getCheckedItems().get(i)).getValue().toString());
         }
 
         chartSet.setFieldNames(fieldNames);
@@ -651,13 +663,30 @@ public class FrmLayerProperty extends javax.swing.JDialog {
                 break;
         }
 
-        aLayer.addCharts();
+        //aLayer.addCharts();
     }
 
     private void jButton_OKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_OKActionPerformed
         // TODO add your handling code here:
-        this.jButton_Apply.doClick();
-        this.dispose();
+        this.propertySheetPanel1.writeToObject(_object);
+        switch (this.jTabbedPane1.getSelectedIndex()) {
+            case 1:    //Legend                
+                _mapLayer.setLegendScheme(this.legendView1.getLegendScheme());
+                break;
+            case 2:    //Chart
+                ((VectorLayer) _mapLayer).removeCharts();
+                addCharts();
+                break;
+        }
+        _mapFrame.updateLayerNode(_mapLayer);
+        _mapFrame.getMapView().paintLayers();
+
+        switch (this.jTabbedPane1.getSelectedIndex()) {
+            case 0:    //General
+            case 1:    //Legend
+                this.dispose();
+                break;
+        }
     }//GEN-LAST:event_jButton_OKActionPerformed
 
     private void jButton_CancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_CancelActionPerformed
@@ -728,9 +757,9 @@ public class FrmLayerProperty extends javax.swing.JDialog {
             } else if (fext.equals("lgs")) {
                 try {
                     _legendScheme.importFromXMLFile(aFile.getAbsolutePath());
-                    if (this._mapLayer.getLayerType() == LayerTypes.VectorLayer){
-                        VectorLayer layer = (VectorLayer)this._mapLayer;
-                        if (layer.getField(_legendScheme.getFieldName()) == null){
+                    if (this._mapLayer.getLayerType() == LayerTypes.VectorLayer) {
+                        VectorLayer layer = (VectorLayer) this._mapLayer;
+                        if (layer.getField(_legendScheme.getFieldName()) == null) {
                             _legendScheme.setFieldName(this.jComboBox_Field.getSelectedItem().toString());
                         }
                     }
@@ -956,9 +985,13 @@ public class FrmLayerProperty extends javax.swing.JDialog {
         switch (selIndex) {
             case 0:   //General
             case 1:    //Legend
+                this.jButton_Apply.setText("Apply");
+                this.jButton_OK.setText("OK");
                 this.jButton_Cancel.setText("Cancel");
                 break;
             case 2:    //Chart
+                this.jButton_Apply.setText("Update");
+                this.jButton_OK.setText("Reset");
                 this.jButton_Cancel.setText("Clear");
                 break;
         }
@@ -1063,7 +1096,6 @@ public class FrmLayerProperty extends javax.swing.JDialog {
 //                        JOptionPane.showMessageDialog(this, "The values of all shapes are same!");
 //                        break;
 //                    }
-
                     if (valueList.size() <= 13) {
                         colors = LegendManage.createRainBowColors(valueList.size());
                     } else {

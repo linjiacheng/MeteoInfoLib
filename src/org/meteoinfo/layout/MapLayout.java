@@ -2356,7 +2356,7 @@ public class MapLayout extends JPanel {
             if (this._currentLayoutMap.getMapFrame().getMapView().isDrawIdentiferShape()) {
                 int selLayerHandle = this._currentLayoutMap.getMapFrame().getMapView().getSelectedLayerHandle();
                 if (selLayerHandle >= 0) {
-                    MapLayer aLayer = this._currentLayoutMap.getMapFrame().getMapView().getLayerFromHandle(selLayerHandle);
+                    MapLayer aLayer = this._currentLayoutMap.getMapFrame().getMapView().getLayerByHandle(selLayerHandle);
                     if (aLayer.getLayerType() == LayerTypes.VectorLayer) {
                         VectorLayer vLayer = (VectorLayer) aLayer;
                         Rectangle rect = getElementViewExtent(_currentLayoutMap);
@@ -3737,7 +3737,7 @@ public class MapLayout extends JPanel {
             int layoutMapIdx = Integer.parseInt(layoutLegend.getAttributes().getNamedItem("LayoutMapIndex").getNodeValue());
             String legendLayerName = layoutLegend.getAttributes().getNamedItem("LegendLayer").getNodeValue();
             LayoutMap aLM = this.getLayoutMaps().get(layoutMapIdx);
-            MapLayer legendLayer = aLM.getMapFrame().getMapView().getLayerFromName(legendLayerName);
+            MapLayer legendLayer = aLM.getMapFrame().getMapView().getLayer(legendLayerName);
             aLL = new LayoutLegend(this, aLM);
             aLL.setLegendLayer(legendLayer);
         } catch (Exception e) {

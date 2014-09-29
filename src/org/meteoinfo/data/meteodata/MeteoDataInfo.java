@@ -43,8 +43,8 @@ import org.meteoinfo.data.meteodata.mm5.MM5DataInfo;
 import org.meteoinfo.data.meteodata.mm5.MM5IMDataInfo;
 import org.meteoinfo.global.util.DateUtil;
 import org.meteoinfo.global.MIMath;
-import org.meteoinfo.global.mathparser.MathParser;
-import org.meteoinfo.global.mathparser.ParseException;
+import org.meteoinfo.data.mathparser.MathParser;
+import org.meteoinfo.data.mathparser.ParseException;
 
 /**
  *

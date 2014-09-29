@@ -45,6 +45,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import org.meteoinfo.global.DataConvert;
+import org.meteoinfo.legend.ChartTypes;
 
 /**
  *
@@ -211,7 +212,7 @@ public class LayoutLegend extends LayoutElement {
      * @param name Layer name
      */
     public void setLayerName(String name) {
-        MapLayer aLayer = _layoutMap.getMapFrame().getMapView().getLayerFromName(name);
+        MapLayer aLayer = _layoutMap.getMapFrame().getMapView().getLayer(name);
         if (aLayer != null) {
             _legendLayer = aLayer;
         }
@@ -880,9 +881,8 @@ public class LayoutLegend extends LayoutElement {
         String caption = "";
         Dimension aSF;
         int bNum = aLS.getBreakNum();
-
-        if (_legendStyle == LegendStyles.Normal) {
-            FontMetrics metrics = g.getFontMetrics(_font);
+        FontMetrics metrics = g.getFontMetrics(_font);
+        if (_legendStyle == LegendStyles.Normal) {            
             aSF = new Dimension(metrics.stringWidth(_title), metrics.getHeight());
             width = aSF.width;
         } else {
@@ -937,10 +937,25 @@ public class LayoutLegend extends LayoutElement {
                     break;
             }
             if (isValid) {
-                FontMetrics metrics = g.getFontMetrics(_font);
-                aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());
-                if (width < aSF.width) {
-                    width = aSF.width;
+                float labwidth = metrics.stringWidth(caption);
+                if (width < labwidth) {
+                    width = labwidth;
+                }
+            }
+        }
+        
+        if (_legendStyle == LegendStyles.Normal) {
+            if (_legendLayer.getLayerType() == LayerTypes.VectorLayer) {
+                if (((VectorLayer) _legendLayer).getChartSet().isDrawCharts()) {
+                    ChartBreak aCB = ((ChartBreak) ((VectorLayer) _legendLayer).getChartPoints().get(0).getLegend()).getSampleChartBreak();
+                    if (aCB.getChartType() == ChartTypes.BarChart){
+                        LegendScheme ls = aCB.getLegendScheme();
+                        for (ColorBreak cb : ls.getLegendBreaks()){
+                            float labwidth = metrics.stringWidth(cb.getCaption());
+                            if (width < labwidth)
+                                width = metrics.stringWidth(cb.getCaption());
+                        }
+                    }
                 }
             }
         }
@@ -993,7 +1008,7 @@ public class LayoutLegend extends LayoutElement {
                     break;
                 case Normal:
                     int aHeight = getBreakHeight(g);
-                    int colWidth = aHeight * 2 + getLabelWidth(g) + 10;
+                    int colWidth = aHeight * 2 + getLabelWidth(g) + 15;
                     this.setWidth(colWidth * _columnNum);
 
                     //Set columns
@@ -1114,7 +1129,7 @@ public class LayoutLegend extends LayoutElement {
          * @param name Layer name
          */
         public void setLayerName(String name) {
-            MapLayer aLayer = _layoutMap.getMapFrame().getMapView().getLayerFromName(name);
+            MapLayer aLayer = _layoutMap.getMapFrame().getMapView().getLayer(name);
             if (aLayer != null) {
                 this.setLegendLayer(aLayer);
             }

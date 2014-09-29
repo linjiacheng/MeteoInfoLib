@@ -1,4 +1,4 @@
-/* Copyright 2012 Yaqiang Wang,
+ /* Copyright 2012 Yaqiang Wang,
  * yaqiang.wang@gmail.com
  * 
  * This library is free software; you can redistribute it and/or modify it
@@ -11,22 +11,24 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
  * General Public License for more details.
  */
-package org.meteoinfo.global.table;
-
-import java.util.ArrayList;
+package org.meteoinfo.data.mathparser;
 
 /**
  *
- * @author Yaqiang Wang
+ * @author yaqiang
  */
-public class DataRowCollection extends ArrayList<DataRow> {
-    DataColumnCollection columns;
+public interface IExpression {
+    /**
+     * Get the number of arguments this expression uses
+     * @return The argument count
+     */
+    public int getArgumentCount();
     
     /**
-     * Set data columns
-     * @param columns Data columns
+     * Math evaluate
+     * @param numbers The numbers to evaluate
+     * @return The result of the evaluated numbers
      */
-    public void setColumns(DataColumnCollection columns){
-        this.columns = columns;
-    }            
+    public Object evaluate(Object[] numbers);
+    
 }

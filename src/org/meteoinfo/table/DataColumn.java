@@ -11,7 +11,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
  * General Public License for more details.
  */
-package org.meteoinfo.global.table;
+package org.meteoinfo.table;
 
 /**
  *
@@ -25,6 +25,7 @@ public class DataColumn {
     private String captionName;
     private int columnIndex;
     private DataTypes dataType;
+    private boolean joined = false;
     //private String dataTypeName;
 
     /**
@@ -116,6 +117,22 @@ public class DataColumn {
     public void setReadOnly(boolean readOnly) {
         this.readOnly = readOnly;
     }
+    
+    /**
+     * Get if is joined
+     * @return Boolean
+     */
+    public boolean isJoined(){
+        return this.joined;
+    }
+    
+    /**
+     * Set if is joined
+     * @param value Boolean
+     */
+    public void setJoined(boolean value){
+        this.joined = value;
+    }
 
     /**
      * Get data table
@@ -183,7 +200,8 @@ public class DataColumn {
     /**
      * Convert input data to current data type
      *
-     * @param Value
+     * @param value Object value
+     * @return 
      */
     public Object convertTo(Object value) {
         switch (this.dataType){

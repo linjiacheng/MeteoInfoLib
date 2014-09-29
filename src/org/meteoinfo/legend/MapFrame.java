@@ -986,7 +986,7 @@ public class MapFrame extends ItemNode {
         aLN.setMapFrame(this);
         int handle = _mapView.addLayer(aLN.getMapLayer());
 
-        aLN.setMapLayer(_mapView.getLayerFromHandle(handle));
+        aLN.setMapLayer(_mapView.getLayerByHandle(handle));
         aGN.addLayer(aLN);
         if (aLN.getMapLayer().isVisible()) {
             aLN.setChecked(true);
@@ -1033,7 +1033,7 @@ public class MapFrame extends ItemNode {
         aLN.setMapFrame(this);
         int handle = _mapView.addLayer(aLN.getMapLayer());
 
-        aLN.setMapLayer(_mapView.getLayerFromHandle(handle));
+        aLN.setMapLayer(_mapView.getLayerByHandle(handle));
         addNode(index, aLN);
         if (aLN.getMapLayer().isVisible()) {
             aLN.setChecked(true);
@@ -1062,7 +1062,7 @@ public class MapFrame extends ItemNode {
         aLN.setMapFrame(this);
         int handle = _mapView.addLayer(aLN.getMapLayer());
 
-        aLN.setMapLayer(_mapView.getLayerFromHandle(handle));
+        aLN.setMapLayer(_mapView.getLayerByHandle(handle));
         aGN.addLayer(index, aLN);
         if (aLN.getMapLayer().isVisible()) {
             aLN.setChecked(true);
@@ -1614,7 +1614,7 @@ public class MapFrame extends ItemNode {
         for (int i = 0; i < _nodes.size(); i++) {
             ItemNode aTN = this.getNodes().get(i);
             if (aTN.getNodeType() == NodeTypes.LayerNode) {
-                MapLayer aLayer = _mapView.getLayerFromHandle(((LayerNode) aTN).getLayerHandle());
+                MapLayer aLayer = _mapView.getLayerByHandle(((LayerNode) aTN).getLayerHandle());
                 addLayerElement(m_Doc, GroupLayer, aLayer, projectFilePath);
             } else {
                 addGroupElement(m_Doc, GroupLayer, (GroupNode) aTN, projectFilePath);
@@ -1639,7 +1639,7 @@ public class MapFrame extends ItemNode {
         Group.setAttributeNode(Expanded);
 
         for (LayerNode aLN : aGN.getLayers()) {
-            MapLayer aLayer = _mapView.getLayerFromHandle(aLN.getLayerHandle());
+            MapLayer aLayer = _mapView.getLayerByHandle(aLN.getLayerHandle());
             addLayerElement(m_Doc, Group, aLayer, projectFilePath);
         }
 
