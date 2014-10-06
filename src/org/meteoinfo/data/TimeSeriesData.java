@@ -16,8 +16,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.meteoinfo.data.analysis.Statistics;
 import org.meteoinfo.table.DataColumn;

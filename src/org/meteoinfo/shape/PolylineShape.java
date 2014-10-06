@@ -146,7 +146,7 @@ public class PolylineShape extends Shape {
             polylines.add(aPolyLine);
         } else {
             PointD[] Pointps;
-            Polyline aPolyLine = null;
+            Polyline aPolyLine;
             int numPoints = this.getPointNum();
             for (int p = 0; p < _numParts; p++) {
                 if (p == _numParts - 1) {
@@ -185,6 +185,54 @@ public class PolylineShape extends Shape {
             parts[i] = partList.get(i);
         }
         this.setExtent(MIMath.getPointsExtent(_points));
+    }
+    
+    /**
+     * Get part index
+     * @param vIdx The vertice index
+     * @return Part index
+     */
+    public int getPartIndex(int vIdx){
+        if (_numParts == 1)
+            return 0;
+        else {
+            for (int p = 1; p < _numParts; p++) {
+                if (vIdx < parts[p])
+                    return p - 1;
+            }
+            return _numParts - 1;
+        }
+    }
+    
+    /**
+     * Add a vertice
+     * @param vIdx Vertice index
+     * @param vertice The vertice
+     */
+    @Override
+    public void addVertice(int vIdx, PointD vertice){     
+        int partIdx = getPartIndex(vIdx);
+        if (partIdx < _numParts - 1)
+            parts[partIdx + 1] += 1;
+        
+        ((List<PointD>)_points).add(vIdx, vertice);
+        this.setExtent(MIMath.getPointsExtent(_points));
+        updatePolyLines();
+    }
+    
+    /**
+     * Remove a vertice
+     * @param vIdx Vertice index
+     */
+    @Override
+    public void removeVerice(int vIdx){      
+        int partIdx = getPartIndex(vIdx);
+        if (partIdx < _numParts - 1)
+            parts[partIdx + 1] -= 1;
+        
+        ((List<PointD>)_points).remove(vIdx);
+        this.setExtent(MIMath.getPointsExtent(_points));
+        updatePolyLines();
     }
 
     /**

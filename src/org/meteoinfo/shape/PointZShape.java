@@ -14,12 +14,6 @@
  */
 package org.meteoinfo.shape;
 
-import org.meteoinfo.global.MIMath;
-import org.meteoinfo.global.PointD;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 /**
  *
  * @author yaqiang

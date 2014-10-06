@@ -13,6 +13,7 @@
  */
 package org.meteoinfo.table;
 
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -74,7 +75,7 @@ public class DataRow {
      * @param columns Columns
      */
     public void setColumns(DataColumnCollection columns) {
-        this.columns = columns;
+        this.columns = columns;        
     }
 
     /**

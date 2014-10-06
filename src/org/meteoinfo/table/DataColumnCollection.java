@@ -15,6 +15,7 @@ package org.meteoinfo.table;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -80,5 +81,17 @@ public class DataColumnCollection extends ArrayList<DataColumn>{
         column.setColumnName(name);
         nameMap.remove(oldName);
         nameMap.put(name, column);
+    }
+    
+    /**
+     * Get column names
+     * @return Column names
+     */
+    public List<String> getColumnNames(){
+        List<String> colNames = new ArrayList<String>();
+        for (DataColumn col : this){
+            colNames.add(col.getColumnName());
+        }
+        return colNames;
     }
 }

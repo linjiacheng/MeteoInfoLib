@@ -18,14 +18,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.meteoinfo.data.analysis.Statistics;
+import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.util.GlobalUtil;
+import org.meteoinfo.table.ColumnData;
 import org.meteoinfo.table.DataColumn;
 import org.meteoinfo.table.DataRow;
 import org.meteoinfo.table.DataTable;
@@ -188,12 +189,30 @@ public class TableData {
      */
     public List<Double> getValidColumnValues(List<DataRow> rows, DataColumn col){
         List<Double> values = new ArrayList<Double>();
+        String colName = col.getColumnName();
         String vstr;
+        double value = Double.NaN;
         for (DataRow row : rows){
-            vstr = row.getValue(col.getColumnName()).toString();
-            if (!vstr.isEmpty()){
-                values.add(Double.parseDouble(vstr));
+            switch (col.getDataType()){
+                case Integer:
+                    value = (double)(Integer)row.getValue(colName);
+                    break;
+                case Float:
+                    value = (double)(Float)row.getValue(colName);                    
+                    break;
+                case Double:
+                    value = (Double)row.getValue(colName);
+                    break;
+                case String:
+                    vstr = (String)row.getValue(colName);
+                    if (!vstr.isEmpty())
+                        value = Double.parseDouble(vstr);
+                    else
+                        value = Double.NaN;
+                    break;
             }
+            if (!Double.isNaN(value))
+                values.add(value);
         }
         
         return values;
@@ -204,8 +223,8 @@ public class TableData {
      * @param colName The column name
      * @return Column data
      */
-    public List<String> getColumnData(String colName){
-        return this.getColumnData(dataTable.findColumn(colName));
+    public ColumnData getColumnData(String colName){
+        return dataTable.getColumnData(colName);
     }
     
     /**
@@ -213,8 +232,8 @@ public class TableData {
      * @param col The data column
      * @return Column data
      */
-    public List<String> getColumnData(DataColumn col) {
-        return this.getColumnData(dataTable.getRows(), col);
+    public ColumnData getColumnData(DataColumn col) {
+        return dataTable.getColumnData(col);
     }
     
     /**
@@ -223,14 +242,37 @@ public class TableData {
      * @param col The data column
      * @return Column values
      */
-    public List<String> getColumnData(List<DataRow> rows, DataColumn col){
-        List<String> values = new ArrayList<String>();
-        for (DataRow row : rows){
-            values.add(row.getValue(col.getColumnName()).toString());
+    public ColumnData getColumnData(List<DataRow> rows, DataColumn col){
+        return dataTable.getColumnData(rows, null);
+    }
+    
+    /**
+     * Convert a data column to double data type
+     * @param colName The data column name
+     */
+    public void columnToDouble(String colName){
+        DataColumn col = dataTable.findColumn(colName);
+        DataTypes oldType = col.getDataType();
+        col.setDataType(DataTypes.Double);
+        Object value;
+        for (DataRow row : dataTable.getRows()){
+            value = row.getValue(colName);
+            switch (oldType){
+                case Integer:
+                    row.setValue(col, (double)(Integer)value);
+                    break;
+                case Float:
+                    row.setValue(col, (double)(Float)value);
+                    break;
+                case String:
+                    if (MIMath.isNumeric((String)value))
+                        row.setValue(col, Double.parseDouble((String)value));
+                    else
+                        row.setValue(col, Double.NaN);
+                    break;
+            }            
         }
-        
-        return values;
-    }        
+    }
     
     /**
      * Get average data table

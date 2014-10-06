@@ -24,8 +24,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JColorChooser;
-import org.meteoinfo.drawing.Draw;
-import org.meteoinfo.global.util.FontUtil;
 
 /**
  *
@@ -41,6 +39,8 @@ public class FrmPointSymbolSet extends javax.swing.JDialog {
 
     /**
      * Creates new form FrmPointSymbolSet
+     * @param parent
+     * @param modal
      */
     public FrmPointSymbolSet(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
@@ -51,6 +51,9 @@ public class FrmPointSymbolSet extends javax.swing.JDialog {
 
     /**
      * Creates new form FrmPointSymbolSet
+     * @param parent
+     * @param modal
+     * @param tparent
      */
     public FrmPointSymbolSet(java.awt.Dialog parent, boolean modal, Object tparent) {
         super(parent, modal);
@@ -75,6 +78,9 @@ public class FrmPointSymbolSet extends javax.swing.JDialog {
 
      /**
      * Creates new form FrmPointSymbolSet
+     * @param parent
+     * @param modal
+     * @param tparent
      */
     public FrmPointSymbolSet(java.awt.Frame parent, boolean modal, Object tparent) {
         super(parent, modal);

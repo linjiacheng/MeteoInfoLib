@@ -18,9 +18,11 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.meteoinfo.global.MIMath;
 
 /**
  *
@@ -135,12 +137,12 @@ public final class DataTable {
         return this.columns;
     }
     
+    /**
+     * Get column names
+     * @return Column names
+     */
     public List<String> getColumnNames(){
-        List<String> names = new ArrayList<String>();
-        for (DataColumn col : columns)
-            names.add(col.getColumnName());
-        
-        return names;
+        return this.columns.getColumnNames();
     }
 
     /**
@@ -177,6 +179,22 @@ public final class DataTable {
                 : nextRowIndex;
         tempRow.setColumns(this.columns);
         tempRow.setRowIndex(nextRowIndex++);
+        for (DataColumn col : columns){
+            switch(col.getDataType()){
+                case String:
+                    tempRow.setValue(col.getColumnName(), "");
+                    break;
+                case Date:
+                    tempRow.setValue(col.getColumnName(), new Date());
+                    break;
+                case Boolean:
+                    tempRow.setValue(col.getColumnName(), Boolean.TRUE);
+                    break;
+                default:
+                    tempRow.setValue(col.getColumnName(), 0);
+                    break;
+            }
+        }
         return tempRow;
     }
 
@@ -315,11 +333,54 @@ public final class DataTable {
     }
     
     /**
+     * Append a data row
+     * @param row Data row
+     * @return Boolean
+     */
+    public boolean appendRow(DataRow row){
+        List<String> colNames = row.getColumns().getColumnNames();
+        nextRowIndex = nextRowIndex < this.rows.size() ? this.rows.size()
+                : nextRowIndex;
+        row.setColumns(this.columns);
+        row.setRowIndex(nextRowIndex++);
+        row.setTable(this);        
+        for (DataColumn col : this.columns){
+            if (!colNames.contains(col.getColumnName()))
+                row.setValue(col, null);
+        }
+        return this.rows.add(row);
+    }
+    
+    /**
+     * Remove a row
+     * @param rowIdx Row index 
+     */
+    public void removeRow(int rowIdx){
+        this.rows.remove(rowIdx);
+    }
+    
+    /**
+     * Add column data
+     * @param colData The column data
+     * @throws Exception 
+     */
+    public void addColumnData(ColumnData colData) throws Exception{
+        DataColumn col = this.addColumn(colData.getDataColumn().getColumnName(), colData.getDataType());
+        int i = 0;
+        for (DataRow row : this.rows){
+            if (i < colData.size()){
+                row.setValue(col, colData.getValue(i));
+            }
+            i++;
+        }
+    }
+    
+    /**
      * Get column data
      * @param colName The column name
      * @return Column data
      */
-    public List<String> getColumnData(String colName){
+    public ColumnData getColumnData(String colName){
         return this.getColumnData(this.getRows(), colName);
     }
     
@@ -328,7 +389,7 @@ public final class DataTable {
      * @param col The data column
      * @return Column data
      */
-    public List<String> getColumnData(DataColumn col) {
+    public ColumnData getColumnData(DataColumn col) {
         return this.getColumnData(col.getColumnName());
     }
     
@@ -338,13 +399,13 @@ public final class DataTable {
      * @param colName The data column name
      * @return Column values
      */
-    public List<String> getColumnData(List<DataRow> rows, String colName){
-        List<String> values = new ArrayList<String>();
+    public ColumnData getColumnData(List<DataRow> rows, String colName){
+        ColumnData colData = new ColumnData(this.findColumn(colName));
         for (DataRow row : rows){
-            values.add(row.getValue(colName).toString());
+            colData.addData(row.getValue(colName));
         }
         
-        return values;
+        return colData;
     }
     
     /**
@@ -550,17 +611,22 @@ public final class DataTable {
         for (DataColumn col : this.columns){
             str += "," + col.getColumnName();
         }
-        str = str.substring(1);                
+        str = str.substring(1);     
+        String vstr;
         for (DataRow row : this.rows){
             String line = "";
             for (DataColumn col : this.columns){
+                vstr = row.getValue(col.getColumnName()).toString();
                 switch(col.getDataType()){
                     case Float:
                     case Double:
-                        line += "," + String.format(dFormat, Double.parseDouble(row.getValue(col.getColumnName()).toString()));
+                        if (MIMath.isNumeric(vstr))
+                            line += "," + String.format(dFormat, Double.parseDouble(vstr));
+                        else
+                            line += ",";
                         break;
                     default:
-                        line += "," + row.getValue(col.getColumnName()).toString();
+                        line += "," + vstr;
                         break;
                 }                
             }
@@ -608,41 +674,17 @@ public final class DataTable {
      * @param colName The column name for join
      */
     public void join(DataTable dataTable, String colName){
-        DataColumn col_this = this.findColumn(colName);
-        if (col_this == null){
-            System.out.println("There is no column of " + colName + " in this table");
-            return;
-        }
-        DataColumn col_in = dataTable.findColumn(colName);
-        if (col_in == null){
-            System.out.println("There is no column of " + colName + " in this table");
-            return;
-        }
-        
-        List<String> values_this = this.getColumnData(colName);
-        List<String> values_in = dataTable.getColumnData(colName);
-        
-        List<String> colNames = this.getColumnNames(); 
-        List<String> newColNames = new ArrayList<String>();
-        for (DataColumn col : dataTable.columns){
-            if (!colNames.contains(col.getColumnName())){
-                DataColumn newCol = new DataColumn(col.getColumnName(), col.getDataType());
-                newCol.setJoined(true);
-                this.addColumn(newCol);
-                newColNames.add(col.getColumnName());
-            }
-        }
-        String value;
-        int idx;
-        for (int i = 0; i < this.getRowCount(); i++){
-            value = values_this.get(i);
-            idx = values_in.indexOf(value);
-            if (idx >= 0){
-                for (String cn : newColNames){
-                    this.setValue(i, cn, dataTable.getValue(idx, cn));
-                }
-            }
-        }
+        this.join(dataTable, colName, colName, false);
+    }
+    
+    /**
+     * Join data table
+     * @param dataTable The input data table
+     * @param colName The column name for join
+     * @param isUpdate If update the existing values with same column name
+     */
+    public void join(DataTable dataTable, String colName, boolean isUpdate){
+        this.join(dataTable, colName, colName, isUpdate);
     }
     
     /**
@@ -650,8 +692,9 @@ public final class DataTable {
      * @param dataTable The input data table
      * @param colName_this The column name of this data table for join
      * @param colName_in The column name of the input data table for join
+     * @param isUpdate If update the existing values with same column name
      */
-    public void join(DataTable dataTable, String colName_this, String colName_in){
+    public void join(DataTable dataTable, String colName_this, String colName_in, boolean isUpdate){
         DataColumn col_this = this.findColumn(colName_this);
         if (col_this == null){
             System.out.println("There is no column of " + colName_this + " in this table");
@@ -663,8 +706,8 @@ public final class DataTable {
             return;
         }
         
-        List<String> values_this = this.getColumnData(colName_this);
-        List<String> values_in = dataTable.getColumnData(colName_in);
+        List<String> values_this = (List<String>)this.getColumnData(colName_this).getData();
+        List<String> values_in = (List<String>)dataTable.getColumnData(colName_in).getData();
         
         List<String> colNames = this.getColumnNames(); 
         List<String> newColNames = new ArrayList<String>();
@@ -682,8 +725,14 @@ public final class DataTable {
             value = values_this.get(i);
             idx = values_in.indexOf(value);
             if (idx >= 0){
-                for (String cn : newColNames){
-                    this.setValue(i, cn, dataTable.getValue(idx, cn));
+                if (isUpdate){
+                    for (String cn : dataTable.getColumnNames()){
+                        this.setValue(i, cn, dataTable.getValue(idx, cn));
+                    }
+                } else {
+                    for (String cn : newColNames){
+                        this.setValue(i, cn, dataTable.getValue(idx, cn));
+                    }
                 }
             }
         }

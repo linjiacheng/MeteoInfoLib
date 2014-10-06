@@ -129,5 +129,9 @@ public enum MouseMode {
     /// <summary>
     /// Map measurement
     /// </summary>
-    Map_Measurement
+    Map_Measurement,
+    Map_Edit_Tool,
+    Map_Edit_MoveSelection,    
+    Map_Edit_NewFeature,
+    Map_Edit_FeatureVertices;
 }

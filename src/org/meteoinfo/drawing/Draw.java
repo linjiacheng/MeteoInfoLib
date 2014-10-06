@@ -74,7 +74,7 @@ public class Draw {
     public static WindBarb calWindBarb(float windDir, float windSpeed, double value,
             float size, PointD sPoint) {
         WindBarb aWB = new WindBarb();
-        
+
         windSpeed += 1;
         aWB.windSpeed = windSpeed;
         aWB.angle = windDir;
@@ -85,7 +85,7 @@ public class Draw {
         aWB.windSpeesLine.W4 = (int) ((windSpeed - aWB.windSpeesLine.W20 * 20) / 4);
         aWB.windSpeesLine.W2 = (int) ((windSpeed - aWB.windSpeesLine.W20 * 20
                 - aWB.windSpeesLine.W4 * 4) / 2);
-        
+
         return aWB;
     }
 
@@ -122,7 +122,7 @@ public class Draw {
         aSM.cloudCoverage.cloudCover = cloudCover;
         aSM.cloudCoverage.size = size / 4 * 3;
         aSM.cloudCoverage.sPoint = aPoint;
-        
+
         return aSM;
     }
 
@@ -143,20 +143,20 @@ public class Draw {
         if (angle >= 360) {
             angle -= 360;
         }
-        
+
         len = len * zoom;
-        
+
         eP.X = (int) (sP.X + len * Math.sin(angle * Math.PI / 180));
         eP.Y = (int) (sP.Y - len * Math.cos(angle * Math.PI / 180));
-        
+
         if (angle == 90) {
             eP.Y = sP.Y;
         }
-        
+
         g.setColor(aColor);
         g.draw(new Line2D.Float(sP.X, sP.Y, eP.X, eP.Y));
         drawArraw(g, eP, angle);
-        
+
 //        GeneralPath path = new GeneralPath(GeneralPath.WIND_EVEN_ODD, 5);
 //        path.moveTo(sP.X, sP.Y);
 //        path.lineTo(eP.X, eP.Y);                        
@@ -173,9 +173,10 @@ public class Draw {
 //        path.lineTo(eP1.X, eP1.Y);
 //        g.draw(path);
     }
-    
+
     /**
      * Draw arraw
+     *
      * @param g Graphics2D
      * @param sP Start point
      * @param angle Angle
@@ -193,7 +194,7 @@ public class Draw {
         for (int i = 1; i < 5; i++) {
             path.lineTo(pt[i].X, pt[i].Y);
         }
-        
+
         AffineTransform tempTrans = g.getTransform();
         if (angle != 0) {
             AffineTransform myTrans = new AffineTransform();
@@ -204,7 +205,7 @@ public class Draw {
         }
         path.closePath();
         g.fill(path);
-        
+
         if (angle != 0) {
             g.setTransform(tempTrans);
         }
@@ -224,15 +225,15 @@ public class Draw {
         PointF eP1;
         double len = size * 2;
         int i;
-        
+
         double aLen = len;
-        
+
         eP = new PointF();
         eP.X = (float) (sP.X + len * Math.sin(aWB.angle * Math.PI / 180));
         eP.Y = (float) (sP.Y - len * Math.cos(aWB.angle * Math.PI / 180));
         g.setColor(aColor);
         g.draw(new Line2D.Float(sP.X, sP.Y, eP.X, eP.Y));
-        
+
         len = len / 2;
         if (aWB.windSpeesLine.W20 > 0) {
             for (i = 0; i < aWB.windSpeesLine.W20; i++) {
@@ -281,9 +282,9 @@ public class Draw {
         PointF eP1;
         double len = size * 2;
         int i;
-        
+
         double aLen = len;
-        
+
         eP = new PointF();
         eP.X = (float) (sP.X + len * Math.sin(aWB.angle * Math.PI / 180));
         eP.Y = (float) (sP.Y - len * Math.cos(aWB.angle * Math.PI / 180));
@@ -292,7 +293,7 @@ public class Draw {
         cutSP.Y = (float) (sP.Y - cut * Math.cos(aWB.angle * Math.PI / 180));
         g.setColor(aColor);
         g.draw(new Line2D.Float(cutSP.X, cutSP.Y, eP.X, eP.Y));
-        
+
         len = len / 2;
         if (aWB.windSpeesLine.W20 > 0) {
             for (i = 0; i < aWB.windSpeesLine.W20; i++) {
@@ -348,7 +349,7 @@ public class Draw {
         aPB.setSize(aSize);
         aPB.setDrawOutline(drawOutline);
         aPB.setDrawFill(drawFill);
-        
+
         drawPoint(aP, aPB, g);
     }
 
@@ -375,7 +376,7 @@ public class Draw {
         //if (aPB.Angle != 0)
         //    g.Transform = new Matrix();
     }
-    
+
     private static void drawPoint_Simple(PointF aP, PointBreak aPB, Graphics2D g) {
         AffineTransform tempTrans = g.getTransform();
         if (aPB.getAngle() != 0) {
@@ -386,7 +387,7 @@ public class Draw {
             aP.X = 0;
             aP.Y = 0;
         }
-        
+
         g.setStroke(new BasicStroke(1.0f));
         int[] xPoints;
         int[] yPoints;
@@ -395,9 +396,9 @@ public class Draw {
         boolean drawOutline = aPB.getDrawOutline();
         Color color = aPB.getColor();
         Color outlineColor = aPB.getOutlineColor();
-        
+
         GeneralPath path = new GeneralPath();
-        
+
         switch (aPB.getStyle()) {
             case Circle:
                 aP.X = aP.X - aSize / 2;
@@ -597,12 +598,12 @@ public class Draw {
                 }
                 break;
         }
-        
+
         if (aPB.getAngle() != 0) {
             g.setTransform(tempTrans);
         }
     }
-    
+
     private static void drawPoint_Simple_Up(PointF aP, PointBreak aPB, Graphics2D g) {
         AffineTransform tempTrans = g.getTransform();
         if (aPB.getAngle() != 0) {
@@ -613,7 +614,7 @@ public class Draw {
             aP.X = 0;
             aP.Y = 0;
         }
-        
+
         int[] xPoints;
         int[] yPoints;
         float aSize = aPB.getSize();
@@ -621,14 +622,14 @@ public class Draw {
         boolean drawOutline = aPB.getDrawOutline();
         Color color = aPB.getColor();
         Color outlineColor = aPB.getOutlineColor();
-        
+
         GeneralPath path = new GeneralPath();
-        
+
         switch (aPB.getStyle()) {
             case Circle:
                 aP.X = aP.X - aSize / 2;
                 aP.Y = aP.Y - aSize;
-                
+
                 if (drawFill) {
                     g.setColor(color);
                     g.fillOval((int) aP.X, (int) aP.Y, (int) aSize, (int) aSize);
@@ -641,7 +642,7 @@ public class Draw {
             case Square:
                 aP.X = aP.X - aSize / 2;
                 aP.Y = aP.Y - aSize;
-                
+
                 if (drawFill) {
                     g.setColor(color);
                     g.fillRect((int) aP.X, (int) aP.Y, (int) aSize, (int) aSize);
@@ -689,12 +690,12 @@ public class Draw {
                 }
                 break;
         }
-        
+
         if (aPB.getAngle() != 0) {
             g.setTransform(tempTrans);
         }
     }
-    
+
     private static void drawPoint_Character(PointF aP, PointBreak aPB, Graphics2D g) {
         AffineTransform tempTrans = g.getTransform();
         if (aPB.getAngle() != 0) {
@@ -705,7 +706,7 @@ public class Draw {
             aP.X = 0;
             aP.Y = 0;
         }
-        
+
         String text = String.valueOf((char) aPB.getCharIndex());
         Font wFont = new Font(aPB.getFontName(), Font.PLAIN, (int) aPB.getSize());
         g.setFont(wFont);
@@ -718,12 +719,12 @@ public class Draw {
 
         g.setColor(aPB.getColor());
         g.drawString(text, sPoint.X, sPoint.Y);
-        
+
         if (aPB.getAngle() != 0) {
             g.setTransform(tempTrans);
         }
     }
-    
+
     private static void drawPoint_Image(PointF aP, PointBreak aPB, Graphics2D g) {
         AffineTransform tempTrans = g.getTransform();
         if (aPB.getAngle() != 0) {
@@ -734,7 +735,7 @@ public class Draw {
             aP.X = 0;
             aP.Y = 0;
         }
-        
+
         File imgFile = new File(aPB.getImagePath());
         if (!imgFile.exists()) {
             //String path = System.getProperty("user.dir");
@@ -755,7 +756,7 @@ public class Draw {
             } catch (IOException ex) {
                 Logger.getLogger(Draw.class.getName()).log(Level.SEVERE, null, ex);
             }
-            
+
             if (image != null) {
                 //((Bitmap)image).MakeTransparent(Color.White);
                 int width = (int) aPB.getSize();
@@ -763,10 +764,10 @@ public class Draw {
                 PointF sPoint = aP;
                 sPoint.X = sPoint.X - width / 2;
                 sPoint.Y = sPoint.Y - height / 2;
-                g.drawImage(image, (int) sPoint.X, (int) sPoint.Y, width, height, null);                
+                g.drawImage(image, (int) sPoint.X, (int) sPoint.Y, width, height, null);
             }
         }
-        
+
         if (aPB.getAngle() != 0) {
             g.setTransform(tempTrans);
         }
@@ -796,7 +797,7 @@ public class Draw {
         aPoint.X += aLB.getXShift();
         float inx = aPoint.X;
         float iny = aPoint.Y;
-        
+
         AffineTransform tempTrans = g.getTransform();
         if (aLB.getAngle() != 0) {
             AffineTransform myTrans = new AffineTransform();
@@ -806,16 +807,16 @@ public class Draw {
             aPoint.X = 0;
             aPoint.Y = 0;
         }
-        
+
         g.setColor(aLB.getColor());
         g.setFont(aLB.getFont());
         g.drawString(aLB.getText(), aPoint.X, aPoint.Y + metrics.getHeight() / 2);
-        
+
         rect.x = (int) aPoint.X;
         rect.y = (int) aPoint.Y - metrics.getHeight() / 2;
         rect.width = (int) labSize.getWidth();
         rect.height = (int) labSize.getHeight();
-        
+
         if (aLB.getAngle() != 0) {
             g.setTransform(tempTrans);
             rect.x = (int) inx;
@@ -856,7 +857,7 @@ public class Draw {
         } else {
             //Draw wind barb
             drawWindBarb(aColor, sP, aSM.windBarb, g, size);
-            
+
             wFont = new Font("Arial", Font.PLAIN, (int) (size / 4 * 3));
             text = "M";
             FontMetrics metrics = g.getFontMetrics(wFont);
@@ -890,7 +891,7 @@ public class Draw {
             g.setFont(wFont);
             g.drawString(text, sPoint.X, sPoint.Y + metrics.getHeight() * 3 / 4);
         }
-        
+
         wFont = new Font("Arial", Font.PLAIN, (int) (size / 4 * 3));
         g.setFont(wFont);
         FontMetrics metrics = g.getFontMetrics(wFont);
@@ -941,7 +942,7 @@ public class Draw {
         rect.y = (int) aExtent.minY;
         rect.width = (int) aExtent.getWidth();
         rect.height = (int) aExtent.getHeight();
-        
+
         switch (aGraphic.getShape().getShapeType()) {
             case Point:
                 switch (aGraphic.getLegend().getBreakType()) {
@@ -1026,7 +1027,7 @@ public class Draw {
                 path.lineTo(points.get(i).X, points.get(i).Y);
             }
         }
-        
+
         g.draw(path);
     }
 
@@ -1045,7 +1046,7 @@ public class Draw {
                 path.lineTo(points[i].X, points[i].Y);
             }
         }
-        
+
         g.draw(path);
     }
 
@@ -1065,7 +1066,7 @@ public class Draw {
             }
         }
         path.closePath();
-        
+
         g.fill(path);
     }
 
@@ -1135,7 +1136,7 @@ public class Draw {
                 dashPattern = new float[]{10, 6, 2, 6, 2, 6};
                 break;
         }
-        
+
         return dashPattern;
     }
 
@@ -1186,7 +1187,7 @@ public class Draw {
                             drawPoint_Simple_Up(new PointF((float) pos.get(i)[0], (float) pos.get(i)[1]), aPB, g);
                         }
                     }
-                    
+
                     g.setColor(Color.blue);
                     g.setStroke(new BasicStroke(aPLB.getSize()));
                     drawPolyline(points, g);
@@ -1205,7 +1206,7 @@ public class Draw {
                             drawPoint_Simple(new PointF((float) pos.get(i)[0], (float) pos.get(i)[1]), aPB, g);
                         }
                     }
-                    
+
                     g.setColor(Color.red);
                     g.setStroke(new BasicStroke(aPLB.getSize()));
                     drawPolyline(points, g);
@@ -1224,7 +1225,7 @@ public class Draw {
                             aPB.setAngle((float) pos.get(i)[2]);
                             drawPoint_Simple_Up(new PointF((float) pos.get(i)[0], (float) pos.get(i)[1]), aPB, g);
                         }
-                        
+
                         aPB = new PointBreak();
                         aPB.setSize(aSize);
                         aPB.setColor(aColor);
@@ -1237,7 +1238,7 @@ public class Draw {
                             drawPoint_Simple(new PointF((float) pos.get(i)[0], (float) pos.get(i)[1]), aPB, g);
                         }
                     }
-                    
+
                     g.setColor(aColor);
                     g.setStroke(new BasicStroke(aPLB.getSize()));
                     drawPolyline(points, g);
@@ -1255,7 +1256,7 @@ public class Draw {
                             aPB.setAngle((float) pos.get(i)[2]);
                             drawPoint_Simple_Up(new PointF((float) pos.get(i)[0], (float) pos.get(i)[1]), aPB, g);
                         }
-                        
+
                         aPB = new PointBreak();
                         aPB.setSize(aSize);
                         aPB.setColor(Color.red);
@@ -1268,7 +1269,7 @@ public class Draw {
                             drawPoint_Simple(new PointF((float) pos.get(i)[0], (float) pos.get(i)[1]), aPB, g);
                         }
                     }
-                    
+
                     g.setColor(Color.blue);
                     g.setStroke(new BasicStroke(aPLB.getSize()));
                     drawPolyline(points, g);
@@ -1305,11 +1306,11 @@ public class Draw {
             aPoint.X = aP.X + width / 2;
             aPoint.Y = aP.Y - height / 2;
             points[3] = aPoint;
-            
+
             g.setColor(aPLB.getColor());
             float[] dashPattern = getDashPattern(aPLB.getStyle());
             g.setStroke(new BasicStroke(aPLB.getSize(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dashPattern, 0.0f));
-            
+
             if (aPLB.getDrawPolyline()) {
                 drawPolyline(points, g);
             }
@@ -1342,7 +1343,7 @@ public class Draw {
                     aPB.setDrawOutline(true);
                     drawPoint_Simple(new PointF(aP.X - aPB.getSize() * 2 / 3, aP.Y - aPB.getSize() / 4), aPB, g);
                     drawPoint_Simple(new PointF(aP.X + aPB.getSize() * 2 / 3, aP.Y - aPB.getSize() / 4), aPB, g);
-                    
+
                     g.setColor(Color.blue);
                     g.setStroke(new BasicStroke(lineWidth));
                     drawPolyline(points, g);
@@ -1357,7 +1358,7 @@ public class Draw {
                     aPB.setDrawOutline(true);
                     drawPoint_Simple(new PointF(aP.X - aPB.getSize() * 2 / 3, aP.Y), aPB, g);
                     drawPoint_Simple(new PointF(aP.X + aPB.getSize() * 2 / 3, aP.Y), aPB, g);
-                    
+
                     g.setColor(Color.red);
                     g.setStroke(new BasicStroke(lineWidth));
                     drawPolyline(points, g);
@@ -1380,7 +1381,7 @@ public class Draw {
                     aPB.setDrawFill(true);
                     aPB.setDrawOutline(true);
                     drawPoint_Simple(new PointF(aP.X + aPB.getSize() * 2 / 3, aP.Y), aPB, g);
-                    
+
                     g.setColor(aColor);
                     g.setStroke(new BasicStroke(lineWidth));
                     drawPolyline(points, g);
@@ -1402,7 +1403,7 @@ public class Draw {
                     aPB.setDrawFill(true);
                     aPB.setDrawOutline(true);
                     drawPoint_Simple(new PointF(aP.X + aPB.getSize() * 2 / 3, aP.Y), aPB, g);
-                    
+
                     g.setColor(Color.blue);
                     g.setStroke(new BasicStroke(lineWidth));
                     drawPolyline(points, g);
@@ -1559,13 +1560,13 @@ public class Draw {
         for (i = 0; i < points.length; i++) {
             opoints.add(new PointD(points[i].X, points[i].Y));
         }
-        
+
         PointD[] rPoints = Spline.cardinalSpline((PointD[]) opoints.toArray(new PointD[opoints.size()]), 5);
         PointF[] dPoints = new PointF[rPoints.length];
         for (i = 0; i < dPoints.length; i++) {
             dPoints[i] = new PointF((float) rPoints[i].X, (float) rPoints[i].Y);
         }
-        
+
         drawPolyline(dPoints, aPLB, g);
     }
 
@@ -1581,13 +1582,13 @@ public class Draw {
         for (i = 0; i < points.size(); i++) {
             opoints[i] = new PointD(points.get(i).X, points.get(i).Y);
         }
-        
+
         PointD[] rPoints = Spline.cardinalSpline(opoints, 5);
         PointF[] dPoints = new PointF[rPoints.length];
         for (i = 0; i < dPoints.length; i++) {
             dPoints[i] = new PointF((float) rPoints[i].X, (float) rPoints[i].Y);
         }
-        
+
         drawPolyline(dPoints, g);
     }
 
@@ -1603,13 +1604,13 @@ public class Draw {
         for (i = 0; i < points.length; i++) {
             opoints.add(new PointD(points[i].X, points[i].Y));
         }
-        
+
         PointD[] rPoints = Spline.cardinalSpline((PointD[]) opoints.toArray(), 5);
         PointF[] dPoints = new PointF[rPoints.length];
         for (i = 0; i < dPoints.length; i++) {
             dPoints[i] = new PointF((float) rPoints[i].X, (float) rPoints[i].Y);
         }
-        
+
         drawPolyline(dPoints, g);
     }
 
@@ -1626,13 +1627,13 @@ public class Draw {
         for (i = 0; i < points.length; i++) {
             opoints.add(new PointD(points[i].X, points[i].Y));
         }
-        
+
         PointD[] rPoints = Spline.cardinalSpline((PointD[]) opoints.toArray(new PointD[opoints.size()]), 5);
         PointF[] dPoints = new PointF[rPoints.length];
         for (i = 0; i < dPoints.length; i++) {
             dPoints[i] = new PointF((float) rPoints[i].X, (float) rPoints[i].Y);
         }
-        
+
         drawPolygon(dPoints, aPGB, g);
     }
 
@@ -1645,7 +1646,7 @@ public class Draw {
      */
     public static void drawCircle(PointF[] points, PolygonBreak aPGB, Graphics2D g) {
         float radius = Math.abs(points[1].X - points[0].X);
-        
+
         if (aPGB.getDrawFill()) {
             g.setColor(aPGB.getColor());
             g.fill(new Ellipse2D.Float(points[0].X, points[0].Y - radius, radius * 2, radius * 2));
@@ -1669,7 +1670,7 @@ public class Draw {
         float sy = Math.min(points[0].Y, points[2].Y);
         float width = Math.abs(points[2].X - points[0].X);
         float height = Math.abs(points[2].Y - points[0].Y);
-        
+
         if (aPGB.getDrawFill()) {
             g.setColor(aPGB.getColor());
             g.fill(new Ellipse2D.Float(sx, sy, width, height));
@@ -1688,17 +1689,51 @@ public class Draw {
      * @param points The points
      */
     public static void drawSelectedVertices(Graphics2D g, PointF[] points) {
-        int size = 6;
-        Rectangle rect = new Rectangle(0, 0, size, size);
-        
+        drawSelectedVertices(g, points, 6, Color.black, Color.cyan);
+    }
+
+    /**
+     * Draw selected vertices rectangles
+     *
+     * @param g Graphics2D
+     * @param points The points
+     * @param size The size
+     * @param outlineColor Outline coloe
+     * @param fillColor Fill color
+     */
+    public static void drawSelectedVertices(Graphics2D g, PointF[] points, float size, Color outlineColor, Color fillColor) {
+        Rectangle.Float rect = new Rectangle.Float(0, 0, size, size);
+
         for (PointF aPoint : points) {
-            rect.x = (int) aPoint.X - size / 2;
-            rect.y = (int) aPoint.Y - size / 2;
-            g.setColor(Color.cyan);
+            rect.x = aPoint.X - size / 2;
+            rect.y = aPoint.Y - size / 2;
+            g.setColor(fillColor);
             g.fill(rect);
-            g.setColor(Color.black);
+            g.setColor(outlineColor);
+            g.setStroke(new BasicStroke(1));
             g.draw(rect);
         }
+    }
+
+    /**
+     * Draw selected vertice rectangles
+     *
+     * @param g Graphics2D
+     * @param point The point
+     * @param size The size
+     * @param outlineColor Outline coloe
+     * @param fillColor Fill color
+     */
+    public static void drawSelectedVertice(Graphics2D g, PointF point, float size, Color outlineColor, Color fillColor) {
+        Rectangle.Float rect = new Rectangle.Float(0, 0, size, size);
+
+        rect.x = point.X - size / 2;
+        rect.y = point.Y - size / 2;
+        g.setColor(fillColor);
+        g.fill(rect);
+        g.setColor(outlineColor);
+        g.setStroke(new BasicStroke(1));
+        g.draw(rect);
     }
 
     /**
@@ -1780,7 +1815,7 @@ public class Draw {
                 drawPieChartSymbol(aPoint, aCB, g);
                 break;
         }
-        
+
     }
 
     /**
@@ -1794,7 +1829,7 @@ public class Draw {
         Font font = new Font("Arial", Font.PLAIN, 8);
         drawBarChartSymbol(aPoint, aCB, g, false, font);
     }
-    
+
     /**
      * Draw bar chart symbol
      *
@@ -1825,7 +1860,7 @@ public class Draw {
                 aPoint.X += aCB.getBarWidth();
                 continue;
             }
-            
+
             aPoint.Y = y - heights.get(i);
             PolygonBreak aPGB = (PolygonBreak) aCB.getLegendScheme().getLegendBreaks().get(i);
             if (aCB.isView3D()) {
@@ -1839,7 +1874,7 @@ public class Draw {
                 Draw.fillPolygon(points, g);
                 g.setColor(aPGB.getOutlineColor());
                 Draw.drawPolyline(points, g);
-                
+
                 points[0] = new PointF(aPoint.X + aCB.getBarWidth(), aPoint.Y);
                 points[1] = new PointF(aPoint.X + aCB.getBarWidth(), aPoint.Y + heights.get(i));
                 points[2] = new PointF(points[1].X + aCB.getThickness(), points[1].Y - aCB.getThickness());
@@ -1850,9 +1885,9 @@ public class Draw {
                 Draw.drawPolyline(points, g);
             }
             drawRectangle(aPoint, aCB.getBarWidth(), heights.get(i), aPGB, g);
-            
+
             aPoint.X += aCB.getBarWidth();
-            
+
             if (i == heights.size() - 1) {
                 if (drawValue) {
                     //String vstr = String.valueOf(aCB.getChartData().get(i));
@@ -1882,7 +1917,7 @@ public class Draw {
         if (width <= 0 || height <= 0) {
             return;
         }
-        
+
         aPoint.Y -= height;
         List<List<Float>> angles = aCB.getPieAngles();
         float startAngle, sweepAngle;
@@ -1896,7 +1931,7 @@ public class Draw {
                 if (startAngle + sweepAngle > 180) {
                     PointF bPoint = new PointF(aPoint.X, aPoint.Y + aCB.getThickness());
                     Color aColor = ColorUtil.modifyBrightness(aPGB.getColor(), 0.5f);
-                    
+
                     g.setColor(aColor);
                     g.fill(new Arc2D.Float(bPoint.X, bPoint.Y, width, width * 2 / 3, startAngle, sweepAngle, Arc2D.PIE));
                     g.setColor(aPGB.getOutlineColor());
@@ -1920,7 +1955,7 @@ public class Draw {
                     if (sA < Math.PI) {
                         cPoint = MIMath.calEllipseCoordByAngle(x0, y0, a, b, sA);
                     }
-                    
+
                     Color aColor = ColorUtil.modifyBrightness(aPGB.getColor(), 0.5f);
                     PointF[] points = new PointF[5];
                     points[0] = cPoint;

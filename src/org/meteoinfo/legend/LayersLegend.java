@@ -68,11 +68,17 @@ import javax.swing.JScrollBar;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
+import javax.swing.undo.UndoableEdit;
 import org.meteoinfo.data.mapdata.FrmAttriData;
 import org.meteoinfo.data.mapdata.webmap.WebMapProvider;
+import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.FrmProperty;
+import org.meteoinfo.global.event.INodeSelectedListener;
+import org.meteoinfo.global.event.NodeSelectedEvent;
 import org.meteoinfo.layer.FrmLabelSet;
 import org.meteoinfo.layer.WebMapLayer;
+import org.meteoinfo.map.MapView;
+import org.meteoinfo.map.MapViewUndoRedo;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -204,6 +210,7 @@ public class LayersLegend extends JPanel {
      */
     public void setSelectedNode(ItemNode aNode) {
         _selectedNode = aNode;
+        this.fireNodeSelectedEvent();
     }
 
     /**
@@ -335,6 +342,27 @@ public class LayersLegend extends JPanel {
         for (int i = 0; i < listeners.length; i = i + 2) {
             if (listeners[i] == IMapFramesUpdatedListener.class) {
                 ((IMapFramesUpdatedListener) listeners[i + 1]).mapFramesUpdatedEvent(event);
+            }
+        }
+    }
+
+    public void addNodeSelectedListener(INodeSelectedListener listener) {
+        this._listeners.add(INodeSelectedListener.class, listener);
+    }
+
+    public void removeNodeSelectedListener(INodeSelectedListener listener) {
+        this._listeners.remove(INodeSelectedListener.class, listener);
+    }
+
+    public void fireNodeSelectedEvent() {
+        fireNodeSelectedEvent(new NodeSelectedEvent(this));
+    }
+
+    private void fireNodeSelectedEvent(NodeSelectedEvent event) {
+        Object[] listeners = _listeners.getListenerList();
+        for (int i = 0; i < listeners.length; i = i + 2) {
+            if (listeners[i] == INodeSelectedListener.class) {
+                ((INodeSelectedListener) listeners[i + 1]).nodeSelectedEvent(event);
             }
         }
     }
@@ -632,7 +660,7 @@ public class LayersLegend extends JPanel {
 
         MousePos mPos = new MousePos();
         ItemNode aNode = getNodeByPositionEx(e.getX(), e.getY(), mPos);
-        LayerNode aLN = (LayerNode) aNode;
+        final LayerNode aLN = (LayerNode) aNode;
         MapLayer aLayerObj = aLN.getMapLayer();
         if (mPos.inExpansionBox) {
             if (e.getButton() == MouseEvent.BUTTON1) {
@@ -767,6 +795,18 @@ public class LayersLegend extends JPanel {
                     });
                     mnuLayer.add(labelMI);
                     mnuLayer.addSeparator();
+
+//                    //Edit and export features
+//                    String editMIName = "Switch Edit Status";
+//                    JMenuItem editMI = new JMenuItem(editMIName);
+//                    editMI.addActionListener(new ActionListener() {
+//                        @Override
+//                        public void actionPerformed(ActionEvent e) {
+//                            onEditClick(aLN);
+//                        }
+//                    });
+//                    mnuLayer.add(editMI);
+//                    mnuLayer.addSeparator();
                 }
 
                 //Properties
@@ -947,12 +987,17 @@ public class LayersLegend extends JPanel {
         }
     }
 
+    private void onEditClick(LayerNode aLN) {
+        aLN.setEditing(!aLN.isEditing());
+        this.paintGraphics();
+    }
+
     private void onPropertiesClick(ActionEvent e) {
         LayerNode aLN = (LayerNode) _selectedNode;
         MapLayer aLayer = aLN.getMapFrame().getMapView().getLayerByHandle(aLN.getLayerHandle());
 //        if (aLayer.getLayerType() == LayerTypes.WebMapLayer)
 //            return;
-        
+
         if (frmLayerProp == null) {
             JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
             frmLayerProp = new FrmLayerProperty(frame, false);
@@ -973,7 +1018,11 @@ public class LayersLegend extends JPanel {
     private void onZoomToLayerClick(ActionEvent e) {
         LayerNode aLN = (LayerNode) _selectedNode;
         MapLayer aLayer = aLN.getMapFrame().getMapView().getLayerByHandle(aLN.getLayerHandle());
+        MapView mapView = aLN.getMapFrame().getMapView();
+        Extent oldExtent = (Extent)mapView.getViewExtent().clone();
         aLN.getMapFrame().getMapView().zoomToExtent(aLayer.getExtent());
+        UndoableEdit edit = (new MapViewUndoRedo()).new ZoomEdit(mapView, oldExtent, (Extent)mapView.getViewExtent().clone());
+        mapView.fireUndoEditEvent(edit);
     }
 
     private void onMinVisScaleClick(ActionEvent e) {
@@ -1284,6 +1333,8 @@ public class LayersLegend extends JPanel {
         } else {
             aMF.getMapView().setSelectedLayerHandle(-1);
         }
+
+        this.fireNodeSelectedEvent();
     }
     //</editor-fold>  
     // <editor-fold desc="Painting Methods">
@@ -1472,6 +1523,12 @@ public class LayersLegend extends JPanel {
             g.setColor(_selectedBackColor);
             g.fill(rect);
             g.setColor(Color.lightGray);
+            g.draw(rect);
+        }
+
+        if (layerNode.isEditing()) {
+            Rectangle rect = new Rectangle(3, sP.y, this.getWidth() - 10, layerNode.getHeight());
+            g.setColor(Color.red);
             g.draw(rect);
         }
 

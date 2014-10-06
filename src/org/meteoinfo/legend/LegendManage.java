@@ -65,7 +65,6 @@ public class LegendManage {
 //            //values.add(String.format(dFormat, v));
 //            values.add(String.valueOf(v));
 //        }
-
         //Generate lengendscheme  
         if (aLT == LegendType.UniqueValue) {
             aLS = createUniqValueLegendScheme(CValues, colors,
@@ -115,6 +114,22 @@ public class LegendManage {
     /**
      * Create single symbol legend scheme
      *
+     * @param shapeType The shape type
+     * @return Legend scheme
+     */
+    public static LegendScheme createSingleSymbolLegendScheme(ShapeTypes shapeType) {
+        if (shapeType.isPoint()) {
+            return createSingleSymbolLegendScheme(shapeType, Color.green, 8.0f);
+        } else if (shapeType.isLine()) {
+            return createSingleSymbolLegendScheme(shapeType, Color.blue, 1.0f);
+        } else {
+            return createSingleSymbolLegendScheme(shapeType, Color.lightGray, 1.0f);
+        }
+    }
+
+    /**
+     * Create single symbol legend scheme
+     *
      * @param aST Shape type
      * @param aColor Color
      * @param size Size
@@ -129,48 +144,44 @@ public class LegendManage {
         legendScheme.setMaxValue(0);
         legendScheme.setUndefValue(-9999);
         legendScheme.setLegendBreaks(new ArrayList<ColorBreak>());
-        switch (aST) {
-            case Point:
-                PointBreak aPB = new PointBreak();
-                aPB.setColor(aColor);
-                aPB.setOutlineColor(Color.black);
-                aPB.setSize(size);
-                aPB.setNoData(false);
-                aPB.setDrawFill(true);
-                aPB.setDrawOutline(true);
-                aPB.setDrawShape(true);
-                aPB.setStyle(PointStyle.Circle);
-                aPB.setStartValue(0);
-                aPB.setEndValue(0);
-                aPB.setCaption("");
-                legendScheme.getLegendBreaks().add(aPB);
-                break;
-            case Polyline:
-            case PolylineZ:
-                PolylineBreak aPLB = new PolylineBreak();
-                aPLB.setColor(aColor);
-                aPLB.setDrawPolyline(true);
-                aPLB.setSize(size);
-                aPLB.setStyle(LineStyles.Solid);
-                aPLB.setStartValue(0);
-                aPLB.setEndValue(0);
-                aPLB.setCaption("");
-                aPLB.setSymbolColor(aColor);
-                legendScheme.getLegendBreaks().add(aPLB);
-                break;
-            case Polygon:
-                PolygonBreak aPGB = new PolygonBreak();
-                aPGB.setColor(aColor);
-                aPGB.setDrawFill(true);
-                aPGB.setDrawOutline(true);
-                aPGB.setDrawShape(true);
-                aPGB.setOutlineColor(Color.gray);
-                aPGB.setOutlineSize(size);
-                aPGB.setStartValue(0);
-                aPGB.setEndValue(0);
-                aPGB.setCaption("");
-                legendScheme.getLegendBreaks().add(aPGB);
-                break;
+        if (aST.isPoint()) {
+            PointBreak aPB = new PointBreak();
+            aPB.setColor(aColor);
+            aPB.setOutlineColor(Color.black);
+            aPB.setSize(size);
+            aPB.setNoData(false);
+            aPB.setDrawFill(true);
+            aPB.setDrawOutline(true);
+            aPB.setDrawShape(true);
+            aPB.setStyle(PointStyle.Circle);
+            aPB.setStartValue(0);
+            aPB.setEndValue(0);
+            aPB.setCaption("");
+            legendScheme.getLegendBreaks().add(aPB);
+        } else if (aST.isLine()) {
+            PolylineBreak aPLB = new PolylineBreak();
+            aPLB.setColor(aColor);
+            aPLB.setDrawPolyline(true);
+            aPLB.setSize(size);
+            aPLB.setStyle(LineStyles.Solid);
+            aPLB.setStartValue(0);
+            aPLB.setEndValue(0);
+            aPLB.setCaption("");
+            aPLB.setSymbolColor(aColor);
+            legendScheme.getLegendBreaks().add(aPLB);
+        } else if (aST.isPolygon()) {
+            PolygonBreak aPGB = new PolygonBreak();
+            aPGB.setColor(aColor);
+            aPGB.setDrawFill(true);
+            aPGB.setDrawOutline(true);
+            aPGB.setDrawShape(true);
+            aPGB.setOutlineColor(Color.gray);
+            aPGB.setOutlineSize(size);
+            aPGB.setStartValue(0);
+            aPGB.setEndValue(0);
+            aPGB.setCaption("");
+            legendScheme.getLegendBreaks().add(aPGB);
+
         }
 
         return legendScheme;
@@ -420,8 +431,8 @@ public class LegendManage {
                         } else if (i == colors.length - 1) {
                             aPB.setCaption("> " + DataConvert.removeTailingZeros(aPB.getStartValue().toString()));
                         } else {
-                            aPB.setCaption(DataConvert.removeTailingZeros(aPB.getStartValue().toString()) +
-                                    " - " + DataConvert.removeTailingZeros(aPB.getEndValue().toString()));
+                            aPB.setCaption(DataConvert.removeTailingZeros(aPB.getStartValue().toString())
+                                    + " - " + DataConvert.removeTailingZeros(aPB.getEndValue().toString()));
                         }
                     }
 
@@ -470,8 +481,8 @@ public class LegendManage {
                         } else if (i == colors.length - 1) {
                             aPLB.setCaption("> " + DataConvert.removeTailingZeros(aPLB.getStartValue().toString()));
                         } else {
-                            aPLB.setCaption(DataConvert.removeTailingZeros(aPLB.getStartValue().toString()) +
-                                    " - " + DataConvert.removeTailingZeros(aPLB.getEndValue().toString()));
+                            aPLB.setCaption(DataConvert.removeTailingZeros(aPLB.getStartValue().toString())
+                                    + " - " + DataConvert.removeTailingZeros(aPLB.getEndValue().toString()));
                         }
                     }
                     aPLB.setSymbolColor(aPLB.getColor());
@@ -510,8 +521,8 @@ public class LegendManage {
                         } else if (i == colors.length - 1) {
                             aPGB.setCaption("> " + DataConvert.removeTailingZeros(aPGB.getStartValue().toString()));
                         } else {
-                            aPGB.setCaption(DataConvert.removeTailingZeros(aPGB.getStartValue().toString()) +
-                                    " - " + DataConvert.removeTailingZeros(aPGB.getEndValue().toString()));
+                            aPGB.setCaption(DataConvert.removeTailingZeros(aPGB.getStartValue().toString())
+                                    + " - " + DataConvert.removeTailingZeros(aPGB.getEndValue().toString()));
                         }
                     }
 //                        if (Enum.IsDefined(typeof(HatchStyle), i))
@@ -543,8 +554,8 @@ public class LegendManage {
                         } else if (i == colors.length - 1) {
                             aCB.setCaption("> " + DataConvert.removeTailingZeros(aCB.getStartValue().toString()));
                         } else {
-                            aCB.setCaption(DataConvert.removeTailingZeros(aCB.getStartValue().toString()) +
-                                    " - " + DataConvert.removeTailingZeros(aCB.getEndValue().toString()));
+                            aCB.setCaption(DataConvert.removeTailingZeros(aCB.getStartValue().toString())
+                                    + " - " + DataConvert.removeTailingZeros(aCB.getEndValue().toString()));
                         }
                     }
 
@@ -777,16 +788,16 @@ public class LegendManage {
         String eStr;
 
         range = BigDecimalUtil.sub(max, min);
-        if (range == 0.0){
+        if (range == 0.0) {
             cNum = 1;
             cValues = new double[1];
             cValues[0] = min;
             return cValues;
         }
-        
+
         eStr = String.format("%1$E", range);
         aD = Integer.parseInt(eStr.substring(0, 1));
-        aE = (int)Math.floor(Math.log10(range));
+        aE = (int) Math.floor(Math.log10(range));
 //        int idx = eStr.indexOf("E");
 //        if (idx < 0) {
 //            aE = 0;

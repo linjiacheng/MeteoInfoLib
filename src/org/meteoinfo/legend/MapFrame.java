@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.event.EventListenerList;
+import javax.swing.undo.UndoableEdit;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -152,9 +153,7 @@ public class MapFrame extends ItemNode {
         _mapView.addViewExtentChangedListener(new IViewExtentChangedListener() {
             @Override
             public void viewExtentChangedEvent(ViewExtentChangedEvent event) {
-                //if (_isFireMapViewUpdate) {
-                    fireMapViewUpdatedEvent();
-                //}
+                fireMapViewUpdatedEvent();
             }
         });
 //            _mapView.LayersUpdated += MapViewLayersUpdated;
@@ -188,7 +187,7 @@ public class MapFrame extends ItemNode {
         _mapView = mapView;
         _mapView.addViewExtentChangedListener(new IViewExtentChangedListener() {
             @Override
-            public void viewExtentChangedEvent(ViewExtentChangedEvent event) {
+            public void viewExtentChangedEvent(ViewExtentChangedEvent even) {
                 //if (_isFireMapViewUpdate) {
                     fireMapViewUpdatedEvent();
                 //}

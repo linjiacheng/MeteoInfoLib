@@ -51,7 +51,6 @@ import org.meteoinfo.legend.BreakTypes;
 import org.meteoinfo.legend.ChartBreak;
 import org.meteoinfo.legend.ChartTypes;
 import org.meteoinfo.legend.ColorBreak;
-import org.meteoinfo.legend.FrmColorSymbolSet;
 import org.meteoinfo.legend.FrmLabelSymbolSet;
 import org.meteoinfo.legend.FrmPointSymbolSet;
 import org.meteoinfo.legend.FrmPolygonSymbolSet;
@@ -148,12 +147,15 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.EventListenerList;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.undo.UndoableEdit;
 import org.meteoinfo.data.mapdata.webmap.GeoPosition;
 import org.meteoinfo.data.mapdata.webmap.Tile;
 import org.meteoinfo.data.mapdata.webmap.TileFactoryInfo;
 import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.event.IShapeSelectedListener;
+import org.meteoinfo.global.event.IUndoEditListener;
 import org.meteoinfo.global.event.ShapeSelectedEvent;
+import org.meteoinfo.global.event.UndoEditEvent;
 import org.meteoinfo.global.util.GeoUtil;
 import static org.meteoinfo.layer.LayerDrawType.Barb;
 import static org.meteoinfo.layer.LayerDrawType.StationModel;
@@ -167,7 +169,9 @@ import static org.meteoinfo.legend.LegendType.SingleSymbol;
 import static org.meteoinfo.legend.LegendType.UniqueValue;
 import org.meteoinfo.projection.Reproject;
 import org.meteoinfo.shape.ChartGraphic;
+import org.meteoinfo.shape.PointZShape;
 import static org.meteoinfo.shape.ShapeTypes.CurveLine;
+import static org.meteoinfo.shape.ShapeTypes.PointZ;
 import static org.meteoinfo.shape.ShapeTypes.Polyline;
 import org.meteoinfo.shape.StationModelShape;
 import org.w3c.dom.Attr;
@@ -177,6 +181,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.meteoinfo.shape.WindArraw;
 import org.meteoinfo.shape.WindBarb;
+import org.meteoinfo.shape.PointZ;
 
 /**
  * MapView class
@@ -624,6 +629,11 @@ public class MapView extends JPanel {
                 customCursor = Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR);
                 //this._tempImage = GlobalUtil.deepCopy(_mapBitmap);
                 break;
+            case Edit_Tool:
+            case Edit_FeatureVertices:
+                image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/resources/Edit_tool.png"));
+                customCursor = toolkit.createCustomCursor(image, new Point(2, 2), "Edit Tool");
+                break;
             case New_Label:
             case New_Point:
             case New_Polygon:
@@ -634,6 +644,7 @@ public class MapView extends JPanel {
             case New_CurvePolygon:
             case New_Ellipse:
             case New_Freehand:
+            case Edit_NewFeature:
                 customCursor = Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR);
                 break;
             case Measurement:
@@ -1159,6 +1170,27 @@ public class MapView extends JPanel {
         }
     }
 
+    public void addUndoEditListener(IUndoEditListener listener) {
+        this._listeners.add(IUndoEditListener.class, listener);
+    }
+
+    public void removeUndoEditListener(IUndoEditListener listener) {
+        this._listeners.remove(IUndoEditListener.class, listener);
+    }
+
+    public void fireUndoEditEvent(UndoableEdit undoEdit) {
+        fireUndoEditEvent(new UndoEditEvent(this), undoEdit);
+    }
+
+    private void fireUndoEditEvent(UndoEditEvent event, UndoableEdit undoEdit) {
+        Object[] listeners = _listeners.getListenerList();
+        for (int i = 0; i < listeners.length; i = i + 2) {
+            if (listeners[i] == IUndoEditListener.class) {
+                ((IUndoEditListener) listeners[i + 1]).undoEditEvent(event, undoEdit);
+            }
+        }
+    }
+
     public void addLayersUpdatedListener(ILayersUpdatedListener listener) {
         this._listeners.add(ILayersUpdatedListener.class, listener);
     }
@@ -1256,6 +1288,24 @@ public class MapView extends JPanel {
                     break;
                 case Pan:
                     break;
+                case Edit_Tool:
+                    VectorLayer layer = (VectorLayer) this.getSelectedLayer();
+                    List<Shape> selShapes = layer.getSelectedShapes();
+                    if (selShapes.size() > 0) {
+                        float burf = 2.5f;
+                        Rectangle.Float selExtent = new Rectangle.Float(e.getX() - burf, e.getY() - burf, burf * 2, burf * 2);
+                        List<Integer> idxs = this.selectShapes(layer, selShapes, selExtent, true, false);
+                        if (idxs.size() > 0) {
+                            Rectangle.Double dRect = this.projToScreen(layer.getShapes().get(idxs.get(0)).getExtent(), 0);
+                            if (dRect.width > 5) {
+                                _selectedRectangle = new Rectangle((int) dRect.x, (int) dRect.y, (int) dRect.width, (int) dRect.height);
+                            } else {
+                                _selectedRectangle = new Rectangle((int) dRect.x - 5, (int) dRect.y - 5, (int) dRect.width + 10, (int) dRect.height + 10);
+                            }
+                            _mouseTool = MouseTools.Edit_MoveSelection;
+                        }
+                    }
+                    break;
                 case SelectElements:
                     PointF mousePoint = new PointF();
                     mousePoint.X = e.getX();
@@ -1287,6 +1337,8 @@ public class MapView extends JPanel {
                     _graphicCollection.add(aGraphic);
                     g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                     drawGraphic(g, aGraphic, 0);
+                    UndoableEdit edit = (new MapViewUndoRedo()).new AddGraphicEdit(this, aGraphic);
+                    this.fireUndoEditEvent(edit);
                     break;
                 case New_Label:
                     pXY = screenToProj(e.getX(), e.getY());
@@ -1295,7 +1347,43 @@ public class MapView extends JPanel {
                     aGraphic = new Graphic(aPS, (LabelBreak) _defLabelBreak.clone());
                     _graphicCollection.add(aGraphic);
                     drawGraphic(g, aGraphic, 0);
+                    edit = (new MapViewUndoRedo()).new AddGraphicEdit(this, aGraphic);
+                    this.fireUndoEditEvent(edit);
                     break;
+                case Edit_NewFeature:
+                    MapLayer selLayer = this.getSelectedLayer();
+                    if (selLayer != null) {
+                        if (selLayer.getLayerType() == LayerTypes.VectorLayer) {
+                            layer = (VectorLayer) selLayer;
+                            if (layer.getShapeType().isPoint()) {
+                                pXY = screenToProj(e.getX(), e.getY());
+                                aPS = new PointShape();
+                                switch (layer.getShapeType()) {
+                                    case Point:
+                                        aPS.setPoint(new PointD(pXY[0], pXY[1]));
+                                        break;
+                                    case PointZ:
+                                        aPS = new PointZShape();
+                                        aPS.setPoint(new PointZ(pXY[0], pXY[1], 0, 0));
+                                }
+                                try {
+                                    layer.editAddShape(aPS);
+                                    this.paintLayers();
+                                    edit = (new MapViewUndoRedo()).new AddFeatureEdit(this, layer, aPS);
+                                    layer.getUndoManager().addEdit(edit);
+                                    this.fireUndoEditEvent(edit);
+                                } catch (Exception ex) {
+                                    Logger.getLogger(MapView.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            } else {
+                                if (_startNewGraphic) {
+                                    _graphicPoints = new ArrayList<PointF>();
+                                    _startNewGraphic = false;
+                                }
+                                _graphicPoints.add(new PointF(e.getX(), e.getY()));
+                            }
+                        }
+                    }
                 case New_Polyline:
                 case New_Polygon:
                 case New_Curve:
@@ -1308,6 +1396,24 @@ public class MapView extends JPanel {
                         _startNewGraphic = false;
                     }
                     _graphicPoints.add(new PointF(e.getX(), e.getY()));
+                    break;
+                case Edit_FeatureVertices:
+                    layer = (VectorLayer) this.getSelectedLayer();
+                    Shape eShape = layer.getEditingShape();
+                    if (eShape != null) {
+                        if (eShape.isEditing()) {
+                            _editingVerticeIndex = selectEditVertices(new Point(e.getX(), e.getY()), eShape,
+                                    _editingVertices);
+                            if (_editingVerticeIndex >= 0) {
+                                _mouseTool = MouseTools.Edit_InEditingVertices;
+                            } 
+//                            else {
+//                                eShape.setEditing(false);
+//                                _mouseTool = MouseTools.Edit_Tool;
+//                                this.paintLayers();
+//                            }
+                        }
+                    }
                     break;
                 case EditVertices:
                     if (_selectedGraphics.size() > 0) {
@@ -1423,9 +1529,11 @@ public class MapView extends JPanel {
                 break;
             case CreateSelection:
             case SelectFeatures_Rectangle:
+            case Edit_Tool:
                 this.repaint();
                 break;
             case MoveSelection:
+            case Edit_MoveSelection:
                 //Move selected graphics
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
                 this.repaint();
@@ -1513,6 +1621,7 @@ public class MapView extends JPanel {
                 this.repaint();
                 break;
             case InEditingVertices:
+            case Edit_InEditingVertices:
                 this.repaint();
                 break;
         }
@@ -1528,6 +1637,26 @@ public class MapView extends JPanel {
         //float aWidth, aHeight, aX, aY;
         g.setColor(this.getForeground());
         switch (_mouseTool) {
+            case Edit_Tool:
+                VectorLayer layer = (VectorLayer) this.getSelectedLayer();
+                List<Shape> selShapes = layer.getSelectedShapes();
+                boolean isMove = false;
+                if (selShapes.size() > 0) {
+                    float burf = 2.5f;
+                    Rectangle.Float selExtent = new Rectangle.Float(e.getX() - burf, e.getY() - burf, burf * 2, burf * 2);
+                    List<Integer> idxs = this.selectShapes(layer, selShapes, selExtent, true, false);
+                    if (idxs.size() > 0) {
+                        isMove = true;
+                    }
+                }
+                if (isMove) {
+                    this.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+                } else {
+                    Toolkit toolkit = Toolkit.getDefaultToolkit();
+                    Image image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/resources/Edit_tool.png"));
+                    this.setCursor(toolkit.createCustomCursor(image, new Point(2, 2), "Edit Tool"));
+                }
+                break;
             case SelectElements:
                 if (_selectedGraphics.size() > 0) {
 
@@ -1597,6 +1726,14 @@ public class MapView extends JPanel {
                     this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 }
                 break;
+            case Edit_NewFeature:
+                VectorLayer selLayer = (VectorLayer) this.getSelectedLayer();
+                if (!selLayer.getShapeType().isPoint()) {
+                    if (!_startNewGraphic) {
+                        this.repaint();
+                    }
+                }
+                break;
             case New_Polyline:
             case New_Polygon:
             case New_Curve:
@@ -1607,16 +1744,45 @@ public class MapView extends JPanel {
                     this.repaint();
                 }
                 break;
+            case Edit_FeatureVertices:
+                selLayer = (VectorLayer) this.getSelectedLayer();
+                Shape eShape = selLayer.getEditingShape();
+                if (eShape != null) {
+                    if (eShape.isEditing()) {
+                        _editingVerticeIndex = selectEditVertices(new Point(e.getX(), e.getY()), eShape,
+                                _editingVertices);
+                        Toolkit toolkit = Toolkit.getDefaultToolkit();
+                        if (_editingVerticeIndex >= 0) {
+                            Image image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/resources/VertexEdit_32x32x32.png"));
+                            this.setCursor(toolkit.createCustomCursor(image, new Point(8, 8), "Vertices edit"));
+                        } else {
+                            if (this.isOnRing(new Point(e.getX(), e.getY()), eShape) >= 0) {
+                                Image image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/resources/insert_vertice.png"));
+                                this.setCursor(toolkit.createCustomCursor(image, new Point(8, 8), "Insert Vertice"));
+                            } else {
+                                Image image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/resources/Edit_tool.png"));
+                                this.setCursor(toolkit.createCustomCursor(image, new Point(2, 2), "Edit Tool"));
+                            }
+                        }
+                    }
+                }
+                break;
             case EditVertices:
                 if (_selectedGraphics.size() > 0) {
-                    _editingVerticeIndex = selectEditVertices(new Point(e.getX(), e.getY()), _selectedGraphics.get(0).getShape(),
+                    eShape = _selectedGraphics.get(0).getShape();
+                    _editingVerticeIndex = selectEditVertices(new Point(e.getX(), e.getY()), eShape,
                             _editingVertices);
+                    Toolkit toolkit = Toolkit.getDefaultToolkit();
                     if (_editingVerticeIndex >= 0) {
-                        Toolkit toolkit = Toolkit.getDefaultToolkit();
                         Image image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/resources/VertexEdit_32x32x32.png"));
                         this.setCursor(toolkit.createCustomCursor(image, new Point(8, 8), "Vertices edit"));
                     } else {
-                        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                        if (this.isOnRing(new Point(e.getX(), e.getY()), eShape) >= 0) {
+                            Image image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/resources/insert_vertice.png"));
+                            this.setCursor(toolkit.createCustomCursor(image, new Point(8, 8), "Insert Vertice"));
+                        } else {
+                            this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                        }
                     }
                 }
                 break;
@@ -1721,7 +1887,10 @@ public class MapView extends JPanel {
                 }
 
                 if (MaxX - MinX > 0.001) {
+                    //Extent oldExtent = (Extent) _viewExtent.clone();
                     zoomToExtent(MinX, MaxX, MinY, MaxY);
+                    //UndoableEdit edit = (new MapViewUndoRedo()).new ZoomEdit(this, oldExtent, (Extent) _viewExtent.clone());
+                    //this.fireUndoEditEvent(edit);
                 }
                 break;
             case Zoom_Out:
@@ -1735,7 +1904,10 @@ public class MapView extends JPanel {
                 MinY = mouseLat - (latRan / 2 * ZoomF);
                 MaxY = mouseLat + (latRan / 2 * ZoomF);
 
+                //Extent oldExtent = (Extent) _viewExtent.clone();
                 zoomToExtent(MinX, MaxX, MinY, MaxY);
+                //UndoableEdit edit = (new MapViewUndoRedo()).new ZoomEdit(this, oldExtent, (Extent) _viewExtent.clone());
+                //this.fireUndoEditEvent(edit);
                 break;
             case Pan:
                 if (e.getButton() == MouseEvent.BUTTON1) {
@@ -1749,10 +1921,14 @@ public class MapView extends JPanel {
                     MinY = _drawExtent.minY - (mouseLat - lat);
                     MaxY = _drawExtent.maxY - (mouseLat - lat);
 
+                    //oldExtent = (Extent) _viewExtent.clone();
                     zoomToExtent(MinX, MaxX, MinY, MaxY);
+                    //edit = (new MapViewUndoRedo()).new ZoomEdit(this, oldExtent, (Extent) _viewExtent.clone());
+                    //this.fireUndoEditEvent(edit);
                 }
                 break;
             case SelectFeatures_Rectangle:
+            case Edit_Tool:
                 if (e.getButton() == MouseEvent.BUTTON1) {
                     if (_selectedLayer < 0) {
                         return;
@@ -1766,11 +1942,21 @@ public class MapView extends JPanel {
                     }
 
                     VectorLayer aLayer = (VectorLayer) aMLayer;
-                    int minx = Math.min(_mouseDownPoint.x, e.getX());
-                    int miny = Math.min(_mouseDownPoint.y, e.getY());
-                    int width = Math.abs(e.getX() - _mouseDownPoint.x);
-                    int height = Math.abs(e.getY() - _mouseDownPoint.y);
-                    Rectangle.Float rect = new Rectangle.Float(minx, miny, width, height);
+                    Rectangle.Float rect;
+                    if (Math.abs(e.getX() - _mouseDownPoint.x) > 5 || Math.abs(e.getY() - _mouseDownPoint.y) > 5) {
+                        int minx = Math.min(_mouseDownPoint.x, e.getX());
+                        int miny = Math.min(_mouseDownPoint.y, e.getY());
+                        int width = Math.abs(e.getX() - _mouseDownPoint.x);
+                        int height = Math.abs(e.getY() - _mouseDownPoint.y);
+                        rect = new Rectangle.Float(minx, miny, width, height);
+                    } else {
+                        float b = 2.5f;
+                        float minx = e.getX() - b;
+                        float miny = e.getY() - b;
+                        float width = b * 2;
+                        float height = b * 2;
+                        rect = new Rectangle.Float(minx, miny, width, height);
+                    }
                     List<Integer> selectedShapes = selectShapes(aLayer, rect);
                     if (!(e.isControlDown() || e.isShiftDown())) {
                         aLayer.clearSelectedShapes();
@@ -1779,11 +1965,10 @@ public class MapView extends JPanel {
                         for (int shapeIdx : selectedShapes) {
                             aLayer.getShapes().get(shapeIdx).setSelected(true);
                         }
-
-                        this.fireShapeSelectedEvent();
                     } else {
                         this.paintLayers();
                     }
+                    this.fireShapeSelectedEvent();
                 }
                 break;
             case CreateSelection:
@@ -1882,6 +2067,20 @@ public class MapView extends JPanel {
                 }
                 _mouseTool = MouseTools.SelectElements;
                 break;
+            case Edit_MoveSelection:
+                VectorLayer slayer = (VectorLayer) this.getSelectedLayer();
+                List<Shape> selShapes = slayer.getSelectedShapes();
+                if (selShapes.size() > 0) {
+                    for (Shape shape : selShapes) {
+                        moveShapeOnScreen(shape, _mouseDownPoint, new Point(e.getX(), e.getY()));
+                    }
+                    this.paintLayers();
+                    UndoableEdit edit = (new MapViewUndoRedo()).new MoveFeaturesEdit(this, selShapes, _mouseDownPoint, new Point(e.getX(), e.getY()));
+                    slayer.getUndoManager().addEdit(edit);
+                    this.fireUndoEditEvent(edit);
+                }
+                _mouseTool = MouseTools.Edit_Tool;
+                break;
             case MoveSelection:
                 if (_mouseDoubleClicked) {
                     _mouseDoubleClicked = false;
@@ -1955,7 +2154,9 @@ public class MapView extends JPanel {
                             Graphic aGraphic = _selectedGraphics.get(0);
                             Shape aShape = aGraphic.getShape();
                             moveShapeOnScreen(aShape, _mouseDownPoint, new Point(e.getX(), e.getY()));
-                            aGraphic.setShape(aShape);
+                            //aGraphic.setShape(aShape);
+                            UndoableEdit edit = (new MapViewUndoRedo()).new MoveGraphicEdit(this, aGraphic, _mouseDownPoint, new Point(e.getX(), e.getY()));
+                            this.fireUndoEditEvent(edit);
 
                             _selectedGraphics.remove(aGraphic);
                             _selectedGraphics.add(0, aGraphic);
@@ -1968,9 +2169,11 @@ public class MapView extends JPanel {
                 break;
             case ResizeSelection:
                 Graphic aG = _selectedGraphics.get(0);
+                UndoableEdit edit = (new MapViewUndoRedo()).new ResizeGraphicEdit(this, aG, _resizeRectangle);
+                this.fireUndoEditEvent(edit);
                 Shape shape = aG.getShape();
                 resizeShapeOnScreen(shape, aG.getLegend(), _resizeRectangle);
-                aG.setShape(shape);
+                //aG.setShape(shape);                
 
                 _selectedGraphics.remove(aG);
                 _selectedGraphics.add(0, aG);
@@ -2017,6 +2220,8 @@ public class MapView extends JPanel {
                     if (aGraphic != null) {
                         _graphicCollection.add(aGraphic);
                         paintLayers();
+                        edit = (new MapViewUndoRedo()).new AddGraphicEdit(this, aGraphic);
+                        this.fireUndoEditEvent(edit);
                     } else {
                         this.repaint();
                     }
@@ -2043,6 +2248,8 @@ public class MapView extends JPanel {
                         Graphic aGraphic = new Graphic(aPLS, (PolylineBreak) _defPolylineBreak.clone());
                         _graphicCollection.add(aGraphic);
                         paintLayers();
+                        edit = (new MapViewUndoRedo()).new AddGraphicEdit(this, aGraphic);
+                        this.fireUndoEditEvent(edit);
                     } else {
                         MapLayer aMLayer = getLayerByHandle(_selectedLayer);
                         if (aMLayer == null) {
@@ -2092,6 +2299,8 @@ public class MapView extends JPanel {
                         Graphic aGraphic = new Graphic(aPGS, (PolygonBreak) _defPolygonBreak.clone());
                         _graphicCollection.add(aGraphic);
                         paintLayers();
+                        edit = (new MapViewUndoRedo()).new AddGraphicEdit(this, aGraphic);
+                        this.fireUndoEditEvent(edit);
                     } else {
                         MapLayer layer = this.getLayerByHandle(_selectedLayer);
                         if (layer == null) {
@@ -2111,11 +2320,31 @@ public class MapView extends JPanel {
                 }
                 break;
             case InEditingVertices:
+                Graphic graphic = _selectedGraphics.get(0);
                 float[] pXY = screenToProj(e.getX(), e.getY());
-                _selectedGraphics.get(0).verticeEditUpdate(_editingVerticeIndex, pXY[0], pXY[1]);
+                edit = (new MapViewUndoRedo()).new MoveGraphicVerticeEdit(this, graphic,
+                        _editingVerticeIndex, pXY[0], pXY[1]);
+                this.fireUndoEditEvent(edit);
+                graphic.verticeMoveUpdate(_editingVerticeIndex, pXY[0], pXY[1]);
 
                 _mouseTool = MouseTools.EditVertices;
                 paintLayers();
+                break;
+            case Edit_InEditingVertices:
+                VectorLayer layer = (VectorLayer) this.getSelectedLayer();
+                Shape eShape = layer.getEditingShape();
+                if (eShape != null) {
+                    if (eShape.isEditing()) {
+                        pXY = screenToProj(e.getX(), e.getY());
+                        edit = (new MapViewUndoRedo()).new MoveFeatureVerticeEdit(this, eShape,
+                                _editingVerticeIndex, pXY[0], pXY[1]);
+                        layer.getUndoManager().addEdit(edit);
+                        this.fireUndoEditEvent(edit);
+                        eShape.moveVertice(_editingVerticeIndex, pXY[0], pXY[1]);
+                        paintLayers();
+                    }
+                }
+                _mouseTool = MouseTools.Edit_FeatureVertices;
                 break;
         }
     }
@@ -2408,6 +2637,55 @@ public class MapView extends JPanel {
                             jPopupMenu_Graphic.show(this, e.getX(), e.getY());
                         }
                         break;
+                    case EditVertices:
+                        final Graphic graphic = _selectedGraphics.get(0);
+                        Shape eShape = graphic.getShape();
+                        _editingVerticeIndex = selectEditVertices(new Point(e.getX(), e.getY()), eShape,
+                                _editingVertices);
+                        if (_editingVerticeIndex >= 0) {
+                            JPopupMenu jPopupMenu_Vertices = new JPopupMenu();
+                            JMenuItem jMenuItem_Remove = new JMenuItem("Remove Vertice");
+                            jMenuItem_Remove.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    UndoableEdit edit = (new MapViewUndoRedo()).new RemoveGraphicVerticeEdit(MapView.this, graphic, _editingVerticeIndex);
+                                    MapView.this.fireUndoEditEvent(edit);
+                                    graphic.verticeRemoveUpdate(_editingVerticeIndex);
+                                    paintLayers();
+                                }
+                            });
+                            jPopupMenu_Vertices.add(jMenuItem_Remove);
+
+                            jPopupMenu_Vertices.show(this, e.getX(), e.getY());
+                        }
+                        break;
+                    case Edit_FeatureVertices:
+                        final VectorLayer selLayer = (VectorLayer) this.getSelectedLayer();
+                        final Shape fShape = selLayer.getEditingShape();
+                        if (fShape != null) {
+                            if (fShape.isEditing()) {
+                                _editingVerticeIndex = selectEditVertices(new Point(e.getX(), e.getY()), fShape,
+                                        _editingVertices);
+                                if (_editingVerticeIndex >= 0) {
+                                    JPopupMenu jPopupMenu_Vertices = new JPopupMenu();
+                                    JMenuItem jMenuItem_Remove = new JMenuItem("Remove Vertice");
+                                    jMenuItem_Remove.addActionListener(new ActionListener() {
+                                        @Override
+                                        public void actionPerformed(ActionEvent e) {
+                                            UndoableEdit edit = (new MapViewUndoRedo()).new RemoveFeatureVerticeEdit(MapView.this, fShape, _editingVerticeIndex);
+                                            selLayer.getUndoManager().addEdit(edit);
+                                            MapView.this.fireUndoEditEvent(edit);                                            
+                                            fShape.removeVerice(_editingVerticeIndex);
+                                            paintLayers();
+                                        }
+                                    });
+                                    jPopupMenu_Vertices.add(jMenuItem_Remove);
+
+                                    jPopupMenu_Vertices.show(this, e.getX(), e.getY());
+                                }
+                            }
+                        }
+                        break;
                 }
             }
         } else if (clickTimes == 2) {
@@ -2451,6 +2729,47 @@ public class MapView extends JPanel {
                         this.paintLayers();
 
                         showSymbolSetForm(aGraphic.getLegend());
+                    }
+                    break;
+                case Edit_NewFeature:
+                    if (!_startNewGraphic) {
+                        _startNewGraphic = true;
+                        _graphicPoints.remove(_graphicPoints.size() - 1);
+                        List<PointD> points = new ArrayList<PointD>();
+                        float[] pXY;
+                        for (PointF aPoint : _graphicPoints) {
+                            pXY = screenToProj(aPoint.X, aPoint.Y);
+                            points.add(new PointD(pXY[0], pXY[1]));
+                        }
+                        VectorLayer selLayer = (VectorLayer) this.getSelectedLayer();
+                        if (selLayer.getShapeType().isLine()) {
+                            PolylineShape aPLS = new PolylineShape();
+                            aPLS.setPoints(points);
+                            try {
+                                selLayer.editAddShape(aPLS);
+                                this.paintLayers();
+                                UndoableEdit edit = (new MapViewUndoRedo()).new AddFeatureEdit(this, selLayer, aPLS);
+                                selLayer.getUndoManager().addEdit(edit);
+                                this.fireUndoEditEvent(edit);
+                            } catch (Exception ex) {
+                                Logger.getLogger(MapView.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        } else if (selLayer.getShapeType().isPolygon()) {
+                            if (points.size() > 2) {
+                                PolygonShape aPGS = new PolygonShape();
+                                points.add((PointD) points.get(0).clone());
+                                aPGS.setPoints(points);
+                                try {
+                                    selLayer.editAddShape(aPGS);
+                                    this.paintLayers();
+                                    UndoableEdit edit = (new MapViewUndoRedo()).new AddFeatureEdit(this, selLayer, aPGS);
+                                    selLayer.getUndoManager().addEdit(edit);
+                                    this.fireUndoEditEvent(edit);
+                                } catch (Exception ex) {
+                                    Logger.getLogger(MapView.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            }
+                        }
                     }
                     break;
                 case New_Polyline:
@@ -2523,8 +2842,51 @@ public class MapView extends JPanel {
                             if (aGraphic != null) {
                                 _graphicCollection.add(aGraphic);
                                 paintLayers();
+                                UndoableEdit edit = (new MapViewUndoRedo()).new AddGraphicEdit(this, aGraphic);
+                                this.fireUndoEditEvent(edit);
                             } else {
                                 this.repaint();
+                            }
+                        }
+                    }
+                    break;
+                case EditVertices:
+                    if (_selectedGraphics.size() > 0) {
+                        Graphic graphic = _selectedGraphics.get(0);
+                        Shape eShape = graphic.getShape();
+                        _editingVerticeIndex = selectEditVertices(new Point(e.getX(), e.getY()), eShape,
+                                _editingVertices);
+                        if (_editingVerticeIndex < 0) {
+                            int idx = this.isOnRing(new Point(e.getX(), e.getY()), eShape);
+                            if (idx >= 0) {
+                                float[] pXY = screenToProj(e.getX(), e.getY());
+                                PointD point = new PointD(pXY[0], pXY[1]);
+                                UndoableEdit edit = (new MapViewUndoRedo()).new AddGraphicVerticeEdit(this, graphic, idx, point);
+                                this.fireUndoEditEvent(edit);
+                                graphic.verticeAddUpdate(idx, point);
+                                this.paintLayers();
+                            }
+                        }
+                    }
+                    break;
+                case Edit_FeatureVertices:
+                    VectorLayer selLayer = (VectorLayer) this.getSelectedLayer();
+                    Shape eShape = selLayer.getEditingShape();
+                    if (eShape != null) {
+                        if (eShape.isEditing()) {
+                            _editingVerticeIndex = selectEditVertices(new Point(e.getX(), e.getY()), eShape,
+                                    _editingVertices);
+                            if (_editingVerticeIndex < 0) {
+                                int idx = this.isOnRing(new Point(e.getX(), e.getY()), eShape);
+                                if (idx >= 0) {
+                                    float[] pXY = screenToProj(e.getX(), e.getY());
+                                    PointD point = new PointD(pXY[0], pXY[1]);
+                                    UndoableEdit edit = (new MapViewUndoRedo()).new AddFeatureVerticeEdit(this, eShape, idx, point);
+                                    selLayer.getUndoManager().addEdit(edit);
+                                    this.fireUndoEditEvent(edit);
+                                    eShape.addVertice(idx, point);
+                                    this.paintLayers();
+                                }
                             }
                         }
                     }
@@ -2629,6 +2991,7 @@ public class MapView extends JPanel {
         MinY = mouseLat - (latRan / 2 * ZoomF);
         MaxY = mouseLat + (latRan / 2 * ZoomF);
 
+        Extent oldExtent = (Extent) _viewExtent.clone();
         if (!_highSpeedWheelZoom) {
             zoomToExtent(MinX, MaxX, MinY, MaxY);
         } else {
@@ -2659,6 +3022,8 @@ public class MapView extends JPanel {
                 this._mouseWheelDetctionTimer.start();
             }
         }
+        UndoableEdit edit = (new MapViewUndoRedo()).new ZoomEdit(this, oldExtent, (Extent) _viewExtent.clone());
+        this.fireUndoEditEvent(edit);
     }
 
     void onKeyTyped(KeyEvent e) {
@@ -2677,7 +3042,7 @@ public class MapView extends JPanel {
     void onKeyReleased(KeyEvent e) {
     }
     // a property change listener which forces repaints when tiles finish loading
-    private TileLoadListener tileLoadListener = new TileLoadListener();
+    private final TileLoadListener tileLoadListener = new TileLoadListener();
 
     private final class TileLoadListener implements PropertyChangeListener {
 
@@ -3140,6 +3505,7 @@ public class MapView extends JPanel {
                     g2.draw(new Rectangle(aX, aY, aWidth, aHeight));
                     break;
                 case MoveSelection:
+                case Edit_MoveSelection:
                     Rectangle rect = new Rectangle();
                     rect.x = _selectedRectangle.x + _mouseLastPos.x - _mouseDownPoint.x;
                     rect.y = _selectedRectangle.y + _mouseLastPos.y - _mouseDownPoint.y;
@@ -3163,6 +3529,7 @@ public class MapView extends JPanel {
                 case New_Rectangle:
                 case New_Ellipse:
                 case SelectFeatures_Rectangle:
+                case Edit_Tool:
                     int sx = Math.min(_mouseDownPoint.x, _mouseLastPos.x);
                     int sy = Math.min(_mouseDownPoint.y, _mouseLastPos.y);
                     g2.setColor(this.getForeground());
@@ -3187,6 +3554,7 @@ public class MapView extends JPanel {
                             radius * 2, radius * 2);
                     break;
                 case InEditingVertices:
+                case Edit_InEditingVertices:
                     double[] sXY = projToScreen(_editingVertices.get(1).X, _editingVertices.get(1).Y);
                     g2.setColor(Color.black);
                     g2.drawLine((int) sXY[0], (int) sXY[1], _mouseLastPos.x, _mouseLastPos.y);
@@ -3205,6 +3573,20 @@ public class MapView extends JPanel {
         }
 
         switch (_mouseTool) {
+            case Edit_NewFeature:
+                VectorLayer selLayer = (VectorLayer) this.getSelectedLayer();
+                if (!_startNewGraphic) {
+                    List<PointF> points = new ArrayList<PointF>(_graphicPoints);
+                    points.add(new PointF(_mouseLastPos.x, _mouseLastPos.y));
+                    g.setColor(this.getForeground());
+                    if (selLayer.getShapeType().isLine()) {
+                        Draw.drawPolyline(points, g2);
+                    } else if (selLayer.getShapeType().isPolygon()) {
+                        points.add(points.get(0));
+                        Draw.drawPolyline(points, g2);
+                    }
+                }
+                break;
             case New_Polyline:
             case New_Polygon:
             case New_Curve:
@@ -4236,7 +4618,6 @@ public class MapView extends JPanel {
         LegendScheme aLS = aLayer.getLegendScheme();
         List<Extent> extentList = new ArrayList<Extent>();
         Extent maxExtent = new Extent();
-        Extent aExtent;
         for (PointShape aPS : (List<PointShape>) aLayer.getShapes()) {
             if (!aPS.isVisible()) {
                 continue;
@@ -4259,7 +4640,7 @@ public class MapView extends JPanel {
                 boolean ifDraw = true;
                 if (aLayer.getAvoidCollision()) {
                     float aSize = aPB.getSize() / 2;
-                    aExtent = new Extent();
+                    Extent aExtent = new Extent();
                     aExtent.minX = aPoint.X - aSize;
                     aExtent.maxX = aPoint.X + aSize;
                     aExtent.minY = aPoint.Y - aSize;
@@ -4296,7 +4677,10 @@ public class MapView extends JPanel {
                         } else {
                             newPB.setDrawOutline(false);
                         }
-                        Draw.drawPoint(aPoint, newPB, g);
+                        Draw.drawPoint(new PointF(aPoint.X, aPoint.Y), newPB, g);
+                        if (aPS.isEditing()) {
+                            Draw.drawSelectedVertice(g, aPoint, 8, Color.red, Color.cyan);
+                        }
                     } else {
                         Draw.drawPoint(aPoint, aPB, g);
                     }
@@ -4542,13 +4926,15 @@ public class MapView extends JPanel {
         GeneralPath path = new GeneralPath(GeneralPath.WIND_EVEN_ODD, len1);
 
         Color aColor = aPLB.getColor();
+        Float size = aPLB.getSize();
         if (!isIdentifer) {
             if (aPLS.isSelected()) {
                 aColor = _selectColor;
+                size = 2.5f;
             }
         }
         float[] dashPattern = getDashPattern(aPLB.getStyle());
-        BasicStroke pen = new BasicStroke(aPLB.getSize(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dashPattern, 0.0f);
+        BasicStroke pen = new BasicStroke(size, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dashPattern, 0.0f);
         g.setColor(aColor);
         g.setStroke(pen);
 
@@ -4627,6 +5013,13 @@ public class MapView extends JPanel {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, rend);
         }
 
+        //Draw selected vertices
+        if (aPLS.isEditing()) {
+            for (PointF drawP : drawPs) {
+                Draw.drawSelectedVertice(g, drawP, 8, Color.red, Color.cyan);
+            }
+        }
+
         //Draw selected rectangle
         if (isSelected) {
             Extent aExtent = MIMath.getPointFsExtent(drawPs);
@@ -4651,6 +5044,13 @@ public class MapView extends JPanel {
         List<PointF> pointList = new ArrayList<PointF>();
         for (Polygon aPolygon : aPGS.getPolygons()) {
             pointList.addAll(drawPolygon(g, aPolygon, aPGB, LonShift, aPGS.isSelected()));
+        }
+
+        //Draw selected vertices
+        if (aPGS.isEditing()) {
+            for (PointF point : pointList) {
+                Draw.drawSelectedVertice(g, point, 8, Color.red, Color.cyan);
+            }
         }
 
         //Draw selected rectangle
@@ -5994,6 +6394,20 @@ public class MapView extends JPanel {
     }
 
     /**
+     * Convert coordinate from map to screen
+     *
+     * @param extent The extent
+     * @param lonShift Longitude shift
+     * @return Screen rectangle
+     */
+    public Rectangle.Double projToScreen(Extent extent, double lonShift) {
+        double[] sXY = projToScreen(extent.minX, extent.minY, lonShift);
+        double[] eXY = projToScreen(extent.maxX, extent.maxY, lonShift);
+
+        return new Rectangle.Double(sXY[0], eXY[1], Math.abs(eXY[0] - sXY[0]), Math.abs(eXY[1] - sXY[1]));
+    }
+
+    /**
      * Longitude/Latitude convert to screen X/Y
      *
      * @param lon Longitude
@@ -6093,7 +6507,14 @@ public class MapView extends JPanel {
         return new double[]{xShift, yShift};
     }
 
-    private void moveShapeOnScreen(Shape aShape, Point point1, Point point2) {
+    /**
+     * Move shape by screen coordinates
+     *
+     * @param aShape The shape
+     * @param point1 From point
+     * @param point2 To point
+     */
+    public void moveShapeOnScreen(Shape aShape, Point point1, Point point2) {
         double[] sXY = getProjXYShift(point1, point2);
         moveShape(aShape, sXY[0], sXY[1]);
     }
@@ -6109,7 +6530,14 @@ public class MapView extends JPanel {
         aShape.setPoints(points);
     }
 
-    private void resizeShapeOnScreen(Shape aShape, ColorBreak legend, Rectangle newRect) {
+    /**
+     * Resize shape on screen
+     *
+     * @param aShape The shape
+     * @param legend The legend
+     * @param newRect New rectangle
+     */
+    public void resizeShapeOnScreen(Shape aShape, ColorBreak legend, Rectangle newRect) {
         double[] min = screenToProj((double) newRect.x, (double) newRect.y + newRect.height);
         double[] max = screenToProj((double) newRect.x + newRect.width, (double) newRect.y);
         Extent newExtent = new Extent(min[0], max[0], min[1], max[1]);
@@ -6155,6 +6583,16 @@ public class MapView extends JPanel {
                 aShape.setPoints(points);
                 break;
         }
+    }
+
+    /**
+     * Resize shape on screen
+     *
+     * @param graphic The graphic
+     * @param newRect New rectangle
+     */
+    public void resizeShapeOnScreen(Graphic graphic, Rectangle newRect) {
+        resizeShapeOnScreen(graphic.getShape(), graphic.getLegend(), newRect);
     }
 
     /**
@@ -6205,7 +6643,6 @@ public class MapView extends JPanel {
         refreshXYScale();
 
         paintLayers();
-
         this.fireViewExtentChangedEvent();
     }
 
@@ -6223,6 +6660,9 @@ public class MapView extends JPanel {
         aExtent.maxX = maxX;
         aExtent.minY = minY;
         aExtent.maxY = maxY;
+
+        UndoableEdit edit = (new MapViewUndoRedo()).new ZoomEdit(this, (Extent) _viewExtent.clone(), (Extent) aExtent.clone());
+        this.fireUndoEditEvent(edit);
 
         zoomToExtent(aExtent);
     }
@@ -6917,6 +7357,46 @@ public class MapView extends JPanel {
         return vIdx;
     }
 
+    private int isOnRing(Point aPoint, Shape aShape) {
+        int buffer = 2;
+        Extent aExtent = new Extent();
+        float[] pXY;
+        pXY = screenToProj(aPoint.x - buffer, aPoint.y + buffer);
+        aExtent.minX = pXY[0];
+        aExtent.minY = pXY[1];
+        pXY = screenToProj(aPoint.x + buffer, aPoint.y - buffer);
+        aExtent.maxX = pXY[0];
+        aExtent.maxY = pXY[1];
+        PointD bPoint = aExtent.getCenterPoint();
+
+        if (MIMath.isExtentCross(aExtent, aShape.getExtent())) {
+            switch (aShape.getShapeType()) {
+                case Polyline:
+                    PolylineShape lShape = (PolylineShape) aShape;
+                    for (Polyline line : lShape.getPolylines()) {
+                        Object sel = GeoComputation.selectPolyline(bPoint, (List<PointD>) line.getPointList(), aExtent.getWidth() / 2);
+                        if (sel != null) {
+                            return (Integer) ((Object[]) sel)[0];
+                        }
+                    }
+                    break;
+                case Polygon:
+                    PolygonShape pShape = (PolygonShape) aShape;
+                    for (Polygon polygon : pShape.getPolygons()) {
+                        for (List<PointD> points : polygon.getRings()) {
+                            Object sel = GeoComputation.selectPolyline(bPoint, points, aExtent.getWidth() / 2);
+                            if (sel != null) {
+                                return (Integer) ((Object[]) sel)[0];
+                            }
+                        }
+                    }
+                    break;
+            }
+        }
+
+        return -1;
+    }
+
     /**
      * Select shaped
      *
@@ -6988,11 +7468,14 @@ public class MapView extends JPanel {
      * Select shapes
      *
      * @param aLayer The vector layer
+     * @param baseShapes The base shapes which is used for selection
      * @param rect Select rectangle
+     * @param isSingleSel If just select the first object shape
      * @param isSel if the selected shapes will be set as selected
      * @return Selected shapes
      */
-    public List<Integer> selectShapes(VectorLayer aLayer, Rectangle.Float rect, boolean isSel) {
+    public List<Integer> selectShapes(VectorLayer aLayer, List<Shape> baseShapes, Rectangle.Float rect,
+            boolean isSingleSel, boolean isSel) {
         Extent aExtent = new Extent();
         double[] projs = this.screenToProj(rect.getMinX(), rect.getMinY());
         aExtent.minX = projs[0];
@@ -7013,7 +7496,7 @@ public class MapView extends JPanel {
             }
         }
 
-        List<Integer> selectedShapes = aLayer.selectShapes(aExtent, false);
+        List<Integer> selectedShapes = aLayer.selectShapes(aExtent, baseShapes, isSingleSel);
         if (isSel) {
             for (int i : selectedShapes) {
                 aLayer.getShapes().get(i).setSelected(true);
@@ -7028,10 +7511,22 @@ public class MapView extends JPanel {
      *
      * @param aLayer The vector layer
      * @param rect Select rectangle
+     * @param isSingleSel If just select the first object shape
+     * @return Selected shapes
+     */
+    public List<Integer> selectShapes(VectorLayer aLayer, Rectangle.Float rect, boolean isSingleSel) {
+        return selectShapes(aLayer, (List<Shape>) aLayer.getShapes(), rect, isSingleSel, false);
+    }
+
+    /**
+     * Select shapes by rectangle
+     *
+     * @param aLayer The vector layer
+     * @param rect Select rectangle
      * @return Selected shapes
      */
     public List<Integer> selectShapes(VectorLayer aLayer, Rectangle.Float rect) {
-        return selectShapes(aLayer, rect, false);
+        return selectShapes(aLayer, (List<Shape>) aLayer.getShapes(), rect, false, false);
     }
 
     /**
@@ -7092,7 +7587,15 @@ public class MapView extends JPanel {
 
     // </editor-fold>
     // <editor-fold desc="Graphic">
-    private Rectangle getGraphicRectangle(Graphics g, Graphic aGraphic, double lonShift) {
+    /**
+     * Get graphic rectangle
+     *
+     * @param g The graphics
+     * @param aGraphic The graphic
+     * @param lonShift Longitude shift
+     * @return Rectangle
+     */
+    public Rectangle getGraphicRectangle(Graphics g, Graphic aGraphic, double lonShift) {
         Rectangle rect = new Rectangle();
         double[] sXY;
         float aX, aY;
@@ -7166,30 +7669,68 @@ public class MapView extends JPanel {
     }
 
     /**
+     * Get graphic rectangle
+     *
+     * @param aGraphic The graphic
+     * @param lonShift Longitude shift
+     * @return Rectangle
+     */
+    public Rectangle getGraphicRectangle(Graphic aGraphic, double lonShift) {
+        return getGraphicRectangle(this.getGraphics(), aGraphic, lonShift);
+    }
+
+    /**
+     * Get graphic rectangle
+     *
+     * @param aGraphic The graphic
+     * @return Rectangle
+     */
+    public Rectangle getGraphicRectangle(Graphic aGraphic) {
+        return getGraphicRectangle(this.getGraphics(), aGraphic, 0);
+    }
+
+    /**
      * Remove a graphic
      *
      * @param aGraphic The graphic
      */
     public void removeGraphic(Graphic aGraphic) {
-        if (_graphicCollection.contains(aGraphic)) {
-            _graphicCollection.remove(aGraphic);
-        } else {
+        if (aGraphic.getClass().equals(ChartGraphic.class)) {
             for (MapLayer aLayer : _layers) {
                 if (aLayer.getLayerType() == LayerTypes.VectorLayer) {
                     VectorLayer aVLayer = (VectorLayer) aLayer;
-                    if (aVLayer.getLabelPoints().contains(aGraphic)) {
-                        aVLayer.getLabelPoints().remove(aGraphic);
+                    if (aVLayer.getChartPoints().contains((ChartGraphic) aGraphic)) {
+                        aVLayer.getChartPoints().remove((ChartGraphic) aGraphic);
                         break;
                     }
                 }
             }
+        } else {
+            if (_graphicCollection.contains(aGraphic)) {
+                _graphicCollection.remove(aGraphic);
+            } else {
+                for (MapLayer aLayer : _layers) {
+                    if (aLayer.getLayerType() == LayerTypes.VectorLayer) {
+                        VectorLayer aVLayer = (VectorLayer) aLayer;
+                        if (aVLayer.getLabelPoints().contains(aGraphic)) {
+                            aVLayer.getLabelPoints().remove(aGraphic);
+                            break;
+                        }
+                    }
+                }
+            }
         }
+//        if (this._selectedGraphics.contains(aGraphic)){
+//            this._selectedGraphics.remove(aGraphic);
+//        }
     }
 
     /**
      * Remove selected graphics
      */
     public void removeSelectedGraphics() {
+        UndoableEdit edit = (new MapViewUndoRedo()).new RemoveGraphicsEdit(this, _selectedGraphics);
+        this.fireUndoEditEvent(edit);
         for (Graphic aGraphic : _selectedGraphics) {
             removeGraphic(aGraphic);
         }
@@ -7983,5 +8524,6 @@ public class MapView extends JPanel {
         }
     }
     // </editor-fold>
-    // </editor-fold>    
+    // </editor-fold>  
+
 }

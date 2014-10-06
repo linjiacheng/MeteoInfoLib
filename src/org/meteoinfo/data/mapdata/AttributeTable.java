@@ -73,7 +73,7 @@ public final class AttributeTable implements Cloneable {
     private boolean _loaded;
     //private bool _virtualMode;
     private List<Integer> _deletedRows;
-    private Charset charset = Charset.defaultCharset();
+    private final Charset charset = Charset.defaultCharset();
     // </editor-fold>
 
     // <editor-fold desc="Constructor">
@@ -141,10 +141,22 @@ public final class AttributeTable implements Cloneable {
 
     // <editor-fold desc="Methods">
     /**
+     * Update data table - convert DataColumn to Field
+     */
+    public void updateDataTable(){
+        for (DataColumn col : _dataTable.getColumns()){
+            if (col.getClass().equals(DataColumn.class)){
+                col = new Field(col);
+            }
+        }
+    }
+    
+    /**
      * Reads all the information from the file, including the vector shapes and
      * the database component.
      *
      * @param filename The file name
+     * @throws java.io.FileNotFoundException
      */
     public void open(String filename) throws FileNotFoundException, IOException, Exception {
         _attributesPopulated = false; // we had a file, but have not read the dbf content into memory yet.
@@ -331,6 +343,7 @@ public final class AttributeTable implements Cloneable {
      *
      * @param numRows In the event that the dbf file is not found, this
      * indicates how many blank rows should exist in the attribute Table.
+     * @throws java.io.FileNotFoundException
      */
     public void fill(int numRows) throws FileNotFoundException, IOException, Exception {
         if (!_loaded) {
@@ -525,7 +538,7 @@ public final class AttributeTable implements Cloneable {
         // longer in the data Table.
         List<Field> removeFields = new ArrayList<Field>();
         for (Field fld : _columns) {
-            if (!_dataTable.getColumns().contains(fld.getColumnName())) {
+            if (!_dataTable.getColumnNames().contains(fld.getColumnName())) {
                 removeFields.add(fld);
             } else {
                 tempColumns.add(fld);
@@ -638,6 +651,7 @@ public final class AttributeTable implements Cloneable {
 
     /**
      * This appends the content of one datarow to a DBF file
+     * @throws java.io.IOException
      */
     public void writeTable() throws IOException {
         if (_dataTable == null) {

@@ -334,7 +334,45 @@ public class GeoComputation {
         }
 
         return null;
-    }       
+    }    
+    
+    /**
+     * Select polyline shape by a point
+     *
+     * @param sp The point
+     * @param points The point list
+     * @param buffer Buffer
+     * @return Is the polyline shape selected
+     */
+    public static Object selectPolyline(PointD sp, List<PointD> points, double buffer) {
+        Extent aExtent = new Extent();
+        aExtent.minX = sp.X - buffer;
+        aExtent.maxX = sp.X + buffer;
+        aExtent.minY = sp.Y - buffer;
+        aExtent.maxY = sp.Y + buffer;
+        Extent bExtent = MIMath.getPointsExtent(points);
+        double dis;
+        if (MIMath.isExtentCross(aExtent, bExtent)) {
+            for (int j = 0; j < points.size(); j++) {
+                PointD aPoint = points.get(j);
+                if (MIMath.pointInExtent(aPoint, aExtent)) {
+                    return GeoComputation.distance(sp, aPoint);
+                }
+                if (j < points.size() - 1) {
+                    PointD bPoint = points.get(j + 1);
+                    if (Math.abs(sp.Y - aPoint.Y) <= Math.abs(bPoint.Y - aPoint.Y)
+                            || Math.abs(sp.X - aPoint.X) <= Math.abs(bPoint.X - aPoint.X)) {
+                        dis = GeoComputation.dis_PointToLine(sp, aPoint, bPoint);
+                        if (dis < aExtent.getWidth()) {
+                            return new Object[] {j + 1, dis};
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }    
 
     // </editor-fold>
     // <editor-fold desc="Earth">

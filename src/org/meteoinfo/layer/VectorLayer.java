@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.undo.UndoManager;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
 import javax.xml.transform.Transformer;
@@ -96,6 +97,9 @@ public class VectorLayer extends MapLayer {
     private List<Graphic> _originLabelPoints = null;
     private List<ChartGraphic> _originChartPoints = null;
     private boolean _projected = false;
+    private boolean editing = false;
+    private Shape editingShape;
+    private final UndoManager undoManager = new UndoManager();
     // </editor-fold>
 
     // <editor-fold desc="Constructor">
@@ -115,11 +119,21 @@ public class VectorLayer extends MapLayer {
         _chartSet = new ChartSet();
         _chartPoints = new ArrayList<ChartGraphic>();
         _shapeList = new ArrayList<Shape>();
+        LegendScheme ls = LegendManage.createSingleSymbolLegendScheme(shapeType);
+        super.setLegendScheme(ls);
         //_isEditing = false;
     }
     // </editor-fold>
 
     // <editor-fold desc="Get Set Methods">
+    /**
+     * Get UndoManager
+     * @return UndoManager
+     */
+    public UndoManager getUndoManager(){
+        return undoManager;
+    }
+    
     /**
      * Get if avoid collision
      *
@@ -363,6 +377,41 @@ public class VectorLayer extends MapLayer {
                 break;
         }
         updateLegendIndexes();
+    }
+    
+    /**
+     * Get if is editing
+     * @return Boolean
+     */
+    public boolean isEditing(){
+        return editing;
+    }
+    
+    /**
+     * Set if is editing
+     * @param value Boolean
+     */
+    public void setEditing(boolean value){
+        editing = value;
+    }
+    
+    /**
+     * Get editing shape
+     * @return Editing shape
+     */
+    public Shape getEditingShape(){
+        return editingShape;
+    }
+    
+    /**
+     * Set editing shape
+     * @param value The shape
+     */
+    public void setEditingShape(Shape value){
+        editingShape = value;
+        for (Shape shape : _shapeList)
+            shape.setEditing(false);
+        editingShape.setEditing(true);
     }
 
     // </editor-fold>
@@ -719,6 +768,15 @@ public class VectorLayer extends MapLayer {
 
         return false;
     }
+    
+    /**
+     * Clear editing shape
+     */
+    public void clearEditingShape(){
+        if (editingShape != null){
+            editingShape.setEditing(false);
+        }
+    }
 
     // </editor-fold>
     // <editor-fold desc="Attribute Table">
@@ -763,7 +821,7 @@ public class VectorLayer extends MapLayer {
         DataColumnCollection cols = _attributeTable.getTable().getColumns();
         List<Field> fields = new ArrayList<Field>();
         for (DataColumn col : cols) {
-            fields.add(new Field(col));
+            fields.add((Field)col);
         }
 
         return fields;
@@ -858,6 +916,10 @@ public class VectorLayer extends MapLayer {
         DataRow aDR = _attributeTable.getTable().newRow();
         _attributeTable.getTable().getRows().add(position, aDR);
     }
+    
+    private void insertRecord(int position, DataRow record) throws Exception {        
+        _attributeTable.getTable().getRows().add(position, record);
+    }
 
     /**
      * Edit: Edit cell value
@@ -918,42 +980,19 @@ public class VectorLayer extends MapLayer {
      * @param colName The column name for join
      */
     public void joinTable(DataTable dataTable, String colName){
+        this.joinTable(dataTable, colName, false);
+    }
+    
+    /**
+     * Join data table
+     * @param dataTable The input data table
+     * @param colName The column name for join
+     * @param isUpdate
+     */
+    public void joinTable(DataTable dataTable, String colName, boolean isUpdate){
         DataTable thisTable = this._attributeTable.getTable();
-        DataColumn col_this = thisTable.findColumn(colName);
-        if (col_this == null){
-            System.out.println("There is no column of " + colName + " in this table");
-            return;
-        }
-        DataColumn col_in = dataTable.findColumn(colName);
-        if (col_in == null){
-            System.out.println("There is no column of " + colName + " in this table");
-            return;
-        }
-        
-        List<String> values_this = thisTable.getColumnData(colName);
-        List<String> values_in = dataTable.getColumnData(colName);
-        
-        List<String> colNames = thisTable.getColumnNames(); 
-        List<String> newColNames = new ArrayList<String>();
-        for (DataColumn col : dataTable.getColumns()){
-            if (!colNames.contains(col.getColumnName())){
-                Field newCol = new Field(col.getColumnName(), col.getDataType());
-                newCol.setJoined(true);
-                thisTable.addColumn(newCol);
-                newColNames.add(col.getColumnName());
-            }
-        }
-        String value;
-        int idx;
-        for (int i = 0; i < thisTable.getRowCount(); i++){
-            value = values_this.get(i);
-            idx = values_in.indexOf(value);
-            if (idx >= 0){
-                for (String cn : newColNames){
-                    thisTable.setValue(i, cn, dataTable.getValue(idx, cn));
-                }
-            }
-        }
+        thisTable.join(dataTable, colName, isUpdate);
+        this._attributeTable.updateDataTable();
     }
     
     /**
@@ -978,11 +1017,61 @@ public class VectorLayer extends MapLayer {
      * @throws java.lang.Exception
      */
     public boolean editInsertShape(Shape aShape, int position) throws Exception {
+        if (position < 0)
+            position = 0;
+        else if (position > _shapeList.size())
+            position = _shapeList.size();
+        
         _shapeList.add(position, aShape);
         insertRecord(position);
         updateLayerExtent(aShape);
 
         return true;
+    }
+    
+    /**
+     * Edit: Insert shape
+     *
+     * @param aShape The shape
+     * @param position The position index
+     * @param record
+     * @return If success
+     * @throws java.lang.Exception
+     */
+    public boolean editInsertShape(Shape aShape, int position, DataRow record) throws Exception {
+        if (position < 0)
+            position = 0;
+        else if (position > _shapeList.size())
+            position = _shapeList.size();
+        
+        _shapeList.add(position, aShape);
+        insertRecord(position, record);
+        updateLayerExtent(aShape);
+
+        return true;
+    }
+    
+    /**
+     * Edit: Add a shape
+     * @param aShape The shape
+     * @return If success
+     * @throws Exception 
+     */
+    public boolean editAddShape(Shape aShape) throws Exception{
+        int pos = _shapeList.size();
+        return this.editInsertShape(aShape, pos);
+    }
+    
+    /**
+     * Edit: Remove a shape
+     * @param shape The shape
+     */
+    public void editRemoveShape(Shape shape){
+        int idx = this._shapeList.indexOf(shape);
+        if (idx >= 0){
+            this._shapeList.remove(shape);
+            this._attributeTable.getTable().removeRow(idx);
+        }
     }
 
     private void updateLayerExtent(Shape aShape) {

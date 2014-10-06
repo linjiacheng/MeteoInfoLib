@@ -47,6 +47,8 @@ public class Field extends DataColumn {
     
     /**
      * Constructor
+     * @param fName Field name
+     * @param type Field data type
      */
     public Field(String fName, DataTypes type) {
         this.setColumnName(fName);

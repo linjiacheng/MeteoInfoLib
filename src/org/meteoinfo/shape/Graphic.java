@@ -148,7 +148,7 @@ public class Graphic {
      * @param newX New X
      * @param newY New Y
      */
-    public void verticeEditUpdate(int vIdx, double newX, double newY) {
+    public void verticeMoveUpdate(int vIdx, double newX, double newY) {
         List<PointD> points = (List<PointD>)_shape.getPoints();        
         switch (_shape.getShapeType()){
             case Polygon:
@@ -173,6 +173,29 @@ public class Graphic {
         aP.X = newX;
         aP.Y = newY;
         //points.set(vIdx, aP);
+        _shape.setPoints(points);
+    }
+    
+    /**
+     * Vertice edited update
+     *
+     * @param vIdx Vertice index
+     * @param point The add vertice
+     */
+    public void verticeAddUpdate(int vIdx, PointD point) {
+        List<PointD> points = (List<PointD>)_shape.getPoints();      
+        points.add(vIdx, point);        
+        _shape.setPoints(points);
+    }
+    
+    /**
+     * Vertice edited update
+     *
+     * @param vIdx Vertice index
+     */
+    public void verticeRemoveUpdate(int vIdx) {
+        List<PointD> points = (List<PointD>)_shape.getPoints();      
+        points.remove(vIdx);        
         _shape.setPoints(points);
     }
     

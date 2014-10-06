@@ -42,6 +42,10 @@ public enum ShapeTypes {
     Circle(55);
     private final int value;
 
+    /**
+     * Get value
+     * @return Value
+     */
     public int getValue() {
         return value;
     }    
@@ -102,5 +106,56 @@ public enum ShapeTypes {
             default:
                 throw new IndexOutOfBoundsException("Invalid ordinal");
         }
+    }
+    
+    /**
+     * If is point
+     * @return Boolean
+     */
+    public boolean isPoint(){
+        switch(this){
+            case Point:
+            case PointM:
+            case PointZ:
+            case WindArraw:
+            case WindBarb:
+            case WeatherSymbol:
+            case StationModel:
+                return true;                
+        }
+        return false;
+    }
+    
+    /**
+     * If is line
+     * @return Boolean
+     */
+    public boolean isLine(){
+        switch(this){
+            case Polyline:
+            case PolylineZ:
+            case PolylineM:
+            case CurveLine:            
+                return true;
+        }
+        return false;
+    }
+    
+    /**
+     * If is polygon
+     * @return Boolean
+     */
+    public boolean isPolygon(){
+        switch(this){
+            case Polygon:
+            case PolygonM:
+            case PolygonZ:
+            case Rectangle:
+            case CurvePolygon:
+            case Ellipse:
+            case Circle:
+                return true;
+        }
+        return false;
     }
 }

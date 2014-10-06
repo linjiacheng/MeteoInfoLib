@@ -29,6 +29,7 @@ public class Shape {
     private ShapeTypes _shapeType;
     private boolean _visible;
     private boolean _selected;
+    private boolean editing;
     private Extent _extent = new Extent();
     private int _legendIndex = 0;
 
@@ -40,6 +41,7 @@ public class Shape {
     public Shape() {
         _shapeType = ShapeTypes.Point;
         _visible = true;
+        editing = false;
         _selected = false;
     }
 
@@ -47,6 +49,8 @@ public class Shape {
     // <editor-fold desc="Get Set Methods">
     /**
      * Get shape type
+     *
+     * @return Shape type
      */
     public ShapeTypes getShapeType() {
         return _shapeType;
@@ -98,6 +102,24 @@ public class Shape {
     }
 
     /**
+     * Get if is editing
+     *
+     * @return Boolean
+     */
+    public boolean isEditing() {
+        return editing;
+    }
+
+    /**
+     * Set if is editing
+     *
+     * @param value Boolean
+     */
+    public void setEditing(boolean value) {
+        editing = value;
+    }
+
+    /**
      * Get extent
      *
      * @return extent Extent
@@ -108,25 +130,28 @@ public class Shape {
 
     /**
      * Set extent
+     *
      * @param aExtent Extent
      */
     public void setExtent(Extent aExtent) {
         _extent = aExtent;
     }
-    
+
     /**
      * Get legend index
+     *
      * @return Legend index
      */
-    public int getLegendIndex(){
+    public int getLegendIndex() {
         return _legendIndex;
     }
-    
+
     /**
      * Set legend index
+     *
      * @param value Legend index
      */
-    public void setLegendIndex(int value){
+    public void setLegendIndex(int value) {
         _legendIndex = value;
     }
 
@@ -147,6 +172,52 @@ public class Shape {
      * @param points point list
      */
     public void setPoints(List<? extends PointD> points) {
+    }
+    
+    /**
+     * Add a vertice
+     * @param vIdx Vertice index
+     * @param vertice The vertice
+     */
+    public void addVertice(int vIdx, PointD vertice){        
+    }
+    
+    /**
+     * Remove a vertice
+     * @param vIdx Vertice index
+     */
+    public void removeVerice(int vIdx){        
+    }
+
+    /**
+     * Vertice edited update
+     *
+     * @param vIdx Vertice index
+     * @param newX New X
+     * @param newY New Y
+     */
+    public void moveVertice(int vIdx, double newX, double newY) {
+        List<PointD> points = (List<PointD>) getPoints();
+        if (_shapeType.isPolygon()) {
+            int last = points.size() - 1;
+            if (vIdx == 0) {
+                if (points.get(0).X == points.get(last).X && points.get(0).Y == points.get(last).Y) {
+                    points.get(last).X = newX;
+                    points.get(last).Y = newY;
+                }
+            } else if (vIdx == last) {
+                if (points.get(0).X == points.get(last).X && points.get(0).Y == points.get(last).Y) {
+                    points.get(0).X = newX;
+                    points.get(0).Y = newY;
+                }
+            }
+        }
+
+        PointD aP = points.get(vIdx);
+        aP.X = newX;
+        aP.Y = newY;
+        //points.set(vIdx, aP);
+        setPoints(points);
     }
 
     /**

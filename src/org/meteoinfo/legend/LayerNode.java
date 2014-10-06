@@ -29,8 +29,9 @@ public class LayerNode extends ItemNode {
 
     private MapLayer _mapLayer = null;
     private int _groupHandle = -1;
-    private List<LegendNode> _legendNodes = new ArrayList<LegendNode>();
+    private final List<LegendNode> _legendNodes = new ArrayList<LegendNode>();
     private MapFrame _mapFrame = null;
+    private boolean editing = false;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -138,6 +139,24 @@ public class LayerNode extends ItemNode {
     public void setGroupHandle(int handle) {
         this._groupHandle = handle;
     }
+    
+    /**
+     * Get if is editing
+     * @return Boolean
+     */
+    public boolean isEditing(){
+        return editing;
+    }
+    
+    /**
+     * Set if is editing
+     * @param value Boolean
+     */
+    public void setEditing(boolean value){
+        editing = value;
+        if (this._mapLayer.getLayerType() == LayerTypes.VectorLayer)
+            ((VectorLayer)this._mapLayer).setEditing(value);
+    }
     // </editor-fold>
     // <editor-fold desc="Methods">
 
@@ -214,6 +233,7 @@ public class LayerNode extends ItemNode {
      * Clone
      *
      * @return LayerNode object
+     * @throws java.lang.CloneNotSupportedException
      */
     @Override
     public Object clone() throws CloneNotSupportedException {

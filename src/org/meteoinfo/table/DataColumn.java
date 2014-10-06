@@ -201,23 +201,32 @@ public class DataColumn {
      * Convert input data to current data type
      *
      * @param value Object value
-     * @return 
+     * @return Result object
      */
     public Object convertTo(Object value) {
         switch (this.dataType){
             case Integer:
-                if (!(value instanceof Integer))
+                if (!(value instanceof Integer))                    
                     return Integer.valueOf(value.toString());
                 break;
             case Double:
                 if (!(value instanceof Double))
-                    return Double.valueOf(value.toString());
+                    if (value == null)
+                        return Double.NaN;
+                    else
+                        return Double.valueOf(value.toString());
                 break;
             case Float:
                 if (!(value instanceof Float))
-                    return Float.valueOf(value.toString());
-                break;
+                    if (value == null)
+                        return Float.NaN;
+                    else
+                        return Float.valueOf(value.toString());
+                break;            
         }
+        
+        if (value == null)
+            return "";
         return value;
     }
 

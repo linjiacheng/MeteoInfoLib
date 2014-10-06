@@ -7,7 +7,6 @@ package org.meteoinfo.data.analysis;
 
 import java.util.Collections;
 import java.util.List;
-import org.meteoinfo.table.DataRow;
 
 /**
  *

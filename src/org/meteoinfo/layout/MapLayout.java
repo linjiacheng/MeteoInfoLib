@@ -115,9 +115,12 @@ import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.undo.UndoableEdit;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.meteoinfo.global.event.IUndoEditListener;
+import org.meteoinfo.global.event.UndoEditEvent;
 import org.meteoinfo.global.util.GlobalUtil;
 import org.meteoinfo.layer.RasterLayer;
 import org.meteoinfo.legend.VectorBreak;
@@ -388,6 +391,27 @@ public class MapLayout extends JPanel {
         }
     }
 
+    public void addUndoEditListener(IUndoEditListener listener) {
+        this._listeners.add(IUndoEditListener.class, listener);
+    }
+
+    public void removeUndoEditListener(IUndoEditListener listener) {
+        this._listeners.remove(IUndoEditListener.class, listener);
+    }
+
+    public void fireUndoEditEvent(UndoableEdit undoEdit) {
+        fireUndoEditEvent(new UndoEditEvent(this), undoEdit);
+    }
+
+    private void fireUndoEditEvent(UndoEditEvent event, UndoableEdit undoEdit) {
+        Object[] listeners = _listeners.getListenerList();
+        for (int i = 0; i < listeners.length; i = i + 2) {
+            if (listeners[i] == IUndoEditListener.class) {
+                ((IUndoEditListener) listeners[i + 1]).undoEditEvent(event, undoEdit);
+            }
+        }
+    }
+
     public void onScrollValueChanged(AdjustmentEvent e) {
         if (e.getSource() == _vScrollBar) {
             _vScrollBar.setValue(e.getValue());
@@ -454,6 +478,8 @@ public class MapLayout extends JPanel {
                     LayoutGraphic aLayoutGraphic = new LayoutGraphic(aGraphic, this);
                     addElement(aLayoutGraphic);
                     this.paintGraphics();
+                    UndoableEdit edit = (new MapLayoutUndoRedo()).new AddElementEdit(this, aLayoutGraphic);
+                    this.fireUndoEditEvent(edit);
                     break;
                 case New_Label:
                     aPS = new PointShape();
@@ -462,6 +488,8 @@ public class MapLayout extends JPanel {
                     aLayoutGraphic = new LayoutGraphic(aGraphic, this);
                     addElement(aLayoutGraphic);
                     this.paintGraphics();
+                    edit = (new MapLayoutUndoRedo()).new AddElementEdit(this, aLayoutGraphic);
+                    this.fireUndoEditEvent(edit);
                     break;
                 case New_Polyline:
                 case New_Polygon:
@@ -654,83 +682,70 @@ public class MapLayout extends JPanel {
                 break;
             case ResizeSelected:
                 LayoutElement oElement = _selectedElements.get(0);
-                if (_selectedRectangle.width > 2 && _selectedRectangle.height > 2) {
-                    switch (oElement.getResizeAbility()) {
-                        case SameWidthHeight:
-                            switch (_resizeSelectedEdge) {
-                                case TopLeft:
-                                    _selectedRectangle.x += deltaX;
-                                    _selectedRectangle.y += deltaX;
-                                    _selectedRectangle.width -= deltaX;
-                                    _selectedRectangle.height -= deltaX;
-                                    break;
-                                case BottomRight:
-                                    _selectedRectangle.width += deltaX;
-                                    _selectedRectangle.height += deltaX;
-                                    break;
-                                case TopRight:
-                                    _selectedRectangle.y += deltaY;
-                                    _selectedRectangle.width -= deltaY;
-                                    _selectedRectangle.height -= deltaY;
-                                    break;
-                                case BottomLeft:
-                                    _selectedRectangle.x += deltaX;
-                                    _selectedRectangle.width -= deltaX;
-                                    _selectedRectangle.height -= deltaX;
-                                    break;
-                            }
-                            break;
-                        case ResizeAll:
-                            switch (_resizeSelectedEdge) {
-                                case TopLeft:
-                                    _selectedRectangle.x += deltaX;
-                                    _selectedRectangle.y += deltaY;
-                                    _selectedRectangle.width -= deltaX;
-                                    _selectedRectangle.height -= deltaY;
-                                    break;
-                                case BottomRight:
-                                    _selectedRectangle.width += deltaX;
-                                    _selectedRectangle.height += deltaY;
-                                    break;
-                                case Top:
-                                    _selectedRectangle.y += deltaY;
-                                    _selectedRectangle.height -= deltaY;
-                                    break;
-                                case Bottom:
-                                    _selectedRectangle.height += deltaY;
-                                    break;
-                                case TopRight:
-                                    _selectedRectangle.y += deltaY;
-                                    _selectedRectangle.width += deltaX;
-                                    _selectedRectangle.height -= deltaY;
-                                    break;
-                                case BottomLeft:
-                                    _selectedRectangle.x += deltaX;
-                                    _selectedRectangle.width -= deltaX;
-                                    _selectedRectangle.height += deltaY;
-                                    break;
-                                case Left:
-                                    _selectedRectangle.x += deltaX;
-                                    _selectedRectangle.width -= deltaX;
-                                    break;
-                                case Right:
-                                    _selectedRectangle.width += deltaX;
-                                    break;
-                            }
-                            break;
-                    }
-
-                    PointF minP = screenToPage((float) _selectedRectangle.x, (float) _selectedRectangle.y);
-                    PointF maxP = screenToPage((float) _selectedRectangle.x + _selectedRectangle.width, _selectedRectangle.y + _selectedRectangle.height);
-                    oElement.setLeft((int) minP.X);
-                    oElement.setTop((int) minP.Y);
-                    oElement.setWidth((int) (maxP.X - minP.X));
-                    oElement.setHeight((int) (maxP.Y - minP.Y));
-                } else {
-                    oElement.setWidth(3);
-                    oElement.setHeight(3);
+                switch (oElement.getResizeAbility()) {
+                    case SameWidthHeight:
+                        switch (_resizeSelectedEdge) {
+                            case TopLeft:
+                                _selectedRectangle.x += deltaX;
+                                _selectedRectangle.y += deltaX;
+                                _selectedRectangle.width -= deltaX;
+                                _selectedRectangle.height -= deltaX;
+                                break;
+                            case BottomRight:
+                                _selectedRectangle.width += deltaX;
+                                _selectedRectangle.height += deltaX;
+                                break;
+                            case TopRight:
+                                _selectedRectangle.y += deltaY;
+                                _selectedRectangle.width -= deltaY;
+                                _selectedRectangle.height -= deltaY;
+                                break;
+                            case BottomLeft:
+                                _selectedRectangle.x += deltaX;
+                                _selectedRectangle.width -= deltaX;
+                                _selectedRectangle.height -= deltaX;
+                                break;
+                        }
+                        break;
+                    case ResizeAll:
+                        switch (_resizeSelectedEdge) {
+                            case TopLeft:
+                                _selectedRectangle.x += deltaX;
+                                _selectedRectangle.y += deltaY;
+                                _selectedRectangle.width -= deltaX;
+                                _selectedRectangle.height -= deltaY;
+                                break;
+                            case BottomRight:
+                                _selectedRectangle.width += deltaX;
+                                _selectedRectangle.height += deltaY;
+                                break;
+                            case Top:
+                                _selectedRectangle.y += deltaY;
+                                _selectedRectangle.height -= deltaY;
+                                break;
+                            case Bottom:
+                                _selectedRectangle.height += deltaY;
+                                break;
+                            case TopRight:
+                                _selectedRectangle.y += deltaY;
+                                _selectedRectangle.width += deltaX;
+                                _selectedRectangle.height -= deltaY;
+                                break;
+                            case BottomLeft:
+                                _selectedRectangle.x += deltaX;
+                                _selectedRectangle.width -= deltaX;
+                                _selectedRectangle.height += deltaY;
+                                break;
+                            case Left:
+                                _selectedRectangle.x += deltaX;
+                                _selectedRectangle.width -= deltaX;
+                                break;
+                            case Right:
+                                _selectedRectangle.width += deltaX;
+                                break;
+                        }
+                        break;
                 }
-
                 this.repaint();
                 break;
             case New_Rectangle:
@@ -1048,7 +1063,7 @@ public class MapLayout extends JPanel {
                             aLayer.getShapes().get(shapeIdx).setSelected(true);
                         }
                         _currentLayoutMap.getMapFrame().getMapView().fireShapeSelectedEvent();
-                    } 
+                    }
                     this.paintGraphics();
                     break;
                 case CreateSelection:
@@ -1106,11 +1121,15 @@ public class MapLayout extends JPanel {
                         }
                         this.fireElementSelectedEvent();
                     } else {
+                        int deltaX = (int) ((e.getX() - _mouseDownPoint.x) / _zoom);
+                        int deltaY = (int) ((e.getY() - _mouseDownPoint.y) / _zoom);
                         for (LayoutElement aElement : _selectedElements) {
-                            aElement.setLeft(aElement.getLeft() + (int) ((e.getX() - _mouseDownPoint.x) / _zoom));
-                            aElement.setTop(aElement.getTop() + (int) ((e.getY() - _mouseDownPoint.y) / _zoom));
+                            aElement.setLeft(aElement.getLeft() + deltaX);
+                            aElement.setTop(aElement.getTop() + deltaY);
                             aElement.moveUpdate();
                         }
+                        UndoableEdit edit = (new MapLayoutUndoRedo()).new MoveElementsEdit(this, _selectedElements, deltaX, deltaY);
+                        this.fireUndoEditEvent(edit);
                     }
 
                     _mouseMode = MouseMode.Select;
@@ -1118,7 +1137,23 @@ public class MapLayout extends JPanel {
                     break;
                 case ResizeSelected:
                     _mouseMode = MouseMode.Select;
-                    _selectedElements.get(0).resizeUpdate();
+                    LayoutElement oElement = _selectedElements.get(0);
+                    if (_selectedRectangle.width < 3) {
+                        _selectedRectangle.width = 3;
+                    }
+                    if (_selectedRectangle.height < 3) {
+                        _selectedRectangle.height = 3;
+                    }
+
+                    UndoableEdit edit = (new MapLayoutUndoRedo()).new ResizeElementEdit(this, oElement, _selectedRectangle);
+                    this.fireUndoEditEvent(edit);
+                    PointF minP = screenToPage((float) _selectedRectangle.x, (float) _selectedRectangle.y);
+                    PointF maxP = screenToPage((float) _selectedRectangle.x + _selectedRectangle.width, _selectedRectangle.y + _selectedRectangle.height);
+                    oElement.setLeft((int) minP.X);
+                    oElement.setTop((int) minP.Y);
+                    oElement.setWidth((int) (maxP.X - minP.X));
+                    oElement.setHeight((int) (maxP.Y - minP.Y));
+                    oElement.resizeUpdate();
                     this.paintGraphics();
                     break;
                 case New_Rectangle:
@@ -1156,8 +1191,11 @@ public class MapLayout extends JPanel {
                         }
 
                         if (aGraphic != null) {
-                            addElement(new LayoutGraphic(aGraphic, this));
+                            LayoutGraphic lg = new LayoutGraphic(aGraphic, this);
+                            addElement(lg);
                             this.paintGraphics();
+                            edit = (new MapLayoutUndoRedo()).new AddElementEdit(this, lg);
+                            this.fireUndoEditEvent(edit);
                         } else {
                             this.repaint();
                         }
@@ -1179,8 +1217,11 @@ public class MapLayout extends JPanel {
                         PolylineShape aPLS = new PolylineShape();
                         aPLS.setPoints(points);
                         Graphic aGraphic = new Graphic(aPLS, (PolylineBreak) _defPolylineBreak.clone());
-                        addElement(new LayoutGraphic(aGraphic, this));
+                        LayoutGraphic lg = new LayoutGraphic(aGraphic, this);
+                        addElement(lg);
                         this.paintGraphics();
+                        edit = (new MapLayoutUndoRedo()).new AddElementEdit(this, lg);
+                        this.fireUndoEditEvent(edit);
                     }
                     break;
                 case New_Circle:
@@ -1206,12 +1247,19 @@ public class MapLayout extends JPanel {
                         CircleShape aPGS = new CircleShape();
                         aPGS.setPoints(points);
                         Graphic aGraphic = new Graphic(aPGS, (PolygonBreak) _defPolygonBreak.clone());
-                        addElement(new LayoutGraphic(aGraphic, this));
+                        LayoutGraphic lg = new LayoutGraphic(aGraphic, this);
+                        addElement(lg);
                         this.paintGraphics();
+                        edit = (new MapLayoutUndoRedo()).new AddElementEdit(this, lg);
+                        this.fireUndoEditEvent(edit);
                     }
                     break;
                 case InEditingVertices:
-                    ((LayoutGraphic) _selectedElements.get(0)).verticeEditUpdate(_editingVerticeIndex, pageP.x, pageP.y);
+                    LayoutGraphic lg = (LayoutGraphic) _selectedElements.get(0);
+                    edit = (new MapLayoutUndoRedo()).new MoveGraphicVerticeEdit(this, lg, _editingVerticeIndex, 
+                            pageP.x, pageP.y);
+                    this.fireUndoEditEvent(edit);
+                    lg.verticeEditUpdate(_editingVerticeIndex, pageP.x, pageP.y);
                     _mouseMode = MouseMode.EditVertices;
                     this.paintGraphics();
                     break;
@@ -1288,13 +1336,10 @@ public class MapLayout extends JPanel {
                                 //Rectangle rect = getElementViewExtent(_currentLayoutMap);
                                 //_currentLayoutMap.getMapFrame().getMapView().drawIdShape(this.createGraphics(), aLayer.getShapes().get(shapeIdx), rect);
                             }
-                        }
-                        else if (aMLayer.getLayerType() == LayerTypes.RasterLayer)
-                        {
-                            RasterLayer aRLayer = (RasterLayer)aMLayer;
+                        } else if (aMLayer.getLayerType() == LayerTypes.RasterLayer) {
+                            RasterLayer aRLayer = (RasterLayer) aMLayer;
                             int[] ijIdx = _currentLayoutMap.getMapFrame().getMapView().selectGridCell(aRLayer, aPoint);
-                            if (ijIdx != null)
-                            {
+                            if (ijIdx != null) {
                                 int iIdx = ijIdx[0];
                                 int jIdx = ijIdx[1];
                                 double aValue = aRLayer.getCellValue(iIdx, jIdx);
@@ -1477,7 +1522,7 @@ public class MapLayout extends JPanel {
                     } else {
                         FrmProperty aFrmProperty = new FrmProperty((JFrame) SwingUtilities.getWindowAncestor(this), true, false);
                         Object object = aElement;
-                        switch (aElement.getElementType()){
+                        switch (aElement.getElementType()) {
                             case LayoutLegend:
                                 object = ((LayoutLegend) aElement).new LayoutLegendBean();
                                 break;
@@ -1490,7 +1535,7 @@ public class MapLayout extends JPanel {
                             case LayoutScaleBar:
                                 object = ((LayoutScaleBar) aElement).new LayoutScaleBarBean();
                                 break;
-                        }                        
+                        }
                         aFrmProperty.setObject(object);
                         aFrmProperty.setParent(this);
                         aFrmProperty.setLocationRelativeTo(this);
@@ -1574,8 +1619,11 @@ public class MapLayout extends JPanel {
                             }
 
                             if (aGraphic != null) {
-                                addElement(new LayoutGraphic(aGraphic, this));
+                                LayoutGraphic lg = new LayoutGraphic(aGraphic, this);
+                                addElement(lg);
                                 this.paintGraphics();
+                                UndoableEdit edit = (new MapLayoutUndoRedo()).new AddElementEdit(this, lg);
+                                this.fireUndoEditEvent(edit);
                             } else {
                                 this.repaint();
                             }
@@ -1587,16 +1635,7 @@ public class MapLayout extends JPanel {
     }
 
     private void onRemoveElementClick(ActionEvent e) {
-        for (int i = 0; i < _layoutElements.size(); i++) {
-            LayoutElement aElement = _layoutElements.get(i);
-            if (aElement.isSelected()) {
-                removeElement(aElement);
-                _selectedElements.remove(aElement);
-            }
-        }
-
-        _startNewGraphic = true;
-        paintGraphics();
+        this.onRemoveElementClick();
     }
 
     private void onBringToFrontClick(ActionEvent e) {
@@ -1766,14 +1805,13 @@ public class MapLayout extends JPanel {
     }
 
     private void onRemoveElementClick() {
-        for (int i = 0; i < _layoutElements.size(); i++) {
-            LayoutElement aElement = _layoutElements.get(i);
-            if (aElement.isSelected()) {
-                removeElement(aElement);
-                _selectedElements.remove(aElement);
-            }
+        UndoableEdit edit = (new MapLayoutUndoRedo()).new RemoveElementsEdit(this, _selectedElements);
+        this.fireUndoEditEvent(edit);
+        for (LayoutElement element : _selectedElements) {
+            removeElement(element);
         }
 
+        _selectedElements.clear();
         _startNewGraphic = true;
         paintGraphics();
     }
@@ -1797,7 +1835,7 @@ public class MapLayout extends JPanel {
     public void setLockViewUpdate(boolean istrue) {
         _lockViewUpdate = istrue;
     }
-    
+
     /**
      * Get map frames
      *
@@ -2368,17 +2406,17 @@ public class MapLayout extends JPanel {
     }
 
     public void paintGraphics() {
-        if (this._lockViewUpdate){
+        if (this._lockViewUpdate) {
             return;
         }
-        
+
         if (this.getWidth() < 10 || this.getHeight() < 10) {
             return;
         }
 
         if ((this._pageBounds.width < 2) || (this._pageBounds.height < 2)) {
             return;
-        }        
+        }
 
         _layoutBitmap = new BufferedImage(this.getWidth(),
                 this.getHeight(), BufferedImage.TYPE_INT_ARGB);
@@ -2422,7 +2460,6 @@ public class MapLayout extends JPanel {
                 _hScrollBar.setVisible(false);
             }
         }
-
 
         //Draw layout elements
         paintGraphicsOnLayout(g);
@@ -2625,7 +2662,14 @@ public class MapLayout extends JPanel {
         return (new Point((int) x, (int) y));
     }
 
-    private PointF screenToPage(float screenX, float screenY) {
+    /**
+     * Convert screen coordinate to page coordinate
+     *
+     * @param screenX Screen x
+     * @param screenY Screen y
+     * @return Page position
+     */
+    public PointF screenToPage(float screenX, float screenY) {
         float x = (screenX - _pageLocation.X) / _zoom;
         float y = (screenY - _pageLocation.Y) / _zoom;
         return (new PointF(x, y));
@@ -2749,7 +2793,7 @@ public class MapLayout extends JPanel {
                 @Override
                 public void mapViewUpdatedEvent(MapViewUpdatedEvent event) {
                     //if (aLM.getMapFrame().isFireMapViewUpdate()) {
-                        paintGraphics();
+                    paintGraphics();
                     //}
                 }
             });
@@ -2805,6 +2849,9 @@ public class MapLayout extends JPanel {
                 _layoutElements.remove(aElement);
                 break;
         }
+//        if (this._selectedElements.contains(aElement)){
+//            this._selectedElements.remove(aElement);
+//        }
     }
 
     /**
@@ -2854,8 +2901,8 @@ public class MapLayout extends JPanel {
 
         return aLayoutGraphic;
     }
-    
-    public LayoutGraphic addWindArrow(int left, int top){
+
+    public LayoutGraphic addWindArrow(int left, int top) {
         WindArraw aWindArraw = new WindArraw();
         //aWindArraw.setPoint(new PointD(left, top));
         aWindArraw.angle = 270;
@@ -2865,9 +2912,9 @@ public class MapLayout extends JPanel {
         LayoutGraphic wag = new LayoutGraphic(new Graphic(aWindArraw, aVB), this,
                 this.getActiveLayoutMap());
         wag.setLeft(left);
-        wag.setTop(top); 
+        wag.setTop(top);
         addElement(wag);
-        
+
         return wag;
     }
 
@@ -2929,10 +2976,10 @@ public class MapLayout extends JPanel {
 
         return aLNA;
     }
-    
+
     /**
      * Add a layout chart
-     * 
+     *
      * @param left Left
      * @param top Top
      * @return Layout chart
@@ -2942,7 +2989,7 @@ public class MapLayout extends JPanel {
         chart.setLeft(left);
         chart.setTop(top);
         addElement(chart);
-        
+
         return chart;
     }
 
@@ -3414,7 +3461,7 @@ public class MapLayout extends JPanel {
         Attr colNum = doc.createAttribute("ColumnNumber");
 
         elementType.setValue(aLegend.getElementType().toString());
-        layoutMapIndex.setValue(String.valueOf(getLayoutMapIndex(aLegend.getLayoutMap())));        
+        layoutMapIndex.setValue(String.valueOf(getLayoutMapIndex(aLegend.getLayoutMap())));
         legendLayer.setValue(aLegend.getLayerName());
         LegendStyle.setValue(aLegend.getLegendStyle().toString());
         layerUpdateType.setValue(aLegend.getLayerUpdateType().toString());
@@ -3577,7 +3624,7 @@ public class MapLayout extends JPanel {
         //Append in parent
         parent.appendChild(layoutGraphic);
     }
-    
+
     /**
      * Load project file
      *
@@ -3589,7 +3636,7 @@ public class MapLayout extends JPanel {
         Document doc = db.parse(aFile);
 
         Element root = doc.getDocumentElement();
-        
+
         Properties property = System.getProperties();
         String path = System.getProperty("user.dir");
         property.setProperty("user.dir", new File(aFile).getAbsolutePath());
@@ -3615,7 +3662,7 @@ public class MapLayout extends JPanel {
         this.setMapFrames(mfs);
         //Load MapLayout content
         this.importProjectXML(root);
-        
+
         property.setProperty("user.dir", path);
     }
 
@@ -3685,7 +3732,7 @@ public class MapLayout extends JPanel {
                     LayoutGraphic aLG = loadLayoutGraphicElement(elementNode);
                     if (aLG.getGraphic().getShape().getShapeType() == ShapeTypes.WindArraw) {
                         ((WindArraw) aLG.getGraphic().getShape()).angle = 270;
-                    } 
+                    }
                     addElement(aLG);
                     break;
                 case LayoutScaleBar:
@@ -3830,10 +3877,11 @@ public class MapLayout extends JPanel {
         aGraphic.importFromXML((Element) graphicNode);
 
         LayoutGraphic aLG;
-        if (aGraphic.getShape().getShapeType() == ShapeTypes.WindArraw)
+        if (aGraphic.getShape().getShapeType() == ShapeTypes.WindArraw) {
             aLG = new LayoutGraphic(aGraphic, this, this.getActiveLayoutMap());
-        else
+        } else {
             aLG = new LayoutGraphic(aGraphic, this);
+        }
 
         aLG.setIsTitle(Boolean.parseBoolean(layoutGraphic.getAttributes().getNamedItem("IsTitle").getNodeValue()));
 

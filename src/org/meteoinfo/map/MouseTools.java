@@ -44,5 +44,10 @@ public enum MouseTools {
     EditVertices,
     InEditingVertices,
     Measurement,
+    Edit_Tool,
+    Edit_MoveSelection,
+    Edit_NewFeature,
+    Edit_FeatureVertices,
+    Edit_InEditingVertices,
     None
 }
