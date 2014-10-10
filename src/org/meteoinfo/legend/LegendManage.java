@@ -87,11 +87,11 @@ public class LegendManage {
      */
     public static LegendScheme createLegendSchemeFromStationData(StationData stationData,
             LegendType aLT, ShapeTypes aST) {
-        LegendScheme aLS = null;
+        LegendScheme aLS;
         double[] CValues;
         Color[] colors;
-        double MinData = 0;
-        double MaxData = 0;
+        double MinData;
+        double MaxData;
         double[] minmax = new double[2];
         boolean hasNoData = ContourDraw.getMinMaxValueFDiscreteData(stationData.data, stationData.missingValue, minmax);
         MinData = minmax[0];
@@ -421,7 +421,8 @@ public class LegendManage {
                     } else {
                         aPB.setEndValue(CValues[i]);
                     }
-                    aPB.setSize((float) i / 2 + 2);
+                    //aPB.setSize((float) i / 2 + 2);
+                    aPB.setSize(8);
                     aPB.setStyle(PointStyle.Circle);
                     if (aPB.getStartValue() == aPB.getEndValue()) {
                         aPB.setCaption(DataConvert.removeTailingZeros(aPB.getStartValue().toString()));

@@ -452,24 +452,26 @@ public class TableData {
         DataTable rTable = new DataTable();
         rTable.addColumn(firstColName, DataTypes.String);
         List<Object> values = new ArrayList<Object>();
-        int r = 0;
-        for (DataRow row : inTable.getRows()){
-            String rowName = row.getValue(0).toString();
-            int i = 0;
-            for (DataColumn col : inTable.getColumns()){
-                if (i > 0){
-                    DataColumn newCol = new DataColumn(rowName + "_" + col.getColumnName(), col.getDataType());
+        
+        int i = 0;
+        for (DataColumn col : inTable.getColumns()){
+            if (i > 0){
+                String colName = col.getColumnName();
+                int r = 0;
+                for (DataRow row : inTable.getRows()){
+                    String rowName = row.getValue(0).toString();
+                    DataColumn newCol = new DataColumn(rowName + "_" + colName, col.getDataType());
                     rTable.addColumn(newCol);
-                    values.add(inTable.getValue(r, col.getColumnName()));
+                    values.add(inTable.getValue(r, colName));
+                    r++;
                 }
-                i++;
-            }
-            r++;
-        }
+            }            
+            i++;
+        }        
         
         rTable.addRow();
         rTable.setValue(0, 0, firstColValue);
-        int i = 1;
+        i = 1;
         for (Object value : values){
             rTable.setValue(0, i, value);
             i++;

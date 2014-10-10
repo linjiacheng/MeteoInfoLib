@@ -22,7 +22,6 @@ import org.meteoinfo.data.meteodata.StationInfoData;
 import org.meteoinfo.data.meteodata.StationModelData;
 import org.meteoinfo.data.meteodata.Variable;
 import org.meteoinfo.global.DataConvert;
-import org.meteoinfo.global.Extent;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -33,9 +32,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -182,6 +179,7 @@ public class MICAPS120DataInfo extends DataInfo implements IStationDataInfo {
             List<String> dList;
             sr.readLine();
             String line = sr.readLine();
+            int i;
             while (line != null) {
                 if (line.isEmpty()) {
                     continue;
@@ -189,8 +187,13 @@ public class MICAPS120DataInfo extends DataInfo implements IStationDataInfo {
                 line = line.trim();
                 dataArray = line.split("\\s+");
                 dList = new ArrayList<String>();
+                i = 0;
                 for (String d : dataArray) {
-                    dList.add(d);
+                    if (i == 2)
+                        dList.add(1, d);
+                    else
+                        dList.add(d);
+                    i++;
                 }
                 dataList.add(dList);
 
@@ -202,7 +205,7 @@ public class MICAPS120DataInfo extends DataInfo implements IStationDataInfo {
             stInfoData.setVariables(_varList);
             List<String> stations = new ArrayList<String>();
             int stNum = dataList.size();
-            for (int i = 0; i < stNum; i++) {
+            for (i = 0; i < stNum; i++) {
                 stations.add(dataList.get(i).get(0));
             }
             stInfoData.setStations(stations);

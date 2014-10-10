@@ -222,12 +222,14 @@ public class DrawMeteoData {
                 aPolygonShape.highValue = cValues[valueIdx + 1];
             }
 
-            if (!aPolygon.IsHighCenter) {
-                aPolygonShape.highValue = aValue;
-                if (valueIdx == 0) {
-                    aPolygonShape.lowValue = minData;
-                } else {
-                    aPolygonShape.lowValue = cValues[valueIdx - 1];
+            if (!aPolygon.IsBorder) {
+                if (!aPolygon.IsHighCenter) {
+                    aPolygonShape.highValue = aValue;
+                    if (valueIdx == 0) {
+                        aPolygonShape.lowValue = minData;
+                    } else {
+                        aPolygonShape.lowValue = cValues[valueIdx - 1];
+                    }
                 }
             }
 
@@ -704,7 +706,7 @@ public class DrawMeteoData {
         aLayer.setLayerName(LName);
         aLS.setFieldName(fieldName);
         aLayer.setLegendScheme((LegendScheme) aLS.clone());
-        aLayer.setAvoidCollision(true);
+        //aLayer.setAvoidCollision(true);
         aLayer.setLayerDrawType(LayerDrawType.StationPoint);
 
         return aLayer;
@@ -757,7 +759,7 @@ public class DrawMeteoData {
 
         aLayer.setLayerName(layerName);
         aLayer.setLegendScheme(aLS);
-        aLayer.setAvoidCollision(true);
+        //aLayer.setAvoidCollision(true);
         aLayer.setLayerDrawType(LayerDrawType.StationPoint);
 
         return aLayer;
@@ -1247,7 +1249,6 @@ public class DrawMeteoData {
             }
         }
 
-
         aLayer.setLayerName(layerName);
         aLS.setFieldName(columnName);
         aLayer.setLegendScheme(aLS);
@@ -1313,7 +1314,6 @@ public class DrawMeteoData {
                 weathers[i - 40] = i;
             }
         }
-
 
         for (int w : weathers) {
             weatherList.add(w);

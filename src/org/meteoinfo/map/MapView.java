@@ -5594,7 +5594,7 @@ public class MapView extends JPanel {
             if (ifDraw) {
                 if (aLayer.getLabelSet().isDrawShadow()) {
                     g.setColor(aLayer.getLabelSet().getShadowColor());
-                    g.fill(new Rectangle.Float(aPoint.X, aPoint.Y - labSize.height, labSize.width, labSize.height));
+                    g.fill(new Rectangle.Float((float) aExtent.minX, (float) aExtent.minY, labSize.width, labSize.height));
                 }
                 g.setFont(drawFont);
                 //g.setColor(aLayer.getLabelSet().getLabelColor());
