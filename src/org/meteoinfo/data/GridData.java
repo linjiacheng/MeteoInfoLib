@@ -1199,9 +1199,12 @@ public class GridData {
         if (eX >= xArray[xNum - 1]) {
             eXidx = xNum - 1;
         } else {
-            for (i = 0; i < xNum; i++) {
-                if (eX <= xArray[i]) {
+            for (i = sXidx; i < xNum; i++) {
+                if (MIMath.doubleEquals(eX, xArray[i])){
                     eXidx = i;
+                    break;
+                } else if (eX < xArray[i]) {
+                    eXidx = i - 1;
                     break;
                 }
             }
@@ -1223,9 +1226,12 @@ public class GridData {
         if (eY >= yArray[yNum - 1]) {
             eYidx = yNum - 1;
         } else {
-            for (i = 0; i < yNum; i++) {
-                if (eY <= yArray[i]) {
+            for (i = sYidx; i < yNum; i++) {
+                if (MIMath.doubleEquals(eY, yArray[i])){
                     eYidx = i;
+                    break;
+                } else if (eY < yArray[i]) {
+                    eYidx = i - 1;
                     break;
                 }
             }

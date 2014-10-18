@@ -4,10 +4,7 @@
  */
 package org.meteoinfo.plot;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
 import javax.swing.JFrame;
-import javax.swing.WindowConstants;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;

@@ -45,6 +45,8 @@ import org.meteoinfo.layer.RasterLayer;
 import org.meteoinfo.legend.LegendType;
 import org.meteoinfo.legend.PointBreak;
 import org.meteoinfo.shape.StationModelShape;
+import wContour.Global.PolyLine;
+import wContour.Global.Polygon;
 
 /**
  * Template
@@ -171,7 +173,7 @@ public class DrawMeteoData {
         }
         ContourPolygons = ContourDraw.tracingPolygons(gridData.data, ContourLines, Borders, cValues);
 
-        wContour.Global.Polygon aPolygon;
+        //wContour.Global.Polygon aPolygon;
         //Color aColor;
         double aValue;
         int valueIdx;
@@ -181,58 +183,51 @@ public class DrawMeteoData {
         aDC = new Field(fieldName + "_High", DataTypes.Double);
         aLayer.editAddField(aDC);
 
-        for (int i = 0; i < ContourPolygons.size(); i++) {
-            aPolygon = ContourPolygons.get(i);
+        for (Polygon aPolygon : ContourPolygons) {
+            //aPolygon = ContourPolygon;
             aValue = aPolygon.LowValue;
-
             PointD aPoint;
             List<PointD> pList = new ArrayList<PointD>();
-            for (int j = 0; j < aPolygon.OutLine.PointList.size(); j++) {
+            for (wContour.Global.PointD pointList : aPolygon.OutLine.PointList) {
                 aPoint = new PointD();
-                aPoint.X = aPolygon.OutLine.PointList.get(j).X;
-                aPoint.Y = aPolygon.OutLine.PointList.get(j).Y;
+                aPoint.X = pointList.X;
+                aPoint.Y = pointList.Y;
                 pList.add(aPoint);
             }
             if (!GeoComputation.isClockwise(pList)) {
                 Collections.reverse(pList);
             }
-
             PolygonShape aPolygonShape = new PolygonShape();
             aPolygonShape.setPoints(pList);
             aPolygonShape.setExtent(MIMath.getPointsExtent(pList));
             aPolygonShape.lowValue = aValue;
             if (aPolygon.HasHoles()) {
-                for (int h = 0; h < aPolygon.HoleLines.size(); h++) {
+                for (PolyLine holeLine : aPolygon.HoleLines) {
                     pList = new ArrayList<PointD>();
-                    for (int j = 0; j < aPolygon.HoleLines.get(h).PointList.size(); j++) {
+                    for (wContour.Global.PointD pointList : holeLine.PointList) {
                         aPoint = new PointD();
-                        aPoint.X = aPolygon.HoleLines.get(h).PointList.get(j).X;
-                        aPoint.Y = aPolygon.HoleLines.get(h).PointList.get(j).Y;
+                        aPoint.X = pointList.X;
+                        aPoint.Y = pointList.Y;
                         pList.add(aPoint);
                     }
                     aPolygonShape.addHole(pList, 0);
                 }
             }
-
             valueIdx = Arrays.binarySearch(cValues, aValue);
-            //valueIdx = Arrays.asList(cValues).indexOf(aValue);
+            //valueIdx = Arrays.asList(cValues).indexOf(aValue);            
             if (valueIdx == cValues.length - 1) {
                 aPolygonShape.highValue = maxData;
             } else {
                 aPolygonShape.highValue = cValues[valueIdx + 1];
             }
-
-            if (!aPolygon.IsBorder) {
-                if (!aPolygon.IsHighCenter) {
-                    aPolygonShape.highValue = aValue;
-                    if (valueIdx == 0) {
-                        aPolygonShape.lowValue = minData;
-                    } else {
-                        aPolygonShape.lowValue = cValues[valueIdx - 1];
-                    }
+            if (!aPolygon.IsHighCenter) {
+                aPolygonShape.highValue = aValue;
+                if (valueIdx == 0) {
+                    aPolygonShape.lowValue = minData;
+                } else {
+                    aPolygonShape.lowValue = cValues[valueIdx - 1];
                 }
             }
-
             int shapeNum = aLayer.getShapeNum();
             try {
                 if (aLayer.editInsertShape(aPolygonShape, shapeNum)) {

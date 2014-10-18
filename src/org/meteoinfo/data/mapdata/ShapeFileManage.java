@@ -626,7 +626,7 @@ public class ShapeFileManage {
         ContentLength = getContentLength(aShape, aST);
         bw.writeIntBE(RecordNumber);
         bw.writeIntBE(ContentLength);
-        bw.writeIntLE(aST.ordinal());
+        bw.writeIntLE(aST.getValue());
         switch (aST) {
             case Point:
                 PointShape aPS = (PointShape) aShape;

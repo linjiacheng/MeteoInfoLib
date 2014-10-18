@@ -265,7 +265,6 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
      * Read GrADS data info
      *
      * @param aFile The control file path
-     * @return If read corrected
      */
     @Override
     public void readDataInfo(String aFile) {
@@ -641,7 +640,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                         dStr = dStr.substring(0, dStr.length() - 2) + String.valueOf(aY);
                     }
                     if (dStr.length() == 14) {
-                        StringBuffer strb = new StringBuffer(dStr);
+                        StringBuilder strb = new StringBuilder(dStr);
                         strb.insert(6, "0");
                         dStr = strb.toString();
                     }

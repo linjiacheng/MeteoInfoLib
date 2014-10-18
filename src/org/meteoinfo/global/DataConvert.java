@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Date;
+import org.meteoinfo.global.util.BigDecimalUtil;
 
 /**
  *
@@ -178,7 +179,8 @@ public class DataConvert {
     public static Date fromOADate(double oaDate) {
         Date date = new Date();
         //long t = (long)((oaDate - 25569) * 24 * 3600 * 1000);
-        long t = (long) (oaDate * 1000000);
+        //long t = (long) (oaDate * 1000000);
+        long t = (long)BigDecimalUtil.mul(oaDate, 1000000);
         date.setTime(t);
         return date;
     }
@@ -192,7 +194,8 @@ public class DataConvert {
     public static double toOADate(Date date) {
         double oaDate = date.getTime();
         //oaDate = oaDate / (24 * 3600 * 1000) + 25569;
-        oaDate = oaDate / 1000000;
+        //oaDate = oaDate / 1000000;
+        oaDate = BigDecimalUtil.div(oaDate, 1000000);
 
         return oaDate;
     }

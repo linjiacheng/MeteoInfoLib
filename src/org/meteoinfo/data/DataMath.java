@@ -798,6 +798,20 @@ public abstract class DataMath {
 
         return rData;
     }
+    
+    /**
+     * Mann-Kendall trend statistics
+     *
+     * @param ts Input data list
+     * @return Result array - z (trend)/beta (change value per unit time)
+     */
+    public static double[] mann_Kendall_Trend(List<Double> ts) {
+        double[] nts = new double[ts.size()];
+        for (int i = 0; i < ts.size(); i++)
+            nts[i] = ts.get(i);
+        
+        return mann_Kendall_Trend(nts);
+    }
 
     /**
      * Mann-Kendall trend statistics
