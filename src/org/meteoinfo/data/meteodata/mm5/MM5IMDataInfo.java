@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,9 +34,9 @@ import org.meteoinfo.global.util.GlobalUtil;
 public class MM5IMDataInfo extends DataInfo implements IGridDataInfo {
 
     // <editor-fold desc="Variables">
-    private ByteOrder _byteOrder = ByteOrder.BIG_ENDIAN;
+    private final ByteOrder _byteOrder = ByteOrder.BIG_ENDIAN;
     private DataOutputStream _bw = null;
-    private List<DataHead> _dataHeads = new ArrayList<DataHead>();
+    private final List<DataHead> _dataHeads = new ArrayList<DataHead>();
     // </editor-fold>
     // <editor-fold desc="Constructor">
     /**
@@ -55,6 +56,7 @@ public class MM5IMDataInfo extends DataInfo implements IGridDataInfo {
         try {
             RandomAccessFile br = new RandomAccessFile(fileName, "r");
             List<Variable> variables = new ArrayList<Variable>();
+            List<Date> times = new ArrayList<Date>();
             while (true) {
                 if (br.getFilePointer() >= br.length() - 100) {
                     break;
@@ -62,6 +64,8 @@ public class MM5IMDataInfo extends DataInfo implements IGridDataInfo {
 
                 long pos = br.getFilePointer();
                 DataHead dh = this.readDataHead(br);
+                if (!times.contains(dh.getDate()))
+                    times.add(dh.getDate());
                 dh.position = pos;
                 dh.length = (int)(br.getFilePointer() - pos);
                 _dataHeads.add(dh);
@@ -105,8 +109,17 @@ public class MM5IMDataInfo extends DataInfo implements IGridDataInfo {
                 }
             }
             
-            for (Variable var : variables)
+            List<Double> values = new ArrayList<Double>();
+            for (Date t : times) {
+                values.add(DataConvert.toOADate(t));
+            }
+            Dimension tDim = new Dimension(DimensionType.T);
+            tDim.setValues(values);
+            this.setTimeDimension(tDim);
+            for (Variable var : variables){
                 var.updateZDimension();
+                var.setTDimension(tDim);
+            }
             
             this.setVariables(variables);
 
