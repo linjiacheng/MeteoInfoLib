@@ -279,6 +279,7 @@ public class MapDataManage {
             LegendScheme aLS = LegendManage.createLegendSchemeFromGridData(gData, LegendType.GraduatedColor,
                     ShapeTypes.Image);
             RasterLayer aLayer = DrawMeteoData.createRasterLayer(gData, new File(fileName).getName(), aLS);
+            aLayer.setProjInfo(gData.projInfo);
 
             return aLayer;
         } catch (IOException ex) {

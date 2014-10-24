@@ -27,6 +27,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.meteoinfo.projection.KnownCoordinateSystems;
+import org.meteoinfo.projection.ProjectionInfo;
 
 /**
  *
@@ -537,6 +539,7 @@ public class GeoTiff {
      */
     public GridData getGridData() {
         try {
+            //Grid data values
             IFDEntry widthIFD = this.findTag(Tag.ImageWidth);
             IFDEntry heightIFD = this.findTag(Tag.ImageLength);
             int width = widthIFD.value[0];
@@ -548,7 +551,8 @@ public class GeoTiff {
                     values[height - i - 1][j] = values1d[i * width + j];
                 }
             }
-            
+
+            //Grid data coordinate
             double[] X = new double[width];
             double[] Y = new double[height];
             IFDEntry modelTiePointTag = findTag(Tag.ModelTiepointTag);
@@ -557,23 +561,55 @@ public class GeoTiff {
             double maxLat = modelTiePointTag.valueD[4];
             double xdelt = modelPixelScaleTag.valueD[0];
             double ydelt = modelPixelScaleTag.valueD[1];
-            for (int i = 0; i < width; i++){
+            for (int i = 0; i < width; i++) {
                 X[i] = minLon + xdelt * i;
             }
-            for (int i = 0; i < height; i++){
+            for (int i = 0; i < height; i++) {
                 Y[height - i - 1] = maxLat - ydelt * i;
             }
 
             GridData gData = new GridData();
-            gData.data = values;            
+            gData.data = values;
             gData.xArray = X;
             gData.yArray = Y;
+
+            //Projection
+            String projStr = getProjection();
+            if (projStr != null){
+                gData.projInfo = new ProjectionInfo(projStr);
+            } else {
+                gData.projInfo = KnownCoordinateSystems.geographic.world.WGS1984;
+            }
 
             return gData;
         } catch (IOException ex) {
             Logger.getLogger(GeoTiff.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }
+    }
+
+    private String getProjection() {
+        String projStr = null;
+        IFDEntry geoKeyDirectoryTag = findTag(Tag.GeoKeyDirectoryTag);
+        if (geoKeyDirectoryTag != null) {
+            GeoKey gtModelTypeGeoKey = geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GTModelTypeGeoKey);
+            if (gtModelTypeGeoKey.value() == 1) {
+                GeoKey projCoordTrans = geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjCoordTrans);
+                switch (projCoordTrans.value()) {
+                    case 11:    //AlbersEqualArea
+                        projStr = "+proj=aea"
+                            + "+lat_1=" + String.valueOf(geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjStdParallel1).valueD(0))
+                            + "+lat_2=" + String.valueOf(geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjStdParallel2).valueD(0))
+                            + "+lon_0=" + String.valueOf(geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjNatOriginLong).valueD(0))
+                            + "+lat_0=" + String.valueOf(geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjNatOriginLat).valueD(0))
+                            + "+x_0=" + String.valueOf(geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjFalseEasting).valueD(0))
+                            + "+y_0=" + String.valueOf(geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjFalseNorthing).valueD(0));
+                        break;
+                }
+            }
+        }
+
+        return projStr;
     }
 
     /**
@@ -586,13 +622,16 @@ public class GeoTiff {
     public double[] readData(int width, int height) throws IOException {
         double[] values = new double[width * height];
         IFDEntry tileOffsetTag = findTag(Tag.TileOffsets);
-        ByteBuffer buffer = null;
+        ByteBuffer buffer;
         if (tileOffsetTag != null) {
             int tileOffset = tileOffsetTag.value[0];
             IFDEntry tileSizeTag = findTag(Tag.TileByteCounts);
             int tileSize = tileSizeTag.value[0];
             System.out.println("tileOffset =" + tileOffset + " tileSize=" + tileSize);
             buffer = testReadData(tileOffset, tileSize);
+            for (int i = 0; i < width * height; i++) {
+                values[i] = buffer.getShort();
+            }
         } else {
             IFDEntry stripOffsetTag = findTag(Tag.StripOffsets);
             if (stripOffsetTag != null) {
@@ -636,7 +675,6 @@ public class GeoTiff {
 //        for (int i = 0; i < size / 4; i++) {
 //            System.out.println(i + ": " + buffer.getFloat());
 //        }
-
         return buffer;
     }
 

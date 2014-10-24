@@ -331,6 +331,7 @@ public class MM5IMDataInfo extends DataInfo implements IGridDataInfo {
         _bw.writeInt(skip);
 
         //Record 2:
+        skip = 124;
         _bw.writeInt(skip);
         _bw.writeBytes(GlobalUtil.padRight(dh.hdate, 24, ' '));
         _bw.writeFloat(dh.xfcst);
@@ -344,6 +345,7 @@ public class MM5IMDataInfo extends DataInfo implements IGridDataInfo {
         _bw.writeInt(skip);
 
         //Record 3:
+        skip = 16;
         _bw.writeInt(skip);
         _bw.writeFloat(dh.startlat);
         _bw.writeFloat(dh.startlon);
@@ -356,6 +358,7 @@ public class MM5IMDataInfo extends DataInfo implements IGridDataInfo {
      * Write grid data
      *
      * @param gridData The grid data
+     * @throws java.io.IOException
      */
     public void writeGridData(GridData gridData) throws IOException {
         int xn = gridData.getXNum();
@@ -375,9 +378,10 @@ public class MM5IMDataInfo extends DataInfo implements IGridDataInfo {
         }
 
         //Write data
-        _bw.writeInt(4);
+        int skip = xn * yn * 4;
+        _bw.writeInt(skip);
         _bw.write(dataBytes);
-        _bw.writeInt(4);
+        _bw.writeInt(skip);
     }
     // </editor-fold>
 }

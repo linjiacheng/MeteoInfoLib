@@ -14,6 +14,7 @@
 package org.meteoinfo.data.mapdata.geotiff;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -28,7 +29,7 @@ public class IFDEntry implements Comparable{
     protected int[] value;
     protected double[] valueD;
     protected String valueS;
-    protected ArrayList geokeys = null;
+    protected List<GeoKey> geokeys = null;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -159,9 +160,23 @@ public class IFDEntry implements Comparable{
      */
     public void addGeoKey(GeoKey geokey) {
         if (this.geokeys == null) {
-            this.geokeys = new ArrayList();
+            this.geokeys = new ArrayList<GeoKey>();
         }
         this.geokeys.add(geokey);
+    }
+    
+    /**
+     * Find a GeoKey
+     * @param tag The GeoKey tag
+     * @return Found GeoKey
+     */
+    public GeoKey findGeoKey(GeoKey.Tag tag){
+        for (GeoKey geoKey : this.geokeys){
+            if (geoKey.tag == tag)
+                return geoKey;
+        }
+        
+        return null;
     }
 
     /**

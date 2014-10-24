@@ -28,7 +28,7 @@ public class GeoKey {
     private int[] value;
     private double[] dvalue;
     private String valueS;
-    private Tag tag;
+    protected Tag tag;
     private TagValue tagValue;
     private int id;
     // </editor-fold>
