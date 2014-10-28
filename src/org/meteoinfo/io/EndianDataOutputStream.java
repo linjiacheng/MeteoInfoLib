@@ -22,10 +22,11 @@ import java.io.IOException;
  */
 public class EndianDataOutputStream {
 
-    private java.io.DataOutputStream outputStream;
+    private final java.io.DataOutputStream outputStream;
 
     /**
      * Creates new EndianDataOutputStream
+     * @param out
      */
     public EndianDataOutputStream(java.io.OutputStream out) {
         outputStream = new DataOutputStream(out);
@@ -33,6 +34,7 @@ public class EndianDataOutputStream {
 
     /**
      * close stream*
+     * @throws java.io.IOException
      */
     public void close() throws IOException {
         outputStream.close();
@@ -40,6 +42,10 @@ public class EndianDataOutputStream {
 
     /**
      * write bytes
+     * @param b
+     * @param off
+     * @param len
+     * @throws java.io.IOException
      */
     public void write(byte[] b, int off, int len) throws IOException {
         outputStream.write(b, off, len);
@@ -47,6 +53,7 @@ public class EndianDataOutputStream {
 
     /**
      * flush stream*
+     * @throws java.io.IOException
      */
     public void flush() throws IOException {
         outputStream.flush();
@@ -55,6 +62,8 @@ public class EndianDataOutputStream {
     /**
      * write a byte in LittleEndian - this is exactly the same as the BigEndian
      * version since there's no endian in a single byte
+     * @param b
+     * @throws java.io.IOException
      */
     public void writeByteLE(int b) throws IOException {
         outputStream.writeByte(b);
@@ -63,6 +72,8 @@ public class EndianDataOutputStream {
     /**
      * write a byte in BigEndian - this is exactly the same as the LittleEndian
      * version since there's no endian in a single byte
+     * @param b
+     * @throws java.io.IOException
      */
     public void writeByteBE(int b) throws IOException {
         outputStream.writeByte(b);
@@ -71,6 +82,8 @@ public class EndianDataOutputStream {
     /**
      * write a set of bytes in LittleEndian - this is exactly the same as the
      * BigEndian version since there's no endian in a single byte
+     * @param s
+     * @throws java.io.IOException
      */
     public void writeBytesLE(String s) throws IOException {
         outputStream.writeBytes(s);
@@ -79,6 +92,8 @@ public class EndianDataOutputStream {
     /**
      * write a set of bytes in BigEndian - this is exactly the same as the
      * LittleEndian version since there's no endian in a single byte
+     * @param s
+     * @throws java.io.IOException
      */
     public void writeBytesBE(String s) throws IOException {
         outputStream.writeBytes(s);
@@ -86,6 +101,8 @@ public class EndianDataOutputStream {
 
     /**
      * write a 16bit short in BigEndian
+     * @param s
+     * @throws java.io.IOException
      */
     public void writeShortBE(int s) throws IOException {
         outputStream.writeShort(s);
@@ -93,6 +110,8 @@ public class EndianDataOutputStream {
 
     /**
      * write a 16bit short in LittleEndian
+     * @param s
+     * @throws java.io.IOException
      */
     public void writeShortLE(int s) throws IOException {
         outputStream.writeByte(s);
@@ -101,6 +120,8 @@ public class EndianDataOutputStream {
 
     /**
      * write a 32bit int in BigEndian
+     * @param i
+     * @throws java.io.IOException
      */
     public void writeIntBE(int i) throws IOException {
         outputStream.writeInt(i);
@@ -108,6 +129,8 @@ public class EndianDataOutputStream {
 
     /**
      * write a 32bit int in  LittleEndian
+     * @param i
+     * @throws java.io.IOException
      */
     public void writeIntLE(int i) throws IOException {
         outputStream.writeByte(i);
@@ -118,6 +141,8 @@ public class EndianDataOutputStream {
 
     /**
      * write a 64bit long in BigEndian
+     * @param l
+     * @throws java.io.IOException
      */
     public void writeLongBE(long l) throws IOException {
         outputStream.writeLong(l);
@@ -125,6 +150,8 @@ public class EndianDataOutputStream {
 
     /**
      * write a 64bit long in LittleEndian
+     * @param l
+     * @throws java.io.IOException
      */
     public void writeLongLE(long l) throws IOException {
         outputStream.writeByte((byte) (l));
@@ -157,6 +184,8 @@ public class EndianDataOutputStream {
 
     /**
      * write a 64bit double in BigEndian
+     * @param d
+     * @throws java.io.IOException
      */
     public void writeDoubleBE(double d) throws IOException {
         outputStream.writeDouble(d);
@@ -164,6 +193,8 @@ public class EndianDataOutputStream {
 
     /**
      * write a 64bit double in LittleEndian
+     * @param d
+     * @throws java.io.IOException
      */
     public void writeDoubleLE(double d) throws IOException {
         this.writeLongLE(Double.doubleToLongBits(d));

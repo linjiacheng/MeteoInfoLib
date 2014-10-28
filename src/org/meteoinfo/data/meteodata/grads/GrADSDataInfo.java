@@ -2246,6 +2246,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
      *
      * @param bw EndianDataOutputStream
      * @param gridData Grid data array
+     * @throws java.io.IOException
      */
     public void writeGrADSData_Grid(DataOutputStream bw, double[][] gridData) throws IOException {
         int i, j, k;
@@ -2254,8 +2255,10 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
 
         EndianDataOutputStream ebw = new EndianDataOutputStream(bw);
         if (this.OPTIONS.sequential) {
-            ebw.writeIntBE(xnum * ynum * 4);
-            //ebw.writeFloatLE(0.0f);
+            if (this._byteOrder == ByteOrder.BIG_ENDIAN)
+                ebw.writeIntBE(xnum * ynum * 4);
+            else
+                ebw.writeIntLE(xnum * ynum * 4);
         }
         
         byte[] bytes = new byte[ynum * xnum * 4];
@@ -2270,31 +2273,13 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                 p += 4;
             }
         }
-//        if (this._byteOrder == ByteOrder.BIG_ENDIAN){
-//            for (i = 0; i < ynum; i++){
-//                for (j = 0; j < xnum; j++){
-//                    //bs = DataConvert.toBytes((float) gridData[i][j]);
-//                    bs = DataConvert.float2Bytes((float)gridData[i][j], _byteOrder);
-//                    for (k = 0; k < 4; k++)
-//                        bytes[p + k] = bs[k];
-//                    p += 4;
-//                }
-//            }
-//        } else {
-//            for (i = 0; i < ynum; i++){
-//                for (j = 0; j < xnum; j++){
-//                    bs = DataConvert.toLittleBytes((float) gridData[i][j]);
-//                    for (k = 0; k < 4; k++)
-//                        bytes[p + k] = bs[k];
-//                    p += 4;
-//                }
-//            }
-//        }
         ebw.write(bytes, 0, bytes.length);
 
         if (this.OPTIONS.sequential) {
-            ebw.writeIntBE(xnum * ynum * 4);
-            //ebw.writeFloatLE(0.0f);
+            if (this._byteOrder == ByteOrder.BIG_ENDIAN)
+                ebw.writeIntBE(xnum * ynum * 4);
+            else
+                ebw.writeIntLE(xnum * ynum * 4);
         }
     }
 

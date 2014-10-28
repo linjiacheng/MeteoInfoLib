@@ -155,8 +155,8 @@ public class DataConvert {
      */
     public static byte[] float2Bytes(float f, ByteOrder byteOrder) {
         ByteBuffer buf = ByteBuffer.allocate(4);
-        buf.putFloat(f);
         buf.order(byteOrder);
+        buf.putFloat(f);
         return buf.array();
     }
 
