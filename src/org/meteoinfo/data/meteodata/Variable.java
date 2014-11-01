@@ -697,6 +697,42 @@ public class Variable {
 
         return false;
     }
+    
+    /**
+     * If the dimensions equales with another variable
+     * @param var Another variable
+     * @return Boolean
+     */
+    public boolean dimensionEquales(Variable var){
+        if (this.getDimNumber() != var.getDimNumber())
+            return false;
+        for (int i = 0; i < this.getDimNumber(); i++){
+            Dimension adim = this._dimensions.get(i);
+            Dimension bdim = var.getDimensions().get(i);
+            if (!adim.getDimName().equals(bdim.getDimName()))
+                return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * If the dimensions size equales with another variable
+     * @param var Another variable
+     * @return Boolean
+     */
+    public boolean dimensionSizeEquals(Variable var){
+        if (this.getDimNumber() != var.getDimNumber())
+            return false;
+        for (int i = 0; i < this.getDimNumber(); i++){
+            Dimension adim = this._dimensions.get(i);
+            Dimension bdim = var.getDimensions().get(i);
+            if (adim.getDimLength() != bdim.getDimLength())
+                return false;
+        }
+        
+        return true;
+    }
 
     /**
      * Get times

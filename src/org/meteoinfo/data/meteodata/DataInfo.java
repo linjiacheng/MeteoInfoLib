@@ -376,7 +376,7 @@ public abstract class DataInfo {
      */
     public Variable getVariable(String varName){
         for (Variable var : _variables){
-            if (var.getName().equals(varName))
+            if (var.getName().equalsIgnoreCase(varName))
                 return var;
         }
         

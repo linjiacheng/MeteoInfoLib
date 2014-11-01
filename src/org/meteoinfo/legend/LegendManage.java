@@ -565,7 +565,7 @@ public class LegendManage {
                 legendScheme.setHasNoData(false);
                 if (hasNodata) {
                     ColorBreak aCB = new ColorBreak();
-                    aCB.setColor(Color.gray);
+                    aCB.setColor(Color.lightGray);
                     aCB.setStartValue(unDef);
                     aCB.setEndValue(aCB.getStartValue());
                     aCB.setCaption("NoData");
