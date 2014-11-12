@@ -1470,22 +1470,12 @@ public class VectorLayer extends MapLayer {
      * @param fileName KML file name
      */
     public void saveAsKMLFile(String fileName) {
-        switch (getShapeType()) {
-            case Polygon:
-            case PolygonM:
-                saveAsKMLFile_Polygon(fileName);
-                break;
-            case Polyline:
-            case PolylineM:
-            case PolylineZ:
-                saveAsKMLFile_Polyline(fileName);
-                break;
-            case Point:
-            case PointM:
-            case PointZ:
-                saveAsKMLFile_Point(fileName);
-                break;
-        }
+        if (this.getShapeType().isPoint())
+            saveAsKMLFile_Point(fileName);
+        else if (this.getShapeType().isLine())
+            saveAsKMLFile_Polyline(fileName);
+        else if (this.getShapeType().isPolygon())
+            saveAsKMLFile_Polygon(fileName);        
     }
 
     /**
@@ -1918,7 +1908,7 @@ public class VectorLayer extends MapLayer {
                 handler.startElement("", "", "bgColor", atts);
                 str = ColorUtil.toKMLColor(pgb.getColor());
                 handler.characters(str.toCharArray(), 0, str.length());
-                handler.endElement("", "", "color");    //color
+                handler.endElement("", "", "bgColor");    //color
                 handler.endElement("", "", "BalloonStyle");    //BalloonStyle                
                 handler.endElement("", "", "Style");    //Style
 

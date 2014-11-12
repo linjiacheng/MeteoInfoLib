@@ -1591,6 +1591,11 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 }
             }
             if (dimType == DimensionType.Other) {
+                if (aVar.findAttributeIgnoreCase("hybrid_layer") != null) {
+                    dimType = DimensionType.Z;
+                }
+            }
+            if (dimType == DimensionType.Other) {
                 if (aVar.findAttributeIgnoreCase("unitsCategory") != null) {
                     sName = aVar.findAttributeIgnoreCase("unitsCategory").getStringValue().trim().toLowerCase();
                     if (sName.equals("longitude")) {
