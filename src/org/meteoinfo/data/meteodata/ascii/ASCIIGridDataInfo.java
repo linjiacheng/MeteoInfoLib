@@ -149,12 +149,12 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
                 if (aLine == null) {
                     break;
                 }
-                dataArray = aLine.split("\\s+");
+                dataArray = aLine.trim().split("\\s+");
                 dataList.addAll(Arrays.asList(dataArray));
                 if (col == 0) {
                     if (!MIMath.isNumeric(dataList.get(0))) {
                         aLine = sr.readLine();
-                        dataArray = aLine.split("\\s+");
+                        dataArray = aLine.trim().split("\\s+");
                         dataList = Arrays.asList(dataArray);
                     }
                 }
@@ -164,7 +164,7 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
                         if (aLine == null) {
                             break;
                         }
-                        dataArray = aLine.split("\\s+");
+                        dataArray = aLine.trim().split("\\s+");
                         dataList.addAll(Arrays.asList(dataArray));
                     } else {
                         break;

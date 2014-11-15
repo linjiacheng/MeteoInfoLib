@@ -147,7 +147,7 @@ public class SurferGridDataInfo extends DataInfo implements IGridDataInfo {
             int d = 0;
             aLine = sr.readLine();
             while (aLine != null) {                
-                dataArray = aLine.split("\\s+");
+                dataArray = aLine.trim().split("\\s+");
                 for (String dstr : dataArray){
                     ii = d / xNum;
                     jj = d % xNum;
