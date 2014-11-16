@@ -2031,7 +2031,7 @@ public class GridData {
      *
      * @param fromProj From projection
      * @param toProj To projection
-     * @param interpMethod Interpolation method
+     * @param resampleMethod Interpolation method
      * @return Porjected grid data
      */
     public GridData project(ProjectionInfo fromProj, ProjectionInfo toProj, ResampleMethods resampleMethod) {
@@ -2083,7 +2083,7 @@ public class GridData {
      * @param toProj To projection info
      * @param newX New xArray coordinates
      * @param newY New yArray coordinates
-     * @param interpMethod Interpolation method
+     * @param resampleMethod Interpolation method
      * @return Projected grid data
      */
     public GridData project(ProjectionInfo toProj, double[] newX, double[] newY,
@@ -2102,7 +2102,7 @@ public class GridData {
      * @param toProj To projection info
      * @param newX New xArray coordinates
      * @param newY New yArray coordinates
-     * @param interpMethod Interpolation method
+     * @param resampleMethod Interpolation method
      * @return Projected grid data
      */
     public GridData project(ProjectionInfo fromProj, ProjectionInfo toProj, double[] newX, double[] newY,
@@ -2123,7 +2123,7 @@ public class GridData {
      * @param fromProj From projection info
      * @param toProj To projection info
      * @param stData Station data
-     * @param interpMethod Interpolation method
+     * @param resampleMethod Interpolation method
      * @return Projected station data
      */
     public StationData project(ProjectionInfo fromProj, ProjectionInfo toProj, StationData stData,
@@ -2161,8 +2161,7 @@ public class GridData {
                     }
                 } catch (Exception e) {
                     newdata[i][j] = missingValue;
-                    j++;
-                    continue;
+                    j++;                   
                 }
             }
         }

@@ -79,7 +79,6 @@ public class ProjectionManage {
                         }
                     }
                 } catch (Exception e) {
-                    continue;
                 }
             }
         }
@@ -102,6 +101,198 @@ public class ProjectionManage {
      * @return Extent
      */
     public static Extent getProjectionExtent(ProjectionInfo fromProj, ProjectionInfo toProj, double[] X, double[] Y) {
+        double x, y, minX = Double.NaN, minY = Double.NaN, maxX = Double.NaN, maxY = Double.NaN;
+        int i, j;        
+        int minXI = X.length, minYI = Y.length, maxXI = -1, maxYI = -1;
+        for (i = 0; i < Y.length; i++) {
+            for (j = 0; j < X.length; j++) {
+                double[][] points = new double[1][];
+                points[0] = new double[]{X[j], Y[i]};
+                try {
+                    Reproject.reprojectPoints(points, fromProj, toProj, 0, 1);
+                    x = points[0][0];
+                    y = points[0][1];
+                    if (Double.isNaN(x) || Double.isNaN(y)) {
+                        continue;
+                    }
+
+                    if (Double.isNaN(minY)) {
+                        minY = y;
+                        minYI = i;
+                    }
+                    if (i == minYI){
+                        if (y < minY)
+                            minY = y;
+                    } else if (i > minYI)
+                        break;
+                } catch (Exception e) {
+                }
+            }
+        }
+        
+        for (i = Y.length - 1; i >= 0; i--) {
+            for (j = 0; j < X.length; j++) {
+                double[][] points = new double[1][];
+                points[0] = new double[]{X[j], Y[i]};
+                try {
+                    Reproject.reprojectPoints(points, fromProj, toProj, 0, 1);
+                    x = points[0][0];
+                    y = points[0][1];
+                    if (Double.isNaN(x) || Double.isNaN(y)) {
+                        continue;
+                    }
+
+                    if (Double.isNaN(maxY)) {
+                        maxY = y;
+                        maxYI = i;
+                    }
+                    if (i == maxYI){
+                        if (y > maxY)
+                            maxY = y;
+                    } else if (i < maxYI)
+                        break;
+                } catch (Exception e) {
+                }
+            }
+        }
+        
+        for (j = 0; j < X.length; j++) {
+            for (i = 0; i < Y.length; i++) {
+                double[][] points = new double[1][];
+                points[0] = new double[]{X[j], Y[i]};
+                try {
+                    Reproject.reprojectPoints(points, fromProj, toProj, 0, 1);
+                    x = points[0][0];
+                    y = points[0][1];
+                    if (Double.isNaN(x) || Double.isNaN(y)) {
+                        continue;
+                    }
+
+                    if (Double.isNaN(minX)) {
+                        minX = x;
+                        minXI = j;
+                    }
+                    if (j == minXI){
+                        if (x < minX)
+                            minX = x;
+                    } else if (j > minXI)
+                        break;
+                } catch (Exception e) {
+                }
+            }
+        }
+        
+        for (j = X.length - 1; j >= 0; j--) {
+            for (i = 0; i < Y.length; i++) {
+                double[][] points = new double[1][];
+                points[0] = new double[]{X[j], Y[i]};
+                try {
+                    Reproject.reprojectPoints(points, fromProj, toProj, 0, 1);
+                    x = points[0][0];
+                    y = points[0][1];
+                    if (Double.isNaN(x) || Double.isNaN(y)) {
+                        continue;
+                    }
+
+                    if (Double.isNaN(maxX)) {
+                        maxX = x;
+                        maxXI = j;
+                    }
+                    if (j == maxXI){
+                        if (x > maxX)
+                            maxX = x;
+                    } else if (j < maxXI)
+                        break;
+                } catch (Exception e) {
+                }
+            }
+        }
+
+        if (Double.isNaN(minX))
+            return null;
+        if (Double.isNaN(minY))
+            return null;
+        if (Double.isNaN(maxX))
+            return null;
+        if (Double.isNaN(maxY))
+            return null;
+                    
+        if (toProj.isLonLat()){
+            if (maxX < minX && maxX < 0)
+                maxX += 360;
+        }
+        Extent aExtent = new Extent();
+        aExtent.minX = minX;
+        aExtent.maxX = maxX;
+        aExtent.minY = minY;
+        aExtent.maxY = maxY;
+
+        return aExtent;
+    }
+    
+    /**
+     * Get projected extent
+     *
+     * @param fromProj From projection
+     * @param toProj To projection
+     * @param X X coordinate
+     * @param Y Y coordinate
+     * @return Extent
+     */
+    public static Extent getProjectionExtent_bak2(ProjectionInfo fromProj, ProjectionInfo toProj, double[] X, double[] Y) {
+        double x, y, minX = Double.NaN, minY = Double.NaN, maxX = Double.NaN, maxY = Double.NaN;
+        int i, j;        
+        for (i = 0; i < Y.length; i++) {
+            for (j = 0; j < X.length; j++) {
+                double[][] points = new double[1][];
+                points[0] = new double[]{X[j], Y[i]};
+                try {
+                    Reproject.reprojectPoints(points, fromProj, toProj, 0, 1);
+                    x = points[0][0];
+                    y = points[0][1];
+                    if (Double.isNaN(x) || Double.isNaN(y)) {
+                        continue;
+                    }
+
+                    if (Double.isNaN(minX)) {
+                        minX = x;
+                        minY = y;
+                        maxX = x;
+                        maxY = y;
+                    } else {
+                        if (x < minX) {
+                            minX = x;
+                        } else if (x > maxX)
+                            maxX = x;
+                        if (y < minY) {
+                            minY = y;
+                        } else if (y > maxY)
+                            maxY = y;
+                    }
+                } catch (Exception e) {
+                }
+            }
+        }
+
+        Extent aExtent = new Extent();
+        aExtent.minX = minX;
+        aExtent.maxX = maxX;
+        aExtent.minY = minY;
+        aExtent.maxY = maxY;
+
+        return aExtent;
+    }
+
+    /**
+     * Get projected extent
+     *
+     * @param fromProj From projection
+     * @param toProj To projection
+     * @param X X coordinate
+     * @param Y Y coordinate
+     * @return Extent
+     */
+    public static Extent getProjectionExtent_bak(ProjectionInfo fromProj, ProjectionInfo toProj, double[] X, double[] Y) {
         double x, y, minX = Double.NaN, minY = Double.NaN, maxX = Double.NaN, maxY = Double.NaN;
         int i;
         for (i = 0; i < Y.length; i++) {
@@ -168,7 +359,6 @@ public class ProjectionManage {
                     }
                 }
             } catch (Exception e) {
-                continue;
             }
         }
 
@@ -251,7 +441,6 @@ public class ProjectionManage {
                     }
                 }
             } catch (Exception e) {
-                continue;
             }
         }
 
