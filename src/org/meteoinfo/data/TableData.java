@@ -275,6 +275,28 @@ public class TableData {
     }
     
     /**
+     * Average data
+     * @param cols The data columns
+     * @return Result data table
+     * @throws Exception 
+     */
+    public DataTable average(List<DataColumn> cols) throws Exception {
+        DataTable rTable = new DataTable();
+        for (DataColumn col : cols){
+            rTable.addColumn(col.getColumnName(), DataTypes.Double);
+        }
+        DataRow nRow = rTable.addRow();         
+        
+        for (DataColumn col : cols){
+            List<Double> values = this.getValidColumnValues(col);
+            double mean = Statistics.mean(values);
+            nRow.setValue(col, mean);
+        }        
+        
+        return rTable;
+    }
+    
+    /**
      * Get average data table
      * @param dataColumns
      * @return Average data table

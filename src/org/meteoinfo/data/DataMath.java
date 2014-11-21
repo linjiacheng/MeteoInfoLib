@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import org.meteoinfo.global.MIMath;
 import java.util.Arrays;
 import java.util.List;
+import org.meteoinfo.table.ColumnData;
 
 /**
  * Template
@@ -797,6 +798,58 @@ public abstract class DataMath {
         }
 
         return rData;
+    }
+    
+    /**
+     * Get correlation coefficient
+     * How well did the forecast values correspond to the observed values?
+     * Range: -1 to 1.  Perfect score: 1.
+     * @param xData X data array
+     * @param yData Y data array
+     * @return Correlation coefficent
+     */
+    public static float getR(List<Double> xData, List<Double> yData){
+        int n = xData.size();
+        double x_sum = 0;
+        double y_sum = 0;
+        for (int i = 0; i < n; i++){
+            x_sum += xData.get(i);
+            y_sum += yData.get(i);
+        }
+        double sx_sum = 0.0;
+        double sy_sum = 0.0;
+        double xy_sum = 0.0;
+        for (int i = 0; i < n; i++){
+            sx_sum += xData.get(i) * xData.get(i);
+            sy_sum += yData.get(i) * yData.get(i);
+            xy_sum += xData.get(i) * yData.get(i);
+        }
+        
+        double r = (n * xy_sum - x_sum * y_sum) / (Math.sqrt(n * sx_sum - x_sum * x_sum) * Math.sqrt(n * sy_sum - y_sum * y_sum));
+        return (float)r;
+    }
+    
+    /**
+     * Get correlation coefficient
+     * How well did the forecast values correspond to the observed values?
+     * Range: -1 to 1.  Perfect score: 1.
+     * @param xcData X data array
+     * @param ycData Y data array
+     * @return Correlation coefficent
+     */
+    public static float getR(ColumnData xcData, ColumnData ycData){
+        List<Double> xData = xcData.getDataValues();
+        List<Double> yData = ycData.getDataValues(); 
+        List<Double> xxData = new ArrayList<Double>();
+        List<Double> yyData = new ArrayList<Double>();
+        for (int i = 0; i < xcData.size(); i++){
+            if (Double.isNaN(xData.get(i)) || Double.isNaN(yData.get(i)))
+                continue;
+            xxData.add(xData.get(i));
+            yyData.add(yData.get(i));
+        }
+        
+        return getR(xxData, yyData);
     }
     
     /**

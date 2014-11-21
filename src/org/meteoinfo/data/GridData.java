@@ -2390,9 +2390,7 @@ public class GridData {
         int yNum = getYNum();
         double[][] newdata = new double[yNum][xNum];
         for (int i = 0; i < yNum; i++) {
-            for (int j = 0; j < xNum; j++) {
-                newdata[yNum - i - 1][j] = data[i][j];
-            }
+            System.arraycopy(data[i], 0, newdata[yNum - i - 1], 0, xNum);
         }
         data = newdata;
     }
