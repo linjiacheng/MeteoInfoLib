@@ -1120,7 +1120,10 @@ public class LayoutLegend extends LayoutElement {
          * @return Legend layer name
          */
         public String getLayerName() {
-            return _legendLayer.getLayerName();
+            if (_legendLayer != null)
+                return _legendLayer.getLayerName();
+            else
+                return null;
         }
 
         /**

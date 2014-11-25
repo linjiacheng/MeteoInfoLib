@@ -29,7 +29,7 @@ public class FrmLabelSymbolSet extends javax.swing.JDialog {
     private Object _parent = null;
     private LabelBreak _labelBreak = null;
     private boolean _isLoading = false;
-    
+
     /**
      * Creates new form FrmLabelSymbolSet
      */
@@ -37,14 +37,14 @@ public class FrmLabelSymbolSet extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
     }
-    
+
     /**
      * Creates new form FrmLabelSymbolSet
      */
     public FrmLabelSymbolSet(java.awt.Frame parent, boolean modal, Object tparent) {
         super(parent, modal);
         initComponents();
-        
+
         _parent = tparent;
     }
 
@@ -216,8 +216,10 @@ public class FrmLabelSymbolSet extends javax.swing.JDialog {
         //FontChooser fontChooser = new FontChooser(this, true, _labelBreak.getFont());
         //fontChooser.setVisible(true);
         Font aFont = JFontChooser.showDialog(this, null, _labelBreak.getFont());
-        this.jTextArea_Text.setFont(aFont);
-        _labelBreak.setFont(aFont);        
+        if (aFont != null) {
+            this.jTextArea_Text.setFont(aFont);
+            _labelBreak.setFont(aFont);
+        }
     }//GEN-LAST:event_jButton_FontActionPerformed
 
     private void jSpinner_AngleStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSpinner_AngleStateChanged
@@ -225,18 +227,19 @@ public class FrmLabelSymbolSet extends javax.swing.JDialog {
         if (_isLoading) {
             return;
         }
-        
+
         float angle = Float.parseFloat(this.jSpinner_Angle.getValue().toString());
         _labelBreak.setAngle(angle);
     }//GEN-LAST:event_jSpinner_AngleStateChanged
 
     /**
      * Set label break
+     *
      * @param lb The label break
      */
-    public void setLabelBreak(LabelBreak lb){
+    public void setLabelBreak(LabelBreak lb) {
         _labelBreak = lb;
-        
+
         _isLoading = true;
         this.jTextArea_Text.setText(_labelBreak.getText());
         this.jTextArea_Text.setForeground(_labelBreak.getColor());
@@ -245,7 +248,7 @@ public class FrmLabelSymbolSet extends javax.swing.JDialog {
         this.jSpinner_Angle.setValue(_labelBreak.getAngle());
         _isLoading = false;
     }
-    
+
     /**
      * @param args the command line arguments
      */

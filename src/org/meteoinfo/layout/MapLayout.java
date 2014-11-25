@@ -271,7 +271,10 @@ public class MapLayout extends JPanel {
         //Add a default map frame
         MapFrame aMF = new MapFrame();
         aMF.setActive(true);
+        aMF.setLayoutBounds(new Rectangle(40, 36, 606, 420));
         _mapFrames.add(aMF);
+        LayoutMap layoutMap = new LayoutMap(aMF);
+        this.addElement(layoutMap);
 
         _defPointBreak.setSize(10);
         _defLabelBreak.setText("Text");
@@ -1500,6 +1503,9 @@ public class MapLayout extends JPanel {
                 case Select:
                 case MoveSelection:
                 case ResizeSelected:
+                    if (_selectedElements.isEmpty())
+                        return;
+                    
                     LayoutElement aElement = _selectedElements.get(0);
                     _selectedElements = selectElements(pageP, _layoutElements, 0);
                     if (_selectedElements.size() > 1) {
@@ -2842,7 +2848,8 @@ public class MapLayout extends JPanel {
                 }
                 _mapFrames.remove(aLM.getMapFrame());
                 _layoutElements.remove(aElement);
-                setActiveMapFrame(_mapFrames.get(0));
+                if (_mapFrames.size() > 0)
+                    setActiveMapFrame(_mapFrames.get(0));
                 this.fireMapFramesUpdatedEvent();
                 break;
             default:
