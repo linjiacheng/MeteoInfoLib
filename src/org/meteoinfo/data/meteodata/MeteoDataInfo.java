@@ -427,7 +427,6 @@ public class MeteoDataInfo {
      * Open GrADS data
      *
      * @param aFile Data file path
-     * @return If data opened correctly
      */
     public void openGrADSData(String aFile) {
         _dataInfo = new GrADSDataInfo();

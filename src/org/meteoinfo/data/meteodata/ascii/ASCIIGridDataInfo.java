@@ -22,8 +22,10 @@ import org.meteoinfo.data.meteodata.Variable;
 import org.meteoinfo.global.MIMath;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -55,7 +57,7 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
         try {
             this.setFileName(fileName);
             
-            BufferedReader sr = new BufferedReader(new FileReader(new File(fileName)));
+            BufferedReader sr = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "utf-8"));
             double xllCorner, yllCorner, cellSize, nodata_value;
             int ncols, nrows, i;
             String aLine;
