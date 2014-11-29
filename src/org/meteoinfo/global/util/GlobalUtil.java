@@ -109,6 +109,24 @@ public class GlobalUtil {
     }
 
     /**
+     * Get sub directories
+     * @param directory The directory
+     * @return Sub directories
+     */
+    public static List<String> getSubDirectories(String directory) {
+        List<String> subDirs = new ArrayList<String>();
+        File f = new File(directory);
+        File fs[] = f.listFiles();
+        for (File f1 : fs) {
+            if (f1.isDirectory()) {
+                subDirs.add(f1.getPath());
+            }
+        }
+
+        return subDirs;
+    }
+
+    /**
      * Get class names in a jar file
      *
      * @param jarFileName The jar file name
@@ -153,7 +171,7 @@ public class GlobalUtil {
             URLClassLoader urlClassLoader = new URLClassLoader(new URL[]{url});
             for (String name : classNames) {
                 Class<?> clazz = urlClassLoader.loadClass(name);
-                if (isInterface(clazz, "org.meteoinfo.plugin.IPlugin")){
+                if (isInterface(clazz, "org.meteoinfo.plugin.IPlugin")) {
                     pluginClassName = name;
                     break;
                 }
@@ -171,6 +189,7 @@ public class GlobalUtil {
 
     /**
      * Determine if a class implements a interface
+     *
      * @param c The class
      * @param szInterface The interface name
      * @return Boolean
@@ -443,14 +462,14 @@ public class GlobalUtil {
         ObjectOutputStream oos = null;
         ObjectInputStream ois = null;
         try {
-            ByteArrayOutputStream bos =
-                    new ByteArrayOutputStream(); // A
+            ByteArrayOutputStream bos
+                    = new ByteArrayOutputStream(); // A
             oos = new ObjectOutputStream(bos); // B
             // serialize and pass the object
             oos.writeObject(oldObj);   // C
             oos.flush();               // D
-            ByteArrayInputStream bin =
-                    new ByteArrayInputStream(bos.toByteArray()); // E
+            ByteArrayInputStream bin
+                    = new ByteArrayInputStream(bos.toByteArray()); // E
             ois = new ObjectInputStream(bin);                  // F
             // return the new object
             return ois.readObject(); // G
@@ -495,33 +514,37 @@ public class GlobalUtil {
 
         return fn;
     }
-    
+
     /**
      * Get separator
+     *
      * @param line The string line
      * @return Separator string
      */
-    public static String getSeparator(String line){
+    public static String getSeparator(String line) {
         String separator = null;
-        if (line.contains(","))
+        if (line.contains(",")) {
             separator = ",";
-        else if (line.contains(";"))
+        } else if (line.contains(";")) {
             separator = ";";
-        
+        }
+
         return separator;
     }
-    
+
     /**
      * Split a string line by separator
+     *
      * @param line The string line
      * @param separator The separator
      * @return Splitted string array
      */
-    public static String[] split(String line, String separator){
-        if (separator == null)
+    public static String[] split(String line, String separator) {
+        if (separator == null) {
             return line.split("\\s+");
-        else
+        } else {
             return line.split(separator);
+        }
     }
     // </editor-fold>
 }
