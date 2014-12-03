@@ -84,14 +84,15 @@ public abstract class LayoutElement {
     private boolean _selected;
     private ResizeAbility _resizeAbility;
     private boolean _visible = true;
+    private boolean drawBackColor = false;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
     public LayoutElement() {
         _foreColor = Color.black;
-        _backColor = new Color(0, 0, 0, 0);
+        _backColor = Color.white;
         _selected = false;
-        _resizeAbility = ResizeAbility.None;
+        _resizeAbility = ResizeAbility.None;        
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -305,6 +306,22 @@ public abstract class LayoutElement {
      */
     public void setResizeAbility(ResizeAbility ra) {
         _resizeAbility = ra;
+    }
+    
+    /**
+     * Get is draw backcolor
+     * @return Boolean
+     */
+    public boolean isDrawBackColor(){
+        return drawBackColor;
+    }
+    
+    /**
+     * Set is draw backcolor
+     * @param value Boolean
+     */
+    public void setDrawBackColor(boolean value){
+        drawBackColor = value;
     }
     // </editor-fold>
     // <editor-fold desc="Methods">

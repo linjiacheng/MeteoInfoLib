@@ -64,6 +64,7 @@ import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -119,6 +120,10 @@ import javax.swing.undo.UndoableEdit;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.freehep.graphics2d.VectorGraphics;
+import org.freehep.graphicsio.emf.EMFGraphics2D;
+import org.freehep.graphicsio.pdf.PDFGraphics2D;
+import org.freehep.graphicsio.ps.PSGraphics2D;
 import org.meteoinfo.global.event.IUndoEditListener;
 import org.meteoinfo.global.event.UndoEditEvent;
 import org.meteoinfo.global.util.GlobalUtil;
@@ -1259,7 +1264,7 @@ public class MapLayout extends JPanel {
                     break;
                 case InEditingVertices:
                     LayoutGraphic lg = (LayoutGraphic) _selectedElements.get(0);
-                    edit = (new MapLayoutUndoRedo()).new MoveGraphicVerticeEdit(this, lg, _editingVerticeIndex, 
+                    edit = (new MapLayoutUndoRedo()).new MoveGraphicVerticeEdit(this, lg, _editingVerticeIndex,
                             pageP.x, pageP.y);
                     this.fireUndoEditEvent(edit);
                     lg.verticeEditUpdate(_editingVerticeIndex, pageP.x, pageP.y);
@@ -1503,9 +1508,10 @@ public class MapLayout extends JPanel {
                 case Select:
                 case MoveSelection:
                 case ResizeSelected:
-                    if (_selectedElements.isEmpty())
+                    if (_selectedElements.isEmpty()) {
                         return;
-                    
+                    }
+
                     LayoutElement aElement = _selectedElements.get(0);
                     _selectedElements = selectElements(pageP, _layoutElements, 0);
                     if (_selectedElements.size() > 1) {
@@ -2047,6 +2053,17 @@ public class MapLayout extends JPanel {
         Rectangle.Float aRect = paperToScreen(new Rectangle.Float(0, 0, getPaperWidth(), getPaperHeight()));
         _pageBounds.width = (int) aRect.width;
         _pageBounds.height = (int) aRect.height;
+    }
+
+    /**
+     * Set paper size
+     *
+     * @param width Width
+     * @param height Height
+     */
+    public void setPaperSize(int width, int height) {
+        PaperSize ps = new PaperSize("Custom", width, height);
+        setPaperSize(ps);
     }
 
     /**
@@ -2612,6 +2629,8 @@ public class MapLayout extends JPanel {
      * Export to a picture file
      *
      * @param aFile File path
+     * @throws java.io.FileNotFoundException
+     * @throws javax.print.PrintException
      */
     public void exportToPicture(String aFile) throws FileNotFoundException, PrintException, IOException {
         if (aFile.endsWith(".ps")) {
@@ -2644,6 +2663,45 @@ public class MapLayout extends JPanel {
                 job.print(doc, attributes);
                 out.close();
             }
+        } else if (aFile.endsWith(".eps")) {
+            int width = this.getPaperWidth();
+            int height = this.getPaperHeight();
+//            EPSGraphics2D g = new EPSGraphics2D(0.0, 0.0, width, height);
+//            paintGraphics(g);
+//            FileOutputStream file = new FileOutputStream(aFile);
+//            try {
+//                file.write(g.getBytes());
+//            } finally {
+//                file.close();
+//                g.dispose();
+//            }
+            
+            Properties p = new Properties();
+            p.setProperty("PageSize","A5");
+            VectorGraphics g = new PSGraphics2D(new File(aFile), new Dimension(width, height)); 
+            //g.setProperties(p);
+            g.startExport(); 
+            this.paintGraphics(g);
+            g.endExport();
+            g.dispose();
+        } else if (aFile.endsWith(".pdf")) {
+            int width = this.getPaperWidth();
+            int height = this.getPaperHeight();
+            VectorGraphics g = new PDFGraphics2D(new File(aFile), new Dimension(width, height)); 
+            //g.setProperties(p);
+            g.startExport(); 
+            this.paintGraphics(g);
+            g.endExport();
+            g.dispose();
+        } else if (aFile.endsWith(".emf")) {
+            int width = this.getPaperWidth();
+            int height = this.getPaperHeight();
+            VectorGraphics g = new EMFGraphics2D(new File(aFile), new Dimension(width, height)); 
+            //g.setProperties(p);
+            g.startExport(); 
+            this.paintGraphics(g);
+            g.endExport();
+            g.dispose();
         } else {
             BufferedImage aImage = new BufferedImage(_pageBounds.width, _pageBounds.height, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g = aImage.createGraphics();
@@ -2848,8 +2906,9 @@ public class MapLayout extends JPanel {
                 }
                 _mapFrames.remove(aLM.getMapFrame());
                 _layoutElements.remove(aElement);
-                if (_mapFrames.size() > 0)
+                if (_mapFrames.size() > 0) {
                     setActiveMapFrame(_mapFrames.get(0));
+                }
                 this.fireMapFramesUpdatedEvent();
                 break;
             default:
@@ -3400,6 +3459,7 @@ public class MapLayout extends JPanel {
         Attr GridYOrigin = m_Doc.createAttribute("GridYOrigin");
         Attr gridLabelPosition = m_Doc.createAttribute("GridLabelPosition");
         Attr drawDegreeSymbol = m_Doc.createAttribute("DrawDegreeSymbol");
+        Attr drawBackColor = m_Doc.createAttribute("DrawBackColor");
 
         elementType.setValue(aMap.getElementType().toString());
         left.setValue(String.valueOf(aMap.getLeft()));
@@ -3422,6 +3482,7 @@ public class MapLayout extends JPanel {
         GridYOrigin.setValue(String.valueOf(aMap.getGridYOrigin()));
         gridLabelPosition.setValue(aMap.getGridLabelPosition().toString());
         drawDegreeSymbol.setValue(String.valueOf(aMap.isDrawDegreeSymbol()));
+        drawBackColor.setValue(String.valueOf(aMap.isDrawBackColor()));
 
         layoutMap.setAttributeNode(elementType);
         layoutMap.setAttributeNode(left);
@@ -3444,6 +3505,7 @@ public class MapLayout extends JPanel {
         layoutMap.setAttributeNode(GridYOrigin);
         layoutMap.setAttributeNode(gridLabelPosition);
         layoutMap.setAttributeNode(drawDegreeSymbol);
+        layoutMap.setAttributeNode(drawBackColor);
 
         parent.appendChild(layoutMap);
     }
@@ -3466,6 +3528,7 @@ public class MapLayout extends JPanel {
         Attr FontName = doc.createAttribute("FontName");
         Attr FontSize = doc.createAttribute("FontSize");
         Attr colNum = doc.createAttribute("ColumnNumber");
+        Attr drawBackColor = doc.createAttribute("DrawBackColor");
 
         elementType.setValue(aLegend.getElementType().toString());
         layoutMapIndex.setValue(String.valueOf(getLayoutMapIndex(aLegend.getLayoutMap())));
@@ -3483,6 +3546,7 @@ public class MapLayout extends JPanel {
         FontName.setValue(aLegend.getFont().getFontName());
         FontSize.setValue(String.valueOf(aLegend.getFont().getSize()));
         colNum.setValue(String.valueOf(aLegend.getColumnNumber()));
+        drawBackColor.setValue(String.valueOf(aLegend.isDrawBackColor()));
 
         Legend.setAttributeNode(elementType);
         Legend.setAttributeNode(layoutMapIndex);
@@ -3500,12 +3564,13 @@ public class MapLayout extends JPanel {
         Legend.setAttributeNode(FontName);
         Legend.setAttributeNode(FontSize);
         Legend.setAttributeNode(colNum);
+        Legend.setAttributeNode(drawBackColor);
 
         parent.appendChild(Legend);
     }
 
     private void addLayoutScaleBarElement(Document doc, Element parent, LayoutScaleBar aScaleBar) {
-        Element Legend = doc.createElement("LayoutScaleBar");
+        Element scaleBar = doc.createElement("LayoutScaleBar");
         Attr elementType = doc.createAttribute("ElementType");
         Attr layoutMapIndex = doc.createAttribute("LayoutMapIndex");
         Attr scaleBarType = doc.createAttribute("ScaleBarType");
@@ -3521,6 +3586,7 @@ public class MapLayout extends JPanel {
         Attr FontName = doc.createAttribute("FontName");
         Attr FontSize = doc.createAttribute("FontSize");
         Attr drawScaleText = doc.createAttribute("DrawScaleText");
+        Attr drawBackColor = doc.createAttribute("DrawBackColor");
 
         elementType.setValue(aScaleBar.getElementType().toString());
         layoutMapIndex.setValue(String.valueOf(getLayoutMapIndex(aScaleBar.getLayoutMap())));
@@ -3537,28 +3603,30 @@ public class MapLayout extends JPanel {
         FontName.setValue(aScaleBar.getFont().getFontName());
         FontSize.setValue(String.valueOf(aScaleBar.getFont().getSize()));
         drawScaleText.setValue(String.valueOf(aScaleBar.isDrawScaleText()));
+        drawBackColor.setValue(String.valueOf(aScaleBar.isDrawBackColor()));
 
-        Legend.setAttributeNode(elementType);
-        Legend.setAttributeNode(layoutMapIndex);
-        Legend.setAttributeNode(scaleBarType);
-        Legend.setAttributeNode(BackColor);
-        Legend.setAttributeNode(foreColor);
-        Legend.setAttributeNode(DrawNeatLine);
-        Legend.setAttributeNode(NeatLineColor);
-        Legend.setAttributeNode(NeatLineSize);
-        Legend.setAttributeNode(Left);
-        Legend.setAttributeNode(Top);
-        Legend.setAttributeNode(Width);
-        Legend.setAttributeNode(Height);
-        Legend.setAttributeNode(FontName);
-        Legend.setAttributeNode(FontSize);
-        Legend.setAttributeNode(drawScaleText);
+        scaleBar.setAttributeNode(elementType);
+        scaleBar.setAttributeNode(layoutMapIndex);
+        scaleBar.setAttributeNode(scaleBarType);
+        scaleBar.setAttributeNode(BackColor);
+        scaleBar.setAttributeNode(foreColor);
+        scaleBar.setAttributeNode(DrawNeatLine);
+        scaleBar.setAttributeNode(NeatLineColor);
+        scaleBar.setAttributeNode(NeatLineSize);
+        scaleBar.setAttributeNode(Left);
+        scaleBar.setAttributeNode(Top);
+        scaleBar.setAttributeNode(Width);
+        scaleBar.setAttributeNode(Height);
+        scaleBar.setAttributeNode(FontName);
+        scaleBar.setAttributeNode(FontSize);
+        scaleBar.setAttributeNode(drawScaleText);
+        scaleBar.setAttributeNode(drawBackColor);
 
-        parent.appendChild(Legend);
+        parent.appendChild(scaleBar);
     }
 
     private void addLayoutNorthArrowElement(Document doc, Element parent, LayoutNorthArrow aNorthArrow) {
-        Element Legend = doc.createElement("LayoutScaleBar");
+        Element northArrow = doc.createElement("LayoutNorthArrow");
         Attr elementType = doc.createAttribute("ElementType");
         Attr layoutMapIndex = doc.createAttribute("LayoutMapIndex");
         Attr BackColor = doc.createAttribute("BackColor");
@@ -3571,6 +3639,7 @@ public class MapLayout extends JPanel {
         Attr Width = doc.createAttribute("Width");
         Attr Height = doc.createAttribute("Height");
         Attr angle = doc.createAttribute("Angle");
+        Attr drawBackColor = doc.createAttribute("DrawBackColor");
 
         elementType.setValue(aNorthArrow.getElementType().toString());
         layoutMapIndex.setValue(String.valueOf(getLayoutMapIndex(aNorthArrow.getLayoutMap())));
@@ -3584,21 +3653,23 @@ public class MapLayout extends JPanel {
         Width.setValue(String.valueOf(aNorthArrow.getWidth()));
         Height.setValue(String.valueOf(aNorthArrow.getHeight()));
         angle.setValue(String.valueOf(aNorthArrow.getAngle()));
+        drawBackColor.setValue(String.valueOf(aNorthArrow.isDrawBackColor()));
 
-        Legend.setAttributeNode(elementType);
-        Legend.setAttributeNode(layoutMapIndex);
-        Legend.setAttributeNode(BackColor);
-        Legend.setAttributeNode(foreColor);
-        Legend.setAttributeNode(DrawNeatLine);
-        Legend.setAttributeNode(NeatLineColor);
-        Legend.setAttributeNode(NeatLineSize);
-        Legend.setAttributeNode(Left);
-        Legend.setAttributeNode(Top);
-        Legend.setAttributeNode(Width);
-        Legend.setAttributeNode(Height);
-        Legend.setAttributeNode(angle);
+        northArrow.setAttributeNode(elementType);
+        northArrow.setAttributeNode(layoutMapIndex);
+        northArrow.setAttributeNode(BackColor);
+        northArrow.setAttributeNode(foreColor);
+        northArrow.setAttributeNode(DrawNeatLine);
+        northArrow.setAttributeNode(NeatLineColor);
+        northArrow.setAttributeNode(NeatLineSize);
+        northArrow.setAttributeNode(Left);
+        northArrow.setAttributeNode(Top);
+        northArrow.setAttributeNode(Width);
+        northArrow.setAttributeNode(Height);
+        northArrow.setAttributeNode(angle);
+        northArrow.setAttributeNode(drawBackColor);
 
-        parent.appendChild(Legend);
+        parent.appendChild(northArrow);
     }
 
     private void addLayoutGraphicElement(Document doc, Element parent, LayoutGraphic aLayoutGraphic) {
@@ -3758,29 +3829,30 @@ public class MapLayout extends JPanel {
         }
     }
 
-    private void loadLayoutMapElement(Node LayoutMap, LayoutMap aLM) {
+    private void loadLayoutMapElement(Node layoutMap, LayoutMap aLM) {
         try {
-            aLM.setLeft(Integer.parseInt(LayoutMap.getAttributes().getNamedItem("Left").getNodeValue()));
-            aLM.setTop(Integer.parseInt(LayoutMap.getAttributes().getNamedItem("Top").getNodeValue()));
-            aLM.setWidth(Integer.parseInt(LayoutMap.getAttributes().getNamedItem("Width").getNodeValue()));
-            aLM.setHeight(Integer.parseInt(LayoutMap.getAttributes().getNamedItem("Height").getNodeValue()));
-            aLM.setDrawNeatLine(Boolean.parseBoolean(LayoutMap.getAttributes().getNamedItem("DrawNeatLine").getNodeValue()));
-            aLM.setNeatLineColor(ColorUtil.parseToColor(LayoutMap.getAttributes().getNamedItem("NeatLineColor").getNodeValue()));
-            aLM.setNeatLineSize(Float.parseFloat(LayoutMap.getAttributes().getNamedItem("NeatLineSize").getNodeValue()));
-            aLM.setGridLineColor(ColorUtil.parseToColor(LayoutMap.getAttributes().getNamedItem("GridLineColor").getNodeValue()));
-            aLM.setGridLineSize(Float.parseFloat(LayoutMap.getAttributes().getNamedItem("GridLineSize").getNodeValue()));
-            aLM.setGridLineStyle(LineStyles.valueOf(LayoutMap.getAttributes().getNamedItem("GridLineStyle").getNodeValue()));
-            aLM.setDrawGridLine(Boolean.parseBoolean(LayoutMap.getAttributes().getNamedItem("DrawGridLine").getNodeValue()));
-            aLM.setDrawGridLabel(Boolean.parseBoolean(LayoutMap.getAttributes().getNamedItem("DrawGridLabel").getNodeValue()));
-            String fontName = LayoutMap.getAttributes().getNamedItem("GridFontName").getNodeValue();
-            float fontSize = Float.parseFloat(LayoutMap.getAttributes().getNamedItem("GridFontSize").getNodeValue());
+            aLM.setLeft(Integer.parseInt(layoutMap.getAttributes().getNamedItem("Left").getNodeValue()));
+            aLM.setTop(Integer.parseInt(layoutMap.getAttributes().getNamedItem("Top").getNodeValue()));
+            aLM.setWidth(Integer.parseInt(layoutMap.getAttributes().getNamedItem("Width").getNodeValue()));
+            aLM.setHeight(Integer.parseInt(layoutMap.getAttributes().getNamedItem("Height").getNodeValue()));
+            aLM.setDrawNeatLine(Boolean.parseBoolean(layoutMap.getAttributes().getNamedItem("DrawNeatLine").getNodeValue()));
+            aLM.setNeatLineColor(ColorUtil.parseToColor(layoutMap.getAttributes().getNamedItem("NeatLineColor").getNodeValue()));
+            aLM.setNeatLineSize(Float.parseFloat(layoutMap.getAttributes().getNamedItem("NeatLineSize").getNodeValue()));
+            aLM.setGridLineColor(ColorUtil.parseToColor(layoutMap.getAttributes().getNamedItem("GridLineColor").getNodeValue()));
+            aLM.setGridLineSize(Float.parseFloat(layoutMap.getAttributes().getNamedItem("GridLineSize").getNodeValue()));
+            aLM.setGridLineStyle(LineStyles.valueOf(layoutMap.getAttributes().getNamedItem("GridLineStyle").getNodeValue()));
+            aLM.setDrawGridLine(Boolean.parseBoolean(layoutMap.getAttributes().getNamedItem("DrawGridLine").getNodeValue()));
+            aLM.setDrawGridLabel(Boolean.parseBoolean(layoutMap.getAttributes().getNamedItem("DrawGridLabel").getNodeValue()));
+            String fontName = layoutMap.getAttributes().getNamedItem("GridFontName").getNodeValue();
+            float fontSize = Float.parseFloat(layoutMap.getAttributes().getNamedItem("GridFontSize").getNodeValue());
             aLM.setGridFont(new Font(fontName, Font.PLAIN, (int) fontSize));
-            aLM.setGridXDelt(Float.parseFloat(LayoutMap.getAttributes().getNamedItem("GridXDelt").getNodeValue()));
-            aLM.setGridYDelt(Float.parseFloat(LayoutMap.getAttributes().getNamedItem("GridYDelt").getNodeValue()));
-            aLM.setGridXOrigin(Float.parseFloat(LayoutMap.getAttributes().getNamedItem("GridXOrigin").getNodeValue()));
-            aLM.setGridYOrigin(Float.parseFloat(LayoutMap.getAttributes().getNamedItem("GridYOrigin").getNodeValue()));
-            aLM.setGridLabelPosition(GridLabelPosition.valueOf(LayoutMap.getAttributes().getNamedItem("GridLabelPosition").getNodeValue()));
-            aLM.setDrawDegreeSymbol(Boolean.parseBoolean(LayoutMap.getAttributes().getNamedItem("DrawDegreeSymbol").getNodeValue()));
+            aLM.setGridXDelt(Float.parseFloat(layoutMap.getAttributes().getNamedItem("GridXDelt").getNodeValue()));
+            aLM.setGridYDelt(Float.parseFloat(layoutMap.getAttributes().getNamedItem("GridYDelt").getNodeValue()));
+            aLM.setGridXOrigin(Float.parseFloat(layoutMap.getAttributes().getNamedItem("GridXOrigin").getNodeValue()));
+            aLM.setGridYOrigin(Float.parseFloat(layoutMap.getAttributes().getNamedItem("GridYOrigin").getNodeValue()));
+            aLM.setGridLabelPosition(GridLabelPosition.valueOf(layoutMap.getAttributes().getNamedItem("GridLabelPosition").getNodeValue()));
+            aLM.setDrawDegreeSymbol(Boolean.parseBoolean(layoutMap.getAttributes().getNamedItem("DrawDegreeSymbol").getNodeValue()));
+            aLM.setDrawBackColor(Boolean.parseBoolean(layoutMap.getAttributes().getNamedItem("DrawBackColor").getNodeValue()));
         } catch (Exception e) {
         }
     }
@@ -3814,6 +3886,7 @@ public class MapLayout extends JPanel {
             aLL.setFont(new Font(fontName, Font.PLAIN, (int) fontSize));
             aLL.setLayerUpdateType(LayerUpdateTypes.valueOf(layoutLegend.getAttributes().getNamedItem("LayerUpdateType").getNodeValue()));
             aLL.setColumnNumber(Integer.parseInt(layoutLegend.getAttributes().getNamedItem("ColumnNumber").getNodeValue()));
+            aLL.setDrawBackColor(Boolean.parseBoolean(layoutLegend.getAttributes().getNamedItem("DrawBackColor").getNodeValue()));
         } catch (Exception e) {
         }
 
@@ -3845,6 +3918,7 @@ public class MapLayout extends JPanel {
             float fontSize = Float.parseFloat(layoutScaleBar.getAttributes().getNamedItem("FontSize").getNodeValue());
             aLSB.setFont(new Font(fontName, Font.PLAIN, (int) fontSize));
             aLSB.setDrawScaleText(Boolean.parseBoolean(layoutScaleBar.getAttributes().getNamedItem("DrawScaleText").getNodeValue()));
+            aLSB.setDrawBackColor(Boolean.parseBoolean(layoutScaleBar.getAttributes().getNamedItem("DrawBackColor").getNodeValue()));
         } catch (Exception e) {
         }
 
@@ -3872,6 +3946,7 @@ public class MapLayout extends JPanel {
             aLNA.setWidth(Integer.parseInt(layoutNorthArrow.getAttributes().getNamedItem("Width").getNodeValue()));
             aLNA.setHeight(Integer.parseInt(layoutNorthArrow.getAttributes().getNamedItem("Height").getNodeValue()));
             aLNA.setAngle(Float.parseFloat(layoutNorthArrow.getAttributes().getNamedItem("Angle").getNodeValue()));
+            aLNA.setDrawBackColor(Boolean.parseBoolean(layoutNorthArrow.getAttributes().getNamedItem("DrawBackColor").getNodeValue()));
         } catch (Exception e) {
         }
 

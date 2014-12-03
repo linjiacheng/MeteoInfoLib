@@ -244,8 +244,10 @@ public class LayoutScaleBar extends LayoutElement {
         }
 
         //Draw background color
-        g.setColor(this.getBackColor());
-        g.fill(new Rectangle.Float(0, 0, this.getWidth() * zoom, this.getHeight() * zoom));
+        if (this.isDrawBackColor()){
+            g.setColor(this.getBackColor());
+            g.fill(new Rectangle.Float(0, 0, this.getWidth() * zoom, this.getHeight() * zoom));
+        }
 
         drawScaleBar(g, zoom);
 
@@ -562,6 +564,22 @@ public class LayoutScaleBar extends LayoutElement {
         }
         
         /**
+         * Get is draw backcolor
+         * @return Boolean
+         */
+        public boolean isDrawBackColor(){
+            return LayoutScaleBar.this.isDrawBackColor();
+        }
+        
+        /**
+         * Set is draw backcolor
+         * @param value Boolean
+         */
+        public void setDrawBackColor(boolean value){
+            LayoutScaleBar.this.setDrawBackColor(value);
+        }
+        
+        /**
          * Get background color
          *
          * @return Background color
@@ -678,6 +696,7 @@ public class LayoutScaleBar extends LayoutElement {
             ExtendedPropertyDescriptor e = addProperty("scaleBarType");
             e.setCategory("General").setDisplayName("Scale Bar Type");
             e.setPropertyEditorClass(ScaleBarTypeEditor.class);
+            addProperty("drawBackColor").setCategory("General").setDisplayName("Draw Background");
             addProperty("backColor").setCategory("General").setDisplayName("Background");
             addProperty("foreColor").setCategory("General").setDisplayName("Foreground");
             addProperty("font").setCategory("General").setDisplayName("Font");

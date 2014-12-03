@@ -181,8 +181,10 @@ public class LayoutNorthArrow extends LayoutElement {
         }
 
         //Draw background color
-        g.setColor(this.getBackColor());
-        g.draw(new Rectangle.Float(0, 0, this.getWidth() * zoom, this.getHeight() * zoom));
+        if (this.isDrawBackColor()){
+            g.setColor(this.getBackColor());
+            g.fill(new Rectangle.Float(0, 0, this.getWidth() * zoom, this.getHeight() * zoom));
+        }
 
         drawNorthArrow(g, zoom);
 
@@ -328,6 +330,22 @@ public class LayoutNorthArrow extends LayoutElement {
         }
         
         /**
+         * Get is draw backcolor
+         * @return Boolean
+         */
+        public boolean isDrawBackColor(){
+            return LayoutNorthArrow.this.isDrawBackColor();
+        }
+        
+        /**
+         * Set is draw backcolor
+         * @param value Boolean
+         */
+        public void setDrawBackColor(boolean value){
+            LayoutNorthArrow.this.setDrawBackColor(value);
+        }
+        
+        /**
          * Get background color
          *
          * @return Background color
@@ -441,6 +459,7 @@ public class LayoutNorthArrow extends LayoutElement {
 
         public LayoutNorthArrowBeanBeanInfo() {
             super(LayoutNorthArrowBean.class);
+            addProperty("drawBackColor").setCategory("General").setDisplayName("Draw Background");
             addProperty("backColor").setCategory("General").setDisplayName("Background");
             addProperty("foreColor").setCategory("General").setDisplayName("Foreground");
             addProperty("drawNeatLine").setCategory("Neat Line").setDisplayName("Draw Neat Line");

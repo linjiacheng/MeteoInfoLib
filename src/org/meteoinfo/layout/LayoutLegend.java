@@ -397,8 +397,10 @@ public class LayoutLegend extends LayoutElement {
         }
 
         //Draw background color
-        g.setColor(this.getBackColor());
-        g.fill(new Rectangle.Float(0, 0, this.getWidth() * zoom, this.getHeight() * zoom));
+        if (this.isDrawBackColor()){
+            g.setColor(this.getBackColor());
+            g.fill(new Rectangle.Float(0, 0, this.getWidth() * zoom, this.getHeight() * zoom));
+        }
 
         switch (_legendStyle) {
             case Bar_Horizontal:
@@ -1290,6 +1292,22 @@ public class LayoutLegend extends LayoutElement {
                 updateLegendSize();
             }
         }
+        
+        /**
+         * Get is draw backcolor
+         * @return Boolean
+         */
+        public boolean isDrawBackColor(){
+            return LayoutLegend.this.isDrawBackColor();
+        }
+        
+        /**
+         * Set is draw backcolor
+         * @param value Boolean
+         */
+        public void setDrawBackColor(boolean value){
+            LayoutLegend.this.setDrawBackColor(value);
+        }
 
         /**
          * Get background color
@@ -1381,6 +1399,7 @@ public class LayoutLegend extends LayoutElement {
             e.setPropertyEditorClass(LegendStyleEditor.class);
             addProperty("title").setCategory("General").setDisplayName("Title");
             addProperty("font").setCategory("General").setDisplayName("Font");
+            addProperty("drawBackColor").setCategory("General").setDisplayName("Draw Background");
             addProperty("backColor").setCategory("General").setDisplayName("Background");
             addProperty("foreColor").setCategory("General").setDisplayName("Foreground");
             addProperty("columnNumber").setCategory("General").setDisplayName("Column Number");

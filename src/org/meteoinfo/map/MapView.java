@@ -126,6 +126,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -148,6 +149,10 @@ import javax.swing.Timer;
 import javax.swing.event.EventListenerList;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.undo.UndoableEdit;
+import org.freehep.graphics2d.VectorGraphics;
+import org.freehep.graphicsio.emf.EMFGraphics2D;
+import org.freehep.graphicsio.pdf.PDFGraphics2D;
+import org.freehep.graphicsio.ps.PSGraphics2D;
 import org.meteoinfo.data.mapdata.webmap.GeoPosition;
 import org.meteoinfo.data.mapdata.webmap.Tile;
 import org.meteoinfo.data.mapdata.webmap.TileFactoryInfo;
@@ -5799,6 +5804,8 @@ public class MapView extends JPanel {
      * Export to a picture file
      *
      * @param aFile File path
+     * @throws java.io.FileNotFoundException
+     * @throws javax.print.PrintException
      */
     public void exportToPicture(String aFile) throws FileNotFoundException, PrintException, IOException {
         if (aFile.endsWith(".ps")) {
@@ -5831,6 +5838,45 @@ public class MapView extends JPanel {
                 job.print(doc, attributes);
                 out.close();
             }
+        } else if (aFile.endsWith(".eps")) {
+            int width = this.getWidth();
+            int height = this.getHeight();
+//            EPSGraphics2D g = new EPSGraphics2D(0.0, 0.0, width, height);
+//            paintGraphics(g);
+//            FileOutputStream file = new FileOutputStream(aFile);
+//            try {
+//                file.write(g.getBytes());
+//            } finally {
+//                file.close();
+//                g.dispose();
+//            }
+            
+            Properties p = new Properties();
+            p.setProperty("PageSize","A5");
+            VectorGraphics g = new PSGraphics2D(new File(aFile), new Dimension(width, height)); 
+            //g.setProperties(p);
+            g.startExport(); 
+            this.paintGraphics(g);
+            g.endExport();
+            g.dispose();
+        } else if (aFile.endsWith(".pdf")) {
+            int width = this.getWidth();
+            int height = this.getHeight();
+            VectorGraphics g = new PDFGraphics2D(new File(aFile), new Dimension(width, height)); 
+            //g.setProperties(p);
+            g.startExport(); 
+            this.paintGraphics(g);
+            g.endExport();
+            g.dispose();
+        } else if (aFile.endsWith(".emf")) {
+            int width = this.getWidth();
+            int height = this.getHeight();
+            VectorGraphics g = new EMFGraphics2D(new File(aFile), new Dimension(width, height)); 
+            //g.setProperties(p);
+            g.startExport(); 
+            this.paintGraphics(g);
+            g.endExport();
+            g.dispose();
         } else {
             String extension = aFile.substring(aFile.lastIndexOf('.') + 1);
             ImageIO.write(this._mapBitmap, extension, new File(aFile));

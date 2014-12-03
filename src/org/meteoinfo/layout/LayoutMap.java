@@ -798,8 +798,10 @@ public class LayoutMap extends LayoutElement {
         if (_mapFrame != null) {
             PointF aP = pageToScreen(this.getLeft(), this.getTop(), pageLocation, zoom);
             Rectangle rect = new Rectangle((int) aP.X, (int) aP.Y, (int) (this.getWidth() * zoom), (int) (this.getHeight() * zoom));
-            g.setColor(_mapFrame.getMapView().getBackground());
-            g.fill(rect);
+            if (this.isDrawBackColor()){
+                g.setColor(_mapFrame.getMapView().getBackground());
+                g.fill(rect);
+            }
 
             _mapFrame.getMapView().paintGraphics(g, rect);
 
@@ -1074,6 +1076,22 @@ public class LayoutMap extends LayoutElement {
          */
         public void setBounds(Rectangle rect) {
             _mapFrame.setLayoutBounds(rect);
+        }
+        
+        /**
+         * Get is draw backcolor
+         * @return Boolean
+         */
+        public boolean isDrawBackColor(){
+            return LayoutMap.this.isDrawBackColor();
+        }
+        
+        /**
+         * Set is draw backcolor
+         * @param value Boolean
+         */
+        public void setDrawBackColor(boolean value){
+            LayoutMap.this.setDrawBackColor(value);
         }
 
         /**
@@ -1462,6 +1480,7 @@ public class LayoutMap extends LayoutElement {
 
         public LayoutMapBeanBeanInfo() {
             super(LayoutMapBean.class);
+            addProperty("drawBackColor").setCategory("General").setDisplayName("Draw Background");
             addProperty("backColor").setCategory("General").setDisplayName("Background");
             addProperty("foreColor").setCategory("General").setDisplayName("Foreground");
             addProperty("drawNeatLine").setCategory("Neat Line").setDisplayName("Draw Neat Line");

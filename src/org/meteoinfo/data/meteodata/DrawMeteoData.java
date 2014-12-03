@@ -1585,6 +1585,17 @@ public class DrawMeteoData {
 
         return aLayer;
     }
+    
+    /**
+     * Create station weather symbol layer
+     *
+     * @param weatherData Weather station data
+     * @param layerName Layer name
+     * @return Weather symbol layer
+     */
+    public static VectorLayer createWeatherSymbolLayer(StationData weatherData, String layerName) {
+        return createWeatherSymbolLayer(weatherData, "All Weather", layerName);
+    }
 
     /**
      * Create station weather symbol layer

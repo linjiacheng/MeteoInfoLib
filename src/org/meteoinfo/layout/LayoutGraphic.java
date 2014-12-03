@@ -335,10 +335,12 @@ public class LayoutGraphic extends LayoutElement {
 
     @Override
     public void paintOnLayout(Graphics2D g, PointF pageLocation, float zoom) {
-        PointF aP = pageToScreen(this.getLeft(), this.getTop(), pageLocation, zoom);
-        Rectangle rect = new Rectangle((int) aP.X, (int) aP.Y, (int) (this.getWidth() * zoom), (int) (this.getHeight() * zoom));
-        g.setColor(this.getBackColor());
-        g.fill(rect);
+        if (this.isDrawBackColor()){
+            PointF aP = pageToScreen(this.getLeft(), this.getTop(), pageLocation, zoom);        
+            Rectangle rect = new Rectangle((int) aP.X, (int) aP.Y, (int) (this.getWidth() * zoom), (int) (this.getHeight() * zoom));
+            g.setColor(this.getBackColor());
+            g.fill(rect);
+        }
 
         //Draw graphics
         if (_antiAlias) {
