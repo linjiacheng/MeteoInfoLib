@@ -21,9 +21,9 @@ package org.meteoinfo.shape;
 public class PointZShape extends PointShape {
     // <editor-fold desc="Variables">
 
-    private PointZ _point = new PointZ();
-    public double Z;
-    public double M;
+    //private PointZ _point = new PointZ();
+    //private double z;
+    //private double m;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -31,32 +31,49 @@ public class PointZShape extends PointShape {
      * Constructor
      */
     public PointZShape() {
+        super();
         this.setShapeType(ShapeTypes.PointZ);
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
 
-    /**
-     * Get point
-     *
-     * @return Point
-     */
-    @Override
-    public PointZ getPoint() {
-        return _point;
-    }
-
-    /**
-     * Set point
-     *
-     * @param point Point
-     */
-    public void setPoint(PointZ point) {
-        _point = point;
-    }
+//    /**
+//     * Get point
+//     *
+//     * @return Point
+//     */
+//    @Override
+//    public PointZ getPoint() {
+//        return _point;
+//    }
+//
+//    /**
+//     * Set point
+//     *
+//     * @param point Point
+//     */
+//    public void setPoint(PointZ point) {
+//        _point = point;
+//    }
 
     // </editor-fold>
     // <editor-fold desc="Methods">
+    /**
+     * Get M value
+     * @return M value
+     */
+    public double getM(){
+        return ((PointZ)this.getPoint()).M;
+    }
+    
+    /**
+     * Get Z value
+     * @return Z value
+     */
+    public double getZ(){
+        return ((PointZ)this.getPoint()).Z;
+    }
+    
     /**
      * Clone
      *
@@ -66,9 +83,9 @@ public class PointZShape extends PointShape {
     public Object clone() {
         PointZShape aPS = new PointZShape();
         //aPS = (PointZShape)base.Clone();
-        aPS.setPoint(_point);
-        aPS.Z = Z;
-        aPS.M = M;
+        aPS.setPoint(this.getPoint());
+        //aPS.Z = Z;
+        //aPS.M = M;
         aPS.setValue(getValue());
         aPS.setLegendIndex(this.getLegendIndex());
 

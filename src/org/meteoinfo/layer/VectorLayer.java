@@ -892,7 +892,7 @@ public class VectorLayer extends MapLayer {
      *
      * @param aField The field
      */
-    public void editAddField(DataColumn aField) {
+    public void editAddField(Field aField) {
         for (int i = 0; i < this.getFieldNumber(); i++) {
             if (aField.getColumnName().equals(_attributeTable.getTable().getColumns().get(i).getColumnName())) {
                 aField.setColumnName(aField.getColumnName() + "_1");
@@ -1131,13 +1131,13 @@ public class VectorLayer extends MapLayer {
         this.setFileName(shpfilepath);
         File aFile = new File(shpfilepath);
         if (aFile.exists()) {
-            String shxfilepath = shpfilepath.replace(shpfilepath.substring(shpfilepath.lastIndexOf(".")), ".shx");
-            String dbffilepath = shpfilepath.replace(shpfilepath.substring(shpfilepath.lastIndexOf(".")), ".dbf");
-            String projfilepath = shpfilepath.replace(shpfilepath.substring(shpfilepath.lastIndexOf(".")), ".prj");
-            new File(shxfilepath).delete();
-            new File(dbffilepath).delete();
-            new File(projfilepath).delete();
-            aFile.delete();
+            //String shxfilepath = shpfilepath.replace(shpfilepath.substring(shpfilepath.lastIndexOf(".")), ".shx");
+            //String dbffilepath = shpfilepath.replace(shpfilepath.substring(shpfilepath.lastIndexOf(".")), ".dbf");
+            //String projfilepath = shpfilepath.replace(shpfilepath.substring(shpfilepath.lastIndexOf(".")), ".prj");
+            //new File(shxfilepath).delete();
+            //new File(dbffilepath).delete();
+            //new File(projfilepath).delete();
+            //aFile.delete();
         }
         try {
             ShapeFileManage.saveShapeFile(shpfilepath, this);
@@ -1970,7 +1970,7 @@ public class VectorLayer extends MapLayer {
                 handler.startElement("", "", "coordinates", atts);
                 str = String.valueOf(pgs.getPoint().X) + "," + String.valueOf(pgs.getPoint().Y);
                 if (this.getShapeType() == ShapeTypes.PointZ) {
-                    str = str + "," + String.valueOf(((PointZShape) shp).Z);
+                    str = str + "," + String.valueOf(((PointZShape) shp).getZ());
                 }
                 handler.characters(str.toCharArray(), 0, str.length());
                 handler.endElement("", "", "coordinates");    //coordinates                    

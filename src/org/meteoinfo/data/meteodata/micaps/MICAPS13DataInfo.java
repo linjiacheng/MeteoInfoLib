@@ -31,6 +31,7 @@ import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.data.meteodata.Variable;
 import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.MIMath;
+import org.meteoinfo.global.util.DateUtil;
 import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.projection.Reproject;
@@ -122,7 +123,7 @@ public class MICAPS13DataInfo extends DataInfo implements IGridDataInfo {
             br.close();
 
             Dimension tdim = new Dimension(DimensionType.T);
-            tdim.addValue(DataConvert.toOADate(_time));
+            tdim.addValue(DateUtil.toOADate(_time));
             this.setTimeDimension(tdim);
             this.addDimension(tdim);
             Dimension ydim = new Dimension(DimensionType.Y);

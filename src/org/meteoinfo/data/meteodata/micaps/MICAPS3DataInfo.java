@@ -21,7 +21,6 @@ import org.meteoinfo.data.meteodata.IStationDataInfo;
 import org.meteoinfo.data.meteodata.StationInfoData;
 import org.meteoinfo.data.meteodata.StationModelData;
 import org.meteoinfo.data.meteodata.Variable;
-import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.Extent;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -38,6 +37,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.meteoinfo.data.meteodata.MeteoDataType;
+import org.meteoinfo.global.util.DateUtil;
 
 /**
  *
@@ -138,7 +138,7 @@ public class MICAPS3DataInfo extends DataInfo implements IStationDataInfo {
             stationNum = _dataList.size();
             Dimension tdim = new Dimension(DimensionType.T);
             double[] values = new double[1];
-            values[0] = DataConvert.toOADate(time);
+            values[0] = DateUtil.toOADate(time);
             tdim.setValues(values);
             this.setTimeDimension(tdim);
             Dimension zdim = new Dimension(DimensionType.Z);

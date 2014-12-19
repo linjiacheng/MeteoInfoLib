@@ -17,6 +17,7 @@ import org.meteoinfo.data.mapdata.Field;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.List;
+import org.meteoinfo.global.util.BigDecimalUtil;
 import org.meteoinfo.shape.Shape;
 
 /**
@@ -773,5 +774,71 @@ public class MIMath {
         }
 
         return lon;
+    }
+    
+    /**
+     * Create contour values by minimum and maximum values
+     *
+     * @param min Minimum value
+     * @param max Maximum value
+     * @return Contour values
+     */
+    public static double[] createContourValues(double min, double max) {
+        double[] cValues;
+        int i, cNum, aD, aE;
+        double cDelt, range, newMin;
+        String eStr;
+
+        range = BigDecimalUtil.sub(max, min);
+        if (range == 0.0) {
+            cNum = 1;
+            cValues = new double[1];
+            cValues[0] = min;
+            return cValues;
+        }
+
+        eStr = String.format("%1$E", range);
+        aD = Integer.parseInt(eStr.substring(0, 1));
+        aE = (int) Math.floor(Math.log10(range));
+//        int idx = eStr.indexOf("E");
+//        if (idx < 0) {
+//            aE = 0;
+//        } else {
+//            aE = Integer.parseInt(eStr.substring(eStr.indexOf("E") + 1));
+//        }
+        if (aD > 5) {
+            //cDelt = Math.pow(10, aE);
+            cDelt = BigDecimalUtil.pow(10, aE);
+            cNum = aD;
+            //newMin = Convert.ToInt32((min + cDelt) / Math.Pow(10, aE)) * Math.Pow(10, aE);
+            //newMin = (int) (min / cDelt + 1) * cDelt;
+        } else if (aD == 5) {
+            //cDelt = aD * Math.pow(10, aE - 1);
+            cDelt = aD * BigDecimalUtil.pow(10, aE - 1);
+            cNum = 10;
+            //newMin = Convert.ToInt32((min + cDelt) / Math.Pow(10, aE)) * Math.Pow(10, aE);
+            //newMin = (int) (min / cDelt + 1) * cDelt;
+            cNum++;
+        } else {
+            //cDelt = aD * Math.pow(10, aE - 1);
+            cDelt = BigDecimalUtil.pow(10, aE - 1);
+            cDelt = BigDecimalUtil.mul(aD, cDelt);
+            cNum = (int)(range / cDelt);
+            //newMin = Convert.ToInt32((min + cDelt) / Math.Pow(10, aE - 1)) * Math.Pow(10, aE - 1);
+            //newMin = (int) (min / cDelt + 1) * cDelt;            
+        }
+        int temp = (int) (min / cDelt + 1);
+        newMin = BigDecimalUtil.mul(temp, cDelt);
+
+        if (newMin + (cNum - 1) * cDelt > max) {
+            cNum -= 1;
+        }
+        cValues = new double[cNum];
+        for (i = 0; i < cNum; i++) {
+            //cValues[i] = newMin + i * cDelt;
+            cValues[i] = BigDecimalUtil.add(newMin, BigDecimalUtil.mul(i, cDelt));
+        }
+
+        return cValues;
     }
 }

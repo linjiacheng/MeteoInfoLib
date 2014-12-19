@@ -3846,8 +3846,8 @@ public class MapLayout extends JPanel {
             String fontName = layoutMap.getAttributes().getNamedItem("GridFontName").getNodeValue();
             float fontSize = Float.parseFloat(layoutMap.getAttributes().getNamedItem("GridFontSize").getNodeValue());
             aLM.setGridFont(new Font(fontName, Font.PLAIN, (int) fontSize));
-            aLM.setGridXDelt(Float.parseFloat(layoutMap.getAttributes().getNamedItem("GridXDelt").getNodeValue()));
-            aLM.setGridYDelt(Float.parseFloat(layoutMap.getAttributes().getNamedItem("GridYDelt").getNodeValue()));
+            aLM.setGridXDelt(Double.parseDouble(layoutMap.getAttributes().getNamedItem("GridXDelt").getNodeValue()));
+            aLM.setGridYDelt(Double.parseDouble(layoutMap.getAttributes().getNamedItem("GridYDelt").getNodeValue()));
             aLM.setGridXOrigin(Float.parseFloat(layoutMap.getAttributes().getNamedItem("GridXOrigin").getNodeValue()));
             aLM.setGridYOrigin(Float.parseFloat(layoutMap.getAttributes().getNamedItem("GridYOrigin").getNodeValue()));
             aLM.setGridLabelPosition(GridLabelPosition.valueOf(layoutMap.getAttributes().getNamedItem("GridLabelPosition").getNodeValue()));

@@ -129,6 +129,16 @@ public class Extent {
     public Extent shift(double dx, double dy) {
         return new Extent(minX + dx, maxX + dx, minY + dy, maxY + dy);
     }
+    
+    /**
+     * Extends extent
+     * @param dx 
+     * @param dy
+     * @return 
+     */
+    public Extent extend(double dx, double dy){
+        return new Extent(minX - dx, maxX + dx, minY - dy, maxY + dy);
+    }
 
     /**
      * Clone

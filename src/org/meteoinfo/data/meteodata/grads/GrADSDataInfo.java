@@ -51,6 +51,7 @@ import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.data.meteodata.StationInfoData;
 import org.meteoinfo.data.meteodata.StationModelData;
 import org.meteoinfo.global.Extent;
+import org.meteoinfo.global.util.DateUtil;
 
 /**
  *
@@ -702,7 +703,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                     }
                     List<Double> values = new ArrayList<Double>();
                     for (Date t : TDEF.times) {
-                        values.add(DataConvert.toOADate(t));
+                        values.add(DateUtil.toOADate(t));
                     }
                     Dimension tDim = new Dimension(DimensionType.T);
                     tDim.setValues(values);
@@ -732,7 +733,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                             dStr = dStr.replace("Z", " ");
                             Date t = formatter.parse(dStr);
                             TDEF.times.add(t);
-                            values.add(DataConvert.toOADate(t));
+                            values.add(DateUtil.toOADate(t));
                         } catch (ParseException ex) {
                             Logger.getLogger(GrADSDataInfo.class.getName()).log(Level.SEVERE, null, ex);
                         }
@@ -1258,7 +1259,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
             aGridData.xArray = Y;
             aGridData.yArray = new double[this.getTimeNum()];
             for (i = 0; i < this.getTimeNum(); i++) {
-                aGridData.yArray[i] = DataConvert.toOADate(this.getTimes().get(i));
+                aGridData.yArray[i] = DateUtil.toOADate(this.getTimes().get(i));
             }
 
             return aGridData;
@@ -1321,7 +1322,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
             aGridData.xArray = X;
             aGridData.yArray = new double[this.getTimeNum()];
             for (i = 0; i < this.getTimeNum(); i++) {
-                aGridData.yArray[i] = DataConvert.toOADate(this.getTimes().get(i));
+                aGridData.yArray[i] = DateUtil.toOADate(this.getTimes().get(i));
             }
 
             return aGridData;
@@ -1517,7 +1518,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
             aGridData.missingValue = this.getMissingValue();
             aGridData.xArray = new double[this.getTimeNum()];
             for (i = 0; i < this.getTimeNum(); i++) {
-                aGridData.xArray[i] = DataConvert.toOADate(this.getTimes().get(i));
+                aGridData.xArray[i] = DateUtil.toOADate(this.getTimes().get(i));
             }
             double[] levels = new double[VARDEF.getVars().get(varIdx).getLevelNum()];
             for (i = 0; i < levels.length; i++) {
@@ -1574,7 +1575,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
 //                    Collections.reverse(Arrays.asList(aBytes));
 //                }
                 aValue = DataConvert.bytes2Float(aBytes, _byteOrder);
-                aGridData.xArray[t] = DataConvert.toOADate(TDEF.times.get(t));
+                aGridData.xArray[t] = DateUtil.toOADate(TDEF.times.get(t));
                 aGridData.data[0][t] = aValue;
             }
 
@@ -1765,7 +1766,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
 
             gData.xArray = new double[this.getTimeNum()];
             for (i = 0; i < this.getTimeNum(); i++) {
-                gData.xArray[i] = DataConvert.toOADate(this.getTimes().get(i));
+                gData.xArray[i] = DateUtil.toOADate(this.getTimes().get(i));
             }
 
             gData.yArray = new double[aVar.getLevelNum()];

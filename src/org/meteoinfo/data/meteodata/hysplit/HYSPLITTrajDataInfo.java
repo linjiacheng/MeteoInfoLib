@@ -19,7 +19,6 @@ import org.meteoinfo.data.meteodata.Dimension;
 import org.meteoinfo.data.meteodata.DimensionType;
 import org.meteoinfo.data.meteodata.TrajDataInfo;
 import org.meteoinfo.data.meteodata.Variable;
-import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
 import org.meteoinfo.table.DataTypes;
@@ -36,12 +35,17 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.meteoinfo.data.XYListDataset;
 import org.meteoinfo.data.meteodata.MeteoDataType;
+import org.meteoinfo.drawing.PointStyle;
+import org.meteoinfo.global.util.DateUtil;
 import org.meteoinfo.layer.LayerDrawType;
 import org.meteoinfo.layer.VectorLayer;
+import org.meteoinfo.legend.ColorBreak;
 import org.meteoinfo.legend.LegendManage;
 import org.meteoinfo.legend.LegendScheme;
 import org.meteoinfo.legend.LegendType;
+import org.meteoinfo.legend.PolylineBreak;
 import org.meteoinfo.shape.PointShape;
 import org.meteoinfo.shape.PointZ;
 import org.meteoinfo.shape.PolylineZShape;
@@ -130,8 +134,9 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
 
     /**
      * Read data info for multi trajectory files
+     *
      * @param trajFiles Trajectory files
-     * @throws IOException 
+     * @throws IOException
      */
     public void readDataInfo(String[] trajFiles) throws IOException {
         this.setFileName(trajFiles[0]);
@@ -184,7 +189,7 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                         Integer.parseInt(dataArray[2]), Integer.parseInt(dataArray[3]), 0, 0);
 
                 if (times.isEmpty()) {
-                    times.add(DataConvert.toOADate(cal.getTime()));
+                    times.add(DateUtil.toOADate(cal.getTime()));
                 }
                 aTrajInfo = new TrajectoryInfo();
                 aTrajInfo.startTime = cal.getTime();
@@ -364,6 +369,19 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
         aLayer.setVisible(true);
         //LegendScheme aLS = LegendManage.createUniqValueLegendScheme(aLayer, 1, trajeoryNumber);
         aLayer.updateLegendScheme(LegendType.UniqueValue, "TrajID");
+        LegendScheme ls = aLayer.getLegendScheme();
+        int i = 0;
+        for (ColorBreak cb : ls.getLegendBreaks()) {
+            PolylineBreak plb = (PolylineBreak) cb;
+            plb.setDrawSymbol(true);
+            plb.setSymbolInterval(6);
+            plb.setSize(2);
+            if (i == PointStyle.values().length) {
+                i = 0;
+            }
+            plb.setSymbolStyle(PointStyle.values()[i]);
+            i += 1;
+        }
         //aLS.setFieldName("TrajID");
         //aLayer.setLegendScheme(aLS);
 
@@ -607,5 +625,105 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
 
         return aLayer;
     }
+
+    /**
+     * Get XYDataset
+     *
+     * @param varIndex Variable index
+     * @return XYDataset
+     */
+    public XYListDataset getXYDataset(int varIndex) {
+        XYListDataset dataset = new XYListDataset();
+        Calendar cal = Calendar.getInstance();
+        int trajNum = 1;
+        for (int t = 0; t < fileNames.size(); t++) {
+            try {
+                String aFile = fileNames.get(t);
+                BufferedReader sr = new BufferedReader(new FileReader(new File(aFile)));
+                String aLine;
+                String[] dataArray;
+                int i;
+
+                //Record #1
+                sr.readLine();
+
+                //Record #2
+                for (i = 0; i < meteoFileNums.get(t); i++) {
+                    sr.readLine();
+                }
+
+                //Record #3
+                sr.readLine();
+
+                //Record #4             
+                for (i = 0; i < trajeoryNums.get(t); i++) {
+                    sr.readLine();
+                }
+
+                //Record #5
+                sr.readLine();
+
+                //Record #6
+                int TrajIdx;
+                List<PointD> pList;
+                List<List<PointD>> PointList = new ArrayList<List<PointD>>();
+                for (i = 0; i < trajeoryNums.get(t); i++) {
+                    pList = new ArrayList<PointD>();
+                    PointList.add(pList);
+                }
+                PointD aPoint;
+                //ArrayList polylines = new ArrayList();
+                while (true) {
+                    aLine = sr.readLine();
+                    if (aLine == null) {
+                        break;
+                    }
+                    if (aLine.isEmpty()) {
+                        continue;
+                    }
+                    aLine = aLine.trim();
+                    dataArray = aLine.split("\\s+");
+                    TrajIdx = Integer.parseInt(dataArray[0]) - 1;
+                    int y = Integer.parseInt(dataArray[2]);
+                    if (y < 100) {
+                        if (y > 50) {
+                            y = 1900 + y;
+                        } else {
+                            y = 2000 + y;
+                        }
+                    }
+                    cal.set(y, Integer.parseInt(dataArray[3]) - 1,
+                            Integer.parseInt(dataArray[4]), Integer.parseInt(dataArray[5]), 0, 0);
+
+                    aPoint = new PointD();
+                    aPoint.X = DateUtil.toOADate(cal.getTime());
+                    aPoint.Y = Double.parseDouble(dataArray[varIndex]);
+                    PointList.get(TrajIdx).add(aPoint);
+                }
+
+                //SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHH");
+                for (i = 0; i < trajeoryNums.get(t); i++) {
+                    int n = PointList.get(i).size();
+                    double[] xvs = new double[n];
+                    double[] yvs = new double[n];
+                    for (int j = 0; j < n; j++) {
+                        xvs[j] = PointList.get(i).get(j).X;
+                        yvs[j] = PointList.get(i).get(j).Y;
+                    }
+                    dataset.addSeries("Traj_" + String.valueOf(trajNum), xvs, yvs);
+                    trajNum += 1;
+                }
+
+                sr.close();
+            } catch (IOException ex) {
+                Logger.getLogger(HYSPLITTrajDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (Exception ex) {
+                Logger.getLogger(HYSPLITTrajDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        return dataset;
+    }
+
     // </editor-fold>
 }

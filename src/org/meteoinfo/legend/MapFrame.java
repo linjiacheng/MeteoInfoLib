@@ -608,7 +608,7 @@ public class MapFrame extends ItemNode {
      *
      * @return Grid x delta
      */
-    public float getGridXDelt() {
+    public double getGridXDelt() {
         return _mapView.getGridXDelt();
     }
 
@@ -617,7 +617,7 @@ public class MapFrame extends ItemNode {
      *
      * @param delta Grid x delta
      */
-    public void setGridXDelt(float delta) {
+    public void setGridXDelt(double delta) {
         _mapView.setGridXDelt(delta);
     }
 
@@ -626,7 +626,7 @@ public class MapFrame extends ItemNode {
      *
      * @return Grid y delta
      */
-    public float getGridYDelt() {
+    public double getGridYDelt() {
         return _mapView.getGridYDelt();
     }
 
@@ -635,7 +635,7 @@ public class MapFrame extends ItemNode {
      *
      * @param value Grid y delta
      */
-    public void setGridYDelt(float value) {
+    public void setGridYDelt(double value) {
         _mapView.setGridYDelt(value);
     }
 

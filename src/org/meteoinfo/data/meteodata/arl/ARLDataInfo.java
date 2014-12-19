@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.meteoinfo.data.meteodata.MeteoDataType;
+import org.meteoinfo.global.util.DateUtil;
 import org.meteoinfo.projection.proj4j.proj.Projection;
 import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
@@ -416,7 +417,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
 
             List<Double> values = new ArrayList<Double>();
             for (Date t : times) {
-                values.add(DataConvert.toOADate(t));
+                values.add(DateUtil.toOADate(t));
             }
             Dimension tDim = new Dimension(DimensionType.T);
             tDim.setValues(values);
@@ -701,7 +702,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             gridData.xArray = Y;
             gridData.yArray = new double[tNum];
             for (int i = 0; i < tNum; i++) {
-                gridData.yArray[i] = DataConvert.toOADate(this.getTimes().get(i));
+                gridData.yArray[i] = DateUtil.toOADate(this.getTimes().get(i));
             }
 
             return gridData;
@@ -760,7 +761,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             gridData.xArray = X;
             gridData.yArray = new double[tNum];
             for (int i = 0; i < tNum; i++) {
-                gridData.yArray[i] = DataConvert.toOADate(this.getTimes().get(i));
+                gridData.yArray[i] = DateUtil.toOADate(this.getTimes().get(i));
             }
 
             return gridData;
@@ -934,7 +935,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             gridData.missingValue = missingValue;
             gridData.xArray = new double[tNum];
             for (int i = 0; i < tNum; i++) {
-                gridData.xArray[i] = DataConvert.toOADate(this.getTimes().get(i));
+                gridData.xArray[i] = DateUtil.toOADate(this.getTimes().get(i));
             }
             gridData.yArray = new double[lNum];
             for (int i = 0; i < lNum; i++) {
@@ -993,7 +994,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                 gridData = unpackARLGridData(dataBytes, xNum, yNum, aDL);
 
                 aValue = gridData[latIdx][lonIdx];
-                aGridData.xArray[t] = DataConvert.toOADate(this.getTimes().get(t));
+                aGridData.xArray[t] = DateUtil.toOADate(this.getTimes().get(t));
                 aGridData.data[0][t] = aValue;
             }
 

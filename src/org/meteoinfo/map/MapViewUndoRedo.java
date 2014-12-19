@@ -573,5 +573,71 @@ public class MapViewUndoRedo {
             mapView.paintLayers();
         }
     }
+    
+    class SmoothGraphicEdit extends AbstractUndoableEdit {
+        MapView mapView;
+        Graphic graphic;
+        List<PointD> oldPoints;
+        List<PointD> newPoints;
+        
+        public SmoothGraphicEdit(MapView mapView, Graphic graphic, List<PointD> points){
+            this.mapView = mapView;
+            this.graphic = graphic;
+            this.newPoints = points;
+            this.oldPoints = (List<PointD>)graphic.getShape().getPoints();
+        }
+        
+        @Override
+        public String getPresentationName() {
+            return "Resize a Graphic";
+        }
+        
+        @Override
+        public void undo() {
+            super.undo();
+            graphic.getShape().setPoints(oldPoints);
+            mapView.paintLayers();
+        }
+        
+        @Override
+        public void redo(){
+            super.redo();
+            graphic.getShape().setPoints(newPoints);
+            mapView.paintLayers();
+        }
+    }
+    
+    class SmoothFeatureEdit extends AbstractUndoableEdit {
+        MapView mapView;
+        Shape shape;
+        List<PointD> oldPoints;
+        List<PointD> newPoints;
+        
+        public SmoothFeatureEdit(MapView mapView, Shape shape, List<PointD> points){
+            this.mapView = mapView;
+            this.shape = shape;
+            this.newPoints = points;
+            this.oldPoints = (List<PointD>)shape.getPoints();
+        }
+        
+        @Override
+        public String getPresentationName() {
+            return "Resize a Graphic";
+        }
+        
+        @Override
+        public void undo() {
+            super.undo();
+            shape.setPoints(oldPoints);
+            mapView.paintLayers();
+        }
+        
+        @Override
+        public void redo(){
+            super.redo();
+            shape.setPoints(newPoints);
+            mapView.paintLayers();
+        }
+    }
     // </editor-fold>
 }

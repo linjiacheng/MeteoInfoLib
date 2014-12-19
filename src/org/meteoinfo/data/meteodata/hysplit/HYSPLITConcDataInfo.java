@@ -20,7 +20,6 @@ import org.meteoinfo.data.meteodata.Dimension;
 import org.meteoinfo.data.meteodata.DimensionType;
 import org.meteoinfo.data.meteodata.IGridDataInfo;
 import org.meteoinfo.data.meteodata.Variable;
-import org.meteoinfo.global.DataConvert;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -32,6 +31,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.meteoinfo.data.meteodata.MeteoDataType;
+import org.meteoinfo.global.util.DateUtil;
 
 /**
  *
@@ -232,7 +232,7 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
 
             List<Double> values = new ArrayList<Double>();
             for (Date t : sample_start) {
-                values.add(DataConvert.toOADate(t));
+                values.add(DateUtil.toOADate(t));
             }
             Dimension tDim = new Dimension(DimensionType.T);
             tDim.setValues(values);

@@ -19,7 +19,6 @@ import org.meteoinfo.data.meteodata.Dimension;
 import org.meteoinfo.data.meteodata.DimensionType;
 import org.meteoinfo.data.meteodata.IGridDataInfo;
 import org.meteoinfo.data.meteodata.Variable;
-import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.MIMath;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -35,6 +34,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.meteoinfo.data.meteodata.MeteoDataType;
+import org.meteoinfo.global.util.DateUtil;
 
 /**
  *
@@ -157,7 +157,7 @@ public class MICAPS4DataInfo extends DataInfo implements IGridDataInfo {
 
             Dimension tdim = new Dimension(DimensionType.T);
             double[] values = new double[1];
-            values[0] = DataConvert.toOADate(time);
+            values[0] = DateUtil.toOADate(time);
             tdim.setValues(values);
             this.setTimeDimension(tdim);
             Dimension zdim = new Dimension(DimensionType.Z);

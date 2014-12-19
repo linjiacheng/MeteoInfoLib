@@ -100,6 +100,16 @@ public class TableData {
     public void addColumn(DataColumn col) {
         dataTable.addColumn(col);
     }
+    
+    /**
+     * Add column
+     *
+     * @param index The index
+     * @param col The column
+     */
+    public void addColumn(int index, DataColumn col) {
+        dataTable.addColumn(index, col);
+    }
 
     /**
      * Add column
@@ -111,7 +121,22 @@ public class TableData {
         try {
             dataTable.addColumn(colName, dataType);
         } catch (Exception ex) {
-            Logger.getLogger(TimeSeriesData.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(TimeTableData.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    /**
+     * Add column
+     *
+     * @param index The index
+     * @param colName Column name
+     * @param dataType Data type
+     */
+    public void addColumn(int index, String colName, DataTypes dataType) {
+        try {
+            dataTable.addColumn(index, colName, dataType);
+        } catch (Exception ex) {
+            Logger.getLogger(TimeTableData.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -122,7 +147,7 @@ public class TableData {
         try {
             dataTable.addRow();
         } catch (Exception ex) {
-            Logger.getLogger(TimeSeriesData.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(TimeTableData.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -135,7 +160,7 @@ public class TableData {
         try {
             dataTable.addRow(row);
         } catch (Exception ex) {
-            Logger.getLogger(TimeSeriesData.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(TimeTableData.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     

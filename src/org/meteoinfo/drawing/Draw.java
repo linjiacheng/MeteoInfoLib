@@ -825,6 +825,100 @@ public class Draw {
     }
 
     /**
+     * Draw label point
+     *
+     * @param x X
+     * @param y Y
+     * @param font Font
+     * @param text Text
+     * @param color Color
+     * @param g Graphics2D
+     * @param rect The extent rectangle
+     * @param angle Angle
+     */
+    public static void drawLabelPoint(float x, float y, Font font, String text, Color color, float angle, Graphics2D g, Rectangle rect) {
+        FontMetrics metrics = g.getFontMetrics(font);
+        Dimension labSize = new Dimension(metrics.stringWidth(text), metrics.getHeight());
+        x = x - (float) labSize.getWidth() / 2;
+        y -= (float) labSize.getHeight() / 2;
+
+        float inx = x;
+        float iny = y;
+
+        AffineTransform tempTrans = g.getTransform();
+        if (angle != 0) {
+            AffineTransform myTrans = new AffineTransform();
+            myTrans.translate(x, y);
+            myTrans.rotate(angle * Math.PI / 180);
+            g.setTransform(myTrans);
+            x = 0;
+            y = 0;
+        }
+
+        g.setColor(color);
+        g.setFont(font);
+        g.drawString(text, x, y + metrics.getHeight() / 2);
+
+        if (rect != null) {
+            rect.x = (int) x;
+            rect.y = (int) y - metrics.getHeight() / 2;
+            rect.width = (int) labSize.getWidth();
+            rect.height = (int) labSize.getHeight();
+        }
+
+        if (angle != 0) {
+            g.setTransform(tempTrans);
+            if (rect != null) {
+                rect.x = (int) inx;
+                rect.y = (int) iny;
+            }
+        }
+    }
+
+    /**
+     * Draw label point (270 degress)
+     *
+     * @param x X
+     * @param y Y
+     * @param font Font
+     * @param text Text
+     * @param color Color
+     * @param g Graphics2D
+     * @param rect The extent rectangle
+     */
+    public static void drawLabelPoint_270(float x, float y, Font font, String text, Color color, Graphics2D g, Rectangle rect) {
+        FontMetrics metrics = g.getFontMetrics(font);
+        Dimension labSize = new Dimension(metrics.stringWidth(text), metrics.getHeight());
+
+        float inx = x;
+        float iny = y;
+
+        AffineTransform tempTrans = g.getTransform();
+        float angle = 270;
+        g.translate(x, y);
+        g.rotate(angle * Math.PI / 180);
+        x = 0;
+        y = 0;
+
+        g.setColor(color);
+        g.setFont(font);
+        g.drawString(text, x - labSize.width / 2, y + labSize.height * 3 / 4);
+
+        if (rect != null) {
+            rect.x = (int) x;
+            rect.y = (int) y - metrics.getHeight() / 2;
+            rect.width = (int) labSize.getWidth();
+            rect.height = (int) labSize.getHeight();
+        }
+
+        g.setTransform(tempTrans);
+        if (rect != null) {
+            rect.x = (int) inx;
+            rect.y = (int) iny;
+        }
+    }
+
+    /**
      * Draw station model shape
      *
      * @param aColor Color
@@ -1042,6 +1136,32 @@ public class Draw {
         for (int i = 0; i < points.length; i++) {
             if (i == 0) {
                 path.moveTo(points[i].X, points[i].Y);
+            } else {
+                path.lineTo(points[i].X, points[i].Y);
+            }
+        }
+
+        g.draw(path);
+    }
+
+    /**
+     * Draw polyline
+     *
+     * @param points The points array
+     * @param g Graphics2D
+     * @param mvIdx Missing value index list
+     */
+    public static void drawPolyline(PointF[] points, Graphics2D g, List<Integer> mvIdx) {
+        GeneralPath path = new GeneralPath(GeneralPath.WIND_EVEN_ODD, points.length - mvIdx.size());
+        boolean isNew = true;
+        for (int i = 0; i < points.length; i++) {
+            if (mvIdx.contains(i)) {
+                isNew = true;
+                continue;
+            }
+            if (isNew) {
+                path.moveTo(points[i].X, points[i].Y);
+                isNew = false;
             } else {
                 path.lineTo(points[i].X, points[i].Y);
             }
@@ -1279,6 +1399,153 @@ public class Draw {
     }
 
     /**
+     * Draw polyline
+     *
+     * @param points The points
+     * @param aPLB The polyline break
+     * @param g Graphics2D
+     * @param mvIdx Missing value index list
+     */
+    public static void drawPolyline(PointF[] points, PolylineBreak aPLB, Graphics2D g, List<Integer> mvIdx) {
+        if (aPLB.getUsingDashStyle()) {
+            g.setColor(aPLB.getColor());
+            float[] dashPattern = getDashPattern(aPLB.getStyle());
+            g.setStroke(new BasicStroke(aPLB.getSize(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dashPattern, 0.0f));
+            if (mvIdx.size() > 0) {
+                drawPolyline(points, g, mvIdx);
+            } else {
+                drawPolyline(points, g);
+            }
+
+            //Draw symbol            
+            if (aPLB.getDrawSymbol()) {
+                Object rend = g.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
+                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                for (int i = 0; i < points.length; i++) {
+                    if (mvIdx.contains(i)) {
+                        continue;
+                    }
+
+                    if (i % aPLB.getSymbolInterval() == 0) {
+                        drawPoint(aPLB.getSymbolStyle(), points[i], aPLB.getSymbolColor(), aPLB.getSymbolColor(),
+                                aPLB.getSymbolSize(), true, false, g);
+                    }
+                }
+                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, rend);
+            }
+        } else {
+            Polyline aPLine = new Polyline();
+            aPLine.setPoints(points);
+            List<double[]> pos = aPLine.getPositions(30);
+            float aSize = 16;
+            int i;
+            switch (aPLB.getStyle()) {
+                case ColdFront:
+                    if (pos != null) {
+                        PointBreak aPB = new PointBreak();
+                        aPB.setSize(aSize);
+                        aPB.setColor(Color.blue);
+                        aPB.setStyle(PointStyle.UpTriangle);
+                        aPB.setOutlineColor(Color.blue);
+                        aPB.setDrawFill(true);
+                        aPB.setDrawOutline(true);
+                        for (i = 0; i < pos.size(); i++) {
+                            aPB.setAngle((float) pos.get(i)[2]);
+                            drawPoint_Simple_Up(new PointF((float) pos.get(i)[0], (float) pos.get(i)[1]), aPB, g);
+                        }
+                    }
+
+                    g.setColor(Color.blue);
+                    g.setStroke(new BasicStroke(aPLB.getSize()));
+                    drawPolyline(points, g);
+                    break;
+                case WarmFront:
+                    if (pos != null) {
+                        PointBreak aPB = new PointBreak();
+                        aPB.setSize(aSize);
+                        aPB.setColor(Color.red);
+                        aPB.setStyle(PointStyle.UpSemiCircle);
+                        aPB.setOutlineColor(Color.red);
+                        aPB.setDrawFill(true);
+                        aPB.setDrawOutline(true);
+                        for (i = 0; i < pos.size(); i++) {
+                            aPB.setAngle((float) pos.get(i)[2]);
+                            drawPoint_Simple(new PointF((float) pos.get(i)[0], (float) pos.get(i)[1]), aPB, g);
+                        }
+                    }
+
+                    g.setColor(Color.red);
+                    g.setStroke(new BasicStroke(aPLB.getSize()));
+                    drawPolyline(points, g);
+                    break;
+                case OccludedFront:
+                    Color aColor = new Color(255, 0, 255);
+                    if (pos != null) {
+                        PointBreak aPB = new PointBreak();
+                        aPB.setSize(aSize);
+                        aPB.setColor(aColor);
+                        aPB.setStyle(PointStyle.UpTriangle);
+                        aPB.setOutlineColor(aColor);
+                        aPB.setDrawFill(true);
+                        aPB.setDrawOutline(true);
+                        for (i = 0; i < pos.size(); i += 2) {
+                            aPB.setAngle((float) pos.get(i)[2]);
+                            drawPoint_Simple_Up(new PointF((float) pos.get(i)[0], (float) pos.get(i)[1]), aPB, g);
+                        }
+
+                        aPB = new PointBreak();
+                        aPB.setSize(aSize);
+                        aPB.setColor(aColor);
+                        aPB.setStyle(PointStyle.UpSemiCircle);
+                        aPB.setOutlineColor(aColor);
+                        aPB.setDrawFill(true);
+                        aPB.setDrawOutline(true);
+                        for (i = 1; i < pos.size(); i += 2) {
+                            aPB.setAngle((float) pos.get(i)[2]);
+                            drawPoint_Simple(new PointF((float) pos.get(i)[0], (float) pos.get(i)[1]), aPB, g);
+                        }
+                    }
+
+                    g.setColor(aColor);
+                    g.setStroke(new BasicStroke(aPLB.getSize()));
+                    drawPolyline(points, g);
+                    break;
+                case StationaryFront:
+                    if (pos != null) {
+                        PointBreak aPB = new PointBreak();
+                        aPB.setSize(aSize);
+                        aPB.setColor(Color.blue);
+                        aPB.setStyle(PointStyle.UpTriangle);
+                        aPB.setOutlineColor(Color.blue);
+                        aPB.setDrawFill(true);
+                        aPB.setDrawOutline(true);
+                        for (i = 0; i < pos.size(); i += 2) {
+                            aPB.setAngle((float) pos.get(i)[2]);
+                            drawPoint_Simple_Up(new PointF((float) pos.get(i)[0], (float) pos.get(i)[1]), aPB, g);
+                        }
+
+                        aPB = new PointBreak();
+                        aPB.setSize(aSize);
+                        aPB.setColor(Color.red);
+                        aPB.setStyle(PointStyle.DownSemiCircle);
+                        aPB.setOutlineColor(Color.red);
+                        aPB.setDrawFill(true);
+                        aPB.setDrawOutline(true);
+                        for (i = 1; i < pos.size(); i += 2) {
+                            aPB.setAngle((float) pos.get(i)[2]);
+                            drawPoint_Simple(new PointF((float) pos.get(i)[0], (float) pos.get(i)[1]), aPB, g);
+                        }
+                    }
+
+                    g.setColor(Color.blue);
+                    g.setStroke(new BasicStroke(aPLB.getSize()));
+                    drawPolyline(points, g);
+                    break;
+            }
+        }
+    }
+
+    /**
      * Draw polyline symbol
      *
      * @param aP The point
@@ -1320,6 +1587,131 @@ public class Draw {
             if (aPLB.getDrawSymbol()) {
                 drawPoint(aPLB.getSymbolStyle(), points[1], aPLB.getSymbolColor(), aPLB.getSymbolColor(), aPLB.getSymbolSize(), true, false, g);
                 drawPoint(aPLB.getSymbolStyle(), points[2], aPLB.getSymbolColor(), aPLB.getSymbolColor(), aPLB.getSymbolSize(), true, false, g);
+            }
+        } else {
+            PointF[] points = new PointF[2];
+            PointF aPoint = new PointF(0, 0);
+            aPoint.X = aP.X - width / 2;
+            aPoint.Y = aP.Y;
+            points[0] = aPoint;
+            aPoint = new PointF();
+            aPoint.X = aP.X + width / 2;
+            aPoint.Y = aP.Y;
+            points[1] = aPoint;
+            float lineWidth = 2.0f;
+            switch (aPLB.getStyle()) {
+                case ColdFront:
+                    PointBreak aPB = new PointBreak();
+                    aPB.setSize(14);
+                    aPB.setColor(Color.blue);
+                    aPB.setStyle(PointStyle.UpTriangle);
+                    aPB.setOutlineColor(Color.blue);
+                    aPB.setDrawFill(true);
+                    aPB.setDrawOutline(true);
+                    drawPoint_Simple(new PointF(aP.X - aPB.getSize() * 2 / 3, aP.Y - aPB.getSize() / 4), aPB, g);
+                    drawPoint_Simple(new PointF(aP.X + aPB.getSize() * 2 / 3, aP.Y - aPB.getSize() / 4), aPB, g);
+
+                    g.setColor(Color.blue);
+                    g.setStroke(new BasicStroke(lineWidth));
+                    drawPolyline(points, g);
+                    break;
+                case WarmFront:
+                    aPB = new PointBreak();
+                    aPB.setSize(14);
+                    aPB.setColor(Color.red);
+                    aPB.setStyle(PointStyle.UpSemiCircle);
+                    aPB.setOutlineColor(Color.red);
+                    aPB.setDrawFill(true);
+                    aPB.setDrawOutline(true);
+                    drawPoint_Simple(new PointF(aP.X - aPB.getSize() * 2 / 3, aP.Y), aPB, g);
+                    drawPoint_Simple(new PointF(aP.X + aPB.getSize() * 2 / 3, aP.Y), aPB, g);
+
+                    g.setColor(Color.red);
+                    g.setStroke(new BasicStroke(lineWidth));
+                    drawPolyline(points, g);
+                    break;
+                case OccludedFront:
+                    Color aColor = new Color(255, 0, 255);
+                    aPB = new PointBreak();
+                    aPB.setSize(14);
+                    aPB.setColor(aColor);
+                    aPB.setStyle(PointStyle.UpTriangle);
+                    aPB.setOutlineColor(aColor);
+                    aPB.setDrawFill(true);
+                    aPB.setDrawOutline(true);
+                    drawPoint_Simple(new PointF(aP.X - aPB.getSize() * 2 / 3, aP.Y - aPB.getSize() / 4), aPB, g);
+                    aPB = new PointBreak();
+                    aPB.setSize(14);
+                    aPB.setColor(aColor);
+                    aPB.setStyle(PointStyle.UpSemiCircle);
+                    aPB.setOutlineColor(aColor);
+                    aPB.setDrawFill(true);
+                    aPB.setDrawOutline(true);
+                    drawPoint_Simple(new PointF(aP.X + aPB.getSize() * 2 / 3, aP.Y), aPB, g);
+
+                    g.setColor(aColor);
+                    g.setStroke(new BasicStroke(lineWidth));
+                    drawPolyline(points, g);
+                    break;
+                case StationaryFront:
+                    aPB = new PointBreak();
+                    aPB.setSize(14);
+                    aPB.setColor(Color.blue);
+                    aPB.setStyle(PointStyle.UpTriangle);
+                    aPB.setOutlineColor(Color.blue);
+                    aPB.setDrawFill(true);
+                    aPB.setDrawOutline(true);
+                    drawPoint_Simple(new PointF(aP.X - aPB.getSize() * 2 / 3, aP.Y - aPB.getSize() / 4), aPB, g);
+                    aPB = new PointBreak();
+                    aPB.setSize(14);
+                    aPB.setColor(Color.red);
+                    aPB.setStyle(PointStyle.DownSemiCircle);
+                    aPB.setOutlineColor(Color.red);
+                    aPB.setDrawFill(true);
+                    aPB.setDrawOutline(true);
+                    drawPoint_Simple(new PointF(aP.X + aPB.getSize() * 2 / 3, aP.Y), aPB, g);
+
+                    g.setColor(Color.blue);
+                    g.setStroke(new BasicStroke(lineWidth));
+                    drawPolyline(points, g);
+                    break;
+            }
+        }
+    }
+    
+    /**
+     * Draw polyline symbol
+     *
+     * @param aP The point
+     * @param width The width
+     * @param height The height
+     * @param aPLB The polyline break
+     * @param g Graphics2D
+     */
+    public static void drawPolylineSymbol_S(PointF aP, float width, float height, PolylineBreak aPLB, Graphics2D g) {
+        if (aPLB.getUsingDashStyle()) {
+            PointF[] points = new PointF[2];
+            PointF aPoint = new PointF(0, 0);
+            aPoint.X = aP.X - width / 2;
+            aPoint.Y = aP.Y;
+            points[0] = aPoint;            
+            aPoint = new PointF();
+            aPoint.X = aP.X + width / 2;
+            aPoint.Y = aP.Y;
+            points[1] = aPoint;
+
+            g.setColor(aPLB.getColor());
+            float[] dashPattern = getDashPattern(aPLB.getStyle());
+            g.setStroke(new BasicStroke(aPLB.getSize(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dashPattern, 0.0f));
+
+            if (aPLB.getDrawPolyline()) {
+                drawPolyline(points, g);
+            }
+            g.setStroke(new BasicStroke());
+
+            //Draw symbol
+            if (aPLB.getDrawSymbol()) {
+                drawPoint(aPLB.getSymbolStyle(), aP, aPLB.getSymbolColor(), aPLB.getSymbolColor(), aPLB.getSymbolSize(), true, false, g);                
             }
         } else {
             PointF[] points = new PointF[2];
@@ -1902,6 +2294,45 @@ public class Draw {
                 }
             }
         }
+    }
+
+    /**
+     * Draw bar chart symbol
+     *
+     * @param aPoint Start point
+     * @param width Width
+     * @param height Height
+     * @param g Graphics2D
+     * @param aPGB Polygon beak
+     * @param isView3D Is view as 3D
+     * @param thickness 3D thickness
+     */
+    public static void drawBar(PointF aPoint, int width, int height, PolygonBreak aPGB, Graphics2D g, boolean isView3D,
+            int thickness) {
+        float y = aPoint.Y;
+        aPoint.Y = y - height;
+        if (isView3D) {
+            Color aColor = ColorUtil.modifyBrightness(aPGB.getColor(), 0.5f);
+            PointF[] points = new PointF[4];
+            points[0] = new PointF(aPoint.X, aPoint.Y);
+            points[1] = new PointF(aPoint.X + width, aPoint.Y);
+            points[2] = new PointF(points[1].X + thickness, points[1].Y - thickness);
+            points[3] = new PointF(points[0].X + thickness, points[0].Y - thickness);
+            g.setColor(aColor);
+            Draw.fillPolygon(points, g);
+            g.setColor(aPGB.getOutlineColor());
+            Draw.drawPolyline(points, g);
+
+            points[0] = new PointF(aPoint.X + width, aPoint.Y);
+            points[1] = new PointF(aPoint.X + width, aPoint.Y + height);
+            points[2] = new PointF(points[1].X + thickness, points[1].Y - thickness);
+            points[3] = new PointF(points[0].X + thickness, points[0].Y - thickness);
+            g.setColor(aColor);
+            Draw.fillPolygon(points, g);
+            g.setColor(aPGB.getOutlineColor());
+            Draw.drawPolyline(points, g);
+        }
+        drawRectangle(aPoint, width, height, aPGB, g);
     }
 
     /**

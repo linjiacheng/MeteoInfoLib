@@ -28,7 +28,7 @@ import org.meteoinfo.global.util.GlobalUtil;
  *
  * @author wyq
  */
-public class TimeSeriesData extends TableData{
+public class TimeTableData extends TableData{
 
     // <editor-fold desc="Variables">
 
@@ -37,7 +37,7 @@ public class TimeSeriesData extends TableData{
     /**
      * Constructor
      */
-    public TimeSeriesData() {
+    public TimeTableData() {
         DataColumn col = new DataColumn("Time", DataTypes.Date);
         dataTable.addColumn(col);
     }

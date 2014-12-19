@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.meteoinfo.data.mapdata.Field;
 import org.meteoinfo.global.MIMath;
 
 /**
@@ -264,6 +265,34 @@ public final class DataTable {
         DataColumn col = new DataColumn(columnName, dataType);
         addColumn(col);
         return col;
+    }
+    
+    /**
+     * Add a data column
+     *
+     * @param index The index
+     * @param columnName Data column name
+     * @param dataType Data type
+     * @return The data column
+     * @throws Exception
+     */
+    public DataColumn addColumn(int index, String columnName, DataTypes dataType) throws Exception {
+        DataColumn col = new DataColumn(columnName, dataType);
+        addColumn(index, col);
+        return col;
+    }
+    
+    /**
+     * Add a data column by index
+     * @param index The index
+     * @param column Data column
+     */
+    public void addColumn(int index, DataColumn column){
+        this.columns.add(index, column);
+        for (DataRow row : this.rows){
+            row.setColumns(columns);
+            row.addColumn(column);
+        }
     }
     
     /**
@@ -560,6 +589,37 @@ public final class DataTable {
         table.readOnly = this.readOnly;
         for (DataColumn col : this.columns){
             DataColumn newcol = (DataColumn)col.clone();
+            //newcol.setTable(table);
+            table.addColumn(newcol);
+        }
+        
+        for (DataRow row : this.rows){
+            try {
+                DataRow newrow = this.newRow();
+                newrow.copyFrom(row);
+                table.addRow(newrow);
+            } catch (Exception ex) {
+                Logger.getLogger(DataTable.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        return table;
+    }
+    
+    /**
+     * Clone table - Vectorlayer with fields
+     * @return DataTable
+     */
+    public DataTable cloneTable_Field(){
+        DataTable table = new DataTable();
+        table.tableName = this.tableName;
+        table.tag = this.tag;
+        table.readOnly = this.readOnly;
+        for (DataColumn col : this.columns){
+            Field newcol = new Field(col.getColumnName(), col.getDataType());
+            newcol.setCaptionName(col.getCaptionName());
+            newcol.setColumnIndex(col.getColumnIndex());
+            newcol.setReadOnly(col.isReadOnly());
             //newcol.setTable(table);
             table.addColumn(newcol);
         }

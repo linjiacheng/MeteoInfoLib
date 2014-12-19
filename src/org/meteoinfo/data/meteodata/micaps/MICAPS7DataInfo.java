@@ -34,9 +34,9 @@ import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.data.meteodata.TrajDataInfo;
 import org.meteoinfo.data.meteodata.Variable;
 import org.meteoinfo.data.meteodata.hysplit.TrajectoryInfo;
-import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
+import org.meteoinfo.global.util.DateUtil;
 import org.meteoinfo.table.DataTypes;
 import org.meteoinfo.layer.LayerDrawType;
 import org.meteoinfo.layer.VectorLayer;
@@ -174,7 +174,7 @@ public class MICAPS7DataInfo extends DataInfo implements TrajDataInfo {
                         Calendar cal = new GregorianCalendar(year, Integer.parseInt(dataArray[1]) - 1,
                                 Integer.parseInt(dataArray[2]), Integer.parseInt(dataArray[3]), 0, 0);
                         if (times.isEmpty()) {
-                            times.add(DataConvert.toOADate(cal.getTime()));
+                            times.add(DateUtil.toOADate(cal.getTime()));
                         }
 
                         aTrajInfo.startTime = cal.getTime();

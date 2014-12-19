@@ -529,7 +529,7 @@ public class LayoutMap extends LayoutElement {
      *
      * @return Grid x delt
      */
-    public float getGridXDelt() {
+    public double getGridXDelt() {
         return _mapFrame.getGridXDelt();
     }
 
@@ -538,7 +538,7 @@ public class LayoutMap extends LayoutElement {
      *
      * @param value The value
      */
-    public void setGridXDelt(float value) {
+    public void setGridXDelt(double value) {
         _mapFrame.setGridXDelt(value);
     }
 
@@ -547,7 +547,7 @@ public class LayoutMap extends LayoutElement {
      *
      * @return Grid y delt
      */
-    public float getGridYDelt() {
+    public double getGridYDelt() {
         return _mapFrame.getGridYDelt();
     }
 
@@ -556,7 +556,7 @@ public class LayoutMap extends LayoutElement {
      *
      * @param value Grid y delt
      */
-    public void setGridYDelt(float value) {
+    public void setGridYDelt(double value) {
         _mapFrame.setGridYDelt(value);
     }
 
@@ -1286,7 +1286,7 @@ public class LayoutMap extends LayoutElement {
         /**
          * Set grid tick line length
          *
-         * @param Grid tick line length
+         * @param value tick line length
          */
         public void setTickLineLength(int value) {
             _mapFrame.setTickLineLength(value);
@@ -1407,7 +1407,7 @@ public class LayoutMap extends LayoutElement {
          *
          * @return Grid x delt
          */
-        public float getGridXDelt() {
+        public double getGridXDelt() {
             return _mapFrame.getGridXDelt();
         }
 
@@ -1416,7 +1416,7 @@ public class LayoutMap extends LayoutElement {
          *
          * @param value The value
          */
-        public void setGridXDelt(float value) {
+        public void setGridXDelt(double value) {
             _mapFrame.setGridXDelt(value);
         }
 
@@ -1425,7 +1425,7 @@ public class LayoutMap extends LayoutElement {
          *
          * @return Grid y delt
          */
-        public float getGridYDelt() {
+        public double getGridYDelt() {
             return _mapFrame.getGridYDelt();
         }
 
@@ -1434,7 +1434,7 @@ public class LayoutMap extends LayoutElement {
          *
          * @param value Grid y delt
          */
-        public void setGridYDelt(float value) {
+        public void setGridYDelt(double value) {
             _mapFrame.setGridYDelt(value);
         }
 

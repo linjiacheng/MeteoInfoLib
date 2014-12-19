@@ -112,6 +112,14 @@ public final class AttributeTable implements Cloneable {
 
     // <editor-fold desc="Get Set Methods">
     /**
+     * Get file
+     * @return File
+     */
+    public File getFile(){
+        return this._file;
+    }
+    
+    /**
      * Get record number
      *
      * @return

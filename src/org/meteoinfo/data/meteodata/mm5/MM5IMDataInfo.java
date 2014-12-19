@@ -24,6 +24,7 @@ import org.meteoinfo.data.meteodata.IGridDataInfo;
 import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.data.meteodata.Variable;
 import org.meteoinfo.global.DataConvert;
+import org.meteoinfo.global.util.DateUtil;
 import org.meteoinfo.global.util.GlobalUtil;
 
 /**
@@ -111,7 +112,7 @@ public class MM5IMDataInfo extends DataInfo implements IGridDataInfo {
             
             List<Double> values = new ArrayList<Double>();
             for (Date t : times) {
-                values.add(DataConvert.toOADate(t));
+                values.add(DateUtil.toOADate(t));
             }
             Dimension tDim = new Dimension(DimensionType.T);
             tDim.setValues(values);

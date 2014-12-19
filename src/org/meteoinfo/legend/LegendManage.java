@@ -55,7 +55,7 @@ public class LegendManage {
         boolean hasUndef = aGridData.getMaxMinValue(maxmin);
         double MinData = maxmin[1];
         double MaxData = maxmin[0];
-
+        
         CValues = createContourValues(MinData, MaxData);
         colors = createRainBowColors(CValues.length + 1);
 
@@ -73,7 +73,7 @@ public class LegendManage {
             aLS = createGraduatedLegendScheme(CValues, colors,
                     aST, MinData, MaxData, hasUndef, aGridData.missingValue);
         }
-
+        
         return aLS;
     }
 
@@ -107,7 +107,7 @@ public class LegendManage {
             aLS = createGraduatedLegendScheme(CValues, colors,
                     aST, MinData, MaxData, hasNoData, stationData.missingValue);
         }
-
+        
         return aLS;
     }
 
@@ -181,9 +181,9 @@ public class LegendManage {
             aPGB.setEndValue(0);
             aPGB.setCaption("");
             legendScheme.getLegendBreaks().add(aPGB);
-
+            
         }
-
+        
         return legendScheme;
     }
 
@@ -230,7 +230,7 @@ public class LegendManage {
                     aPB.setDrawFill(true);
                     aPB.setDrawShape(true);
                     aPB.setCaption(captions.get(i - 1));
-
+                    
                     legendScheme.getLegendBreaks().add(aPB);
                 }
                 legendScheme.setHasNoData(false);
@@ -249,7 +249,7 @@ public class LegendManage {
                     aPLB.setCaption(captions.get(i - 1));
                     aPLB.setSymbolColor(aPLB.getColor());
                     aPLB.setSymbolStyle(PointStyle.Circle);
-
+                    
                     legendScheme.getLegendBreaks().add(aPLB);
                 }
                 legendScheme.setHasNoData(false);
@@ -273,7 +273,95 @@ public class LegendManage {
                 legendScheme.setHasNoData(false);
                 break;
         }
+        
+        return legendScheme;
+    }
 
+    /**
+     * Create unique value legend scheme
+     *
+     * @param n Legend break number
+     * @param aST The shape type
+     * @return The legend scheme
+     */
+    public static LegendScheme createUniqValueLegendScheme(int n, ShapeTypes aST) {
+        LegendScheme legendScheme = new LegendScheme(aST);
+        legendScheme.setLegendType(LegendType.UniqueValue);
+        legendScheme.setShapeType(aST);
+        Color[] colors;
+        
+        if (n <= 13) {
+            colors = LegendManage.createRainBowColors(n);
+        } else {
+            colors = LegendManage.createRandomColors(n);
+        }
+        
+        int i;
+        switch (aST) {
+            case Point:
+            case PointZ:
+                for (i = 0; i < colors.length; i++) {
+                    PointBreak aPB = new PointBreak();
+                    aPB.setColor(colors[i]);
+                    aPB.setStartValue(i);
+                    aPB.setEndValue(i);
+                    aPB.setSize(6);
+                    aPB.setStyle(PointStyle.Circle);
+                    aPB.setOutlineColor(Color.black);
+                    aPB.setNoData(false);
+                    aPB.setDrawOutline(true);
+                    aPB.setDrawFill(true);
+                    aPB.setDrawShape(true);
+                    aPB.setCaption(String.valueOf(i));
+                    
+                    legendScheme.getLegendBreaks().add(aPB);
+                }
+                legendScheme.setHasNoData(false);
+                break;
+            case Polyline:
+            case PolylineM:
+            case PolylineZ:
+                int ii = 0;
+                for (i = 0; i < colors.length; i++) {
+                    PolylineBreak aPLB = new PolylineBreak();
+                    aPLB.setColor(colors[i]);
+                    aPLB.setStartValue(i);
+                    aPLB.setEndValue(i);
+                    aPLB.setSize(1.0F);
+                    aPLB.setStyle(LineStyles.Solid);
+                    aPLB.setDrawPolyline(true);
+                    aPLB.setCaption(String.valueOf(i));
+                    aPLB.setSymbolColor(aPLB.getColor());
+                    aPLB.setSymbolStyle(PointStyle.values()[ii]);
+                    ii += 1;
+                    if (ii == PointStyle.values().length) {
+                        ii = 0;
+                    }
+                    
+                    legendScheme.getLegendBreaks().add(aPLB);
+                }
+                legendScheme.setHasNoData(false);
+                break;
+            case Polygon:
+                for (i = 0; i < colors.length; i++) {
+                    PolygonBreak aPGB = new PolygonBreak();
+                    aPGB.setColor(colors[i]);
+                    aPGB.setOutlineColor(Color.gray);
+                    aPGB.setOutlineSize(1.0F);
+                    aPGB.setDrawFill(true);
+                    aPGB.setDrawOutline(true);
+                    aPGB.setDrawShape(true);
+                    aPGB.setStartValue(i);
+                    aPGB.setEndValue(i);
+                    aPGB.setCaption(String.valueOf(i));
+                    //aPGB.Style = (HatchStyle)idxList[i];
+
+                    legendScheme.getLegendBreaks().add(aPGB);
+                }
+                legendScheme.setHasNoData(false);
+                break;
+        }
+        
         return legendScheme;
     }
 
@@ -315,7 +403,7 @@ public class LegendManage {
             captions.add(String.format(dFormat, v));
             values.add(String.valueOf(v));
         }
-
+        
         return createUniqValueLegendScheme(values, captions, colors, aST, min, max, hasNodata, unDef);
     }
 
@@ -332,7 +420,7 @@ public class LegendManage {
         double[] CValues;
         Color[] colors;
         List<Double> valueList = new ArrayList<Double>();
-
+        
         switch (aLayer.getShapeType()) {
             case Point:
                 for (Shape aPS : aLayer.getShapes()) {
@@ -357,12 +445,12 @@ public class LegendManage {
                 }
                 break;
         }
-
+        
         CValues = new double[valueList.size()];
         for (int i = 0; i < valueList.size(); i++) {
             CValues[i] = valueList.get(i);
         }
-
+        
         if (CValues.length <= 13) {
             colors = createRainBowColors(CValues.length);
         } else {
@@ -373,10 +461,10 @@ public class LegendManage {
         for (int i = 1; i < newcolors.length; i++) {
             newcolors[i] = colors[i - 1];
         }
-
+        
         aLS = createUniqValueLegendScheme(CValues, newcolors,
                 aLayer.getShapeType(), min, max, false, -9999);
-
+        
         return aLS;
     }
 
@@ -436,7 +524,7 @@ public class LegendManage {
                                     + " - " + DataConvert.removeTailingZeros(aPB.getEndValue().toString()));
                         }
                     }
-
+                    
                     legendScheme.getLegendBreaks().add(aPB);
                 }
                 legendScheme.setHasNoData(false);
@@ -490,7 +578,7 @@ public class LegendManage {
                     if (i < PointStyle.values().length) {
                         aPLB.setSymbolStyle(PointStyle.values()[i]);
                     }
-
+                    
                     legendScheme.getLegendBreaks().add(aPLB);
                 }
                 legendScheme.setHasNoData(false);
@@ -559,7 +647,7 @@ public class LegendManage {
                                     + " - " + DataConvert.removeTailingZeros(aCB.getEndValue().toString()));
                         }
                     }
-
+                    
                     legendScheme.getLegendBreaks().add(aCB);
                 }
                 legendScheme.setHasNoData(false);
@@ -575,7 +663,7 @@ public class LegendManage {
                 }
                 break;
         }
-
+        
         return legendScheme;
     }
 
@@ -592,7 +680,7 @@ public class LegendManage {
         int sR, sG, sB, eR, eG, eB;
         int rStep, gStep, bStep;
         int i;
-
+        
         sR = sColor.getRed();
         sG = sColor.getGreen();
         sB = sColor.getBlue();
@@ -605,7 +693,7 @@ public class LegendManage {
         for (i = 0; i < colors.length; i++) {
             colors[i] = new Color(sR + i * rStep, sG + i * gStep, sB + i * bStep);
         }
-
+        
         return colors;
     }
 
@@ -621,13 +709,13 @@ public class LegendManage {
         double[] cValues;
         int cNum = (int) ((max - min) / interval) + 1;
         int i;
-
+        
         cValues = new double[cNum];
         for (i = 0; i < cNum; i++) {
             //cValues[i] = min + i * interval;
             cValues[i] = BigDecimalUtil.add(min, BigDecimalUtil.mul(i, interval));
         }
-
+        
         return cValues;
     }
 
@@ -641,12 +729,12 @@ public class LegendManage {
         Color[] colors = new Color[cNum];
         int i;
         Random randomColor = new Random();
-
+        
         for (i = 0; i < cNum; i++) {
             colors[i] = new Color(randomColor.nextInt(256),
                     randomColor.nextInt(256), randomColor.nextInt(256));
         }
-
+        
         return colors;
     }
 
@@ -661,9 +749,9 @@ public class LegendManage {
             //return getRainBowColors_HSL(cNum);
             return getRainBowColors_HSV(cNum);
         }
-
+        
         List<Color> colorList = new ArrayList<Color>();
-
+        
         colorList.add(new Color(160, 0, 200));
         colorList.add(new Color(110, 0, 220));
         colorList.add(new Color(30, 60, 255));
@@ -677,7 +765,7 @@ public class LegendManage {
         colorList.add(new Color(240, 130, 40));
         colorList.add(new Color(250, 60, 60));
         colorList.add(new Color(240, 0, 130));
-
+        
         switch (cNum) {
             case 12:
                 colorList.remove(new Color(0, 210, 140));
@@ -732,12 +820,12 @@ public class LegendManage {
                 colorList.remove(new Color(160, 0, 200));
                 break;
         }
-
+        
         Color[] colors = new Color[cNum];
         for (int i = 0; i < cNum; i++) {
             colors[i] = colorList.get(i);
         }
-
+        
         return colors;
     }
 
@@ -771,7 +859,7 @@ public class LegendManage {
         for (int i = 0; i < cNum; i++) {
             colors[cNum - i - 1] = Color.getHSBColor((float) (i * p), 1.0f, 1.0f);
         }
-
+        
         return colors;
     }
 
@@ -787,7 +875,7 @@ public class LegendManage {
         int i, cNum, aD, aE;
         double cDelt, range, newMin;
         String eStr;
-
+        
         range = BigDecimalUtil.sub(max, min);
         if (range == 0.0) {
             cNum = 1;
@@ -795,7 +883,7 @@ public class LegendManage {
             cValues[0] = min;
             return cValues;
         }
-
+        
         eStr = String.format("%1$E", range);
         aD = Integer.parseInt(eStr.substring(0, 1));
         aE = (int) Math.floor(Math.log10(range));
@@ -824,7 +912,7 @@ public class LegendManage {
             //newMin = Convert.ToInt32((min + cDelt) / Math.Pow(10, aE - 1)) * Math.Pow(10, aE - 1);
             newMin = (int) (min / cDelt + 1) * cDelt;
         }
-
+        
         if (newMin + (cNum - 1) * cDelt > max) {
             cNum -= 1;
         }
@@ -833,7 +921,7 @@ public class LegendManage {
             //cValues[i] = newMin + i * cDelt;
             cValues[i] = BigDecimalUtil.add(newMin, BigDecimalUtil.mul(i, cDelt));
         }
-
+        
         return cValues;
     }
 
@@ -896,7 +984,7 @@ public class LegendManage {
                 }
                 break;
         }
-
+        
         return new Object[]{cValues, colors};
     }
 

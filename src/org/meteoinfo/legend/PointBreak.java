@@ -52,7 +52,7 @@ public class PointBreak extends ColorBreak {
         _fontName = "Arial";
         _charIndex = 0;
         _outlineColor = Color.black;
-        _size = 1.0f;
+        _size = 6.0f;
         _style = PointStyle.Circle;
         _drawOutline = true;
         _drawFill = true;

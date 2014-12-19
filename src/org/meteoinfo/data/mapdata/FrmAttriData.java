@@ -16,6 +16,7 @@ package org.meteoinfo.data.mapdata;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -239,7 +240,7 @@ public class FrmAttriData extends javax.swing.JFrame {
         if (result == JOptionPane.YES_OPTION) {
             this.saveDataTable();
         } else {
-            _dataTable = (DataTable) _layer.getAttributeTable().getTable().clone();
+            _dataTable = _layer.getAttributeTable().getTable().cloneTable_Field();
         }
 
         DataTableModel dataTableModel = new DataTableModel(_dataTable) {
@@ -268,8 +269,8 @@ public class FrmAttriData extends javax.swing.JFrame {
                 return;
             }
             DataTypes dataType = frmField.getDataType();
-            try {
-                _dataTable.addColumn(fieldName, dataType);
+            try {                
+                _dataTable.addColumn(new Field(fieldName, dataType));
                 //this.jTable1.revalidate();
                 DataTableModel dataTableModel = new DataTableModel(_dataTable) {
                     @Override
@@ -345,7 +346,7 @@ public class FrmAttriData extends javax.swing.JFrame {
      */
     public void setLayer(VectorLayer aLayer) {
         _layer = aLayer;
-        _dataTable = (DataTable) _layer.getAttributeTable().getTable().clone();
+        _dataTable = _layer.getAttributeTable().getTable().cloneTable_Field();
         this.setTitle("Attribute Data - " + _layer.getLayerName());
         DataTableModel dataTableModel = new DataTableModel(_dataTable);
         this.jTable1.setModel(dataTableModel);
@@ -359,8 +360,11 @@ public class FrmAttriData extends javax.swing.JFrame {
 //            }
 //        }
 
-        _layer.getAttributeTable().setTable((DataTable) _dataTable.clone());
-        _layer.getAttributeTable().save();
+        _layer.getAttributeTable().setTable(_dataTable.cloneTable_Field());
+        if (new File(_layer.getFileName()).exists())
+            _layer.getAttributeTable().save();
+        else
+            _layer.saveFile();
     }
 
     /**

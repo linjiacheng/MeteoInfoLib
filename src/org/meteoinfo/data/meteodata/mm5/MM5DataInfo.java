@@ -23,6 +23,7 @@ import org.meteoinfo.data.meteodata.IGridDataInfo;
 import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.data.meteodata.Variable;
 import org.meteoinfo.global.DataConvert;
+import org.meteoinfo.global.util.DateUtil;
 import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.projection.Reproject;
@@ -286,7 +287,7 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
 
             List<Double> values = new ArrayList<Double>();
             for (Date t : times) {
-                values.add(DataConvert.toOADate(t));
+                values.add(DateUtil.toOADate(t));
             }
             Dimension tDim = new Dimension(DimensionType.T);
             tDim.setValues(values);
@@ -657,7 +658,7 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
             gridData.xArray = ydim.getValues();
             gridData.yArray = new double[tNum];
             for (i = 0; i < tNum; i++) {
-                gridData.yArray[i] = DataConvert.toOADate(this.getTimes().get(i));
+                gridData.yArray[i] = DateUtil.toOADate(this.getTimes().get(i));
             }
 
             return gridData;
@@ -713,7 +714,7 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
             gridData.xArray = xdim.getValues();
             gridData.yArray = new double[tNum];
             for (i = 0; i < tNum; i++) {
-                gridData.yArray[i] = DataConvert.toOADate(this.getTimes().get(i));
+                gridData.yArray[i] = DateUtil.toOADate(this.getTimes().get(i));
             }
 
             return gridData;

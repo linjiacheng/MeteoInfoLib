@@ -17,6 +17,7 @@ import org.meteoinfo.global.DataConvert;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import org.meteoinfo.global.util.DateUtil;
 
 /**
  *
@@ -748,7 +749,7 @@ public class Variable {
         List<Double> values = tDim.getDimValue();
         List<Date> times = new ArrayList<Date>();
         for (Double v : values) {
-            times.add(DataConvert.fromOADate(v));
+            times.add(DateUtil.fromOADate(v));
         }
 
         return times;

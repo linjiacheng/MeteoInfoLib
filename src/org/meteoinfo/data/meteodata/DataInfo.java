@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import org.meteoinfo.global.util.DateUtil;
 import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
 
@@ -137,7 +138,7 @@ public abstract class DataInfo {
         List<Date> times = new ArrayList<Date>();
         for (Double v : values)
         {
-            times.add(DataConvert.fromOADate(v));
+            times.add(DateUtil.fromOADate(v));
         }
         
         return times;
@@ -181,7 +182,7 @@ public abstract class DataInfo {
         List<Date> times = value;
         List<Double> values = new ArrayList<Double>();
         for (Date t : times){
-            values.add(DataConvert.toOADate(t));
+            values.add(DateUtil.toOADate(t));
         }
         _tDim.setValues(values);
     }

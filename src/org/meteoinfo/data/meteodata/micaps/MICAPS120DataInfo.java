@@ -21,7 +21,6 @@ import org.meteoinfo.data.meteodata.IStationDataInfo;
 import org.meteoinfo.data.meteodata.StationInfoData;
 import org.meteoinfo.data.meteodata.StationModelData;
 import org.meteoinfo.data.meteodata.Variable;
-import org.meteoinfo.global.DataConvert;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -37,6 +36,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.meteoinfo.data.meteodata.MeteoDataType;
+import org.meteoinfo.global.util.DateUtil;
 
 /**
  *
@@ -86,7 +86,7 @@ public class MICAPS120DataInfo extends DataInfo implements IStationDataInfo {
             //Set dimension and variables
             Dimension tdim = new Dimension(DimensionType.T);
             double[] values = new double[1];
-            values[0] = DataConvert.toOADate(time);
+            values[0] = DateUtil.toOADate(time);
             tdim.setValues(values);
             this.setTimeDimension(tdim);
             List<Variable> variables = new ArrayList<Variable>();

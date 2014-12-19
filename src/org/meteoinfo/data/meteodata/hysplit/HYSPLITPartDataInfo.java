@@ -21,7 +21,6 @@ import org.meteoinfo.data.meteodata.IStationDataInfo;
 import org.meteoinfo.data.meteodata.StationInfoData;
 import org.meteoinfo.data.meteodata.StationModelData;
 import org.meteoinfo.data.meteodata.Variable;
-import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.Extent;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -34,6 +33,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.meteoinfo.data.meteodata.MeteoDataType;
+import org.meteoinfo.global.util.DateUtil;
 
 /**
  *
@@ -97,7 +97,7 @@ public class HYSPLITPartDataInfo extends DataInfo implements IStationDataInfo {
 
             List<Double> values = new ArrayList<Double>();
             for (Date t : times) {
-                values.add(DataConvert.toOADate(t));
+                values.add(DateUtil.toOADate(t));
             }
             Dimension tDim = new Dimension(DimensionType.T);
             tDim.setValues(values);

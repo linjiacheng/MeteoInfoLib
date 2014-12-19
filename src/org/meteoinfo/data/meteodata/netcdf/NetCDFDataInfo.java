@@ -33,7 +33,6 @@ import static org.meteoinfo.data.meteodata.netcdf.TimeUnit.Minute;
 import static org.meteoinfo.data.meteodata.netcdf.TimeUnit.Month;
 import static org.meteoinfo.data.meteodata.netcdf.TimeUnit.Second;
 import static org.meteoinfo.data.meteodata.netcdf.TimeUnit.Year;
-import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
 import java.io.IOException;
@@ -966,7 +965,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 List<Date> times = this.getTimes(var, values);
                 List<Double> ts = new ArrayList<Double>();
                 for (Date t : times) {
-                    ts.add(DataConvert.toOADate(t));
+                    ts.add(DateUtil.toOADate(t));
                 }
 
                 Dimension tDim = this.findDimension(var.getDimension(0).getShortName());
@@ -1055,7 +1054,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                         List<Date> times = this.getTimes(var, values);
                         List<Double> ts = new ArrayList<Double>();
                         for (Date t : times) {
-                            ts.add(DataConvert.toOADate(t));
+                            ts.add(DateUtil.toOADate(t));
                         }
                         dim.setValues(ts);
                         this.setTimeDimension(dim);
@@ -1163,7 +1162,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                         List<Date> times = this.getTimes(aVar, values);
                         List<Double> ts = new ArrayList<Double>();
                         for (Date t : times) {
-                            ts.add(DataConvert.toOADate(t));
+                            ts.add(DateUtil.toOADate(t));
                         }
                         aDim.setValues(ts);
                         this.setTimeDimension(aDim);
@@ -1216,7 +1215,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
         }
         List<Double> values = new ArrayList<Double>();
         for (Date t : times) {
-            values.add(DataConvert.toOADate(t));
+            values.add(DateUtil.toOADate(t));
         }
         Dimension tDim = this.findDimension("TSTEP");
         if (tDim != null) {
@@ -1452,7 +1451,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 }
                 List<Double> values = new ArrayList<Double>();
                 for (Date t : times) {
-                    values.add(DataConvert.toOADate(t));
+                    values.add(DateUtil.toOADate(t));
                 }
                 tDim.setDimType(DimensionType.T);
                 //tDim.setDimName("times");

@@ -6,7 +6,7 @@ package org.meteoinfo.layout;
 
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
-import org.jfree.chart.JFreeChart;
+import org.meteoinfo.chart.Chart;
 import org.meteoinfo.global.PointF;
 
 /**
@@ -16,7 +16,7 @@ import org.meteoinfo.global.PointF;
 public class LayoutChart extends LayoutElement {
 
     // <editor-fold desc="Variables">
-    private JFreeChart chart;
+    private Chart chart;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -38,7 +38,7 @@ public class LayoutChart extends LayoutElement {
      *
      * @return The chart
      */
-    public JFreeChart getChart() {
+    public Chart getChart() {
         return chart;
     }
 
@@ -47,7 +47,7 @@ public class LayoutChart extends LayoutElement {
      *
      * @param value The chart
      */
-    public void setChart(JFreeChart value) {
+    public void setChart(Chart value) {
         chart = value;
     }
     // </editor-fold>
