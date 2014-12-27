@@ -28,8 +28,8 @@ public class GridLine {
         this.color = Color.LIGHT_GRAY;
         this.size = 1.0f;
         this.style = LineStyles.Dash;
-        this.drawXLine = true;
-        this.drawYLine = true;
+        this.drawXLine = false;
+        this.drawYLine = false;
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">

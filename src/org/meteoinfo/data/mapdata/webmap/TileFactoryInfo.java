@@ -165,8 +165,9 @@ public class TileFactoryInfo {
     }
 
     /**
-     *
-     * @return
+     * Get minimum zoom level
+     * 
+     * @return Minimum zoom level
      */
     public int getMinimumZoomLevel() {
         return minimumZoomLevel;
@@ -176,8 +177,9 @@ public class TileFactoryInfo {
 //        this.minimumZoomLevel = minimumZoomLevel;
 //    }
     /**
-     *
-     * @return
+     * Get maximum zoom level
+     * 
+     * @return Maximum zoom level
      */
     public int getMaximumZoomLevel() {
         return maximumZoomLevel;
@@ -188,8 +190,9 @@ public class TileFactoryInfo {
 //    }
 
     /**
-     *
-     * @return
+     * Get total map zoom
+     * 
+     * @return Total map zoom
      */
     public int getTotalMapZoom() {
         return totalMapZoom;
@@ -201,18 +204,20 @@ public class TileFactoryInfo {
      */
 
     /**
-     *
-     * @param zoom
-     * @return
+     * Get map width in tiles at zoom
+     * 
+     * @param zoom The zoom
+     * @return Map width
      */
     public int getMapWidthInTilesAtZoom(int zoom) {
         return mapWidthInTilesAtZoom[zoom];
     }
 
     /**
-     *
-     * @param zoom
-     * @return
+     * Get map center in pixels at zoom
+     * 
+     * @param zoom The zoom
+     * @return Map center
      */
     public Point2D getMapCenterInPixelsAtZoom(int zoom) {
         return mapCenterInPixelsAtZoom[zoom];
@@ -240,8 +245,9 @@ public class TileFactoryInfo {
      * Note that the URL can be a
      * <CODE>file:</CODE> url.
      *
+     * @param x X
+     * @param y Y
      * @param zoom the zoom level
-     * @param tilePoint the tile point
      * @param language The language
      * @return a valid url to load the tile
      */
@@ -265,18 +271,20 @@ public class TileFactoryInfo {
     }
 
     /**
-     *
-     * @param zoom
-     * @return
+     * Get longitude degree within pixels
+     * 
+     * @param zoom The zoom
+     * @return Longitude degree
      */
     public double getLongitudeDegreeWidthInPixels(int zoom) {
         return longitudeDegreeWidthInPixels[zoom];
     }
 
     /**
-     *
-     * @param zoom
-     * @return
+     * Get longitude radian width in pixels
+     * 
+     * @param zoom The zoom
+     * @return Longitude radian width
      */
     public double getLongitudeRadianWidthInPixels(int zoom) {
         return longitudeRadianWidthInPixels[zoom];
@@ -286,7 +294,7 @@ public class TileFactoryInfo {
      * A property indicating if the X coordinates of tiles go from right to left
      * or left to right.
      *
-     * @return
+     * @return Boolean
      */
     public boolean isXr2l() {
         return xr2l;
@@ -306,7 +314,7 @@ public class TileFactoryInfo {
      * A property indicating if the Y coordinates of tiles go from right to left
      * or left to right.
      *
-     * @return
+     * @return Boolean
      */
     public boolean isYt2b() {
         return yt2b;

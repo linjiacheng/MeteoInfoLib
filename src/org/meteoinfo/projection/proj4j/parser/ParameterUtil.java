@@ -9,8 +9,8 @@ public class ParameterUtil {
 
   /**
    * 
-   * @param s
-   * @return
+   * @param s Angle string
+   * @return Angle double value
    * @deprecated
    * @see Angle#parse(String)
    */

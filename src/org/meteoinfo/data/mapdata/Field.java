@@ -173,7 +173,7 @@ public class Field extends DataColumn {
      * Integer, Long, Float, Double, byte) L - Logic (True-False, Yes-No) F -
      * Float B - Double
      *
-     * @return
+     * @return Type character
      */
     public char getTypeCharacter() {
         switch (this.getDataType()) {

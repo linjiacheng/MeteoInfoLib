@@ -53,7 +53,7 @@ public class DataColumnCollection extends ArrayList<DataColumn>{
      * Add a data column
      * @param colName
      * @param dataType
-     * @return 
+     * @return The added data column
      */
     public DataColumn add(String colName, DataTypes dataType){
         DataColumn aCol = new DataColumn(colName, dataType);

@@ -212,7 +212,7 @@ public class FrmMeasurement extends javax.swing.JDialog {
     /**
      * Get measure type
      *
-     * @return
+     * @return Measure type
      */
     public MeasureTypes getMeasureType() {
         return _measureType;

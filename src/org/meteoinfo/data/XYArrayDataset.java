@@ -84,12 +84,19 @@ public class XYArrayDataset extends XYDataset {
      * @param ydata Y data
      * @param seriesKey Series key
      */
-    public XYArrayDataset(List<Double> xdata, List<Double> ydata, String seriesKey) {
+    public XYArrayDataset(List<Number> xdata, List<Number> ydata, String seriesKey) {
+        List<Double> nxdata = new ArrayList<Double>();
+        List<Double> nydata = new ArrayList<Double>();
+        for (int i = 0; i < xdata.size(); i++) {
+            nxdata.add(Double.parseDouble(xdata.get(i).toString()));
+            nydata.add(Double.parseDouble(ydata.get(i).toString()));
+        }
+        
         List<double[]> vdata = new ArrayList<double[]>();
         double v1, v2;
         for (int i = 0; i < xdata.size(); i++) {
-            v1 = xdata.get(i);            
-            v2 = ydata.get(i);
+            v1 = nxdata.get(i);            
+            v2 = nydata.get(i);
             vdata.add(new double[]{v1, v2});
         }
         seriesCount = 1;

@@ -211,7 +211,7 @@ public class MapLayer implements Cloneable {
     /**
      * Get legend scheme
      *
-     * @return
+     * @return Legend scheme
      */
     public LegendScheme getLegendScheme() {
         return _legendScheme;

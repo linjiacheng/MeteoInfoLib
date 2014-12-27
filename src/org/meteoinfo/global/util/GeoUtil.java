@@ -32,6 +32,8 @@ import org.w3c.dom.Document;
 public final class GeoUtil {
         
     /**
+     * @param zoom Zoom
+     * @param info Tile factory info
      * @return the size of the map at the given zoom, in tiles (num tiles tall
      *         by num tiles wide)
      */
@@ -40,7 +42,11 @@ public final class GeoUtil {
     }
     
     /**
-     * @returns true if this point in <em>tiles</em> is valid at this zoom level. For example,
+     * @param x X
+     * @param y Y
+     * @param zoomLevel Zoom level
+     * @param info Tile factory info
+     * @return true if this point in <em>tiles</em> is valid at this zoom level. For example,
      * if the zoom level is 0 (zoomed all the way out, where there is only
      * one tile), then x,y must be 0,0
      */
@@ -73,6 +79,8 @@ public final class GeoUtil {
      * 
      * @param c A lat/lon pair
      * @param zoomLevel the zoom level to extract the pixel coordinate for
+     * @param info Tile factory info
+     * @return Bitmap coordinate point
      */
     public static Point2D getBitmapCoordinate(GeoPosition c, int zoomLevel, TileFactoryInfo info) {
         return getBitmapCoordinate(c.getLatitude(), c.getLongitude(), zoomLevel, info);
@@ -83,10 +91,11 @@ public final class GeoUtil {
      * the appropriate point in <em>pixels</em>. The zoom level is necessary because
      * pixel coordinates are in terms of the zoom level
      * 
-     * 
-     * @param double latitude
-     * @param double longitude
+     * @param latitude Latitude
+     * @param longitude Longitude
      * @param zoomLevel the zoom level to extract the pixel coordinate for
+     * @param info Tile factory info
+     * @return Position point
      */
     public static Point2D getBitmapCoordinate(
             double latitude, 

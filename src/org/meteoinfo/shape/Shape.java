@@ -86,7 +86,7 @@ public class Shape {
     /**
      * Get if the shape is selected
      *
-     * @return
+     * @return Boolean
      */
     public boolean isSelected() {
         return _selected;

@@ -454,7 +454,7 @@ public class WebMapLayer extends MapLayer {
 
     /**
      * Get web map provider
-     * @return 
+     * @return Web map provider
      */
     public WebMapProvider getWebMapProvider() {
         return this.defaultProvider;

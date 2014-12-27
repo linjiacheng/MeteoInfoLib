@@ -72,8 +72,8 @@ public class DataConvert {
     /**
      * Convert byte to int - byte in Java is signed
      *
-     * @param b
-     * @return
+     * @param b Input byte
+     * @return Output integer
      */
     public static int byte2Int(byte b) {
         return b >= 0 ? (int) b : (int) (b + 256);
@@ -82,8 +82,8 @@ public class DataConvert {
     /**
      * Convert LittleEndian to BigEndian
      *
-     * @param bytes
-     * @return
+     * @param bytes Input LittleEndian byte array
+     * @return Output BigEndian byte array
      */
     public static byte[] littleToBig(byte[] bytes) {
         if (bytes == null) {
@@ -99,8 +99,8 @@ public class DataConvert {
     /**
      * Convert BigEndian to LittleEndian
      *
-     * @param bytes
-     * @return
+     * @param bytes Input BigEndian byte array
+     * @return Output LittleEndian byte array
      */
     public static byte[] bigToLittle(byte[] bytes) {
         return littleToBig(bytes);
@@ -110,7 +110,7 @@ public class DataConvert {
      * Convert int to byte array.
      *
      * @param i Int value
-     * @return
+     * @return Byte array
      */
     public static byte[] toBytes(int i) {
         byte[] bytes = new byte[4];
@@ -125,7 +125,7 @@ public class DataConvert {
      * Convert int to byte array - LittleEndian
      *
      * @param i Int value
-     * @return
+     * @return Byte array
      */
     public static byte[] toLittleBytes(int i) {
         byte[] bytes = new byte[4];

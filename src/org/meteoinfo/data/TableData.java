@@ -236,7 +236,7 @@ public class TableData {
                         value = Double.NaN;
                     break;
             }
-            if (!Double.isNaN(value))
+            if (!Double.isNaN(value) && !MIMath.doubleEquals(value, this.missingValue))
                 values.add(value);
         }
         

@@ -15,7 +15,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import org.meteoinfo.chart.plot.Plot;
 import org.meteoinfo.chart.plot.PlotType;
-import org.meteoinfo.chart.plot.XYPlot;
+import org.meteoinfo.chart.plot.XY1DPlot;
 import org.meteoinfo.global.PointF;
 
 /**
@@ -45,14 +45,13 @@ public class Chart {
     public Chart(Plot plot) {
         this.plot = plot;
         if (plot.getPlotType() == PlotType.XY)
-            this.legend = new ChartLegend((XYPlot)plot);
+            this.legend = new ChartLegend((XY1DPlot)plot);
         else {
-            this.legend = null;
-            this.drawLegend = false;
+            this.legend = null;            
         }
+        this.drawLegend = false;
         this.background = Color.white;
         this.drawBackground = false;
-        this.drawLegend = true;
         this.antiAlias = false;
     }
 

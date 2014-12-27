@@ -109,6 +109,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
@@ -409,7 +410,7 @@ public class MapView extends JPanel {
     /**
      * Get selected layer handle
      *
-     * @return
+     * @return Selected layer handle
      */
     public int getSelectedLayerHandle() {
         return this._selectedLayer;
@@ -427,7 +428,7 @@ public class MapView extends JPanel {
     /**
      * Get last added layer
      *
-     * @return
+     * @return Last added layer
      */
     public MapLayer getLastAddedLayer() {
         int hnd = 0;
@@ -2081,6 +2082,7 @@ public class MapView extends JPanel {
                     for (Shape shape : selShapes) {
                         moveShapeOnScreen(shape, _mouseDownPoint, new Point(e.getX(), e.getY()));
                     }
+                    slayer.updateExtent();
                     this.paintLayers();
                     UndoableEdit edit = (new MapViewUndoRedo()).new MoveFeaturesEdit(this, selShapes, _mouseDownPoint, new Point(e.getX(), e.getY()));
                     slayer.getUndoManager().addEdit(edit);
@@ -3329,6 +3331,32 @@ public class MapView extends JPanel {
 
         return aExtent;
     }
+    
+    /**
+     * Get layers whole extent
+     *
+     * @return The extent
+     */
+    public Extent getMeteoLayersExtent() {
+        Extent aExtent = null;
+        Extent bExtent;
+        int n = 0;
+        for (int i = 0; i < _layers.size(); i++) {
+            MapLayer layer = this._layers.get(i);
+            if (!layer.getFileName().isEmpty())
+                continue;
+            
+            bExtent = layer.getExtent();
+            if (n == 0) {
+                aExtent = bExtent;
+            } else {
+                aExtent = MIMath.getLagerExtent(aExtent, bExtent);
+            }
+            n++;
+        }
+
+        return aExtent;
+    }
 
     /**
      * Get layer handle from layer name
@@ -3847,6 +3875,18 @@ public class MapView extends JPanel {
         }
     }
 
+    /**
+     * Paint graphics
+     *
+     * @param g Graphics2D
+     * @param area Target rectangle area
+     */
+    public void paintGraphics(Graphics2D g, Rectangle2D area) {
+        Rectangle rect = new Rectangle((int)area.getX(), (int)area.getY(),
+                (int)area.getWidth(), (int) area.getHeight());
+        this.paintGraphics(g, rect);
+    }
+    
     /**
      * Paint graphics
      *
@@ -7267,7 +7307,7 @@ public class MapView extends JPanel {
      * @param baseGraphics Base graphics
      * @param selectedGraphics Selected graphics
      * @param lonShift Logitude shift
-     * @return
+     * @return Boolean
      */
     public boolean selectGraphics_back(Rectangle aRect, GraphicCollection baseGraphics, GraphicCollection selectedGraphics,
             double lonShift) {
@@ -7339,7 +7379,7 @@ public class MapView extends JPanel {
      * @param baseGraphics Base graphics
      * @param selectedGraphics Selected graphics
      * @param lonShift Logitude shift
-     * @return
+     * @return Boolean
      */
     public boolean selectGraphics(Rectangle aRect, GraphicCollection baseGraphics, GraphicCollection selectedGraphics,
             double lonShift) {
@@ -7409,7 +7449,7 @@ public class MapView extends JPanel {
      * @param screen
      * @param pt
      * @param limit
-     * @return
+     * @return Edge
      */
     private static Edge intersectElementEdge(Rectangle screen, PointF pt, float limit) {
         Rectangle.Float ptRect = new Rectangle.Float(pt.X - limit, pt.Y - limit, 2F * limit, 2F * limit);

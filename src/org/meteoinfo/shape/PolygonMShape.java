@@ -26,7 +26,7 @@ public class PolygonMShape extends PolygonShape{
     /**
      * Get M Array
      *
-     * @return
+     * @return M value array
      */
     public double[] getMArray() {
         double[] mArray = new double[this.getPoints().size()];

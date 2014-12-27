@@ -123,7 +123,7 @@ public final class DataTable {
     /**
      * Get data rows
      *
-     * @return: DataRowCollection The data rows
+     * @return DataRowCollection The data rows
      */
     public DataRowCollection getRows() {
         return this.rows;
@@ -151,7 +151,7 @@ public final class DataTable {
      *
      * @param row Row index
      * @param colName Column name
-     * @return: Object The value
+     * @return Object The value
      */
     public Object getValue(int row, String colName) {
         return this.rows.get(row).getValue(colName);
@@ -171,7 +171,7 @@ public final class DataTable {
     /**
      * Create a new data row
      *
-     * @return: DataRow The new data row
+     * @return DataRow The new data row
      * @throws java.lang.Exception
      */
     public DataRow newRow() throws Exception {

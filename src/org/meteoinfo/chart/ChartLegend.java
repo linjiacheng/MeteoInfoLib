@@ -32,7 +32,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import org.meteoinfo.chart.plot.PlotOrientation;
-import org.meteoinfo.chart.plot.XYPlot;
+import org.meteoinfo.chart.plot.XY1DPlot;
 
 /**
  *
@@ -41,7 +41,7 @@ import org.meteoinfo.chart.plot.XYPlot;
 public class ChartLegend {
     // <editor-fold desc="Variables">
 
-    private final XYPlot plot;
+    private final XY1DPlot plot;
     private LegendPosition position;
     private PlotOrientation orientation;
     private Color background;
@@ -68,7 +68,7 @@ public class ChartLegend {
      *
      * @param plot XYPlot
      */
-    public ChartLegend(XYPlot plot) {
+    public ChartLegend(XY1DPlot plot) {
         this.plot = plot;
         this.position = LegendPosition.BOTTOM;
         this.orientation = PlotOrientation.HORIZONTAL;

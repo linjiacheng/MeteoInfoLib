@@ -68,12 +68,16 @@ public class RasterLayer extends ImageLayer {
     /**
      * Get grid data
      *
-     * @return
+     * @return Grid data
      */
     public GridData getGridData() {
         return _gridData;
     }
 
+    /**
+     * Set grid data
+     * @param gdata Grid data
+     */
     public void setGridData(GridData gdata) {
         _gridData = gdata;
         updateGridData();

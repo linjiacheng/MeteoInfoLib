@@ -148,7 +148,7 @@ public abstract class DataInfo {
      * Get time values - Time delta values of base date
      * @param baseDate Base date
      * @param tDelta Time delta type - days/hours/...
-     * @return 
+     * @return Time values
      */
     public List<Integer> getTimeValues(Date baseDate, String tDelta){
         List<Date> times = this.getTimes();

@@ -2238,7 +2238,7 @@ public class VectorLayer extends MapLayer {
     /**
      * Clone VectorLayer object - without attribute table
      *
-     * @return
+     * @return Object
      */
     public Object cloneShapes() {
         VectorLayer aLayer = new VectorLayer(this.getShapeType());
@@ -2272,7 +2272,7 @@ public class VectorLayer extends MapLayer {
     /**
      * Clone VectorLayer object - only parameters
      *
-     * @return
+     * @return Object
      */
     public Object cloneValue() {
         VectorLayer aLayer = new VectorLayer(this.getShapeType());

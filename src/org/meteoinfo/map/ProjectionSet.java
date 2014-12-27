@@ -621,14 +621,13 @@ public class ProjectionSet {
      * @param oLayer The layer
      * @param fromProj From projection
      * @param toProj To projection
-     * @return
+     * @return VectorLayer
      */
     public VectorLayer projectLayerAngle(VectorLayer oLayer, ProjectionInfo fromProj, ProjectionInfo toProj) {
         //coordinate transform process            
         ArrayList newPoints = new ArrayList();
 
-        VectorLayer aLayer = new VectorLayer(oLayer.getShapeType());
-        aLayer = (VectorLayer) oLayer.clone();
+        VectorLayer aLayer = (VectorLayer) oLayer.clone();
 
         //aLayer.AttributeTable.Table = oLayer.AttributeTable.Table.Clone();
         DataTable aTable = new DataTable();

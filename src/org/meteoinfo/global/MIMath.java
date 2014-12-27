@@ -16,6 +16,7 @@ package org.meteoinfo.global;
 import org.meteoinfo.data.mapdata.Field;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.ArrayList;
 import java.util.List;
 import org.meteoinfo.global.util.BigDecimalUtil;
 import org.meteoinfo.shape.Shape;
@@ -783,18 +784,26 @@ public class MIMath {
      * @param max Maximum value
      * @return Contour values
      */
-    public static double[] createContourValues(double min, double max) {
-        double[] cValues;
+    public static double[] getIntervalValues(double min, double max) {
+        return getIntervalValues(min, max, false);
+    }
+    
+    /**
+     * Create contour values by minimum and maximum values
+     *
+     * @param min Minimum value
+     * @param max Maximum value
+     * @param isExtend If extend values
+     * @return Contour values
+     */
+    public static double[] getIntervalValues(double min, double max, boolean isExtend) {
         int i, cNum, aD, aE;
         double cDelt, range, newMin;
         String eStr;
 
         range = BigDecimalUtil.sub(max, min);
         if (range == 0.0) {
-            cNum = 1;
-            cValues = new double[1];
-            cValues[0] = min;
-            return cValues;
+            return new double[]{min};
         }
 
         eStr = String.format("%1$E", range);
@@ -821,24 +830,55 @@ public class MIMath {
             cNum++;
         } else {
             //cDelt = aD * Math.pow(10, aE - 1);
-            cDelt = BigDecimalUtil.pow(10, aE - 1);
-            cDelt = BigDecimalUtil.mul(aD, cDelt);
+            double cd = BigDecimalUtil.pow(10, aE - 1);
+            //cDelt = BigDecimalUtil.mul(aD, cDelt);
+            cDelt = BigDecimalUtil.mul(5, cd);
             cNum = (int)(range / cDelt);
+            if (cNum < 5)
+            {
+                cDelt = BigDecimalUtil.mul(2, cd);
+                cNum = (int)(range / cDelt);
+                if (cNum < 5){
+                    cDelt = BigDecimalUtil.mul(1, cd);
+                    cNum = (int)(range / cDelt);
+                }
+            }
             //newMin = Convert.ToInt32((min + cDelt) / Math.Pow(10, aE - 1)) * Math.Pow(10, aE - 1);
             //newMin = (int) (min / cDelt + 1) * cDelt;            
         }
         int temp = (int) (min / cDelt + 1);
         newMin = BigDecimalUtil.mul(temp, cDelt);
+        if (newMin - min >= cDelt) {
+            newMin = BigDecimalUtil.sub(newMin, cDelt);
+            cNum += 1;
+        }
 
         if (newMin + (cNum - 1) * cDelt > max) {
             cNum -= 1;
+        } else if (newMin + (cNum - 1) * cDelt + cDelt < max){
+            cNum += 1;
         }
-        cValues = new double[cNum];
-        for (i = 0; i < cNum; i++) {
-            //cValues[i] = newMin + i * cDelt;
-            cValues[i] = BigDecimalUtil.add(newMin, BigDecimalUtil.mul(i, cDelt));
+        
+        //Get values
+        List <Double> values = new ArrayList<Double>();     
+        for (i = 0; i < cNum; i++){
+            values.add(BigDecimalUtil.add(newMin, BigDecimalUtil.mul(i, cDelt)));
+        }
+        
+        //Extend values
+        if (isExtend){
+            if (values.get(0) > min){
+                values.add(0, BigDecimalUtil.sub(newMin, cDelt));
+            }
+            if (values.get(values.size() - 1) < max){
+                values.add(BigDecimalUtil.add(values.get(values.size() - 1), cDelt));
+            }
         }
 
+        double[] cValues = new double[values.size()];
+        for (i = 0; i < values.size(); i++)
+            cValues[i] = values.get(i);
+        
         return cValues;
     }
 }

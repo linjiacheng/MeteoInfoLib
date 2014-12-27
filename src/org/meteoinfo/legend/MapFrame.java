@@ -242,7 +242,7 @@ public class MapFrame extends ItemNode {
     /**
      * Get layers legend
      *
-     * @return
+     * @return LayersLegend
      */
     public LayersLegend getLegend() {
         return this._legend;

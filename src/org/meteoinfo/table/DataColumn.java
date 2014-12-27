@@ -191,7 +191,7 @@ public class DataColumn {
     /**
      * Get data type name
      *
-     * @return
+     * @return Data type name
      */
     public String getDataTypeName() {
         return dataType.toString();

@@ -7,7 +7,6 @@ package org.meteoinfo.data;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.PointD;
 
 /**

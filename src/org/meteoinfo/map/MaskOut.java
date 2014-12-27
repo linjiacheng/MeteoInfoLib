@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.meteoinfo.layer.LayerTypes;
 import org.meteoinfo.layer.MapLayer;
-import static org.meteoinfo.layout.LayoutLegend.getLayerNames;
 import org.meteoinfo.shape.ShapeTypes;
 
 /**
@@ -50,6 +49,14 @@ public class MaskOut {
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
 
+    /**
+     * Set map view
+     * @param mapView Map view
+     */
+    public void setMapView(MapView mapView){
+        _mapView = mapView;
+    }
+    
     /**
      * Get polygon map layers
      *
@@ -129,7 +136,7 @@ public class MaskOut {
 
     // <editor-fold desc="BeanInfo">
     public class MaskOutBean {
-
+        
         public MaskOutBean() {
         }
 

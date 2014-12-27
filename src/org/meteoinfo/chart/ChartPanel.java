@@ -8,6 +8,7 @@ package org.meteoinfo.chart;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -23,13 +24,37 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.awt.print.PageFormat;
+import java.awt.print.Printable;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
+import javax.print.DocFlavor;
+import javax.print.DocPrintJob;
+import javax.print.PrintException;
+import javax.print.PrintService;
+import javax.print.SimpleDoc;
+import javax.print.StreamPrintServiceFactory;
+import javax.print.attribute.HashPrintRequestAttributeSet;
+import javax.print.attribute.PrintRequestAttributeSet;
+import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.event.EventListenerList;
-import org.meteoinfo.chart.plot.XYPlot;
+import org.freehep.graphics2d.VectorGraphics;
+import org.freehep.graphicsio.emf.EMFGraphics2D;
+import org.freehep.graphicsio.pdf.PDFGraphics2D;
+import org.freehep.graphicsio.ps.PSGraphics2D;
+import org.meteoinfo.chart.plot.XY1DPlot;
 import org.meteoinfo.global.Extent;
+import org.meteoinfo.global.GenericFileFilter;
 
 /**
  *
@@ -106,6 +131,16 @@ public class ChartPanel extends JPanel {
             }
         });
         popupMenu.add(undoZoom);
+        popupMenu.addSeparator();
+        
+        JMenuItem saveFigure = new JMenuItem("Save figure");
+        saveFigure.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                onSaveFigureClick(e);
+            }
+        });
+        popupMenu.add(saveFigure);
         
         this.chart = null;
     }
@@ -218,6 +253,9 @@ public class ChartPanel extends JPanel {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
+        if (this.getWidth() < 5 || this.getHeight() < 5)
+            return;
+        
         //this.setBackground(Color.white);
         Graphics2D g2 = (Graphics2D) g;
         g2.drawImage(mapBitmap, null, 0, 0);
@@ -239,6 +277,9 @@ public class ChartPanel extends JPanel {
      * Paint graphics
      */
     public void paintGraphics() {
+        if (this.getWidth() < 5 || this.getHeight() < 5)
+            return;
+        
         this.mapBitmap = new BufferedImage(this.getWidth(), this.getHeight(), BufferedImage.TYPE_INT_ARGB);
 
         if (this.chart != null) {
@@ -247,6 +288,13 @@ public class ChartPanel extends JPanel {
             this.chart.draw(g, chartArea);
         }
         this.repaint();
+    }
+    
+    public void paintGraphics(Graphics2D g){
+        if (this.chart != null) {
+            Rectangle2D chartArea = new Rectangle2D.Double(0.0, 0.0, this.mapBitmap.getWidth(), this.mapBitmap.getHeight());
+            this.chart.draw(g, chartArea);
+        }
     }
 
     void onComponentResized(ComponentEvent e) {
@@ -270,7 +318,7 @@ public class ChartPanel extends JPanel {
         switch (this.mouseMode) {
             case ZOOM:
                 if (Math.abs(mouseLastPos.x - mouseDownPoint.x) > 5) {
-                    XYPlot plot = (XYPlot) this.chart.getPlot();
+                    XY1DPlot plot = (XY1DPlot) this.chart.getPlot();
                     Rectangle2D graphArea = this.chart.getGraphArea();
                     if (graphArea.contains(mouseDownPoint.x, mouseDownPoint.y) || graphArea.contains(mouseLastPos.x, mouseLastPos.y)) {
                         double[] xy1 = plot.screenToProj(mouseDownPoint.x - graphArea.getX(), mouseDownPoint.y - graphArea.getY(), graphArea);
@@ -303,7 +351,7 @@ public class ChartPanel extends JPanel {
                 break;
             case SELECT:
                 if (Math.abs(mouseLastPos.x - mouseDownPoint.x) > 5) {
-                    XYPlot plot = (XYPlot) this.chart.getPlot();
+                    XY1DPlot plot = (XY1DPlot) this.chart.getPlot();
                     Rectangle2D graphArea = this.chart.getGraphArea();
                     if (graphArea.contains(mouseDownPoint.x, mouseDownPoint.y) || graphArea.contains(mouseLastPos.x, mouseLastPos.y)) {
                         double[] xy1 = plot.screenToProj(mouseDownPoint.x - graphArea.getX(), mouseDownPoint.y - graphArea.getY(), graphArea);
@@ -340,9 +388,136 @@ public class ChartPanel extends JPanel {
     }
 
     private void onUndoZoomClick(ActionEvent e) {
-        XYPlot plot = (XYPlot) this.chart.getPlot();
+        XY1DPlot plot = (XY1DPlot) this.chart.getPlot();
         plot.setAutoExtent();
         this.paintGraphics();
+    }
+    
+    private void onSaveFigureClick(ActionEvent e) {
+        String path = System.getProperty("user.dir");
+        File pathDir = new File(path);
+        JFileChooser aDlg = new JFileChooser();
+        aDlg.setCurrentDirectory(pathDir);
+        String[] fileExts = new String[]{"png"};
+        GenericFileFilter pngFileFilter = new GenericFileFilter(fileExts, "Png Image (*.png)");
+        aDlg.addChoosableFileFilter(pngFileFilter);
+        fileExts = new String[]{"gif"};
+        GenericFileFilter mapFileFilter = new GenericFileFilter(fileExts, "Gif Image (*.gif)");
+        aDlg.addChoosableFileFilter(mapFileFilter);
+        fileExts = new String[]{"jpg"};
+        mapFileFilter = new GenericFileFilter(fileExts, "Jpeg Image (*.jpg)");
+        aDlg.addChoosableFileFilter(mapFileFilter);
+        fileExts = new String[]{"eps"};
+        mapFileFilter = new GenericFileFilter(fileExts, "EPS file (*.eps)");
+        aDlg.addChoosableFileFilter(mapFileFilter);
+        fileExts = new String[]{"pdf"};
+        mapFileFilter = new GenericFileFilter(fileExts, "PDF file (*.pdf)");
+        aDlg.addChoosableFileFilter(mapFileFilter);
+        fileExts = new String[]{"emf"};
+        mapFileFilter = new GenericFileFilter(fileExts, "EMF file (*.emf)");
+        aDlg.addChoosableFileFilter(mapFileFilter);
+        aDlg.setFileFilter(pngFileFilter);
+        aDlg.setAcceptAllFileFilterUsed(false);
+        if (JFileChooser.APPROVE_OPTION == aDlg.showSaveDialog(this)) {
+            File aFile = aDlg.getSelectedFile();
+            System.setProperty("user.dir", aFile.getParent());
+            String extent = ((GenericFileFilter) aDlg.getFileFilter()).getFileExtent();
+            String fileName = aFile.getAbsolutePath();
+            if (!fileName.substring(fileName.length() - extent.length()).equals(extent)) {
+                fileName = fileName + "." + extent;
+            }
+
+            try {
+                this.exportToPicture(fileName);
+            } catch (PrintException ex) {
+                Logger.getLogger(ChartPanel.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(ChartPanel.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+    
+    /**
+     * Export to a picture file
+     *
+     * @param aFile File path
+     * @throws java.io.FileNotFoundException
+     * @throws javax.print.PrintException
+     */
+    public void exportToPicture(String aFile) throws FileNotFoundException, PrintException, IOException {
+        if (aFile.endsWith(".ps")) {
+            DocFlavor flavor = DocFlavor.SERVICE_FORMATTED.PRINTABLE;
+            String mimeType = "application/postscript";
+            StreamPrintServiceFactory[] factories = StreamPrintServiceFactory.lookupStreamPrintServiceFactories(flavor, mimeType);
+            FileOutputStream out = new FileOutputStream(aFile);
+            if (factories.length > 0) {
+                PrintService service = factories[0].getPrintService(out);
+                SimpleDoc doc = new SimpleDoc(new Printable() {
+                    @Override
+                    public int print(Graphics g, PageFormat pf, int page) {
+                        if (page >= 1) {
+                            return Printable.NO_SUCH_PAGE;
+                        } else {
+                            double sf1 = pf.getImageableWidth() / (getWidth() + 1);
+                            double sf2 = pf.getImageableHeight() / (getHeight() + 1);
+                            double s = Math.min(sf1, sf2);
+                            Graphics2D g2 = (Graphics2D) g;
+                            g2.translate((pf.getWidth() - pf.getImageableWidth()) / 2, (pf.getHeight() - pf.getImageableHeight()) / 2);
+                            g2.scale(s, s);
+
+                            paintGraphics(g2);
+                            return Printable.PAGE_EXISTS;
+                        }
+                    }
+                }, flavor, null);
+                DocPrintJob job = service.createPrintJob();
+                PrintRequestAttributeSet attributes = new HashPrintRequestAttributeSet();
+                job.print(doc, attributes);
+                out.close();
+            }
+        } else if (aFile.endsWith(".eps")) {
+            int width = this.getWidth();
+            int height = this.getHeight();
+//            EPSGraphics2D g = new EPSGraphics2D(0.0, 0.0, width, height);
+//            paintGraphics(g);
+//            FileOutputStream file = new FileOutputStream(aFile);
+//            try {
+//                file.write(g.getBytes());
+//            } finally {
+//                file.close();
+//                g.dispose();
+//            }
+
+            Properties p = new Properties();
+            p.setProperty("PageSize", "A5");
+            VectorGraphics g = new PSGraphics2D(new File(aFile), new Dimension(width, height));
+            //g.setProperties(p);
+            g.startExport();
+            this.paintGraphics(g);
+            g.endExport();
+            g.dispose();
+        } else if (aFile.endsWith(".pdf")) {
+            int width = this.getWidth();
+            int height = this.getHeight();
+            VectorGraphics g = new PDFGraphics2D(new File(aFile), new Dimension(width, height));
+            //g.setProperties(p);
+            g.startExport();
+            this.paintGraphics(g);
+            g.endExport();
+            g.dispose();
+        } else if (aFile.endsWith(".emf")) {
+            int width = this.getWidth();
+            int height = this.getHeight();
+            VectorGraphics g = new EMFGraphics2D(new File(aFile), new Dimension(width, height));
+            //g.setProperties(p);
+            g.startExport();
+            this.paintGraphics(g);
+            g.endExport();
+            g.dispose();
+        } else {
+            String extension = aFile.substring(aFile.lastIndexOf('.') + 1);
+            ImageIO.write(this.mapBitmap, extension, new File(aFile));
+        }
     }
     // </editor-fold>
 }

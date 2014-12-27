@@ -64,12 +64,12 @@ public class Draw {
     /**
      * Create wind barb from wind direction/speed
      *
-     * @param windDir
-     * @param windSpeed
-     * @param value
-     * @param size
-     * @param sPoint
-     * @return
+     * @param windDir Wind direction
+     * @param windSpeed Wind speed
+     * @param value Value
+     * @param size Size
+     * @param sPoint Start point
+     * @return WindBarb
      */
     public static WindBarb calWindBarb(float windDir, float windSpeed, double value,
             float size, PointD sPoint) {

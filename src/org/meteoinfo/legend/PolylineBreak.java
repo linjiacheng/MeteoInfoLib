@@ -180,7 +180,7 @@ public class PolylineBreak extends ColorBreak {
     /**
      * Get symbol interval
      *
-     * @return
+     * @return Symbol interval
      */
     public int getSymbolInterval() {
         return _symbolInterval;

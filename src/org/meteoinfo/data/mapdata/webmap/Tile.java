@@ -68,8 +68,9 @@ public class Tile extends AbstractBean {
     
     /**
      * Create a new Tile at the specified tile point and zoom level
-     * @param location
-     * @param zoom
+     * @param x X index
+     * @param y Y index
+     * @param zoom Zoom
      */
     public Tile(int x, int y, int zoom) {
         loaded = false;
@@ -96,8 +97,7 @@ public class Tile extends AbstractBean {
     /**
      *
      * Indicates if this tile's underlying image has been successfully loaded yet.
-     * @returns true if the Tile has been loaded
-     * @return
+     * @return true if the Tile has been loaded
      */
     public synchronized boolean isLoaded() {
         return loaded;
@@ -124,7 +124,7 @@ public class Tile extends AbstractBean {
      * Returns the Throwable tied to any error that may have ocurred while
      * loading the tile. This error may change several times if multiple
      * errors occur
-     * @return
+     * @return Throwable
      */
     public Throwable getLoadingError() {
         return error;
@@ -134,6 +134,7 @@ public class Tile extends AbstractBean {
      * Returns the Image associated with this Tile. This is a read only property
      *          This may return null at any time, however if this returns null,
      *          a load operation will automatically be started for it.
+     * @return BufferedImage
      */
     public BufferedImage getImage() {
         BufferedImage img = image.get();
@@ -227,7 +228,7 @@ public class Tile extends AbstractBean {
 	
     /**
      * Gets the loading priority of this tile.
-     * @return
+     * @return Priority
      */
     public Priority getPriority() {
         return priority;
@@ -243,7 +244,7 @@ public class Tile extends AbstractBean {
     
     /**
      * Gets the URL of this tile.
-     * @return
+     * @return URL string
      */
     public String getURL() {
         return url;

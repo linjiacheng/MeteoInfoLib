@@ -101,7 +101,7 @@ public class LabelSet {
     /**
      * Get label font
      *
-     * @return
+     * @return Font
      */
     public Font getLabelFont() {
         return _labelFont;
@@ -284,7 +284,7 @@ public class LabelSet {
     /**
      * Get if automatic set decimal digits
      *
-     * @return
+     * @return Boolean
      */
     public boolean isAutoDecimal() {
         return _autoDecimal;

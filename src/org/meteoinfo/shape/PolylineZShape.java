@@ -57,7 +57,7 @@ public class PolylineZShape extends PolylineShape {
     /**
      * Get Z Array
      *
-     * @return
+     * @return Z value array
      */
     public double[] getMArray() {
         double[] mArray = new double[this.getPoints().size()];

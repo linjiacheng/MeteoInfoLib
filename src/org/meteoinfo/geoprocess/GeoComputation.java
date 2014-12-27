@@ -642,7 +642,7 @@ public class GeoComputation {
      * Clip a vector layer by polygon shape list
      *
      * @param subjectLayer Subject vector layer
-     * @param polygonShapes Cipping object list
+     * @param clipObjects Cipping object list
      * @return Result clipped layer
      */
     public static VectorLayer clipLayer(VectorLayer subjectLayer, List<Object> clipObjects) {

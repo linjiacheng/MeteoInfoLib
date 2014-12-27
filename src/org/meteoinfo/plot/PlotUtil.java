@@ -5,18 +5,17 @@
  */
 package org.meteoinfo.plot;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartUtilities;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.data.xy.XYDataset;
-import org.jfree.ui.RectangleInsets;
+import javax.print.PrintException;
+import org.meteoinfo.chart.Chart;
+import org.meteoinfo.chart.ChartPanel;
+import org.meteoinfo.chart.plot.ChartPlotMethod;
+import org.meteoinfo.chart.plot.XY1DPlot;
 import org.meteoinfo.data.StationData;
+import org.meteoinfo.data.XYArrayDataset;
+import org.meteoinfo.data.XYDataset;
 
 /**
  *
@@ -31,7 +30,7 @@ public class PlotUtil {
      * @return XYDataset XYDataset
      */
     public static XYDataset getXYDataset(StationData xdata, StationData ydata, String seriesKey){
-        return new PlotXYDataset(xdata, ydata, seriesKey);
+        return new XYArrayDataset(xdata, ydata, seriesKey);
     }
     
     /**
@@ -42,11 +41,12 @@ public class PlotUtil {
      * @param dataset XYDataset
      * @return JFreeChart
      */
-    public static JFreeChart createScatterPlot(String title, String xAxisLabel, String yAxisLabel, XYDataset dataset){
-        JFreeChart chart = ChartFactory.createScatterPlot(title, xAxisLabel, yAxisLabel, dataset, PlotOrientation.VERTICAL, true, true, false);
-        XYPlot plot = (XYPlot)chart.getPlot();
-        plot.setBackgroundPaint(null);
-        plot.setAxisOffset(RectangleInsets.ZERO_INSETS);
+    public static Chart createScatterPlot(String title, String xAxisLabel, String yAxisLabel, XYDataset dataset){
+        XY1DPlot plot = new XY1DPlot(dataset);
+        plot.setChartPlotMethod(ChartPlotMethod.POINT);
+        plot.getXAxis().setLabel(xAxisLabel);
+        plot.getYAxis().setLabel(yAxisLabel);
+        Chart chart = new Chart(title, plot);
         
         return chart;
     }
@@ -58,10 +58,14 @@ public class PlotUtil {
      * @param width Width
      * @param height Heigth
      */
-    public static void saveChartAsPNG(String fileName, JFreeChart chart, int width, int height){
+    public static void exportToPicture(String fileName, Chart chart, int width, int height){
         try {
-            ChartUtilities.saveChartAsPNG(new File(fileName), chart, width, height);
+            ChartPanel cp = new ChartPanel(chart);
+            cp.setSize(width, height);
+            cp.exportToPicture(fileName);
         } catch (IOException ex) {
+            Logger.getLogger(PlotUtil.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (PrintException ex) {
             Logger.getLogger(PlotUtil.class.getName()).log(Level.SEVERE, null, ex);
         }
     }

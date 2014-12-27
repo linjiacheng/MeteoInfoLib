@@ -14,7 +14,7 @@ import org.meteoinfo.global.Extent;
  */
 public abstract class XYDataset extends Dataset{
 
-    private double missingValue;
+    private double missingValue = -9999.0;
     
     /**
      * Get missing value

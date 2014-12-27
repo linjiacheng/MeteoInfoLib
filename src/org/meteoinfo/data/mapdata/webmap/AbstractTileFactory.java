@@ -66,9 +66,10 @@ public abstract class AbstractTileFactory extends TileFactory {
      * tilePoint is (3,5), then the appropriate tile will be located and
      * returned.
      *
-     * @param tilePoint
-     * @param zoom
-     * @return
+     * @param x X index
+     * @param y Y index
+     * @param zoom Zoom value
+     * @return Tile
      */
     @Override
     public Tile getTile(int x, int y, int zoom) {
@@ -294,7 +295,7 @@ public abstract class AbstractTileFactory extends TileFactory {
      *
      * @param tile
      * @throws java.net.URISyntaxException
-     * @return
+     * @return URI
      */
     protected URI getURI(Tile tile) throws URISyntaxException {
         if (tile.getURL() == null) {
@@ -321,7 +322,8 @@ public abstract class AbstractTileFactory extends TileFactory {
      * Subclasses can override this if they need custom TileRunners for some
      * reason
      *
-     * @return
+     * @param tile Tile
+     * @return Runnable
      */
     protected Runnable createTileRunner(Tile tile) {
         return new TileRunner();
@@ -329,6 +331,7 @@ public abstract class AbstractTileFactory extends TileFactory {
 
     /**
      * Increase the priority of this tile so it will be loaded sooner.
+     * @param tile Tile
      */
     public synchronized void promote(Tile tile) {
         if (tileQueue.contains(tile)) {

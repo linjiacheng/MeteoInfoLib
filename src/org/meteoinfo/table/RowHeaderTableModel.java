@@ -28,7 +28,7 @@ public class RowHeaderTableModel extends AbstractTableModel {
     // <editor-fold desc="Constructor">
     /**
      * Constructor
-     * @param model The table model
+     * @param rowCount Row count
      */
     public RowHeaderTableModel (int rowCount){
         _rowCount = rowCount;

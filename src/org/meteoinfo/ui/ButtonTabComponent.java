@@ -28,7 +28,7 @@ import javax.swing.plaf.basic.BasicButtonUI;
  * Component to be used as tabComponent;
  * Contains a JLabel to show the text and 
  * a JButton to close the tab it belongs to
- * @author
+ * @author Yaqiang Wang
  */
 public class ButtonTabComponent extends JPanel {
     private final JTabbedPane pane;

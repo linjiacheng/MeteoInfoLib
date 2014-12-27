@@ -51,7 +51,7 @@ public abstract class ItemNode {
     /**
      * Get parent layers legend
      *
-     * @return
+     * @return LayersLegend
      */
     public LayersLegend getParentLegend() {
         return _parentLegend;

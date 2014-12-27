@@ -142,7 +142,7 @@ public class MeteoDataInfo {
     /**
      * Get plot dimension
      *
-     * @return
+     * @return Plot dimension
      */
     public PlotDimension getDimensionSet() {
         return _dimensionSet;
@@ -160,7 +160,7 @@ public class MeteoDataInfo {
     /**
      * Get data info text
      *
-     * @return
+     * @return Data info text
      */
     public String getInfoText() {
         return _infoText;
@@ -640,7 +640,7 @@ public class MeteoDataInfo {
     /**
      * Get file name
      *
-     * @return
+     * @return File name
      */
     public String getFileName() {
         return _dataInfo.getFileName();

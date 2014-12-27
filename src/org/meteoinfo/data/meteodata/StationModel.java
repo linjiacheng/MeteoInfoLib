@@ -237,7 +237,7 @@ public class StationModel {
     /**
      * Set weather
      *
-     * @param vlaue Weather
+     * @param value Weather
      */
     public void setWeather(double value) {
         _weather = value;

@@ -1329,9 +1329,9 @@ public class GridData {
     /**
      * Skip the grid data by two dimension skip factor
      *
-     * @param skipI
-     * @param skipJ
-     * @return
+     * @param skipI Skip number in x coordinate
+     * @param skipJ Skip number in y coordinate
+     * @return Grid data
      */
     public GridData skip(int skipI, int skipJ) {
         int yNum = (getYNum() + skipI - 1) / skipI;

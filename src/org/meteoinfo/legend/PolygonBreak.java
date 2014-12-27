@@ -145,7 +145,7 @@ public class PolygonBreak extends ColorBreak {
     /**
      * Get if maskout
      *
-     * @return
+     * @return Boolean
      */
     public boolean isMaskout() {
         return _isMaskout;

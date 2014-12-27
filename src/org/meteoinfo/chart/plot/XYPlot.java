@@ -15,47 +15,31 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import org.meteoinfo.chart.axis.Axis;
-import org.meteoinfo.data.Dataset;
-import org.meteoinfo.data.XYArrayDataset;
-import org.meteoinfo.data.XYDataset;
+import static org.meteoinfo.chart.plot.Plot.MINIMUM_HEIGHT_TO_DRAW;
+import static org.meteoinfo.chart.plot.Plot.MINIMUM_WIDTH_TO_DRAW;
 import org.meteoinfo.drawing.Draw;
 import static org.meteoinfo.drawing.Draw.getDashPattern;
 import org.meteoinfo.global.Extent;
-import org.meteoinfo.global.PointF;
 import org.meteoinfo.global.util.DateUtil;
-import org.meteoinfo.legend.LegendScheme;
-import org.meteoinfo.legend.PointBreak;
-import org.meteoinfo.legend.PolygonBreak;
-import org.meteoinfo.legend.PolylineBreak;
-import org.meteoinfo.shape.ShapeTypes;
 
 /**
  *
- * @author yaqiang
+ * @author wyq
  */
-public class XYPlot extends Plot {
-
+public abstract class XYPlot extends Plot {
     // <editor-fold desc="Variables">
-    private XYDataset dataset;
-    private ChartPlotMethod chartPlotMethod;
     private Color background;
     private boolean drawBackground;
-    private PolylineBreak[] lineBreaks;
-    private PointBreak[] pointBreaks;
-    private PolygonBreak[] polygonBreaks;
-    private PointBreak[][] itemPointBreaks;
-    private boolean useBreak2D;
     private Extent drawExtent;
     private final Axis xAxis;
     private final Axis yAxis;
     private Rectangle2D graphArea;
     private PlotOrientation orientation;
     private GridLine gridLine;
-
+    private boolean drawTopRightAxis;
     // </editor-fold>
     // <editor-fold desc="Constructor">
     /**
@@ -66,86 +50,14 @@ public class XYPlot extends Plot {
         this.drawBackground = false;
         this.xAxis = new Axis("X", true);
         this.yAxis = new Axis("Y", false);
-        this.chartPlotMethod = ChartPlotMethod.LINE;
-        this.useBreak2D = false;
         this.orientation = PlotOrientation.VERTICAL;
         this.gridLine = new GridLine();
+        this.drawTopRightAxis = true;
     }
-
-    /**
-     * Constructor
-     *
-     * @param dateset Dataset
-     */
-    public XYPlot(XYDataset dateset) {
-        this();
-        this.setDataset(dateset);
-    }
-
-    /**
-     * Constructor
-     *
-     * @param orientation Plot orientation
-     * @param dateset Dataset
-     */
-    public XYPlot(PlotOrientation orientation, XYDataset dateset) {
-        this();
-        this.orientation = orientation;
-        this.setDataset(dateset);
-    }
-
-    /**
-     * Constructor
-     *
-     * @param isTime If x axis is time
-     * @param dateset Dataset
-     */
-    public XYPlot(boolean isTime, XYDataset dateset) {
-        this();
-        this.xAxis.setTimeAxis(isTime);
-        this.setDataset(dateset);
-    }
-
-    /**
-     * Constructor
-     *
-     * @param isTime If x axis is time
-     * @param orientation Plot orientation
-     * @param dateset Dataset
-     */
-    public XYPlot(boolean isTime, PlotOrientation orientation, XYDataset dateset) {
-        this();
-        this.xAxis.setTimeAxis(isTime);
-        this.orientation = orientation;
-        this.setDataset(dateset);
-    }
-
     // </editor-fold>
+    
     // <editor-fold desc="Get Set Methods">
-    @Override
-    public XYDataset getDataset() {
-        return dataset;
-    }
-
-    @Override
-    public void setDataset(Dataset value) {
-        dataset = (XYDataset) value;
-        Extent extent = this.getAutoExtent();
-        this.setDrawExtent(extent);
-        lineBreaks = new PolylineBreak[dataset.getSeriesCount()];
-        pointBreaks = new PointBreak[dataset.getSeriesCount()];
-        polygonBreaks = new PolygonBreak[dataset.getSeriesCount()];
-        this.itemPointBreaks = new PointBreak[dataset.getSeriesCount()][dataset.getItemCount()];
-        for (int i = 0; i < dataset.getSeriesCount(); i++) {
-            lineBreaks[i] = new PolylineBreak();
-            lineBreaks[i].setCaption(dataset.getSeriesKey(i));
-            pointBreaks[i] = new PointBreak();
-            pointBreaks[i].setCaption(dataset.getSeriesKey(i));
-            polygonBreaks[i] = new PolygonBreak();
-            polygonBreaks[i].setCaption(dataset.getSeriesKey(i));
-        }
-    }
-
+    
     /**
      * Get draw extent
      *
@@ -166,24 +78,6 @@ public class XYPlot extends Plot {
         this.yAxis.setMinMaxValue(extent.minY, extent.maxY);
     }
 
-    /**
-     * Get chart plot method
-     *
-     * @return Chart plot method
-     */
-    public ChartPlotMethod getChartPlotMethod() {
-        return this.chartPlotMethod;
-    }
-
-    /**
-     * Set chart plot method
-     *
-     * @param value Chart plot method
-     */
-    public void setChartPlotMethod(ChartPlotMethod value) {
-        this.chartPlotMethod = value;
-    }
-    
     /**
      * Get background
      *
@@ -242,42 +136,6 @@ public class XYPlot extends Plot {
     }
 
     /**
-     * Get polyline breaks
-     *
-     * @return Polyline breaks
-     */
-    public PolylineBreak[] getPolylineBreaks() {
-        return this.lineBreaks;
-    }
-
-    /**
-     * Get point breaks
-     *
-     * @return Point breaks
-     */
-    public PointBreak[] getPointBreaks() {
-        return this.pointBreaks;
-    }
-
-    /**
-     * If use item 2D point breaks
-     *
-     * @return Boolean
-     */
-    public boolean isUseBreak2D() {
-        return this.useBreak2D;
-    }
-
-    /**
-     * Set if use item 2D point breaks
-     *
-     * @param value Boolean
-     */
-    public void setUseBeak2D(boolean value) {
-        this.useBreak2D = value;
-    }
-
-    /**
      * Get graph area
      *
      * @return Graph area
@@ -285,6 +143,14 @@ public class XYPlot extends Plot {
     @Override
     public Rectangle2D getGraphArea() {
         return this.graphArea;
+    }
+    
+    /**
+     * Set graph area
+     * @param area Graph area
+     */
+    public void setGraphArea(Rectangle2D area){
+        this.graphArea = area;
     }
 
     /**
@@ -312,9 +178,25 @@ public class XYPlot extends Plot {
     public GridLine getGridLine(){
         return this.gridLine;
     }
+    
+    /**
+     * get if draw top right axis
+     * @return Boolean
+     */
+    public boolean isDrawTopRightAxis(){
+        return this.drawTopRightAxis;
+    }
+    
+    /**
+     * Set if draw top right axis
+     * @param value Boolean
+     */
+    public void setDrawTopRightAxis(boolean value){
+        this.drawTopRightAxis = value;
+    }
     // </editor-fold>
-    // <editor-fold desc="Methods">
-
+    
+    // <editor-fold desc="Method">
     /**
      * Draw plot
      *
@@ -358,8 +240,8 @@ public class XYPlot extends Plot {
         g.setTransform(oldMatrix);
         g.setClip(oldRegion);
     }
-
-    private Rectangle2D getGraphArea(Graphics2D g, Rectangle2D area) {
+    
+    Rectangle2D getGraphArea(Graphics2D g, Rectangle2D area) {
         int left, bottom, right = 10, top = 5;
         int space = 1;
 
@@ -381,7 +263,7 @@ public class XYPlot extends Plot {
         return plotArea;
     }
 
-    private void drawGridLine(Graphics2D g, Rectangle2D area){
+    void drawGridLine(Graphics2D g, Rectangle2D area){
         if (!this.gridLine.isDrawXLine() && !this.gridLine.isDrawYLine())
             return;
         
@@ -436,113 +318,9 @@ public class XYPlot extends Plot {
         }
     }
     
-    private void drawGraph(Graphics2D g, Rectangle2D area) {
-        AffineTransform oldMatrix = g.getTransform();
-        Rectangle oldRegion = g.getClipBounds();
-        g.setClip(area);
-        g.translate(area.getX(), area.getY());
-        
-        //Draw background
-        if (this.drawBackground){
-            g.setColor(background);
-            g.fill(new Rectangle2D.Double(0, 0, area.getWidth(), area.getHeight()));
-        }
-
-        double[] xy;
-        for (int i = 0; i < this.dataset.getSeriesCount(); i++) {
-            int len = this.dataset.getItemCount(i);
-            PointF[] points = new PointF[len];
-            List<Integer> mvIdx = this.dataset.getMissingValueIndex(i);
-            if (this.orientation == PlotOrientation.VERTICAL) {
-                for (int j = 0; j < len; j++) {
-                    xy = this.projToScreen(this.dataset.getX(i, j), this.dataset.getY(i, j), area);
-                    points[j] = new PointF((float) xy[0], (float) xy[1]);
-                }
-            } else {
-                for (int j = 0; j < len; j++) {
-                    xy = this.projToScreen(this.dataset.getY(i, j), this.dataset.getX(i, j), area);
-                    points[j] = new PointF((float) xy[0], (float) xy[1]);
-                }
-            }
-            if (this.yAxis.isInverse()) {
-                PointF[] npoints = new PointF[len];
-                PointF p;
-                float y;
-                for (int j = 0; j < len; j++) {
-                    p = points[len - j - 1];
-                    y = (float) area.getHeight() - p.Y;
-                    npoints[j] = new PointF(p.X, y);
-                }
-                points = npoints;
-            }
-            if (this.xAxis.isInverse()) {
-                PointF[] npoints = new PointF[len];
-                PointF p;
-                float x;
-                for (int j = 0; j < len; j++) {
-                    p = points[len - j - 1];
-                    x = (float) area.getWidth() - p.X;
-                    npoints[j] = new PointF(x, p.Y);
-                }
-                points = npoints;
-            }
-
-            switch (this.chartPlotMethod) {
-                case LINE:
-                    this.lineBreaks[i].setDrawSymbol(false);
-                    if (mvIdx.isEmpty()) {
-                        Draw.drawPolyline(points, this.lineBreaks[i], g);
-                    } else {
-                        Draw.drawPolyline(points, this.lineBreaks[i], g, mvIdx);
-                    }
-                    break;
-                case POINT:
-                    if (this.useBreak2D) {
-                        for (int j = 0; j < len; j++) {
-                            if (!mvIdx.contains(j)) {
-                                Draw.drawPoint(points[j], this.itemPointBreaks[i][j], g);
-                            }
-                        }
-                    } else {
-                        for (int j = 0; j < len; j++) {
-                            if (!mvIdx.contains(j)) {
-                                Draw.drawPoint(points[j], this.pointBreaks[i], g);
-                            }
-                        }
-                    }
-                    break;
-                case LINE_POINT:
-                    this.lineBreaks[i].setDrawSymbol(true);
-                    if (mvIdx.isEmpty()) {
-                        Draw.drawPolyline(points, this.lineBreaks[i], g);
-                    } else {
-                        Draw.drawPolyline(points, this.lineBreaks[i], g, mvIdx);
-                    }
-                    break;
-                case BAR:
-                    int width;
-                    if (points.length > 1) {
-                        width = (int) ((points[1].X - points[0].X) * 0.5) / this.dataset.getSeriesCount();
-                    } else {
-                        width = (int) (area.getWidth() / 10) / this.dataset.getSeriesCount();
-                    }
-                    int height;
-                    for (int j = 0; j < len; j++) {
-                        if (!mvIdx.contains(j)) {
-                            height = (int) (area.getHeight() - points[j].Y);
-                            Draw.drawBar(new PointF(points[j].X - width * this.dataset.getSeriesCount() / 2
-                                    + i * width, (int) area.getHeight()), width, height, this.polygonBreaks[i], g, false, 5);
-                        }
-                    }
-                    break;
-            }
-        }
-
-        g.setTransform(oldMatrix);
-        g.setClip(oldRegion);
-    }
-
-    private void drawAxis(Graphics2D g, Rectangle2D area) {
+    abstract void drawGraph(Graphics2D g, Rectangle2D area);
+    
+    void drawAxis(Graphics2D g, Rectangle2D area) {
         double[] xy;
         double x, y;
         double miny = area.getY();
@@ -557,6 +335,9 @@ public class XYPlot extends Plot {
         g.setColor(this.xAxis.getLineColor());
         g.setStroke(this.xAxis.getLineStroke());
         g.draw(new Line2D.Double(minx, maxy, maxx, maxy));
+        if (this.drawTopRightAxis){
+            g.draw(new Line2D.Double(minx, miny, maxx, miny));
+        }
         //Draw tick lines   
         g.setColor(this.xAxis.getTickColor());
         g.setStroke(this.xAxis.getTickStroke());
@@ -576,7 +357,16 @@ public class XYPlot extends Plot {
                 x = area.getWidth() - x;
             }
             x += minx;
-            g.draw(new Line2D.Double(x, maxy, x, maxy + len));
+            if (this.xAxis.isInsideTick())
+                g.draw(new Line2D.Double(x, maxy, x, maxy - len));
+            else
+                g.draw(new Line2D.Double(x, maxy, x, maxy + len));
+            if (this.drawTopRightAxis){
+                    if (this.xAxis.isInsideTick())
+                    g.draw(new Line2D.Double(x, miny, x, miny + len));
+                else
+                    g.draw(new Line2D.Double(x, miny, x, miny - len));
+            }
             //Draw tick label
             drawStr = tickLabels.get(n);
             dim = new Dimension(metrics.stringWidth(drawStr), metrics.getHeight());
@@ -610,18 +400,22 @@ public class XYPlot extends Plot {
             }            
             if (drawStr != null) {
                 labx = (float) minx;
-                laby = (float) (maxy + len + metrics.getHeight() * 2 + space);
+                laby = (float) (maxy + metrics.getHeight() * 2 + space);
+                if (!this.getXAxis().isInsideTick())
+                    laby += len;
                 g.drawString(drawStr, labx, laby);
             }
         }
         //Draw label
         if (this.xAxis.isDrawLabel()){
             x = (maxx - minx) / 2 + minx;
-            y = maxy + len + space + metrics.getHeight() + 5;
+            y = maxy + space + metrics.getHeight() + 5;
             metrics = g.getFontMetrics(this.xAxis.getLabelFont());
             dim = new Dimension(metrics.stringWidth(this.xAxis.getLabel()), metrics.getHeight());
             labx = (float) (x - dim.width / 2);
             laby = (float) (y + dim.height * 3 / 4);
+            if (!this.xAxis.isInsideTick())
+                laby += len;
             g.setFont(this.xAxis.getLabelFont());
             g.setColor(this.xAxis.getLabelColor());
             g.drawString(this.xAxis.getLabel(), labx, laby);
@@ -632,6 +426,9 @@ public class XYPlot extends Plot {
         g.setColor(this.yAxis.getLineColor());
         g.setStroke(this.yAxis.getLineStroke());
         g.draw(new Line2D.Double(minx, maxy, minx, miny));
+        if (this.drawTopRightAxis){
+            g.draw(new Line2D.Double(maxx, maxy, maxx, miny));
+        }
         //Draw tick lines   
         g.setColor(this.yAxis.getTickColor());
         g.setStroke(this.yAxis.getTickStroke());
@@ -649,11 +446,22 @@ public class XYPlot extends Plot {
                 y = area.getHeight() - y;
             }
             y += area.getY();
-            g.draw(new Line2D.Double(minx, y, minx - len, y));
+            if (this.getYAxis().isInsideTick())
+                g.draw(new Line2D.Double(minx, y, minx + len, y));
+            else
+                g.draw(new Line2D.Double(minx, y, minx - len, y));
+            if (this.drawTopRightAxis){
+                    if (this.getYAxis().isInsideTick())
+                    g.draw(new Line2D.Double(maxx, y, maxx - len, y));
+                else
+                    g.draw(new Line2D.Double(maxx, y, maxx + len, y));
+            }
             //Draw tick label
             drawStr = tickLabels.get(n);
             dim = new Dimension(metrics.stringWidth(drawStr), metrics.getHeight());
-            labx = (float) (minx - len - dim.width - space);
+            labx = (float) (minx - dim.width - space - space);  
+            if (!this.getYAxis().isInsideTick())
+                labx -= len;
             laby = (float) (y + dim.height / 3);
             g.drawString(drawStr, labx, laby);
             n += this.yAxis.getTickLabelGap();
@@ -661,7 +469,9 @@ public class XYPlot extends Plot {
         //Draw label
         if (this.yAxis.isDrawLabel()) {
             metrics = g.getFontMetrics(this.yAxis.getLabelFont());
-            x = minx - len - space - this.getYAxis().getMaxLabelLength(g) - metrics.getHeight() - 5;
+            x = minx - space - this.getYAxis().getMaxLabelLength(g) - metrics.getHeight() - 5;
+            if (!this.getYAxis().isInsideTick())
+                x -= len;
             y = (maxy - miny) / 2 + miny;
             //x = g.getTransform().getTranslateX() + x;
             //y = g.getTransform().getTranslateY() + y;
@@ -705,136 +515,7 @@ public class XYPlot extends Plot {
 
         return new double[]{projX, projY};
     }
-
-    /**
-     * Get a item point break
-     *
-     * @param seriesIdx Series index
-     * @param itemIdx Item index
-     * @return Item point break;
-     */
-    public PointBreak getItemPointBreak(int seriesIdx, int itemIdx) {
-        return this.itemPointBreaks[seriesIdx][itemIdx];
-    }
-
-    /**
-     * Set item point break
-     *
-     * @param seriesIdx Series index
-     * @param itemIdx Item index
-     * @param pb Item point break
-     */
-    public void setItemPointBreak(int seriesIdx, int itemIdx, PointBreak pb) {
-        this.itemPointBreaks[seriesIdx][itemIdx] = pb;
-    }
-
-    /**
-     * Get polyline break
-     *
-     * @param seriesIdx Series index
-     * @return Polyline break
-     */
-    public PolylineBreak getPolylineBreak(int seriesIdx) {
-        return this.lineBreaks[seriesIdx];
-    }
-
-    /**
-     * Set polyline break
-     *
-     * @param seriesIdx Series index
-     * @param plb Polyline break
-     */
-    public void setPolylineBreak(int seriesIdx, PolylineBreak plb) {
-        this.lineBreaks[seriesIdx] = plb;
-    }
-
-    /**
-     * Get point break
-     *
-     * @param seriesIdx Series index
-     * @return Point break
-     */
-    public PointBreak getPointBreak(int seriesIdx) {
-        return this.pointBreaks[seriesIdx];
-    }
-
-    /**
-     * Set point break
-     *
-     * @param seriesIdx Series index
-     * @param pb Point break
-     */
-    public void setPointBreak(int seriesIdx, PointBreak pb) {
-        this.pointBreaks[seriesIdx] = pb;
-    }
     
-    /**
-     * Get polygon break
-     * @param seriesIdx Series index
-     * @return Polygon break
-     */
-    public PolygonBreak getPolygonBreak(int seriesIdx){
-        return this.polygonBreaks[seriesIdx];
-    }
-    
-    /**
-     * Set polygon break
-     * @param seriesIdx Series index
-     * @param pgb Polygon break
-     */
-    public void setPolygonBreak(int seriesIdx, PolygonBreak pgb){
-        this.polygonBreaks[seriesIdx] = pgb;
-    }
-
-    /**
-     * Get auto extent
-     *
-     * @return Auto extent
-     */
-    public Extent getAutoExtent() {
-        Extent extent = dataset.getDataExtent();
-        double xgap = extent.getWidth() / Math.min(dataset.getItemCount(), 50);
-        double ygap = extent.getHeight() / Math.min(dataset.getItemCount(), 50);
-        extent = extent.extend(xgap, ygap);
-        if (this.orientation == PlotOrientation.VERTICAL) {
-            return extent;
-        } else {
-            return new Extent(extent.minY, extent.maxY, extent.minX, extent.maxX);
-        }
-    }
-
-    /**
-     * Set auto extent
-     */
-    public void setAutoExtent() {
-        Extent extent = this.getAutoExtent();
-        this.setDrawExtent(extent);
-    }
-    
-    /**
-     * Get legend scheme
-     * @return Legend scheme
-     */
-    public LegendScheme getLegendScheme() {
-        LegendScheme ls = null;
-        switch (this.chartPlotMethod){
-            case LINE:
-            case LINE_POINT:
-                ls = new LegendScheme(ShapeTypes.Polyline);
-                ls.getLegendBreaks().addAll(Arrays.asList(this.lineBreaks));
-                break;
-            case POINT:
-                ls = new LegendScheme(ShapeTypes.Point);
-                ls.getLegendBreaks().addAll(Arrays.asList(this.pointBreaks));
-                break;
-            case BAR:
-                ls = new LegendScheme(ShapeTypes.Polygon);
-                ls.getLegendBreaks().addAll(Arrays.asList(this.polygonBreaks));
-                break;
-        }
-        
-        return ls;
-    }
-
-    // </editor-fold>   
+    abstract Extent getAutoExtent();
+    // </editor-fold>
 }

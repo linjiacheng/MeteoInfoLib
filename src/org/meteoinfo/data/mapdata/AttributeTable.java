@@ -122,7 +122,7 @@ public final class AttributeTable implements Cloneable {
     /**
      * Get record number
      *
-     * @return
+     * @return Record number
      */
     public int getNumRecords() {
         return _dataTable.getRows().size();

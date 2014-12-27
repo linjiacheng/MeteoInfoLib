@@ -1916,7 +1916,7 @@ public class MapLayout extends JPanel {
     /**
      * Get if is landscape
      *
-     * @return
+     * @return Boolean
      */
     public boolean isLandscape() {
         return _isLandscape;

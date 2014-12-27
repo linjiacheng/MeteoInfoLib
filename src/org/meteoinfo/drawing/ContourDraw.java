@@ -70,7 +70,7 @@ public class ContourDraw {
      * @param contourLines Contour lines
      * @param borders Border lines
      * @param cValues Values
-     * @return
+     * @return Polygon list
      */
     public static List<wContour.Global.Polygon> tracingPolygons(double[][] gridData,
             List<wContour.Global.PolyLine> contourLines, List<wContour.Global.Border> borders, double[] cValues) {

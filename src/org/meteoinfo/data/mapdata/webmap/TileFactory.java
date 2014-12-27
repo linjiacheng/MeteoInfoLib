@@ -56,6 +56,8 @@ public abstract class TileFactory /*TODO extends AbstractBean*/ {
     /**
      * 
      * Return the Tile at a given TilePoint and zoom level
+     * @param x X index
+     * @param y Y index
      * @return the tile that is located at the given tilePoint for this zoom level. For
      *         example, if getMapSize() returns 10x20 for this zoom, and the
      *         tilePoint is (3,5), then the appropriate tile will be located
@@ -63,7 +65,6 @@ public abstract class TileFactory /*TODO extends AbstractBean*/ {
      * can return dummy tiles that contain no data if it wants. This is appropriate,
      * for example, for tiles which are outside of the bounds of the map and if the
      * factory doesn't implement wrapping.
-     * @param tilePoint the tilePoint
      * @param zoom the current zoom level
      */
     public abstract Tile getTile(int x, int y, int zoom);
@@ -86,7 +87,7 @@ public abstract class TileFactory /*TODO extends AbstractBean*/ {
      * Convert a GeoPosition to a pixel position in the world bitmap
      * a the specified zoom level.
      * @param c a GeoPosition
-     * @param zoom the zoom level to extract the pixel coordinate for
+     * @param zoomLevel the zoom level to extract the pixel coordinate for
      * @return the pixel point
      */
     public Point2D geoToPixel(GeoPosition c, int zoomLevel) {

@@ -35,7 +35,7 @@ public class FontUtil {
     /**
      * Get all available fonts (system fonts, weather font and custom fonts)
      *
-     * @return
+     * @return Font list
      */
     public static List<Font> getAllFonts() {
         List<Font> fontList = new ArrayList<Font>();

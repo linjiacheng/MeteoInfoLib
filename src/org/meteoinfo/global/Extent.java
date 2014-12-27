@@ -132,9 +132,9 @@ public class Extent {
     
     /**
      * Extends extent
-     * @param dx 
-     * @param dy
-     * @return 
+     * @param dx X delta
+     * @param dy Y delta
+     * @return Extended extent
      */
     public Extent extend(double dx, double dy){
         return new Extent(minX - dx, maxX + dx, minY - dy, maxY + dy);

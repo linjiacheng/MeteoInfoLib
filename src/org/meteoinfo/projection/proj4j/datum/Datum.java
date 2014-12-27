@@ -147,7 +147,7 @@ public class Datum {
      * thus avoiding some loss of numerical precision).
      *
      * @param transform
-     * @return
+     * @return If is identity
      */
     private static boolean isIdentity(double[] transform) {
         for (int i = 0; i < transform.length; i++) {
@@ -179,7 +179,7 @@ public class Datum {
      * </ul>
      *
      * @param datum
-     * @return
+     * @return If is equal
      */
     public boolean isEqual(Datum datum) {
         // false if tranforms are not equal

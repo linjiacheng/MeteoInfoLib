@@ -7,19 +7,16 @@ package org.meteoinfo.chart.axis;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
-import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import org.meteoinfo.drawing.Draw;
 import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.util.DateUtil;
@@ -40,13 +37,14 @@ public class Axis {
     private Color tickColor;
     private Stroke tickStroke;
     private int tickLength;
+    private boolean insideTick;
     private Font labelFont;
     private Color labelColor;
     private Font tickLabelFont;
     private Color tickLabelColor;
     private int tickLabelGap;
     private double tickStartValue;
-    private double tickDeltaValue;
+    private double tickDeltaValue;    
     private double minValue;
     private double maxValue;
     private double[] tickValues;
@@ -59,28 +57,37 @@ public class Axis {
     // <editor-fold desc="Constructor">
     /**
      * Constructor
-     *
-     * @param label Axis label
      */
-    public Axis(String label) {
+    public Axis(){
         this.xAxis = true;
-        this.label = label;
+        this.label = "";
         this.visible = true;
-        this.drawLabel = true;
-        this.lineColor = Color.black;
+        this.drawLabel = false;
+        this.lineColor = Color.darkGray;
         this.lineStroke = new BasicStroke(1.0f);
-        this.tickColor = Color.black;
+        this.tickColor = Color.darkGray;
         this.tickStroke = new BasicStroke(1.0f);
-        this.tickLength = 3;
+        this.tickLength = 5;
+        this.insideTick = true;
         this.labelFont = new Font("Arial", Font.PLAIN, 14);
-        this.labelColor = Color.black;
-        this.tickLabelFont = new Font("Arial", Font.PLAIN, 12);
-        this.tickLabelColor = Color.black;
+        this.labelColor = Color.darkGray;
+        this.tickLabelFont = new Font("Arial", Font.PLAIN, 14);
+        this.tickLabelColor = Color.darkGray;
         this.tickLabelGap = 1;
         this.timeAxis = false;
         this.timeFormat = "yyyy-MM-dd";
         this.timeUnit = TimeUnit.DAY;
         this.inverse = false;
+    }
+    
+    /**
+     * Constructor
+     *
+     * @param label Axis label
+     */
+    public Axis(String label) {
+        this();
+        this.label = label;
     }
 
     /**
@@ -256,6 +263,22 @@ public class Axis {
      */
     public void setTickLength(int value) {
         this.tickLength = value;
+    }
+    
+    /**
+     * Get if is inside tick
+     * @return Boolean
+     */
+    public boolean isInsideTick(){
+        return this.insideTick;
+    }
+    
+    /**
+     * Set if is inside tick
+     * @param value Boolean
+     */
+    public void setInsideTick(boolean value){
+        this.insideTick = value;
     }
 
     /**
@@ -511,7 +534,7 @@ public class Axis {
         if (this.timeAxis) {
             this.updateTimeLabels();
         } else {
-            tickValues = MIMath.createContourValues(minValue, maxValue);
+            tickValues = MIMath.getIntervalValues(minValue, maxValue);
         }
     }
 
@@ -658,7 +681,6 @@ public class Axis {
         Date edate = DateUtil.fromOADate(maxValue);
         Calendar scal = Calendar.getInstance();
         Calendar ecal = Calendar.getInstance();
-        Calendar cal = Calendar.getInstance();
         scal.setTime(sdate);
         ecal.setTime(edate);
         Calendar sscal = Calendar.getInstance();
@@ -675,10 +697,10 @@ public class Axis {
             scal.set(Calendar.HOUR_OF_DAY, 0);
             scal.set(Calendar.MINUTE, 0);
             scal.set(Calendar.SECOND, 0);
-            if (scal.after(sscal)) {
+            if (!scal.before(sscal)) {
                 dates.add(scal.getTime());
             }
-            while (scal.before(ecal)) {
+            while (!scal.after(ecal)) {
                 scal.set(Calendar.YEAR, scal.get(Calendar.YEAR) + 1);
                 dates.add(scal.getTime());
             }
@@ -693,12 +715,12 @@ public class Axis {
                 scal.set(Calendar.HOUR_OF_DAY, 0);
                 scal.set(Calendar.MINUTE, 0);
                 scal.set(Calendar.SECOND, 0);
-                if (scal.after(sscal)) {
+                if (!scal.before(sscal)) {
                     dates.add(scal.getTime());
                 }
-                while (scal.before(ecal)) {
+                while (!scal.after(ecal)) {
                     scal.add(Calendar.MONTH, 1);
-                    if (scal.after(sscal)) {
+                    if (!scal.before(sscal)) {
                         dates.add(scal.getTime());
                     }
                 }
@@ -712,12 +734,12 @@ public class Axis {
                     scal.set(Calendar.HOUR_OF_DAY, 0);
                     scal.set(Calendar.MINUTE, 0);
                     scal.set(Calendar.SECOND, 0);
-                    if (scal.after(sscal)) {
+                    if (!scal.before(sscal)) {
                         dates.add(scal.getTime());
                     }
-                    while (scal.before(ecal)) {
+                    while (!scal.after(ecal)) {
                         scal.add(Calendar.DAY_OF_MONTH, 1);
-                        if (scal.after(sscal)) {
+                        if (!scal.before(sscal)) {
                             dates.add(scal.getTime());
                         }
                     }
@@ -730,12 +752,12 @@ public class Axis {
                         this.timeUnit = TimeUnit.HOUR;
                         scal.set(Calendar.MINUTE, 0);
                         scal.set(Calendar.SECOND, 0);
-                        if (scal.after(sscal)) {
+                        if (!scal.before(sscal)) {
                             dates.add(scal.getTime());
                         }
-                        while (scal.before(ecal)) {
+                        while (!scal.after(ecal)) {
                             scal.add(Calendar.HOUR_OF_DAY, 1);
-                            if (scal.after(sscal)) {
+                            if (!scal.before(sscal)) {
                                 dates.add(scal.getTime());
                             }
                         }
@@ -747,12 +769,12 @@ public class Axis {
                             this.timeFormat = "HH:mm";
                             this.timeUnit = TimeUnit.MINITUE;
                             scal.set(Calendar.SECOND, 0);
-                            if (scal.after(sscal)) {
+                            if (!scal.before(sscal)) {
                                 dates.add(scal.getTime());
                             }
-                            while (scal.before(ecal)) {
+                            while (!scal.after(ecal)) {
                                 scal.add(Calendar.MINUTE, 1);
-                                if (scal.after(sscal)) {
+                                if (!scal.before(sscal)) {
                                     dates.add(scal.getTime());
                                 }
                             }
@@ -760,12 +782,12 @@ public class Axis {
                             scal.setTime(sdate);
                             this.timeFormat = "HH:mm:ss";
                             this.timeUnit = TimeUnit.SECOND;
-                            if (scal.after(sscal)) {
+                            if (!scal.before(sscal)) {
                                 dates.add(scal.getTime());
                             }
-                            while (scal.before(ecal)) {
+                            while (!scal.after(ecal)) {
                                 scal.add(Calendar.SECOND, 1);
-                                if (scal.after(sscal)) {
+                                if (!scal.before(sscal)) {
                                     dates.add(scal.getTime());
                                 }
                             }                            

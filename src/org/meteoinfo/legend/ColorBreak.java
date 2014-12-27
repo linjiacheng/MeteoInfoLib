@@ -84,7 +84,7 @@ public class ColorBreak {
     /**
      * Set start value
      *
-     * @param Start value
+     * @param startValue  Start value
      */
     public void setStartValue(Object startValue) {
         _startValue = startValue;

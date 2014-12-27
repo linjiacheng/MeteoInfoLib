@@ -59,7 +59,7 @@ public interface IGridDataInfo {
      *
      * @param lonIdx Longitude index
      * @param varIdx Variable index
-     * @param levelIdx Level index
+     * @param timeIdx Time index
      * @return Grid data
      */
     public abstract GridData getGridData_LevelLat(int lonIdx, int varIdx, int timeIdx);
@@ -69,7 +69,7 @@ public interface IGridDataInfo {
      *
      * @param latIdx Latitude index
      * @param varIdx Variable index
-     * @param levelIdx Level index
+     * @param timeIdx Time index
      * @return Grid data
      */
     public abstract GridData getGridData_LevelLon(int latIdx, int varIdx, int timeIdx);

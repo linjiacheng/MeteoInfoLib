@@ -212,7 +212,7 @@ public abstract class LayoutElement {
     /**
      * Get bounds rectangle
      *
-     * @return
+     * @return Bounds rectangle
      */
     public Rectangle getBounds() {
         return new Rectangle(_left, _top, _width, _height);

@@ -16,7 +16,7 @@ public class BigHeader {
     
     /**
      * Get data type index
-     * @return 
+     * @return Data type index
      */
     public int getIndex(){
         return bhi[0][0];

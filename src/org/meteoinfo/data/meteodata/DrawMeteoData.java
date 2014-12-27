@@ -1618,7 +1618,7 @@ public class DrawMeteoData {
      * @param weatherData Weather station data
      * @param wList Weather list
      * @param layerName Layer name
-     * @return
+     * @return VectorLayer
      */
     public static VectorLayer createWeatherSymbolLayer(StationData weatherData, List<Integer> wList,
             String layerName) {

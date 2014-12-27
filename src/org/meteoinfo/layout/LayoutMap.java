@@ -408,7 +408,7 @@ public class LayoutMap extends LayoutElement {
     /**
      * Set grid tick line length
      *
-     * @param Grid tick line length
+     * @param value Tick line length value
      */
     public void setTickLineLength(int value) {
         _mapFrame.setTickLineLength(value);

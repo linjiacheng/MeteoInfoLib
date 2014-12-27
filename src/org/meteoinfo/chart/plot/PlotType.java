@@ -11,5 +11,6 @@ package org.meteoinfo.chart.plot;
  */
 public enum PlotType {
     XY,
-    CATEGORY
+    CATEGORY,
+    XY2D
 }

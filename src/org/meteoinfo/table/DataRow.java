@@ -45,7 +45,7 @@ public class DataRow {
     /**
      * Get row index
      *
-     * @return: int Row index
+     * @return int Row index
      */
     public int getRowIndex() {
         return rowIndex;
@@ -54,7 +54,7 @@ public class DataRow {
     /**
      * Get data table
      *
-     * @return: DataTable The data table
+     * @return DataTable The data table
      */
     public DataTable getTable() {
         return this.table;

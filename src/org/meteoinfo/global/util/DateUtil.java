@@ -124,7 +124,7 @@ public class DateUtil {
      * Convert OA date to date
      *
      * @param oaDate OA date
-     * @return
+     * @return Date
      */
     public static Date fromOADate(double oaDate) {
         Date date = new Date();

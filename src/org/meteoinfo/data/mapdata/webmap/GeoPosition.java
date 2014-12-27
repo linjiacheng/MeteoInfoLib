@@ -93,7 +93,7 @@ public class GeoPosition {
     
     /**
      * {@inheritDoc}
-     * @return 
+     * @return String
      */
     @Override
     public String toString() {

@@ -91,7 +91,7 @@ public class Polygon {
     /**
      * Get rings
      * 
-     * @return 
+     * @return Rings
      */
     public List<List<PointD>> getRings() {
         List<List<PointD>> rings = new ArrayList<List<PointD>>();

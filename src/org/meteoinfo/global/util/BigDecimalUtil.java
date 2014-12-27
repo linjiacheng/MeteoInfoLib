@@ -14,9 +14,9 @@ import java.math.MathContext;
 public class BigDecimalUtil {
     /**
      * Add
-     * @param d1
-     * @param d2
-     * @return 
+     * @param d1 Value1
+     * @param d2 Value2
+     * @return Add result
      */
     public static double add(double d1,double d2){  
         BigDecimal b1=new BigDecimal(Double.toString(d1));  
@@ -26,9 +26,9 @@ public class BigDecimalUtil {
       
     /**
      * Substract
-     * @param d1
-     * @param d2
-     * @return 
+     * @param d1 Value1
+     * @param d2 Value2
+     * @return Substract result
      */
     public static double sub(double d1,double d2){  
         BigDecimal b1=new BigDecimal(Double.toString(d1));  
@@ -38,9 +38,9 @@ public class BigDecimalUtil {
       
     /**
      * Multiply
-     * @param d1
-     * @param d2
-     * @return 
+     * @param d1 Value1
+     * @param d2 Value2
+     * @return Multiply result
      */
     public static double mul(double d1,double d2){  
         BigDecimal b1=new BigDecimal(Double.toString(d1));  
@@ -50,9 +50,9 @@ public class BigDecimalUtil {
       
     /**
      * Divide
-     * @param d1
-     * @param d2
-     * @return 
+     * @param d1 Value1
+     * @param d2 Value2
+     * @return Divide result
      */
     public static double div(double d1,double d2){  
         return div(d1,d2,20);            
@@ -60,10 +60,10 @@ public class BigDecimalUtil {
       
     /**
      * Divide
-     * @param d1
-     * @param d2
-     * @param scale
-     * @return 
+     * @param d1 Value1
+     * @param d2 Value2
+     * @param scale Scale
+     * @return Divide result
      */
     public static double div(double d1,double d2,int scale){  
         if(scale<0){  
@@ -76,8 +76,8 @@ public class BigDecimalUtil {
     
     /**
      * Power
-     * @param d1
-     * @param d2
+     * @param d1 Value1
+     * @param d2 Value2
      * @return Power value
      */
     public static double pow(double d1,int d2){  

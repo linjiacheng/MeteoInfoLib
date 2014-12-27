@@ -929,7 +929,7 @@ public class LegendManage {
      * Get contour values and colors from legend scheme
      *
      * @param aLS The legend scheme
-     * @return
+     * @return Contour and color values
      */
     public static Object[] getContoursAndColors(LegendScheme aLS) {
         int i;
