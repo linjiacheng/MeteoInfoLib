@@ -13,9 +13,9 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.List;
 import org.meteoinfo.chart.plot.Plot;
-import org.meteoinfo.chart.plot.PlotType;
-import org.meteoinfo.chart.plot.XY1DPlot;
 import org.meteoinfo.global.PointF;
 
 /**
@@ -25,9 +25,11 @@ import org.meteoinfo.global.PointF;
 public class Chart {
 
     // <editor-fold desc="Variables">
-    private final Plot plot;
-    private ChartTitle title;
-    private ChartTitle subTitle;
+    private List<Plot> plots;
+    private int rowNum;
+    private int columnNum;
+    private ChartText title;
+    private ChartText subTitle;
     private ChartLegend legend;
     private Color background;
     private boolean drawBackground;
@@ -39,20 +41,25 @@ public class Chart {
     // <editor-fold desc="Constructor">
     /**
      * Constructor
-     *
-     * @param plot Plot
      */
-    public Chart(Plot plot) {
-        this.plot = plot;
-        if (plot.getPlotType() == PlotType.XY)
-            this.legend = new ChartLegend((XY1DPlot)plot);
-        else {
-            this.legend = null;            
-        }
+    public Chart(){
         this.drawLegend = false;
         this.background = Color.white;
         this.drawBackground = false;
         this.antiAlias = false;
+        this.rowNum = 1;
+        this.columnNum = 1;
+        this.plots = new ArrayList<Plot>();
+    }
+    
+    /**
+     * Constructor
+     *
+     * @param plot Plot
+     */
+    public Chart(Plot plot) {
+        this();
+        this.plots.add(plot);
     }
 
     /**
@@ -66,7 +73,7 @@ public class Chart {
         if (title == null) {
             this.title = null;
         } else {
-            this.title = new ChartTitle(title);
+            this.title = new ChartText(title);
         }
     }
 
@@ -77,8 +84,48 @@ public class Chart {
      *
      * @return Plot
      */
-    public Plot getPlot() {
-        return plot;
+    public List<Plot> getPlots() {
+        return plots;
+    }
+    
+    /**
+     * Get the first plot
+     * @return Plot
+     */
+    public Plot getPlot(){
+        return this.plots.get(0);
+    }
+    
+    /**
+     * Get row number of sub plots
+     * @return Row number of sub plots
+     */
+    public int getRowNum(){
+        return this.rowNum;
+    }
+    
+    /**
+     * Set row number of sub plots
+     * @param value Row number of sub plots
+     */
+    public void setRowNum(int value){
+        this.rowNum = value;
+    }
+    
+    /**
+     * Get column number of sub plots
+     * @return Column number of sub plots
+     */
+    public int getColumnNum(){
+        return this.columnNum;
+    }
+    
+    /**
+     * Set column number of sub plots
+     * @param value Column number of sub plots
+     */
+    public void setColumnNum(int value){
+        this.columnNum = value;
     }
 
     /**
@@ -86,7 +133,7 @@ public class Chart {
      *
      * @return Title
      */
-    public ChartTitle getTitle() {
+    public ChartText getTitle() {
         return title;
     }
 
@@ -95,7 +142,7 @@ public class Chart {
      *
      * @param value Title
      */
-    public void setTitle(ChartTitle value) {
+    public void setTitle(ChartText value) {
         title = value;
     }
 
@@ -104,7 +151,7 @@ public class Chart {
      *
      * @return Sub title
      */
-    public ChartTitle getSubTitle() {
+    public ChartText getSubTitle() {
         return subTitle;
     }
 
@@ -113,7 +160,7 @@ public class Chart {
      *
      * @param value Sub title
      */
-    public void setSubTitle(ChartTitle value) {
+    public void setSubTitle(ChartText value) {
         subTitle = value;
     }
 
@@ -267,8 +314,11 @@ public class Chart {
             return;
         }
         
-        if (plot != null) {
-            this.plot.draw(g, plotArea);
+        if (this.plots.size() > 0) {
+            for (Plot plot : this.plots) {
+                Rectangle2D subPlotArea = this.getSubPlotArea(g, plot, plotArea);
+                plot.draw(g, subPlotArea);
+            }
         }
         
         //Draw legend
@@ -331,6 +381,19 @@ public class Chart {
 
         return pArea;
     }
+    
+    private Rectangle2D getSubPlotArea(Graphics2D g, Plot plot, Rectangle2D area) {
+        if (this.rowNum == 1 && this.columnNum == 1){
+            return this.plotArea;
+        } else {
+            double rowHeight = area.getHeight()/ this.rowNum;
+            double colWidth = area.getWidth()/ this.columnNum;
+            double x = area.getX() + plot.columnIndex * colWidth;
+            double y = area.getY()+ plot.rowIndex * rowHeight; 
+            Rectangle2D subPlotArea = new Rectangle2D.Double(x, y, colWidth, rowHeight);
+            return subPlotArea;
+        }
+    }
 
     /**
      * Get graph area
@@ -338,10 +401,50 @@ public class Chart {
      * @return Get graph area
      */
     public Rectangle2D getGraphArea() {
-        Rectangle2D rect = this.plot.getGraphArea();
+        Rectangle2D rect = this.plots.get(0).getGraphArea();
         double left = rect.getX() + this.plotArea.getX();
         double top = rect.getY() + this.plotArea.getY();
         return new Rectangle2D.Double(left, top, rect.getWidth(), rect.getHeight());
+    }
+    
+    /**
+     * Clear plots
+     */
+    public void clearPlots(){
+        this.plots.clear();
+    }
+    
+    /**
+     * Add a plot
+     * @param plot Plot
+     */
+    public void addPlot(Plot plot){
+        this.plots.add(plot);
+    }
+    
+    /**
+     * Set plot
+     * @param plot Plot
+     */
+    public void setPlot(Plot plot){
+        this.plots.clear();
+        this.plots.add(plot);
+    }
+    
+    /**
+     * Get plot by plot index
+     * @param plotIdx Plot index - begin with 1
+     * @return 
+     */
+    public Plot getPlot(int plotIdx){
+        for (Plot plot : this.plots){
+            int pIdx = plot.columnIndex * this.columnNum + plot.rowIndex + 1;
+            if (pIdx == plotIdx){
+                return plot;
+            }
+        }
+        
+        return null;
     }
     // </editor-fold>
 

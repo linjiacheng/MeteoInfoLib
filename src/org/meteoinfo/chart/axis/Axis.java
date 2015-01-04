@@ -451,6 +451,25 @@ public class Axis {
     public double[] getTickValues() {
         return this.tickValues;
     }
+    
+    /**
+     * Set tick values
+     * @param value Tick values
+     */
+    public void setTickValues(double[] value){
+        this.tickValues = value;
+    }
+    
+    /**
+     * Set tick values
+     * @param value Tick value list
+     */
+    public void setTickValues(List<Double> value){
+        this.tickValues = new double[value.size()];
+        for (int i = 0; i < value.size(); i++){
+            this.tickValues[i] = value.get(i);
+        }
+    }
 
     /**
      * Get if is time axis

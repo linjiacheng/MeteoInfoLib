@@ -41,7 +41,8 @@ import org.meteoinfo.chart.plot.XY1DPlot;
 public class ChartLegend {
     // <editor-fold desc="Variables">
 
-    private final XY1DPlot plot;
+    //private final XY1DPlot plot;
+    private LegendScheme legendScheme;
     private LegendPosition position;
     private PlotOrientation orientation;
     private Color background;
@@ -66,14 +67,15 @@ public class ChartLegend {
     /**
      * Constructor
      *
-     * @param plot XYPlot
+     * @param ls LegendScheme
      */
-    public ChartLegend(XY1DPlot plot) {
-        this.plot = plot;
+    public ChartLegend(LegendScheme ls) {
+        //this.plot = plot;
+        this.legendScheme = ls;
         this.position = LegendPosition.BOTTOM;
         this.orientation = PlotOrientation.HORIZONTAL;
         this.background = Color.white;
-        this.drawBackground = false;        
+        this.drawBackground = false;
         _drawNeatLine = true;
         _neatLineColor = Color.black;
         _neatLineSize = 1;
@@ -89,26 +91,44 @@ public class ChartLegend {
 
     // </editor-fold>
     // <editor-fold desc="Events">
-   
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
+    /**
+     * Get legend scheme
+     *
+     * @return Legend scheme
+     */
+    public LegendScheme getLegendScheme() {
+        return this.legendScheme;
+    }
+
+    /**
+     * Set legend scheme
+     *
+     * @param value Legend scheme
+     */
+    public void setLegendScheme(LegendScheme value) {
+        this.legendScheme = value;
+    }
 
     /**
      * Get legend position
+     *
      * @return Legend position
      */
-    public LegendPosition getPosition(){
+    public LegendPosition getPosition() {
         return this.position;
     }
-    
+
     /**
      * Set legend position
+     *
      * @param value Legend position
      */
-    public void setPosition(LegendPosition value){
+    public void setPosition(LegendPosition value) {
         this.position = value;
     }
-    
+
     /**
      * Get plot orientation
      *
@@ -126,7 +146,7 @@ public class ChartLegend {
     public void setPlotOrientation(PlotOrientation value) {
         this.orientation = value;
     }
-    
+
     /**
      * Get background
      *
@@ -144,23 +164,25 @@ public class ChartLegend {
     public void setBackground(Color value) {
         this.background = value;
     }
-    
+
     /**
      * Get if draw background
+     *
      * @return Boolean
      */
-    public boolean isDrawBackground(){
+    public boolean isDrawBackground() {
         return this.drawBackground;
     }
-    
+
     /**
      * Set if draw background
+     *
      * @param value Boolean
      */
-    public void setDrawBackground(boolean value){
+    public void setDrawBackground(boolean value) {
         this.drawBackground = value;
     }
-    
+
     /**
      * Get if draw neat line
      *
@@ -250,20 +272,22 @@ public class ChartLegend {
     public void setColumnNumber(int value) {
         rowColNum = value;
     }
-    
+
     /**
      * Get symbol dimension
+     *
      * @return Symbol dimension
      */
-    public Dimension getSymbolDimension(){
+    public Dimension getSymbolDimension() {
         return this.symbolDimension;
     }
-    
+
     /**
      * Set symbol dimension
+     *
      * @param value Symbol dimension
      */
-    public void setSymbolDimension(Dimension value){
+    public void setSymbolDimension(Dimension value) {
         this.symbolDimension = value;
     }
 
@@ -276,24 +300,23 @@ public class ChartLegend {
      * @param point Start point
      */
     public void draw(Graphics2D g, PointF point) {
-        
+
         AffineTransform oldMatrix = g.getTransform();
         g.translate(point.X, point.Y);
-        
+
         //Draw background color
-        if (this.drawBackground){
+        if (this.drawBackground) {
             g.setColor(this.background);
             g.fill(new Rectangle.Float(0, 0, this.width, this.height));
         }
 
         //Draw legend
-        LegendScheme ls = plot.getLegendScheme();
         switch (this.orientation) {
             case HORIZONTAL:
-                drawHorizontalLegend(g, ls);
+                drawHorizontalLegend(g, legendScheme);
                 break;
             case VERTICAL:
-                this.drawVerticalLegend(g, ls);
+                this.drawVerticalLegend(g, legendScheme);
                 break;
         }
 
@@ -306,7 +329,7 @@ public class ChartLegend {
         }
 
         g.setTransform(oldMatrix);
-    }    
+    }
 
     private void drawVerticalLegend(Graphics2D g, LegendScheme aLS) {
         String caption = "";
@@ -317,12 +340,13 @@ public class ChartLegend {
         float symbolHeight = this.symbolDimension.height;
         float symbolWidth = this.symbolDimension.width;
         float colWidth = symbolWidth + getMaxLabelWidth(g) + 10;
-        
+
         //Set columns
         int[] rowNums = new int[rowColNum];
         int ave = aLS.getVisibleBreakNum() / rowColNum;
-        if (ave * rowColNum < aLS.getBreakNum())
+        if (ave * rowColNum < aLS.getBreakNum()) {
             ave += 1;
+        }
         int num = 0;
         int i;
         for (i = 1; i < rowColNum; i++) {
@@ -384,19 +408,20 @@ public class ChartLegend {
             }
         }
     }
-    
+
     private void drawHorizontalLegend(Graphics2D g, LegendScheme aLS) {
         String caption;
         float breakHeight = this.getBreakHeight(g);
         float symbolHeight = this.symbolDimension.height;
         float symbolWidth = this.symbolDimension.width;
         FontMetrics metrics = g.getFontMetrics(labelFont);
-        
+
         //Set columns
         int[] colNums = new int[rowColNum];
         int ave = aLS.getVisibleBreakNum() / rowColNum;
-        if (ave * rowColNum < aLS.getBreakNum())
+        if (ave * rowColNum < aLS.getBreakNum()) {
             ave += 1;
+        }
         int num = 0;
         int i;
         for (i = 0; i < rowColNum - 1; i++) {
@@ -410,35 +435,46 @@ public class ChartLegend {
         y = this._breakSpace + breakHeight / 2;
         i = 0;
         for (int row = 0; row < rowColNum; row++) {
-            x = this.symbolDimension.width / 2 + 5;            
+            x = this.symbolDimension.width / 2 + 5;
             for (int col = 0; col < colNums[row]; col++) {
-                if (i >= aLS.getBreakNum())
+                if (i >= aLS.getBreakNum()) {
                     break;
-                
+                }
+
                 ColorBreak cb = aLS.getLegendBreaks().get(i);
                 if (!cb.isDrawShape()) {
                     continue;
-                }                
-                caption = aLS.getLegendBreaks().get(i).getCaption();                
-                switch (aLS.getShapeType()) {
-                    case Point:
-                        PointBreak aPB = (PointBreak) cb;
-                        Draw.drawPoint(new PointF(x, y), aPB, g);
-                        break;
-                    case Polyline:
-                    case PolylineZ:
-                        PolylineBreak aPLB = (PolylineBreak) cb;
-                        Draw.drawPolylineSymbol_S(new PointF(x, y), symbolWidth, symbolHeight, aPLB, g);
-                        break;
-                    case Polygon:
-                        PolygonBreak aPGB = (PolygonBreak) cb;
-                        Draw.drawPolygonSymbol(new PointF(x, y), symbolHeight * 8 / 10, symbolHeight * 8 / 10, aPGB, g);
-                        break;
-                    case Image:
-                        Draw.drawPolygonSymbol(new PointF(x, y), cb.getColor(), Color.black, symbolWidth,
-                                symbolHeight, true, true, g);
-                        break;
                 }
+                caption = aLS.getLegendBreaks().get(i).getCaption();
+                if (cb instanceof PointBreak) {
+                    PointBreak aPB = (PointBreak) cb;
+                    Draw.drawPoint(new PointF(x, y), aPB, g);
+                } else if (cb instanceof PolylineBreak) {
+                    PolylineBreak aPLB = (PolylineBreak) cb;
+                    Draw.drawPolylineSymbol_S(new PointF(x, y), symbolWidth, symbolHeight, aPLB, g);
+                } else if (cb instanceof PolygonBreak) {
+                    Draw.drawPolygonSymbol(new PointF(x, y), cb.getColor(), Color.black, symbolWidth,
+                            symbolHeight, true, true, g);
+                }
+//                switch (aLS.getShapeType()) {
+//                    case Point:
+//                        PointBreak aPB = (PointBreak) cb;
+//                        Draw.drawPoint(new PointF(x, y), aPB, g);
+//                        break;
+//                    case Polyline:
+//                    case PolylineZ:
+//                        PolylineBreak aPLB = (PolylineBreak) cb;
+//                        Draw.drawPolylineSymbol_S(new PointF(x, y), symbolWidth, symbolHeight, aPLB, g);
+//                        break;
+//                    case Polygon:
+//                        PolygonBreak aPGB = (PolygonBreak) cb;
+//                        Draw.drawPolygonSymbol(new PointF(x, y), symbolHeight * 8 / 10, symbolHeight * 8 / 10, aPGB, g);
+//                        break;
+//                    case Image:
+//                        Draw.drawPolygonSymbol(new PointF(x, y), cb.getColor(), Color.black, symbolWidth,
+//                                symbolHeight, true, true, g);
+//                        break;
+//                }
 
                 PointF sP = new PointF(0, 0);
                 sP.X = x + symbolWidth / 2;
@@ -456,16 +492,15 @@ public class ChartLegend {
     }
 
     private int getMaxLabelWidth(Graphics2D g) {
-        LegendScheme aLS = plot.getLegendScheme();
         String caption = "";
         Dimension aSF;
-        int bNum = aLS.getBreakNum();
+        int bNum = legendScheme.getBreakNum();
         FontMetrics metrics = g.getFontMetrics(labelFont);
         aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());
         int labWidth = aSF.width;
         for (int i = 0; i < bNum; i++) {
-            caption = aLS.getLegendBreaks().get(i).getCaption();            
-            boolean isValid = true;            
+            caption = legendScheme.getLegendBreaks().get(i).getCaption();
+            boolean isValid = true;
             if (isValid) {
                 int labwidth = metrics.stringWidth(caption);
                 if (labWidth < labwidth) {
@@ -473,135 +508,139 @@ public class ChartLegend {
                 }
             }
         }
-        
+
         return labWidth;
     }
 
-    private int getBreakHeight(Graphics2D g) {        
+    private int getBreakHeight(Graphics2D g) {
         FontMetrics metrics = g.getFontMetrics(labelFont);
         return Math.max(metrics.getHeight(), this.symbolDimension.height);
     }
 
     /**
      * Get legend dimension
+     *
      * @param g Graphics2D
      * @param limitDim Limit dimension
      * @return Legend dimension
      */
     public Dimension getLegendDimension(Graphics2D g, Dimension limitDim) {
-        if (plot != null) {
-            if (plot.getLegendScheme() == null) {
-                return null;
-            }
-
-            LegendScheme ls = plot.getLegendScheme();
-            int breakHeight = getBreakHeight(g);            
+        if (legendScheme != null) {
+            int breakHeight = getBreakHeight(g);
             switch (this.orientation) {
-                case VERTICAL:                                                    
+                case VERTICAL:
                     //Get column number
-                    int tHeight = (int) (ls.getBreakNum() * (breakHeight + _breakSpace)
+                    int tHeight = (int) (legendScheme.getBreakNum() * (breakHeight + _breakSpace)
                             + _breakSpace * 2 + breakHeight / 2 + 5);
                     rowColNum = 1;
                     if (tHeight > limitDim.height * 10 / 8) {
                         rowColNum = tHeight / (limitDim.height * 10 / 8) + 1;
-                        if (rowColNum == 1)
+                        if (rowColNum == 1) {
                             rowColNum = 2;
-                        else {
-                            int n = ls.getBreakNum() / rowColNum;
-                            int m = ls.getBreakNum() % rowColNum;
+                        } else {
+                            int n = legendScheme.getBreakNum() / rowColNum;
+                            int m = legendScheme.getBreakNum() % rowColNum;
                             if (m != 0) {
-                                if (m <= n)
-                                    rowColNum += 1;   
-                                else 
-                                    rowColNum += 2;
-                            } else {
-                                if (rowColNum * (limitDim.width * 8 / 10) < tHeight)
+                                if (m <= n) {
                                     rowColNum += 1;
-                            }   
+                                } else {
+                                    rowColNum += 2;
+                                }
+                            } else {
+                                if (rowColNum * (limitDim.width * 8 / 10) < tHeight) {
+                                    rowColNum += 1;
+                                }
+                            }
                         }
                     }
-                    
+
                     //Get width
                     int colWidth = this.symbolDimension.width + getMaxLabelWidth(g) + 15;
                     this.width = colWidth * rowColNum;
-                    
+
                     //Get height
                     int[] rowNums = new int[rowColNum];
-                    int ave = ls.getBreakNum()/ rowColNum;
-                    if (ave * rowColNum < ls.getBreakNum())
+                    int ave = legendScheme.getBreakNum() / rowColNum;
+                    if (ave * rowColNum < legendScheme.getBreakNum()) {
                         ave += 1;
+                    }
                     int num = 0;
                     int i;
                     for (i = 0; i < rowColNum - 1; i++) {
                         rowNums[i] = ave;
                         num += ave;
                     }
-                    rowNums[rowColNum - 1] = ls.getBreakNum()- num;
+                    rowNums[rowColNum - 1] = legendScheme.getBreakNum() - num;
 
                     this.height = (int) (rowNums[0] * (breakHeight + _breakSpace)
-                            + _breakSpace * 2 + breakHeight / 2 + 5);                    
+                            + _breakSpace * 2 + breakHeight / 2 + 5);
                     break;
-                case HORIZONTAL:                                        
+                case HORIZONTAL:
                     //Get row number
                     int breakWidth = this.symbolDimension.width + this.getMaxLabelWidth(g) + 15;
-                    int tWidth = breakWidth * ls.getBreakNum();
+                    int tWidth = breakWidth * legendScheme.getBreakNum();
                     rowColNum = 1;
-                    if (tWidth > limitDim.width * 8 / 10){
+                    if (tWidth > limitDim.width * 8 / 10) {
                         rowColNum = tWidth / (limitDim.width * 8 / 10);
-                        if (rowColNum == 1)
+                        if (rowColNum == 1) {
                             rowColNum = 2;
-                        else {
-                            int n = ls.getBreakNum() / rowColNum;
-                            int m = ls.getBreakNum() % rowColNum;
+                        } else {
+                            int n = legendScheme.getBreakNum() / rowColNum;
+                            int m = legendScheme.getBreakNum() % rowColNum;
                             if (m != 0) {
-                                if (m <= n)
-                                    rowColNum += 1;   
-                                else 
-                                    rowColNum += 2;
-                            } else {
-                                if (rowColNum * (limitDim.width * 8 / 10) < tWidth)
+                                if (m <= n) {
                                     rowColNum += 1;
-                            }                           
+                                } else {
+                                    rowColNum += 2;
+                                }
+                            } else {
+                                if (rowColNum * (limitDim.width * 8 / 10) < tWidth) {
+                                    rowColNum += 1;
+                                }
+                            }
                         }
-                    }                                     
-                    
+                    }
+
                     //Get height
-                    this.height = (int)(breakHeight + this._breakSpace * 2) * this.rowColNum;
-                    
+                    this.height = (int) (breakHeight + this._breakSpace * 2) * this.rowColNum;
+
                     //Get width
                     FontMetrics metrics = g.getFontMetrics(labelFont);
-                    ave = ls.getBreakNum()/ rowColNum;
-                    if (ave * rowColNum < ls.getBreakNum())
+                    ave = legendScheme.getBreakNum() / rowColNum;
+                    if (ave * rowColNum < legendScheme.getBreakNum()) {
                         ave += 1;
+                    }
                     num = 0;
                     int maxWidth = 0;
                     int tempWidth = 0;
-                    for (i = 0; i < ls.getBreakNum(); i++) {
-                        if (num < ave){
-                            tempWidth += this.symbolDimension.width + 15 +
-                                    metrics.stringWidth(ls.getLegendBreaks().get(i).getCaption());
+                    for (i = 0; i < legendScheme.getBreakNum(); i++) {
+                        if (num < ave) {
+                            tempWidth += this.symbolDimension.width + 15
+                                    + metrics.stringWidth(legendScheme.getLegendBreaks().get(i).getCaption());
                             num += 1;
-                        } else {                            
-                            if (maxWidth < tempWidth)
+                        } else {
+                            if (maxWidth < tempWidth) {
                                 maxWidth = tempWidth;
-                            tempWidth = metrics.stringWidth(ls.getLegendBreaks().get(i).getCaption()) + 15;
+                            }
+                            tempWidth = metrics.stringWidth(legendScheme.getLegendBreaks().get(i).getCaption()) + 15;
                             num = 1;
                         }
                     }
-                    if (maxWidth < tempWidth)
+                    if (maxWidth < tempWidth) {
                         maxWidth = tempWidth;
-                    if (maxWidth > limitDim.width)
+                    }
+                    if (maxWidth > limitDim.width) {
                         maxWidth = limitDim.width * 8 / 10;
+                    }
                     this.width = maxWidth;
-                    break;                
+                    break;
             }
         }
-        
+
         return new Dimension(this.width, this.height);
     }
 
     // </editor-fold>      
-
     // <editor-fold desc="BeanInfo">
     public class LayoutLegendBean {
 
@@ -609,7 +648,6 @@ public class ChartLegend {
         }
 
         // <editor-fold desc="Get Set Methods">        
-
         /**
          * Get if draw neat line
          *
@@ -679,7 +717,7 @@ public class ChartLegend {
          * @param font The font
          */
         public void setLabelFont(Font font) {
-            labelFont = font;            
+            labelFont = font;
         }
 
         /**
@@ -699,20 +737,22 @@ public class ChartLegend {
         public void setColumnNumber(int value) {
             rowColNum = value;
         }
-        
+
         /**
          * Get is draw background
+         *
          * @return Boolean
          */
-        public boolean isDrawBackground(){
+        public boolean isDrawBackground() {
             return drawBackground;
         }
-        
+
         /**
          * Set is draw background
+         *
          * @param value Boolean
          */
-        public void setDrawBackground(boolean value){
+        public void setDrawBackground(boolean value) {
             drawBackground = value;
         }
 
@@ -733,7 +773,7 @@ public class ChartLegend {
         public void setBackground(Color c) {
             background = c;
         }
-        
+
         // </editor-fold>
     }
 
@@ -743,7 +783,7 @@ public class ChartLegend {
             super(LayoutLegendBean.class);
             ExtendedPropertyDescriptor e = addProperty("plotOrientation");
             e.setCategory("General").setDisplayName("Plot orientation");
-            e.setPropertyEditorClass(PlotOrientationEditor.class);            
+            e.setPropertyEditorClass(PlotOrientationEditor.class);
             addProperty("labelFont").setCategory("General").setDisplayName("Label Font");
             addProperty("drawBackground").setCategory("General").setDisplayName("Draw Background");
             addProperty("background").setCategory("General").setDisplayName("Background");

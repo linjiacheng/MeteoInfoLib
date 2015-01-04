@@ -39,21 +39,21 @@ public abstract class DataMath {
             if (b.getClass() == GridData.class) {
                 return ((GridData) a).add((GridData) b);
             } else {
-                return ((GridData) a).add((Double) b);
+                return ((GridData) a).add(Double.parseDouble(b.toString()));
             }
         } else if (a.getClass() == StationData.class) {
             if (b.getClass() == StationData.class) {
                 return ((StationData) a).add((StationData) b);
             } else {
-                return ((StationData) a).add((Double) b);
+                return ((StationData) a).add(Double.parseDouble(b.toString()));
             }
         } else {
             if (b.getClass() == GridData.class) {
-                return ((GridData) b).add((Double) a);
+                return ((GridData) b).add(Double.parseDouble(a.toString()));
             } else if (b.getClass() == StationData.class) {
-                return ((StationData) b).add((Double) a);
+                return ((StationData) b).add(Double.parseDouble(a.toString()));
             } else {
-                return (Double) a + (Double) b;
+                return Double.parseDouble(a.toString()) + Double.parseDouble(b.toString());
             }
         }
     }
@@ -70,21 +70,21 @@ public abstract class DataMath {
             if (b.getClass() == GridData.class) {
                 return ((GridData) a).sub((GridData) b);
             } else {
-                return ((GridData) a).sub((Double) b);
+                return ((GridData) a).sub(Double.parseDouble(b.toString()));
             }
         } else if (a.getClass() == StationData.class) {
             if (b.getClass() == StationData.class) {
                 return ((StationData) a).sub((StationData) b);
             } else {
-                return ((StationData) a).sub((Double) b);
+                return ((StationData) a).sub(Double.parseDouble(b.toString()));
             }
         } else {
             if (b.getClass() == GridData.class) {
-                return sub((Double) a, (GridData) b);
+                return sub(Double.parseDouble(a.toString()), (GridData) b);
             } else if (b.getClass() == StationData.class) {
-                return sub((Double) a, (StationData) b);
+                return sub(Double.parseDouble(a.toString()), (StationData) b);
             } else {
-                return (Double) a - (Double) b;
+                return Double.parseDouble(a.toString()) - Double.parseDouble(b.toString());
             }
         }
     }
@@ -153,21 +153,21 @@ public abstract class DataMath {
             if (b.getClass() == GridData.class) {
                 return ((GridData) a).mul((GridData) b);
             } else {
-                return ((GridData) a).mul((Double) b);
+                return ((GridData) a).mul(Double.parseDouble(b.toString()));
             }
         } else if (a.getClass() == StationData.class) {
             if (b.getClass() == StationData.class) {
                 return ((StationData) a).mul((StationData) b);
             } else {
-                return ((StationData) a).mul((Double) b);
+                return ((StationData) a).mul(Double.parseDouble(b.toString()));
             }
         } else {
             if (b.getClass() == GridData.class) {
-                return ((GridData) b).mul((Double) a);
+                return ((GridData) b).mul(Double.parseDouble(a.toString()));
             } else if (b.getClass() == StationData.class) {
-                return ((StationData) b).mul((Double) a);
+                return ((StationData) b).mul(Double.parseDouble(a.toString()));
             } else {
-                return (Double) a * (Double) b;
+                return Double.parseDouble(a.toString()) * Double.parseDouble(b.toString());
             }
         }
     }
@@ -184,21 +184,21 @@ public abstract class DataMath {
             if (b.getClass() == GridData.class) {
                 return ((GridData) a).div((GridData) b);
             } else {
-                return ((GridData) a).div((Double) b);
+                return ((GridData) a).div(Double.parseDouble(b.toString()));
             }
         } else if (a.getClass() == StationData.class) {
             if (b.getClass() == StationData.class) {
                 return ((StationData) a).div((StationData) b);
             } else {
-                return ((StationData) a).div((Double) b);
+                return ((StationData) a).div(Double.parseDouble(b.toString()));
             }
         } else {
             if (b.getClass() == GridData.class) {
-                return div_1((Double) a, (GridData) b);
+                return div_1(Double.parseDouble(a.toString()), (GridData) b);
             } else if (b.getClass() == StationData.class) {
-                return div_1((Double) a, (StationData) b);
+                return div_1(Double.parseDouble(a.toString()), (StationData) b);
             } else {
-                return (Double) a / (Double) b;
+                return Double.parseDouble(a.toString()) / Double.parseDouble(b.toString());
             }
         }
     }
@@ -447,7 +447,7 @@ public abstract class DataMath {
         if (a.getClass() == StationData.class) {
             return ((StationData) a).abs();
         } else {
-            return Math.abs((Double) a);
+            return Math.abs(Double.parseDouble(a.toString()));
         }
     }
 
@@ -464,7 +464,7 @@ public abstract class DataMath {
         if (a.getClass() == StationData.class) {
             return ((StationData) a).asin();
         } else {
-            return Math.asin((Double) a);
+            return Math.asin(Double.parseDouble(a.toString()));
         }
     }
 
@@ -481,7 +481,7 @@ public abstract class DataMath {
         if (a.getClass() == StationData.class) {
             return ((StationData) a).acos();
         } else {
-            return Math.acos((Double) a);
+            return Math.acos(Double.parseDouble(a.toString()));
         }
     }
 
@@ -498,7 +498,7 @@ public abstract class DataMath {
         if (a.getClass() == StationData.class) {
             return ((StationData) a).atan();
         } else {
-            return Math.atan((Double) a);
+            return Math.atan(Double.parseDouble(a.toString()));
         }
     }
 
@@ -515,7 +515,7 @@ public abstract class DataMath {
         if (a.getClass() == StationData.class) {
             return ((StationData) a).sin();
         } else {
-            return Math.sin((Double) a);
+            return Math.sin(Double.parseDouble(a.toString()));
         }
     }
 
@@ -532,7 +532,7 @@ public abstract class DataMath {
         if (a.getClass() == StationData.class) {
             return ((StationData) a).cos();
         } else {
-            return Math.cos((Double) a);
+            return Math.cos(Double.parseDouble(a.toString()));
         }
     }
 
@@ -549,7 +549,7 @@ public abstract class DataMath {
         if (a.getClass() == StationData.class) {
             return ((StationData) a).tan();
         } else {
-            return Math.tan((Double) a);
+            return Math.tan(Double.parseDouble(a.toString()));
         }
     }
 
@@ -566,7 +566,7 @@ public abstract class DataMath {
         if (a.getClass() == StationData.class) {
             return ((StationData) a).exp();
         } else {
-            return Math.exp((Double) a);
+            return Math.exp(Double.parseDouble(a.toString()));
         }
     }
 
@@ -584,7 +584,7 @@ public abstract class DataMath {
         if (a.getClass() == StationData.class) {
             return ((StationData) a).pow(p);
         } else {
-            return Math.pow((Double) a, p);
+            return Math.pow(Double.parseDouble(a.toString()), p);
         }
     }
 
@@ -601,7 +601,7 @@ public abstract class DataMath {
         if (a.getClass() == StationData.class) {
             return ((StationData) a).log();
         } else {
-            return Math.log((Double) a);
+            return Math.log(Double.parseDouble(a.toString()));
         }
     }
 
@@ -618,7 +618,7 @@ public abstract class DataMath {
         if (a.getClass() == StationData.class) {
             return ((StationData) a).log10();
         } else {
-            return Math.log10((Double) a);
+            return Math.log10(Double.parseDouble(a.toString()));
         }
     }
 
@@ -635,7 +635,7 @@ public abstract class DataMath {
         if (a.getClass() == StationData.class) {
             return ((StationData) a).sqrt();
         } else {
-            return Math.sqrt((Double) a);
+            return Math.sqrt(Double.parseDouble(a.toString()));
         }
     }
 

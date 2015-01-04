@@ -12,7 +12,7 @@ import java.awt.Font;
  *
  * @author yaqiang
  */
-public class ChartTitle {
+public class ChartText {
     // <editor-fold desc="Variables">
     private Font font;
     private String text;
@@ -22,7 +22,7 @@ public class ChartTitle {
     /**
      * Constructor
      */
-    public ChartTitle(){
+    public ChartText(){
         font = new Font("Arial", Font.BOLD, 14);
         color = Color.black;
     }
@@ -31,7 +31,7 @@ public class ChartTitle {
      * Constructor
      * @param text Text
      */
-    public ChartTitle(String text){
+    public ChartText(String text){
         this();
         this.text = text;
     }
@@ -41,7 +41,7 @@ public class ChartTitle {
      * @param text Text
      * @param font Font
      */
-    public ChartTitle(String text, Font font){
+    public ChartText(String text, Font font){
         this.text = text;
         this.font = font;
     }

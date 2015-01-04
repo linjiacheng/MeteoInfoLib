@@ -361,20 +361,37 @@ public class Draw {
      * @param g Graphics
      */
     public static void drawPoint(PointF aP, PointBreak aPB, Graphics2D g) {
-        switch (aPB.getMarkerType()) {
-            case Simple:
-                drawPoint_Simple(aP, aPB, g);
-                break;
-            case Character:
-                drawPoint_Character(aP, aPB, g);
-                break;
-            case Image:
-                drawPoint_Image(aP, aPB, g);
-                break;
+        Rectangle clip = g.getClipBounds();
+        if (clip != null) {
+            g.setClip(null);
+            if (aP.X >= clip.x && aP.X <= clip.x + clip.width && aP.Y >= clip.y
+                    && aP.Y <= clip.y + clip.height) {
+                switch (aPB.getMarkerType()) {
+                    case Simple:
+                        drawPoint_Simple(aP, aPB, g);
+                        break;
+                    case Character:
+                        drawPoint_Character(aP, aPB, g);
+                        break;
+                    case Image:
+                        drawPoint_Image(aP, aPB, g);
+                        break;
+                }
+            }
+            g.setClip(clip);
+        } else {
+            switch (aPB.getMarkerType()) {
+                case Simple:
+                    drawPoint_Simple(aP, aPB, g);
+                    break;
+                case Character:
+                    drawPoint_Character(aP, aPB, g);
+                    break;
+                case Image:
+                    drawPoint_Image(aP, aPB, g);
+                    break;
+            }
         }
-
-        //if (aPB.Angle != 0)
-        //    g.Transform = new Matrix();
     }
 
     private static void drawPoint_Simple(PointF aP, PointBreak aPB, Graphics2D g) {
@@ -1278,10 +1295,26 @@ public class Draw {
             if (aPLB.getDrawSymbol()) {
                 Object rend = g.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
                 g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                for (int i = 0; i < points.length; i++) {
-                    if (i % aPLB.getSymbolInterval() == 0) {
-                        drawPoint(aPLB.getSymbolStyle(), points[i], aPLB.getSymbolColor(), aPLB.getSymbolColor(),
-                                aPLB.getSymbolSize(), true, false, g);
+                Rectangle clip = g.getClipBounds();
+                PointF p;
+                if (clip != null) {
+                    g.setClip(null);
+                    for (int i = 0; i < points.length; i++) {
+                        p = points[i];
+                        if (p.X >= clip.x && p.X <= clip.x + clip.width && p.Y >= clip.y && p.Y <= clip.y + clip.height) {
+                            if (i % aPLB.getSymbolInterval() == 0) {
+                                drawPoint(aPLB.getSymbolStyle(), points[i], aPLB.getSymbolColor(), aPLB.getSymbolColor(),
+                                        aPLB.getSymbolSize(), true, false, g);
+                            }
+                        }
+                    }
+                    g.setClip(clip);
+                } else {
+                    for (int i = 0; i < points.length; i++) {
+                        if (i % aPLB.getSymbolInterval() == 0) {
+                            drawPoint(aPLB.getSymbolStyle(), points[i], aPLB.getSymbolColor(), aPLB.getSymbolColor(),
+                                    aPLB.getSymbolSize(), true, false, g);
+                        }
                     }
                 }
                 g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, rend);
@@ -1421,14 +1454,34 @@ public class Draw {
             if (aPLB.getDrawSymbol()) {
                 Object rend = g.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
                 g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                for (int i = 0; i < points.length; i++) {
-                    if (mvIdx.contains(i)) {
-                        continue;
-                    }
 
-                    if (i % aPLB.getSymbolInterval() == 0) {
-                        drawPoint(aPLB.getSymbolStyle(), points[i], aPLB.getSymbolColor(), aPLB.getSymbolColor(),
-                                aPLB.getSymbolSize(), true, false, g);
+                Rectangle clip = g.getClipBounds();
+                PointF p;
+                if (clip != null) {
+                    g.setClip(null);
+                    for (int i = 0; i < points.length; i++) {
+                        p = points[i];
+                        if (p.X >= clip.x && p.X <= clip.x + clip.width && p.Y >= clip.y && p.Y <= clip.y + clip.height) {
+                            if (mvIdx.contains(i)) {
+                                continue;
+                            }
+                            if (i % aPLB.getSymbolInterval() == 0) {
+                                drawPoint(aPLB.getSymbolStyle(), points[i], aPLB.getSymbolColor(), aPLB.getSymbolColor(),
+                                        aPLB.getSymbolSize(), true, false, g);
+                            }
+                        }
+                    }
+                    g.setClip(clip);
+                } else {
+                    for (int i = 0; i < points.length; i++) {
+                        if (mvIdx.contains(i)) {
+                            continue;
+                        }
+
+                        if (i % aPLB.getSymbolInterval() == 0) {
+                            drawPoint(aPLB.getSymbolStyle(), points[i], aPLB.getSymbolColor(), aPLB.getSymbolColor(),
+                                    aPLB.getSymbolSize(), true, false, g);
+                        }
                     }
                 }
                 g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, rend);
@@ -1678,7 +1731,7 @@ public class Draw {
             }
         }
     }
-    
+
     /**
      * Draw polyline symbol
      *
@@ -1694,7 +1747,7 @@ public class Draw {
             PointF aPoint = new PointF(0, 0);
             aPoint.X = aP.X - width / 2;
             aPoint.Y = aP.Y;
-            points[0] = aPoint;            
+            points[0] = aPoint;
             aPoint = new PointF();
             aPoint.X = aP.X + width / 2;
             aPoint.Y = aP.Y;
@@ -1711,7 +1764,7 @@ public class Draw {
 
             //Draw symbol
             if (aPLB.getDrawSymbol()) {
-                drawPoint(aPLB.getSymbolStyle(), aP, aPLB.getSymbolColor(), aPLB.getSymbolColor(), aPLB.getSymbolSize(), true, false, g);                
+                drawPoint(aPLB.getSymbolStyle(), aP, aPLB.getSymbolColor(), aPLB.getSymbolColor(), aPLB.getSymbolSize(), true, false, g);
             }
         } else {
             PointF[] points = new PointF[2];

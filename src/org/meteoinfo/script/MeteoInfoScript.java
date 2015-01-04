@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 import javax.swing.WindowConstants;
 import org.meteoinfo.chart.Chart;
 import org.meteoinfo.chart.ChartPanel;
-import org.meteoinfo.chart.ChartTitle;
+import org.meteoinfo.chart.ChartText;
 import org.meteoinfo.chart.plot.ChartPlotMethod;
 import org.meteoinfo.chart.plot.XY1DPlot;
 import org.meteoinfo.data.GridData;
@@ -309,7 +309,7 @@ public class MeteoInfoScript {
             this.mapLayout.addText(title, 280, 20, 16);
             this.mapLayout.paintGraphics();
         } else {
-            this.chartPanel.getChart().setTitle(new ChartTitle(title));
+            this.chartPanel.getChart().setTitle(new ChartText(title));
             this.chartPanel.paintGraphics();
         }
     }
@@ -343,91 +343,91 @@ public class MeteoInfoScript {
 
     // </editor-fold>
     // <editor-fold desc="Plot">
-    /**
-     * Plot
-     *
-     * @param yValues Y values
-     */
-    public void plot(List<Number> yValues) {
-        List<Number> xValues = new ArrayList<Number>();
-        for (int i = 0; i < yValues.size(); i++) {
-            xValues.add(i);
-        }
-
-        this.plot(xValues, yValues);
-    }
-
-    /**
-     * Plot
-     *
-     * @param xValues X values
-     * @param yValues Y values
-     */
-    public void plot(List<Number> xValues, List<Number> yValues) {
-        this.plot(xValues, yValues, "");
-    }
-
-    /**
-     * Plot
-     *
-     * @param xValues X values
-     * @param yValues Y values
-     * @param style Plot style
-     */
-    public void plot(List<Number> xValues, List<Number> yValues, String style) {
-        if (this.isMap)
-            this.figure();
-            
-        if (xValues.size() != yValues.size()) {
-            System.out.println("The size of x and y values are not same!");
-            return;
-        }
-        
-        XYArrayDataset dataset = new XYArrayDataset(xValues, yValues, "S_1");
-        XY1DPlot plot = new XY1DPlot(dataset);
-
-        if (!style.isEmpty()) {
-            Color color = this.getColor(style);
-            PointStyle ps = this.getPointStyle(style);
-            LineStyles ls = this.getLineStyle(style);
-            if (ps != null) {
-                if (ls == null){
-                    plot.setChartPlotMethod(ChartPlotMethod.POINT);
-                    PointBreak pb = plot.getPointBreak(0);
-                    pb.setSize(8);
-                    pb.setStyle(ps);
-                    if (color != null) {
-                        pb.setColor(color);
-                    }
-                } else {
-                    plot.setChartPlotMethod(ChartPlotMethod.LINE_POINT);
-                    PolylineBreak plb = plot.getPolylineBreak(0);
-                    plb.setStyle(ls);
-                    plb.setDrawSymbol(true);
-                    plb.setSymbolStyle(ps);
-                    plb.setSymbolInterval(this.getSymbolInterval(xValues.size()));
-                    if (color != null) {
-                        plb.setColor(color);
-                        plb.setSymbolColor(color);
-                    }
-                }
-            } else {                                
-                plot.setChartPlotMethod(ChartPlotMethod.LINE);
-                PolylineBreak plb = plot.getPolylineBreak(0);
-                if (color != null) {
-                    plb.setColor(color);
-                }
-                if (ls != null){
-                    plb.setStyle(ls);
-                }
-            }
-        }
-
-        Chart chart = new Chart(plot);
-        chart.setAntiAlias(true);
-        this.chartPanel.setChart(chart);
-        this.chartPanel.paintGraphics();
-    }    
+//    /**
+//     * Plot
+//     *
+//     * @param yValues Y values
+//     */
+//    public void plot(List<Number> yValues) {
+//        List<Number> xValues = new ArrayList<Number>();
+//        for (int i = 0; i < yValues.size(); i++) {
+//            xValues.add(i);
+//        }
+//
+//        this.plot(xValues, yValues);
+//    }
+//
+//    /**
+//     * Plot
+//     *
+//     * @param xValues X values
+//     * @param yValues Y values
+//     */
+//    public void plot(List<Number> xValues, List<Number> yValues) {
+//        this.plot(xValues, yValues, "");
+//    }
+//
+//    /**
+//     * Plot
+//     *
+//     * @param xValues X values
+//     * @param yValues Y values
+//     * @param style Plot style
+//     */
+//    public void plot(List<Number> xValues, List<Number> yValues, String style) {
+//        if (this.isMap)
+//            this.figure();
+//            
+//        if (xValues.size() != yValues.size()) {
+//            System.out.println("The size of x and y values are not same!");
+//            return;
+//        }
+//        
+//        XYArrayDataset dataset = new XYArrayDataset(xValues, yValues, "S_1");
+//        XY1DPlot plot = new XY1DPlot(dataset);
+//
+//        if (!style.isEmpty()) {
+//            Color color = this.getColor(style);
+//            PointStyle ps = this.getPointStyle(style);
+//            LineStyles ls = this.getLineStyle(style);
+//            if (ps != null) {
+//                if (ls == null){
+//                    plot.setChartPlotMethod(ChartPlotMethod.POINT);
+//                    PointBreak pb = plot.getPointBreak(0);
+//                    pb.setSize(8);
+//                    pb.setStyle(ps);
+//                    if (color != null) {
+//                        pb.setColor(color);
+//                    }
+//                } else {
+//                    plot.setChartPlotMethod(ChartPlotMethod.LINE_POINT);
+//                    PolylineBreak plb = plot.getPolylineBreak(0);
+//                    plb.setStyle(ls);
+//                    plb.setDrawSymbol(true);
+//                    plb.setSymbolStyle(ps);
+//                    plb.setSymbolInterval(this.getSymbolInterval(xValues.size()));
+//                    if (color != null) {
+//                        plb.setColor(color);
+//                        plb.setSymbolColor(color);
+//                    }
+//                }
+//            } else {                                
+//                plot.setChartPlotMethod(ChartPlotMethod.LINE);
+//                PolylineBreak plb = plot.getPolylineBreak(0);
+//                if (color != null) {
+//                    plb.setColor(color);
+//                }
+//                if (ls != null){
+//                    plb.setStyle(ls);
+//                }
+//            }
+//        }
+//
+//        Chart chart = new Chart(plot);
+//        chart.setAntiAlias(true);
+//        this.chartPanel.setChart(chart);
+//        this.chartPanel.paintGraphics();
+//    }    
     
     private LineStyles getLineStyle(String style){
         LineStyles ls = null;

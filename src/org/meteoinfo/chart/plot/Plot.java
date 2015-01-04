@@ -51,6 +51,12 @@ public abstract class Plot {
     public static final Shape DEFAULT_LEGEND_ITEM_CIRCLE
             = new Ellipse2D.Double(-4.0, -4.0, 8.0, 8.0);   
     
+    /** Column index as a sub plot. */
+    public int columnIndex = 0;
+    
+    /** Row index as a sub plot. */
+    public int rowIndex = 0;
+    
     /**
      * Get dataset
      * @return Dataset

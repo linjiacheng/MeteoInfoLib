@@ -15,7 +15,7 @@ import org.meteoinfo.map.MapView;
  *
  * @author wyq
  */
-public final class XY2DPlot extends XYPlot {
+public class XY2DPlot extends XYPlot {
 
     // <editor-fold desc="Variables">
     private MapView mapView;
@@ -34,7 +34,7 @@ public final class XY2DPlot extends XYPlot {
      */
     public XY2DPlot(MapView mapView){
         this();
-        this.setMapView(mapView);
+        this.setMapView(mapView, false);
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -59,10 +59,11 @@ public final class XY2DPlot extends XYPlot {
     /**
      * Set map view
      * @param value Map view
+     * @param isGeoMap If is geo map
      */
-    public void setMapView(MapView value){
+    public void setMapView(MapView value, boolean isGeoMap){
         this.mapView = value;
-        this.mapView.setGeoMap(false);
+        this.mapView.setGeoMap(isGeoMap);
         Extent extent = this.getAutoExtent();
         this.setDrawExtent(extent);
     }
@@ -87,6 +88,11 @@ public final class XY2DPlot extends XYPlot {
     @Override
     public Extent getAutoExtent() {
         return this.mapView.getLayersWholeExtent();
+    }
+    
+    @Override
+    public void updateLegendScheme(){
+        
     }
     // </editor-fold>            
 }
