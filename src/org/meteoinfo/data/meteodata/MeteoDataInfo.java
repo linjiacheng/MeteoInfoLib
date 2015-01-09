@@ -670,6 +670,7 @@ public class MeteoDataInfo {
         } else {
             GridData gridData = this.getGridData();
             gridData.projInfo = this.getProjectionInfo();
+            gridData.fieldName = varName;
             return gridData;
         }
     }

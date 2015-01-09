@@ -6,6 +6,8 @@
 package org.meteoinfo.plot;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.print.PrintException;
@@ -16,6 +18,8 @@ import org.meteoinfo.chart.plot.XY1DPlot;
 import org.meteoinfo.data.StationData;
 import org.meteoinfo.data.XYArrayDataset;
 import org.meteoinfo.data.XYDataset;
+import org.meteoinfo.global.MIMath;
+import org.meteoinfo.legend.PointBreak;
 
 /**
  *
@@ -30,7 +34,22 @@ public class PlotUtil {
      * @return XYDataset XYDataset
      */
     public static XYDataset getXYDataset(StationData xdata, StationData ydata, String seriesKey){
-        return new XYArrayDataset(xdata, ydata, seriesKey);
+        List<Number> xvs = new ArrayList<Number>();
+        List<Number> yvs = new ArrayList<Number>();
+        double x, y;
+        int n = xdata.getStNum();
+        for (int i = 0; i < n; i++){
+            x = xdata.data[i][2];
+            if (MIMath.doubleEquals(x, xdata.missingValue))
+                continue;
+            y = ydata.data[i][2];
+            if (MIMath.doubleEquals(y, ydata.missingValue))
+                continue;
+            xvs.add(x);
+            yvs.add(y);
+        }
+        
+        return new XYArrayDataset(xvs, yvs, seriesKey);
     }
     
     /**
@@ -43,10 +62,13 @@ public class PlotUtil {
      */
     public static Chart createScatterPlot(String title, String xAxisLabel, String yAxisLabel, XYDataset dataset){
         XY1DPlot plot = new XY1DPlot(dataset);
+        plot.setTitle(title);
         plot.setChartPlotMethod(ChartPlotMethod.POINT);
+        PointBreak pb = new PointBreak();
+        plot.setLegendBreak(0, pb);
         plot.getXAxis().setLabel(xAxisLabel);
         plot.getYAxis().setLabel(yAxisLabel);
-        Chart chart = new Chart(title, plot);
+        Chart chart = new Chart(plot);        
         
         return chart;
     }
@@ -62,6 +84,7 @@ public class PlotUtil {
         try {
             ChartPanel cp = new ChartPanel(chart);
             cp.setSize(width, height);
+            cp.paintGraphics();
             cp.exportToPicture(fileName);
         } catch (IOException ex) {
             Logger.getLogger(PlotUtil.class.getName()).log(Level.SEVERE, null, ex);

@@ -826,7 +826,8 @@ public class MapFrame extends ItemNode {
      */
     public int insertPolygonLayer(MapLayer aLayer) {
         //_mapView.setLockViewUpdate(true);
-        int lIdx = _mapView.getPolygonLayerIdx() + 1;
+        //int lIdx = _mapView.getPolygonLayerIdx() + 1;
+        int lIdx = _mapView.getImageLayerIdx() + 1;
         int handle = addLayer(aLayer);
         if (lIdx < 0) {
             lIdx = 0;
@@ -1491,14 +1492,7 @@ public class MapFrame extends ItemNode {
     public int getExpandedHeight() {
         int height = this.getHeight();
         for (ItemNode aNode : _nodes) {
-            int lnHeight;
-            if (aNode.isExpanded()) {
-                lnHeight = aNode.getExpandedHeight();
-            } else {
-                lnHeight = aNode.getHeight();
-            }
-
-            height += lnHeight + Constants.ITEM_PAD;
+            height += aNode.getDrawHeight() + Constants.ITEM_PAD;
         }
 
         return height;

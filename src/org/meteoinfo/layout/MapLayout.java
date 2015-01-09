@@ -290,7 +290,7 @@ public class MapLayout extends JPanel {
     }
 
     private void initComponents() {
-        _vScrollBar = new JScrollBar(JScrollBar.VERTICAL);
+        _vScrollBar = new JScrollBar(JScrollBar.VERTICAL);        
         _vScrollBar.addAdjustmentListener(new AdjustmentListener() {
             @Override
             public void adjustmentValueChanged(AdjustmentEvent e) {
@@ -298,9 +298,7 @@ public class MapLayout extends JPanel {
             }
         });
         this.add(_vScrollBar, BorderLayout.EAST);
-        this._vScrollBar.setLocation(this.getWidth() - this._vScrollBar.getWidth(), 0);
-        this._vScrollBar.setSize(this._vScrollBar.getWidth(), this.getHeight());
-
+        
         _hScrollBar = new JScrollBar(JScrollBar.HORIZONTAL);
         _hScrollBar.addAdjustmentListener(new AdjustmentListener() {
             @Override
@@ -309,8 +307,18 @@ public class MapLayout extends JPanel {
             }
         });
         this.add(_hScrollBar, BorderLayout.SOUTH);
-        this._hScrollBar.setLocation(this.getWidth() - this._hScrollBar.getWidth(), 0);
-        this._hScrollBar.setSize(this._hScrollBar.getWidth(), this.getHeight());
+        
+        this._vScrollBar.setLocation(this.getWidth() - this._vScrollBar.getWidth(), 0);
+        if (this._hScrollBar.isVisible())
+            this._vScrollBar.setSize(21, this.getHeight() - 21);
+        else
+            this._vScrollBar.setSize(21, this.getHeight());
+        
+        this._hScrollBar.setLocation(0, this.getHeight()- this._hScrollBar.getHeight());
+        if (this._vScrollBar.isVisible())
+            this._hScrollBar.setSize(this.getWidth() - 21, 21);
+        else
+            this._hScrollBar.setSize(this.getWidth(), 21);
     }
     // </editor-fold>
 
@@ -422,21 +430,38 @@ public class MapLayout extends JPanel {
 
     public void onScrollValueChanged(AdjustmentEvent e) {
         if (e.getSource() == _vScrollBar) {
-            _vScrollBar.setValue(e.getValue());
+            //_vScrollBar.setValue(e.getValue());            
+            //this._yShift = - this._vScrollBar.getValue();
+            int y = - e.getValue();
+            if (y == 1)
+                y = 0;
+            this._pageLocation.Y = y;
         }
         if (e.getSource() == _hScrollBar) {
-            _hScrollBar.setValue(e.getValue());
+            //_hScrollBar.setValue(e.getValue());       
+            //this._xShift = - this._hScrollBar.getValue();
+            int x = - e.getValue();
+            if (x == 1)
+                x = 0;
+            this._pageLocation.X = x;
         }
         this.paintGraphics();
+        //this.repaint();
     }
 
     void onComponentResized(ComponentEvent e) {
         if (this.getWidth() > 0 && this.getHeight() > 0) {
             this._vScrollBar.setLocation(this.getWidth() - this._vScrollBar.getWidth(), 0);
-            this._vScrollBar.setSize(this._vScrollBar.getWidth(), this.getHeight());
+            if (this._hScrollBar.isVisible())
+                this._vScrollBar.setSize(this._vScrollBar.getWidth(), this.getHeight() - this._vScrollBar.getWidth());
+            else
+                this._vScrollBar.setSize(this._vScrollBar.getWidth(), this.getHeight());
 
-            this._hScrollBar.setLocation(this.getWidth() - this._hScrollBar.getWidth(), 0);
-            this._hScrollBar.setSize(this._hScrollBar.getWidth(), this.getHeight());
+            this._hScrollBar.setLocation(0, this.getHeight()- this._hScrollBar.getHeight());
+            if (this._vScrollBar.isVisible())
+                this._hScrollBar.setSize(this.getWidth() - this._hScrollBar.getHeight(), this._hScrollBar.getHeight());
+            else
+                this._hScrollBar.setSize(this.getWidth(), this._hScrollBar.getHeight());
 
             this.paintGraphics();
         }
@@ -2446,43 +2471,49 @@ public class MapLayout extends JPanel {
         Graphics2D g = _layoutBitmap.createGraphics();
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-        //Draw bound rectangle
-        Rectangle.Float aRect = pageToScreen(_pageBounds.x, _pageBounds.y, _pageBounds.width, _pageBounds.height);
-        g.setColor(_pageBackColor);
-        g.fill(aRect);
-
         //Judge if show scroll bar
-        if (aRect.height > this.getHeight()) {
-            _vScrollBar.setMinimum(0);
-            _vScrollBar.setUnitIncrement(5);
-            _vScrollBar.setBlockIncrement(this.getHeight());
-            _vScrollBar.setMaximum((int) aRect.height + 100);
+        if (_pageBounds.height > this.getHeight()) {
+            int sHeight = _pageBounds.height - this.getHeight() + 40;
+            _vScrollBar.setMinimum(sHeight / 100);
+            _vScrollBar.setUnitIncrement(sHeight / 10);
+            _vScrollBar.setBlockIncrement(10);
+            _vScrollBar.setMaximum(sHeight);
+            if (_vScrollBar.getWidth() == 0)
+                _vScrollBar.setSize(21, this._vScrollBar.getHeight());
 
             if (_vScrollBar.isVisible() == false) {
                 _vScrollBar.setValue(0);
                 _vScrollBar.setVisible(true);
             }
         } else {
-            if (aRect.y >= 0) {
-                _vScrollBar.setVisible(false);
-            }
+            _pageBounds.y = 0;
+            this._pageLocation.Y = 0;
+            _vScrollBar.setVisible(false);
         }
 
-        if (aRect.width > this.getWidth()) {
-            _hScrollBar.setMinimum(0);
-            _hScrollBar.setUnitIncrement(5);
-            _hScrollBar.setBlockIncrement(this.getWidth());
-            _hScrollBar.setMaximum((int) aRect.width + 100);
+        if (_pageBounds.width > this.getWidth()) {
+            int sWidth =  _pageBounds.width - this.getWidth() + 40;
+            _hScrollBar.setMinimum(sWidth / 100);
+            _hScrollBar.setUnitIncrement(sWidth / 10);
+            _hScrollBar.setBlockIncrement(10);
+            _hScrollBar.setMaximum(sWidth);
+            if (this._hScrollBar.getHeight() == 0)
+                this._hScrollBar.setSize(this._hScrollBar.getWidth(), 21);
 
             if (_hScrollBar.isVisible() == false) {
                 _hScrollBar.setValue(0);
                 _hScrollBar.setVisible(true);
             }
         } else {
-            if (aRect.x >= 0) {
-                _hScrollBar.setVisible(false);
-            }
+            _pageBounds.x = 0;
+            this._pageLocation.X = 0;
+            _hScrollBar.setVisible(false);
         }
+        
+        //Draw bound rectangle
+        Rectangle.Float aRect = pageToScreen(_pageBounds.x, _pageBounds.y, _pageBounds.width, _pageBounds.height);
+        g.setColor(_pageBackColor);
+        g.fill(aRect);        
 
         //Draw layout elements
         paintGraphicsOnLayout(g);

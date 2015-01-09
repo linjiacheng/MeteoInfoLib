@@ -482,9 +482,14 @@ public class LegendManage {
      */
     public static LegendScheme createGraduatedLegendScheme(double[] CValues, Color[] colors, ShapeTypes aST,
             double min, double max, Boolean hasNodata, double unDef) {
+        if (min > CValues[0])
+            min = CValues[0] - (CValues[1] - CValues[0]);
+        if (max < CValues[CValues.length - 1])
+            max = CValues[CValues.length - 1] + (CValues[1] - CValues[0]);
+        
         LegendScheme legendScheme = new LegendScheme(aST);
         legendScheme.setLegendType(LegendType.GraduatedColor);
-        legendScheme.setShapeType(aST);
+        legendScheme.setShapeType(aST);        
         legendScheme.setMinValue(min);
         legendScheme.setMaxValue(max);
         legendScheme.setUndefValue(unDef);

@@ -729,6 +729,33 @@ public final class DataTable {
     }
     
     /**
+     * Save as ASCII file
+     * @param fileName File name
+     * @throws java.io.IOException
+     */
+    public void saveAsASCIIFile(String fileName) throws IOException{        
+        BufferedWriter sw = new BufferedWriter(new FileWriter(new File(fileName)));
+        String str = "";
+        for (DataColumn col : this.columns){
+            str += " " + col.getColumnName();
+        }
+        str = str.substring(1);
+        sw.write(str);
+        
+        for (DataRow row : this.rows){
+            String line = "";
+            for (DataColumn col : this.columns){
+                line += " " + row.getValue(col.getColumnName()).toString();
+            }
+            line = line.substring(1);
+            sw.newLine();
+            sw.write(line);
+        }
+        sw.flush();
+        sw.close();
+    }
+    
+    /**
      * Join data table
      * @param dataTable The input data table
      * @param colName The column name for join
@@ -771,9 +798,11 @@ public final class DataTable {
         
         List<String> colNames = this.getColumnNames(); 
         List<String> newColNames = new ArrayList<String>();
-        for (DataColumn col : dataTable.columns){
-            if (!colNames.contains(col.getColumnName())){
-                DataColumn newCol = new DataColumn(col.getColumnName(), col.getDataType());
+        for (DataColumn col : dataTable.columns){        
+            if (col.getColumnName().equals(colName_in))
+                continue;
+            if (!colNames.contains(col.getColumnName())){                
+                Field newCol = new Field(col.getColumnName(), col.getDataType());
                 newCol.setJoined(true);
                 this.addColumn(newCol);
                 newColNames.add(col.getColumnName());
@@ -787,6 +816,8 @@ public final class DataTable {
             if (idx >= 0){
                 if (isUpdate){
                     for (String cn : dataTable.getColumnNames()){
+                        if (cn.equals(colName_in))
+                            continue;
                         this.setValue(i, cn, dataTable.getValue(idx, cn));
                     }
                 } else {

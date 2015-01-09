@@ -7,9 +7,11 @@ package org.meteoinfo.data;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,7 +65,7 @@ public class TimeTableData extends TableData{
         DataTable dTable = new DataTable();
         dTable.addColumn("Time", DataTypes.Date);
 
-        BufferedReader sr = new BufferedReader(new FileReader(new File(fileName)));
+        BufferedReader sr = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "utf-8"));
         String title = sr.readLine().trim();
         //Determine separator
         String separator = GlobalUtil.getSeparator(title);
@@ -131,7 +133,7 @@ public class TimeTableData extends TableData{
         DataTable dTable = new DataTable();
         dTable.addColumn("Time", DataTypes.Date);
 
-        BufferedReader sr = new BufferedReader(new FileReader(new File(fileName)));
+        BufferedReader sr = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "utf-8"));
         String title = sr.readLine().trim();
         //Determine separator
         String separator = GlobalUtil.getSeparator(title);

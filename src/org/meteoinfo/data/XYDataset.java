@@ -90,7 +90,7 @@ public abstract class XYDataset extends Dataset{
      * @param itemIdx Item index
      * @param value Y value
      */
-    public abstract void setY(int seriesIdx, int itemIdx, double value);
+    public abstract void setY(int seriesIdx, int itemIdx, double value);        
     
     /**
      * Get x values
@@ -112,6 +112,13 @@ public abstract class XYDataset extends Dataset{
      * @return Series key
      */
     public abstract String getSeriesKey(int seriesIdx);
+    
+    /**
+     * Set series key by index
+     * @param seriesIdx Series index
+     * @param seriesKey  Series key
+     */
+    public abstract void setSeriesKey(int seriesIdx, String seriesKey);
     
     /**
      * Get series keys

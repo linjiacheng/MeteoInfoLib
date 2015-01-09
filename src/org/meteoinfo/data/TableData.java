@@ -15,9 +15,11 @@ package org.meteoinfo.data;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -444,7 +446,7 @@ public class TableData {
     public void readASCIIFile(String fileName) throws FileNotFoundException, IOException, Exception {
         DataTable dTable = new DataTable();
 
-        BufferedReader sr = new BufferedReader(new FileReader(new File(fileName)));
+        BufferedReader sr = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "utf-8"));
         String title = sr.readLine().trim();
         //Determine separator
         String separator = GlobalUtil.getSeparator(title);
@@ -525,6 +527,37 @@ public class TableData {
         }
         
         return rTable;
+    }
+    
+    /**
+     * Save as csv file
+     * @param fileName File name
+     * @throws java.io.IOException
+     */
+    public void saveAsCSVFile(String fileName) throws IOException{
+        this.dataTable.saveAsCSVFile(fileName);
+    }
+    
+    /**
+     * Save as ASCII file
+     * @param fileName File name
+     * @throws java.io.IOException
+     */
+    public void saveAsASCIIFile(String fileName) throws IOException{    
+        this.dataTable.saveAsASCIIFile(fileName);
+    }
+    
+    /**
+     * Clone
+     * @return Cloned TableData object
+     */
+    @Override
+    public Object clone(){
+        TableData td = new TableData();
+        td.dataTable = (DataTable)this.dataTable.clone();
+        td.missingValue = this.missingValue;
+        
+        return td;
     }
     // </editor-fold>
 }

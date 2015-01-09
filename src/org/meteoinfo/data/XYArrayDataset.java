@@ -134,6 +134,16 @@ public class XYArrayDataset extends XYDataset {
     public String getSeriesKey(int seriesIdx) {
         return seriesKeys[seriesIdx];
     }
+    
+    /**
+     * Set series key by index
+     * @param seriesIdx Series index
+     * @param seriesKey Series key
+     */
+    @Override
+    public void setSeriesKey(int seriesIdx, String seriesKey){
+        this.seriesKeys[seriesIdx] = seriesKey;
+    }
 
     /**
      * Get item count

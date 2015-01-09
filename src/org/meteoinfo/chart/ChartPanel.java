@@ -543,5 +543,13 @@ public class ChartPanel extends JPanel {
             ImageIO.write(this.mapBitmap, extension, new File(aFile));
         }
     }
+    
+    /**
+     * Get view image
+     * @return View image
+     */
+    public BufferedImage getViewImage(){
+        return this.mapBitmap;
+    }
     // </editor-fold>
 }

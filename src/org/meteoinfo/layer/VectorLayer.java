@@ -996,6 +996,19 @@ public class VectorLayer extends MapLayer {
     }
     
     /**
+     * Join data table
+     * @param dataTable The input data table
+     * @param colName_this The column name of this data table for join
+     * @param colName_in The column name of the input data table for join
+     * @param isUpdate If update the existing values with same column name
+     */
+    public void joinTable(DataTable dataTable, String colName_this, String colName_in, boolean isUpdate){
+        DataTable thisTable = this._attributeTable.getTable();
+        thisTable.join(dataTable, colName_this, colName_in, isUpdate);
+        this._attributeTable.updateDataTable();
+    }
+    
+    /**
      * Remove joined data columns
      */
     public void removeJoins(){

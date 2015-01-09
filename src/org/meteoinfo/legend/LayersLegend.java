@@ -1378,10 +1378,11 @@ public class LayersLegend extends JPanel {
         int TotalHeight = calcTotalDrawHeight();
         Rectangle rect;
         if (TotalHeight > this.getHeight()) {
+            int swidth = TotalHeight - this.getHeight() + 20;
             _vScrollBar.setMinimum(0);
-            _vScrollBar.setUnitIncrement(Constants.ITEM_HEIGHT);
-            _vScrollBar.setBlockIncrement(this.getHeight());
-            _vScrollBar.setMaximum(TotalHeight);
+            _vScrollBar.setUnitIncrement(swidth / 100);
+            _vScrollBar.setBlockIncrement(swidth / 10);
+            _vScrollBar.setMaximum(swidth);
 
             if (_vScrollBar.isVisible() == false) {
                 _vScrollBar.setValue(0);

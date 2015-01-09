@@ -32,7 +32,6 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import org.meteoinfo.chart.plot.PlotOrientation;
-import org.meteoinfo.chart.plot.XY1DPlot;
 
 /**
  *
@@ -84,7 +83,7 @@ public class ChartLegend {
         _leftSpace = 5;
         _vBarWidth = 10;
         _hBarHeight = 10;
-        labelFont = new Font("宋体", Font.PLAIN, 12);
+        labelFont = new Font("Arial", Font.PLAIN, 14);
         this.labelColor = Color.black;
         this.symbolDimension = new Dimension(16, 10);
     }

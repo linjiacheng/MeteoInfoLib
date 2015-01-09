@@ -32,6 +32,22 @@ public class XYListDataset extends XYDataset {
     
     /**
      * Constructor
+     *
+     * @param seriesNum Series number
+     * @param itemNum Item number
+     */
+    public XYListDataset(int seriesNum, int itemNum) {      
+        this();
+        
+        for (int i = 0; i < seriesNum; i++){
+            xValues.add(new double[itemNum]);
+            yValues.add(new double[itemNum]);
+            seriesKeys.add("");
+        }
+    }
+    
+    /**
+     * Constructor
      * @param xdata X station data
      * @param ydata Y station data
      * @param seriesKey Series key
@@ -77,6 +93,16 @@ public class XYListDataset extends XYDataset {
     }
     
     /**
+     * Set series key by index
+     * @param seriesIdx Series index
+     * @param seriesKey Series key
+     */
+    @Override
+    public void setSeriesKey(int seriesIdx, String seriesKey){
+        this.seriesKeys.set(seriesIdx, seriesKey);
+    }
+    
+    /**
      * Get series keys
      * @return Series keys
      */
@@ -108,6 +134,7 @@ public class XYListDataset extends XYDataset {
         return n;
     }
 
+    @Override
     public int getItemCount(int seriesIdx) {        
         return this.xValues.get(seriesIdx).length;
     }
@@ -240,7 +267,15 @@ public class XYListDataset extends XYDataset {
      */
     @Override
     public List<Integer> getMissingValueIndex(int seriesIdx){
-        return new ArrayList<Integer>();
+        List<Integer> mvidx = new ArrayList<Integer>();
+        double[] xvs = this.getXValues(seriesIdx);
+        double[] yvs = this.getYValues(seriesIdx);
+        for (int i = 0; i < yvs.length; i++){
+            if (MIMath.doubleEquals(xvs[i], this.getMissingValue()) || MIMath.doubleEquals(yvs[i], this.getMissingValue()))
+                mvidx.add(i);
+        }
+        
+        return mvidx;
     }
     
     /**

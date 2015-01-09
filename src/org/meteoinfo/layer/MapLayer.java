@@ -49,6 +49,7 @@ public class MapLayer implements Cloneable {
      * Constructor
      */
     public MapLayer() {
+        _layerName = "layer";
         _fileName = "";
         _projInfo = KnownCoordinateSystems.geographic.world.WGS1984;
         _handle = -1;

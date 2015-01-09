@@ -34,6 +34,8 @@ import org.meteoinfo.projection.ProjectionManage;
 import org.meteoinfo.projection.Reproject;
 import org.meteoinfo.shape.PolygonShape;
 import org.meteoinfo.shape.ShapeTypes;
+import org.meteoinfo.table.DataTable;
+import org.meteoinfo.table.DataTypes;
 
 /**
  *
@@ -41,10 +43,9 @@ import org.meteoinfo.shape.ShapeTypes;
  */
 public class GridData {
     // <editor-fold desc="Variables">
-    /// <summary>
-    /// Grid data
-    /// </summary>
-
+    /**
+     * Grid data
+     */
     public double[][] data;
     /// <summary>
     /// x coordinate array
@@ -62,6 +63,7 @@ public class GridData {
      * Projection information
      */
     public ProjectionInfo projInfo = null;
+    public String fieldName = "Data";
     private boolean _xStag = false;
     private boolean _yStag = false;
     // </editor-fold>
@@ -504,6 +506,7 @@ public class GridData {
      */
     public StationData toStation(StationData stData) {
         StationData nstData = new StationData(stData);
+        nstData.missingValue = this.missingValue;
         if (this.projInfo.equals(stData.projInfo)){
             for (int i = 0; i < nstData.getStNum(); i++) {
                 nstData.setValue(i, this.toStation(nstData.getX(i), nstData.getY(i)));
@@ -513,6 +516,37 @@ public class GridData {
         }
 
         return nstData;
+    }
+    
+    /**
+     * Interpolate grid data to station data
+     *
+     * @param stData Station table data
+     */
+    public void toStation(StationTableData stData) {
+        DataTable dataTable = stData.dataTable;
+        int lonIdx = stData.getLonIndex();
+        int latIdx = stData.getLatIndex();
+        double x, y;
+        stData.addColumn(this.fieldName, DataTypes.Float);        
+        if (this.projInfo.equals(stData.getProjectionInfo())){
+            for (int i = 0; i < dataTable.getRowCount(); i++) {
+                x = Double.parseDouble(dataTable.getValue(i, lonIdx).toString());
+                y = Double.parseDouble(dataTable.getValue(i, latIdx).toString());
+                dataTable.setValue(i, fieldName, this.toStation(x, y));
+            }
+        } else {
+            StationData sdata = new StationData();            
+            for (int i = 0; i < dataTable.getRowCount(); i++) {
+                x = Double.parseDouble(dataTable.getValue(i, lonIdx).toString());
+                y = Double.parseDouble(dataTable.getValue(i, latIdx).toString());
+                sdata.addData("S_" + String.valueOf(i), x, y, 0);
+            }                
+            sdata = this.project(projInfo, sdata.projInfo, sdata, ResampleMethods.Bilinear);
+            for (int i = 0; i < dataTable.getRowCount(); i++) {
+                dataTable.setValue(i, fieldName, sdata.getValue(i));
+            }
+        }
     }
 
     /**
@@ -2199,7 +2233,6 @@ public class GridData {
                 } catch (Exception e) {
                     newdata[i][j] = missingValue;
                     j++;
-                    continue;
                 }
             }
         }
@@ -2236,7 +2269,6 @@ public class GridData {
             } catch (Exception e) {
                 nsData.setValue(i, missingValue);
                 i++;
-                continue;
             }
         }
 

@@ -10,15 +10,16 @@ import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.meteoinfo.chart.ChartLegend;
 import org.meteoinfo.data.Dataset;
 import org.meteoinfo.data.XYDataset;
+import org.meteoinfo.data.XYListDataset;
 import org.meteoinfo.drawing.Draw;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointF;
+import org.meteoinfo.global.colors.ColorUtil;
 import org.meteoinfo.legend.ColorBreak;
 import org.meteoinfo.legend.LegendScheme;
 import org.meteoinfo.legend.PointBreak;
@@ -36,9 +37,6 @@ public final class XY1DPlot extends XYPlot {
     private XYDataset dataset;
     private ChartPlotMethod chartPlotMethod;
     private List<SeriesLegend> seriesLegends;
-    //private PointBreak[] pointBreaks;
-    //private PolygonBreak[] polygonBreaks;
-    //private List<PointBreak[]> itemPointBreaks;
     private boolean useBreak2D;
 
     // </editor-fold>
@@ -52,7 +50,6 @@ public final class XY1DPlot extends XYPlot {
         this.chartPlotMethod = ChartPlotMethod.LINE;
         this.useBreak2D = false;
         this.seriesLegends = new ArrayList<SeriesLegend>();
-        //this.itemPointBreaks = new ArrayList<PointBreak[]>();
     }
 
     /**
@@ -115,18 +112,11 @@ public final class XY1DPlot extends XYPlot {
         dataset = (XYDataset) value;
         Extent extent = this.getAutoExtent();
         this.setDrawExtent(extent);
-        //legendBreaks = new [dataset.getSeriesCount()];
-        //pointBreaks = new PointBreak[dataset.getSeriesCount()];
-        //polygonBreaks = new PolygonBreak[dataset.getSeriesCount()];
-        //this.itemPointBreaks = new PointBreak[dataset.getSeriesCount()][dataset.getItemCount()];
         for (int i = 0; i < dataset.getSeriesCount(); i++) {
             PolylineBreak plb = new PolylineBreak();
+            plb.setColor(ColorUtil.getCommonColor(i));
             plb.setCaption(dataset.getSeriesKey(i));
             seriesLegends.add(new SeriesLegend(plb));
-            //pointBreaks[i] = new PointBreak();
-            //pointBreaks[i].setCaption(dataset.getSeriesKey(i));
-            //polygonBreaks[i] = new PolygonBreak();
-            //polygonBreaks[i].setCaption(dataset.getSeriesKey(i));
         }
     }
 
@@ -190,6 +180,24 @@ public final class XY1DPlot extends XYPlot {
 
     // </editor-fold>
     // <editor-fold desc="Methods">    
+    /**
+     * Add a series data
+     *
+     * @param seriesKey Series key
+     * @param xvs X value array
+     * @param yvs Y value array
+     */
+    public void addSeries(String seriesKey, double[] xvs, double[] yvs) {
+        ((XYListDataset) this.dataset).addSeries(seriesKey, xvs, yvs);
+        PolylineBreak plb = new PolylineBreak();
+        plb.setColor(ColorUtil.getCommonColor(this.dataset.getSeriesCount()));
+        plb.setCaption(seriesKey);
+        seriesLegends.add(new SeriesLegend(plb));
+        
+        Extent extent = this.getAutoExtent();
+        this.setDrawExtent(extent);
+    }
+
     @Override
     void drawGraph(Graphics2D g, Rectangle2D area) {
         AffineTransform oldMatrix = g.getTransform();
@@ -229,6 +237,11 @@ public final class XY1DPlot extends XYPlot {
                     npoints[j] = new PointF(p.X, y);
                 }
                 points = npoints;
+                if (!mvIdx.isEmpty()){
+                    for (int j = 0; j < mvIdx.size(); j++){
+                        mvIdx.set(j, len - mvIdx.get(j) - 1);
+                    }
+                }
             }
             if (this.getXAxis().isInverse()) {
                 PointF[] npoints = new PointF[len];
@@ -240,6 +253,11 @@ public final class XY1DPlot extends XYPlot {
                     npoints[j] = new PointF(x, p.Y);
                 }
                 points = npoints;
+                if (!mvIdx.isEmpty()){
+                    for (int j = 0; j < mvIdx.size(); j++){
+                        mvIdx.set(j, len - mvIdx.get(j) - 1);
+                    }
+                }
             }
 
             SeriesLegend slegend = this.seriesLegends.get(i);
@@ -253,7 +271,7 @@ public final class XY1DPlot extends XYPlot {
                 if (slegend.isMutiple()) {
                     for (int j = 0; j < len; j++) {
                         if (!mvIdx.contains(j)) {
-                            Draw.drawPoint(points[j], (PointBreak)slegend.getLegendBreak(j), g);
+                            Draw.drawPoint(points[j], (PointBreak) slegend.getLegendBreak(j), g);
                         }
                     }
                 } else {
@@ -342,7 +360,7 @@ public final class XY1DPlot extends XYPlot {
      * @return Item point break;
      */
     public PointBreak getItemPointBreak(int seriesIdx, int itemIdx) {
-        return (PointBreak)this.seriesLegends.get(seriesIdx).getLegendBreak(itemIdx);
+        return (PointBreak) this.seriesLegends.get(seriesIdx).getLegendBreak(itemIdx);
     }
 
     /**
@@ -375,7 +393,7 @@ public final class XY1DPlot extends XYPlot {
     public void setLegendBreak(int seriesIdx, ColorBreak plb) {
         this.seriesLegends.get(seriesIdx).setLegendBreak(plb);
     }
-    
+
     /**
      * Set series legend
      *
@@ -425,7 +443,6 @@ public final class XY1DPlot extends XYPlot {
 //    public void setPolygonBreak(int seriesIdx, PolygonBreak pgb) {
 //        this.polygonBreaks[seriesIdx] = pgb;
 //    }
-
     /**
      * Get auto extent
      *
@@ -485,8 +502,9 @@ public final class XY1DPlot extends XYPlot {
 //        }
         ShapeTypes stype = ShapeTypes.Polyline;
         LegendScheme ls = new LegendScheme(stype);
-        for (SeriesLegend slegend : this.seriesLegends)
+        for (SeriesLegend slegend : this.seriesLegends) {
             ls.getLegendBreaks().add(slegend.getLegendBreak());
+        }
         return ls;
     }
 

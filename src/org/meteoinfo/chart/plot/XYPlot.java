@@ -393,6 +393,9 @@ public abstract class XYPlot extends Plot {
 
         //Get y axis space
         left += this.getYAxisWidth(g, space);
+        
+        //Set right space
+        right += this.getXAxis().getMaxLabelLength(g) / 2;
 
         //Set area
         Rectangle2D plotArea = new Rectangle2D.Double(left, top,

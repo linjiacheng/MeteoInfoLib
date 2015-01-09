@@ -23,7 +23,7 @@ import java.util.Map;
  * @author Yaqiang
  */
 public class ColorUtil {
-    // <editor-fold desc="Variables">
+    // <editor-fold desc="Variables">   
 
     private final static Map colorNames;
 
@@ -55,6 +55,46 @@ public class ColorUtil {
     // <editor-fold desc="Constructor">
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
+    /**
+     * Get common color
+     * @param idx Index
+     * @return Common color
+     */
+    public static Color getCommonColor(int idx){
+        if (idx == 0)
+            idx = 1;
+        if (idx > 12)
+            idx = idx % 12;
+        
+        switch(idx){
+            case 1:
+                return Color.red;
+            case 2:
+                return Color.blue;
+            case 3:
+                return Color.green;
+            case 4:
+                return Color.black;
+            case 5:
+                return Color.yellow;
+            case 6:
+                return Color.pink;
+            case 7:
+                return Color.gray;
+            case 8:
+                return Color.cyan;
+            case 9:
+                return Color.magenta;
+            case 10:
+                return Color.orange;
+            case 11:
+                return Color.darkGray;
+            case 12:
+                return Color.lightGray;
+        }
+        
+        return Color.red;
+    }
     // </editor-fold>
     // <editor-fold desc="Methods">
 
