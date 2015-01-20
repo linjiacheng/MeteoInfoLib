@@ -17,6 +17,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -643,15 +644,28 @@ public final class DataTable {
      */
     @Override
     public String toString(){
+        return this.toString("yyyyMMddHH");
+    }
+    
+    /**
+     * Convert to string
+     * @param dateFormat Date format string
+     * @return The string
+     */
+    public String toString(String dateFormat){
         String str = "";
         for (DataColumn col : this.columns){
             str += "," + col.getColumnName();
         }
-        str = str.substring(1);                
+        str = str.substring(1);     
+        SimpleDateFormat format = new SimpleDateFormat(dateFormat);
         for (DataRow row : this.rows){
             String line = "";
             for (DataColumn col : this.columns){
-                line += "," + row.getValue(col.getColumnName()).toString();
+                if (col.getDataType() == DataTypes.Date)
+                    line += "," + format.format((Date)row.getValue(col.getColumnName()));
+                else
+                    line += "," + row.getValue(col.getColumnName()).toString();
             }
             line = line.substring(1);
             str += System.getProperty("line.separator") + line;
@@ -666,6 +680,17 @@ public final class DataTable {
      * @return The string
      */
     public String toString(int decimalNum){
+        return this.toString("yyyyMMddHH", decimalNum);
+    }
+    
+    /**
+     * Convert to string
+     * @param dateFormat Date format string
+     * @param decimalNum Decimal number
+     * @return The string
+     */
+    public String toString(String dateFormat, int decimalNum){
+        SimpleDateFormat format = new SimpleDateFormat(dateFormat);
         String dFormat = "%1$." + String.valueOf(decimalNum) + "f";
         String str = "";
         for (DataColumn col : this.columns){
@@ -685,6 +710,9 @@ public final class DataTable {
                         else
                             line += ",";
                         break;
+                    case Date:
+                        line += "," + format.format((Date)row.getValue(col.getColumnName()));
+                        break;
                     default:
                         line += "," + vstr;
                         break;
@@ -703,10 +731,21 @@ public final class DataTable {
      * @throws java.io.IOException
      */
     public void saveAsCSVFile(String fileName) throws IOException{
+        this.saveAsCSVFile(fileName, "yyyyMMddHH");
+    }
+    
+    /**
+     * Save as csv file
+     * @param fileName File name
+     * @param dateFormat Date format string
+     * @throws java.io.IOException
+     */
+    public void saveAsCSVFile(String fileName, String dateFormat) throws IOException{
         if (!fileName.endsWith(".csv")){
             fileName = fileName + ".csv";
         }
         
+        SimpleDateFormat format = new SimpleDateFormat(dateFormat);
         BufferedWriter sw = new BufferedWriter(new FileWriter(new File(fileName)));
         String str = "";
         for (DataColumn col : this.columns){
@@ -718,7 +757,10 @@ public final class DataTable {
         for (DataRow row : this.rows){
             String line = "";
             for (DataColumn col : this.columns){
-                line += "," + row.getValue(col.getColumnName()).toString();
+                if (col.getDataType() == DataTypes.Date)
+                    line += "," + format.format((Date)row.getValue(col.getColumnName()));
+                else
+                    line += "," + row.getValue(col.getColumnName()).toString();
             }
             line = line.substring(1);
             sw.newLine();
@@ -733,7 +775,18 @@ public final class DataTable {
      * @param fileName File name
      * @throws java.io.IOException
      */
-    public void saveAsASCIIFile(String fileName) throws IOException{        
+    public void saveAsASCIIFile(String fileName) throws IOException{    
+        this.saveAsASCIIFile(fileName, "yyyyMMddHH");        
+    }
+    
+    /**
+     * Save as ASCII file
+     * @param fileName File name
+     * @param dateFormat Date format string
+     * @throws java.io.IOException
+     */
+    public void saveAsASCIIFile(String fileName, String dateFormat) throws IOException{        
+        SimpleDateFormat format = new SimpleDateFormat(dateFormat);
         BufferedWriter sw = new BufferedWriter(new FileWriter(new File(fileName)));
         String str = "";
         for (DataColumn col : this.columns){
@@ -741,11 +794,14 @@ public final class DataTable {
         }
         str = str.substring(1);
         sw.write(str);
-        
+                
         for (DataRow row : this.rows){
             String line = "";
             for (DataColumn col : this.columns){
-                line += " " + row.getValue(col.getColumnName()).toString();
+                if (col.getDataType() == DataTypes.Date)
+                    line += " " + format.format((Date)row.getValue(col.getColumnName()));
+                else
+                    line += " " + row.getValue(col.getColumnName()).toString();
             }
             line = line.substring(1);
             sw.newLine();

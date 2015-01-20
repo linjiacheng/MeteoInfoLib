@@ -17,7 +17,10 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import org.meteoinfo.table.DataTable;
+import org.meteoinfo.table.DataTypes;
 
 /**
  *
@@ -103,11 +106,70 @@ public class StationInfoData {
     }
     // </editor-fold>
     // <editor-fold desc="Methods">
-
+    /**
+     * Extract station data
+     * @param sts Stations
+     * @param colNames Column names
+     * @return Station data table
+     * @throws java.lang.Exception
+     */
+    public DataTable extractStationData(List<String> sts, List<String> colNames) throws Exception{
+        return this.extractStationData(sts, colNames, null);
+    }
+    
+    /**
+     * Extract station data
+     * @param sts Stations
+     * @param colNames Column names
+     * @param time Time
+     * @return Station data table
+     * @throws java.lang.Exception
+     */
+    public DataTable extractStationData(List<String> sts, List<String> colNames, Date time) throws Exception{
+        DataTable dt = new DataTable();
+        dt.addColumn("Station", DataTypes.String);
+        dt.addColumn("Longitude", DataTypes.Float);
+        dt.addColumn("Latitude", DataTypes.Float);
+        if (time != null)
+            dt.addColumn("Time", DataTypes.Date);
+        for (String colName : colNames){
+            if (this._fields.contains(colName))
+                dt.addColumn(colName, DataTypes.String);
+        }
+        
+        int idx, cidx;
+        int rn = 0;
+        List<String> dlist;
+        for (String st : sts){
+            idx = this._stations.indexOf(st);
+            if (idx >= 0){
+                dt.addRow();
+                dt.setValue(rn, "Station", st);
+                dlist = this._dataList.get(idx);
+                dt.setValue(rn, "Longitude", Float.parseFloat(dlist.get(1)));
+                dt.setValue(rn, "Latitude", Float.parseFloat(dlist.get(2)));
+                if (time != null)
+                    dt.setValue(rn, "Time", time);
+                for (String colName : colNames){
+                    cidx = this._fields.indexOf(colName);
+                    if (cidx >= 0){
+                        dt.setValue(rn, colName, dlist.get(cidx));
+                    }
+                }
+                
+                rn += 1;
+            }
+        }
+        
+        return dt;
+    }
+    
+    
     /**
      * Save the station info data to CSV file
      *
      * @param fileName File path
+     * @throws java.io.IOException
      */
     public void saveAsCSVFile(String fileName) throws IOException {
         BufferedWriter sr = new BufferedWriter(new FileWriter(fileName));

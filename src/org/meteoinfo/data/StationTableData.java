@@ -26,6 +26,7 @@ import org.meteoinfo.table.DataTypes;
 public class StationTableData extends TableData{
     // <editor-fold desc="Variables">    
     private ProjectionInfo projInfo;
+    private int stIdx;
     private int lonIdx;
     private int latIdx;
     // </editor-fold>
@@ -35,8 +36,9 @@ public class StationTableData extends TableData{
      */
     public StationTableData(){
         this.projInfo = KnownCoordinateSystems.geographic.world.WGS1984;
-        lonIdx = 0;
-        latIdx = 1;
+        stIdx = 0;
+        lonIdx = 1;
+        latIdx = 2;
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -57,32 +59,48 @@ public class StationTableData extends TableData{
     }
     
     /**
-     * Get longitude index
-     * @return Longitude index
+     * Get station column index
+     * @return Station column index
+     */
+    public int getStationIndex(){
+        return this.stIdx;
+    }
+    
+    /**
+     * Set station column index
+     * @param value Statin column index
+     */
+    public void setStationIndex(int value){
+        this.stIdx = value;
+    }
+    
+    /**
+     * Get longitude column index
+     * @return Longitude column index
      */
     public int getLonIndex(){
         return this.lonIdx;
     }
     
     /**
-     * Set longitude index
-     * @param value Longitude index
+     * Set longitude column index
+     * @param value Longitude column index
      */
     public void setLonIndex(int value){
         this.latIdx = value;
     }
     
     /**
-     * Get latitude index
-     * @return Latitude index
+     * Get latitude column index
+     * @return Latitude column index
      */
     public int getLatIndex(){
         return this.latIdx;
     }
     
     /**
-     * Set Latitude index
-     * @param value Latitude index
+     * Set Latitude column index
+     * @param value Latitude column index
      */
     public void setLatIndex(int value){
         this.lonIdx = value;
@@ -98,6 +116,19 @@ public class StationTableData extends TableData{
      * @throws java.io.FileNotFoundException
      */
     public void readASCIIFile(String fileName, int lonIdx, int latIdx) throws FileNotFoundException, IOException, Exception {
+        this.readASCIIFile(fileName, 0, lonIdx, latIdx);
+    }      
+    
+    /**
+     * Read data table from ASCII file
+     *
+     * @param fileName File name
+     * @param stIdx Station column index
+     * @param lonIdx Longitude column index
+     * @param latIdx Latitude column index
+     * @throws java.io.FileNotFoundException
+     */
+    public void readASCIIFile(String fileName, int stIdx, int lonIdx, int latIdx) throws FileNotFoundException, IOException, Exception {
         this.lonIdx = lonIdx;
         this.latIdx = latIdx;
         DataTable dTable = new DataTable();
@@ -161,6 +192,7 @@ public class StationTableData extends TableData{
         std.dataTable = (DataTable)this.dataTable.clone();
         std.missingValue = this.missingValue;
         std.projInfo = this.projInfo;
+        std.stIdx = this.stIdx;
         std.lonIdx = this.lonIdx;
         std.latIdx = this.latIdx;
         

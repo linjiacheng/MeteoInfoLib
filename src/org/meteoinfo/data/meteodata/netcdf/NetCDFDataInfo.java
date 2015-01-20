@@ -1555,7 +1555,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                         dimType = DimensionType.Y;
                     } else if (sName.equals("time") || sName.equals("initial time")) {
                         dimType = DimensionType.T;
-                    } else if (sName.equals("level") || sName.equals("pressure_level")) {
+                    } else if (sName.equals("level") || sName.equals("pressure_level") || sName.equals("isobaric surface")) {
                         dimType = DimensionType.Z;
                     } else {
                         if (sName.contains("level") || sName.contains("depths")) {

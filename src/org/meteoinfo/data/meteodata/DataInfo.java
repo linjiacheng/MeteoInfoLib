@@ -13,7 +13,6 @@
  */
 package org.meteoinfo.data.meteodata;
 
-import org.meteoinfo.global.DataConvert;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -145,6 +144,15 @@ public abstract class DataInfo {
     }
     
     /**
+     * Get time
+     * @param timeIdx Time index
+     * @return Time
+     */
+    public Date getTime(int timeIdx){
+        return DateUtil.fromOADate(_tDim.getDimValue().get(timeIdx));
+    }
+    
+    /**
      * Get time values - Time delta values of base date
      * @param baseDate Base date
      * @param tDelta Time delta type - days/hours/...
@@ -158,8 +166,8 @@ public abstract class DataInfo {
         long sl = cal.getTimeInMillis();
         long el, delta;
         int value;
-        for (int i = 0; i < times.size(); i++){
-            cal.setTime(times.get(i));
+        for (Date time : times) {
+            cal.setTime(time);
             el = cal.getTimeInMillis();
             delta = el - sl;
             if (tDelta.equalsIgnoreCase("hours")){
