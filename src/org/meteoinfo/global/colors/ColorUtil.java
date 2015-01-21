@@ -14,8 +14,14 @@
 package org.meteoinfo.global.colors;
 
 import java.awt.Color;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import org.meteoinfo.global.util.GlobalUtil;
 
 /**
  * ColorUtiles class
@@ -51,22 +57,27 @@ public class ColorUtil {
         colorNames.put("aqua", new Color(0x00FFFF));
         colorNames.put("transparent", new Color(0, 0, 0, 0));
     }
+
     // </editor-fold>
     // <editor-fold desc="Constructor">
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
+
     /**
      * Get common color
+     *
      * @param idx Index
      * @return Common color
      */
-    public static Color getCommonColor(int idx){
-        if (idx == 0)
+    public static Color getCommonColor(int idx) {
+        if (idx == 0) {
             idx = 1;
-        if (idx > 12)
+        }
+        if (idx > 12) {
             idx = idx % 12;
-        
-        switch(idx){
+        }
+
+        switch (idx) {
             case 1:
                 return Color.red;
             case 2:
@@ -92,7 +103,7 @@ public class ColorUtil {
             case 12:
                 return Color.lightGray;
         }
-        
+
         return Color.red;
     }
     // </editor-fold>
@@ -201,6 +212,106 @@ public class ColorUtil {
         sb.append(R);
 
         return sb.toString();
+    }
+
+    /**
+     * Get color tables
+     *
+     * @return Color tables
+     * @throws IOException
+     */
+    public static ColorTable[] getColorTables() throws IOException {
+        String fn = GlobalUtil.getAppPath(ColorUtil.class);
+        boolean isDebug = java.lang.management.ManagementFactory.getRuntimeMXBean().
+                getInputArguments().toString().contains("jdwp");
+        if (isDebug) {
+            fn = "D:/MyProgram/java/MeteoInfoDev/MeteoInfo/";
+        }     
+        fn = fn.substring(0, fn.lastIndexOf("/"));
+        String path = fn + File.separator + "colormaps";
+        File pathDir = new File(path);
+        if (!pathDir.isDirectory()) {
+            return null;
+        }
+
+        File[] files = pathDir.listFiles();
+        List<ColorTable> cts = new ArrayList<ColorTable>();
+        for (File file : files) {
+            //InputStream is = ColorUtil.class.getResourceAsStream(pdir + "/" + fileName);
+            //System.out.println(file.getAbsolutePath());
+            ColorTable ct = new ColorTable();
+            ct.readFromFile(file);            
+            if (ct.getColorCount() > 0) {
+                String name = file.getName();
+                name = name.substring(0, name.lastIndexOf("."));
+                ct.setName(name);
+                cts.add(ct);
+            }
+        }
+
+        ColorTable[] ncts = new ColorTable[cts.size()];
+        for (int i = 0; i < cts.size(); i++) {
+            ncts[i] = cts.get(i);
+        }
+
+        return ncts;
+    }
+    
+    /**
+     * Find color table
+     * @param cts Color tables
+     * @param name Color table name
+     * @return Finded color table
+     */
+    public static ColorTable findColorTable(ColorTable[] cts, String name){
+        for (ColorTable ct : cts){
+            if (ct.getName().equalsIgnoreCase(name))
+                return ct;
+        }
+        
+        return null;
+    }
+
+    /**
+     * Get color tables
+     *
+     * @return Color tables
+     * @throws IOException
+     */
+    public static ColorTable[] getColorTables_old() throws IOException {
+        String pdir = "/org/meteoinfo/resources/colortables";
+        List<String> fns = new ArrayList<String>();
+        fns.add("grads_rainbow.rgb");
+        fns.add("GHRSST_anomaly.rgb");
+        fns.add("amwg256.rgb");
+        fns.add("cmp_b2r.rgb");
+        fns.add("cmp_flux.rgb");
+        fns.add("cmp_haxby.rgb");
+        fns.add("matlab_hot.rgb");
+        fns.add("matlab_hsv.rgb");
+        fns.add("matlab_jet.rgb");
+        fns.add("matlab_lines.rgb");
+        fns.add("ncl_default.rgb");
+        fns.add("ncview_default.ncmap");
+        fns.add("rainbow+white+gray.gp");
+        fns.add("rainbow.gp");
+        fns.add("seaice_1.rgb");
+        fns.add("seaice_2.rgb");
+
+        List<ColorTable> cts = new ArrayList<ColorTable>();
+        for (String fileName : fns) {
+            InputStream is = ColorUtil.class.getResourceAsStream(pdir + "/" + fileName);
+            ColorTable ct = new ColorTable();
+            ct.readFromFile(is);
+            cts.add(ct);
+        }
+
+        ColorTable[] ncts = new ColorTable[cts.size()];
+        for (int i = 0; i < cts.size(); i++) {
+            ncts[i] = cts.get(i);
+        }
+
+        return ncts;
     }
     // </editor-fold>
 }

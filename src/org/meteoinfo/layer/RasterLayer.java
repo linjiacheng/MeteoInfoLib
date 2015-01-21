@@ -58,7 +58,7 @@ public class RasterLayer extends ImageLayer {
     @Override
     public void setLegendScheme(LegendScheme ls) {
         super.setLegendScheme(ls);
-        if (ls.getBreakNum() < 50) {
+        if (ls.getBreakNum() < 200) {
             updateImage(ls);
         } else {
             setPaletteByLegend();

@@ -28,6 +28,8 @@ public class FrmLegendSet extends javax.swing.JDialog {
     
     /**
      * Creates new form FrmLegendSet
+     * @param parent
+     * @param modal
      */
     public FrmLegendSet(java.awt.Dialog parent, boolean modal) {
         super(parent, modal);
@@ -36,6 +38,8 @@ public class FrmLegendSet extends javax.swing.JDialog {
     
     /**
      * Creates new form FrmLegendSet
+     * @param parent
+     * @param modal
      */
     public FrmLegendSet(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
@@ -409,12 +413,12 @@ public class FrmLegendSet extends javax.swing.JDialog {
 
     private void jButton_MakeBreaksActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_MakeBreaksActionPerformed
         // TODO add your handling code here:
-        boolean isUniqueValue = false;
-        if (_legendScheme.getLegendType() == LegendType.UniqueValue) {
-            isUniqueValue = true;
-        }
+//        boolean isUniqueValue = false;
+//        if (_legendScheme.getLegendType() == LegendType.UniqueValue) {
+//            isUniqueValue = true;
+//        }
 
-        FrmLegendBreaks frmLB = new FrmLegendBreaks(this, false, isUniqueValue);
+        FrmLegendBreaks frmLB = new FrmLegendBreaks(this, false, false);
         frmLB.setLegendScheme(_legendScheme);
         frmLB.setLocationRelativeTo(this);
         frmLB.setVisible(true);

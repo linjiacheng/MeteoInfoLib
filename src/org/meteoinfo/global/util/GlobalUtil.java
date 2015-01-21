@@ -110,6 +110,7 @@ public class GlobalUtil {
 
     /**
      * Get sub directories
+     *
      * @param directory The directory
      * @return Sub directories
      */
@@ -188,6 +189,88 @@ public class GlobalUtil {
     }
 
     /**
+     * Given a package name, attempts to reflect to find all classes within the
+     * package on the local file system.
+     *
+     * @param packageName
+     * @return
+     */
+    public static List<Class> getClassesInPackage(String packageName) {
+        List<Class> classes = new ArrayList<Class>();
+        String packageNameSlashed = "/" + packageName.replace(".", "/");
+        // Get a File object for the package  
+        URL directoryURL = Thread.currentThread().getContextClassLoader().getResource(packageNameSlashed);
+        if (directoryURL == null) {
+            System.out.println("Could not retrieve URL resource: " + packageNameSlashed);
+            return classes;
+        }
+
+        String directoryString = directoryURL.getFile();
+        if (directoryString == null) {
+            System.out.println("Could not find directory for URL resource: " + packageNameSlashed);
+            return classes;
+        }
+
+        File directory = new File(directoryString);
+        if (directory.exists()) {
+            // Get the list of the files contained in the package  
+            String[] files = directory.list();
+            for (String fileName : files) {
+                // We are only interested in .class files  
+                if (fileName.endsWith(".class")) {
+                    // Remove the .class extension  
+                    fileName = fileName.substring(0, fileName.length() - 6);
+                    try {
+                        classes.add(Class.forName(packageName + "." + fileName));
+                    } catch (ClassNotFoundException e) {
+                        System.out.println(packageName + "." + fileName + " does not appear to be a valid class.");
+                    }
+                }
+            }
+        } else {
+            System.out.println(packageName + " does not appear to exist as a valid package on the file system.");
+        }
+        return classes;
+    }
+    
+    /**
+     * Given a package name, attempts to reflect to find all file names within the
+     * package on the local file system.
+     *
+     * @param packageName
+     * @return
+     */
+    public static List<String> getFilesInPackage(String packageName) {
+        List<String> fns = new ArrayList<String>();
+        //String packageNameSlashed = "/" + packageName.replace(".", "/");
+        String packageNameSlashed = packageName.replace(".", "/");
+        // Get a File object for the package  
+        URL directoryURL = Thread.currentThread().getContextClassLoader().getResource(packageNameSlashed);
+        if (directoryURL == null) {
+            System.out.println("Could not retrieve URL resource: " + packageNameSlashed);
+            return fns;
+        }
+
+        String directoryString = directoryURL.getFile();
+        if (directoryString == null) {
+            System.out.println("Could not find directory for URL resource: " + packageNameSlashed);
+            return fns;
+        }
+
+        File directory = new File(directoryString);
+        if (directory.exists()) {
+            // Get the list of the files contained in the package  
+            String[] files = directory.list();
+            for (String fileName : files) {
+                fns.add(fileName);
+            }
+        } else {
+            System.out.println(packageName + " does not appear to exist as a valid package on the file system.");
+        }
+        return fns;
+    }
+
+    /**
      * Determine if a class implements a interface
      *
      * @param c The class
@@ -241,6 +324,7 @@ public class GlobalUtil {
      * @param fileName File path
      * @param projFile Project file path
      * @return Relative path
+     * @throws java.io.IOException
      */
     public static String getRelativePath(String fileName, String projFile) throws IOException {
         String RelativePath = "";
@@ -378,7 +462,7 @@ public class GlobalUtil {
             //Remove package name from the class name
             clsName = clsName.substring(packName.length() + 1);
             //Convert package name to path if the package has simple name
-            if (packName.indexOf(".") < 0) {
+            if (!packName.contains(".")) {
                 path = packName + "/";
             } else {    //Convert package name to path
                 int start = 0;

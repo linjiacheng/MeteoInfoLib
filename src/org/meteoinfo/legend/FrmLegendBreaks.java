@@ -7,9 +7,16 @@ package org.meteoinfo.legend;
 import org.meteoinfo.layer.FrmLayerProperty;
 import org.meteoinfo.shape.ShapeTypes;
 import java.awt.Color;
-import javax.swing.JColorChooser;
+import java.awt.Dimension;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import org.meteoinfo.global.colors.ColorTable;
+import org.meteoinfo.global.colors.ColorUtil;
 import org.meteoinfo.global.util.BigDecimalUtil;
+import org.meteoinfo.ui.ColorComboBoxModel;
+import org.meteoinfo.ui.ColorListCellRender;
 
 /**
  *
@@ -38,37 +45,72 @@ public class FrmLegendBreaks extends javax.swing.JDialog {
     }
 
     private void initialize() {
-        this.jLabel_Min.setText("Min: " + String.format("%1$E", _legendScheme.getMinValue()));
-        this.jLabel_Max.setText("Max: " + String.format("%1$E", _legendScheme.getMaxValue()));
-        int bnum = _legendScheme.getBreakNum();
-        if (bnum > 2) {
-            ColorBreak aCB = _legendScheme.getLegendBreaks().get(0);
-            _minContourValue = Double.parseDouble(aCB.getEndValue().toString());
-            if (_legendScheme.getHasNoData()) {
-                aCB = _legendScheme.getLegendBreaks().get(bnum - 2);
-                _maxContourValue = Double.parseDouble(aCB.getStartValue().toString());
-                _interval = BigDecimalUtil.div((BigDecimalUtil.sub(_maxContourValue, _minContourValue)), (bnum - 3));
-            } else {
-                aCB = _legendScheme.getLegendBreaks().get(bnum - 1);
-                _maxContourValue = Double.parseDouble(aCB.getStartValue().toString());
-                switch (_legendScheme.getShapeType()) {
-                    case Polyline:
-                    case PolylineZ:
-                        _interval = BigDecimalUtil.div((BigDecimalUtil.sub(_maxContourValue, _minContourValue)), (bnum - 1));
-                        break;
-                    default:
-                        _interval = BigDecimalUtil.div((BigDecimalUtil.sub(_maxContourValue, _minContourValue)), (bnum - 2));
-                        break;
+        if (!this._isUniqueValue) {
+            this.jLabel_Min.setEnabled(true);
+            this.jLabel_Max.setEnabled(true);
+            this.jLabel_From.setEnabled(true);
+            this.jTextField_StartValue.setEnabled(true);
+            this.jLabel_To.setEnabled(true);
+            this.jTextField_EndValue.setEnabled(true);
+            this.jLabel_Interval.setEnabled(true);
+            this.jTextField_Interval.setEnabled(true);
+            this.jButton_NewLegend.setEnabled(true);
+            
+            this.jLabel_Min.setText("Min: " + String.format("%1$E", _legendScheme.getMinValue()));
+            this.jLabel_Max.setText("Max: " + String.format("%1$E", _legendScheme.getMaxValue()));
+            int bnum = _legendScheme.getBreakNum();
+            if (bnum > 2) {
+                ColorBreak aCB = _legendScheme.getLegendBreaks().get(0);
+                _minContourValue = Double.parseDouble(aCB.getEndValue().toString());
+                if (_legendScheme.getHasNoData()) {
+                    aCB = _legendScheme.getLegendBreaks().get(bnum - 2);
+                    _maxContourValue = Double.parseDouble(aCB.getStartValue().toString());
+                    _interval = BigDecimalUtil.div((BigDecimalUtil.sub(_maxContourValue, _minContourValue)), (bnum - 3));
+                } else {
+                    aCB = _legendScheme.getLegendBreaks().get(bnum - 1);
+                    _maxContourValue = Double.parseDouble(aCB.getStartValue().toString());
+                    switch (_legendScheme.getShapeType()) {
+                        case Polyline:
+                        case PolylineZ:
+                            _interval = BigDecimalUtil.div((BigDecimalUtil.sub(_maxContourValue, _minContourValue)), (bnum - 1));
+                            break;
+                        default:
+                            _interval = BigDecimalUtil.div((BigDecimalUtil.sub(_maxContourValue, _minContourValue)), (bnum - 2));
+                            break;
+                    }
                 }
-            }
 
-            this.jTextField_StartValue.setText(String.valueOf(_minContourValue));
-            this.jTextField_EndValue.setText(String.valueOf(_maxContourValue));
-            this.jTextField_Interval.setText(String.valueOf(_interval));
+                this.jTextField_StartValue.setText(String.valueOf(_minContourValue));
+                this.jTextField_EndValue.setText(String.valueOf(_maxContourValue));
+                this.jTextField_Interval.setText(String.valueOf(_interval));
+            }
+        } else {
+            this.jLabel_Min.setEnabled(false);
+            this.jLabel_Max.setEnabled(false);
+            this.jLabel_From.setEnabled(false);
+            this.jTextField_StartValue.setEnabled(false);
+            this.jLabel_To.setEnabled(false);
+            this.jTextField_EndValue.setEnabled(false);
+            this.jLabel_Interval.setEnabled(false);
+            this.jTextField_Interval.setEnabled(false);
+            this.jButton_NewLegend.setEnabled(false);
         }
-        this.jRadioButton_RainbowColors.setSelected(true);
-        this.jLabel_StartColor.setEnabled(false);
-        this.jLabel_EndColor.setEnabled(false);
+
+        ColorTable[] colorTables;
+        try {
+            colorTables = ColorUtil.getColorTables();
+            ColorListCellRender render = new ColorListCellRender();
+            render.setPreferredSize(new Dimension(62, 21));
+            this.jComboBox_ColorTable.setModel(new ColorComboBoxModel(colorTables));
+            this.jComboBox_ColorTable.setRenderer(render);
+            ColorTable ct = ColorUtil.findColorTable(colorTables, "grads_rainbow");
+            if (ct != null)
+                this.jComboBox_ColorTable.setSelectedItem(ct);
+            else
+                this.jComboBox_ColorTable.setSelectedIndex(0);
+        } catch (IOException ex) {
+            Logger.getLogger(FrmLegendBreaks.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -83,19 +125,16 @@ public class FrmLegendBreaks extends javax.swing.JDialog {
         buttonGroup1 = new javax.swing.ButtonGroup();
         jLabel_Min = new javax.swing.JLabel();
         jLabel_Max = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
+        jLabel_From = new javax.swing.JLabel();
         jTextField_StartValue = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
+        jLabel_To = new javax.swing.JLabel();
         jTextField_EndValue = new javax.swing.JTextField();
-        jLabel3 = new javax.swing.JLabel();
+        jLabel_Interval = new javax.swing.JLabel();
         jTextField_Interval = new javax.swing.JTextField();
-        jPanel1 = new javax.swing.JPanel();
-        jRadioButton_RainbowColors = new javax.swing.JRadioButton();
-        jRadioButton_ShadedColors = new javax.swing.JRadioButton();
-        jLabel_StartColor = new javax.swing.JLabel();
-        jLabel_EndColor = new javax.swing.JLabel();
         jButton_NewLegend = new javax.swing.JButton();
         jButton_NewColors = new javax.swing.JButton();
+        jComboBox_ColorTable = new javax.swing.JComboBox();
+        jLabel_ColorTable = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setResizable(false);
@@ -109,82 +148,17 @@ public class FrmLegendBreaks extends javax.swing.JDialog {
 
         jLabel_Max.setText("Max:");
 
-        jLabel1.setText("Contouring:");
+        jLabel_From.setText("from:");
 
         jTextField_StartValue.setPreferredSize(new java.awt.Dimension(89, 24));
 
-        jLabel2.setText("to:");
+        jLabel_To.setText("to:");
 
         jTextField_EndValue.setPreferredSize(new java.awt.Dimension(89, 24));
 
-        jLabel3.setText("Interval:");
+        jLabel_Interval.setText("Interval:");
 
         jTextField_Interval.setPreferredSize(new java.awt.Dimension(89, 24));
-
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Color Set"));
-
-        buttonGroup1.add(jRadioButton_RainbowColors);
-        jRadioButton_RainbowColors.setText("Rainbow Colors");
-        jRadioButton_RainbowColors.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jRadioButton_RainbowColorsActionPerformed(evt);
-            }
-        });
-
-        buttonGroup1.add(jRadioButton_ShadedColors);
-        jRadioButton_ShadedColors.setText("Shaded Colors");
-        jRadioButton_ShadedColors.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jRadioButton_ShadedColorsActionPerformed(evt);
-            }
-        });
-
-        jLabel_StartColor.setBackground(new java.awt.Color(255, 255, 204));
-        jLabel_StartColor.setText("Start Color");
-        jLabel_StartColor.setOpaque(true);
-        jLabel_StartColor.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jLabel_StartColorMouseClicked(evt);
-            }
-        });
-
-        jLabel_EndColor.setBackground(new java.awt.Color(255, 0, 51));
-        jLabel_EndColor.setText("End Color");
-        jLabel_EndColor.setOpaque(true);
-        jLabel_EndColor.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jLabel_EndColorMouseClicked(evt);
-            }
-        });
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(21, 21, 21)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jRadioButton_RainbowColors)
-                    .addComponent(jRadioButton_ShadedColors))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 90, Short.MAX_VALUE)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel_StartColor)
-                    .addComponent(jLabel_EndColor))
-                .addGap(34, 34, 34))
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jRadioButton_RainbowColors)
-                    .addComponent(jLabel_StartColor))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jRadioButton_ShadedColors)
-                    .addComponent(jLabel_EndColor))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
 
         jButton_NewLegend.setText("New Legend");
         jButton_NewLegend.addActionListener(new java.awt.event.ActionListener() {
@@ -200,6 +174,10 @@ public class FrmLegendBreaks extends javax.swing.JDialog {
             }
         });
 
+        jComboBox_ColorTable.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        jLabel_ColorTable.setText("Color table:");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -208,31 +186,36 @@ public class FrmLegendBreaks extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addComponent(jLabel_ColorTable)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jComboBox_ColorTable, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel3)
-                                    .addComponent(jLabel1))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(jTextField_StartValue, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jTextField_Interval, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addComponent(jLabel_Min))
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel2)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jTextField_EndValue, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jLabel_Max)))
-                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(59, 59, 59)
-                .addComponent(jButton_NewLegend)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jButton_NewColors)
-                .addGap(51, 51, 51))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                            .addComponent(jLabel_Interval)
+                                            .addComponent(jLabel_From))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                            .addComponent(jTextField_StartValue, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(jTextField_Interval, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                    .addComponent(jLabel_Min))
+                                .addGap(18, 18, 18)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(jLabel_To)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jTextField_EndValue, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(jLabel_Max))))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jButton_NewLegend)
+                        .addGap(56, 56, 56)
+                        .addComponent(jButton_NewColors)
+                        .addGap(45, 45, 45))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -243,21 +226,23 @@ public class FrmLegendBreaks extends javax.swing.JDialog {
                     .addComponent(jLabel_Min))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
+                    .addComponent(jLabel_From)
                     .addComponent(jTextField_StartValue, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2)
+                    .addComponent(jLabel_To)
                     .addComponent(jTextField_EndValue, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jTextField_Interval, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel3))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                    .addComponent(jLabel_Interval))
+                .addGap(35, 35, 35)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel_ColorTable)
+                    .addComponent(jComboBox_ColorTable, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 34, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton_NewLegend)
                     .addComponent(jButton_NewColors))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         pack();
@@ -267,34 +252,6 @@ public class FrmLegendBreaks extends javax.swing.JDialog {
         // TODO add your handling code here:
         this.initialize();
     }//GEN-LAST:event_formWindowOpened
-
-    private void jRadioButton_RainbowColorsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton_RainbowColorsActionPerformed
-        // TODO add your handling code here:
-        if (this.jRadioButton_RainbowColors.isSelected()) {
-            this.jLabel_StartColor.setEnabled(false);
-            this.jLabel_EndColor.setEnabled(false);
-        }
-    }//GEN-LAST:event_jRadioButton_RainbowColorsActionPerformed
-
-    private void jRadioButton_ShadedColorsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton_ShadedColorsActionPerformed
-        // TODO add your handling code here:
-        if (this.jRadioButton_ShadedColors.isSelected()) {
-            this.jLabel_StartColor.setEnabled(true);
-            this.jLabel_EndColor.setEnabled(true);
-        }
-    }//GEN-LAST:event_jRadioButton_ShadedColorsActionPerformed
-
-    private void jLabel_StartColorMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel_StartColorMouseClicked
-        // TODO add your handling code here:
-        Color aColor = JColorChooser.showDialog(rootPane, null, this.jLabel_StartColor.getBackground());
-        this.jLabel_StartColor.setBackground(aColor);
-    }//GEN-LAST:event_jLabel_StartColorMouseClicked
-
-    private void jLabel_EndColorMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel_EndColorMouseClicked
-        // TODO add your handling code here:
-        Color aColor = JColorChooser.showDialog(rootPane, null, this.jLabel_EndColor.getBackground());
-        this.jLabel_EndColor.setBackground(aColor);
-    }//GEN-LAST:event_jLabel_EndColorMouseClicked
 
     private void jButton_NewLegendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_NewLegendActionPerformed
         // TODO add your handling code here:
@@ -323,7 +280,8 @@ public class FrmLegendBreaks extends javax.swing.JDialog {
                     _legendScheme.getUndefValue());
         }
         aLS.setFieldName(_legendScheme.getFieldName());
-        setLegendScheme(aLS);
+        //setLegendScheme(aLS);
+        this._legendScheme = aLS;
 
         if (_parent.getClass() == FrmLegendSet.class) {
             ((FrmLegendSet) _parent).setLegendScheme(aLS);
@@ -364,18 +322,11 @@ public class FrmLegendBreaks extends javax.swing.JDialog {
         this.initialize();
     }
 
-    private Color[] createColors(int colorNum) {
-        Color[] colors;
-
-        if (this.jRadioButton_RainbowColors.isSelected()) {
-            colors = LegendManage.createRainBowColors(colorNum);
-        } else {
-            colors = LegendManage.createColors(this.jLabel_StartColor.getBackground(), this.jLabel_EndColor.getBackground(),
-                    colorNum);
-        }
-
-        return colors;
-    }
+    private Color[] createColors(int colorNum) {        
+        ColorComboBoxModel model = (ColorComboBoxModel)this.jComboBox_ColorTable.getModel();
+        ColorTable ct = (ColorTable)model.getSelectedItem();
+        return ct.getColors(colorNum);
+    }    
 
     /**
      * @param args the command line arguments
@@ -422,16 +373,13 @@ public class FrmLegendBreaks extends javax.swing.JDialog {
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton jButton_NewColors;
     private javax.swing.JButton jButton_NewLegend;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel_EndColor;
+    private javax.swing.JComboBox jComboBox_ColorTable;
+    private javax.swing.JLabel jLabel_ColorTable;
+    private javax.swing.JLabel jLabel_From;
+    private javax.swing.JLabel jLabel_Interval;
     private javax.swing.JLabel jLabel_Max;
     private javax.swing.JLabel jLabel_Min;
-    private javax.swing.JLabel jLabel_StartColor;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JRadioButton jRadioButton_RainbowColors;
-    private javax.swing.JRadioButton jRadioButton_ShadedColors;
+    private javax.swing.JLabel jLabel_To;
     private javax.swing.JTextField jTextField_EndValue;
     private javax.swing.JTextField jTextField_Interval;
     private javax.swing.JTextField jTextField_StartValue;
