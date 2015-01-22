@@ -25,11 +25,11 @@ import org.meteoinfo.global.MIMath;
 import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.projection.Reproject;
-import ucar.grib.grib2.Grib2GridDefinitionSection;
-import ucar.grib.grib2.Grib2IdentificationSection;
-import ucar.grib.grib2.Grib2IndicatorSection;
-import ucar.grib.grib2.Grib2LocalUseSection;
-import ucar.grib.grib2.Grib2ProductDefinitionSection;
+import ucar.nc2.grib.grib2.Grib2SectionGridDefinition;
+import ucar.nc2.grib.grib2.Grib2SectionIdentification;
+import ucar.nc2.grib.grib2.Grib2SectionIndicator;
+import ucar.nc2.grib.grib2.Grib2SectionLocalUse;
+import ucar.nc2.grib.grib2.Grib2SectionProductDefinition;
 import ucar.unidata.io.RandomAccessFile;
 
 /**
@@ -88,10 +88,10 @@ public class GRIB2DataInfo extends DataInfo implements IGridDataInfo {
             List<Variable> variables = new ArrayList<Variable>();
             double[] X, Y;
             while (br.getFilePointer() < br.length() - 30) {
-                Grib2IndicatorSection rINS = new Grib2IndicatorSection(br);
+                Grib2SectionIndicator rINS = new Grib2SectionIndicator(br);
                 long messageStart = rINS.getStartPos();
                 long messageEnd = rINS.getEndPos();
-                Grib2IdentificationSection rIDS = new Grib2IdentificationSection(br);
+                Grib2SectionIdentification rIDS = new Grib2SectionIdentification(br);
 
                 while (this.readSectionNumber(br) != 8) {
                     int sectionNum = readSectionNumber(br);
@@ -100,49 +100,49 @@ public class GRIB2DataInfo extends DataInfo implements IGridDataInfo {
                     messageIdx.dataPos = br.getFilePointer();
                     messageIdx.startSection = sectionNum;
                     if (sectionNum == 2) {
-                        Grib2LocalUseSection rLUS = new Grib2LocalUseSection(br);
-                        Grib2GridDefinitionSection rGDS = new Grib2GridDefinitionSection(br, false);
+                        Grib2SectionLocalUse rLUS = new Grib2SectionLocalUse(br);
+                        Grib2SectionGridDefinition rGDS = new Grib2SectionGridDefinition(br);
                         if (gridNum == 0) {
-                            this._projInfo = getProjectionInfo(rGDS);
+                            //this._projInfo = getProjectionInfo(rGDS);
                             this.setProjectionInfo(this._projInfo);
-                            Object[] XY = this.getXYArray(rGDS);
-                            X = (double[]) XY[0];
-                            Y = (double[]) XY[1];
-                            Dimension xDim = new Dimension(DimensionType.X);
-                            xDim.setValues(X);
-                            this.setXDimension(xDim);
-                            Dimension yDim = new Dimension(DimensionType.Y);
-                            yDim.setValues(Y);
-                            this.setYDimension(yDim);
+                            //Object[] XY = this.getXYArray(rGDS);
+                            //X = (double[]) XY[0];
+                            //Y = (double[]) XY[1];
+//                            Dimension xDim = new Dimension(DimensionType.X);
+//                            xDim.setValues(X);
+//                            this.setXDimension(xDim);
+//                            Dimension yDim = new Dimension(DimensionType.Y);
+//                            yDim.setValues(Y);
+//                            this.setYDimension(yDim);
                         } else {
-                            Object[] XY = this.getXYArray(rGDS);
-                            X = (double[]) XY[0];
-                            Y = (double[]) XY[1];
+                            //Object[] XY = this.getXYArray(rGDS);
+                            //X = (double[]) XY[0];
+                            //Y = (double[]) XY[1];
                         }
                         gridNum += 1;
                     }
                     if (sectionNum == 3) {
-                        Grib2GridDefinitionSection rGDS = new Grib2GridDefinitionSection(br, false);
+                        Grib2SectionGridDefinition rGDS = new Grib2SectionGridDefinition(br);
                         if (gridNum == 0) {
-                            this._projInfo = getProjectionInfo(rGDS);
+                            //this._projInfo = getProjectionInfo(rGDS);
                             this.setProjectionInfo(this._projInfo);
-                            Object[] XY = this.getXYArray(rGDS);
-                            X = (double[]) XY[0];
-                            Y = (double[]) XY[1];
-                            Dimension xDim = new Dimension(DimensionType.X);
-                            xDim.setValues(X);
-                            this.setXDimension(xDim);
-                            Dimension yDim = new Dimension(DimensionType.Y);
-                            yDim.setValues(Y);
-                            this.setYDimension(yDim);
+                            //Object[] XY = this.getXYArray(rGDS);
+                            //X = (double[]) XY[0];
+                            //Y = (double[]) XY[1];
+//                            Dimension xDim = new Dimension(DimensionType.X);
+//                            xDim.setValues(X);
+//                            this.setXDimension(xDim);
+//                            Dimension yDim = new Dimension(DimensionType.Y);
+//                            yDim.setValues(Y);
+//                            this.setYDimension(yDim);
                         } else {
-                            Object[] XY = this.getXYArray(rGDS);
-                            X = (double[]) XY[0];
-                            Y = (double[]) XY[1];
+                            //Object[] XY = this.getXYArray(rGDS);
+                            //X = (double[]) XY[0];
+                            //Y = (double[]) XY[1];
                         }
                         gridNum += 1;
                     }
-                    Grib2ProductDefinitionSection rPDS = new Grib2ProductDefinitionSection(br, br.getFilePointer());
+                    Grib2SectionProductDefinition rPDS = new Grib2SectionProductDefinition(br);
                     seekNextSction(br);    //Skip Data representation section
                     seekNextSction(br);    //Skip Bitmap section
                     seekNextSction(br);    //Skip Data section
@@ -184,134 +184,134 @@ public class GRIB2DataInfo extends DataInfo implements IGridDataInfo {
         }
     }
 
-    /**
-     * Get projection info from grid definition section
-     *
-     * @param rGDS The grid definition section
-     * @return Projection info
-     */
-    private ProjectionInfo getProjectionInfo(Grib2GridDefinitionSection rGDS) {
-        ProjectionInfo aProjInfo;
-        String projStr = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
-        switch (rGDS.getGdtn()) {  // Grid Definition Template Number
+//    /**
+//     * Get projection info from grid definition section
+//     *
+//     * @param rGDS The grid definition section
+//     * @return Projection info
+//     */
+//    private ProjectionInfo getProjectionInfo(Grib2SectionGridDefinition rGDS) {
+//        ProjectionInfo aProjInfo;
+//        String projStr = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
+//        switch (rGDS.getSource()) {  // Grid Definition Template Number
+//
+//            case 0:
+//            case 1:
+//            case 2:
+//            case 3:       // Latitude/Longitude Grid
+//                projStr = KnownCoordinateSystems.geographic.world.WGS1984.toProj4String();
+//                break;
+//            case 10:  // Mercator
+//                if (rGDS.getGDS().getNy() == 0) {
+//                    projStr = "+proj=merc+lon_0=" + String.valueOf(GRIBData.getMeanLongitude(rGDS.getLo1(), rGDS.getLo2()));
+//                } else //Transverse_Mercator
+//                {
+//                    projStr = "+proj=tmerc+lon_0=" + String.valueOf(GRIBData.getMeanLongitude(rGDS.getLo1(), rGDS.getLo2()))
+//                            + "+lat_0=" + String.valueOf(rGDS.getLad());
+//                }
+//                break;
+//            case 20:  // Polar stereographic projection
+//                double lat0 = 90;
+//                if ((rGDS.getProjectionCenter() & 128) != 0) {
+//                    lat0 = -90;
+//                }
+//                projStr = "+proj=stere+lon_0=" + String.valueOf(rGDS.getLov())
+//                        + "+lat_0=" + String.valueOf(lat0);
+//                break;
+//            case 30:  // Lambert Conformal
+//                projStr = "+proj=lcc+lon_0=" + String.valueOf(rGDS.getLov())
+//                        + "+lat_0=" + String.valueOf(rGDS.getLad())
+//                        + "+lat_1=" + String.valueOf(rGDS.getLatin1())
+//                        + "+lat_2=" + String.valueOf(rGDS.getLatin2());
+//                break;
+//            case 31:  // Albers Equal Area
+//
+//
+//                break;
+//            case 40:
+//            case 41:
+//            case 42:
+//            case 43:  // Gaussian latitude/longitude
+//                projStr = KnownCoordinateSystems.geographic.world.WGS1984.toProj4String();
+//                break;
+//            case 50:
+//            case 51:
+//            case 52:
+//            case 53:                     // Spherical harmonic coefficients
+//
+//
+//                break;
+//            case 90:  // Space view perspective or orthographic
+//                projStr = "+proj=ortho+lon_0=" + String.valueOf(rGDS.getLop())
+//                        + "+lat_0=" + String.valueOf(rGDS.getLap());
+//
+//                //if (isOrtho)
+//                //    projStr = "+proj=ortho+lon_0=" + lop.ToString() +
+//                //        "+lat_0=" + lap.ToString();
+//                //else
+//                //    projStr = "+proj=geos+lon_0=" + lop.ToString() +
+//                //        "+h=" + altitude.ToString();
+//                break;
+//            case 100:  // Triangular grid based on an icosahedron
+//
+//
+//                break;
+//            case 110:  // Equatorial azimuthal equidistant projection
+//
+//
+//                break;
+//            case 120:  // Azimuth-range Projection
+//
+//
+//                break;
+//            case 204:  // Curvilinear orthographic
+//
+//                break;
+//            default:
+//                return null;
+//        }
+//
+//        aProjInfo = new ProjectionInfo(projStr);
+//        return aProjInfo;
+//    }
 
-            case 0:
-            case 1:
-            case 2:
-            case 3:       // Latitude/Longitude Grid
-                projStr = KnownCoordinateSystems.geographic.world.WGS1984.toProj4String();
-                break;
-            case 10:  // Mercator
-                if (rGDS.getLad() == 0) {
-                    projStr = "+proj=merc+lon_0=" + String.valueOf(GRIBData.getMeanLongitude(rGDS.getLo1(), rGDS.getLo2()));
-                } else //Transverse_Mercator
-                {
-                    projStr = "+proj=tmerc+lon_0=" + String.valueOf(GRIBData.getMeanLongitude(rGDS.getLo1(), rGDS.getLo2()))
-                            + "+lat_0=" + String.valueOf(rGDS.getLad());
-                }
-                break;
-            case 20:  // Polar stereographic projection
-                double lat0 = 90;
-                if ((rGDS.getProjectionCenter() & 128) != 0) {
-                    lat0 = -90;
-                }
-                projStr = "+proj=stere+lon_0=" + String.valueOf(rGDS.getLov())
-                        + "+lat_0=" + String.valueOf(lat0);
-                break;
-            case 30:  // Lambert Conformal
-                projStr = "+proj=lcc+lon_0=" + String.valueOf(rGDS.getLov())
-                        + "+lat_0=" + String.valueOf(rGDS.getLad())
-                        + "+lat_1=" + String.valueOf(rGDS.getLatin1())
-                        + "+lat_2=" + String.valueOf(rGDS.getLatin2());
-                break;
-            case 31:  // Albers Equal Area
-
-
-                break;
-            case 40:
-            case 41:
-            case 42:
-            case 43:  // Gaussian latitude/longitude
-                projStr = KnownCoordinateSystems.geographic.world.WGS1984.toProj4String();
-                break;
-            case 50:
-            case 51:
-            case 52:
-            case 53:                     // Spherical harmonic coefficients
-
-
-                break;
-            case 90:  // Space view perspective or orthographic
-                projStr = "+proj=ortho+lon_0=" + String.valueOf(rGDS.getLop())
-                        + "+lat_0=" + String.valueOf(rGDS.getLap());
-
-                //if (isOrtho)
-                //    projStr = "+proj=ortho+lon_0=" + lop.ToString() +
-                //        "+lat_0=" + lap.ToString();
-                //else
-                //    projStr = "+proj=geos+lon_0=" + lop.ToString() +
-                //        "+h=" + altitude.ToString();
-                break;
-            case 100:  // Triangular grid based on an icosahedron
-
-
-                break;
-            case 110:  // Equatorial azimuthal equidistant projection
-
-
-                break;
-            case 120:  // Azimuth-range Projection
-
-
-                break;
-            case 204:  // Curvilinear orthographic
-
-                break;
-            default:
-                return null;
-        }
-
-        aProjInfo = new ProjectionInfo(projStr);
-        return aProjInfo;
-    }
-
-    /**
-     * Get X coordinate array
-     *
-     * @param rGDS The grid definition section
-     * @return X array
-     */
-    public double[] getXArray(Grib2GridDefinitionSection rGDS) {
-        double[] X = new double[rGDS.getNx()];
-        double ddx = Math.abs(rGDS.getDx());
-        double ddx1 = (rGDS.getLo2() - rGDS.getLo1()) / (rGDS.getNx() - 1);
-        if (!MIMath.doubleEquals(ddx, ddx1) && Math.abs(ddx - ddx1) < 0.001) {
-            ddx = ddx1;
-        }
-
-        for (int i = 0; i < rGDS.getNx(); i++) {
-            X[i] = rGDS.getLo1() + ddx * i;
-        }
-
-        return X;
-    }
-
-    /**
-     * Get Y coordinate array
-     *
-     * @param rGDS The grid definition section
-     * @return Y array
-     */
-    public double[] getYArray(Grib2GridDefinitionSection rGDS) {
-        double[] Y = new double[rGDS.getNy()];
-        double ddy = Math.abs(rGDS.getDy());
-        double sLat = Math.min(rGDS.getLa1(), rGDS.getLa2());
-        for (int i = 0; i < rGDS.getNy(); i++) {
-            Y[i] = sLat + ddy * i;
-        }
-
-        return Y;
-    }
+//    /**
+//     * Get X coordinate array
+//     *
+//     * @param rGDS The grid definition section
+//     * @return X array
+//     */
+//    public double[] getXArray(Grib2SectionGridDefinition rGDS) {
+//        double[] X = new double[rGDS.getNx()];
+//        double ddx = Math.abs(rGDS.getDx());
+//        double ddx1 = (rGDS.getLo2() - rGDS.getLo1()) / (rGDS.getNx() - 1);
+//        if (!MIMath.doubleEquals(ddx, ddx1) && Math.abs(ddx - ddx1) < 0.001) {
+//            ddx = ddx1;
+//        }
+//
+//        for (int i = 0; i < rGDS.getNx(); i++) {
+//            X[i] = rGDS.getLo1() + ddx * i;
+//        }
+//
+//        return X;
+//    }
+//
+//    /**
+//     * Get Y coordinate array
+//     *
+//     * @param rGDS The grid definition section
+//     * @return Y array
+//     */
+//    public double[] getYArray(Grib2GridDefinitionSection rGDS) {
+//        double[] Y = new double[rGDS.getNy()];
+//        double ddy = Math.abs(rGDS.getDy());
+//        double sLat = Math.min(rGDS.getLa1(), rGDS.getLa2());
+//        for (int i = 0; i < rGDS.getNy(); i++) {
+//            Y[i] = sLat + ddy * i;
+//        }
+//
+//        return Y;
+//    }
 
     /**
      * Get Y coordinate array of Gaussian grid
@@ -332,109 +332,109 @@ public class GRIB2DataInfo extends DataInfo implements IGridDataInfo {
         return Y;
     }
 
-    /**
-     * Get X/Y coordinate array
-     *
-     * @param rGDS The grid definition section
-     * @return X/Y coordinate array
-     */
-    public Object[] getXYArray(Grib2GridDefinitionSection rGDS) {
-        ProjectionInfo aProjInfo = getProjectionInfo(rGDS);
-        double[] X = new double[1], Y = new double[1];
-        switch (aProjInfo.getProjectionName()) {
-            case LongLat:
-                switch (rGDS.getGdtn()) {
-                    case 0:
-                    case 1:
-                    case 2:
-                    case 3:
-                        X = getXArray(rGDS);
-                        Y = getYArray(rGDS);
-                        break;
-                    case 40:
-                    case 41:
-                    case 42:
-                    case 43:  // Gaussian latitude/longitude
-                        X = getXArray(rGDS);
-                        Y = getGaussYArray(rGDS.getNy());
-                        break;
-                }
-                break;
-            case Orthographic_Azimuthal:
-            case Geostationary_Satellite:
-                //Get under satellite point X/Y
-                ProjectionInfo fromProj = KnownCoordinateSystems.geographic.world.WGS1984;
-                double s_X,
-                 s_Y;
-                double[][] points = new double[1][];
-                points[0] = new double[]{rGDS.getLo1(), rGDS.getLa1()};
-                Reproject.reprojectPoints(points, fromProj, aProjInfo, 0, 1);
-                s_X = points[0][0];
-                s_Y = points[0][1];
-
-                //Get integer sync X/Y            
-                int i_XP,
-                 i_YP;
-                double i_X,
-                 i_Y;
-                i_XP = (int) rGDS.getXp();
-                if (rGDS.getXp() == i_XP) {
-                    i_X = s_X;
-                } else {
-                    i_X = s_X - (rGDS.getXp() - i_XP) * rGDS.getDx();
-                }
-                i_YP = (int) rGDS.getYp();
-                if (rGDS.getYp() == i_YP) {
-                    i_Y = s_Y;
-                } else {
-                    i_Y = s_Y - (rGDS.getYp() - i_YP) * rGDS.getDy();
-                }
-
-                //Get left bottom X/Y
-                int nx,
-                 ny;
-                nx = X.length;
-                ny = Y.length;
-                double xlb,
-                 ylb;
-                xlb = i_X - (i_XP - 1) * rGDS.getDx();
-                ylb = i_Y - (i_YP - 1) * rGDS.getDy();
-
-                //Get X Y with orient 0
-                int i;
-                X = new double[rGDS.getNx()];
-                Y = new double[rGDS.getNy()];
-                for (i = 0; i < rGDS.getNx(); i++) {
-                    X[i] = xlb + i * rGDS.getDx();
-                }
-                for (i = 0; i < rGDS.getNy(); i++) {
-                    Y[i] = ylb + i * rGDS.getDy();
-                }
-                break;
-            default:
-                //Get start X/Y
-                fromProj = KnownCoordinateSystems.geographic.world.WGS1984;
-                points = new double[1][];
-                points[0] = new double[]{rGDS.getLo1(), rGDS.getLa1()};
-                Reproject.reprojectPoints(points, fromProj, aProjInfo, 0, 1);
-                s_X = points[0][0];
-                s_Y = points[0][1];
-
-                //Get X/Y
-                X = new double[rGDS.getNx()];
-                Y = new double[rGDS.getNy()];
-                for (i = 0; i < rGDS.getNx(); i++) {
-                    X[i] = s_X + rGDS.getDx() * i;
-                }
-
-                for (i = 0; i < rGDS.getNy(); i++) {
-                    Y[i] = s_Y + rGDS.getDy() * i;
-                }
-                break;
-        }
-
-        return new Object[]{X, Y};
-    }
+//    /**
+//     * Get X/Y coordinate array
+//     *
+//     * @param rGDS The grid definition section
+//     * @return X/Y coordinate array
+//     */
+//    public Object[] getXYArray(Grib2GridDefinitionSection rGDS) {
+//        ProjectionInfo aProjInfo = getProjectionInfo(rGDS);
+//        double[] X = new double[1], Y = new double[1];
+//        switch (aProjInfo.getProjectionName()) {
+//            case LongLat:
+//                switch (rGDS.getGdtn()) {
+//                    case 0:
+//                    case 1:
+//                    case 2:
+//                    case 3:
+//                        X = getXArray(rGDS);
+//                        Y = getYArray(rGDS);
+//                        break;
+//                    case 40:
+//                    case 41:
+//                    case 42:
+//                    case 43:  // Gaussian latitude/longitude
+//                        X = getXArray(rGDS);
+//                        Y = getGaussYArray(rGDS.getNy());
+//                        break;
+//                }
+//                break;
+//            case Orthographic_Azimuthal:
+//            case Geostationary_Satellite:
+//                //Get under satellite point X/Y
+//                ProjectionInfo fromProj = KnownCoordinateSystems.geographic.world.WGS1984;
+//                double s_X,
+//                 s_Y;
+//                double[][] points = new double[1][];
+//                points[0] = new double[]{rGDS.getLo1(), rGDS.getLa1()};
+//                Reproject.reprojectPoints(points, fromProj, aProjInfo, 0, 1);
+//                s_X = points[0][0];
+//                s_Y = points[0][1];
+//
+//                //Get integer sync X/Y            
+//                int i_XP,
+//                 i_YP;
+//                double i_X,
+//                 i_Y;
+//                i_XP = (int) rGDS.getXp();
+//                if (rGDS.getXp() == i_XP) {
+//                    i_X = s_X;
+//                } else {
+//                    i_X = s_X - (rGDS.getXp() - i_XP) * rGDS.getDx();
+//                }
+//                i_YP = (int) rGDS.getYp();
+//                if (rGDS.getYp() == i_YP) {
+//                    i_Y = s_Y;
+//                } else {
+//                    i_Y = s_Y - (rGDS.getYp() - i_YP) * rGDS.getDy();
+//                }
+//
+//                //Get left bottom X/Y
+//                int nx,
+//                 ny;
+//                nx = X.length;
+//                ny = Y.length;
+//                double xlb,
+//                 ylb;
+//                xlb = i_X - (i_XP - 1) * rGDS.getDx();
+//                ylb = i_Y - (i_YP - 1) * rGDS.getDy();
+//
+//                //Get X Y with orient 0
+//                int i;
+//                X = new double[rGDS.getNx()];
+//                Y = new double[rGDS.getNy()];
+//                for (i = 0; i < rGDS.getNx(); i++) {
+//                    X[i] = xlb + i * rGDS.getDx();
+//                }
+//                for (i = 0; i < rGDS.getNy(); i++) {
+//                    Y[i] = ylb + i * rGDS.getDy();
+//                }
+//                break;
+//            default:
+//                //Get start X/Y
+//                fromProj = KnownCoordinateSystems.geographic.world.WGS1984;
+//                points = new double[1][];
+//                points[0] = new double[]{rGDS.getLo1(), rGDS.getLa1()};
+//                Reproject.reprojectPoints(points, fromProj, aProjInfo, 0, 1);
+//                s_X = points[0][0];
+//                s_Y = points[0][1];
+//
+//                //Get X/Y
+//                X = new double[rGDS.getNx()];
+//                Y = new double[rGDS.getNy()];
+//                for (i = 0; i < rGDS.getNx(); i++) {
+//                    X[i] = s_X + rGDS.getDx() * i;
+//                }
+//
+//                for (i = 0; i < rGDS.getNy(); i++) {
+//                    Y[i] = s_Y + rGDS.getDy() * i;
+//                }
+//                break;
+//        }
+//
+//        return new Object[]{X, Y};
+//    }
 
     @Override
     public String generateInfoText() {

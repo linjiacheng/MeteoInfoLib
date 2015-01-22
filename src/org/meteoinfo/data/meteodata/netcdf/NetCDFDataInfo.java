@@ -52,6 +52,7 @@ import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.projection.Reproject;
 import ucar.ma2.Array;
+import ucar.ma2.DataType;
 import ucar.ma2.InvalidRangeException;
 import ucar.nc2.NetcdfFile;
 
@@ -981,6 +982,9 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
     private void getDimValues_CF() throws IOException {
         for (ucar.nc2.Variable var : _variables) {
             if (var.getRank() == 1) {
+                if (var.getDataType() == DataType.STRING)
+                    continue;
+                
                 int idx = this.getDimensionIndex(var.getDimension(0));
                 if (idx == -1) {
                     continue;
@@ -992,7 +996,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
                 DimensionType dimType = getDimType(var);
                 dim.setDimType(dimType);
-                Array darray = var.read();
+                Array darray = var.read();                
                 double[] values = new double[(int) darray.getSize()];
                 BigDecimal b;
                 for (int i = 0; i < values.length; i++) {

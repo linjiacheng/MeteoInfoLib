@@ -1555,7 +1555,7 @@ public class MapLayout extends JPanel {
 
                     if (aElement.getElementType() == ElementType.LayoutGraphic) {
                         Graphic aGraphic = ((LayoutGraphic) aElement).getGraphic();
-                        showSymbolSetForm(aGraphic.getLegend());
+                        showSymbolSetForm(aGraphic);
                     } else {
                         FrmProperty aFrmProperty = new FrmProperty((JFrame) SwingUtilities.getWindowAncestor(this), true, false);
                         Object object = aElement;
@@ -1793,6 +1793,68 @@ public class MapLayout extends JPanel {
                 }
                 _frmPolygonSymbolSet.setPolygonBreak(aPGB);
                 _frmPolygonSymbolSet.setVisible(true);
+                break;
+        }
+    }
+    
+    private void showSymbolSetForm(Graphic graphic) {
+        Shape shape = graphic.getShape();
+        ColorBreak aCB = graphic.getLegend();
+        switch (aCB.getBreakType()) {
+            case PointBreak:
+                PointBreak aPB = (PointBreak) aCB;
+
+                if (_frmPointSymbolSet == null) {
+                    _frmPointSymbolSet = new FrmPointSymbolSet((JFrame) SwingUtilities.getWindowAncestor(this), false, this);
+                    _frmPointSymbolSet.setLocationRelativeTo(this);
+                    _frmPointSymbolSet.setVisible(true);
+                }
+                _frmPointSymbolSet.setPointBreak(aPB);
+                _frmPointSymbolSet.setVisible(true);
+                break;
+            case LabelBreak:
+                LabelBreak aLB = (LabelBreak) aCB;
+
+                if (_frmLabelSymbolSet == null) {
+                    _frmLabelSymbolSet = new FrmLabelSymbolSet((JFrame) SwingUtilities.getWindowAncestor(this), false, this);
+                    _frmLabelSymbolSet.setLocationRelativeTo(this);
+                    _frmLabelSymbolSet.setVisible(true);
+                }
+                _frmLabelSymbolSet.setLabelBreak(aLB);
+                _frmLabelSymbolSet.setVisible(true);
+                break;
+            case PolylineBreak:
+                PolylineBreak aPLB = (PolylineBreak) aCB;
+
+                if (_frmPolylineSymbolSet == null) {
+                    _frmPolylineSymbolSet = new FrmPolylineSymbolSet((JFrame) SwingUtilities.getWindowAncestor(this), false, this);
+                    _frmPolylineSymbolSet.setLocationRelativeTo(this);
+                    _frmPolylineSymbolSet.setVisible(true);
+                }
+                _frmPolylineSymbolSet.setPolylineBreak(aPLB);
+                _frmPolylineSymbolSet.setVisible(true);
+                break;
+            case PolygonBreak:
+                PolygonBreak aPGB = (PolygonBreak) aCB;
+
+                if (_frmPolygonSymbolSet == null) {
+                    _frmPolygonSymbolSet = new FrmPolygonSymbolSet((JFrame) SwingUtilities.getWindowAncestor(this), false, this);
+                    _frmPolygonSymbolSet.setLocationRelativeTo(this);
+                    _frmPolygonSymbolSet.setVisible(true);
+                }
+                _frmPolygonSymbolSet.setPolygonBreak(aPGB);
+                _frmPolygonSymbolSet.setVisible(true);
+                break;
+            case VectorBreak:
+                WindArraw wa = (WindArraw)shape;
+                //VectorBreak vb = (VectorBreak) aCB;
+                Object[] lens = {5, 10, 15, 20, 25, 30};
+                Object lenObj = JOptionPane.showInputDialog((JFrame) SwingUtilities.getWindowAncestor(this), 
+                        "Select wind speed:", "Selection", JOptionPane.PLAIN_MESSAGE, null, lens, (int)wa.length);
+                if (lenObj != null) {
+                    wa.length = Integer.parseInt(lenObj.toString());
+                    this.paintGraphics();
+                }
                 break;
         }
     }

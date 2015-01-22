@@ -128,18 +128,18 @@ public class LayoutGraphic extends LayoutElement {
                                 setVisible(true);
                                 float zoom = ((VectorLayer) aLayer).getDrawingZoom();
                                 ((VectorBreak) _graphic.getLegend()).setZoom(zoom);
-                                float max = 30.0f / zoom;
-                                WindArraw aWA = (WindArraw) _graphic.getShape();
-                                int llen = 5;
-                                for (i = 10; i <= 100; i += 5) {
-                                    if (max < i) {
-                                        llen = i - 5;
-                                        break;
-                                    }
-                                }
-                                aWA.length = llen;
-                                aWA.size = 5;
-                                aWA.setValue(0);
+//                                float max = 30.0f / zoom;
+//                                WindArraw aWA = (WindArraw) _graphic.getShape();
+//                                int llen = 5;
+//                                for (i = 10; i <= 100; i += 5) {
+//                                    if (max < i) {
+//                                        llen = i - 5;
+//                                        break;
+//                                    }
+//                                }
+//                                aWA.length = llen;
+//                                aWA.size = 5;
+//                                aWA.setValue(0);
                                 updateControlSize();
                                 break;
                             }
@@ -169,6 +169,9 @@ public class LayoutGraphic extends LayoutElement {
                     break;
                 case Circle:
                     this.setResizeAbility(ResizeAbility.SameWidthHeight);
+                    break;
+                case WindArraw:
+                    this.setResizeAbility(ResizeAbility.None);
                     break;
                 default:
                     this.setResizeAbility(ResizeAbility.ResizeAll);
