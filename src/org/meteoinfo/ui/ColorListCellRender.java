@@ -11,6 +11,7 @@ import java.awt.Component;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.geom.Rectangle2D;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
@@ -75,24 +76,25 @@ public class ColorListCellRender extends JPanel implements ListCellRenderer {
             int xshift = 2;
             int yshift = 2;
             int width = this.getWidth() - xshift;
-            int w = width / n;
-            if (w == 0)
+            double w = width / n;
+            if (w <= 0)
                 w = 1;
             int h = this.getHeight() - yshift;
-            int x = xshift / 2;
-            int y = yshift / 2;
+            double x = xshift / 2;
+            double y = yshift / 2;
             Color c;
             for (int i = 0; i < n; i++) {
                 c = this.colorTable.getColor(i);
                 g2.setColor(c);
                 if (x + w > width) {
-                    g2.fillRect(x, y, width - x, h);
+                    g2.fill(new Rectangle2D.Double(x, y, width - x, h));
+                    //g2.fillRect(x, y, width - x, h);
                     break;
                 } else {
                     if (i == n - 1)
-                        g2.fillRect(x, y, width - x, h);
+                        g2.fill(new Rectangle2D.Double(x, y, width - x, h));
                     else
-                        g2.fillRect(x, y, w, h);
+                        g2.fill(new Rectangle2D.Double(x, y, w, h));
                 }
                 
                 x += w;
@@ -105,7 +107,7 @@ public class ColorListCellRender extends JPanel implements ListCellRenderer {
                 y = this.getHeight() / 2 + metrics.getHeight() / 3;
                 //y = this.getHeight() / 2;
                 g2.setColor(Color.black);
-                g2.drawString(name, x, y);
+                g2.drawString(name, (int)x, (int)y);
             }
         }
     }

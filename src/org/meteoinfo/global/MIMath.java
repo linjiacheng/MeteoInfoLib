@@ -778,6 +778,58 @@ public class MIMath {
     }
     
     /**
+     * Create values by interval
+     *
+     * @param min Miminum value
+     * @param max Maximum value
+     * @param interval Interval value
+     * @return Value array
+     */
+    public static double[] getIntervalValues(double min, double max, double interval) {
+        double[] cValues;
+        min = BigDecimalUtil.add(min, interval);
+        min = min - (min % interval);
+        int cNum = (int) ((max - min) / interval) + 1;
+        int i;
+        
+        cValues = new double[cNum];
+        for (i = 0; i < cNum; i++) {
+            cValues[i] = BigDecimalUtil.add(min, BigDecimalUtil.mul(i, interval));
+        }
+        
+        return cValues;
+    }
+    
+    /**
+     * Get interval values
+     * @param min Minimum value
+     * @param max Maximum value
+     * @param n Level number
+     * @return Values
+     */
+    public static double[] getIntervalValues(double min, double max, int n){
+        int aD, aE;
+        double  range;
+        String eStr;
+
+        range = BigDecimalUtil.sub(max, min);
+        if (range == 0.0) {
+            return new double[]{min};
+        }
+
+        eStr = String.format("%1$E", range);
+        aD = Integer.parseInt(eStr.substring(0, 1));
+        aE = (int) Math.floor(Math.log10(range));        
+        while(n > aD){
+            aD = aD * 10;
+            aE = aE - 1;
+        }
+        double interval = BigDecimalUtil.mul((int)(aD / n), Math.pow(10, aE));
+        
+        return getIntervalValues(min, max, interval);
+    }
+    
+    /**
      * Create contour values by minimum and maximum values
      *
      * @param min Minimum value

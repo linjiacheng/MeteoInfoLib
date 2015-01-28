@@ -66,7 +66,6 @@ public class LegendScheme {
     private String fieldName = "";
     private LegendType legendType = LegendType.SingleSymbol;
     private ShapeTypes shapeType;
-    private BreakTypes breakType;
     private List<ColorBreak> legendBreaks;
     private boolean hasNoData;
     private double minValue;
@@ -74,6 +73,13 @@ public class LegendScheme {
     private double undef;
     // </editor-fold>
     // <editor-fold desc="Constructor">
+    /**
+     * Constructor
+     */
+    public LegendScheme(){
+        this.shapeType = ShapeTypes.Image;
+        legendBreaks = new ArrayList<ColorBreak>();
+    }
 
     /**
      * Constructor
@@ -168,14 +174,14 @@ public class LegendScheme {
         return breakType;
     }
 
-    /**
-     * Set break type
-     *
-     * @param bt The break type
-     */
-    public void setBreakType(BreakTypes bt) {
-        breakType = bt;
-    }
+//    /**
+//     * Set break type
+//     *
+//     * @param bt The break type
+//     */
+//    public void setBreakType(BreakTypes bt) {
+//        breakType = bt;
+//    }
 
     /**
      * Get legend breaks
@@ -379,6 +385,72 @@ public class LegendScheme {
             default:
                 return false;
         }
+    }
+    
+    /**
+     * Convert to other shape type
+     * @param shapeType The shape type
+     * @return Result legend scheme
+     */
+    public LegendScheme convertTo(ShapeTypes shapeType){
+        if (this.shapeType == shapeType){
+            return this;
+        }
+        
+        LegendScheme ls = new LegendScheme(shapeType);
+        ls.fieldName = this.fieldName;
+        ls.hasNoData = this.hasNoData;
+        ls.legendType = this.legendType;
+        ls.minValue = this.minValue;
+        ls.maxValue = this.maxValue;
+        ls.undef = this.undef;
+        for (ColorBreak cb : this.legendBreaks){
+            switch(shapeType){
+                case Point:
+                    PointBreak pb = new PointBreak();
+                    pb.setColor(cb.getColor());
+                    pb.setStartValue(cb.getStartValue());
+                    pb.setEndValue(cb.getEndValue());
+                    pb.setCaption(cb.getCaption());
+                    pb.setNoData(cb.isNoData());
+                    pb.setDrawShape(cb.isDrawShape());
+                    ls.legendBreaks.add(pb);
+                    break;
+                case Polyline:
+                    PolylineBreak plb = new PolylineBreak();
+                    plb.setColor(cb.getColor());
+                    plb.setStartValue(cb.getStartValue());
+                    plb.setEndValue(cb.getEndValue());
+                    plb.setCaption(cb.getCaption());
+                    plb.setNoData(cb.isNoData());
+                    plb.setDrawShape(cb.isDrawShape());
+                    ls.legendBreaks.add(plb);
+                    break;
+                case Polygon:
+                    PolygonBreak pgb = new PolygonBreak();
+                    pgb.setColor(cb.getColor());
+                    pgb.setStartValue(cb.getStartValue());
+                    pgb.setEndValue(cb.getEndValue());
+                    pgb.setCaption(cb.getCaption());
+                    pgb.setNoData(cb.isNoData());
+                    pgb.setDrawShape(cb.isDrawShape());
+                    pgb.setDrawOutline(false);
+                    ls.legendBreaks.add(pgb);
+                    break;
+                case Image:
+                    ColorBreak ncb = new ColorBreak();
+                    ncb.setColor(cb.getColor());
+                    ncb.setStartValue(cb.getStartValue());
+                    ncb.setEndValue(cb.getEndValue());
+                    ncb.setCaption(cb.getCaption());
+                    ncb.setNoData(cb.isNoData());
+                    ncb.setDrawShape(cb.isDrawShape());
+                    ls.legendBreaks.add(ncb);
+                    break;
+            }
+        }
+        
+        return ls;
     }
 
     /**

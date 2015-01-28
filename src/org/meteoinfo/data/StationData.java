@@ -1100,6 +1100,41 @@ public class StationData {
 
         return max;
     }
+    
+    /**
+     * Get maximum and minimum values
+     * @param maxmin Maximum and minimum value array
+     * @return Has missing value or not
+     */
+    public boolean getMaxMinValue(double[] maxmin){
+        double max = 0;
+        double min = 0;
+        int vdNum = 0;
+        boolean hasMissingValue = false;
+        for (int i = 0; i < this.getStNum(); i++) {
+            if (MIMath.doubleEquals(data[i][2], missingValue)) {
+                hasMissingValue = true;
+                continue;
+            }
+
+            if (vdNum == 0) {
+                max = data[i][2];
+                min = max;
+            } else {
+                if (max < data[i][2]) {
+                    max = data[i][2];
+                }
+                if (min > data[i][2]) {
+                    min = data[i][2];
+                }
+            }
+            vdNum += 1;
+        }
+        
+        maxmin[0] = max;
+        maxmin[1] = min;
+        return hasMissingValue;
+    }
     // </editor-fold>
     // </editor-fold>
 }
