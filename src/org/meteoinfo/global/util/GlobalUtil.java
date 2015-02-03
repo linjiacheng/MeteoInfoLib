@@ -24,11 +24,13 @@ import java.awt.image.ImageFilter;
 import java.awt.image.ImageProducer;
 import java.awt.image.RGBImageFilter;
 import java.awt.image.WritableRaster;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -603,9 +605,9 @@ public class GlobalUtil {
      * Get separator
      *
      * @param line The string line
-     * @return Separator string
+     * @return Delimiter string
      */
-    public static String getSeparator(String line) {
+    public static String getDelimiter(String line) {
         String separator = null;
         if (line.contains(",")) {
             separator = ",";
@@ -614,6 +616,20 @@ public class GlobalUtil {
         }
 
         return separator;
+    }
+    
+    /**
+     * Get delimiter
+     * @param file File
+     * @return Delimiter
+     * @throws FileNotFoundException
+     * @throws IOException 
+     */
+    public static String getDelimiter(File file) throws FileNotFoundException, IOException{
+        BufferedReader sr = new BufferedReader(new FileReader(file));
+        String line = sr.readLine();
+        sr.close();
+        return getDelimiter(line);        
     }
 
     /**

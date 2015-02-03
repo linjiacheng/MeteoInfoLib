@@ -725,6 +725,7 @@ public class Variable {
     public boolean dimensionSizeEquals(Variable var){
         if (this.getDimNumber() != var.getDimNumber())
             return false;
+        
         for (int i = 0; i < this.getDimNumber(); i++){
             Dimension adim = this._dimensions.get(i);
             Dimension bdim = var.getDimensions().get(i);
@@ -733,6 +734,42 @@ public class Variable {
         }
         
         return true;
+    }
+    
+    /**
+     * If the dimensions contains the diemsions of another variable
+     * @param var Another variable
+     * @return Boolean
+     */
+    public boolean dimensionContains(Variable var){
+        if (this.getDimNumber() < var.getDimNumber())
+            return false;
+        
+        for (int i = 0; i < var.getDimNumber(); i++){
+            Dimension adim = this._dimensions.get(i);
+            Dimension bdim = var.getDimensions().get(i);
+            if (adim.getDimLength() != bdim.getDimLength())
+                return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Get level dimension for SWATH data variable
+     * @param var Variable
+     * @return Dimension
+     */
+    public Dimension getLevelDimension(Variable var){   
+        if (this.getDimNumber() > var.getDimNumber()) {
+            for (int i = var.getDimNumber(); i < this.getDimNumber(); i++) {
+                Dimension dim = this._dimensions.get(i);
+                if (dim.getDimType() == DimensionType.Other)
+                    return dim;
+            }
+        }
+        
+        return null;
     }
 
     /**

@@ -85,6 +85,9 @@ public class Dimension {
      */
     public void setDimLength(int value) {
         _dimLength = value;
+        this._dimValue.clear();
+        for (int i = 0; i < _dimLength; i++)
+            this._dimValue.add(Double.valueOf(i));
     }
 
     /**

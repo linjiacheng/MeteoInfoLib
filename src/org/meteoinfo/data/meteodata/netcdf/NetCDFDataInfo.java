@@ -2802,7 +2802,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                                 origin[i] = 0;
                                 size[i] = dim.getLength();
                             } else {
-                                origin[i] = 0;
+                                origin[i] = levelIdx;
                                 size[i] = 1;
                             }
                             break;

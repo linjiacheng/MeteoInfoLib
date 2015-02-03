@@ -13,6 +13,12 @@
  */
 package org.meteoinfo.table;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author Yaqiang Wang
@@ -25,6 +31,7 @@ public class DataColumn {
     private String captionName;
     private int columnIndex;
     private DataTypes dataType;
+    private String format;
     private boolean joined = false;
     //private String dataTypeName;
 
@@ -62,6 +69,19 @@ public class DataColumn {
     public DataColumn(String columnName, DataTypes dataType) {
         this.dataType = dataType;
         this.columnName = columnName;
+    }
+    
+    /**
+     * Constructor
+     *
+     * @param columnName Column name
+     * @param dataType Data type
+     * @param format Data format string
+     */
+    public DataColumn(String columnName, DataTypes dataType, String format) {
+        this.dataType = dataType;
+        this.columnName = columnName;
+        this.format = format;
     }
 
     /**
@@ -117,20 +137,40 @@ public class DataColumn {
     public void setReadOnly(boolean readOnly) {
         this.readOnly = readOnly;
     }
-    
+
+    /**
+     * Get format string
+     *
+     * @return Format string
+     */
+    public String getFormat() {
+        return this.format;
+    }
+
+    /**
+     * Set format string
+     *
+     * @param value Format string
+     */
+    public void setFormat(String value) {
+        this.format = value;
+    }
+
     /**
      * Get if is joined
+     *
      * @return Boolean
      */
-    public boolean isJoined(){
+    public boolean isJoined() {
         return this.joined;
     }
-    
+
     /**
      * Set if is joined
+     *
      * @param value Boolean
      */
-    public void setJoined(boolean value){
+    public void setJoined(boolean value) {
         this.joined = value;
     }
 
@@ -204,29 +244,50 @@ public class DataColumn {
      * @return Result object
      */
     public Object convertTo(Object value) {
-        switch (this.dataType){
+        switch (this.dataType) {
             case Integer:
-                if (!(value instanceof Integer))                    
+                if (!(value instanceof Integer)) {
                     return Integer.valueOf(value.toString());
+                }
                 break;
             case Double:
-                if (!(value instanceof Double))
-                    if (value == null)
+                if (!(value instanceof Double)) {
+                    if (value == null) {
                         return Double.NaN;
-                    else
+                    } else {
                         return Double.valueOf(value.toString());
+                    }
+                }
                 break;
             case Float:
-                if (!(value instanceof Float))
-                    if (value == null)
+                if (!(value instanceof Float)) {
+                    if (value == null) {
                         return Float.NaN;
-                    else
+                    } else {
                         return Float.valueOf(value.toString());
-                break;            
+                    }
+                }
+                break;
+            case Boolean:
+                if (!(value instanceof Boolean)) {
+                    return Boolean.valueOf(value.toString());
+                }
+                break;
+            case Date:
+                if (!(value instanceof Date)) {
+                    SimpleDateFormat format = new SimpleDateFormat(this.format);
+                    try {
+                        return format.parse(value.toString());
+                    } catch (ParseException ex) {
+                        Logger.getLogger(DataColumn.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                break;
         }
-        
-        if (value == null)
+
+        if (value == null) {
             return "";
+        }
         return value;
     }
 
@@ -239,21 +300,21 @@ public class DataColumn {
     public String toString() {
         return this.columnName;
     }
-    
+
     /**
      * Clone
-     * 
-     * @return Cloned DataColumn object 
+     *
+     * @return Cloned DataColumn object
      */
     @Override
-    public Object clone(){
+    public Object clone() {
         DataColumn col = new DataColumn();
         col.captionName = this.captionName;
         col.columnIndex = this.columnIndex;
         col.columnName = this.columnName;
         col.dataType = this.dataType;
         col.readOnly = this.readOnly;
-        
+
         return col;
     }
 }

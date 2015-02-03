@@ -136,7 +136,7 @@ public class StationTableData extends TableData{
         BufferedReader sr = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "utf-8"));
         String title = sr.readLine().trim();
         //Determine separator
-        String separator = GlobalUtil.getSeparator(title);
+        String separator = GlobalUtil.getDelimiter(title);
         String[] titleArray = GlobalUtil.split(title, separator);
         if (titleArray.length < 2) {
             JOptionPane.showMessageDialog(null, "File Format Error!");
