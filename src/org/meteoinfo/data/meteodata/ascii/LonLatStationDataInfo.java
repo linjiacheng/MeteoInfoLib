@@ -67,7 +67,7 @@ public class LonLatStationDataInfo extends DataInfo implements IStationDataInfo 
         try {
             this.setFileName(fileName);
 
-            sr = new BufferedReader(new FileReader(new File(fileName)));
+            sr = new BufferedReader(new InputStreamReader(new FileInputStream(this.getFileName()), "UTF8"));
             String[] dataArray, fieldArray;
             String aLine = sr.readLine().trim();    //Title
             delimiter = GlobalUtil.getDelimiter(aLine);
@@ -121,7 +121,7 @@ public class LonLatStationDataInfo extends DataInfo implements IStationDataInfo 
     public StationData getStationData(int timeIdx, int varIdx, int levelIdx) {
         try {
             List<String[]> dataList = new ArrayList<String[]>();
-            BufferedReader sr = new BufferedReader(new FileReader(new File(this.getFileName())));
+            BufferedReader sr = new BufferedReader(new InputStreamReader(new FileInputStream(this.getFileName()), "UTF8"));
             sr.readLine();
             String line = sr.readLine();
             while (line != null) {
@@ -151,13 +151,19 @@ public class LonLatStationDataInfo extends DataInfo implements IStationDataInfo 
 
             //Get real variable index
             int vIdx = _fields.indexOf(this.getVariables().get(varIdx).getName());
-
             for (i = 0; i < dataList.size(); i++) {
                 dataArray = dataList.get(i);
                 stName = dataArray[0];
                 lon = Double.parseDouble(dataArray[1]);
                 lat = Double.parseDouble(dataArray[2]);
-                t = Double.parseDouble(dataArray[vIdx]);
+                if (dataArray.length <= vIdx)
+                    t = stationData.missingValue;
+                else {
+                    if (dataArray[vIdx].isEmpty())
+                        t = stationData.missingValue;
+                    else
+                        t = Double.parseDouble(dataArray[vIdx]);
+                }
                 discreteData[i][0] = lon;
                 discreteData[i][1] = lat;
                 discreteData[i][2] = t;
@@ -205,7 +211,7 @@ public class LonLatStationDataInfo extends DataInfo implements IStationDataInfo 
     public StationInfoData getStationInfoData(int timeIdx, int levelIdx) {
         BufferedReader sr = null;
         try {
-            sr = new BufferedReader(new InputStreamReader(new FileInputStream(this.getFileName()), "gbk"));
+            sr = new BufferedReader(new InputStreamReader(new FileInputStream(this.getFileName()), "UTF8"));
             List<List<String>> dataList = new ArrayList<List<String>>();
             sr.readLine();
             String line = sr.readLine();

@@ -1043,6 +1043,7 @@ public class DrawMeteoData {
             aLayer.editAddField(fieldName, dtype);
         }
 
+        double v;
         for (i = 0; i < stInfoData.getDataList().size(); i++) {
             List<String> dataList = stInfoData.getDataList().get(i);
             aPoint = new PointD();
@@ -1056,7 +1057,16 @@ public class DrawMeteoData {
                 if (aLayer.editInsertShape(aPointShape, shapeNum)) {
                     for (j = 0; j < stInfoData.getFields().size(); j++) {
                         if (stInfoData.getVariables().contains(stInfoData.getFields().get(j))) {
-                            aLayer.editCellValue(stInfoData.getFields().get(j), shapeNum, Double.parseDouble(dataList.get(j)));
+                            if (dataList.size() <= j) {
+                                v = -9999.0;
+                            } else {
+                                if (dataList.get(j).isEmpty()) {
+                                    v = -9999.0;
+                                } else {
+                                    v = Double.parseDouble(dataList.get(j));
+                                }
+                            }
+                            aLayer.editCellValue(stInfoData.getFields().get(j), shapeNum, v);
                         } else {
                             aLayer.editCellValue(stInfoData.getFields().get(j), shapeNum, dataList.get(j));
                         }
