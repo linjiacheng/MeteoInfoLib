@@ -264,10 +264,13 @@ public class ColumnData {
      */
     public List<Double> getValidDataValues(){
         List<Double> values = this.getDataValues();
-        for (Double v : values){
-            if (Double.isNaN(v))
-                values.remove(v);
-        }
+        for (int i = 0, len = values.size(); i < len; i++) { 
+            if (Double.isNaN(values.get(i))) {                
+                values.remove(i); 
+                len--; 
+                i--;  
+            }
+        } 
         
         return values;
     }

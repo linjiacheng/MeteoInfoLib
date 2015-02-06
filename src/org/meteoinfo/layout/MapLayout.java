@@ -2534,12 +2534,15 @@ public class MapLayout extends JPanel {
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
         //Judge if show scroll bar
-        if (_pageBounds.height > this.getHeight()) {
-            int sHeight = _pageBounds.height - this.getHeight() + 40;
-            _vScrollBar.setMinimum(sHeight / 100);
-            _vScrollBar.setUnitIncrement(sHeight / 10);
-            _vScrollBar.setBlockIncrement(10);
-            _vScrollBar.setMaximum(sHeight);
+        int pageHeight = (int)(_pageBounds.height * _zoom);
+        int pageWidth = (int)(_pageBounds.width * _zoom);
+        if (pageHeight > this.getHeight()) {
+            int sHeight = pageHeight - this.getHeight() + 40;
+            _vScrollBar.setMinimum(0);
+            _vScrollBar.setMaximum(pageHeight);
+            _vScrollBar.setVisibleAmount(pageHeight - sHeight);
+            _vScrollBar.setUnitIncrement(pageHeight / 10);
+            _vScrollBar.setBlockIncrement(pageHeight / 5);            
             if (_vScrollBar.getWidth() == 0)
                 _vScrollBar.setSize(21, this._vScrollBar.getHeight());
 
@@ -2553,12 +2556,13 @@ public class MapLayout extends JPanel {
             _vScrollBar.setVisible(false);
         }
 
-        if (_pageBounds.width > this.getWidth()) {
-            int sWidth =  _pageBounds.width - this.getWidth() + 40;
-            _hScrollBar.setMinimum(sWidth / 100);
-            _hScrollBar.setUnitIncrement(sWidth / 10);
-            _hScrollBar.setBlockIncrement(10);
-            _hScrollBar.setMaximum(sWidth);
+        if (pageWidth > this.getWidth()) {
+            int sWidth = pageWidth - this.getWidth() + 40;
+            _hScrollBar.setMinimum(0);
+            _hScrollBar.setMaximum(pageWidth);
+            _hScrollBar.setVisibleAmount(pageWidth - sWidth);
+            _hScrollBar.setUnitIncrement(pageWidth / 10);
+            _hScrollBar.setBlockIncrement(pageWidth / 5);            
             if (this._hScrollBar.getHeight() == 0)
                 this._hScrollBar.setSize(this._hScrollBar.getWidth(), 21);
 

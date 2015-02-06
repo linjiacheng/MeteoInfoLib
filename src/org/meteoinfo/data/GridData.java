@@ -1335,6 +1335,55 @@ public class GridData {
 
         return aGridData;
     }
+    
+    /**
+     * Extract grid data by extent index
+     *
+     * @param sXIdx Start x index
+     * @param eXIdx End x index
+     * @param xstep X step
+     * @param sYIdx Start y index
+     * @param eYIdx End y index
+     * @param ystep Y step
+     * @return Extracted grid data
+     */
+    public GridData extract(int sXIdx, int eXIdx, int xstep, int sYIdx, int eYIdx, int ystep) {
+        GridData aGridData = new GridData();
+        aGridData.projInfo = projInfo;
+        aGridData.missingValue = missingValue;
+        int xNum = (eXIdx - sXIdx) / xstep;
+        int yNum = (eYIdx - sYIdx) / ystep;
+        double[] newX = new double[xNum];
+        int i, idx = 0;
+        for (i = sXIdx; i < eXIdx; i+=xstep) {
+            newX[idx] = xArray[i];
+            idx += 1;
+        }
+
+        double[] newY = new double[yNum];
+        idx = 0;
+        for (i = sYIdx; i < eYIdx; i+=ystep) {
+            newY[idx] = yArray[i];
+            idx += 1;
+        }
+
+        aGridData.xArray = newX;
+        aGridData.yArray = newY;
+
+        double[][] newData = new double[yNum][xNum];
+        int yidx = 0;
+        for (i = sYIdx; i < eYIdx; i+=ystep) {
+            int xidx = 0;
+            for (int j = sXIdx; j < eXIdx; j+=xstep) {
+                newData[yidx][xidx] = data[i][j];
+                xidx += 1;
+            }
+            yidx += 1;
+        }
+        aGridData.data = newData;
+
+        return aGridData;
+    }
 
     /**
      * Set missing value - bigger or smaller than the given value

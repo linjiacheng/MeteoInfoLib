@@ -409,7 +409,7 @@ public class TableData {
     public DataTable statistics() throws Exception {
         return this.statistics(this.getDataColumns());
     }
-
+    
     /**
      * Read data table from ASCII file
      *
@@ -418,20 +418,49 @@ public class TableData {
      * @throws java.io.FileNotFoundException
      */
     public void readASCIIFile(String fileName, String formatSpec) throws FileNotFoundException, IOException, Exception {
-        DataTable dTable = new DataTable();
-
-        BufferedReader sr = new BufferedReader(new FileReader(new File(fileName)));
+        BufferedReader sr = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "UTF8"));
         String title = sr.readLine().trim();
         //Determine separator
-        String separator = GlobalUtil.getDelimiter(title);
-        String[] titleArray = GlobalUtil.split(title, separator);
+        String delimiter = GlobalUtil.getDelimiter(title);
+        sr.close();
+        this.readASCIIFile(fileName, delimiter, 0, formatSpec, "UTF8");
+    }
+
+    /**
+     * Read data table from ASCII file
+     *
+     * @param fileName File name
+     * @param delimiter Delimiter
+     * @param headerLines Number of lines to skip at begining of the file
+     * @param formatSpec Format specifiers string
+     * @param encoding Fle encoding
+     * @throws java.io.FileNotFoundException
+     */
+    public void readASCIIFile(String fileName, String delimiter, int headerLines, String formatSpec, String encoding) throws FileNotFoundException, IOException, Exception {
+        DataTable dTable = new DataTable();
+
+        BufferedReader sr = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), encoding));
+        if (headerLines > 0) {
+            for (int i = 0; i < headerLines; i++)
+                sr.readLine();
+        }
+        
+        String title = sr.readLine().trim();        
+        String[] titleArray = GlobalUtil.split(title, delimiter);
         int colNum = titleArray.length;
         if (titleArray.length < 2) {
             JOptionPane.showMessageDialog(null, "File Format Error!");
             sr.close();
         } else {
             //Get fields
-            String[] colFormats = formatSpec.split("%");
+            String[] colFormats;
+            if (formatSpec == null){
+                colFormats = new String[colNum];
+                for (int i = 0; i < colNum; i++)
+                    colFormats[i] = "C";
+            } else
+                colFormats = formatSpec.split("%");
+            
             int idx = 0;
             for (String colFormat : colFormats) {
                 if (colFormat.isEmpty()) {
@@ -474,7 +503,7 @@ public class TableData {
                 if (line.isEmpty()) {
                     continue;
                 }
-                dataArray = GlobalUtil.split(line, separator);
+                dataArray = GlobalUtil.split(line, delimiter);
                 if (dataArray.length < colNum)
                     continue;
                 

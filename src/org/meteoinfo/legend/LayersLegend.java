@@ -1375,22 +1375,22 @@ public class LayersLegend extends JPanel {
         }
         this._paintImage = new BufferedImage(this.getWidth(), this.getHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = this._paintImage.createGraphics();
-        int TotalHeight = calcTotalDrawHeight();
+        int totalHeight = calcTotalDrawHeight();
         Rectangle rect;
-        if (TotalHeight > this.getHeight()) {
-            int swidth = TotalHeight - this.getHeight() + 20;
+        if (totalHeight > this.getHeight()) {
+            int sHeight = totalHeight - this.getHeight() + 20;
             _vScrollBar.setMinimum(0);
-            _vScrollBar.setUnitIncrement(swidth / 100);
-            _vScrollBar.setBlockIncrement(swidth / 10);
-            _vScrollBar.setMaximum(swidth);
-
+            _vScrollBar.setMaximum(totalHeight);
+            _vScrollBar.setVisibleAmount(totalHeight - sHeight);
+            _vScrollBar.setUnitIncrement(totalHeight / 10);
+            _vScrollBar.setBlockIncrement(totalHeight / 5);            
             if (_vScrollBar.isVisible() == false) {
                 _vScrollBar.setValue(0);
                 _vScrollBar.setVisible(true);
             }
 
             //RecalcItemPositions();
-            rect = new Rectangle(0, -_vScrollBar.getValue(), this.getWidth() - _vScrollBar.getWidth(), TotalHeight);
+            rect = new Rectangle(0, -_vScrollBar.getValue(), this.getWidth() - _vScrollBar.getWidth(), totalHeight);
         } else {
             _vScrollBar.setVisible(false);
             rect = new Rectangle(0, 0, this.getWidth(), this.getHeight());
