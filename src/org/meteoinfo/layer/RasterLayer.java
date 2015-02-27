@@ -121,7 +121,7 @@ public class RasterLayer extends ImageLayer {
      * @return Cell value
      */
     public double getCellValue(int iIdx, int jIdx) {
-        return _gridData.data[iIdx][jIdx];
+        return _gridData.getDoubleValue(iIdx, jIdx);
     }
 
     /**
@@ -198,7 +198,8 @@ public class RasterLayer extends ImageLayer {
         Color oneColor;
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                oneValue = gdata.data[i][j];
+                //oneValue = gdata.data[i][j];
+                oneValue = gdata.getDoubleValue(i, j);
                 if (MIMath.doubleEquals(oneValue, gdata.missingValue)) {
                     oneColor = undefColor;
                 } else {

@@ -14,7 +14,7 @@
 package org.meteoinfo.data.mapdata;
 
 import org.meteoinfo.table.DataColumn;
-import org.meteoinfo.table.DataTypes;
+import org.meteoinfo.data.DataTypes;
 
 /**
  * The field in attribute table of shape file

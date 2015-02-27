@@ -36,7 +36,6 @@ import org.meteoinfo.table.ColumnData;
 import org.meteoinfo.table.DataColumn;
 import org.meteoinfo.table.DataRow;
 import org.meteoinfo.table.DataTable;
-import org.meteoinfo.table.DataTypes;
 
 /**
  *

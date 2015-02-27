@@ -27,6 +27,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.meteoinfo.data.meteodata.GridDataSetting;
 import org.meteoinfo.geoprocess.analysis.ResampleMethods;
+import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.util.BigDecimalUtil;
 import org.meteoinfo.layer.VectorLayer;
 import org.meteoinfo.projection.ProjectionInfo;
@@ -35,13 +36,13 @@ import org.meteoinfo.projection.Reproject;
 import org.meteoinfo.shape.PolygonShape;
 import org.meteoinfo.shape.ShapeTypes;
 import org.meteoinfo.table.DataTable;
-import org.meteoinfo.table.DataTypes;
 
 /**
  *
  * @author yaqiang
  */
 public class GridData {
+
     // <editor-fold desc="Variables">
     /**
      * Grid data
@@ -215,9 +216,20 @@ public class GridData {
     public void setYStagger(boolean value) {
         _yStag = value;
     }
+
+    /**
+     * Get double value
+     *
+     * @param i I index
+     * @param j J index
+     * @return Double value
+     */
+    public double getDoubleValue(int i, int j) {
+        return data[i][j];
+    }
+
     // </editor-fold>
     // <editor-fold desc="Methods">
-
     // <editor-fold desc="Operation">
     /**
      * Add operation with another grid data
@@ -465,7 +477,7 @@ public class GridData {
         double b = data[i1][j2];
         double c = data[i2][j1];
         double d = data[i2][j2];
-        List<Double> dList = new ArrayList<Double>();
+        List<java.lang.Double> dList = new ArrayList<java.lang.Double>();
         if (!MIMath.doubleEquals(a, missingValue)) {
             dList.add(a);
         }
@@ -507,7 +519,7 @@ public class GridData {
     public StationData toStation(StationData stData) {
         StationData nstData = new StationData(stData);
         nstData.missingValue = this.missingValue;
-        if (this.projInfo.equals(stData.projInfo)){
+        if (this.projInfo.equals(stData.projInfo)) {
             for (int i = 0; i < nstData.getStNum(); i++) {
                 nstData.setValue(i, this.toStation(nstData.getX(i), nstData.getY(i)));
             }
@@ -517,7 +529,7 @@ public class GridData {
 
         return nstData;
     }
-    
+
     /**
      * Interpolate grid data to station data
      *
@@ -528,20 +540,20 @@ public class GridData {
         int lonIdx = stData.getLonIndex();
         int latIdx = stData.getLatIndex();
         double x, y;
-        stData.addColumn(this.fieldName, DataTypes.Float);        
-        if (this.projInfo.equals(stData.getProjectionInfo())){
+        stData.addColumn(this.fieldName, DataTypes.Float);
+        if (this.projInfo.equals(stData.getProjectionInfo())) {
             for (int i = 0; i < dataTable.getRowCount(); i++) {
-                x = Double.parseDouble(dataTable.getValue(i, lonIdx).toString());
-                y = Double.parseDouble(dataTable.getValue(i, latIdx).toString());
+                x = java.lang.Double.parseDouble(dataTable.getValue(i, lonIdx).toString());
+                y = java.lang.Double.parseDouble(dataTable.getValue(i, latIdx).toString());
                 dataTable.setValue(i, fieldName, this.toStation(x, y));
             }
         } else {
-            StationData sdata = new StationData();            
+            StationData sdata = new StationData();
             for (int i = 0; i < dataTable.getRowCount(); i++) {
-                x = Double.parseDouble(dataTable.getValue(i, lonIdx).toString());
-                y = Double.parseDouble(dataTable.getValue(i, latIdx).toString());
+                x = java.lang.Double.parseDouble(dataTable.getValue(i, lonIdx).toString());
+                y = java.lang.Double.parseDouble(dataTable.getValue(i, latIdx).toString());
                 sdata.addData("S_" + String.valueOf(i), x, y, 0);
-            }                
+            }
             sdata = this.project(projInfo, sdata.projInfo, sdata, ResampleMethods.Bilinear);
             for (int i = 0; i < dataTable.getRowCount(); i++) {
                 dataTable.setValue(i, fieldName, sdata.getValue(i));
@@ -1234,7 +1246,7 @@ public class GridData {
             eXidx = xNum - 1;
         } else {
             for (i = sXidx; i < xNum; i++) {
-                if (MIMath.doubleEquals(eX, xArray[i])){
+                if (MIMath.doubleEquals(eX, xArray[i])) {
                     eXidx = i;
                     break;
                 } else if (eX < xArray[i]) {
@@ -1261,7 +1273,7 @@ public class GridData {
             eYidx = yNum - 1;
         } else {
             for (i = sYidx; i < yNum; i++) {
-                if (MIMath.doubleEquals(eY, yArray[i])){
+                if (MIMath.doubleEquals(eY, yArray[i])) {
                     eYidx = i;
                     break;
                 } else if (eY < yArray[i]) {
@@ -1335,7 +1347,7 @@ public class GridData {
 
         return aGridData;
     }
-    
+
     /**
      * Extract grid data by extent index
      *
@@ -1355,14 +1367,14 @@ public class GridData {
         int yNum = (eYIdx - sYIdx) / ystep;
         double[] newX = new double[xNum];
         int i, idx = 0;
-        for (i = sXIdx; i < eXIdx; i+=xstep) {
+        for (i = sXIdx; i < eXIdx; i += xstep) {
             newX[idx] = xArray[i];
             idx += 1;
         }
 
         double[] newY = new double[yNum];
         idx = 0;
-        for (i = sYIdx; i < eYIdx; i+=ystep) {
+        for (i = sYIdx; i < eYIdx; i += ystep) {
             newY[idx] = yArray[i];
             idx += 1;
         }
@@ -1372,9 +1384,9 @@ public class GridData {
 
         double[][] newData = new double[yNum][xNum];
         int yidx = 0;
-        for (i = sYIdx; i < eYIdx; i+=ystep) {
+        for (i = sYIdx; i < eYIdx; i += ystep) {
             int xidx = 0;
-            for (int j = sXIdx; j < eXIdx; j+=xstep) {
+            for (int j = sXIdx; j < eXIdx; j += xstep) {
                 newData[yidx][xidx] = data[i][j];
                 xidx += 1;
             }
@@ -1547,7 +1559,7 @@ public class GridData {
         double b = data[i1][j2];
         double c = data[i2][j1];
         double d = data[i2][j2];
-        List<Double> dList = new ArrayList<Double>();
+        List<java.lang.Double> dList = new ArrayList<java.lang.Double>();
         if (a != missingValue) {
             dList.add(a);
         }
@@ -2244,7 +2256,7 @@ public class GridData {
                     }
                 } catch (Exception e) {
                     newdata[i][j] = missingValue;
-                    j++;                   
+                    j++;
                 }
             }
         }
@@ -2365,7 +2377,7 @@ public class GridData {
                         Reproject.reprojectPoints(points, this.projInfo, toGridData.projInfo, 0, 1);
                         x = points[0][0];
                         y = points[0][1];
-                        if (Double.isNaN(x) || Double.isNaN(y)) {
+                        if (java.lang.Double.isNaN(x) || java.lang.Double.isNaN(y)) {
                             continue;
                         }
 
@@ -2475,6 +2487,376 @@ public class GridData {
         }
         data = newdata;
     }
+
     // </editor-fold>
+    // </editor-fold>
+    // <editor-fold desc="Nested classes">
+    /**
+     * GridData.Integer class
+     */
+    public static class Byte extends GridData {
+
+        private byte[][] data;
+        private int missingValue;
+
+        /**
+         * Constructor
+         *
+         * @param yNum Y number
+         * @param xNum X number
+         */
+        public Byte(int yNum, int xNum) {
+            data = new byte[yNum][xNum];
+            missingValue = -9999;
+        }
+
+        /**
+         * Get missing value
+         *
+         * @return Missing value
+         */
+        public int getMissingValue() {
+            return this.missingValue;
+        }
+
+        /**
+         * Set missing value
+         *
+         * @param value Missing value
+         */
+        public void setMissingValue(int value) {
+            this.missingValue = value;
+        }
+
+        /**
+         * Get value
+         *
+         * @param i I index
+         * @param j J index
+         * @return Value
+         */
+        public int getValue(int i, int j) {
+            return DataConvert.byte2Int(data[i][j]);
+        }
+
+        /**
+         * Set value
+         *
+         * @param i I index
+         * @param j J index
+         * @param value Value
+         */
+        public void setValue(int i, int j, byte value) {
+            data[i][j] = value;
+        }
+
+        /**
+         * Get double value
+         *
+         * @param i I index
+         * @param j J index
+         * @return Double value
+         */
+        @Override
+        public double getDoubleValue(int i, int j) {
+            return getValue(i, j);
+        }
+
+        /**
+         * Get maximum and minimum values
+         *
+         * @param maxmin Max/Min array
+         * @return If has undefine data
+         */
+        @Override
+        public boolean getMaxMinValue(double[] maxmin) {
+            double max = 0;
+            double min = 0;
+            int vdNum = 0;
+            boolean hasUndef = false;
+            int v;
+            for (int i = 0; i < getYNum(); i++) {
+                for (int j = 0; j < getXNum(); j++) {
+                    v = getValue(i, j);
+                    if (v == missingValue) {
+                        hasUndef = true;
+                        continue;
+                    }
+
+                    if (vdNum == 0) {
+                        min = v;
+                        max = min;
+                    } else {
+                        if (min > v) {
+                            min = v;
+                        }
+                        if (max < v) {
+                            max = v;
+                        }
+                    }
+                    vdNum += 1;
+                }
+            }
+
+            maxmin[0] = max;
+            maxmin[1] = min;
+            return hasUndef;
+        }
+    }
+    
+    /**
+     * GridData.Integer class
+     */
+    public static class Integer extends GridData {
+
+        private int[][] data;
+        private int missingValue;
+
+        /**
+         * Constructor
+         *
+         * @param yNum Y number
+         * @param xNum X number
+         */
+        public Integer(int yNum, int xNum) {
+            data = new int[yNum][xNum];
+            missingValue = -9999;
+        }
+
+        /**
+         * Get missing value
+         *
+         * @return Missing value
+         */
+        public int getMissingValue() {
+            return this.missingValue;
+        }
+
+        /**
+         * Set missing value
+         *
+         * @param value Missing value
+         */
+        public void setMissingValue(int value) {
+            this.missingValue = value;
+        }
+
+        /**
+         * Get value
+         *
+         * @param i I index
+         * @param j J index
+         * @return Value
+         */
+        public int getValue(int i, int j) {
+            return data[i][j];
+        }
+
+        /**
+         * Set value
+         *
+         * @param i I index
+         * @param j J index
+         * @param value Value
+         */
+        public void setValue(int i, int j, int value) {
+            data[i][j] = value;
+        }
+
+        /**
+         * Get double value
+         *
+         * @param i I index
+         * @param j J index
+         * @return Double value
+         */
+        @Override
+        public double getDoubleValue(int i, int j) {
+            return data[i][j];
+        }
+
+        /**
+         * Get maximum and minimum values
+         *
+         * @param maxmin Max/Min array
+         * @return If has undefine data
+         */
+        @Override
+        public boolean getMaxMinValue(double[] maxmin) {
+            double max = 0;
+            double min = 0;
+            int vdNum = 0;
+            boolean hasUndef = false;
+            for (int i = 0; i < getYNum(); i++) {
+                for (int j = 0; j < getXNum(); j++) {
+                    if (data[i][j] == missingValue) {
+                        hasUndef = true;
+                        continue;
+                    }
+
+                    if (vdNum == 0) {
+                        min = data[i][j];
+                        max = min;
+                    } else {
+                        if (min > data[i][j]) {
+                            min = data[i][j];
+                        }
+                        if (max < data[i][j]) {
+                            max = data[i][j];
+                        }
+                    }
+                    vdNum += 1;
+                }
+            }
+
+            maxmin[0] = max;
+            maxmin[1] = min;
+            return hasUndef;
+        }
+    }
+
+    /**
+     * GridData.Double class
+     */
+    public static class Double extends GridData {
+
+        private double[][] data;
+        private double missingValue;
+
+        /**
+         * Constructor
+         *
+         * @param yNum Y number
+         * @param xNum X number
+         */
+        public Double(int yNum, int xNum) {
+            data = new double[yNum][xNum];
+            missingValue = -9999.0;
+        }
+
+        /**
+         * Get missing value
+         *
+         * @return Missing value
+         */
+        public double getMissingValue() {
+            return this.missingValue;
+        }
+
+        /**
+         * Set missing value
+         *
+         * @param value Missing value
+         */
+        public void setMissingValue(double value) {
+            this.missingValue = value;
+        }
+
+        /**
+         * Get value
+         *
+         * @param i I index
+         * @param j J index
+         * @return Value
+         */
+        public double getValue(int i, int j) {
+            return data[i][j];
+        }
+
+        /**
+         * Set value
+         *
+         * @param i I index
+         * @param j J index
+         * @param value Value
+         */
+        public void setValue(int i, int j, double value) {
+            data[i][j] = value;
+        }
+
+        /**
+         * Get double value
+         *
+         * @param i I index
+         * @param j J index
+         * @return Double value
+         */
+        @Override
+        public double getDoubleValue(int i, int j) {
+            return data[i][j];
+        }
+    }
+
+    /**
+     * GridData.Integer class
+     */
+    public static class Float extends GridData {
+
+        private float[][] data;
+        private float missingValue;
+
+        /**
+         * Constructor
+         *
+         * @param yNum Y number
+         * @param xNum X number
+         */
+        public Float(int yNum, int xNum) {
+            data = new float[yNum][xNum];
+            missingValue = -9999;
+        }
+
+        /**
+         * Get missing value
+         *
+         * @return Missing value
+         */
+        public float getMissingValue() {
+            return this.missingValue;
+        }
+
+        /**
+         * Set missing value
+         *
+         * @param value Missing value
+         */
+        public void setMissingValue(float value) {
+            this.missingValue = value;
+        }
+
+        /**
+         * Get value
+         *
+         * @param i I index
+         * @param j J index
+         * @return Value
+         */
+        public float getValue(int i, int j) {
+            return data[i][j];
+        }
+
+        /**
+         * Set value
+         *
+         * @param i I index
+         * @param j J index
+         * @param value Value
+         */
+        public void setValue(int i, int j, float value) {
+            data[i][j] = value;
+        }
+
+        /**
+         * Get double value
+         *
+         * @param i I index
+         * @param j J index
+         * @return Double value
+         */
+        @Override
+        public double getDoubleValue(int i, int j) {
+            return data[i][j];
+        }
+    }
     // </editor-fold>
 }

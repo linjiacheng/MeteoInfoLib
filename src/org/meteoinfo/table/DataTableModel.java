@@ -13,6 +13,7 @@
  */
 package org.meteoinfo.table;
 
+import org.meteoinfo.data.DataTypes;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import javax.swing.table.AbstractTableModel;

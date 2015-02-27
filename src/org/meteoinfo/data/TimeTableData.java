@@ -21,7 +21,6 @@ import org.meteoinfo.data.analysis.Statistics;
 import org.meteoinfo.table.DataColumn;
 import org.meteoinfo.table.DataRow;
 import org.meteoinfo.table.DataTable;
-import org.meteoinfo.table.DataTypes;
 import org.meteoinfo.global.util.GlobalUtil;
 
 /**

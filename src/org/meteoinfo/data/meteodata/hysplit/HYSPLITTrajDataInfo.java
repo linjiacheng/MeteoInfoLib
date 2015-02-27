@@ -21,7 +21,7 @@ import org.meteoinfo.data.meteodata.TrajDataInfo;
 import org.meteoinfo.data.meteodata.Variable;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
-import org.meteoinfo.table.DataTypes;
+import org.meteoinfo.data.DataTypes;
 import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;

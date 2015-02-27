@@ -23,7 +23,7 @@ import org.meteoinfo.drawing.MarkerType;
 import org.meteoinfo.geoprocess.GeoComputation;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
-import org.meteoinfo.table.DataTypes;
+import org.meteoinfo.data.DataTypes;
 import org.meteoinfo.layer.LayerDrawType;
 import org.meteoinfo.layer.VectorLayer;
 import org.meteoinfo.legend.LegendManage;

@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import org.meteoinfo.table.DataTable;
-import org.meteoinfo.table.DataTypes;
+import org.meteoinfo.data.DataTypes;
 
 /**
  *

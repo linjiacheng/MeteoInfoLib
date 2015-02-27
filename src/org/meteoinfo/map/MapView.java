@@ -35,7 +35,7 @@ import org.meteoinfo.global.util.GlobalUtil;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
 import org.meteoinfo.global.PointF;
-import org.meteoinfo.table.DataTypes;
+import org.meteoinfo.data.DataTypes;
 import org.meteoinfo.layer.ChartSet;
 import org.meteoinfo.layer.ImageLayer;
 import org.meteoinfo.layer.LabelSet;

@@ -286,6 +286,9 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
     private int getDimensionIndex(ucar.nc2.Dimension dim) {
         String name2 = dim.getShortName();
+        if (name2 == null)
+            return -1;
+        
         for (int i = 0; i < _dimensions.size(); i++) {
             ucar.nc2.Dimension idim = _dimensions.get(i);
             if (idim.getShortName().equals(name2)) {

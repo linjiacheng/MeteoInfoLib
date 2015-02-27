@@ -13,6 +13,7 @@
  */
 package org.meteoinfo.table;
 
+import org.meteoinfo.data.DataTypes;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;

@@ -25,7 +25,7 @@ import org.meteoinfo.global.PointF;
 import org.meteoinfo.global.colors.ColorUtil;
 import org.meteoinfo.table.DataColumn;
 import org.meteoinfo.table.DataRow;
-import org.meteoinfo.table.DataTypes;
+import org.meteoinfo.data.DataTypes;
 import org.meteoinfo.legend.ChartBreak;
 import org.meteoinfo.legend.ColorBreak;
 import org.meteoinfo.legend.LabelBreak;

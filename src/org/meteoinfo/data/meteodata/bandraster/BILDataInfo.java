@@ -50,9 +50,10 @@ public class BILDataInfo extends DataInfo implements IGridDataInfo {
     private int _skipbytes = 0;
     private int _bandrowbytes = 0;
     private int _totalrowbytes = 0;
+
     // </editor-fold>
     // <editor-fold desc="Constructor">
-    public BILDataInfo(){
+    public BILDataInfo() {
         this.setDataType(MeteoDataType.BIL);
     }
     // </editor-fold>
@@ -138,7 +139,7 @@ public class BILDataInfo extends DataInfo implements IGridDataInfo {
                         xdim = Double.parseDouble(sr.readLine());
                         sr.readLine();
                         sr.readLine();
-                        ydim = - Double.parseDouble(sr.readLine());
+                        ydim = -Double.parseDouble(sr.readLine());
                         ulxmap = Double.parseDouble(sr.readLine());
                         ulymap = Double.parseDouble(sr.readLine());
                         sr.close();
@@ -187,7 +188,7 @@ public class BILDataInfo extends DataInfo implements IGridDataInfo {
     public String generateInfoText() {
         String dataInfo;
         dataInfo = "File Name: " + this.getFileName();
-        dataInfo += System.getProperty("line.separator") + "Data Type: Sufer ASCII Grid";
+        dataInfo += System.getProperty("line.separator") + "Data Type: BIL Grid";
         Dimension xdim = this.getXDimension();
         Dimension ydim = this.getYDimension();
         dataInfo += System.getProperty("line.separator") + "XNum = " + String.valueOf(xdim.getDimLength())
@@ -203,12 +204,29 @@ public class BILDataInfo extends DataInfo implements IGridDataInfo {
 
     @Override
     public GridData getGridData_LonLat(int timeIdx, int varIdx, int levelIdx) {
+        int nbytes = this._nbits / 8;
         if (this._layout.toLowerCase().equals("bil")) {
-            return getGridData_BIL(varIdx);
+            if (this._pixeltype.toLowerCase().equals("float")) {
+                return getGridData_BIL(varIdx);
+            } else {
+                if (nbytes > 1) {
+                    return getGridData_BIL_Int(varIdx);
+                } else {
+                    return getGridData_BIL_Byte(varIdx);
+                }
+            }
         } else if (this._layout.toLowerCase().equals("bip")) {
             return getGridData_BIP(varIdx);
         } else {
-            return getGridData_BSQ(varIdx);
+            if (this._pixeltype.toLowerCase().equals("float")) {
+                return getGridData_BSQ(varIdx);
+            } else {                
+                if (nbytes > 1) {
+                    return getGridData_BSQ_Int(varIdx);
+                } else {
+                    return getGridData_BSQ_Byte(varIdx);
+                }
+            }
         }
     }
 
@@ -248,6 +266,89 @@ public class BILDataInfo extends DataInfo implements IGridDataInfo {
                             gData.data[_nrows - 1 - i][j] = DataConvert.byte2Int(bytes[0]);
                         }
                     }
+                }
+                br.seek(position + this._totalrowbytes);
+            }
+
+            br.close();
+            return gData;
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(BILDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(BILDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return null;
+    }
+
+    private GridData getGridData_BIL_Int(int varIdx) {
+        try {
+            RandomAccessFile br = new RandomAccessFile(this.getFileName(), "r");
+            GridData.Integer gData = new GridData.Integer(_nrows, _ncols);
+            gData.xArray = this.getXDimension().getValues();
+            gData.yArray = this.getYDimension().getValues();
+            //gData.missingValue = this.getMissingValue();
+            //gData.data = new double[_nrows][_ncols];
+
+            br.seek(this._skipbytes);
+            int i, j;
+            int nbytes = this._nbits / 8;
+            byte[] bytes;
+            int start;
+            long position;
+            for (i = 0; i < _nrows; i++) {
+                position = br.getFilePointer();
+                if (varIdx > 0) {
+                    br.seek(this._bandrowbytes * varIdx);
+                }
+                byte[] byteData = new byte[_ncols * nbytes];
+                br.read(byteData);
+                start = 0;
+                for (j = 0; j < _ncols; j++) {
+                    bytes = new byte[nbytes];
+                    System.arraycopy(byteData, start, bytes, 0, nbytes);
+                    start += nbytes;
+                    if (nbytes >= 2) {
+                        gData.setValue(_nrows - 1 - i, j, DataConvert.bytes2Int(bytes, _byteOrder));
+                    } else {
+                        gData.setValue(_nrows - 1 - i, j, DataConvert.byte2Int(bytes[0]));
+                    }
+                }
+                br.seek(position + this._totalrowbytes);
+            }
+
+            br.close();
+            return gData;
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(BILDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(BILDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return null;
+    }
+    
+    private GridData getGridData_BIL_Byte(int varIdx) {
+        try {
+            RandomAccessFile br = new RandomAccessFile(this.getFileName(), "r");
+            GridData.Byte gData = new GridData.Byte(_nrows, _ncols);
+            gData.xArray = this.getXDimension().getValues();
+            gData.yArray = this.getYDimension().getValues();
+            //gData.missingValue = this.getMissingValue();
+            //gData.data = new double[_nrows][_ncols];
+
+            br.seek(this._skipbytes);
+            int i, j;
+            long position;
+            for (i = 0; i < _nrows; i++) {
+                position = br.getFilePointer();
+                if (varIdx > 0) {
+                    br.seek(this._bandrowbytes * varIdx);
+                }
+                byte[] byteData = new byte[_ncols];
+                br.read(byteData);
+                for (j = 0; j < _ncols; j++) {
+                    gData.setValue(_nrows - 1 - i, j, byteData[j]);
                 }
                 br.seek(position + this._totalrowbytes);
             }
@@ -348,6 +449,88 @@ public class BILDataInfo extends DataInfo implements IGridDataInfo {
                     }
                 }
                 br.seek(position + this._totalrowbytes);
+            }
+
+            br.close();
+            return gData;
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(BILDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(BILDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return null;
+    }
+
+    private GridData getGridData_BSQ_Int(int varIdx) {
+        try {
+            RandomAccessFile br = new RandomAccessFile(this.getFileName(), "r");
+            GridData.Integer gData = new GridData.Integer(_nrows, _ncols);
+            gData.xArray = this.getXDimension().getValues();
+            gData.yArray = this.getYDimension().getValues();
+            //gData.missingValue = this.getMissingValue();
+            //gData.data = new double[_nrows][_ncols];
+
+            br.seek(this._skipbytes);
+            int i, j;
+            int nbytes = this._nbits / 8;
+            byte[] bytes;
+            int start, v;
+            //long position;
+            if (this._nbands > 1) {
+                br.seek(br.getFilePointer() + varIdx * this._ncols * this._nrows * nbytes);
+            }
+            for (i = 0; i < _nrows; i++) {
+                //position = br.getFilePointer();
+                byte[] byteData = new byte[_ncols * nbytes];
+                br.read(byteData);
+                start = 0;
+                for (j = 0; j < _ncols; j++) {
+                    bytes = new byte[nbytes];
+                    System.arraycopy(byteData, start, bytes, 0, nbytes);
+                    start += nbytes;
+                    if (nbytes >= 2) {
+                        gData.setValue(_nrows - 1 - i, j, DataConvert.bytes2Int(bytes, _byteOrder));
+                    } else {
+                        v = DataConvert.byte2Int(bytes[0]);
+                        gData.setValue(_nrows - 1 - i, j, v);
+                    }
+                }
+                //br.seek(position + this._totalrowbytes);
+            }
+
+            br.close();
+            return gData;
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(BILDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(BILDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return null;
+    }
+
+    private GridData getGridData_BSQ_Byte(int varIdx) {
+        try {
+            RandomAccessFile br = new RandomAccessFile(this.getFileName(), "r");
+            GridData.Byte gData = new GridData.Byte(_nrows, _ncols);
+            gData.xArray = this.getXDimension().getValues();
+            gData.yArray = this.getYDimension().getValues();
+            //gData.missingValue = this.getMissingValue();
+            //gData.data = new double[_nrows][_ncols];
+
+            br.seek(this._skipbytes);
+            int i, j;
+            //long position;
+            if (this._nbands > 1) {
+                br.seek(br.getFilePointer() + varIdx * this._ncols * this._nrows);
+            }
+            for (i = 0; i < _nrows; i++) {
+                byte[] byteData = new byte[_ncols];
+                br.read(byteData);
+                for (j = 0; j < _ncols; j++) {
+                    gData.setValue(_nrows - 1 - i, j, byteData[j]);
+                }
             }
 
             br.close();

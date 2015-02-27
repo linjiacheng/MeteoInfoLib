@@ -559,10 +559,9 @@ public class LayersLegend extends JPanel {
                                 }
                             }
                         }
-                    }
-
-                    this.paintGraphics();
+                    }                    
                 }
+                this.paintGraphics();
             }
         }
     }
@@ -574,7 +573,6 @@ public class LayersLegend extends JPanel {
             mPos.curTop = 0;
             mPos.inItem = false;
             ItemNode aNode = getNodeByPosition(e.getX(), e.getY(), mPos);
-            this.repaint();
             if (aNode != null && aNode != _dragNode) {
                 if (_dragNode.getNodeType() == NodeTypes.GroupNode && aNode.getNodeType() == NodeTypes.LayerNode) {
                     if (((LayerNode) aNode).getGroupHandle() != -1) {
@@ -586,8 +584,8 @@ public class LayersLegend extends JPanel {
                 if (aNode.getNodeType() == NodeTypes.LayerNode) {
                     _dragPosY = mPos.curTop + aNode.getDrawHeight();
                 }
-                this.repaint();
             }
+            this.repaint();
         }
     }
 
@@ -1079,6 +1077,13 @@ public class LayersLegend extends JPanel {
     }
 
     private ItemNode getNodeByPosition(int x, int y, MousePos mPos) {
+        if (y < 0) {
+            if (_vScrollBar.getValue() == 0)
+                return _mapFrames.get(0);
+            else
+                return null;
+        }
+        
         ItemNode aIN = null;
         mPos.inItem = false;
         mPos.curTop = 0;
@@ -1125,7 +1130,15 @@ public class LayersLegend extends JPanel {
                 }
             }
         }
-
+        
+        if (aIN == null){
+            if (y < this.getHeight()){
+                ItemNode selNode =  _mapFrames.get(_mapFrames.size() - 1).getNodes().get(0);
+                mPos.curTop = mPos.curTop - selNode.getDrawHeight() - Constants.ITEM_PAD;
+                return selNode;
+            }
+        }
+        
         return aIN;
     }
 

@@ -13,6 +13,7 @@
  */
 package org.meteoinfo.table;
 
+import org.meteoinfo.data.DataTypes;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;

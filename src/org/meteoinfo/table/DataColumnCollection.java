@@ -13,6 +13,7 @@
  */
 package org.meteoinfo.table;
 
+import org.meteoinfo.data.DataTypes;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

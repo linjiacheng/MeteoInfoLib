@@ -20,7 +20,7 @@ import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.util.GlobalUtil;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
-import org.meteoinfo.table.DataTypes;
+import org.meteoinfo.data.DataTypes;
 import org.meteoinfo.layer.ImageLayer;
 import org.meteoinfo.layer.LayerDrawType;
 import org.meteoinfo.layer.MapLayer;
@@ -72,6 +72,8 @@ public class MapDataManage {
      *
      * @param aFile The file path
      * @return The layer
+     * @throws java.io.IOException
+     * @throws java.io.FileNotFoundException
      */
     public static MapLayer loadLayer(String aFile) throws IOException, FileNotFoundException, Exception {
         MapLayer aLayer = null;
@@ -90,7 +92,7 @@ public class MapDataManage {
                 aLayer = readImageFile(aFile);
             } else if (ext.equals("tif")) {
                 aLayer = readGeoTiffFile(aFile);
-            } else if (ext.equals("bil")) {
+            } else if (ext.equals("bil") || ext.equals("bip") || ext.equals("bsq")) {
                 aLayer = readBILFile(aFile);
             } else {
                 aLayer = readMapFile_GrADS(aFile);

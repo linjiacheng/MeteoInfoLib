@@ -37,7 +37,7 @@ import org.meteoinfo.data.meteodata.hysplit.TrajectoryInfo;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
 import org.meteoinfo.global.util.DateUtil;
-import org.meteoinfo.table.DataTypes;
+import org.meteoinfo.data.DataTypes;
 import org.meteoinfo.layer.LayerDrawType;
 import org.meteoinfo.layer.VectorLayer;
 import org.meteoinfo.legend.LegendManage;

@@ -17,7 +17,6 @@ import org.meteoinfo.global.util.GlobalUtil;
 import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.table.DataTable;
-import org.meteoinfo.table.DataTypes;
 
 /**
  *

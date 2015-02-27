@@ -1,4 +1,4 @@
-/* Copyright 2012 Yaqiang Wang,
+/* Copyright 2012 - Yaqiang Wang,
  * yaqiang.wang@gmail.com
  * 
  * This library is free software; you can redistribute it and/or modify it
@@ -11,34 +11,19 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
  * General Public License for more details.
  */
-package org.meteoinfo.table;
+package org.meteoinfo.data;
 
 /**
  *
- * @author Yaqiang Wang
+ * @author yaqiang
  */
-public enum DataTypes {
-    Integer,
-    Float,
-    Decimal,
-    Double,
-    String,
-    Boolean,
-    Date;
-    
-    /**
-     * If is numeric
-     * @return Boolean
-     */
-    public boolean isNumeric(){
-        switch (this){
-            case Integer:
-            case Float:
-            case Decimal:
-            case Double:
-                return true;
-            default:
-                return false;
-        }
-    }
+public class DimensionData {
+    // <editor-fold desc="Variables">
+    // </editor-fold>
+    // <editor-fold desc="Constructor">
+    // </editor-fold>
+    // <editor-fold desc="Get Set Methods">
+    // </editor-fold>
+    // <editor-fold desc="Methods">
+    // </editor-fold>
 }

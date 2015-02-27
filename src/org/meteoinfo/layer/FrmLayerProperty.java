@@ -6,7 +6,7 @@ package org.meteoinfo.layer;
 
 import org.meteoinfo.global.GenericFileFilter;
 import org.meteoinfo.global.MIMath;
-import org.meteoinfo.table.DataTypes;
+import org.meteoinfo.data.DataTypes;
 import org.meteoinfo.legend.ColorBreak;
 import org.meteoinfo.legend.FrmLegendBreaks;
 import org.meteoinfo.legend.LegendManage;
