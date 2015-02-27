@@ -3331,7 +3331,7 @@ public class MapView extends JPanel {
 
         return aExtent;
     }
-    
+
     /**
      * Get layers whole extent
      *
@@ -3343,9 +3343,10 @@ public class MapView extends JPanel {
         int n = 0;
         for (int i = 0; i < _layers.size(); i++) {
             MapLayer layer = this._layers.get(i);
-            if (!layer.getFileName().isEmpty())
+            if (!layer.getFileName().isEmpty()) {
                 continue;
-            
+            }
+
             bExtent = layer.getExtent();
             if (n == 0) {
                 aExtent = bExtent;
@@ -3882,11 +3883,11 @@ public class MapView extends JPanel {
      * @param area Target rectangle area
      */
     public void paintGraphics(Graphics2D g, Rectangle2D area) {
-        Rectangle rect = new Rectangle((int)area.getX(), (int)area.getY(),
-                (int)area.getWidth(), (int) area.getHeight());
+        Rectangle rect = new Rectangle((int) area.getX(), (int) area.getY(),
+                (int) area.getWidth(), (int) area.getHeight());
         this.paintGraphics(g, rect);
     }
-    
+
     /**
      * Paint graphics
      *
@@ -8348,6 +8349,62 @@ public class MapView extends JPanel {
     }
 
     /**
+     * Export raster layer element
+     *
+     * @param m_Doc XML document
+     * @param parent Parent element
+     * @param aILayer The raster layer
+     * @param projectFilePath Project file path
+     */
+    public void exportRasterLayer(Document m_Doc, Element parent, RasterLayer aILayer, String projectFilePath) {
+        Element Layer = m_Doc.createElement("Layer");
+        Attr Handle = m_Doc.createAttribute("Handle");
+        Attr LayerName = m_Doc.createAttribute("LayerName");
+        Attr FileName = m_Doc.createAttribute("FileName");
+        Attr Visible = m_Doc.createAttribute("Visible");
+        Attr IsMaskout = m_Doc.createAttribute("IsMaskout");
+        Attr LayerType = m_Doc.createAttribute("LayerType");
+        Attr LayerDrawType = m_Doc.createAttribute("LayerDrawType");
+        Attr transparencyPerc = m_Doc.createAttribute("TransparencyPerc");
+        Attr transparencyColor = m_Doc.createAttribute("TransparencyColor");
+        Attr setTransColor = m_Doc.createAttribute("SetTransColor");
+
+        Handle.setValue(String.valueOf(aILayer.getHandle()));
+        LayerName.setValue(aILayer.getLayerName());
+        try {
+            FileName.setValue(GlobalUtil.getRelativePath(aILayer.getFileName(), projectFilePath));
+        } catch (IOException ex) {
+            Logger.getLogger(MapView.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        Visible.setValue(String.valueOf(aILayer.isVisible()));
+        IsMaskout.setValue(String.valueOf(aILayer.isMaskout()));
+        LayerType.setValue(aILayer.getLayerType().toString());
+        LayerDrawType.setValue(aILayer.getLayerDrawType().toString());
+        transparencyPerc.setValue(String.valueOf(aILayer.getTransparency()));
+        transparencyColor.setValue(ColorUtil.toHexEncoding(aILayer.getTransparencyColor()));
+        setTransColor.setValue(String.valueOf(aILayer.isUseTransColor()));
+
+        Layer.setAttributeNode(Handle);
+        Layer.setAttributeNode(LayerName);
+        Layer.setAttributeNode(FileName);
+        Layer.setAttributeNode(Visible);
+        Layer.setAttributeNode(IsMaskout);
+        Layer.setAttributeNode(LayerType);
+        Layer.setAttributeNode(LayerDrawType);
+        Layer.setAttributeNode(transparencyPerc);
+        Layer.setAttributeNode(transparencyColor);
+        Layer.setAttributeNode(setTransColor);
+
+        //Add legend scheme            
+        aILayer.getLegendScheme().exportToXML(m_Doc, Layer);
+
+        //Add visible scale
+        exportVisibleScale(m_Doc, Layer, aILayer.getVisibleScale());
+
+        parent.appendChild(Layer);
+    }
+
+    /**
      * Load map property element
      *
      * @param parent Parent XML element
@@ -8603,6 +8660,59 @@ public class MapView extends JPanel {
                 aLayer.setTransparency(Integer.parseInt(aILayer.getAttributes().getNamedItem("TransparencyPerc").getNodeValue()));
                 aLayer.setTransparencyColor(ColorUtil.parseToColor(aILayer.getAttributes().getNamedItem("TransparencyColor").getNodeValue()));
                 aLayer.setUseTransColor(Boolean.parseBoolean(aILayer.getAttributes().getNamedItem("SetTransColor").getNodeValue()));
+
+                //Load visible scale
+                NodeList visScaleNodes = ((Element) aILayer).getElementsByTagName("VisibleScale");
+                if (visScaleNodes.getLength() > 0) {
+                    Node visScaleNode = visScaleNodes.item(0);
+                    VisibleScale visScale = aLayer.getVisibleScale();
+                    loadVisibleScale(visScaleNode, visScale);
+                }
+            } catch (Exception e) {
+            }
+        }
+
+        return aLayer;
+    }
+
+    /**
+     * Load raster layer
+     *
+     * @param aILayer Raster layer XML node
+     * @return Raster layer
+     */
+    public RasterLayer loadRasterLayer(Node aILayer) throws Exception {
+        String aFile = aILayer.getAttributes().getNamedItem("FileName").getNodeValue();
+        File lFile = new File(aFile);
+        String curDir = System.getProperty("user.dir");
+        if (new File(curDir).isFile()) {
+            System.setProperty("user.dir", new File(curDir).getParent());
+        }
+        aFile = lFile.getAbsolutePath();
+        RasterLayer aLayer = null;
+
+        if (new File(aFile).exists()) {
+            try {
+                aLayer = (RasterLayer) MapDataManage.loadLayer(aFile);
+            } catch (IOException ex) {
+                Logger.getLogger(MapView.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            try {
+                aLayer.setHandle(Integer.parseInt(aILayer.getAttributes().getNamedItem("Handle").getNodeValue()));
+                aLayer.setLayerName(aILayer.getAttributes().getNamedItem("LayerName").getNodeValue());
+                aLayer.setVisible(Boolean.parseBoolean(aILayer.getAttributes().getNamedItem("Visible").getNodeValue()));
+                aLayer.setMaskout(Boolean.parseBoolean(aILayer.getAttributes().getNamedItem("IsMaskout").getNodeValue()));
+                aLayer.setLayerType(LayerTypes.valueOf(aILayer.getAttributes().getNamedItem("LayerType").getNodeValue()));
+                aLayer.setLayerDrawType(LayerDrawType.valueOf(aILayer.getAttributes().getNamedItem("LayerDrawType").getNodeValue()));
+                aLayer.setTransparency(Integer.parseInt(aILayer.getAttributes().getNamedItem("TransparencyPerc").getNodeValue()));
+                aLayer.setTransparencyColor(ColorUtil.parseToColor(aILayer.getAttributes().getNamedItem("TransparencyColor").getNodeValue()));
+                aLayer.setUseTransColor(Boolean.parseBoolean(aILayer.getAttributes().getNamedItem("SetTransColor").getNodeValue()));
+
+                //Load legend scheme
+                Node LS = (Node) ((Element) aILayer).getElementsByTagName("LegendScheme").item(0);
+                LegendScheme ls = new LegendScheme(aLayer.getShapeType());
+                ls.importFromXML(LS);
+                aLayer.setLegendScheme(ls);
 
                 //Load visible scale
                 NodeList visScaleNodes = ((Element) aILayer).getElementsByTagName("VisibleScale");

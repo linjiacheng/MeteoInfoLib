@@ -35,9 +35,12 @@ import java.awt.Rectangle;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.event.EventListenerList;
 import javax.swing.undo.UndoableEdit;
+import org.meteoinfo.layer.RasterLayer;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -189,7 +192,7 @@ public class MapFrame extends ItemNode {
             @Override
             public void viewExtentChangedEvent(ViewExtentChangedEvent even) {
                 //if (_isFireMapViewUpdate) {
-                    fireMapViewUpdatedEvent();
+                fireMapViewUpdatedEvent();
                 //}
             }
         });
@@ -713,7 +716,6 @@ public class MapFrame extends ItemNode {
 //    }
     // </editor-fold>
     // <editor-fold desc="Methods">
-
     // <editor-fold desc="Group">
     /**
      * Add a group node
@@ -773,9 +775,10 @@ public class MapFrame extends ItemNode {
         this.selectLayer(aLN);
         return addLayerNode(aLN);
     }
-    
+
     /**
      * Add a layer
+     *
      * @param index The index
      * @param layer The layer
      * @return The layer handle
@@ -1642,12 +1645,19 @@ public class MapFrame extends ItemNode {
     private void addLayerElement(Document m_Doc, Element parent, MapLayer aLayer, String projectFilePath) {
         File aFile = new File(aLayer.getFileName());
         if (aFile.isFile()) {
-            if (aLayer.getLayerType() == LayerTypes.VectorLayer) {
-                VectorLayer aVLayer = (VectorLayer) aLayer;
-                _mapView.exportVectorLayerElement(m_Doc, parent, aVLayer, projectFilePath);
-            } else {
-                ImageLayer aILayer = (ImageLayer) aLayer;
-                _mapView.exportImageLayer(m_Doc, parent, aILayer, projectFilePath);
+            switch (aLayer.getLayerType()) {
+                case VectorLayer:
+                    VectorLayer aVLayer = (VectorLayer) aLayer;
+                    _mapView.exportVectorLayerElement(m_Doc, parent, aVLayer, projectFilePath);
+                    break;
+                case ImageLayer:
+                    ImageLayer aILayer = (ImageLayer) aLayer;
+                    _mapView.exportImageLayer(m_Doc, parent, aILayer, projectFilePath);
+                    break;
+                case RasterLayer:
+                    RasterLayer aRLayer = (RasterLayer) aLayer;
+                    _mapView.exportRasterLayer(m_Doc, parent, aRLayer, projectFilePath);
+                    break;
             }
         }
     }
@@ -1739,7 +1749,7 @@ public class MapFrame extends ItemNode {
         } catch (Exception e) {
         } finally {
             addGroup(aGN);
-            NodeList layerNodes = ((Element)aGroup).getElementsByTagName("Layer");
+            NodeList layerNodes = ((Element) aGroup).getElementsByTagName("Layer");
             for (int i = 0; i < layerNodes.getLength(); i++) {
                 Node aLayerNode = layerNodes.item(i);
                 loadLayer(aLayerNode, aGN.getGroupHandle());
@@ -1749,44 +1759,55 @@ public class MapFrame extends ItemNode {
     }
 
     private void loadLayer(Node aLayer, int groupHnd) {
-        LayerDrawType aLayerType;
-        if (aLayer.getAttributes().getNamedItem("LayerDrawType") == null) {
-            aLayerType = LayerDrawType.valueOf(aLayer.getAttributes().getNamedItem("LayerType").getNodeValue());
-        } else {
-            aLayerType = LayerDrawType.valueOf(aLayer.getAttributes().getNamedItem("LayerDrawType").getNodeValue());
-        }
-
-        if (aLayerType == LayerDrawType.Image) {
-            ImageLayer aILayer = _mapView.loadImageLayer(aLayer);
-            if (aILayer != null) {
-                addLayer(aILayer, groupHnd);
+        try {
+            LayerTypes aLayerType = LayerTypes.valueOf(aLayer.getAttributes().getNamedItem("LayerType").getNodeValue());
+            
+            switch (aLayerType) {
+                case VectorLayer:
+                    VectorLayer aVLayer = _mapView.loadVectorLayer(aLayer);
+                    if (aVLayer != null) {
+                        addLayer(aVLayer, groupHnd);
+                    }
+                    break;
+                case ImageLayer:
+                    ImageLayer aILayer = _mapView.loadImageLayer(aLayer);
+                    if (aILayer != null) {
+                        addLayer(aILayer, groupHnd);
+                    }
+                    break;
+                case RasterLayer:
+                    RasterLayer aRLayer = _mapView.loadRasterLayer(aLayer);
+                    if (aRLayer != null) {
+                        addLayer(aRLayer, groupHnd);
+                    }
+                    break;
             }
-        } else {
-            VectorLayer aVLayer = _mapView.loadVectorLayer(aLayer);
-            if (aVLayer != null) {
-                addLayer(aVLayer, groupHnd);
-            }
+        } catch (Exception ex) {
+            Logger.getLogger(MapFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     // </editor-fold>
     // </editor-fold>
-     // <editor-fold desc="BeanInfo">
+    // <editor-fold desc="BeanInfo">
+
     public class MapFrameBean {
-        public MapFrameBean(){
-            
+
+        public MapFrameBean() {
+
         }
-        
-        public String getText(){
+
+        public String getText() {
             return MapFrame.this.getText();
         }
-        
-        public void setText(String value){
+
+        public void setText(String value) {
             MapFrame.this.setText(value);
             MapFrame.this.getLegend().paintGraphics();
         }
     }
-    
+
     public static class MapFrameBeanBeanInfo extends BaseBeanInfo {
+
         public MapFrameBeanBeanInfo() {
             super(MapFrameBean.class);
             addProperty("text").setCategory("General").setDisplayName("Text");

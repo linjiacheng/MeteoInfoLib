@@ -282,6 +282,7 @@ public class MapDataManage {
                     ShapeTypes.Image);
             RasterLayer aLayer = DrawMeteoData.createRasterLayer(gData, new File(fileName).getName(), aLS);
             aLayer.setProjInfo(gData.projInfo);
+            aLayer.setFileName(fileName);
 
             return aLayer;
         } catch (IOException ex) {
@@ -303,6 +304,7 @@ public class MapDataManage {
         LegendScheme aLS = LegendManage.createLegendSchemeFromGridData(gData, LegendType.GraduatedColor,
                 ShapeTypes.Image);
         RasterLayer aLayer = DrawMeteoData.createRasterLayer(gData, new File(fileName).getName(), aLS);
+        aLayer.setFileName(fileName);
 
         return aLayer;
     }
