@@ -1000,14 +1000,25 @@ public class LayoutLegend extends LayoutElement {
                 bNum -= 1;
             }
 
+            int w = this.getWidth();
+            int h = this.getHeight();
+            int nw, nh;
             switch (_legendStyle) {
                 case Bar_Vertical:
-                    this.setWidth(10 + getLabelWidth(g) + 5);
-                    this.setHeight(bNum * 20);
+                    nw = 10 + getLabelWidth(g) + 5;
+                    nh = bNum * 20;
+                    if (nw > w)
+                        this.setWidth(nw);
+                    if (nh > h)
+                        this.setHeight(bNum * 20);
                     break;
                 case Bar_Horizontal:
-                    this.setWidth(bNum * 30);
-                    this.setHeight(30);
+                    nw = bNum * 30;
+                    nh = 30;
+                    if (nw > w)
+                        this.setWidth(nw);
+                    if (nh > h)
+                        this.setHeight(bNum * 20);
                     break;
                 case Normal:
                     int aHeight = getBreakHeight(g);
