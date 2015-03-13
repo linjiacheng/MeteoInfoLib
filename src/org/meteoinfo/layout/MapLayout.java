@@ -2350,7 +2350,7 @@ public class MapLayout extends JPanel {
      *
      * @return View image
      */
-    public BufferedImage getViewIamge() {
+    public BufferedImage getViewImage() {
         BufferedImage aImage = new BufferedImage(_pageBounds.width, _pageBounds.height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = aImage.createGraphics();
         paintGraphics(g);
