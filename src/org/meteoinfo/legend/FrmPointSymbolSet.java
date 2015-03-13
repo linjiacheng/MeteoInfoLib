@@ -24,6 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JColorChooser;
+import org.meteoinfo.global.util.FontUtil;
 
 /**
  *
@@ -533,6 +534,7 @@ public class FrmPointSymbolSet extends javax.swing.JDialog {
 
     private void updateProperties() {
         isLoading = true;
+        
         this.jLabel_Color.setBackground(_pointBreak.getColor());
         this.jSpinner_Size.setValue(_pointBreak.getSize());
         this.jCheckBox_DrawOutline.setSelected(_pointBreak.getDrawOutline());
@@ -545,6 +547,7 @@ public class FrmPointSymbolSet extends javax.swing.JDialog {
             this.jComboBox_MarkerType.addItem(t.toString());
         }
         this.jComboBox_MarkerType.setSelectedItem(_pointBreak.getMarkerType().toString());
+
         isLoading = false;
     }
 
@@ -574,9 +577,9 @@ public class FrmPointSymbolSet extends javax.swing.JDialog {
         //FontUtil.registerWeatherFont();
         GraphicsEnvironment gEnv = GraphicsEnvironment.getLocalGraphicsEnvironment();
         String[] fonts = gEnv.getAvailableFontFamilyNames();
-//        Font weatherFont = FontUtil.getWeatherFont();        
-//        if (weatherFont != null)
-//            this.jComboBox_FontFamily.addItem(weatherFont.getFontName());
+        Font weatherFont = FontUtil.getWeatherFont();        
+        if (weatherFont != null)
+            this.jComboBox_FontFamily.addItem(weatherFont.getFontName());
         for (String ff : fonts) {
             this.jComboBox_FontFamily.addItem(ff);
         }
