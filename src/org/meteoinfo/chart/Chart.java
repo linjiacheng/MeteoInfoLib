@@ -326,19 +326,19 @@ public class Chart {
             Dimension dim = this.legend.getLegendDimension(g, new Dimension((int)area.getWidth(), (int)area.getHeight()));
             float x = 0;
             switch (this.legend.getPosition()){
-                case TOP:
+                case UPPER_CENTER_OUTSIDE:
                     x = (float) area.getWidth() / 2 - dim.width / 2;
                     y += 5;
                     break;
-                case BOTTOM:
+                case LOWER_CENTER_OUTSIDE:
                     x = (float) area.getWidth() / 2 - dim.width / 2;
                     y += plotArea.getHeight() + 5;
                     break;
-                case LEFT:
+                case LEFT_OUTSIDE:
                     x = 10;
                     y = (float) area.getHeight() / 2 - dim.height / 2;
                     break;
-                case RIGHT:
+                case RIGHT_OUTSIDE:
                     x = (float) plotArea.getWidth() + 10;
                     y = (float) area.getHeight() / 2 - dim.height / 2;
                     break;
@@ -363,16 +363,16 @@ public class Chart {
         if (this.drawLegend){
             Dimension dim = this.legend.getLegendDimension(g, new Dimension((int)area.getWidth(), (int)area.getHeight()));
             switch (this.legend.getPosition()){
-                case TOP:
+                case UPPER_CENTER_OUTSIDE:
                     top += dim.height + 10;
                     break;
-                case BOTTOM:
+                case LOWER_CENTER_OUTSIDE:
                     bottom += dim.height + 10;
                     break;
-                case LEFT:
+                case LEFT_OUTSIDE:
                     left += dim.width + 10;
                     break;
-                case RIGHT:
+                case RIGHT_OUTSIDE:
                     right += dim.width + 10;
                     break;
             }

@@ -7,7 +7,7 @@ package org.meteoinfo.ui;
 
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
-import org.meteoinfo.global.colors.ColorTable;
+import org.meteoinfo.global.colors.ColorMap;
 
 /**
  *
@@ -15,15 +15,15 @@ import org.meteoinfo.global.colors.ColorTable;
  */
 public class ColorComboBoxModel extends AbstractListModel implements ComboBoxModel {
 
-    ColorTable[] items;
-    ColorTable item = null;
+    ColorMap[] items;
+    ColorMap item = null;
 
     /**
      * Constructor
      *
      * @param value Color tables
      */
-    public ColorComboBoxModel(ColorTable[] value) {
+    public ColorComboBoxModel(ColorMap[] value) {
         this.items = value;
     }
 
@@ -36,7 +36,7 @@ public class ColorComboBoxModel extends AbstractListModel implements ComboBoxMod
     @Override
     public void setSelectedItem(Object item) {
         // TODO Auto-generated method stub  
-        this.item = (ColorTable) item;
+        this.item = (ColorMap) item;
     }
 
     @Override

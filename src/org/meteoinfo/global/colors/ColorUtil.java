@@ -220,7 +220,7 @@ public class ColorUtil {
      * @return Color tables
      * @throws IOException
      */
-    public static ColorTable[] getColorTables() throws IOException {
+    public static ColorMap[] getColorTables() throws IOException {
         String fn = GlobalUtil.getAppPath(ColorUtil.class);
         boolean isDebug = java.lang.management.ManagementFactory.getRuntimeMXBean().
                 getInputArguments().toString().contains("jdwp");
@@ -235,11 +235,11 @@ public class ColorUtil {
         }
 
         File[] files = pathDir.listFiles();
-        List<ColorTable> cts = new ArrayList<ColorTable>();
+        List<ColorMap> cts = new ArrayList<ColorMap>();
         for (File file : files) {
             //InputStream is = ColorUtil.class.getResourceAsStream(pdir + "/" + fileName);
             //System.out.println(file.getAbsolutePath());
-            ColorTable ct = new ColorTable();
+            ColorMap ct = new ColorMap();
             ct.readFromFile(file);            
             if (ct.getColorCount() > 0) {
                 String name = file.getName();
@@ -249,7 +249,7 @@ public class ColorUtil {
             }
         }
 
-        ColorTable[] ncts = new ColorTable[cts.size()];
+        ColorMap[] ncts = new ColorMap[cts.size()];
         for (int i = 0; i < cts.size(); i++) {
             ncts[i] = cts.get(i);
         }
@@ -258,12 +258,12 @@ public class ColorUtil {
     }
     
     /**
-     * Get color table
-     * @param ctName Color table name
+     * Get color map
+     * @param ctName Color map name
      * @return Color table
      * @throws java.io.IOException
      */
-    public static ColorTable getColorTable(String ctName) throws IOException{
+    public static ColorMap getColorMap(String ctName) throws IOException{
         String fn = GlobalUtil.getAppPath(ColorUtil.class);
         boolean isDebug = java.lang.management.ManagementFactory.getRuntimeMXBean().
                 getInputArguments().toString().contains("jdwp");
@@ -282,7 +282,7 @@ public class ColorUtil {
         if (!ctFile.isFile())
             return null;                
         
-        ColorTable ct = new ColorTable();
+        ColorMap ct = new ColorMap();
         ct.readFromFile(fn);
         
         return ct;
@@ -294,8 +294,8 @@ public class ColorUtil {
      * @param name Color table name
      * @return Finded color table
      */
-    public static ColorTable findColorTable(ColorTable[] cts, String name){
-        for (ColorTable ct : cts){
+    public static ColorMap findColorTable(ColorMap[] cts, String name){
+        for (ColorMap ct : cts){
             if (ct.getName().equalsIgnoreCase(name))
                 return ct;
         }
@@ -309,7 +309,7 @@ public class ColorUtil {
      * @return Color tables
      * @throws IOException
      */
-    public static ColorTable[] getColorTables_old() throws IOException {
+    public static ColorMap[] getColorTables_old() throws IOException {
         String pdir = "/org/meteoinfo/resources/colortables";
         List<String> fns = new ArrayList<String>();
         fns.add("grads_rainbow.rgb");
@@ -329,15 +329,15 @@ public class ColorUtil {
         fns.add("seaice_1.rgb");
         fns.add("seaice_2.rgb");
 
-        List<ColorTable> cts = new ArrayList<ColorTable>();
+        List<ColorMap> cts = new ArrayList<ColorMap>();
         for (String fileName : fns) {
             InputStream is = ColorUtil.class.getResourceAsStream(pdir + "/" + fileName);
-            ColorTable ct = new ColorTable();
+            ColorMap ct = new ColorMap();
             ct.readFromFile(is);
             cts.add(ct);
         }
 
-        ColorTable[] ncts = new ColorTable[cts.size()];
+        ColorMap[] ncts = new ColorMap[cts.size()];
         for (int i = 0; i < cts.size(); i++) {
             ncts[i] = cts.get(i);
         }

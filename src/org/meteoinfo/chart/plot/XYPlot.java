@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.List;
 import org.meteoinfo.chart.ChartLegend;
 import org.meteoinfo.chart.ChartText;
+import org.meteoinfo.chart.LegendPosition;
 import org.meteoinfo.chart.axis.Axis;
 import static org.meteoinfo.chart.plot.Plot.MINIMUM_HEIGHT_TO_DRAW;
 import static org.meteoinfo.chart.plot.Plot.MINIMUM_WIDTH_TO_DRAW;
@@ -354,7 +355,10 @@ public abstract class XYPlot extends Plot {
 
         //Draw legend
         if (this.drawLegend && this.getLegend() != null) {
-            this.drawLegendScheme(g, area, y);
+            if (this.getLegend().getPosition() == LegendPosition.CUSTOM)
+                this.legend.draw(g, new PointF(this.legend.getX(), this.legend.getY()));
+            else
+                this.drawLegendScheme(g, area, y);
         }
 
         g.setTransform(oldMatrix);
@@ -373,16 +377,16 @@ public abstract class XYPlot extends Plot {
         if (this.drawLegend && this.getLegend() != null) {
             Dimension dim = this.legend.getLegendDimension(g, new Dimension((int) area.getWidth(), (int) area.getHeight()));
             switch (this.legend.getPosition()) {
-                case TOP:
+                case UPPER_CENTER_OUTSIDE:
                     top += dim.height + 10;
                     break;
-                case BOTTOM:
+                case LOWER_CENTER_OUTSIDE:
                     bottom += dim.height + 10;
                     break;
-                case LEFT:
+                case LEFT_OUTSIDE:
                     left += dim.width + 10;
                     break;
-                case RIGHT:
+                case RIGHT_OUTSIDE:
                     right += dim.width + 10;
                     break;
             }
@@ -648,24 +652,37 @@ public abstract class XYPlot extends Plot {
     }
 
     void drawLegendScheme(Graphics2D g, Rectangle2D area, float y) {
+        switch (this.legend.getPosition()){
+            case UPPER_CENTER_OUTSIDE:
+            case LOWER_CENTER_OUTSIDE:
+                this.legend.setPlotOrientation(PlotOrientation.HORIZONTAL);
+                break;
+            default:
+                this.legend.setPlotOrientation(PlotOrientation.VERTICAL);
+                break;
+        }
         Dimension dim = this.legend.getLegendDimension(g, new Dimension((int) area.getWidth(), (int) area.getHeight()));
         float x = 0;
         switch (this.legend.getPosition()) {
-            case TOP:
+            case UPPER_CENTER_OUTSIDE:
                 x = (float) area.getWidth() / 2 - dim.width / 2;
-                y += 5;
+                y += 5;                
                 break;
-            case BOTTOM:
+            case LOWER_CENTER_OUTSIDE:
                 x = (float) area.getWidth() / 2 - dim.width / 2;
                 y += graphArea.getHeight() + this.getXAxisHeight(g, 1) + 5;
                 break;
-            case LEFT:
+            case LEFT_OUTSIDE:
                 x = 10;
                 y = (float) area.getHeight() / 2 - dim.height / 2;
                 break;
-            case RIGHT:
+            case RIGHT_OUTSIDE:
                 x = (float) graphArea.getWidth() + 10;
                 y = (float) area.getHeight() / 2 - dim.height / 2;
+                break;
+            case UPPER_RIGHT:
+                x = (float) graphArea.getWidth() - dim.width;
+                y = y + 20;
                 break;
         }
         this.legend.draw(g, new PointF(x, y));

@@ -5,7 +5,7 @@
  */
 package org.meteoinfo.ui;
 
-import org.meteoinfo.global.colors.ColorTable;
+import org.meteoinfo.global.colors.ColorMap;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.FontMetrics;
@@ -23,7 +23,7 @@ import javax.swing.ListCellRenderer;
 public class ColorListCellRender extends JPanel implements ListCellRenderer {
 
     // <editor-fold desc="Variables">
-    private ColorTable colorTable;
+    private ColorMap colorTable;
     private boolean isSelected = false;
 
     // </editor-fold>
@@ -52,7 +52,7 @@ public class ColorListCellRender extends JPanel implements ListCellRenderer {
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
         //Get the selected index. (The index param isn't
         //always valid, so just use the value.)
-        this.colorTable = (ColorTable) value;
+        this.colorTable = (ColorMap) value;
         this.isSelected = isSelected;
 
         if (isSelected) {

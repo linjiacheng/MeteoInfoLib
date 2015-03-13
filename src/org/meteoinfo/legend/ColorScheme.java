@@ -7,7 +7,7 @@ package org.meteoinfo.legend;
 
 import java.awt.Color;
 import org.meteoinfo.global.MIMath;
-import org.meteoinfo.global.colors.ColorTable;
+import org.meteoinfo.global.colors.ColorMap;
 
 /**
  *
@@ -26,7 +26,7 @@ public class ColorScheme {
      * @param n Level number
      * @param ct Color table
      */
-    public ColorScheme(double min, double max, int n, ColorTable ct){
+    public ColorScheme(double min, double max, int n, ColorMap ct){
         this.values = MIMath.getIntervalValues(min, max, n);
         this.colors = ct.getColors(n);
     }

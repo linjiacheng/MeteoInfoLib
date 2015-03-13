@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
-import org.meteoinfo.global.colors.ColorTable;
+import org.meteoinfo.global.colors.ColorMap;
 import org.meteoinfo.global.colors.ColorUtil;
 import org.meteoinfo.global.util.BigDecimalUtil;
 import org.meteoinfo.ui.ColorComboBoxModel;
@@ -96,14 +96,14 @@ public class FrmLegendBreaks extends javax.swing.JDialog {
             this.jButton_NewLegend.setEnabled(false);
         }
 
-        ColorTable[] colorTables;
+        ColorMap[] colorTables;
         try {
             colorTables = ColorUtil.getColorTables();
             ColorListCellRender render = new ColorListCellRender();
             render.setPreferredSize(new Dimension(62, 21));
             this.jComboBox_ColorTable.setModel(new ColorComboBoxModel(colorTables));
             this.jComboBox_ColorTable.setRenderer(render);
-            ColorTable ct = ColorUtil.findColorTable(colorTables, "grads_rainbow");
+            ColorMap ct = ColorUtil.findColorTable(colorTables, "grads_rainbow");
             if (ct != null)
                 this.jComboBox_ColorTable.setSelectedItem(ct);
             else
@@ -324,7 +324,7 @@ public class FrmLegendBreaks extends javax.swing.JDialog {
 
     private Color[] createColors(int colorNum) {        
         ColorComboBoxModel model = (ColorComboBoxModel)this.jComboBox_ColorTable.getModel();
-        ColorTable ct = (ColorTable)model.getSelectedItem();
+        ColorMap ct = (ColorMap)model.getSelectedItem();
         return ct.getColors(colorNum);
     }    
 

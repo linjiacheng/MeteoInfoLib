@@ -23,7 +23,7 @@ import org.meteoinfo.legend.LegendManage;
  *
  * @author wyq
  */
-public class ColorTable {
+public class ColorMap {
     // <editor-fold desc="Variables">
     private Color[] colors;
     private String name;
@@ -34,7 +34,7 @@ public class ColorTable {
     /**
      * Constructor
      */
-    public ColorTable(){
+    public ColorMap(){
         name = "";
         colors = new Color[1];
         colors[0] = Color.red;
@@ -44,7 +44,7 @@ public class ColorTable {
      * Construct
      * @param n Color number
      */
-    public ColorTable(int n){
+    public ColorMap(int n){
         colors = new Color[n];
         int i;
         Random randomColor = new Random();

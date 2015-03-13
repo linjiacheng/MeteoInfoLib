@@ -69,8 +69,7 @@ public class LayoutLegend extends LayoutElement {
     private float _breakSpace;
     private float _topSpace;
     private float _leftSpace;
-    private float _vBarWidth;
-    private float _hBarHeight;
+    private float barWidth;
     private int _columnNum = 1;
     // </editor-fold>
     // <editor-fold desc="Constructor">
@@ -84,7 +83,7 @@ public class LayoutLegend extends LayoutElement {
     public LayoutLegend(MapLayout mapLayout, LayoutMap layoutMap) {
         super();
         this.setElementType(ElementType.LayoutLegend);
-        this.setResizeAbility(ResizeAbility.None);
+        this.setResizeAbility(ResizeAbility.ResizeAll);
 
         _mapLayout = mapLayout;
         _layoutMap = layoutMap;
@@ -104,8 +103,7 @@ public class LayoutLegend extends LayoutElement {
         _breakSpace = 3;
         _topSpace = 5;
         _leftSpace = 5;
-        _vBarWidth = 10;
-        _hBarHeight = 10;
+        barWidth = 10;
         _font = new Font("宋体", Font.PLAIN, 12);
         _titleFont = new Font("Arial", Font.PLAIN, 12);
     }
@@ -570,7 +568,8 @@ public class LayoutLegend extends LayoutElement {
             bNum -= 1;
         }
 
-        float width = _vBarWidth * zoom;
+        barWidth = this.getWidth() - this.getLabelWidth(g) - 5;
+        float width = barWidth * zoom;
         float height = (this.getHeight() - 5) * zoom / bNum;
         Font lFont = new Font(this.getFont().getFontName(), this.getFont().getStyle(), (int) (this.getFont().getSize() * zoom));
 
@@ -731,9 +730,11 @@ public class LayoutLegend extends LayoutElement {
             bNum -= 1;
         }
 
-        width = (this.getWidth() - 5) * zoom / bNum;
-        height = _hBarHeight * zoom;
         Font lFont = new Font(this.getFont().getFontName(), this.getFont().getStyle(), (int) (this.getFont().getSize() * zoom));
+        FontMetrics metrics = g.getFontMetrics(lFont);
+        barWidth = this.getHeight() - metrics.getHeight() - 5;
+        width = (this.getWidth() - 5) * zoom / bNum;        
+        height = barWidth * zoom;        
 
         for (int i = 0; i < bNum; i++) {
             switch (aLS.getShapeType()) {
@@ -800,7 +801,7 @@ public class LayoutLegend extends LayoutElement {
 
                 sP.X = aP.X;
                 sP.Y = aP.Y + height / 2;
-                FontMetrics metrics = g.getFontMetrics(lFont);
+                //FontMetrics metrics = g.getFontMetrics(lFont);
                 aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());
                 g.setColor(this.getForeColor());
                 g.setFont(lFont);
@@ -867,7 +868,7 @@ public class LayoutLegend extends LayoutElement {
                 sP.X = aP.X + width / 2;
                 sP.Y = aP.Y + height / 2;
                 if (i < bNum - 1) {
-                    FontMetrics metrics = g.getFontMetrics(lFont);
+                    //FontMetrics metrics = g.getFontMetrics(lFont);
                     aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());
                     g.setColor(this.getForeColor());
                     g.setFont(lFont);
@@ -1370,7 +1371,7 @@ public class LayoutLegend extends LayoutElement {
          */
         public int getTop() {
             return LayoutLegend.this.getTop();
-        }
+        }                
 
         /**
          * Set top
@@ -1379,6 +1380,54 @@ public class LayoutLegend extends LayoutElement {
          */
         public void setTop(int top) {
             LayoutLegend.this.setTop(top);
+        }
+        
+        /**
+         * Get width
+         * @return Width
+         */
+        public int getWidth(){
+            return LayoutLegend.this.getWidth();
+        }
+        
+        /**
+         * Set width
+         * @param value Width
+         */
+        public void setWidth(int value){
+            LayoutLegend.this.setWidth(value);
+        }
+        
+        /**
+         * Get height
+         * @return Height
+         */
+        public int getHeight(){
+            return LayoutLegend.this.getHeight();
+        }
+        
+        /**
+         * Set height
+         * @param value Height
+         */
+        public void setHeight(int value){
+            LayoutLegend.this.setHeight(value);
+        }
+        
+        /**
+         * Get bar width
+         * @return Bar width
+         */
+        public float getBarWidth(){
+            return LayoutLegend.this.barWidth;
+        }
+        
+        /**
+         * Set bar width
+         * @param value Bar width
+         */
+        public void setBarWidth(float value){
+            LayoutLegend.this.barWidth = value;
         }
         // </editor-fold>
     }
@@ -1408,6 +1457,9 @@ public class LayoutLegend extends LayoutElement {
             addProperty("neatLineSize").setCategory("Neat Line").setDisplayName("Neat Line Size");
             addProperty("left").setCategory("Location").setDisplayName("Left");
             addProperty("top").setCategory("Location").setDisplayName("Top");
+            addProperty("width").setCategory("Location").setDisplayName("Width");
+            addProperty("height").setCategory("Location").setDisplayName("Height");
+            //addProperty("barWidth").setCategory("ColorBar").setDisplayName("Bar Width");
         }
     }
 

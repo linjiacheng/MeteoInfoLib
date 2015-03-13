@@ -32,6 +32,9 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import org.meteoinfo.chart.plot.PlotOrientation;
+import org.meteoinfo.global.DataConvert;
+import org.meteoinfo.legend.LegendType;
+import org.meteoinfo.shape.ShapeTypes;
 
 /**
  *
@@ -43,6 +46,8 @@ public class ChartLegend {
     //private final XY1DPlot plot;
     private LegendScheme legendScheme;
     private LegendPosition position;
+    private float x;
+    private float y;
     private PlotOrientation orientation;
     private Color background;
     private boolean drawBackground;
@@ -71,7 +76,7 @@ public class ChartLegend {
     public ChartLegend(LegendScheme ls) {
         //this.plot = plot;
         this.legendScheme = ls;
-        this.position = LegendPosition.BOTTOM;
+        this.position = LegendPosition.LOWER_CENTER_OUTSIDE;
         this.orientation = PlotOrientation.HORIZONTAL;
         this.background = Color.white;
         this.drawBackground = false;
@@ -127,7 +132,70 @@ public class ChartLegend {
     public void setPosition(LegendPosition value) {
         this.position = value;
     }
+    
+    /**
+     * Get X
+     * @return X value
+     */
+    public float getX(){
+        return this.x;
+    }
+    
+    /**
+     * Set X
+     * @param value X value
+     */
+    public void setX(float value){
+        x = value;
+    }
+    
+    /**
+     * Get Y
+     * @return Y value
+     */
+    public float getY(){
+        return this.y;
+    }
+    
+    /**
+     * Set Y
+     * @param value Y value
+     */
+    public void setY(float value){
+        y = value;
+    }
+    
+    /**
+     * Get width
+     * @return Width
+     */
+    public int getWidth(){
+        return this.width;
+    }
+    
+    /**
+     * Set width
+     * @param value Width
+     */
+    public void setWidth(int value){
+        this.width = value;
+    }
+    
+    /**
+     * Get height
+     * @return Height
+     */
+    public int getHeight(){
+        return this.height;
+    }
 
+    /**
+     * Set height
+     * @param value Height 
+     */
+    public void setHeight(int value){
+        this.height = value;
+    }
     /**
      * Get plot orientation
      *
@@ -367,31 +435,46 @@ public class ChartLegend {
                 }
 
                 y += breakHeight + breakSpace;
-                switch (aLS.getShapeType()) {
-                    case Point:
-                        PointBreak aPB = (PointBreak) ((PointBreak) aLS.getLegendBreaks().get(i)).clone();
-                        caption = aPB.getCaption();
-                        aPB.setSize(aPB.getSize());
-                        Draw.drawPoint(new PointF(x, y), aPB, g);
-                        break;
-                    case Polyline:
-                    case PolylineZ:
-                        PolylineBreak aPLB = (PolylineBreak) aLS.getLegendBreaks().get(i);
-                        caption = aPLB.getCaption();
-                        Draw.drawPolylineSymbol_S(new PointF(x, y), symbolWidth, symbolHeight, aPLB, g);
-                        break;
-                    case Polygon:
-                        PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(i);
-                        caption = aPGB.getCaption();
-                        Draw.drawPolygonSymbol(new PointF(x, y), symbolHeight * 8 / 10, symbolHeight * 8 / 10, aPGB, g);
-                        break;
-                    case Image:
-                        ColorBreak aCB = aLS.getLegendBreaks().get(i);
-                        caption = aCB.getCaption();
-                        Draw.drawPolygonSymbol(new PointF(x, y), aCB.getColor(), Color.black, symbolWidth,
-                                symbolHeight, true, true, g);
-                        break;
+                ColorBreak cb = aLS.getLegendBreaks().get(i);
+                if (!cb.isDrawShape()) {
+                    continue;
                 }
+                caption = aLS.getLegendBreaks().get(i).getCaption();
+                if (cb instanceof PointBreak) {
+                    PointBreak aPB = (PointBreak) cb;
+                    Draw.drawPoint(new PointF(x, y), aPB, g);
+                } else if (cb instanceof PolylineBreak) {
+                    PolylineBreak aPLB = (PolylineBreak) cb;
+                    Draw.drawPolylineSymbol_S(new PointF(x, y), symbolWidth, symbolHeight, aPLB, g);
+                } else if (cb instanceof PolygonBreak) {
+                    Draw.drawPolygonSymbol(new PointF(x, y), cb.getColor(), Color.black, symbolWidth,
+                            symbolHeight, true, true, g);
+                }
+//                switch (aLS.getShapeType()) {
+//                    case Point:
+//                        PointBreak aPB = (PointBreak) ((PointBreak) aLS.getLegendBreaks().get(i)).clone();
+//                        caption = aPB.getCaption();
+//                        aPB.setSize(aPB.getSize());
+//                        Draw.drawPoint(new PointF(x, y), aPB, g);
+//                        break;
+//                    case Polyline:
+//                    case PolylineZ:
+//                        PolylineBreak aPLB = (PolylineBreak) aLS.getLegendBreaks().get(i);
+//                        caption = aPLB.getCaption();
+//                        Draw.drawPolylineSymbol_S(new PointF(x, y), symbolWidth, symbolHeight, aPLB, g);
+//                        break;
+//                    case Polygon:
+//                        PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(i);
+//                        caption = aPGB.getCaption();
+//                        Draw.drawPolygonSymbol(new PointF(x, y), symbolHeight * 8 / 10, symbolHeight * 8 / 10, aPGB, g);
+//                        break;
+//                    case Image:
+//                        ColorBreak aCB = aLS.getLegendBreaks().get(i);
+//                        caption = aCB.getCaption();
+//                        Draw.drawPolygonSymbol(new PointF(x, y), aCB.getColor(), Color.black, symbolWidth,
+//                                symbolHeight, true, true, g);
+//                        break;
+//                }
 
                 PointF sP = new PointF(0, 0);
                 sP.X = x + symbolWidth / 2;
@@ -487,6 +570,323 @@ public class ChartLegend {
                 i += 1;
             }
             y += breakHeight + this._breakSpace * 2;
+        }
+    }
+    
+    private void drawVerticalBarLegend(Graphics2D g, LegendScheme aLS) {
+        PointF aP = new PointF(0, 0);
+        PointF sP = new PointF(0, 0);
+        boolean DrawShape = true, DrawFill = true, DrawOutline = true;
+        Color FillColor = Color.red, OutlineColor = Color.black;
+        String caption = "";
+        Dimension aSF;
+
+        int bNum = aLS.getBreakNum();
+        if (aLS.getLegendBreaks().get(bNum - 1).isNoData()) {
+            bNum -= 1;
+        }
+
+        float width = _vBarWidth;
+        float height = (this.height - 5) / bNum;        
+
+        for (int i = 0; i < bNum; i++) {
+            switch (aLS.getShapeType()) {
+                case Point:
+                    PointBreak aPB = (PointBreak) aLS.getLegendBreaks().get(i);
+                    DrawShape = aPB.isDrawShape();
+                    DrawFill = aPB.getDrawFill();
+                    FillColor = aPB.getColor();
+                    if (aLS.getLegendType() == LegendType.UniqueValue) {
+                        caption = aPB.getCaption();
+                    } else {
+                        caption = DataConvert.removeTailingZeros(aPB.getEndValue().toString());
+                    }
+                    break;
+                case Polyline:
+                    PolylineBreak aPLB = (PolylineBreak) aLS.getLegendBreaks().get(i);
+                    DrawShape = aPLB.getDrawPolyline();
+                    FillColor = aPLB.getColor();
+                    if (aLS.getLegendType() == LegendType.UniqueValue) {
+                        caption = aPLB.getCaption();
+                    } else {
+                        caption = DataConvert.removeTailingZeros(aPLB.getEndValue().toString());
+                    }
+                    break;
+                case Polygon:
+                    PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(i);
+                    DrawShape = aPGB.isDrawShape();
+                    DrawFill = aPGB.getDrawFill();
+                    FillColor = aPGB.getColor();
+                    if (aLS.getLegendType() == LegendType.UniqueValue) {
+                        caption = aPGB.getCaption();
+                    } else {
+                        caption = DataConvert.removeTailingZeros(aPGB.getEndValue().toString());
+                    }
+                    break;
+                case Image:
+                    ColorBreak aCB = aLS.getLegendBreaks().get(i);
+                    DrawShape = true;
+                    DrawFill = true;
+                    FillColor = aCB.getColor();
+                    if (aLS.getLegendType() == LegendType.UniqueValue) {
+                        caption = aCB.getCaption();
+                    } else {
+                        caption = DataConvert.removeTailingZeros(aCB.getEndValue().toString());
+                    }
+                    break;
+            }
+
+            aP.X = width / 2;
+            aP.Y = i * height + height / 2;
+
+            if (aLS.getLegendType() == LegendType.UniqueValue) {
+                if (DrawShape) {
+                    if (aLS.getShapeType() == ShapeTypes.Polygon) {
+                        PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(i).clone();
+                        aPGB.setDrawOutline(true);
+                        aPGB.setOutlineColor(Color.black);
+                        Draw.drawPolygonSymbol((PointF) aP.clone(), width, height, aPGB, g);
+                    } else {
+                        Draw.drawPolygonSymbol((PointF) aP.clone(), FillColor, OutlineColor, width,
+                                height, DrawFill, DrawOutline, g);
+                    }
+                }
+
+                sP.X = aP.X + width / 2 + 5;
+                sP.Y = aP.Y;
+                FontMetrics metrics = g.getFontMetrics(this.labelFont);
+                aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());
+                g.setColor(Color.black);
+                g.setFont(this.labelFont);
+                g.drawString(caption, sP.X, sP.Y + aSF.height / 2);
+            } else {
+                if (DrawShape) {
+                    if (i == 0) {
+                        PointF[] Points = new PointF[4];
+                        Points[0] = new PointF();
+                        Points[0].X = aP.X;
+                        Points[0].Y = 0;
+                        Points[1] = new PointF();
+                        Points[1].X = 0;
+                        Points[1].Y = height;
+                        Points[2] = new PointF();
+                        Points[2].X = width;
+                        Points[2].Y = height;
+                        Points[3] = new PointF();
+                        Points[3].X = aP.X;
+                        Points[3].Y = 0;
+                        if (aLS.getShapeType() == ShapeTypes.Polygon) {
+                            PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(i).clone();
+                            aPGB.setDrawOutline(true);
+                            aPGB.setOutlineColor(Color.black);
+                            Draw.drawPolygon(Points, aPGB, g);
+                        } else {
+                            Draw.drawPolygon(Points, FillColor, OutlineColor, DrawFill, DrawOutline, g);
+                        }
+                    } else if (i == bNum - 1) {
+                        PointF[] Points = new PointF[4];
+                        Points[0] = new PointF();
+                        Points[0].X = 0;
+                        Points[0].Y = i * height;
+                        Points[1] = new PointF();
+                        Points[1].X = width;
+                        Points[1].Y = i * height;
+                        Points[2] = new PointF();
+                        Points[2].X = aP.X;
+                        Points[2].Y = i * height + height;
+                        Points[3] = new PointF();
+                        Points[3].X = 0;
+                        Points[3].Y = i * height;
+                        if (aLS.getShapeType() == ShapeTypes.Polygon) {
+                            PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(i).clone();
+                            aPGB.setDrawOutline(true);
+                            aPGB.setOutlineColor(Color.black);
+                            Draw.drawPolygon(Points, aPGB, g);
+                        } else {
+                            Draw.drawPolygon(Points, FillColor, OutlineColor, DrawFill, DrawOutline, g);
+                        }
+                    } else {
+                        if (aLS.getShapeType() == ShapeTypes.Polygon) {
+                            PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(i).clone();
+                            aPGB.setDrawOutline(true);
+                            aPGB.setOutlineColor(Color.black);
+                            Draw.drawPolygonSymbol((PointF) aP.clone(), width, height, aPGB, g);
+                        } else {
+                            Draw.drawPolygonSymbol((PointF) aP.clone(), FillColor, OutlineColor, width,
+                                    height, DrawFill, DrawOutline, g);
+                        }
+                    }
+                }
+
+                sP.X = aP.X + width / 2 + 5;
+                sP.Y = aP.Y + height / 2;
+                if (i < bNum - 1) {
+                    FontMetrics metrics = g.getFontMetrics(this.labelFont);
+                    aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());
+                    g.setColor(Color.black);
+                    g.setFont(this.labelFont);
+                    g.drawString(caption, sP.X, sP.Y + aSF.height / 2);
+                }
+            }
+        }
+    }
+
+    private void drawHorizontalBarLegend(Graphics2D g, LegendScheme aLS) {
+        PointF aP = new PointF(0, 0);
+        PointF sP = new PointF(0, 0);
+        float width, height;
+        boolean DrawShape = true, DrawFill = true, DrawOutline = true;
+        Color FillColor = Color.red, OutlineColor = Color.black;
+        String caption = "";
+        Dimension aSF;
+
+        int bNum = aLS.getBreakNum();
+        if (aLS.getLegendBreaks().get(bNum - 1).isNoData()) {
+            bNum -= 1;
+        }
+
+        width = (this.getWidth() - 5) / bNum;
+        height = _hBarHeight;
+
+        for (int i = 0; i < bNum; i++) {
+            switch (aLS.getShapeType()) {
+                case Point:
+                    PointBreak aPB = (PointBreak) aLS.getLegendBreaks().get(i);
+                    DrawShape = aPB.isDrawShape();
+                    DrawFill = aPB.getDrawFill();
+                    FillColor = aPB.getColor();
+                    if (aLS.getLegendType() == LegendType.UniqueValue) {
+                        caption = aPB.getCaption();
+                    } else {                        
+                        caption = DataConvert.removeTailingZeros(aPB.getEndValue().toString());
+                    }
+                    break;
+                case Polyline:
+                    PolylineBreak aPLB = (PolylineBreak) aLS.getLegendBreaks().get(i);
+                    DrawShape = aPLB.getDrawPolyline();
+                    FillColor = aPLB.getColor();
+                    if (aLS.getLegendType() == LegendType.UniqueValue) {
+                        caption = aPLB.getCaption();
+                    } else {
+                        caption = DataConvert.removeTailingZeros(aPLB.getEndValue().toString());
+                    }
+                    break;
+                case Polygon:
+                    PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(i);
+                    DrawShape = aPGB.isDrawShape();
+                    DrawFill = aPGB.getDrawFill();
+                    FillColor = aPGB.getColor();
+                    if (aLS.getLegendType() == LegendType.UniqueValue) {
+                        caption = aPGB.getCaption();
+                    } else {
+                        caption = DataConvert.removeTailingZeros(aPGB.getEndValue().toString());
+                    }
+                    break;
+                case Image:
+                    ColorBreak aCB = aLS.getLegendBreaks().get(i);
+                    DrawShape = true;
+                    DrawFill = true;
+                    FillColor = aCB.getColor();
+                    if (aLS.getLegendType() == LegendType.UniqueValue) {
+                        caption = aCB.getCaption();
+                    } else {
+                        caption = DataConvert.removeTailingZeros(aCB.getEndValue().toString());
+                    }
+                    break;
+            }
+
+            aP.X = i * width + width / 2;
+            aP.Y = height / 2;
+
+            if (aLS.getLegendType() == LegendType.UniqueValue) {
+                if (DrawShape) {
+                    if (aLS.getShapeType() == ShapeTypes.Polygon) {
+                        PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(i).clone();
+                        aPGB.setDrawOutline(true);
+                        aPGB.setOutlineColor(Color.black);
+                        Draw.drawPolygonSymbol((PointF) aP.clone(), width, height, aPGB, g);
+                    } else {
+                        Draw.drawPolygonSymbol((PointF) aP.clone(), FillColor, OutlineColor, width,
+                                height, DrawFill, DrawOutline, g);
+                    }
+                }
+
+                sP.X = aP.X;
+                sP.Y = aP.Y + height / 2;
+                FontMetrics metrics = g.getFontMetrics(this.labelFont);
+                aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());
+                g.setColor(Color.black);
+                g.setFont(this.labelFont);
+                g.drawString(caption, sP.X - aSF.width / 2, sP.Y + aSF.height);
+            } else {
+                if (DrawShape) {
+                    if (i == 0) {
+                        PointF[] Points = new PointF[4];
+                        Points[0] = new PointF();
+                        Points[0].X = 0;
+                        Points[0].Y = aP.Y;
+                        Points[1] = new PointF();
+                        Points[1].X = width;
+                        Points[1].Y = 0;
+                        Points[2] = new PointF();
+                        Points[2].X = width;
+                        Points[2].Y = height;
+                        Points[3] = new PointF();
+                        Points[3].X = 0;
+                        Points[3].Y = aP.Y;
+                        if (aLS.getShapeType() == ShapeTypes.Polygon) {
+                            PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(i).clone();
+                            aPGB.setDrawOutline(true);
+                            aPGB.setOutlineColor(Color.black);
+                            Draw.drawPolygon(Points, aPGB, g);
+                        } else {
+                            Draw.drawPolygon(Points, FillColor, OutlineColor, DrawFill, DrawOutline, g);
+                        }
+                    } else if (i == bNum - 1) {
+                        PointF[] Points = new PointF[4];
+                        Points[0] = new PointF();
+                        Points[0].X = i * width;
+                        Points[0].Y = height;
+                        Points[1] = new PointF();
+                        Points[1].X = i * width;
+                        Points[1].Y = 0;
+                        Points[2] = new PointF();
+                        Points[2].X = i * width + width;
+                        Points[2].Y = aP.Y;
+                        Points[3] = new PointF();
+                        Points[3].X = i * width;
+                        Points[3].Y = height;
+                        if (aLS.getShapeType() == ShapeTypes.Polygon) {
+                            PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(i).clone();
+                            aPGB.setDrawOutline(true);
+                            aPGB.setOutlineColor(Color.black);
+                            Draw.drawPolygon(Points, aPGB, g);
+                        } else {
+                            Draw.drawPolygon(Points, FillColor, OutlineColor, DrawFill, DrawOutline, g);
+                        }
+                    } else {
+                        if (aLS.getShapeType() == ShapeTypes.Polygon) {
+                            PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(i).clone();
+                            aPGB.setDrawOutline(true);
+                            aPGB.setOutlineColor(Color.black);
+                            Draw.drawPolygonSymbol((PointF) aP.clone(), width, height, aPGB, g);
+                        } else {
+                            Draw.drawPolygonSymbol((PointF) aP.clone(), FillColor, OutlineColor, width,
+                                    height, DrawFill, DrawOutline, g);
+                        }
+                    }
+                }
+
+                sP.X = aP.X + width / 2;
+                sP.Y = aP.Y + height / 2;
+                if (i < bNum - 1) {
+                    FontMetrics metrics = g.getFontMetrics(this.labelFont);
+                    aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());
+                    g.setColor(Color.black);
+                    g.setFont(this.labelFont);
+                    g.drawString(caption, sP.X - aSF.width / 2, sP.Y + aSF.height);
+                }
+            }
         }
     }
 
