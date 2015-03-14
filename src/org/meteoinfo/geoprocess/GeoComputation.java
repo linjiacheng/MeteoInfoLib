@@ -334,8 +334,8 @@ public class GeoComputation {
         }
 
         return null;
-    }    
-    
+    }
+
     /**
      * Select polyline shape by a point
      *
@@ -364,7 +364,7 @@ public class GeoComputation {
                             || Math.abs(sp.X - aPoint.X) <= Math.abs(bPoint.X - aPoint.X)) {
                         dis = GeoComputation.dis_PointToLine(sp, aPoint, bPoint);
                         if (dis < aExtent.getWidth()) {
-                            return new Object[] {j + 1, dis};
+                            return new Object[]{j + 1, dis};
                         }
                     }
                 }
@@ -372,7 +372,7 @@ public class GeoComputation {
         }
 
         return null;
-    }    
+    }
 
     // </editor-fold>
     // <editor-fold desc="Earth">
@@ -392,7 +392,6 @@ public class GeoComputation {
         int Count = points.size();
         if (Count > 2) {
             double mtotalArea = 0;
-
 
             if (isLonLat) {
                 return sphericalPolygonArea(points, EARTH_RADIUS);
@@ -1914,7 +1913,7 @@ public class GeoComputation {
         return clipPList;
     }
 
-    private static boolean isLineSegmentCross(Line lineA, Line lineB) {
+    private static boolean isLineSegmentCross_old(Line lineA, Line lineB) {
         Extent boundA, boundB;
         List<PointD> PListA = new ArrayList<PointD>(), PListB = new ArrayList<PointD>();
         PListA.add(lineA.P1);
@@ -1937,6 +1936,67 @@ public class GeoComputation {
                 return true;
             }
         }
+    }
+
+    private static boolean isLineSegmentCross(Line lineA, Line lineB) {
+        Extent boundA, boundB;
+        List<PointD> PListA = new ArrayList<PointD>(), PListB = new ArrayList<PointD>();
+        PListA.add(lineA.P1);
+        PListA.add(lineA.P2);
+        PListB.add(lineB.P1);
+        PListB.add(lineB.P2);
+        boundA = MIMath.getPointsExtent(PListA);
+        boundB = MIMath.getPointsExtent(PListB);
+
+        if (!MIMath.isExtentCross(boundA, boundB)) {
+            return false;
+        } else {
+            double d1 = crossProduct(lineA.P1, lineA.P2, lineB.P1);
+            double d2 = crossProduct(lineA.P1, lineA.P2, lineB.P2);
+            double d3 = crossProduct(lineB.P1, lineB.P2, lineA.P1);
+            double d4 = crossProduct(lineB.P1, lineB.P2, lineA.P2);
+            if ((d1 * d2 < 0) && (d3 * d4 < 0)) {
+                return true;
+            } else if (d1 == 0 && pointProduct(lineB.P1, lineA.P1, lineA.P2) <= 0) {
+                return true;
+            } else if (d2 == 0 && pointProduct(lineB.P2, lineA.P1, lineA.P2) <= 0) {
+                return true;
+            } else if (d3 == 0 && pointProduct(lineA.P1, lineB.P1, lineB.P2) <= 0) {
+                return true;
+            } else if (d4 == 0 && pointProduct(lineA.P2, lineB.P1, lineB.P2) <= 0) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    /**
+     * Finds the cross product of the 2 vectors created by the 3 vertices.
+     * Vector 1 = v1 -> v2, Vector 2 = v2 -> v3 The vectors make a "right turn"
+     * if the sign of the cross product is negative. The vectors make a "left
+     * turn" if the sign of the cross product is positive. The vectors are
+     * colinear (on the same line) if the cross product is zero.
+     *
+     * @param p1 Point 1
+     * @param p2 Point 2
+     * @param p3 Piont 3
+     * @return Cross product of the two vectors
+     */
+    public static double crossProduct(PointD p1, PointD p2, PointD p3) {
+        return (p2.X - p1.X) * (p3.Y - p1.Y) - (p3.X - p1.X) * (p2.Y - p1.Y);
+    }
+
+    /**
+     * Finds the point product of the 2 vectors created by the 3 vertices.
+     *
+     * @param p1 Point 1
+     * @param p2 Point 2
+     * @param p3 Piont 3
+     * @return Cross product of the two vectors
+     */
+    public static double pointProduct(PointD p1, PointD p2, PointD p3) {
+        return (p2.X - p1.X) * (p3.X - p1.X) + (p2.Y - p1.Y) * (p3.Y - p1.Y);
     }
 
     private static boolean lineIntersectRect(Line line, Extent extent) {
