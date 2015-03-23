@@ -403,7 +403,7 @@ public class LegendScheme {
         ls.legendType = this.legendType;
         ls.minValue = this.minValue;
         ls.maxValue = this.maxValue;
-        ls.undef = this.undef;
+        ls.undef = this.undef;        
         for (ColorBreak cb : this.legendBreaks){
             switch(shapeType){
                 case Point:
@@ -414,6 +414,7 @@ public class LegendScheme {
                     pb.setCaption(cb.getCaption());
                     pb.setNoData(cb.isNoData());
                     pb.setDrawShape(cb.isDrawShape());
+                    pb.setTag(cb.getTag());
                     ls.legendBreaks.add(pb);
                     break;
                 case Polyline:
@@ -424,6 +425,7 @@ public class LegendScheme {
                     plb.setCaption(cb.getCaption());
                     plb.setNoData(cb.isNoData());
                     plb.setDrawShape(cb.isDrawShape());
+                    plb.setTag(cb.getTag());
                     ls.legendBreaks.add(plb);
                     break;
                 case Polygon:
@@ -435,6 +437,7 @@ public class LegendScheme {
                     pgb.setNoData(cb.isNoData());
                     pgb.setDrawShape(cb.isDrawShape());
                     pgb.setDrawOutline(false);
+                    pgb.setTag(cb.getTag());
                     ls.legendBreaks.add(pgb);
                     break;
                 case Image:
@@ -445,6 +448,7 @@ public class LegendScheme {
                     ncb.setCaption(cb.getCaption());
                     ncb.setNoData(cb.isNoData());
                     ncb.setDrawShape(cb.isDrawShape());
+                    ncb.setTag(cb.getTag());
                     ls.legendBreaks.add(ncb);
                     break;
             }
@@ -500,6 +504,7 @@ public class LegendScheme {
         Attr outlineColor;
         Attr drawOutline;
         Attr drawFill;
+        Attr tagAttr;
         switch (this.shapeType) {
             case Point:
             case PointZ:
@@ -523,6 +528,7 @@ public class LegendScheme {
                     Attr charIndex = doc.createAttribute("CharIndex");
                     Attr imagePath = doc.createAttribute("ImagePath");
                     Attr angle = doc.createAttribute("Angle");
+                    tagAttr = doc.createAttribute("Tag");
 
                     caption.setValue(aPB.getCaption());
                     startValue.setValue(String.valueOf(aPB.getStartValue()));
@@ -540,6 +546,7 @@ public class LegendScheme {
                     charIndex.setValue(String.valueOf(aPB.getCharIndex()));
                     imagePath.setValue(aPB.getImagePath());
                     angle.setValue(String.valueOf(aPB.getAngle()));
+                    tagAttr.setValue(aPB.getTag());
 
                     brk.setAttributeNode(caption);
                     brk.setAttributeNode(startValue);
@@ -557,6 +564,7 @@ public class LegendScheme {
                     brk.setAttributeNode(charIndex);
                     brk.setAttributeNode(imagePath);
                     brk.setAttributeNode(angle);
+                    brk.setAttributeNode(tagAttr);
 
                     breaks.appendChild(brk);
                 }
@@ -578,6 +586,7 @@ public class LegendScheme {
                     Attr symbolStyle = doc.createAttribute("SymbolStyle");
                     Attr symbolColor = doc.createAttribute("SymbolColor");
                     Attr symbolInterval = doc.createAttribute("SymbolInterval");
+                    tagAttr = doc.createAttribute("Tag");
 
                     caption.setValue(aPLB.getCaption());
                     startValue.setValue(String.valueOf(aPLB.getStartValue()));
@@ -591,6 +600,7 @@ public class LegendScheme {
                     symbolStyle.setValue(aPLB.getSymbolStyle().toString());
                     symbolColor.setValue(ColorUtil.toHexEncoding(aPLB.getSymbolColor()));
                     symbolInterval.setValue(String.valueOf(aPLB.getSymbolInterval()));
+                    tagAttr.setValue(aPLB.getTag());
 
                     brk.setAttributeNode(caption);
                     brk.setAttributeNode(startValue);
@@ -604,6 +614,7 @@ public class LegendScheme {
                     brk.setAttributeNode(symbolStyle);
                     brk.setAttributeNode(symbolColor);
                     brk.setAttributeNode(symbolInterval);
+                    brk.setAttributeNode(tagAttr);
 
                     breaks.appendChild(brk);
                 }
@@ -625,6 +636,7 @@ public class LegendScheme {
                     //Attr usingHatchStyle = doc.createAttribute("UsingHatchStyle");
                     //style = doc.createAttribute("Style");
                     Attr backColor = doc.createAttribute("BackColor");
+                    tagAttr = doc.createAttribute("Tag");
 
                     caption.setValue(aPGB.getCaption());
                     startValue.setValue(String.valueOf(aPGB.getStartValue()));
@@ -638,6 +650,7 @@ public class LegendScheme {
                     //usingHatchStyle.InnerText = aPGB.UsingHatchStyle.ToString();
                     //style.InnerText = aPGB.Style.ToString();
                     backColor.setValue(ColorUtil.toHexEncoding(aPGB.getBackColor()));
+                    tagAttr.setValue(aPGB.getTag());
 
                     brk.setAttributeNode(caption);
                     brk.setAttributeNode(startValue);
@@ -651,6 +664,7 @@ public class LegendScheme {
                     //brk.setAttributeNode(usingHatchStyle);
                     //brk.setAttributeNode(style);
                     brk.setAttributeNode(backColor);
+                    brk.setAttributeNode(tagAttr);
 
                     breaks.appendChild(brk);
                 }
@@ -663,18 +677,21 @@ public class LegendScheme {
                     endValue = doc.createAttribute("EndValue");
                     color = doc.createAttribute("Color");
                     isNoData = doc.createAttribute("IsNoData");
+                    tagAttr = doc.createAttribute("Tag");
 
                     caption.setValue(aCB.getCaption());
                     startValue.setValue(String.valueOf(aCB.getStartValue()));
                     endValue.setValue(String.valueOf(aCB.getEndValue()));
                     color.setValue(ColorUtil.toHexEncoding(aCB.getColor()));
                     isNoData.setValue(String.valueOf(aCB.isNoData()));
+                    tagAttr.setValue(aCB.getTag());
 
                     brk.setAttributeNode(caption);
                     brk.setAttributeNode(startValue);
                     brk.setAttributeNode(endValue);
                     brk.setAttributeNode(color);
                     brk.setAttributeNode(isNoData);
+                    brk.setAttributeNode(tagAttr);
 
                     breaks.appendChild(brk);
                 }
@@ -788,6 +805,7 @@ public class LegendScheme {
                             aPB.setCharIndex(Integer.parseInt(brk.getAttributes().getNamedItem("CharIndex").getNodeValue()));
                             aPB.setImagePath(brk.getAttributes().getNamedItem("ImagePath").getNodeValue());
                             aPB.setAngle(Float.parseFloat(brk.getAttributes().getNamedItem("Angle").getNodeValue()));
+                            aPB.setTag(brk.getAttributes().getNamedItem("Tag").getNodeValue());
                         } catch (Exception e) {
                         } finally {
                             legendBreaks.add(aPB);
@@ -812,6 +830,7 @@ public class LegendScheme {
                             aPLB.setSymbolStyle(PointStyle.valueOf(brk.getAttributes().getNamedItem("SymbolStyle").getNodeValue()));
                             aPLB.setSymbolColor(ColorUtil.parseToColor(brk.getAttributes().getNamedItem("SymbolColor").getNodeValue()));
                             aPLB.setSymbolInterval(Integer.parseInt(brk.getAttributes().getNamedItem("SymbolInterval").getNodeValue()));
+                            aPLB.setTag(brk.getAttributes().getNamedItem("Tag").getNodeValue());
                         } catch (Exception e) {
                         } finally {
                             legendBreaks.add(aPLB);
@@ -835,6 +854,7 @@ public class LegendScheme {
                             //aPGB.UsingHatchStyle = bool.Parse(brk.Attributes["UsingHatchStyle"].InnerText);
                             //aPGB.Style = (HatchStyle) Enum.Parse(typeof(HatchStyle), brk.Attributes["Style"].InnerText, true);
                             aPGB.setBackColor(ColorUtil.parseToColor(brk.getAttributes().getNamedItem("BackColor").getNodeValue()));
+                            aPGB.setTag(brk.getAttributes().getNamedItem("Tag").getNodeValue());
                         } catch (Exception e) {
                         } finally {
                             legendBreaks.add(aPGB);
@@ -851,6 +871,7 @@ public class LegendScheme {
                             aCB.setEndValue(brk.getAttributes().getNamedItem("EndValue").getNodeValue());
                             aCB.setColor(ColorUtil.parseToColor(brk.getAttributes().getNamedItem("Color").getNodeValue()));
                             aCB.setDrawShape(Boolean.parseBoolean(brk.getAttributes().getNamedItem("DrawShape").getNodeValue()));
+                            aCB.setTag(brk.getAttributes().getNamedItem("Tag").getNodeValue());
                         } catch (Exception e) {
                         } finally {
                             legendBreaks.add(aCB);
@@ -870,6 +891,7 @@ public class LegendScheme {
                             aPB.setEndValue(brk.getAttributes().getNamedItem("EndValue").getNodeValue());
                             aPB.setColor(ColorUtil.parseToColor(brk.getAttributes().getNamedItem("Color").getNodeValue()));
                             aPB.setDrawShape(Boolean.parseBoolean(brk.getAttributes().getNamedItem("DrawShape").getNodeValue()));
+                            aPB.setTag(brk.getAttributes().getNamedItem("Tag").getNodeValue());
                         } catch (Exception e) {
                         } finally {
                             legendBreaks.add(aPB);
@@ -888,6 +910,7 @@ public class LegendScheme {
                                 aPLB.setEndValue(brk.getAttributes().getNamedItem("EndValue").getNodeValue());
                                 aPLB.setColor(ColorUtil.parseToColor(brk.getAttributes().getNamedItem("Color").getNodeValue()));
                                 aPLB.setDrawPolyline(Boolean.parseBoolean(brk.getAttributes().getNamedItem("DrawShape").getNodeValue()));
+                                aPLB.setTag(brk.getAttributes().getNamedItem("Tag").getNodeValue());
                             }
                         } catch (Exception e) {
                         } finally {
@@ -907,6 +930,7 @@ public class LegendScheme {
                                 aPGB.setColor(ColorUtil.parseToColor(brk.getAttributes().getNamedItem("Color").getNodeValue()));
                                 aPGB.setDrawShape(Boolean.parseBoolean(brk.getAttributes().getNamedItem("DrawShape").getNodeValue()));
                                 aPGB.setDrawFill(true);
+                                aPGB.setTag(brk.getAttributes().getNamedItem("Tag").getNodeValue());
                             }
                         } catch (Exception e) {
                         } finally {
@@ -924,6 +948,7 @@ public class LegendScheme {
                             aCB.setStartValue(brk.getAttributes().getNamedItem("StartValue").getNodeValue());
                             aCB.setEndValue(brk.getAttributes().getNamedItem("EndValue").getNodeValue());
                             aCB.setColor(ColorUtil.parseToColor(brk.getAttributes().getNamedItem("Color").getNodeValue()));
+                            aCB.setTag(brk.getAttributes().getNamedItem("Tag").getNodeValue());
                         } catch (Exception e) {
                         } finally {
                             legendBreaks.add(aCB);
@@ -939,6 +964,9 @@ public class LegendScheme {
      * Import legend scheme from XML file
      *
      * @param aFile File path
+     * @throws javax.xml.parsers.ParserConfigurationException
+     * @throws org.xml.sax.SAXException
+     * @throws java.io.IOException
      */
     public void importFromXMLFile(String aFile) throws ParserConfigurationException, SAXException, IOException {
         importFromXMLFile(aFile, true);

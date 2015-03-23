@@ -1872,6 +1872,8 @@ public class MapLayout extends JPanel {
                     int x = 0;
                     int y = 0;
                     int d = 5;
+                    if (e.isControlDown())
+                        d = 1;
                     switch (e.getKeyCode()) {
                         case KeyEvent.VK_LEFT:
                             x = -d;
@@ -1898,6 +1900,7 @@ public class MapLayout extends JPanel {
                             aElement.moveUpdate();
                         }
                     }
+                    this.paintGraphics();
                     break;
             }
         }

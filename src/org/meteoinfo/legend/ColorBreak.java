@@ -36,6 +36,7 @@ public class ColorBreak {
     private String _caption;
     private boolean _isNoData;
     private boolean _drawShape;
+    private String tag;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -179,6 +180,22 @@ public class ColorBreak {
     public void setDrawShape(boolean isTrue) {
         _drawShape = isTrue;
     }
+    
+    /**
+     * Get tag
+     * @return Tag 
+     */
+    public String getTag(){
+        return this.tag;
+    }
+    
+    /**
+     * Set tag
+     * @param value Tag
+     */
+    public void setTag(String value){
+        this.tag = value;
+    }
 
     // </editor-fold>
     // <editor-fold desc="Methods">
@@ -208,6 +225,7 @@ public class ColorBreak {
         aCB.setEndValue(_endValue);
         aCB.setNoData(_isNoData);
         aCB.setStartValue(_startValue);
+        aCB.setTag(tag);
 
         return aCB;
     }
@@ -225,18 +243,21 @@ public class ColorBreak {
         Attr endValue = doc.createAttribute("EndValue");
         Attr color = doc.createAttribute("Color");
         Attr isNoData = doc.createAttribute("IsNoData");
+        Attr tagAttr = doc.createAttribute("Tag");
 
         caption.setValue(_caption);
         startValue.setValue(String.valueOf(_startValue));
         endValue.setValue(String.valueOf(_endValue));
         color.setValue(ColorUtil.toHexEncoding(_color));
         isNoData.setValue(String.valueOf(_isNoData));
+        tagAttr.setValue(tag);
 
         brk.setAttributeNode(caption);
         brk.setAttributeNode(startValue);
         brk.setAttributeNode(endValue);
         brk.setAttributeNode(color);
         brk.setAttributeNode(isNoData);
+        brk.setAttributeNode(tagAttr);
 
         parent.appendChild(brk);
     }

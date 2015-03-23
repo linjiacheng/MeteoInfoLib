@@ -945,11 +945,12 @@ public class FrmLayerProperty extends javax.swing.JDialog {
         if (item.isSelected()) {
             PolygonBreak aPB = new PolygonBreak();
             aPB.setCaption(selFieldStr);
+            aPB.setTag(selFieldStr);
             aPB.setColor(LegendManage.createRandomColors(1)[0]);
             legendView_Chart.getLegendScheme().getLegendBreaks().add(aPB);
         } else {
             for (int i = 0; i < legendView_Chart.getLegendScheme().getBreakNum(); i++) {
-                if (legendView_Chart.getLegendScheme().getLegendBreaks().get(i).getCaption().equals(selFieldStr)) {
+                if (legendView_Chart.getLegendScheme().getLegendBreaks().get(i).getTag().equals(selFieldStr)) {
                     legendView_Chart.getLegendScheme().getLegendBreaks().remove(i);
                     break;
                 }

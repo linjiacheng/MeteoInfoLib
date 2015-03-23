@@ -698,6 +698,22 @@ public class GridData {
     }
 
     /**
+     * Replace a certain grid data value by a new value
+     *
+     * @param aValue Old value
+     * @param bValue New value
+     */
+    public void replaceValue(double aValue, double bValue) {
+        for (int i = 0; i < getYNum(); i++) {
+            for (int j = 0; j < getXNum(); j++) {
+                if (data[i][j] == aValue) {
+                    data[i][j] = bValue;
+                }
+            }
+        }
+    }
+
+    /**
      * Replace grid data value by a threshold - the values bigger/smaller than
      * the threshold value will be replaced by the new value
      *
@@ -2603,7 +2619,7 @@ public class GridData {
             return hasUndef;
         }
     }
-    
+
     /**
      * GridData.Integer class
      */
