@@ -391,6 +391,22 @@ public final class DataTable {
     }
     
     /**
+     * Remove a row
+     * @param row The row will be removed
+     */
+    public void removeRow(DataRow row){
+        this.rows.remove(row);
+    }
+    
+    /**
+     * Remove rows
+     * @param rows The rows will be removed
+     */
+    public void removeRows(List<DataRow> rows){
+        this.rows.removeAll(rows);
+    }
+    
+    /**
      * Add column data
      * @param colData The column data
      * @throws Exception 
