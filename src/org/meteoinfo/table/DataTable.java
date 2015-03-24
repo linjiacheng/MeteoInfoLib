@@ -407,6 +407,17 @@ public final class DataTable {
     }
     
     /**
+     * Set data rows
+     * @param rows The data rows
+     */
+    public void setRows(List<DataRow> rows){
+        this.rows.clear();
+        for (DataRow row : rows){
+            this.rows.add(row);
+        }
+    }
+    
+    /**
      * Add column data
      * @param colData The column data
      * @throws Exception 
