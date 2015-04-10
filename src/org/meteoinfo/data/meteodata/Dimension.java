@@ -38,7 +38,7 @@ public class Dimension {
      */
     public Dimension() {
         _dimType = DimensionType.Other;
-        _dimValue = new ArrayList<Double>();
+        _dimValue = new ArrayList<>();
     }
 
     /**
@@ -48,7 +48,21 @@ public class Dimension {
      */
     public Dimension(DimensionType dimType) {
         _dimType = dimType;
-        _dimValue = new ArrayList<Double>();
+        _dimValue = new ArrayList<>();
+    }
+    
+    /**
+     * Constructor
+     * @param dimType Dimension type
+     * @param min Minimum value
+     * @param delta Delta value
+     * @param num value number
+     */
+    public Dimension(DimensionType dimType, double min, double delta, int num) {
+        _dimType = dimType;
+        _dimValue = new ArrayList<>();
+        for (int i = 0; i < num; i++)
+            _dimValue.add(min + delta * i);
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">

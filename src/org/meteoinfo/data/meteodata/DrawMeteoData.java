@@ -170,6 +170,84 @@ public class DrawMeteoData {
     }
 
     /**
+     * Create contour layer
+     *
+     * @param data Data
+     * @param xArray X array
+     * @param aLS Legend scheme
+     * @param yArray Y array
+     * @param lName Layer name
+     * @param missingValue Missing value
+     * @param fieldName Field name
+     * @param isSmooth If smooth the contour lines
+     * @return Vector layer
+     */
+    public static VectorLayer createContourLayer(double[][] data, double[] xArray, double[] yArray, double missingValue,
+            LegendScheme aLS, String lName, String fieldName, boolean isSmooth) {
+        LegendScheme ls = aLS.convertTo(ShapeTypes.Polyline);
+        Object[] ccs = LegendManage.getContoursAndColors(ls);
+        double[] cValues = (double[]) ccs[0];
+
+        int[][] S1 = new int[data.length][data[0].length];
+        List<wContour.Global.Border> Borders = ContourDraw.tracingBorders(data, xArray, yArray, S1, missingValue);
+        List<wContour.Global.PolyLine> ContourLines = ContourDraw.tracingContourLines(data,
+                cValues, xArray, yArray, missingValue, Borders, S1);
+
+        if (ContourLines.isEmpty()) {
+            return null;
+        }
+
+        if (isSmooth) {
+            ContourLines = wContour.Contour.smoothLines(ContourLines);
+        }
+
+        double aValue;
+        VectorLayer aLayer = new VectorLayer(ShapeTypes.Polyline);
+        Field aDC = new Field(fieldName, DataTypes.Double);
+        aLayer.editAddField(aDC);
+
+        for (wContour.Global.PolyLine aLine : ContourLines) {
+            aValue = aLine.Value;
+            PolylineShape aPolyline = new PolylineShape();
+            PointD aPoint;
+            List<PointD> pList = new ArrayList<>();
+            for (wContour.Global.PointD p : aLine.PointList) {
+                aPoint = new PointD();
+                aPoint.X = p.X;
+                aPoint.Y = p.Y;
+                pList.add(aPoint);
+            }
+            aPolyline.setPoints(pList);
+            aPolyline.value = aValue;
+            aPolyline.setExtent(MIMath.getPointsExtent(pList));
+            int shapeNum = aLayer.getShapeNum();
+            try {
+                if (aLayer.editInsertShape(aPolyline, shapeNum)) {
+                    aLayer.editCellValue(fieldName, shapeNum, aValue);
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(DrawMeteoData.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        aLayer.setLayerName(lName);
+        ls.setFieldName(fieldName);
+        aLayer.setLegendScheme(ls);
+        aLayer.setLayerDrawType(LayerDrawType.Contour);
+
+        aLayer.getLabelSet().setDrawLabels(true);
+        aLayer.getLabelSet().setDrawShadow(true);
+        aLayer.getLabelSet().setShadowColor(Color.white);
+        aLayer.getLabelSet().setYOffset(3);
+        aLayer.getLabelSet().setFieldName(fieldName);
+        aLayer.getLabelSet().setColorByLegend(true);
+        aLayer.getLabelSet().setDynamicContourLabel(true);
+        //aLayer.addLabels();
+
+        return aLayer;
+    }
+    
+    /**
      * Create shaded layer
      *
      * @param gridData Grid data

@@ -13,7 +13,6 @@
  */
 package org.meteoinfo.data.meteodata;
 
-import org.meteoinfo.global.DataConvert;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
