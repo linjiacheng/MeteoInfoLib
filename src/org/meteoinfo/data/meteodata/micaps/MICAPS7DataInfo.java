@@ -46,6 +46,7 @@ import org.meteoinfo.legend.LegendType;
 import org.meteoinfo.shape.PointShape;
 import org.meteoinfo.shape.PolylineShape;
 import org.meteoinfo.shape.ShapeTypes;
+import ucar.ma2.Array;
 
 /**
  *
@@ -210,7 +211,6 @@ public class MICAPS7DataInfo extends DataInfo implements TrajDataInfo {
     public String generateInfoText() {
         String dataInfo = "";
         for (int t = 0; t < FileNames.size(); t++) {
-            int i;
             dataInfo += "File Name: " + FileNames.get(t);
             dataInfo += System.getProperty("line.separator") + "Typhoon number = " + String.valueOf(TrajeoryNums.get(t));
             dataInfo += System.getProperty("line.separator") + System.getProperty("line.separator") + "Typhoons:";
@@ -229,6 +229,20 @@ public class MICAPS7DataInfo extends DataInfo implements TrajDataInfo {
         }
 
         return dataInfo;
+    }
+    
+    /**
+     * Read array data of the variable
+     *
+     * @param varName Variable name
+     * @param origin The origin array
+     * @param size The size array
+     * @param stride The stride array
+     * @return Array data
+     */
+    @Override
+    public Array read(String varName, int[] origin, int[] size, int[] stride) {
+        return null;
     }
 
     @Override

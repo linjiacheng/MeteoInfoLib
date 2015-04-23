@@ -162,7 +162,7 @@ public class ColorMap {
             return LegendManage.getRainBowColors_HSV(cNum);
         }
         
-        List<Color> colorList = new ArrayList<Color>();
+        List<Color> colorList = new ArrayList<>();
         
         colorList.add(new Color(160, 0, 200));
         colorList.add(new Color(110, 0, 220));
@@ -233,19 +233,19 @@ public class ColorMap {
                 break;
         }
         
-        Color[] colors = new Color[cNum];
+        Color[] cs = new Color[cNum];
         for (int i = 0; i < cNum; i++) {
-            colors[i] = colorList.get(i);
+            cs[i] = colorList.get(i);
         }
         
-        return colors;
+        return cs;
     }
     
     private void readFromFile(BufferedReader sr) throws IOException{
         String line = sr.readLine();
         String[] strs;
         Color color;
-        List<Color> clist = new ArrayList<Color>();
+        List<Color> clist = new ArrayList<>();
         int r, g, b;
         int n = 0;
         boolean isdouble = false;

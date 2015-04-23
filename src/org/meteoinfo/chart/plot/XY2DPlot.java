@@ -77,6 +77,7 @@ public class XY2DPlot extends XYPlot {
     
     @Override
     void drawGraph(Graphics2D g, Rectangle2D area) {
+        this.mapView.setViewExtent(this.getDrawExtent());
         this.mapView.paintGraphics(g, area);
     }
     

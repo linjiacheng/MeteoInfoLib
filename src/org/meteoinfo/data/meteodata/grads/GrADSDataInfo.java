@@ -52,6 +52,7 @@ import org.meteoinfo.data.meteodata.StationInfoData;
 import org.meteoinfo.data.meteodata.StationModelData;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.util.DateUtil;
+import ucar.ma2.Array;
 
 /**
  *
@@ -1118,6 +1119,20 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
         }
 
         return new Object[]{filePath, tIdx};
+    }
+    
+    /**
+     * Read array data of the variable
+     *
+     * @param varName Variable name
+     * @param origin The origin array
+     * @param size The size array
+     * @param stride The stride array
+     * @return Array data
+     */
+    @Override
+    public Array read(String varName, int[] origin, int[] size, int[] stride) {
+        return null;
     }
 
     /**

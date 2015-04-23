@@ -14,17 +14,12 @@ import java.util.logging.Logger;
 import org.meteoinfo.data.DataMath;
 import org.meteoinfo.data.GridData;
 import org.meteoinfo.data.meteodata.DataInfo;
-import org.meteoinfo.data.meteodata.Dimension;
-import org.meteoinfo.data.meteodata.DimensionType;
 import org.meteoinfo.data.meteodata.IGridDataInfo;
 import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.data.meteodata.Variable;
-import org.meteoinfo.data.meteodata.grib.GRIBData;
 import org.meteoinfo.global.Bytes2Number;
-import org.meteoinfo.global.MIMath;
-import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
-import org.meteoinfo.projection.Reproject;
+import ucar.ma2.Array;
 import ucar.nc2.grib.grib2.Grib2SectionGridDefinition;
 import ucar.nc2.grib.grib2.Grib2SectionIdentification;
 import ucar.nc2.grib.grib2.Grib2SectionIndicator;
@@ -435,6 +430,20 @@ public class GRIB2DataInfo extends DataInfo implements IGridDataInfo {
 //
 //        return new Object[]{X, Y};
 //    }
+    
+    /**
+     * Read array data of the variable
+     *
+     * @param varName Variable name
+     * @param origin The origin array
+     * @param size The size array
+     * @param stride The stride array
+     * @return Array data
+     */
+    @Override
+    public Array read(String varName, int[] origin, int[] size, int[] stride) {
+        return null;
+    }
 
     @Override
     public String generateInfoText() {

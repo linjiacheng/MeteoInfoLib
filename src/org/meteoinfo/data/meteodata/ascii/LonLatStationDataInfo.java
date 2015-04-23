@@ -22,10 +22,8 @@ import org.meteoinfo.data.meteodata.Variable;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -36,6 +34,7 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.global.util.GlobalUtil;
+import ucar.ma2.Array;
 
 /**
  *
@@ -115,6 +114,20 @@ public class LonLatStationDataInfo extends DataInfo implements IStationDataInfo 
         }
 
         return dataInfo;
+    }
+    
+    /**
+     * Read array data of the variable
+     *
+     * @param varName Variable name
+     * @param origin The origin array
+     * @param size The size array
+     * @param stride The stride array
+     * @return Array data
+     */
+    @Override
+    public Array read(String varName, int[] origin, int[] size, int[] stride) {
+        return null;
     }
 
     @Override

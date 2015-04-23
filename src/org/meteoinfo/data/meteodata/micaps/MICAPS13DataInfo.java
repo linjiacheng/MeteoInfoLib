@@ -35,6 +35,7 @@ import org.meteoinfo.global.util.DateUtil;
 import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.projection.Reproject;
+import ucar.ma2.Array;
 
 /**
  *
@@ -283,6 +284,20 @@ public class MICAPS13DataInfo extends DataInfo implements IGridDataInfo {
         }
 
         return imageType;
+    }
+    
+    /**
+     * Read array data of the variable
+     *
+     * @param varName Variable name
+     * @param origin The origin array
+     * @param size The size array
+     * @param stride The stride array
+     * @return Array data
+     */
+    @Override
+    public Array read(String varName, int[] origin, int[] size, int[] stride) {
+        return null;
     }
 
     @Override

@@ -88,7 +88,7 @@ public class LegendScheme {
      */
     public LegendScheme(ShapeTypes aShapeType) {
         shapeType = aShapeType;        
-        legendBreaks = new ArrayList<ColorBreak>();
+        legendBreaks = new ArrayList<>();
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">

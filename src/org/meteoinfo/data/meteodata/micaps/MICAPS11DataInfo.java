@@ -35,6 +35,7 @@ import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.data.meteodata.Variable;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.util.DateUtil;
+import ucar.ma2.Array;
 
 /**
  *
@@ -191,6 +192,20 @@ public class MICAPS11DataInfo extends DataInfo implements IGridDataInfo {
                 + "  Ysize = " + String.valueOf(this.getYDimension().getDimLength());
 
         return dataInfo;
+    }
+    
+    /**
+     * Read array data of the variable
+     *
+     * @param varName Variable name
+     * @param origin The origin array
+     * @param size The size array
+     * @param stride The stride array
+     * @return Array data
+     */
+    @Override
+    public Array read(String varName, int[] origin, int[] size, int[] stride) {
+        return null;
     }
 
     @Override

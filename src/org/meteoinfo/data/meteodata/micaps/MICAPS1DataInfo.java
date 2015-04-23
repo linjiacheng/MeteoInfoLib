@@ -40,6 +40,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.global.util.DateUtil;
+import ucar.ma2.Array;
 
 /**
  *
@@ -50,12 +51,12 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
     // <editor-fold desc="Variables">
     private String _description;
     private boolean _isAutoStation = false;
-    private List<String> _varList = new ArrayList<String>();
+    private List<String> _varList = new ArrayList<>();
     private int _stNum;
     private boolean _hasAllCols = false;
     private int _varNum;
-    private List<List<String>> _dataList = new ArrayList<List<String>>();
-    private List<String> _fieldList = new ArrayList<String>();
+    private List<List<String>> _dataList = new ArrayList<>();
+    private List<String> _fieldList = new ArrayList<>();
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -115,7 +116,7 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
             values[0] = DateUtil.toOADate(time);
             tdim.setValues(values);
             this.setTimeDimension(tdim);
-            List<Variable> variables = new ArrayList<Variable>();
+            List<Variable> variables = new ArrayList<>();
             for (String vName : _varList) {
                 Variable var = new Variable();
                 var.setName(vName);
@@ -134,7 +135,7 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
                 }
                 aLine = aLine.trim();
                 dataArray = aLine.split("\\s+");
-                aList = new ArrayList<String>();
+                aList = new ArrayList<>();
                 aList.addAll(Arrays.asList(dataArray));
                 for (n = 0; n <= 10; n++) {
                     if (aList.size() < 24) {
@@ -201,6 +202,20 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
         dataInfo += System.getProperty("line.separator") + "Station Number: " + _stNum;
 
         return dataInfo;
+    }
+    
+    /**
+     * Read array data of the variable
+     *
+     * @param varName Variable name
+     * @param origin The origin array
+     * @param size The size array
+     * @param stride The stride array
+     * @return Array data
+     */
+    @Override
+    public Array read(String varName, int[] origin, int[] size, int[] stride) {
+        return null;
     }
 
     @Override

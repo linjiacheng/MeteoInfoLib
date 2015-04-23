@@ -27,6 +27,7 @@ import org.meteoinfo.global.util.DateUtil;
 import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.projection.Reproject;
+import ucar.ma2.Array;
 
 /**
  *
@@ -101,7 +102,7 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
             SubHeader sh;
             int xn = 0, yn = 0, zn = 0;
             //byte[] bytes;
-            List<Variable> variables = new ArrayList<Variable>();
+            List<Variable> variables = new ArrayList<>();
             int tn = 0;
             Dimension xdim = new Dimension(DimensionType.X);
             Dimension ydim = new Dimension(DimensionType.Y);
@@ -152,7 +153,7 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
                 this.setYDimension(ydim);
             }
 
-            List<Date> times = new ArrayList<Date>();
+            List<Date> times = new ArrayList<>();
             Date ct;
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
             //int shIdx = 0;
@@ -285,7 +286,7 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
                 }
             }
 
-            List<Double> values = new ArrayList<Double>();
+            List<Double> values = new ArrayList<>();
             for (Date t : times) {
                 values.add(DateUtil.toOADate(t));
             }
@@ -303,9 +304,7 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
             br.close();
         } catch (FileNotFoundException ex) {
             Logger.getLogger(MM5DataInfo.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(MM5DataInfo.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ParseException ex) {
+        } catch (IOException | ParseException ex) {
             Logger.getLogger(MM5DataInfo.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -532,6 +531,20 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
 //        }
 
         return dataInfo;
+    }
+    
+    /**
+     * Read array data of the variable
+     *
+     * @param varName Variable name
+     * @param origin The origin array
+     * @param size The size array
+     * @param stride The stride array
+     * @return Array data
+     */
+    @Override
+    public Array read(String varName, int[] origin, int[] size, int[] stride) {
+        return null;
     }
 
     @Override

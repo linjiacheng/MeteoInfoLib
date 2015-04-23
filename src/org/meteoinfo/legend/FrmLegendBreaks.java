@@ -24,7 +24,7 @@ import org.meteoinfo.ui.ColorListCellRender;
  */
 public class FrmLegendBreaks extends javax.swing.JDialog {
 
-    private java.awt.Dialog _parent;
+    private final java.awt.Dialog _parent;
     private LegendScheme _legendScheme = null;
     private double _minContourValue, _maxContourValue, _interval;
     private boolean _isUniqueValue = false;

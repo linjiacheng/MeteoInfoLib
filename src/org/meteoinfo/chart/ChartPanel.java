@@ -412,8 +412,14 @@ public class ChartPanel extends JPanel {
     }
 
     private void onUndoZoomClick(ActionEvent e) {
-        XY1DPlot plot = (XY1DPlot) this.chart.getPlots().get(0);
-        plot.setAutoExtent();
+        XYPlot xyplot = (XYPlot) this.chart.getPlots().get(0);
+        if (xyplot instanceof XY1DPlot){
+            XY1DPlot plot = (XY1DPlot) xyplot;
+            plot.setAutoExtent();            
+        } else if (xyplot instanceof XY2DPlot){
+            XY2DPlot plot = (XY2DPlot) xyplot;
+            plot.setDrawExtent(plot.getMapView().getExtent());
+        }
         this.paintGraphics();
     }
 

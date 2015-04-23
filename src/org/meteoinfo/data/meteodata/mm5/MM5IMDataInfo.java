@@ -26,6 +26,7 @@ import org.meteoinfo.data.meteodata.Variable;
 import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.util.DateUtil;
 import org.meteoinfo.global.util.GlobalUtil;
+import ucar.ma2.Array;
 
 /**
  * MM5 regrid intermediate data info
@@ -209,6 +210,20 @@ public class MM5IMDataInfo extends DataInfo implements IGridDataInfo {
         }
 
         return dataInfo;
+    }
+    
+    /**
+     * Read array data of the variable
+     *
+     * @param varName Variable name
+     * @param origin The origin array
+     * @param size The size array
+     * @param stride The stride array
+     * @return Array data
+     */
+    @Override
+    public Array read(String varName, int[] origin, int[] size, int[] stride) {
+        return null;
     }
 
     @Override

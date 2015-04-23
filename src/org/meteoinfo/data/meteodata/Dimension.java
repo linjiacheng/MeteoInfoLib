@@ -30,13 +30,13 @@ public class Dimension {
     private List<Double> _dimValue;
     private int _dimId;
     private int _dimLength = 1;
-    // </editor-fold>
-    // <editor-fold desc="Constructor">
+    private boolean unlimited;
 
     /**
      * Constructor
      */
     public Dimension() {
+        this.unlimited = false;
         _dimType = DimensionType.Other;
         _dimValue = new ArrayList<>();
     }
@@ -47,6 +47,7 @@ public class Dimension {
      * @param dimType Dimension type
      */
     public Dimension(DimensionType dimType) {
+        this.unlimited = false;
         _dimType = dimType;
         _dimValue = new ArrayList<>();
     }
@@ -59,6 +60,7 @@ public class Dimension {
      * @param num value number
      */
     public Dimension(DimensionType dimType, double min, double delta, int num) {
+        this.unlimited = false;
         _dimType = dimType;
         _dimValue = new ArrayList<>();
         for (int i = 0; i < num; i++)
@@ -161,6 +163,24 @@ public class Dimension {
     public void setDimId(int value) {
         _dimId = value;
     }
+    
+    /**
+     * Get if is unlimited
+     * @return Boolean
+     */
+    public boolean isUnlimited() {
+        return this.unlimited;
+    }
+    
+    /**
+     * Set if is unlimited
+     * @param value Boolean
+     */
+    public void setUnlimited(boolean value){
+        this.unlimited = value;
+        if (this._ncDimension != null)
+            this._ncDimension.setUnlimited(value);
+    }
     // </editor-fold>
     // <editor-fold desc="Methods">
 
@@ -177,11 +197,7 @@ public class Dimension {
         if (_dimType != aDim.getDimType()) {
             return false;
         }
-        if (_dimLength != aDim.getDimLength()) {
-            return false;
-        }
-
-        return true;
+        return _dimLength == aDim.getDimLength();
     }
     
     /**
@@ -213,7 +229,7 @@ public class Dimension {
      * @param values Values
      */
     public void setValues(double[] values){
-        _dimValue = new ArrayList<Double>();
+        _dimValue = new ArrayList<>();
         for (double v : values){
             _dimValue.add(v);
         }
@@ -226,7 +242,7 @@ public class Dimension {
      * @param values Values
      */
     public void setValues(float[] values){
-        _dimValue = new ArrayList<Double>();
+        _dimValue = new ArrayList<>();
         for (double v : values){
             _dimValue.add(v);
         }
@@ -265,6 +281,26 @@ public class Dimension {
      */
     public double getDeltaValue(){
         return _dimValue.get(1) - _dimValue.get(0);
+    }
+    
+    /**
+     * Extract dimension
+     * @param first First
+     * @param last Last
+     * @param stride Stride
+     * @return Extracted dimension
+     */
+    public Dimension extract(int first, int last, int stride){
+        Dimension dim = new Dimension(this._dimType);
+        dim.setDimId(this._dimId);
+        dim.setDimName(this._dimName);
+        List<Double> values = new ArrayList<>();
+        for (int i = first; i <= last; i+=stride){
+            values.add(this._dimValue.get(i));
+        }
+        dim.setValues(values);
+        
+        return dim;
     }
     // </editor-fold>
 }

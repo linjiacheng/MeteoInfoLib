@@ -46,6 +46,7 @@ public class ChartLegend {
     //private final XY1DPlot plot;
     private LegendScheme legendScheme;
     private LegendPosition position;
+    private boolean colorBar;
     private float x;
     private float y;
     private PlotOrientation orientation;
@@ -76,6 +77,7 @@ public class ChartLegend {
     public ChartLegend(LegendScheme ls) {
         //this.plot = plot;
         this.legendScheme = ls;
+        this.colorBar = false;
         this.position = LegendPosition.LOWER_CENTER_OUTSIDE;
         this.orientation = PlotOrientation.HORIZONTAL;
         this.background = Color.white;
@@ -116,6 +118,24 @@ public class ChartLegend {
     }
 
     /**
+     * Get if is color bar
+     *
+     * @return Boolean
+     */
+    public boolean isColorbar() {
+        return this.colorBar;
+    }
+
+    /**
+     * Set if is color bar
+     *
+     * @param value Boolean
+     */
+    public void setColorbar(boolean value) {
+        this.colorBar = value;
+    }
+
+    /**
      * Get legend position
      *
      * @return Legend position
@@ -132,70 +152,79 @@ public class ChartLegend {
     public void setPosition(LegendPosition value) {
         this.position = value;
     }
-    
+
     /**
      * Get X
+     *
      * @return X value
      */
-    public float getX(){
+    public float getX() {
         return this.x;
     }
-    
+
     /**
      * Set X
+     *
      * @param value X value
      */
-    public void setX(float value){
+    public void setX(float value) {
         x = value;
     }
-    
+
     /**
      * Get Y
+     *
      * @return Y value
      */
-    public float getY(){
+    public float getY() {
         return this.y;
     }
-    
+
     /**
      * Set Y
+     *
      * @param value Y value
      */
-    public void setY(float value){
+    public void setY(float value) {
         y = value;
     }
-    
+
     /**
      * Get width
+     *
      * @return Width
      */
-    public int getWidth(){
+    public int getWidth() {
         return this.width;
     }
-    
+
     /**
      * Set width
+     *
      * @param value Width
      */
-    public void setWidth(int value){
+    public void setWidth(int value) {
         this.width = value;
     }
-    
+
     /**
      * Get height
+     *
      * @return Height
      */
-    public int getHeight(){
+    public int getHeight() {
         return this.height;
     }
 
     /**
      * Set height
-     * @param value Height 
+     *
+     * @param value Height
      */
-    public void setHeight(int value){
+    public void setHeight(int value) {
         this.height = value;
     }
+
     /**
      * Get plot orientation
      *
@@ -378,13 +407,24 @@ public class ChartLegend {
         }
 
         //Draw legend
-        switch (this.orientation) {
-            case HORIZONTAL:
-                drawHorizontalLegend(g, legendScheme);
-                break;
-            case VERTICAL:
-                this.drawVerticalLegend(g, legendScheme);
-                break;
+        if (this.colorBar) {
+            switch (this.orientation) {
+                case HORIZONTAL:
+                    this.drawHorizontalBarLegend(g, legendScheme);
+                    break;
+                case VERTICAL:
+                    this.drawVerticalBarLegend(g, legendScheme);
+                    break;
+            }
+        } else {
+            switch (this.orientation) {
+                case HORIZONTAL:
+                    drawHorizontalLegend(g, legendScheme);
+                    break;
+                case VERTICAL:
+                    this.drawVerticalLegend(g, legendScheme);
+                    break;
+            }
         }
 
         //Draw neatline
@@ -572,7 +612,7 @@ public class ChartLegend {
             y += breakHeight + this._breakSpace * 2;
         }
     }
-    
+
     private void drawVerticalBarLegend(Graphics2D g, LegendScheme aLS) {
         PointF aP = new PointF(0, 0);
         PointF sP = new PointF(0, 0);
@@ -587,7 +627,7 @@ public class ChartLegend {
         }
 
         float width = _vBarWidth;
-        float height = (this.height - 5) / bNum;        
+        float height = (this.height - 5) / bNum;
 
         for (int i = 0; i < bNum; i++) {
             switch (aLS.getShapeType()) {
@@ -757,7 +797,7 @@ public class ChartLegend {
                     FillColor = aPB.getColor();
                     if (aLS.getLegendType() == LegendType.UniqueValue) {
                         caption = aPB.getCaption();
-                    } else {                        
+                    } else {
                         caption = DataConvert.removeTailingZeros(aPB.getEndValue().toString());
                     }
                     break;

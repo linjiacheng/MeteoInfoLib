@@ -45,6 +45,7 @@ import org.meteoinfo.global.util.DateUtil;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.data.mathparser.MathParser;
 import org.meteoinfo.data.mathparser.ParseException;
+import ucar.ma2.Array;
 
 /**
  *
@@ -645,6 +646,60 @@ public class MeteoDataInfo {
     public String getFileName() {
         return _dataInfo.getFileName();
     }
+    
+    /**
+     * Read array data of the variable
+     *
+     * @param varName Variable name
+     * @param origin The origin array
+     * @param size The size array
+     * @param stride The stride array
+     * @return Array data
+     */
+    public Array read(String varName, int[] origin, int[] size, int[] stride) {
+        return this._dataInfo.read(varName, origin, size, stride);
+    }
+    
+    /**
+     * Read array data of the variable
+     *
+     * @param varName Variable name
+     * @param origin The origin array
+     * @param size The size array
+     * @param stride The stride array
+     * @return Array data
+     */
+    public Array read(String varName, List<Integer> origin, List<Integer> size, List<Integer> stride) {
+        int n = origin.size();
+        int[] origin_a = new int[n];
+        int[] size_a = new int[n];
+        int[] stride_a = new int[n];
+        for (int i = 0; i < n; i++){
+            origin_a[i] = origin.get(i);
+            size_a[i] = size.get(i);
+        }
+        if (stride == null){
+            for (int i = 0; i < n; i++)
+                stride_a[i] = 1;            
+        } else {
+            for (int i = 0; i < n; i++)
+                stride_a[i] = stride.get(i);    
+        }
+        
+        return this._dataInfo.read(varName, origin_a, size_a, stride_a);
+    }
+    
+    /**
+     * Read array data of the variable
+     *
+     * @param varName Variable name
+     * @param origin The origin array
+     * @param size The size array
+     * @return Array data
+     */
+    public Array read(String varName, List<Integer> origin, List<Integer> size) {
+        return this.read(varName, origin, size, null);
+    }
 
     /**
      * Get grid data
@@ -660,10 +715,7 @@ public class MeteoDataInfo {
                 GridData gridData = (GridData) mathParser.evaluate(varName);
                 gridData.projInfo = this.getProjectionInfo();
                 return gridData;
-            } catch (ParseException ex) {
-                Logger.getLogger(MeteoDataInfo.class.getName()).log(Level.SEVERE, null, ex);
-                return null;
-            } catch (IOException ex) {
+            } catch (ParseException | IOException ex) {
                 Logger.getLogger(MeteoDataInfo.class.getName()).log(Level.SEVERE, null, ex);
                 return null;
             }

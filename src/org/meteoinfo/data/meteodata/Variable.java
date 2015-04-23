@@ -223,6 +223,15 @@ public class Variable {
     public List<Dimension> getDimensions() {
         return _dimensions;
     }
+    
+    /**
+     * Get dimension
+     * @param idx Index
+     * @return Dimension
+     */
+    public Dimension getDimension(int idx){
+        return _dimensions.get(idx);
+    }
 
     /**
      * Set dimensions
@@ -663,6 +672,15 @@ public class Variable {
         }
 
         return idx;
+    }
+    
+    /**
+     * Get dimension length
+     * @param idx Dimension index
+     * @return Dimension length
+     */
+    public int getDimLength(int idx) {
+        return this._dimensions.get(idx).getDimLength();
     }
 
     /**

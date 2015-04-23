@@ -36,6 +36,7 @@ import org.meteoinfo.projection.Reproject;
 import org.meteoinfo.shape.PolygonShape;
 import org.meteoinfo.shape.ShapeTypes;
 import org.meteoinfo.table.DataTable;
+import ucar.ma2.Array;
 
 /**
  *
@@ -112,6 +113,35 @@ public class GridData {
 
         missingValue = -9999;
         data = new double[yNum][xNum];
+    }
+    
+    /**
+     * Constructor
+     * @param array Data array
+     * @param xdata X data
+     * @param ydata Y data
+     * @param missingValue Missing value
+     * @param projInfo Projection info
+     */
+    public GridData(Array array, List<Number> xdata, List<Number> ydata, double missingValue, ProjectionInfo projInfo){
+        int yn = ydata.size();
+        int xn = xdata.size();
+        this.data = new double[yn][xn];        
+        for (int i = 0; i < yn; i++){
+            for (int j = 0; j < xn; j++){
+                data[i][j] = array.getDouble(i * xn + j);
+            }
+        }
+        
+        this.xArray = new double[xn];
+        this.yArray = new double[yn];
+        for (int i = 0; i < xn; i++)
+            this.xArray[i] = xdata.get(i).doubleValue();
+        for (int i = 0; i < yn; i++)
+            this.yArray[i] = ydata.get(i).doubleValue();
+        
+        this.missingValue = missingValue;
+        this.projInfo = projInfo;
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -1868,11 +1898,9 @@ public class GridData {
         double max = 0;
         double min = 0;
         int vdNum = 0;
-        boolean hasUndef = false;
         for (int i = 0; i < getYNum(); i++) {
             for (int j = 0; j < getXNum(); j++) {
                 if (MIMath.doubleEquals(data[i][j], missingValue)) {
-                    hasUndef = true;
                     continue;
                 }
 
@@ -1892,6 +1920,22 @@ public class GridData {
         }
 
         return new double[]{max, min};
+    }
+    
+    /**
+     * Get maximum value
+     * @return Maximum value
+     */
+    public double getMaxValue(){
+        return this.getMaxMinValue()[0];
+    }
+    
+    /**
+     * Get minimum value
+     * @return Minimum value
+     */
+    public double getMinValue(){
+        return this.getMaxMinValue()[1];
     }
 
     /**

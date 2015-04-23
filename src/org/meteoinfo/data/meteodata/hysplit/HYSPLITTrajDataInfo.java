@@ -50,6 +50,7 @@ import org.meteoinfo.shape.PointShape;
 import org.meteoinfo.shape.PointZ;
 import org.meteoinfo.shape.PolylineZShape;
 import org.meteoinfo.shape.ShapeTypes;
+import ucar.ma2.Array;
 
 /**
  *
@@ -254,6 +255,20 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
         }
 
         return dataInfo;
+    }
+    
+    /**
+     * Read array data of the variable
+     *
+     * @param varName Variable name
+     * @param origin The origin array
+     * @param size The size array
+     * @param stride The stride array
+     * @return Array data
+     */
+    @Override
+    public Array read(String varName, int[] origin, int[] size, int[] stride) {
+        return null;
     }
 
     @Override

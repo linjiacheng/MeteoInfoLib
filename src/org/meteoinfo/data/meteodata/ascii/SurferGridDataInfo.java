@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.meteoinfo.data.meteodata.MeteoDataType;
+import ucar.ma2.Array;
 
 /**
  *
@@ -126,6 +127,20 @@ public class SurferGridDataInfo extends DataInfo implements IGridDataInfo {
         dataInfo += System.getProperty("line.separator") + "UNDEF = " + String.valueOf(this.getMissingValue());
 
         return dataInfo;
+    }
+    
+    /**
+     * Read array data of the variable
+     *
+     * @param varName Variable name
+     * @param origin The origin array
+     * @param size The size array
+     * @param stride The stride array
+     * @return Array data
+     */
+    @Override
+    public Array read(String varName, int[] origin, int[] size, int[] stride) {
+        return null;
     }
 
     @Override
