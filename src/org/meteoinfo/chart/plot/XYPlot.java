@@ -366,7 +366,7 @@ public abstract class XYPlot extends Plot {
     }
 
     Rectangle2D getGraphArea(Graphics2D g, Rectangle2D area) {
-        int left = 0, bottom = 0, right = 10, top = 5;
+        int left = 0, bottom = 0, right = 0, top = 5;
         int space = 1;
 
         if (this.title != null) {
@@ -677,7 +677,7 @@ public abstract class XYPlot extends Plot {
                 y = (float) area.getHeight() / 2 - dim.height / 2;
                 break;
             case RIGHT_OUTSIDE:
-                x = (float) graphArea.getWidth() + 10;
+                x = (float) graphArea.getX() + (float) graphArea.getWidth() + 10;
                 y = (float) area.getHeight() / 2 - dim.height / 2;
                 break;
             case UPPER_RIGHT:

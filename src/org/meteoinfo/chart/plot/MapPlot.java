@@ -17,6 +17,7 @@ import java.util.List;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointF;
+import org.meteoinfo.layer.MapLayer;
 import org.meteoinfo.legend.MapFrame;
 import org.meteoinfo.map.GridLabel;
 import org.meteoinfo.map.MapView;
@@ -85,9 +86,47 @@ public class MapPlot extends XY2DPlot {
     
     // </editor-fold>
     // <editor-fold desc="Methods">
+    /**
+     * Add a layer
+     * @param idx Index
+     * @param layer Layer
+     */
+    public void addLayer(int idx, MapLayer layer){
+        this.mapFrame.addLayer(idx, layer);
+    }
+    
+    /**
+     * Add a layer
+     * @param layer Layer 
+     */
+    public void addLayer(MapLayer layer){
+        this.mapFrame.addLayer(layer);
+    }
+    
+    /**
+     * Set extent
+     * @param extent Extent
+     */
+    public void setExtent(Extent extent){
+        this.mapFrame.getMapView().setViewExtent(extent);
+    }
+    
     @Override
     public void drawGraph(Graphics2D g, Rectangle2D area) {
         MapView mapView = this.mapFrame.getMapView();
+        Extent extent = mapView.getViewExtent();
+        double width = extent.getWidth();
+        double height = extent.getHeight();
+        double scaleFactor = mapView.getXYScaleFactor();
+        if (width / height / scaleFactor > area.getWidth() / area.getHeight()){
+            double h = area.getWidth() * height * scaleFactor / width;
+            double delta = area.getHeight() - h;
+            area.setRect(area.getX(), area.getY() + delta / 2, area.getWidth(), h);
+        } else {
+            double w = width * area.getHeight() / height / scaleFactor;
+            double delta = area.getWidth() - w;
+            area.setRect(area.getX() + delta / 2, area.getY(), w, area.getHeight());
+        }
         mapView.paintGraphics(g, area);
     }
 

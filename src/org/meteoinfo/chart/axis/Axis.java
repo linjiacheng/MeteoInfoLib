@@ -587,7 +587,7 @@ public class Axis {
             sameHour = true;
         }
 
-        List<Date> dates = new ArrayList<Date>();
+        List<Date> dates = new ArrayList<>();
         if (sameYear) {
             if (sameMonth) {
                 if (sameDay) {
@@ -705,7 +705,7 @@ public class Axis {
         Calendar sscal = Calendar.getInstance();
         sscal.setTime(sdate);
 
-        List<Date> dates = new ArrayList<Date>();
+        List<Date> dates = new ArrayList<>();
         scal.add(Calendar.YEAR, 5);
         if (scal.before(ecal)) {
             this.timeFormat = "yyyy";
@@ -828,7 +828,7 @@ public class Axis {
      * @return Tick labels
      */
     public List<String> getTickLabels() {
-        List<String> tls = new ArrayList<String>();
+        List<String> tls = new ArrayList<>();
         String lab;
         if (this.timeAxis) {
             SimpleDateFormat format = new SimpleDateFormat(this.timeFormat);
@@ -889,6 +889,8 @@ public class Axis {
             FontMetrics metrics = g.getFontMetrics(labelFont);
             nn = (int) (len / metrics.getHeight());
         }
+        if (nn == 0)
+            nn = 1;
         this.tickLabelGap = n / nn + 1;
     }
         
