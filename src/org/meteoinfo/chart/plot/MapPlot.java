@@ -14,10 +14,10 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
+import org.meteoinfo.chart.axis.LonLatAxis;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointF;
-import org.meteoinfo.layer.MapLayer;
 import org.meteoinfo.legend.MapFrame;
 import org.meteoinfo.map.GridLabel;
 import org.meteoinfo.map.MapView;
@@ -30,7 +30,6 @@ public class MapPlot extends XY2DPlot {
 
     // <editor-fold desc="Variables">
     private MapFrame mapFrame;
-    private boolean drawDegreeSymbol;
 
     // </editor-fold>
     // <editor-fold desc="Constructor">
@@ -39,7 +38,8 @@ public class MapPlot extends XY2DPlot {
      */
     public MapPlot() {
         super();
-        this.drawDegreeSymbol = false;
+        this.setXAxis(new LonLatAxis("Longitude", true));
+        this.setYAxis(new LonLatAxis("Latitude", false));
     }
 
     /**
@@ -86,55 +86,90 @@ public class MapPlot extends XY2DPlot {
     
     // </editor-fold>
     // <editor-fold desc="Methods">
-    /**
-     * Add a layer
-     * @param idx Index
-     * @param layer Layer
-     */
-    public void addLayer(int idx, MapLayer layer){
-        this.mapFrame.addLayer(idx, layer);
-    }
+//    /**
+//     * Add a layer
+//     * @param idx Index
+//     * @param layer Layer
+//     */
+//    public void addLayer(int idx, MapLayer layer){
+//        this.mapFrame.addLayer(idx, layer);
+//    }
+//    
+//    /**
+//     * Add a layer
+//     * @param layer Layer 
+//     */
+//    public void addLayer(MapLayer layer){
+//        this.mapFrame.addLayer(layer);
+//    }
+//    
+//    /**
+//     * Set extent
+//     *
+//     * @param extent Extent
+//     */
+//    public void setExtent(Extent extent) {
+//        this.mapFrame.getMapView().setViewExtent(extent);
+//    }
     
     /**
-     * Add a layer
-     * @param layer Layer 
+     * Get graphic area
+     * @param g Graphic2D
+     * @param area Whole area
+     * @return Graphic area
      */
-    public void addLayer(MapLayer layer){
-        this.mapFrame.addLayer(layer);
-    }
-    
-    /**
-     * Set extent
-     * @param extent Extent
-     */
-    public void setExtent(Extent extent){
-        this.mapFrame.getMapView().setViewExtent(extent);
-    }
-    
     @Override
-    public void drawGraph(Graphics2D g, Rectangle2D area) {
+    public Rectangle2D getGraphArea(Graphics2D g, Rectangle2D area) {
+        Rectangle2D plotArea = super.getGraphArea(g, area);
         MapView mapView = this.mapFrame.getMapView();
+        mapView.setViewExtent((Extent)this.getDrawExtent().clone());
         Extent extent = mapView.getViewExtent();
         double width = extent.getWidth();
         double height = extent.getHeight();
         double scaleFactor = mapView.getXYScaleFactor();
-        if (width / height / scaleFactor > area.getWidth() / area.getHeight()){
-            double h = area.getWidth() * height * scaleFactor / width;
-            double delta = area.getHeight() - h;
-            area.setRect(area.getX(), area.getY() + delta / 2, area.getWidth(), h);
+        if (width / height / scaleFactor > plotArea.getWidth() / plotArea.getHeight()){
+            double h = plotArea.getWidth() * height * scaleFactor / width;
+            double delta = plotArea.getHeight() - h;
+            plotArea.setRect(plotArea.getX(), plotArea.getY() + delta / 2, plotArea.getWidth(), h);
         } else {
-            double w = width * area.getHeight() / height / scaleFactor;
-            double delta = area.getWidth() - w;
-            area.setRect(area.getX() + delta / 2, area.getY(), w, area.getHeight());
+            double w = width * plotArea.getHeight() / height / scaleFactor;
+            double delta = plotArea.getWidth() - w;
+            plotArea.setRect(plotArea.getX() + delta / 2, plotArea.getY(), w, plotArea.getHeight());
         }
-        mapView.paintGraphics(g, area);
+        
+        return plotArea;
     }
+    
+//    @Override
+//    public void drawGraph(Graphics2D g, Rectangle2D area) {
+//        MapView mapView = this.mapFrame.getMapView();
+//        mapView.setViewExtent(this.getDrawExtent());
+//        Extent extent = mapView.getViewExtent();
+//        double width = extent.getWidth();
+//        double height = extent.getHeight();
+//        double scaleFactor = mapView.getXYScaleFactor();
+//        if (width / height / scaleFactor > area.getWidth() / area.getHeight()){
+//            double h = area.getWidth() * height * scaleFactor / width;
+//            double delta = area.getHeight() - h;
+//            area.setRect(area.getX(), area.getY() + delta / 2, area.getWidth(), h);
+//        } else {
+//            double w = width * area.getHeight() / height / scaleFactor;
+//            double delta = area.getWidth() - w;
+//            area.setRect(area.getX() + delta / 2, area.getY(), w, area.getHeight());
+//        }
+//        mapView.paintGraphics(g, area);
+//    }
 
     @Override
     void drawAxis(Graphics2D g, Rectangle2D area) {
+        if (this.mapFrame.getMapView().getProjection().isLonLatMap()){
+            super.drawAxis(g, area);
+            return;
+        }
+        
         //Draw lon/lat grid labels
         if (this.mapFrame.isDrawGridLabel()) {
-            List<Extent> extentList = new ArrayList<Extent>();
+            List<Extent> extentList = new ArrayList<>();
             Extent maxExtent = new Extent();
             Extent aExtent;
             Dimension aSF;
@@ -193,13 +228,13 @@ public class MapPlot extends XY2DPlot {
                 sP.Y = labY;
 
                 drawStr = aGL.getLabString();
-                if (this.drawDegreeSymbol) {
+                //if (this.drawDegreeSymbol) {
                     if (drawStr.endsWith("E") || drawStr.endsWith("W") || drawStr.endsWith("N") || drawStr.endsWith("S")) {
                         drawStr = drawStr.substring(0, drawStr.length() - 1) + String.valueOf((char) 186) + drawStr.substring(drawStr.length() - 1);
                     } else {
                         drawStr = drawStr + String.valueOf((char) 186);
                     }
-                }
+                //}
                 FontMetrics metrics = g.getFontMetrics(font);
                 aSF = new Dimension(metrics.stringWidth(drawStr), metrics.getHeight());
                 switch (aGL.getLabDirection()) {

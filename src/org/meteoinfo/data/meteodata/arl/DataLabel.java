@@ -260,5 +260,14 @@ public class DataLabel {
     }
     // </editor-fold>
     // <editor-fold desc="Methods">
+    /**
+     * Get time value
+     * @return Time value
+     */
+    public Date getTimeValue(){
+        Calendar cal = Calendar.getInstance();
+        cal.set(_year, _month, _day, _hour, 0);
+        return cal.getTime();
+    }
     // </editor-fold>
 }

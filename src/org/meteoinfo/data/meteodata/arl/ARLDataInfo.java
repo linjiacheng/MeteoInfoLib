@@ -45,6 +45,11 @@ import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.projection.ProjectionNames;
 import org.meteoinfo.projection.Reproject;
 import ucar.ma2.Array;
+import ucar.ma2.DataType;
+import ucar.ma2.IndexIterator;
+import ucar.ma2.InvalidRangeException;
+import ucar.ma2.Range;
+import ucar.ma2.Section;
 
 /**
  * Template
@@ -126,9 +131,9 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
      */
     public ARLDataInfo() {
         isLatLon = false;
-        LevelVarList = new ArrayList<List<String>>();
+        LevelVarList = new ArrayList<>();
         levelNum = 0;
-        levels = new ArrayList<Double>();
+        levels = new ArrayList<>();
         //varLevList = new List<ARLVAR>();
         missingValue = -9999;
         isGlobal = false;
@@ -156,6 +161,28 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
     // <editor-fold desc="Methods">
     // <editor-fold desc="Read">
     /**
+     * If can open as ARL data
+     *
+     * @param fileName File name
+     * @return Boolean
+     */
+    public static boolean canOpen(String fileName) {
+        try {
+            RandomAccessFile br = new RandomAccessFile(fileName, "r");
+            DataLabel dl = readDataLabel(br);
+            br.close();
+            Date t = dl.getTimeValue();
+            return t != null;
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(ARLDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        } catch (IOException ex) {
+            Logger.getLogger(ARLDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        }
+    }
+
+    /**
      * Read data info
      *
      * @param fileName File path
@@ -169,7 +196,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             DataHead aDH = new DataHead();
             int i, j, vNum;
             String vName;
-            List<String> vList = new ArrayList<String>();
+            List<String> vList = new ArrayList<>();
 
             //open file to decode the standard label (50) plus the 
             //fixed portion (108) of the extended header   
@@ -232,7 +259,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             if (aDH.LENH > NXY) {
                 bytes = new byte[NXY - 108];
                 br.read(bytes);
-                List<Byte> byteList = new ArrayList<Byte>();
+                List<Byte> byteList = new ArrayList<>();
                 for (byte b : bytes) {
                     byteList.add(b);
                 }
@@ -277,7 +304,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                         vList.add(vName);
                         idx += 4;
                     }
-                    LevelVarList.add(new ArrayList<String>(vList));
+                    LevelVarList.add(new ArrayList<>(vList));
                     vList.clear();
                 }
             } else {
@@ -296,7 +323,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                         vList.add(vName);
                         br.read(bytes);
                     }
-                    LevelVarList.add(new ArrayList<String>(vList));
+                    LevelVarList.add(new ArrayList<>(vList));
                     vList.clear();
                 }
             }
@@ -306,7 +333,6 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
 //                //ErrorStr = "WARNING Old format meteo data grid!" + Environment.NewLine + aDL.Variable;
 //                return;
 //            }
-
             //Decide projection            
             dataHead = aDH;
             if (aDH.SIZE == 0) {
@@ -385,7 +411,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             }
             Calendar cal = new GregorianCalendar(year, aDL.getMonth() - 1, aDL.getDay(), aDL.getHour(), 0, 0);
             oldTime = cal.getTime();
-            List<Date> times = new ArrayList<Date>();
+            List<Date> times = new ArrayList<>();
             times.add((Date) oldTime.clone());
 
             do {
@@ -416,7 +442,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
 
             br.close();
 
-            List<Double> values = new ArrayList<Double>();
+            List<Double> values = new ArrayList<>();
             for (Date t : times) {
                 values.add(DateUtil.toOADate(t));
             }
@@ -428,7 +454,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             Variable aVar;
             vList.clear();
             int varIdx;
-            List<Variable> variables = new ArrayList<Variable>();
+            List<Variable> variables = new ArrayList<>();
             for (i = 0; i < LevelVarList.size(); i++) {
                 for (j = 0; j < LevelVarList.get(i).size(); j++) {
                     vName = LevelVarList.get(i).get(j);
@@ -451,13 +477,13 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                 }
             }
 
-            for (Variable var : variables) {
-                var.setDimension(this.getXDimension());
-                var.setDimension(this.getYDimension());
+            for (Variable var : variables) {                                
                 var.setDimension(this.getTimeDimension());
                 Dimension zDim = new Dimension(DimensionType.Z);
                 zDim.setValues(var.getLevels());
                 var.setDimension(zDim);
+                var.setDimension(this.getYDimension());
+                var.setDimension(this.getXDimension());
             }
             this.setTimes(times);
             this.setVariables(variables);
@@ -466,7 +492,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         }
     }
 
-    private DataLabel readDataLabel(RandomAccessFile br) {
+    private static DataLabel readDataLabel(RandomAccessFile br) {
         try {
             DataLabel aDL = new DataLabel();
             byte[] bytes = new byte[2];
@@ -600,10 +626,34 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             VOLD = gridData[j][0];
         }
 
-
         return gridData;
     }
-    
+
+    private float[] unpackARLData(byte[] dataBytes, int xNum, int yNum, DataLabel aDL) {
+        int n = dataBytes.length;
+        float[] data = new float[n];
+        float SCALE = (float) Math.pow(2.0, (7 - aDL.getExponent()));
+        float VOLD = (float) aDL.getValue();
+        float init = VOLD;
+        float v;
+        int INDX = 0;
+        int i, j;
+        for (j = 0; j < yNum; j++) {
+            for (i = 0; i < xNum; i++) {
+                v = ((int) (DataConvert.byte2Int(dataBytes[INDX])) - 127) / SCALE + VOLD;
+                data[INDX] = v;
+                if (i == 0) {
+                    init = v;
+                }                
+                INDX += 1;
+                VOLD = v;                
+            }
+            VOLD = init;
+        }
+
+        return data;
+    }
+
     /**
      * Read array data of the variable
      *
@@ -615,7 +665,82 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
      */
     @Override
     public Array read(String varName, int[] origin, int[] size, int[] stride) {
-        return null;
+        try {
+            Variable var = this.getVariable(varName);
+            Section section = new Section(origin, size, stride);
+            Array dataArray = Array.factory(DataType.FLOAT, section.getShape());
+            int rangeIdx = 0;
+            Range timeRange = section.getRank() > 2 ? section
+                    .getRange(rangeIdx++)
+                    : new Range(0, 0);
+
+            Range levRange = var.getLevelNum() > 0 ? section
+                    .getRange(rangeIdx++)
+                    : new Range(0, 0);
+
+            Range yRange = section.getRange(rangeIdx++);
+            Range xRange = section.getRange(rangeIdx);
+
+            IndexIterator ii = dataArray.getIndexIterator();
+
+            for (int timeIdx = timeRange.first(); timeIdx <= timeRange.last();
+                    timeIdx += timeRange.stride()) {
+                int levelIdx = levRange.first();
+
+                for (; levelIdx <= levRange.last();
+                        levelIdx += levRange.stride()) {
+                    readXY(varName, timeIdx, levelIdx, yRange, xRange, ii);
+                }
+            }
+
+            return dataArray;
+        } catch (InvalidRangeException ex) {
+            Logger.getLogger(ARLDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+
+    private void readXY(String varName, int timeIdx, int levelIdx, Range yRange, Range xRange, IndexIterator ii) {
+        try {
+            int varIdx = this.getVariableNames().indexOf(varName);
+            int xNum, yNum;
+            xNum = dataHead.NX;
+            yNum = dataHead.NY;
+            RandomAccessFile br = new RandomAccessFile(this.getFileName(), "r");
+            byte[] dataBytes;
+            DataLabel aDL;
+            //Update level and variable index
+            Variable aVar = this.getVariables().get(varIdx);
+            if (aVar.getLevelNum() > 1) {
+                levelIdx += 1;
+            }
+            varIdx = LevelVarList.get(levelIdx).indexOf(aVar.getName());
+            br.seek(timeIdx * recsPerTime * recLen);
+            br.seek(br.getFilePointer() + indexLen);
+            for (int i = 0; i < levelIdx; i++) {
+                br.seek(br.getFilePointer() + LevelVarList.get(i).size() * recLen);
+            }
+            br.seek(br.getFilePointer() + varIdx * recLen);
+            //Read label
+            aDL = ARLDataInfo.readDataLabel(br);
+            //Read Data
+            dataBytes = new byte[recLen - 50];
+            br.read(dataBytes);
+            br.close();
+            float[] data = unpackARLData(dataBytes, xNum, yNum, aDL);
+            for (int y = yRange.first(); y <= yRange.last();
+                    y += yRange.stride()) {
+                for (int x = xRange.first(); x <= xRange.last();
+                        x += xRange.stride()) {
+                    int index = y * xNum + x;
+                    ii.setFloatNext(data[index]);
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(ARLDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(ARLDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
@@ -645,7 +770,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             br.seek(br.getFilePointer() + varIdx * recLen);
 
             //Read label
-            aDL = this.readDataLabel(br);
+            aDL = ARLDataInfo.readDataLabel(br);
 
             //Read Data
             dataBytes = new byte[recLen - 50];
@@ -698,7 +823,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                 br.seek(br.getFilePointer() + varIdx * recLen);
 
                 //Read label
-                aDL = this.readDataLabel(br);
+                aDL = ARLDataInfo.readDataLabel(br);
 
                 //Read Data
                 dataBytes = new byte[recLen - 50];
@@ -757,7 +882,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                 br.seek(br.getFilePointer() + varIdx * recLen);
 
                 //Read label
-                aDL = this.readDataLabel(br);
+                aDL = ARLDataInfo.readDataLabel(br);
 
                 //Read Data
                 dataBytes = new byte[recLen - 50];
@@ -814,7 +939,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                 br.seek(br.getFilePointer() + nvarIdx * recLen);
 
                 //Read label
-                aDL = this.readDataLabel(br);
+                aDL = ARLDataInfo.readDataLabel(br);
 
                 //Read Data
                 dataBytes = new byte[recLen - 50];
@@ -871,7 +996,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                 br.seek(br.getFilePointer() + nvarIdx * recLen);
 
                 //Read label
-                aDL = this.readDataLabel(br);
+                aDL = ARLDataInfo.readDataLabel(br);
 
                 //Read Data
                 dataBytes = new byte[recLen - 50];
@@ -931,7 +1056,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                     br.seek(br.getFilePointer() + nvarIdx * recLen);
 
                     //Read label
-                    aDL = this.readDataLabel(br);
+                    aDL = ARLDataInfo.readDataLabel(br);
 
                     //Read Data
                     dataBytes = new byte[recLen - 50];
@@ -1001,7 +1126,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                 br.seek(br.getFilePointer() + varIdx * recLen);
 
                 //Read label
-                aDL = this.readDataLabel(br);
+                aDL = ARLDataInfo.readDataLabel(br);
 
                 //Read Data
                 dataBytes = new byte[recLen - 50];
@@ -1056,7 +1181,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                 br.seek(br.getFilePointer() + nvarIdx * recLen);
 
                 //Read label
-                aDL = this.readDataLabel(br);
+                aDL = ARLDataInfo.readDataLabel(br);
 
                 //Read Data
                 dataBytes = new byte[recLen - 50];
@@ -1111,7 +1236,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             br.seek(br.getFilePointer() + varIdx * recLen);
 
             //Read label
-            aDL = this.readDataLabel(br);
+            aDL = ARLDataInfo.readDataLabel(br);
 
             //Read Data
             dataBytes = new byte[recLen - 50];
@@ -1167,7 +1292,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             br.seek(br.getFilePointer() + varIdx * recLen);
 
             //Read label
-            aDL = this.readDataLabel(br);
+            aDL = ARLDataInfo.readDataLabel(br);
 
             //Read Data
             dataBytes = new byte[recLen - 50];
@@ -1482,12 +1607,14 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDL.getExponent()), 4, ' '));
         DecimalFormat dformat = new DecimalFormat("0.0000000E00");
         String preStr = dformat.format(aDL.getPrecision());
-        if (!preStr.contains("E-"))
+        if (!preStr.contains("E-")) {
             preStr = preStr.replace("E", "E+");
+        }
         _bw.writeBytes(GlobalUtil.padLeft(preStr, 14, ' '));
         preStr = dformat.format(aDL.getValue());
-        if (!preStr.contains("E-"))
+        if (!preStr.contains("E-")) {
             preStr = preStr.replace("E", "E+");
+        }
         _bw.writeBytes(GlobalUtil.padLeft(preStr, 14, ' '));
 
         //Write data

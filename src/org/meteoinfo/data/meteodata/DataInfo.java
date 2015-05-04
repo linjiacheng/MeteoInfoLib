@@ -92,7 +92,7 @@ public abstract class DataInfo {
      * @return Plottable variables
      */
     public List<Variable> getPlottableVariables() {
-        List<Variable> vars = new ArrayList<Variable>();
+        List<Variable> vars = new ArrayList<>();
         for (Variable var : _variables) {
             if (var.isPlottable()) {
                 vars.add(var);

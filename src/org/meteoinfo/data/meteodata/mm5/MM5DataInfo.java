@@ -28,6 +28,11 @@ import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.projection.Reproject;
 import ucar.ma2.Array;
+import ucar.ma2.DataType;
+import ucar.ma2.IndexIterator;
+import ucar.ma2.InvalidRangeException;
+import ucar.ma2.Range;
+import ucar.ma2.Section;
 
 /**
  *
@@ -76,7 +81,7 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
 
             BigHeader bh = null;
             if (flag == 0) {    //Read big header
-                bh = this.readBigHeader(br);                
+                bh = this.readBigHeader(br);
             }
             br.close();
 
@@ -258,13 +263,13 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
 
                         if (sh.ordering.equals("YXS") || sh.ordering.equals("YXP")
                                 || sh.ordering.equals("YXW") || sh.ordering.equals("YX")) {
-                            var.setXDimension(xdim);
-                            var.setYDimension(ydim);
+                            var.addDimension(xdim);
+                            var.addDimension(0, ydim);
                         }
                         if (sh.ordering.equals("YXS") || sh.ordering.equals("YXP")
                                 || sh.ordering.equals("YXW") || sh.ordering.equals("S")
                                 || sh.ordering.equals("P")) {
-                            var.setZDimension(zdim);
+                            var.addDimension(0, zdim);
                         }
                         variables.add(var);
                     }
@@ -295,7 +300,7 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
             this.setTimeDimension(tDim);
 
             for (Variable var : variables) {
-                var.setTDimension(tDim);
+                var.addDimension(0, tDim);
                 //var.updateZDimension();
             }
 
@@ -308,12 +313,13 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
             Logger.getLogger(MM5DataInfo.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     /**
      * Read big header
+     *
      * @param br The randomAccessFile
      * @return The big header
-     * @throws IOException 
+     * @throws IOException
      */
     public BigHeader readBigHeader(RandomAccessFile br) throws IOException {
         return readBigHeader(br, true);
@@ -321,15 +327,17 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
 
     /**
      * Read big header
+     *
      * @param br The randomAccessFile
      * @param isSequential If is sequential
      * @return The big header
-     * @throws IOException 
+     * @throws IOException
      */
     public BigHeader readBigHeader(RandomAccessFile br, boolean isSequential) throws IOException {
         BigHeader bh = new BigHeader();
-        if (isSequential)
+        if (isSequential) {
             br.skipBytes(4);
+        }
         byte[] bytes = new byte[80];
         int i, j;
         for (i = 0; i < 20; i++) {
@@ -355,8 +363,9 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
             }
         }
 
-        if (isSequential)
+        if (isSequential) {
             br.skipBytes(4);
+        }
 
         return bh;
     }
@@ -394,31 +403,33 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
 //        dos.write(bytes);
 //        dos.close();
 //    }
-    
     /**
      * Read sub header
+     *
      * @param br The randomAccessFile
      * @return The sub header
-     * @throws IOException 
+     * @throws IOException
      */
     public SubHeader readSubHeader(RandomAccessFile br) throws IOException {
         return readSubHeader(br, true);
     }
-    
+
     /**
      * Read sub header
+     *
      * @param br The randomAccessFile
      * @param isSequential If if sequential
      * @return The sub header
-     * @throws IOException 
+     * @throws IOException
      */
     public SubHeader readSubHeader(RandomAccessFile br, boolean isSequential) throws IOException {
         SubHeader sh = new SubHeader();
         byte[] bytes = new byte[4];
         int i;
-        if (isSequential)
+        if (isSequential) {
             br.skipBytes(4);
-        
+        }
+
         sh.ndim = br.readInt();
         for (i = 0; i < 4; i++) {
             sh.start_index[i] = br.readInt();
@@ -444,8 +455,9 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
         br.read(bytes);
         sh.description = new String(bytes).trim();
 
-        if (isSequential)
+        if (isSequential) {
             br.skipBytes(4);
+        }
 
         return sh;
     }
@@ -532,7 +544,7 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
 
         return dataInfo;
     }
-    
+
     /**
      * Read array data of the variable
      *
@@ -544,7 +556,83 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
      */
     @Override
     public Array read(String varName, int[] origin, int[] size, int[] stride) {
-        return null;
+        try {
+            Variable var = this.getVariable(varName);
+            Section section = new Section(origin, size, stride);
+            Array dataArray = Array.factory(DataType.FLOAT, section.getShape());
+            int rangeIdx = 0;
+            Range timeRange = section.getRank() > 2 ? section
+                    .getRange(rangeIdx++)
+                    : new Range(0, 0);
+
+            Range levRange = var.getLevelNum() > 0 ? section
+                    .getRange(rangeIdx++)
+                    : new Range(0, 0);
+
+            Range yRange = section.getRange(rangeIdx++);
+            Range xRange = section.getRange(rangeIdx);
+
+            IndexIterator ii = dataArray.getIndexIterator();
+
+            for (int timeIdx = timeRange.first(); timeIdx <= timeRange.last();
+                    timeIdx += timeRange.stride()) {
+                int levelIdx = levRange.first();
+
+                for (; levelIdx <= levRange.last();
+                        levelIdx += levRange.stride()) {
+                    readXY(varName, timeIdx, levelIdx, yRange, xRange, ii);
+                }
+            }
+
+            return dataArray;
+        } catch (InvalidRangeException ex) {
+            Logger.getLogger(MM5DataInfo.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+
+    private void readXY(String varName, int timeIdx, int levelIdx, Range yRange, Range xRange, IndexIterator ii) {
+        try {
+            int varIdx = this.getVariableNames().indexOf(varName);
+            RandomAccessFile br = new RandomAccessFile(this.getFileName(), "r");
+            Variable var = this.getVariables().get(varIdx);
+            Dimension xdim = var.getXDimension();
+            Dimension ydim = var.getYDimension();
+            int xn = xdim.getDimLength();
+            int yn = ydim.getDimLength();
+            SubHeader sh = this.findSubHeader(var.getName(), timeIdx);
+            br.seek(sh.position + sh.length);
+            int n = xn * yn;
+            br.skipBytes(4);
+            br.skipBytes(n * 4 * levelIdx);
+            byte[] dataBytes = new byte[n * 4];
+            br.read(dataBytes);
+            br.close();
+
+            int i, j;
+            float[] data = new float[n];
+            int start = 0;
+            byte[] bytes = new byte[4];
+            for (i = 0; i < n; i++) {
+                System.arraycopy(dataBytes, start, bytes, 0, 4);
+                data[i] = DataConvert.bytes2Float(bytes, _byteOrder);
+                start += 4;
+            }
+
+            br.close();
+            for (int y = yRange.first(); y <= yRange.last();
+                    y += yRange.stride()) {
+                for (int x = xRange.first(); x <= xRange.last();
+                        x += xRange.stride()) {
+                    int index = y * xn + x;
+                    ii.setFloatNext(data[index]);
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(MM5DataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(MM5DataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
@@ -595,11 +683,12 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
 
     /**
      * Get grid data - lon/lat
+     *
      * @param raf The randomAcessFile
      * @param xdim X dimension
      * @param ydim Y dimension
      * @return The grid data
-     * @throws IOException 
+     * @throws IOException
      */
     public GridData getGridData(RandomAccessFile raf, Dimension xdim, Dimension ydim) throws IOException {
         int xn = xdim.getDimLength();

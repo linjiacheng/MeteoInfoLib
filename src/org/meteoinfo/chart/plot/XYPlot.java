@@ -21,6 +21,7 @@ import org.meteoinfo.chart.ChartLegend;
 import org.meteoinfo.chart.ChartText;
 import org.meteoinfo.chart.LegendPosition;
 import org.meteoinfo.chart.axis.Axis;
+import org.meteoinfo.chart.axis.TimeAxis;
 import static org.meteoinfo.chart.plot.Plot.MINIMUM_HEIGHT_TO_DRAW;
 import static org.meteoinfo.chart.plot.Plot.MINIMUM_WIDTH_TO_DRAW;
 import org.meteoinfo.drawing.Draw;
@@ -39,8 +40,8 @@ public abstract class XYPlot extends Plot {
     private Color background;
     private boolean drawBackground;
     private Extent drawExtent;
-    private final Axis xAxis;
-    private final Axis yAxis;
+    private Axis xAxis;
+    private Axis yAxis;
     private Rectangle2D graphArea;
     private PlotOrientation orientation;
     private GridLine gridLine;
@@ -221,6 +222,14 @@ public abstract class XYPlot extends Plot {
     public Axis getXAxis() {
         return this.xAxis;
     }
+    
+    /**
+     * Set x axis
+     * @param value X axis
+     */
+    public void setXAxis(Axis value) {
+        this.xAxis = value;
+    }
 
     /**
      * Get y axis
@@ -229,6 +238,14 @@ public abstract class XYPlot extends Plot {
      */
     public Axis getYAxis() {
         return this.yAxis;
+    }
+    
+    /**
+     * Set y axis
+     * @param value Y axis
+     */
+    public void setYAxis(Axis value){
+        this.yAxis = value;
     }
 
     /**
@@ -317,24 +334,29 @@ public abstract class XYPlot extends Plot {
         g.setClip(area);
         g.translate(area.getX(), area.getY());
 
+        //Get graphic area
+        graphArea = this.getGraphArea(g, area);
+        
         //Draw title
-        float y = 5;
+        //float y = 5;
+        float y = (float)graphArea.getY();
         if (title != null) {
             g.setColor(title.getColor());
             g.setFont(title.getFont());
-            float x = (float) area.getWidth() / 2;
+            //float x = (float) area.getWidth() / 2;
+            float x = (float) (graphArea.getX() + graphArea.getWidth() / 2);
             FontMetrics metrics = g.getFontMetrics(title.getFont());
             x -= metrics.stringWidth(title.getText()) / 2;
-            y += metrics.getHeight();
+            //y += metrics.getHeight();
+            y -= metrics.getHeight() * 2 / 3;
             g.drawString(title.getText(), x, y);
-            y += 5;
+            //y += 5;
         }
-        
+
         //Update legend scheme
         this.updateLegendScheme();
 
-        //Draw grid lines
-        graphArea = this.getGraphArea(g, area);
+        //Draw grid lines        
         if (graphArea.getWidth() < 10 || graphArea.getHeight() < 10) {
             g.setTransform(oldMatrix);
             g.setClip(oldRegion);
@@ -355,18 +377,41 @@ public abstract class XYPlot extends Plot {
 
         //Draw legend
         if (this.drawLegend && this.getLegend() != null) {
-            if (this.getLegend().getPosition() == LegendPosition.CUSTOM)
+            switch (this.legend.getPosition()) {
+                case UPPER_CENTER_OUTSIDE:
+                case LOWER_CENTER_OUTSIDE:
+                    this.legend.setPlotOrientation(PlotOrientation.HORIZONTAL);
+                    break;
+                default:
+                    this.legend.setPlotOrientation(PlotOrientation.VERTICAL);
+                    break;
+            }
+            if (this.legend.isColorbar()) {
+                if (this.legend.getPlotOrientation() == PlotOrientation.VERTICAL) {
+                    this.legend.setHeight((int) graphArea.getHeight());
+                } else {
+                    this.legend.setWidth((int) graphArea.getWidth());
+                }
+            }
+            if (this.legend.getPosition() == LegendPosition.CUSTOM) {
                 this.legend.draw(g, new PointF(this.legend.getX(), this.legend.getY()));
-            else
+            } else {
                 this.drawLegendScheme(g, area, y);
+            }
         }
 
         g.setTransform(oldMatrix);
         g.setClip(oldRegion);
     }
 
-    Rectangle2D getGraphArea(Graphics2D g, Rectangle2D area) {
-        int left = 0, bottom = 0, right = 0, top = 5;
+    /**
+     * Get graphic area
+     * @param g Graphic2D
+     * @param area Whole area
+     * @return Graphic area
+     */
+    public Rectangle2D getGraphArea(Graphics2D g, Rectangle2D area) {
+        int left = 0, bottom = 0, right = 5, top = 5;
         int space = 1;
 
         if (this.title != null) {
@@ -397,7 +442,7 @@ public abstract class XYPlot extends Plot {
 
         //Get y axis space
         left += this.getYAxisWidth(g, space);
-        
+
         //Set right space
         right += this.getXAxis().getMaxLabelLength(g) / 2;
 
@@ -406,22 +451,22 @@ public abstract class XYPlot extends Plot {
                 area.getWidth() - left - right, area.getHeight() - top - bottom);
         return plotArea;
     }
-    
+
     int getXAxisHeight(Graphics2D g, int space) {
         FontMetrics metrics = g.getFontMetrics(this.xAxis.getTickLabelFont());
         int height = metrics.getHeight();
         height += this.xAxis.getTickLength() + space;
         metrics = g.getFontMetrics(this.xAxis.getLabelFont());
         height += metrics.getHeight() + 10;
-        
+
         return height;
     }
-    
-    int getYAxisWidth(Graphics2D g, int space){
+
+    int getYAxisWidth(Graphics2D g, int space) {
         int width = this.yAxis.getMaxLabelLength(g) + this.yAxis.getTickLength() + space;
         FontMetrics metrics = g.getFontMetrics(this.yAxis.getLabelFont());
         width += metrics.getHeight() + 10;
-        
+
         return width;
     }
 
@@ -540,9 +585,11 @@ public abstract class XYPlot extends Plot {
         }
         //Time label - left
         SimpleDateFormat format;
-        if (this.xAxis.isTimeAxis()) {
+        if (this.xAxis instanceof TimeAxis) {
+            TimeAxis tAxis = (TimeAxis)this.xAxis;
+        //if (this.xAxis.isTimeAxis()) {
             drawStr = null;
-            switch (this.xAxis.getTimeUnit()) {
+            switch (tAxis.getTimeUnit()) {
                 case MONTH:
                     format = new SimpleDateFormat("yyyy");
                     Date cdate = DateUtil.fromOADate(this.xAxis.getTickValues()[0]);
@@ -652,21 +699,12 @@ public abstract class XYPlot extends Plot {
     }
 
     void drawLegendScheme(Graphics2D g, Rectangle2D area, float y) {
-        switch (this.legend.getPosition()){
-            case UPPER_CENTER_OUTSIDE:
-            case LOWER_CENTER_OUTSIDE:
-                this.legend.setPlotOrientation(PlotOrientation.HORIZONTAL);
-                break;
-            default:
-                this.legend.setPlotOrientation(PlotOrientation.VERTICAL);
-                break;
-        }
         Dimension dim = this.legend.getLegendDimension(g, new Dimension((int) area.getWidth(), (int) area.getHeight()));
         float x = 0;
         switch (this.legend.getPosition()) {
             case UPPER_CENTER_OUTSIDE:
                 x = (float) area.getWidth() / 2 - dim.width / 2;
-                y += 5;                
+                y += 5;
                 break;
             case LOWER_CENTER_OUTSIDE:
                 x = (float) area.getWidth() / 2 - dim.width / 2;
@@ -723,7 +761,7 @@ public abstract class XYPlot extends Plot {
     }
 
     abstract Extent getAutoExtent();
-    
+
     abstract void updateLegendScheme();
     // </editor-fold>
 }

@@ -439,7 +439,7 @@ public class VectorLayer extends MapLayer {
      * Add charts
      */
     public void addCharts() {
-        List<Shape> shapeList = new ArrayList<Shape>(this._shapeList);
+        List<Shape> shapeList = new ArrayList<>(this._shapeList);
         int shapeIdx = -1;
         PointD aPoint = new PointD();
 

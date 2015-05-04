@@ -50,9 +50,15 @@ import org.meteoinfo.data.meteodata.IStationDataInfo;
 import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.data.meteodata.StationInfoData;
 import org.meteoinfo.data.meteodata.StationModelData;
+import org.meteoinfo.data.meteodata.arl.ARLDataInfo;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.util.DateUtil;
 import ucar.ma2.Array;
+import ucar.ma2.DataType;
+import ucar.ma2.IndexIterator;
+import ucar.ma2.InvalidRangeException;
+import ucar.ma2.Range;
+import ucar.ma2.Section;
 
 /**
  *
@@ -188,7 +194,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
      * @return Variable names
      */
     public List<String> getVarNames() {
-        List<String> varList = new ArrayList<String>();
+        List<String> varList = new ArrayList<>();
         for (Variable aVar : VARDEF.getVars()) {
             varList.add(aVar.getName());
         }
@@ -202,7 +208,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
      * @return Upper variables
      */
     public List<Variable> getUpperVariables() {
-        List<Variable> uVarList = new ArrayList<Variable>();
+        List<Variable> uVarList = new ArrayList<>();
         for (Variable aVar : VARDEF.getVars()) {
             if (aVar.getLevelNum() > 1) {
                 uVarList.add(aVar);
@@ -218,7 +224,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
      * @return Upper variable names
      */
     public List<String> getUpperVariableNames() {
-        List<String> uVarList = new ArrayList<String>();
+        List<String> uVarList = new ArrayList<>();
         for (Variable aVar : VARDEF.getVars()) {
             if (aVar.getLevelNum() > 1) {
                 uVarList.add(aVar.getName());
@@ -262,6 +268,16 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
     // </editor-fold>
     // <editor-fold desc="Methods">
     // <editor-fold desc="Read and write data">
+
+    public static boolean canOpen(String fileName) {
+        try {
+            BufferedReader sr = new BufferedReader(new FileReader(new File(fileName)));
+            return true;
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(GrADSDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        }
+    }
 
     /**
      * Read GrADS data info
@@ -351,9 +367,10 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                     errorStr = "The data type is not supported at present!" + System.getProperty("line.separator")
                             + DTYPE;
                     //goto ERROR;
-                }                
-                if (DTYPE.toUpperCase().equals("STATION"))
+                }
+                if (DTYPE.toUpperCase().equals("STATION")) {
                     this.setDataType(MeteoDataType.GrADS_Station);
+                }
             } else if (hStr.equals("OPTIONS")) {
                 for (i = 1; i < dataArray.length; i++) {
                     String oStr = dataArray[i].toLowerCase();
@@ -417,7 +434,6 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                             + " +lat_0=" + String.valueOf(aPLCC.latref)
                             + " +lon_0=" + String.valueOf(aPLCC.slon);
 
-
                     theProj = new ProjectionInfo(ProjStr);
                     this.setProjectionInfo(theProj);
                     if (PDEF.PDEF_Type.equals("LCCR")) {
@@ -480,7 +496,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                     XDEF.XNum = Integer.parseInt(dataArray[1]);
                     XDEF.X = new double[XDEF.XNum];
                     XDEF.Type = dataArray[2];
-                    List<Double> values = new ArrayList<Double>();
+                    List<Double> values = new ArrayList<>();
                     if (XDEF.Type.toUpperCase().equals("LINEAR")) {
                         XDEF.XMin = Float.parseFloat(dataArray[3]);
                         XDEF.XDelt = Float.parseFloat(dataArray[4]);
@@ -522,7 +538,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                     YDEF.YNum = Integer.parseInt(dataArray[1]);
                     YDEF.Y = new double[YDEF.YNum];
                     YDEF.Type = dataArray[2];
-                    List<Double> values = new ArrayList<Double>();
+                    List<Double> values = new ArrayList<>();
                     if (YDEF.Type.toUpperCase().equals("LINEAR")) {
                         YDEF.YMin = Float.parseFloat(dataArray[3]);
                         YDEF.YDelt = Float.parseFloat(dataArray[4]);
@@ -559,7 +575,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                 ZDEF.ZNum = Integer.parseInt(dataArray[1]);
                 ZDEF.Type = dataArray[2];
                 ZDEF.ZLevels = new float[ZDEF.ZNum];
-                List<Double> values = new ArrayList<Double>();
+                List<Double> values = new ArrayList<>();
                 if (ZDEF.Type.toUpperCase().equals("LINEAR")) {
                     ZDEF.SLevel = Float.parseFloat(dataArray[3]);
                     ZDEF.ZDelt = Float.parseFloat(dataArray[4]);
@@ -702,7 +718,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
 
                         }
                     }
-                    List<Double> values = new ArrayList<Double>();
+                    List<Double> values = new ArrayList<>();
                     for (Date t : TDEF.times) {
                         values.add(DateUtil.toOADate(t));
                     }
@@ -727,7 +743,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                         //goto ERROR;
                     }
                     SimpleDateFormat formatter = new SimpleDateFormat("HH:mm ddMMMyyyy", Locale.ENGLISH);
-                    List<Double> values = new ArrayList<Double>();
+                    List<Double> values = new ArrayList<>();
                     for (i = 0; i < tnum; i++) {
                         try {
                             String dStr = dataArray[3 + i];
@@ -751,7 +767,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                     Variable aVar = new Variable();
                     aVar.setName(dataArray[0]);
                     int lNum = Integer.parseInt(dataArray[1]);
-                    List<Double> levs = new ArrayList<Double>();
+                    List<Double> levs = new ArrayList<>();
                     for (int j = 0; j < lNum; j++) {
                         if (ZDEF.ZNum > j) {
                             aVar.addLevel(ZDEF.ZLevels[j]);
@@ -763,16 +779,17 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                     if (dataArray.length > 3) {
                         aVar.setDescription(dataArray[3]);
                     }
-                    aVar.setDimension(this.getXDimension());
-                    aVar.setDimension(this.getYDimension());
+                    aVar.setDimension(this.getTimeDimension());
                     if (lNum > 1) {
                         Dimension zDim = new Dimension(DimensionType.Z);
                         zDim.setValues(levs);
                         aVar.setDimension(zDim);
                     }
-                    aVar.setDimension(this.getTimeDimension());
-                    if (this.getDataType() == MeteoDataType.GrADS_Station)
+                    aVar.setDimension(this.getYDimension());
+                    aVar.setDimension(this.getXDimension());
+                    if (this.getDataType() == MeteoDataType.GrADS_Station) {
                         aVar.setStation(true);
+                    }
 
                     VARDEF.addVar(aVar);
                 }
@@ -825,7 +842,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
     }
 
     private boolean isKeyWord(String str) {
-        List<String> keyWords = new ArrayList<String>();
+        List<String> keyWords = new ArrayList<>();
         keyWords.add("DSET");
         keyWords.add("CHSUB");
         keyWords.add("DTYPE");
@@ -1120,7 +1137,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
 
         return new Object[]{filePath, tIdx};
     }
-    
+
     /**
      * Read array data of the variable
      *
@@ -1132,7 +1149,93 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
      */
     @Override
     public Array read(String varName, int[] origin, int[] size, int[] stride) {
-        return null;
+        try {
+            Variable var = this.getVariable(varName);
+            Section section = new Section(origin, size, stride);
+            Array dataArray = Array.factory(DataType.FLOAT, section.getShape());
+            int rangeIdx = 0;
+            Range timeRange = section.getRank() > 2 ? section
+                    .getRange(rangeIdx++)
+                    : new Range(0, 0);
+
+            Range levRange = var.getLevelNum() > 0 ? section
+                    .getRange(rangeIdx++)
+                    : new Range(0, 0);
+
+            Range yRange = section.getRange(rangeIdx++);
+            Range xRange = section.getRange(rangeIdx);
+
+            IndexIterator ii = dataArray.getIndexIterator();
+
+            for (int timeIdx = timeRange.first(); timeIdx <= timeRange.last();
+                    timeIdx += timeRange.stride()) {
+                int levelIdx = levRange.first();
+
+                for (; levelIdx <= levRange.last();
+                        levelIdx += levRange.stride()) {
+                    readXY(varName, timeIdx, levelIdx, yRange, xRange, ii);
+                }
+            }
+
+            return dataArray;
+        } catch (InvalidRangeException ex) {
+            Logger.getLogger(ARLDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+
+    private void readXY(String varName, int timeIdx, int levelIdx, Range yRange, Range xRange, IndexIterator ii) {
+        try {
+            int varIdx = this.getVariableNames().indexOf(varName);
+            int xNum, yNum;
+            xNum = XNum;
+            yNum = YNum;
+            float[] data = new float[yNum * xNum];
+
+            RandomAccessFile br = new RandomAccessFile(DSET, "r");
+            int i, j, lNum;
+            byte[] aBytes;
+
+            br.seek(FILEHEADER);
+            br.seek(br.getFilePointer() + (long) timeIdx * (long) RecLenPerTime);
+            for (i = 0; i < varIdx; i++) {
+                lNum = VARDEF.getVars().get(i).getLevelNum();
+                if (lNum == 0) {
+                    lNum = 1;
+                }
+                br.seek(br.getFilePointer() + lNum * RecordLen);
+            }
+            br.seek(br.getFilePointer() + levelIdx * RecordLen);
+
+            if (OPTIONS.sequential) {
+                br.seek(br.getFilePointer() + 4);
+            }
+
+            //Read X/Y data
+            byte[] byteData = new byte[xNum * yNum * 4];
+            br.read(byteData);
+            int start = 0;
+            for (i = 0; i < yNum * xNum; i++) {
+                aBytes = new byte[4];
+                System.arraycopy(byteData, start, aBytes, 0, 4);
+                start += 4;
+                data[i] = DataConvert.bytes2Float(aBytes, _byteOrder);
+            }
+
+            br.close();
+            for (int y = yRange.first(); y <= yRange.last();
+                    y += yRange.stride()) {
+                for (int x = xRange.first(); x <= xRange.last();
+                        x += xRange.stride()) {
+                    int index = y * xNum + x;
+                    ii.setFloatNext(data[index]);
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(ARLDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(ARLDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -2108,12 +2211,13 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
     // <editor-fold desc="Write data">
     /**
      * Add a time
-     * @param time The time 
+     *
+     * @param time The time
      */
-    public void addTime(Date time){
+    public void addTime(Date time) {
         this.TDEF.times.add(time);
     }
-    
+
     /**
      * Write GrADS control file
      */
@@ -2134,11 +2238,13 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
             sw.write("TITLE " + TITLE);
             sw.newLine();
             String line = "OPTIONS";
-            if (OPTIONS.sequential)
+            if (OPTIONS.sequential) {
                 line += " sequential";
-            if (OPTIONS.big_endian)
+            }
+            if (OPTIONS.big_endian) {
                 line += " big_endian";
-            if (line.length() > "OPTIONS".length()){
+            }
+            if (line.length() > "OPTIONS".length()) {
                 sw.write(line);
                 sw.newLine();
             }
@@ -2219,6 +2325,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
      * Create a GrADS binary data file
      *
      * @param aFile
+     * @throws java.io.IOException
      */
     public void createDataFile(String aFile) throws IOException {
         _bw = new DataOutputStream(new FileOutputStream(new File(aFile)));
@@ -2226,6 +2333,8 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
 
     /**
      * Close the data file created by prevoid step
+     *
+     * @throws java.io.IOException
      */
     public void closeDataFile() throws IOException {
         _bw.close();
@@ -2271,12 +2380,13 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
 
         EndianDataOutputStream ebw = new EndianDataOutputStream(bw);
         if (this.OPTIONS.sequential) {
-            if (this._byteOrder == ByteOrder.BIG_ENDIAN)
+            if (this._byteOrder == ByteOrder.BIG_ENDIAN) {
                 ebw.writeIntBE(xnum * ynum * 4);
-            else
+            } else {
                 ebw.writeIntLE(xnum * ynum * 4);
+            }
         }
-        
+
         byte[] bytes = new byte[ynum * xnum * 4];
         byte[] bs;
         int p = 0;
@@ -2292,10 +2402,11 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
         ebw.write(bytes, 0, bytes.length);
 
         if (this.OPTIONS.sequential) {
-            if (this._byteOrder == ByteOrder.BIG_ENDIAN)
+            if (this._byteOrder == ByteOrder.BIG_ENDIAN) {
                 ebw.writeIntBE(xnum * ynum * 4);
-            else
+            } else {
                 ebw.writeIntLE(xnum * ynum * 4);
+            }
         }
     }
 

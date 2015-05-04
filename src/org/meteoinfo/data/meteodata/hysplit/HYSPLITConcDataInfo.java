@@ -21,6 +21,7 @@ import org.meteoinfo.data.meteodata.DimensionType;
 import org.meteoinfo.data.meteodata.IGridDataInfo;
 import org.meteoinfo.data.meteodata.Variable;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
@@ -31,8 +32,14 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.meteoinfo.data.meteodata.MeteoDataType;
+import org.meteoinfo.data.meteodata.arl.ARLDataInfo;
 import org.meteoinfo.global.util.DateUtil;
 import ucar.ma2.Array;
+import ucar.ma2.DataType;
+import ucar.ma2.IndexIterator;
+import ucar.ma2.InvalidRangeException;
+import ucar.ma2.Range;
+import ucar.ma2.Section;
 
 /**
  *
@@ -139,7 +146,7 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
             //Record #5
             br.skipBytes(8);
             int pollutant_num = br.readInt();
-            List<Variable> variables = new ArrayList<Variable>();
+            List<Variable> variables = new ArrayList<>();
             for (i = 0; i < pollutant_num; i++) {
                 br.read(aBytes);
                 Variable var = new Variable();
@@ -158,8 +165,8 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
             int[] sampleTimes = new int[6];
             String dStr;
             Date aDateTime;
-            List<Date> sample_start = new ArrayList<Date>();
-            List<Date> sample_stop = new ArrayList<Date>();
+            List<Date> sample_start = new ArrayList<>();
+            List<Date> sample_stop = new ArrayList<>();
             do {
                 //Record #6
                 br.skipBytes(8);
@@ -231,7 +238,7 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
                 }
             } while (true);
 
-            List<Double> values = new ArrayList<Double>();
+            List<Double> values = new ArrayList<>();
             for (Date t : sample_start) {
                 values.add(DateUtil.toOADate(t));
             }
@@ -239,11 +246,11 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
             tDim.setValues(values);
             this.setTimeDimension(tDim);
 
-            for (Variable var : variables) {
-                var.setDimension(xDim);
-                var.setDimension(yDim);
+            for (Variable var : variables) {                                
                 var.setDimension(tDim);
                 var.setDimension(zDim);
+                var.setDimension(yDim);
+                var.setDimension(xDim);
             }
             //this.setTimes(times);
             this.setVariables(variables);
@@ -281,7 +288,177 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
      */
     @Override
     public Array read(String varName, int[] origin, int[] size, int[] stride) {
-        return null;
+        try {
+            Variable var = this.getVariable(varName);
+            Section section = new Section(origin, size, stride);
+            Array dataArray = Array.factory(DataType.DOUBLE, section.getShape());
+            int rangeIdx = 0;
+            Range timeRange = section.getRank() > 2 ? section
+                    .getRange(rangeIdx++)
+                    : new Range(0, 0);
+
+            Range levRange = var.getLevelNum() > 0 ? section
+                    .getRange(rangeIdx++)
+                    : new Range(0, 0);
+
+            Range yRange = section.getRange(rangeIdx++);
+            Range xRange = section.getRange(rangeIdx);
+
+            IndexIterator ii = dataArray.getIndexIterator();
+
+            for (int timeIdx = timeRange.first(); timeIdx <= timeRange.last();
+                    timeIdx += timeRange.stride()) {
+                int levelIdx = levRange.first();
+
+                for (; levelIdx <= levRange.last();
+                        levelIdx += levRange.stride()) {
+                    readXY(varName, timeIdx, levelIdx, yRange, xRange, ii);
+                }
+            }
+
+            return dataArray;
+        } catch (InvalidRangeException ex) {
+            Logger.getLogger(HYSPLITConcDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+    
+    private void readXY(String varName, int timeIdx, int levelIdx, Range yRange, Range xRange, IndexIterator ii) {
+        try {
+            int varIdx = this.getVariableNames().indexOf(varName);
+            RandomAccessFile br = new RandomAccessFile(this.getFileName(), "r");
+            int i, j, nBytes;
+            byte[] aBytes = new byte[4];
+            int xNum = this.getXDimension().getDimLength();
+            int yNum = this.getYDimension().getDimLength();
+            double[][] dataArray = new double[xNum][yNum];
+            double[] data = new double[yNum * xNum];
+
+            //Record #1            
+            br.skipBytes(36);
+
+            //Record #2
+            nBytes = (8 * 4 + 8) * _loc_num;
+            br.skipBytes(nBytes);
+
+            //Record #3
+            String fName = new File(this.getFileName()).getName().toLowerCase();
+            if (fName.contains("gemzint")) {
+                br.skipBytes(28);   //For vertical concentration file gemzint
+            } else {
+                br.skipBytes(32);
+            }
+
+            //Record #4
+            nBytes = 12 + this.getZDimension().getDimLength() * 4;
+            br.skipBytes(nBytes);
+
+            //Record #5
+            nBytes = 12 + this.getVariableNum() * 4;
+            br.skipBytes(nBytes);
+
+            //Record Data
+            int t, k;
+            int aLevel, aN, IP, JP;
+            String aType;
+            double aConc;
+            for (t = 0; t < this.getTimeNum(); t++) {
+                br.skipBytes(64);
+
+                for (i = 0; i < this.getVariableNum(); i++) {
+                    for (j = 0; j < this.getZDimension().getDimLength(); j++) {
+                        if (t == timeIdx && i == varIdx && j == levelIdx) {
+                            if (br.getFilePointer() + 28 > br.length()) {
+                                break;
+                            }
+                            if (_pack_flag == 1) {
+                                br.skipBytes(8);
+                                br.read(aBytes);
+                                aType = new String(aBytes);
+                                aLevel = br.readInt();
+                                aN = br.readInt();
+                                for (k = 0; k < aN; k++) {
+                                    if (br.getFilePointer() + 8 > br.length()) {
+                                        break;
+                                    }
+                                    IP = br.readShort();
+                                    JP = br.readShort();
+                                    aConc = br.readFloat();
+                                    if (IP >= 0 && IP < xNum && JP >= 0 && JP < yNum) {
+                                        dataArray[IP][JP] = aConc;
+                                    }
+                                }
+                            } else {
+                                br.skipBytes(8);
+                                br.read(aBytes);
+                                aType = new String(aBytes);
+                                aLevel = br.readInt();
+                                for (JP = 0; JP < yNum; JP++) {
+                                    for (IP = 0; IP < xNum; IP++) {
+                                        aConc = br.readFloat();
+                                        dataArray[IP][JP] = aConc;
+                                    }
+                                }
+                            }
+                        } else {
+                            if (br.getFilePointer() + 28 > br.length()) {
+                                break;
+                            }
+                            if (_pack_flag == 1) {
+                                br.skipBytes(8);
+                                br.read(aBytes);
+                                aType = new String(aBytes);
+                                aLevel = br.readInt();
+                                aN = br.readInt();
+                                for (k = 0; k < aN; k++) {
+                                    if (br.getFilePointer() + 8 > br.length()) {
+                                        break;
+                                    }
+                                    IP = br.readShort();
+                                    JP = br.readShort();
+                                    br.skipBytes(4);
+                                }
+                            } else {
+                                br.skipBytes(8);
+                                br.read(aBytes);
+                                aType = new String(aBytes);
+                                aLevel = br.readInt();
+                                for (JP = 0; JP < yNum; JP++) {
+                                    for (IP = 0; IP < xNum; IP++) {
+                                        br.skipBytes(4);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (br.getFilePointer() + 10 > br.length()) {
+                    break;
+                }
+            }
+
+            br.close();
+
+            for (i = 0; i < xNum; i++) {
+                for (j = 0; j < yNum; j++) {
+                    data[i * yNum + j] = dataArray[j][i];
+                }
+            }
+            
+            for (int y = yRange.first(); y <= yRange.last();
+                    y += yRange.stride()) {
+                for (int x = xRange.first(); x <= xRange.last();
+                        x += xRange.stride()) {
+                    int index = y * xNum + x;
+                    ii.setDoubleNext(data[index]);
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(ARLDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(ARLDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override

@@ -31,6 +31,10 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.List;
 import org.meteoinfo.chart.plot.PlotOrientation;
 import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.legend.LegendType;
@@ -616,6 +620,125 @@ public class ChartLegend {
     private void drawVerticalBarLegend(Graphics2D g, LegendScheme aLS) {
         PointF aP = new PointF(0, 0);
         PointF sP = new PointF(0, 0);
+        boolean DrawShape = true, DrawFill = true, DrawOutline = false;
+        Color FillColor = Color.red, OutlineColor = Color.black;
+        String caption = "";
+        Dimension aSF;
+
+        int bNum = aLS.getBreakNum();
+        if (aLS.getLegendBreaks().get(bNum - 1).isNoData()) {
+            bNum -= 1;
+        }
+
+        int labelGap = this.getLabelGap(g);
+        List<Integer> labelIdxs = new ArrayList<>();
+        int sIdx = (bNum % labelGap) / 2;
+        while (sIdx < bNum - 1) {
+            labelIdxs.add(sIdx);
+            sIdx += labelGap;
+        }
+
+        //float width = _vBarWidth;
+        _hBarHeight = (float)this.height / bNum;
+
+        for (int i = 0; i < bNum; i++) {
+            switch (aLS.getShapeType()) {
+                case Point:
+                    PointBreak aPB = (PointBreak) aLS.getLegendBreaks().get(i);
+                    DrawShape = aPB.isDrawShape();
+                    DrawFill = aPB.getDrawFill();
+                    FillColor = aPB.getColor();
+                    break;
+                case Polyline:
+                    PolylineBreak aPLB = (PolylineBreak) aLS.getLegendBreaks().get(i);
+                    DrawShape = aPLB.getDrawPolyline();
+                    FillColor = aPLB.getColor();
+                    break;
+                case Polygon:
+                    PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(i);
+                    DrawShape = aPGB.isDrawShape();
+                    DrawFill = aPGB.getDrawFill();
+                    FillColor = aPGB.getColor();
+                    break;
+                case Image:
+                    ColorBreak aCB = aLS.getLegendBreaks().get(i);
+                    DrawShape = true;
+                    DrawFill = true;
+                    FillColor = aCB.getColor();
+                    break;
+            }
+
+            aP.X = _vBarWidth / 2;
+            aP.Y = i * _hBarHeight + _hBarHeight / 2;
+
+            if (aLS.getLegendType() == LegendType.UniqueValue) {
+                if (DrawShape) {
+                    if (aLS.getShapeType() == ShapeTypes.Polygon) {
+                        PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(i).clone();
+                        aPGB.setDrawOutline(false);
+                        Draw.drawPolygonSymbol((PointF) aP.clone(), _vBarWidth, _hBarHeight, aPGB, g);
+                    } else {
+                        Draw.drawPolygonSymbol((PointF) aP.clone(), FillColor, OutlineColor, _vBarWidth,
+                                _hBarHeight, DrawFill, DrawOutline, g);
+                    }
+                }
+            } else {
+                if (DrawShape) {
+                    if (aLS.getShapeType() == ShapeTypes.Polygon) {
+                        PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(i).clone();
+                        aPGB.setDrawOutline(false);
+                        Draw.drawPolygonSymbol((PointF) aP.clone(), _vBarWidth, _hBarHeight, aPGB, g);
+                    } else {
+                        Draw.drawPolygonSymbol((PointF) aP.clone(), FillColor, OutlineColor, _vBarWidth,
+                                _hBarHeight, DrawFill, DrawOutline, g);
+                    }
+                }
+            }
+        }
+        g.setColor(Color.black);
+        g.draw(new Rectangle.Float(0, 0, this._vBarWidth, this._hBarHeight * bNum));
+        for (int i = 0; i < bNum; i++) {
+            ColorBreak cb = aLS.getLegendBreaks().get(i);
+            if (aLS.getLegendType() == LegendType.UniqueValue) {
+                caption = cb.getCaption();
+            } else {
+                caption = DataConvert.removeTailingZeros(cb.getEndValue().toString());
+            }
+
+            aP.X = _vBarWidth / 2;
+            aP.Y = i * _hBarHeight + _hBarHeight / 2;
+
+            if (aLS.getLegendType() == LegendType.UniqueValue) {
+                if (labelIdxs.contains(i)) {
+                    sP.X = aP.X + _vBarWidth / 2 + 5;
+                    sP.Y = aP.Y;
+                    FontMetrics metrics = g.getFontMetrics(this.labelFont);
+                    aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());
+                    g.setColor(Color.black);
+                    g.setFont(this.labelFont);
+                    g.drawString(caption, sP.X, sP.Y + aSF.height / 2);
+                }
+            } else {
+                if (labelIdxs.contains(i)) {
+                    //g.setColor(Color.black);
+                    sP.X = aP.X + _vBarWidth / 2;
+                    sP.Y = aP.Y + _hBarHeight / 2;
+                    g.draw(new Line2D.Float(sP.X - 5, sP.Y, sP.X, sP.Y));
+                    sP.X = sP.X + 5;
+                    if (i < bNum - 1) {
+                        FontMetrics metrics = g.getFontMetrics(this.labelFont);
+                        aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());
+                        g.setFont(this.labelFont);
+                        g.drawString(caption, sP.X, sP.Y + aSF.height / 3);
+                    }
+                }
+            }
+        }
+    }
+
+    private void drawVerticalBarLegend_old(Graphics2D g, LegendScheme aLS) {
+        PointF aP = new PointF(0, 0);
+        PointF sP = new PointF(0, 0);
         boolean DrawShape = true, DrawFill = true, DrawOutline = true;
         Color FillColor = Color.red, OutlineColor = Color.black;
         String caption = "";
@@ -626,8 +749,8 @@ public class ChartLegend {
             bNum -= 1;
         }
 
-        float width = _vBarWidth;
-        float height = (this.height - 5) / bNum;
+        //float width = _vBarWidth;
+        _hBarHeight = (this.height - 5) / bNum;
 
         for (int i = 0; i < bNum; i++) {
             switch (aLS.getShapeType()) {
@@ -676,8 +799,8 @@ public class ChartLegend {
                     break;
             }
 
-            aP.X = width / 2;
-            aP.Y = i * height + height / 2;
+            aP.X = _vBarWidth / 2;
+            aP.Y = i * _hBarHeight + _hBarHeight / 2;
 
             if (aLS.getLegendType() == LegendType.UniqueValue) {
                 if (DrawShape) {
@@ -685,14 +808,14 @@ public class ChartLegend {
                         PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(i).clone();
                         aPGB.setDrawOutline(true);
                         aPGB.setOutlineColor(Color.black);
-                        Draw.drawPolygonSymbol((PointF) aP.clone(), width, height, aPGB, g);
+                        Draw.drawPolygonSymbol((PointF) aP.clone(), _vBarWidth, _hBarHeight, aPGB, g);
                     } else {
-                        Draw.drawPolygonSymbol((PointF) aP.clone(), FillColor, OutlineColor, width,
-                                height, DrawFill, DrawOutline, g);
+                        Draw.drawPolygonSymbol((PointF) aP.clone(), FillColor, OutlineColor, _vBarWidth,
+                                _hBarHeight, DrawFill, DrawOutline, g);
                     }
                 }
 
-                sP.X = aP.X + width / 2 + 5;
+                sP.X = aP.X + _vBarWidth / 2 + 5;
                 sP.Y = aP.Y;
                 FontMetrics metrics = g.getFontMetrics(this.labelFont);
                 aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());
@@ -708,10 +831,10 @@ public class ChartLegend {
                         Points[0].Y = 0;
                         Points[1] = new PointF();
                         Points[1].X = 0;
-                        Points[1].Y = height;
+                        Points[1].Y = _hBarHeight;
                         Points[2] = new PointF();
-                        Points[2].X = width;
-                        Points[2].Y = height;
+                        Points[2].X = _vBarWidth;
+                        Points[2].Y = _hBarHeight;
                         Points[3] = new PointF();
                         Points[3].X = aP.X;
                         Points[3].Y = 0;
@@ -727,16 +850,16 @@ public class ChartLegend {
                         PointF[] Points = new PointF[4];
                         Points[0] = new PointF();
                         Points[0].X = 0;
-                        Points[0].Y = i * height;
+                        Points[0].Y = i * _hBarHeight;
                         Points[1] = new PointF();
-                        Points[1].X = width;
-                        Points[1].Y = i * height;
+                        Points[1].X = _vBarWidth;
+                        Points[1].Y = i * _hBarHeight;
                         Points[2] = new PointF();
                         Points[2].X = aP.X;
-                        Points[2].Y = i * height + height;
+                        Points[2].Y = i * _hBarHeight + _hBarHeight;
                         Points[3] = new PointF();
                         Points[3].X = 0;
-                        Points[3].Y = i * height;
+                        Points[3].Y = i * _hBarHeight;
                         if (aLS.getShapeType() == ShapeTypes.Polygon) {
                             PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(i).clone();
                             aPGB.setDrawOutline(true);
@@ -750,16 +873,16 @@ public class ChartLegend {
                             PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(i).clone();
                             aPGB.setDrawOutline(true);
                             aPGB.setOutlineColor(Color.black);
-                            Draw.drawPolygonSymbol((PointF) aP.clone(), width, height, aPGB, g);
+                            Draw.drawPolygonSymbol((PointF) aP.clone(), _vBarWidth, _hBarHeight, aPGB, g);
                         } else {
-                            Draw.drawPolygonSymbol((PointF) aP.clone(), FillColor, OutlineColor, width,
-                                    height, DrawFill, DrawOutline, g);
+                            Draw.drawPolygonSymbol((PointF) aP.clone(), FillColor, OutlineColor, _vBarWidth,
+                                    _hBarHeight, DrawFill, DrawOutline, g);
                         }
                     }
                 }
 
-                sP.X = aP.X + width / 2 + 5;
-                sP.Y = aP.Y + height / 2;
+                sP.X = aP.X + _vBarWidth / 2 + 5;
+                sP.Y = aP.Y + _hBarHeight / 2;
                 if (i < bNum - 1) {
                     FontMetrics metrics = g.getFontMetrics(this.labelFont);
                     aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());
@@ -965,118 +1088,213 @@ public class ChartLegend {
      */
     public Dimension getLegendDimension(Graphics2D g, Dimension limitDim) {
         if (legendScheme != null) {
-            int breakHeight = getBreakHeight(g);
-            switch (this.orientation) {
-                case VERTICAL:
-                    //Get column number
-                    int tHeight = (int) (legendScheme.getBreakNum() * (breakHeight + _breakSpace)
-                            + _breakSpace * 2 + breakHeight / 2 + 5);
-                    rowColNum = 1;
-                    if (tHeight > limitDim.height * 10 / 8) {
-                        rowColNum = tHeight / (limitDim.height * 10 / 8) + 1;
-                        if (rowColNum == 1) {
-                            rowColNum = 2;
-                        } else {
-                            int n = legendScheme.getBreakNum() / rowColNum;
-                            int m = legendScheme.getBreakNum() % rowColNum;
-                            if (m != 0) {
-                                if (m <= n) {
-                                    rowColNum += 1;
-                                } else {
-                                    rowColNum += 2;
-                                }
+            if (this.colorBar) {
+                switch (this.orientation) {
+                    case VERTICAL:
+                        this.width = this.getLabelWidth(g) + 20;
+                        break;
+                }
+            } else {
+                int breakHeight = getBreakHeight(g);
+                switch (this.orientation) {
+                    case VERTICAL:
+                        //Get column number
+                        int tHeight = (int) (legendScheme.getBreakNum() * (breakHeight + _breakSpace)
+                                + _breakSpace * 2 + breakHeight / 2 + 5);
+                        rowColNum = 1;
+                        if (tHeight > limitDim.height * 10 / 8) {
+                            rowColNum = tHeight / (limitDim.height * 10 / 8) + 1;
+                            if (rowColNum == 1) {
+                                rowColNum = 2;
                             } else {
-                                if (rowColNum * (limitDim.width * 8 / 10) < tHeight) {
-                                    rowColNum += 1;
-                                }
-                            }
-                        }
-                    }
-
-                    //Get width
-                    int colWidth = this.symbolDimension.width + getMaxLabelWidth(g) + 15;
-                    this.width = colWidth * rowColNum;
-
-                    //Get height
-                    int[] rowNums = new int[rowColNum];
-                    int ave = legendScheme.getBreakNum() / rowColNum;
-                    if (ave * rowColNum < legendScheme.getBreakNum()) {
-                        ave += 1;
-                    }
-                    int num = 0;
-                    int i;
-                    for (i = 0; i < rowColNum - 1; i++) {
-                        rowNums[i] = ave;
-                        num += ave;
-                    }
-                    rowNums[rowColNum - 1] = legendScheme.getBreakNum() - num;
-
-                    this.height = (int) (rowNums[0] * (breakHeight + _breakSpace)
-                            + _breakSpace * 2 + breakHeight / 2 + 5);
-                    break;
-                case HORIZONTAL:
-                    //Get row number
-                    int breakWidth = this.symbolDimension.width + this.getMaxLabelWidth(g) + 15;
-                    int tWidth = breakWidth * legendScheme.getBreakNum();
-                    rowColNum = 1;
-                    if (tWidth > limitDim.width * 8 / 10) {
-                        rowColNum = tWidth / (limitDim.width * 8 / 10);
-                        if (rowColNum == 1) {
-                            rowColNum = 2;
-                        } else {
-                            int n = legendScheme.getBreakNum() / rowColNum;
-                            int m = legendScheme.getBreakNum() % rowColNum;
-                            if (m != 0) {
-                                if (m <= n) {
-                                    rowColNum += 1;
+                                int n = legendScheme.getBreakNum() / rowColNum;
+                                int m = legendScheme.getBreakNum() % rowColNum;
+                                if (m != 0) {
+                                    if (m <= n) {
+                                        rowColNum += 1;
+                                    } else {
+                                        rowColNum += 2;
+                                    }
                                 } else {
-                                    rowColNum += 2;
+                                    if (rowColNum * (limitDim.width * 8 / 10) < tHeight) {
+                                        rowColNum += 1;
+                                    }
                                 }
+                            }
+                        }
+
+                        //Get width
+                        int colWidth = this.symbolDimension.width + getMaxLabelWidth(g) + 15;
+                        this.width = colWidth * rowColNum;
+
+                        //Get height
+                        int[] rowNums = new int[rowColNum];
+                        int ave = legendScheme.getBreakNum() / rowColNum;
+                        if (ave * rowColNum < legendScheme.getBreakNum()) {
+                            ave += 1;
+                        }
+                        int num = 0;
+                        int i;
+                        for (i = 0; i < rowColNum - 1; i++) {
+                            rowNums[i] = ave;
+                            num += ave;
+                        }
+                        rowNums[rowColNum - 1] = legendScheme.getBreakNum() - num;
+
+                        this.height = (int) (rowNums[0] * (breakHeight + _breakSpace)
+                                + _breakSpace * 2 + breakHeight / 2 + 5);
+                        break;
+                    case HORIZONTAL:
+                        //Get row number
+                        int breakWidth = this.symbolDimension.width + this.getMaxLabelWidth(g) + 15;
+                        int tWidth = breakWidth * legendScheme.getBreakNum();
+                        rowColNum = 1;
+                        if (tWidth > limitDim.width * 8 / 10) {
+                            rowColNum = tWidth / (limitDim.width * 8 / 10);
+                            if (rowColNum == 1) {
+                                rowColNum = 2;
                             } else {
-                                if (rowColNum * (limitDim.width * 8 / 10) < tWidth) {
-                                    rowColNum += 1;
+                                int n = legendScheme.getBreakNum() / rowColNum;
+                                int m = legendScheme.getBreakNum() % rowColNum;
+                                if (m != 0) {
+                                    if (m <= n) {
+                                        rowColNum += 1;
+                                    } else {
+                                        rowColNum += 2;
+                                    }
+                                } else {
+                                    if (rowColNum * (limitDim.width * 8 / 10) < tWidth) {
+                                        rowColNum += 1;
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    //Get height
-                    this.height = (int) (breakHeight + this._breakSpace * 2) * this.rowColNum;
+                        //Get height
+                        this.height = (int) (breakHeight + this._breakSpace * 2) * this.rowColNum;
 
-                    //Get width
-                    FontMetrics metrics = g.getFontMetrics(labelFont);
-                    ave = legendScheme.getBreakNum() / rowColNum;
-                    if (ave * rowColNum < legendScheme.getBreakNum()) {
-                        ave += 1;
-                    }
-                    num = 0;
-                    int maxWidth = 0;
-                    int tempWidth = 0;
-                    for (i = 0; i < legendScheme.getBreakNum(); i++) {
-                        if (num < ave) {
-                            tempWidth += this.symbolDimension.width + 15
-                                    + metrics.stringWidth(legendScheme.getLegendBreaks().get(i).getCaption());
-                            num += 1;
-                        } else {
-                            if (maxWidth < tempWidth) {
-                                maxWidth = tempWidth;
-                            }
-                            tempWidth = metrics.stringWidth(legendScheme.getLegendBreaks().get(i).getCaption()) + 15;
-                            num = 1;
+                        //Get width
+                        FontMetrics metrics = g.getFontMetrics(labelFont);
+                        ave = legendScheme.getBreakNum() / rowColNum;
+                        if (ave * rowColNum < legendScheme.getBreakNum()) {
+                            ave += 1;
                         }
-                    }
-                    if (maxWidth < tempWidth) {
-                        maxWidth = tempWidth;
-                    }
-                    if (maxWidth > limitDim.width) {
-                        maxWidth = limitDim.width * 8 / 10;
-                    }
-                    this.width = maxWidth;
-                    break;
+                        num = 0;
+                        int maxWidth = 0;
+                        int tempWidth = 0;
+                        for (i = 0; i < legendScheme.getBreakNum(); i++) {
+                            if (num < ave) {
+                                tempWidth += this.symbolDimension.width + 15
+                                        + metrics.stringWidth(legendScheme.getLegendBreaks().get(i).getCaption());
+                                num += 1;
+                            } else {
+                                if (maxWidth < tempWidth) {
+                                    maxWidth = tempWidth;
+                                }
+                                tempWidth = metrics.stringWidth(legendScheme.getLegendBreaks().get(i).getCaption()) + 15;
+                                num = 1;
+                            }
+                        }
+                        if (maxWidth < tempWidth) {
+                            maxWidth = tempWidth;
+                        }
+                        if (maxWidth > limitDim.width) {
+                            maxWidth = limitDim.width * 8 / 10;
+                        }
+                        this.width = maxWidth;
+                        break;
+                }
             }
         }
 
         return new Dimension(this.width, this.height);
+    }
+
+    private int getLabelWidth(Graphics2D g) {
+        float rwidth = 0;
+        String caption = "";
+        int bNum = this.legendScheme.getBreakNum();
+        FontMetrics metrics = g.getFontMetrics(this.labelFont);
+        if (this.legendScheme.getLegendBreaks().get(bNum - 1).isNoData()) {
+            bNum -= 1;
+        }
+        for (int i = 0; i < bNum; i++) {
+            switch (this.legendScheme.getShapeType()) {
+                case Point:
+                    PointBreak aPB = (PointBreak) legendScheme.getLegendBreaks().get(i);
+                    if (legendScheme.getLegendType() == LegendType.GraduatedColor) {
+                        caption = DataConvert.removeTailingZeros(aPB.getEndValue().toString());
+                    } else {
+                        caption = aPB.getCaption();
+                    }
+                    break;
+                case Polyline:
+                    PolylineBreak aPLB = (PolylineBreak) legendScheme.getLegendBreaks().get(i);
+                    if (legendScheme.getLegendType() == LegendType.GraduatedColor) {
+                        caption = DataConvert.removeTailingZeros(aPLB.getEndValue().toString());
+                    } else {
+                        caption = aPLB.getCaption();
+                    }
+                    break;
+                case Polygon:
+                    PolygonBreak aPGB = (PolygonBreak) legendScheme.getLegendBreaks().get(i);
+                    if (legendScheme.getLegendType() == LegendType.GraduatedColor) {
+                        caption = DataConvert.removeTailingZeros(aPGB.getEndValue().toString());
+                    } else {
+                        caption = aPGB.getCaption();
+                    }
+                    break;
+                case Image:
+                    ColorBreak aCB = legendScheme.getLegendBreaks().get(i);
+                    if (legendScheme.getLegendType() == LegendType.GraduatedColor) {
+                        caption = DataConvert.removeTailingZeros(aCB.getEndValue().toString());
+                    } else {
+                        caption = aCB.getCaption();
+                    }
+                    break;
+            }
+
+            boolean isValid = true;
+            switch (legendScheme.getLegendType()) {
+                case GraduatedColor:
+                    if (i == bNum - 1) {
+                        isValid = false;
+                    }
+                    break;
+            }
+            if (isValid) {
+                float labwidth = metrics.stringWidth(caption);
+                if (rwidth < labwidth) {
+                    rwidth = labwidth;
+                }
+            }
+        }
+
+        return (int) rwidth;
+    }
+
+    /**
+     * Update lable gap
+     *
+     * @param g Graphics2D
+     */
+    private int getLabelGap(Graphics2D g) {
+        double len;
+        int n = this.legendScheme.getBreakNum();
+        int nn;
+        if (this.orientation == PlotOrientation.HORIZONTAL) {
+            len = this.width;
+            int labLen = this.getLabelWidth(g);
+            nn = (int) ((len * 0.8) / labLen);
+        } else {
+            len = this.height;
+            FontMetrics metrics = g.getFontMetrics(labelFont);
+            nn = (int) (len / metrics.getHeight());
+        }
+        if (nn == 0) {
+            nn = 1;
+        }
+        return n / nn + 1;
     }
 
     // </editor-fold>      

@@ -1051,6 +1051,24 @@ public class LegendManage {
      * Create legend scheme
      * @param min Minimum
      * @param max Maximum
+     * @param levs Level values
+     * @param ct Color table
+     * @return LegendScheme
+     */
+    public static LegendScheme createLegendScheme(double min, double max, List<Number> levs, ColorMap ct){
+        double[] values = new double[levs.size()];
+        for (int i = 0; i < levs.size(); i++){
+            values[i] = levs.get(i).doubleValue();
+        }
+        Color[] colors = ct.getColors(levs.size() + 1);
+ 
+        return createLegendScheme(min, max, values, colors, LegendType.GraduatedColor, ShapeTypes.Image, false, -9999.0);
+    }
+    
+    /**
+     * Create legend scheme
+     * @param min Minimum
+     * @param max Maximum
      * @param n Level number
      * @param ct Color table
      * @return LegendScheme

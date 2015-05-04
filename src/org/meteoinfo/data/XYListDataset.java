@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
+import ucar.ma2.Array;
 
 /**
  *
@@ -25,9 +26,9 @@ public class XYListDataset extends XYDataset {
      * Constructor
      */
     public XYListDataset(){
-        xValues = new ArrayList<double[]>();
-        yValues = new ArrayList<double[]>();
-        seriesKeys = new ArrayList<String>();
+        xValues = new ArrayList<>();
+        yValues = new ArrayList<>();
+        seriesKeys = new ArrayList<>();
     }
     
     /**
@@ -54,7 +55,7 @@ public class XYListDataset extends XYDataset {
      */
     public XYListDataset(StationData xdata, StationData ydata, String seriesKey){
         this();
-        List<double[]> vdata = new ArrayList<double[]>();
+        List<double[]> vdata = new ArrayList<>();
         double v1, v2;
         for (int i = 0; i < xdata.getStNum(); i++) {
             v1 = xdata.getValue(i);
@@ -195,6 +196,44 @@ public class XYListDataset extends XYDataset {
             nxvs[i] = Double.parseDouble(xvs.get(i).toString());
         for (int i = 0; i < yvs.size(); i++)
             nyvs[i] = Double.parseDouble(yvs.get(i).toString());
+        
+        this.addSeries(seriesKey, nxvs, nyvs);
+    }
+    
+   /**
+     * Add a series data 
+     * @param seriesKey Series key
+     * @param xvs X value array
+     * @param yvs Y value array
+     */
+    public void addSeries(String seriesKey, List<Number> xvs, Array yvs){
+        int xn = (int)xvs.size();
+        int yn = (int)yvs.getSize();
+        double[] nxvs = new double[xn];
+        double[] nyvs = new double[yn];
+        for (int i = 0; i < xn; i++)
+            nxvs[i] = Double.parseDouble(xvs.get(i).toString());
+        for (int i = 0; i < yn; i++)
+            nyvs[i] = yvs.getDouble(i);
+        
+        this.addSeries(seriesKey, nxvs, nyvs);
+    } 
+    
+    /**
+     * Add a series data 
+     * @param seriesKey Series key
+     * @param xvs X value array
+     * @param yvs Y value array
+     */
+    public void addSeries(String seriesKey, Array xvs, Array yvs){
+        int xn = (int)xvs.getSize();
+        int yn = (int)yvs.getSize();
+        double[] nxvs = new double[xn];
+        double[] nyvs = new double[yn];
+        for (int i = 0; i < xn; i++)
+            nxvs[i] = xvs.getDouble(i);
+        for (int i = 0; i < yn; i++)
+            nyvs[i] = yvs.getDouble(i);
         
         this.addSeries(seriesKey, nxvs, nyvs);
     }

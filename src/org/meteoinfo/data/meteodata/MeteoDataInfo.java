@@ -46,6 +46,7 @@ import org.meteoinfo.global.MIMath;
 import org.meteoinfo.data.mathparser.MathParser;
 import org.meteoinfo.data.mathparser.ParseException;
 import ucar.ma2.Array;
+import ucar.nc2.NetcdfFile;
 
 /**
  *
@@ -423,6 +424,24 @@ public class MeteoDataInfo {
     // </editor-fold>
     // <editor-fold desc="Methods">
     // <editor-fold desc="Open Data">
+    /**
+     * Open data file
+     * @param fileName File name
+     */
+    public void openData(String fileName){
+        try {
+            boolean canOpen = NetcdfFile.canOpen(fileName);
+            if (canOpen){
+                this.openNetCDFData(fileName);
+            } else {
+                if (ARLDataInfo.canOpen(fileName)){
+                    this.openARLData(fileName);
+                }
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(MeteoDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 
     /**
      * Open GrADS data

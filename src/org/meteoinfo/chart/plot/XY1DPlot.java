@@ -12,6 +12,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 import org.meteoinfo.chart.ChartLegend;
+import org.meteoinfo.chart.axis.TimeAxis;
 import org.meteoinfo.data.Dataset;
 import org.meteoinfo.data.XYDataset;
 import org.meteoinfo.data.XYListDataset;
@@ -49,7 +50,7 @@ public final class XY1DPlot extends XYPlot {
 
         this.chartPlotMethod = ChartPlotMethod.LINE;
         this.useBreak2D = false;
-        this.seriesLegends = new ArrayList<SeriesLegend>();
+        this.seriesLegends = new ArrayList<>();
     }
 
     /**
@@ -82,7 +83,8 @@ public final class XY1DPlot extends XYPlot {
      */
     public XY1DPlot(boolean isTime, XYDataset dateset) {
         this();
-        this.getXAxis().setTimeAxis(isTime);
+        this.setXAxis(new TimeAxis("X", true));
+        //this.getXAxis().setTimeAxis(isTime);
         this.setDataset(dateset);
     }
 
@@ -95,7 +97,8 @@ public final class XY1DPlot extends XYPlot {
      */
     public XY1DPlot(boolean isTime, PlotOrientation orientation, XYDataset dateset) {
         this();
-        this.getXAxis().setTimeAxis(isTime);
+        this.setXAxis(new TimeAxis("X", true));
+        //this.getXAxis().setTimeAxis(isTime);
         this.setPlotOrientation(orientation);
         this.setDataset(dateset);
     }
@@ -455,7 +458,8 @@ public final class XY1DPlot extends XYPlot {
         //double ygap = extent.getHeight() / Math.min(dataset.getItemCount(), 50);
         //extent = extent.extend(xgap, ygap);
         double[] xValues;
-        if (this.getXAxis().isTimeAxis()) {
+        if (this.getXAxis() instanceof TimeAxis) {
+        //if (this.getXAxis().isTimeAxis()) {
             xValues = MIMath.getIntervalValues(extent.minX, extent.maxX, false);
             xValues[0] = extent.minX;
             xValues[xValues.length - 1] = extent.maxX;

@@ -55,8 +55,8 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
     private int _stNum;
     private boolean _hasAllCols = false;
     private int _varNum;
-    private List<List<String>> _dataList = new ArrayList<>();
-    private List<String> _fieldList = new ArrayList<>();
+    private final List<List<String>> _dataList = new ArrayList<>();
+    private final List<String> _fieldList = new ArrayList<>();
     // </editor-fold>
     // <editor-fold desc="Constructor">
 

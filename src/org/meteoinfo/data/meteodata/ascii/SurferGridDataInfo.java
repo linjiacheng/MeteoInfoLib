@@ -21,6 +21,7 @@ import org.meteoinfo.data.meteodata.IGridDataInfo;
 import org.meteoinfo.data.meteodata.Variable;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,19 +30,26 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.meteoinfo.data.meteodata.MeteoDataType;
 import ucar.ma2.Array;
+import ucar.ma2.DataType;
+import ucar.ma2.IndexIterator;
+import ucar.ma2.InvalidRangeException;
+import ucar.ma2.Range;
+import ucar.ma2.Section;
 
 /**
  *
  * @author yaqiang
  */
 public class SurferGridDataInfo extends DataInfo implements IGridDataInfo {
+
     // <editor-fold desc="Variables">
     // </editor-fold>
     // <editor-fold desc="Constructor">
+
     /**
      * Constructor
      */
-    public SurferGridDataInfo(){
+    public SurferGridDataInfo() {
         this.setDataType(MeteoDataType.Sufer_Grid);
     }
     // </editor-fold>
@@ -97,11 +105,11 @@ public class SurferGridDataInfo extends DataInfo implements IGridDataInfo {
             yDim.setValues(Y);
             this.setYDimension(yDim);
 
-            List<Variable> variables = new ArrayList<Variable>();
+            List<Variable> variables = new ArrayList<>();
             Variable aVar = new Variable();
-            aVar.setName("var");
-            aVar.addDimension(xDim);
+            aVar.setName("var");            
             aVar.addDimension(yDim);
+            aVar.addDimension(xDim);
             variables.add(aVar);
             this.setVariables(variables);
 
@@ -128,7 +136,7 @@ public class SurferGridDataInfo extends DataInfo implements IGridDataInfo {
 
         return dataInfo;
     }
-    
+
     /**
      * Read array data of the variable
      *
@@ -140,7 +148,61 @@ public class SurferGridDataInfo extends DataInfo implements IGridDataInfo {
      */
     @Override
     public Array read(String varName, int[] origin, int[] size, int[] stride) {
-        return null;
+        try {
+            Section section = new Section(origin, size, stride);
+            Array dataArray = Array.factory(DataType.FLOAT, section.getShape());
+            int rangeIdx = 0;
+            Range yRange = section.getRange(rangeIdx++);
+            Range xRange = section.getRange(rangeIdx);
+            IndexIterator ii = dataArray.getIndexIterator();
+            readXY(yRange, xRange, ii);
+
+            return dataArray;
+        } catch (InvalidRangeException ex) {
+            Logger.getLogger(SurferGridDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+
+    private void readXY(Range yRange, Range xRange, IndexIterator ii) {
+        try {
+            int xNum = this.getXDimension().getDimLength();
+            int yNum = this.getYDimension().getDimLength();
+            float[] data = new float[yNum * xNum];
+            BufferedReader sr = new BufferedReader(new FileReader(new File(this.getFileName())));
+            String[] dataArray;
+            int i, j;
+            String aLine;
+
+            for (i = 0; i < 5; i++) {
+                sr.readLine();
+            }
+
+            int idx = 0;
+            aLine = sr.readLine();
+            while (aLine != null) {
+                dataArray = aLine.trim().split("\\s+");
+                for (String dstr : dataArray) {
+                    data[idx] = Float.parseFloat(dstr);
+                    idx += 1;
+                }
+                aLine = sr.readLine();
+            }
+            sr.close();
+
+            for (int y = yRange.first(); y <= yRange.last();
+                    y += yRange.stride()) {
+                for (int x = xRange.first(); x <= xRange.last();
+                        x += xRange.stride()) {
+                    int index = y * xNum + x;
+                    ii.setFloatNext(data[index]);
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(SurferGridDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(SurferGridDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
@@ -161,16 +223,16 @@ public class SurferGridDataInfo extends DataInfo implements IGridDataInfo {
             int ii, jj;
             int d = 0;
             aLine = sr.readLine();
-            while (aLine != null) {    
+            while (aLine != null) {
                 dataArray = aLine.trim().split("\\s+");
-                for (String dstr : dataArray){
+                for (String dstr : dataArray) {
                     ii = d / xNum;
                     jj = d % xNum;
-                    if (ii >= yNum){
+                    if (ii >= yNum) {
                         d += 1;
                         break;
                     }
-                    if (jj >= xNum){
+                    if (jj >= xNum) {
                         d += 1;
                         break;
                     }

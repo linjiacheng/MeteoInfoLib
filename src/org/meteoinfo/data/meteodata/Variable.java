@@ -191,7 +191,7 @@ public class Variable {
         //return _levels.size();
         Dimension zDim = this.getZDimension();
         if (zDim == null) {
-            return 1;
+            return 0;
         } else {
             return zDim.getDimLength();
         }
@@ -851,6 +851,15 @@ public class Variable {
      */
     public void addDimension(Dimension dim) {
         _dimensions.add(dim);
+    }
+    
+    /**
+     * Add a dimension
+     * @param idx Index
+     * @param dim Dimension
+     */
+    public void addDimension(int idx, Dimension dim){
+        _dimensions.add(idx, dim);
     }
 
     /**

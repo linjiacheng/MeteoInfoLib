@@ -246,19 +246,19 @@ public class MapView extends JPanel {
     private FrmLabelSymbolSet _frmLabelSymbolSet = null;
     //private final FrmColorSymbolSet _frmColorSymbolSet = null;
     private boolean _startNewGraphic = true;
-    private List<PointF> _graphicPoints = new ArrayList<PointF>();
+    private List<PointF> _graphicPoints = new ArrayList<>();
     private PointBreak _defPointBreak = new PointBreak();
     private LabelBreak _defLabelBreak = new LabelBreak();
     private PolylineBreak _defPolylineBreak = new PolylineBreak();
     private PolygonBreak _defPolygonBreak = new PolygonBreak();
-    private final List<PointD> _editingVertices = new ArrayList<PointD>();
+    private final List<PointD> _editingVertices = new ArrayList<>();
     private int _editingVerticeIndex;
     private boolean _dragMode = false;
     private boolean _multiGlobalDraw = true;
-    private List<String> _xGridStrs = new ArrayList<String>();
-    private List<String> _yGridStrs = new ArrayList<String>();
-    private final List<Object[]> _xGridPosLabel = new ArrayList<Object[]>();
-    private final List<Object[]> _yGridPosLabel = new ArrayList<Object[]>();
+    private List<String> _xGridStrs = new ArrayList<>();
+    private List<String> _yGridStrs = new ArrayList<>();
+    private final List<Object[]> _xGridPosLabel = new ArrayList<>();
+    private final List<Object[]> _yGridPosLabel = new ArrayList<>();
     private boolean _drawGridTickLine = false;
     private Color _gridLineColor = Color.gray;
     private float _gridLineSize = 1;
@@ -269,7 +269,7 @@ public class MapView extends JPanel {
     private float _gridXOrigin = 0;
     private float _gridYOrigin = 0;
     private boolean _gridDeltChanged = false;
-    private List<GridLabel> _gridLabels = new ArrayList<GridLabel>();
+    private List<GridLabel> _gridLabels = new ArrayList<>();
     private Date _lastMouseWheelTime;
     private Timer _mouseWheelDetctionTimer;
     // </editor-fold>
@@ -5769,7 +5769,7 @@ public class MapView extends JPanel {
         //List<Shape> shapeList = new ArrayList<Shape>(aLayer.getShapes());
         //Font drawFont = aLayer.LabelSet.LabelFont;
         //SolidBrush labelBrush = new SolidBrush(aLayer.LabelSet.LabelColor);
-        List<Extent> extentList = new ArrayList<Extent>();
+        List<Extent> extentList = new ArrayList<>();
         Extent maxExtent = new Extent();
         Extent aExtent;
         int i, j;
@@ -5795,9 +5795,7 @@ public class MapView extends JPanel {
             aPoint.X = (float) xy[0];
             aPoint.Y = (float) xy[1];
 
-            aExtent = aCB.getDrawExtent(aPoint);
-            aPoint.X = (float) aExtent.minX;
-            aPoint.Y = (float) aExtent.maxY;
+            aExtent = aCB.getDrawExtent((PointF)aPoint.clone());        
 
             boolean ifDraw = true;
             if (aLayer.getChartSet().isAvoidCollision()) {
@@ -5832,6 +5830,8 @@ public class MapView extends JPanel {
                 if (Math.abs(sP.X - aPoint.X) > 5 || Math.abs(sP.Y - aPoint.Y) > 5) {
                     g.drawLine((int) sP.X, (int) sP.Y, (int) aPoint.X, (int) aPoint.Y);
                 }
+                aPoint.X = (float) aExtent.minX;
+                aPoint.Y = (float) aExtent.maxY;
                 Draw.drawChartPoint(aPoint, aCB, g);
 
                 //Draw selected rectangle
@@ -6263,7 +6263,7 @@ public class MapView extends JPanel {
 
     private void getLonLatGridLabels() {
         if (_isGeoMap) {
-            _gridLabels = new ArrayList<GridLabel>();
+            _gridLabels = new ArrayList<>();
             if (_projection.isLonLatMap()) {
                 if (_lonLatLayer == null) {
                     return;
@@ -6295,13 +6295,13 @@ public class MapView extends JPanel {
                             }
                         }
                     }
-                    List<GridLabel> gLabels = new ArrayList<GridLabel>();
+                    List<GridLabel> gLabels = new ArrayList<>();
                     for (int l = 0; l < aPLS.getPolylines().size(); l++) {
                         Polyline aPL = aPLS.getPolylines().get(l);
                         gLabels.addAll(GeoComputation.getGridLabels_StraightLine(aPL, _drawExtent, isLon));
 
                         if (isLon) {
-                            List<PointD> aPList = new ArrayList<PointD>();
+                            List<PointD> aPList = new ArrayList<>();
                             for (int j = 0; j < aPL.getPointList().size(); j++) {
                                 PointD aP = (PointD) aPL.getPointList().get(j).clone();
                                 aP.X = aP.X + 360;

@@ -9,6 +9,7 @@ import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import org.meteoinfo.data.Dataset;
 import org.meteoinfo.global.Extent;
+import org.meteoinfo.layer.MapLayer;
 import org.meteoinfo.map.MapView;
 
 /**
@@ -77,7 +78,7 @@ public class XY2DPlot extends XYPlot {
     
     @Override
     void drawGraph(Graphics2D g, Rectangle2D area) {
-        this.mapView.setViewExtent(this.getDrawExtent());
+        this.mapView.setViewExtent((Extent)this.getDrawExtent().clone());
         this.mapView.paintGraphics(g, area);
     }
     
@@ -94,6 +95,25 @@ public class XY2DPlot extends XYPlot {
     @Override
     public void updateLegendScheme(){
         
+    }
+    
+    /**
+     * Add a layer
+     * @param layer The layer 
+     */
+    public void addLayer(MapLayer layer){
+        this.mapView.addLayer(layer);
+        this.setDrawExtent(layer.getExtent());
+    }
+    
+    /**
+     * Add a layer
+     * @param idx Index
+     * @param layer Layer
+     */
+    public void addLayer(int idx, MapLayer layer){
+        this.mapView.addLayer(idx, layer);
+        this.setDrawExtent(layer.getExtent());
     }
     // </editor-fold>            
 }

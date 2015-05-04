@@ -23,6 +23,7 @@ import org.meteoinfo.global.MIMath;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -33,6 +34,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.meteoinfo.data.meteodata.MeteoDataType;
 import ucar.ma2.Array;
+import ucar.ma2.DataType;
+import ucar.ma2.IndexIterator;
+import ucar.ma2.InvalidRangeException;
+import ucar.ma2.Range;
+import ucar.ma2.Section;
 
 /**
  *
@@ -98,11 +104,11 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
             yDim.setValues(Y);
             this.setYDimension(yDim);
             
-            List<Variable> variables = new ArrayList<Variable>();
+            List<Variable> variables = new ArrayList<>();
             Variable aVar = new Variable();
             aVar.setName("var");
-            aVar.addDimension(xDim);
             aVar.addDimension(yDim);
+            aVar.addDimension(xDim);            
             variables.add(aVar);
             this.setVariables(variables);
             
@@ -141,7 +147,97 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
      */
     @Override
     public Array read(String varName, int[] origin, int[] size, int[] stride) {
-        return null;
+        try {
+            Section section = new Section(origin, size, stride);
+            Array dataArray = Array.factory(DataType.FLOAT, section.getShape());
+            int rangeIdx = 0;
+            Range yRange = section.getRange(rangeIdx++);
+            Range xRange = section.getRange(rangeIdx);
+            IndexIterator ii = dataArray.getIndexIterator();
+            readXY(yRange, xRange, ii);
+
+            return dataArray;
+        } catch (InvalidRangeException ex) {
+            Logger.getLogger(ASCIIGridDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+
+    private void readXY(Range yRange, Range xRange, IndexIterator ii) {
+        try {
+            int xNum = this.getXDimension().getDimLength();
+            int yNum = this.getYDimension().getDimLength();
+            float[][] theData = new float[yNum][xNum];
+            BufferedReader sr = new BufferedReader(new FileReader(new File(this.getFileName())));
+            String[] dataArray;
+            int i, j;
+            String aLine;
+            
+            for (i = 0; i < 6; i++) {
+                sr.readLine();
+            }
+            
+            List<String> dataList = new ArrayList<>();
+            int col = 0;
+            do {
+                aLine = sr.readLine();
+                if (aLine == null) {
+                    break;
+                }
+                dataArray = aLine.trim().split("\\s+");
+                dataList.addAll(Arrays.asList(dataArray));
+                if (col == 0) {
+                    if (!MIMath.isNumeric(dataList.get(0))) {
+                        aLine = sr.readLine();
+                        dataArray = aLine.trim().split("\\s+");
+                        dataList = Arrays.asList(dataArray);
+                    }
+                }
+                for (i = 0; i < 100; i++) {
+                    if (dataList.size() < xNum) {
+                        aLine = sr.readLine();
+                        if (aLine == null) {
+                            break;
+                        }
+                        dataArray = aLine.trim().split("\\s+");
+                        dataList.addAll(Arrays.asList(dataArray));
+                    } else {
+                        break;
+                    }
+                }
+                for (i = 0; i < xNum; i++) {
+                    theData[col][i] = Float.parseFloat(dataList.get(i));
+                }
+                if (dataList.size() > xNum) {
+                    dataList = dataList.subList(xNum, dataList.size() - 1);
+                } else {
+                    dataList = new ArrayList<>();
+                }
+                col += 1;
+            } while (aLine != null);
+            
+            sr.close();
+            
+            float[] data = new float[yNum * xNum];
+            for (i = 0; i < yNum; i++) {
+                for (j = 0; j < xNum; j++) {
+                    data[i * xNum + j] = theData[yNum - 1 - i][j];
+                }
+            }
+
+            for (int y = yRange.first(); y <= yRange.last();
+                    y += yRange.stride()) {
+                for (int x = xRange.first(); x <= xRange.last();
+                        x += xRange.stride()) {
+                    int index = y * xNum + x;
+                    ii.setFloatNext(data[index]);
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(ASCIIGridDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(ASCIIGridDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     @Override
@@ -153,13 +249,13 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
             BufferedReader sr = new BufferedReader(new FileReader(new File(this.getFileName())));
             String[] dataArray;
             int i, j;
-            String aLine, wholeStr;
+            String aLine;
             
             for (i = 0; i < 6; i++) {
                 sr.readLine();
             }
             
-            List<String> dataList = new ArrayList<String>();
+            List<String> dataList = new ArrayList<>();
             int col = 0;
             do {
                 aLine = sr.readLine();
@@ -193,7 +289,7 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
                 if (dataList.size() > xNum) {
                     dataList = dataList.subList(xNum, dataList.size() - 1);
                 } else {
-                    dataList = new ArrayList<String>();
+                    dataList = new ArrayList<>();
                 }
                 col += 1;
             } while (aLine != null);

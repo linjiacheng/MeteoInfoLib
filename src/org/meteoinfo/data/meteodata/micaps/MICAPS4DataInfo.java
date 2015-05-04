@@ -22,6 +22,7 @@ import org.meteoinfo.data.meteodata.Variable;
 import org.meteoinfo.global.MIMath;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
@@ -36,6 +37,11 @@ import java.util.logging.Logger;
 import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.global.util.DateUtil;
 import ucar.ma2.Array;
+import ucar.ma2.DataType;
+import ucar.ma2.IndexIterator;
+import ucar.ma2.InvalidRangeException;
+import ucar.ma2.Range;
+import ucar.ma2.Section;
 
 /**
  *
@@ -73,7 +79,7 @@ public class MICAPS4DataInfo extends DataInfo implements IGridDataInfo {
             String aLine;
             String[] dataArray;
             int i, n;
-            List<String> dataList = new ArrayList<String>();
+            List<String> dataList = new ArrayList<>();
 
             this.setFileName(fileName);
             aLine = sr.readLine().trim();
@@ -170,7 +176,7 @@ public class MICAPS4DataInfo extends DataInfo implements IGridDataInfo {
             ydim.setValues(_yArray);
             this.setYDimension(ydim);
 
-            List<Variable> variables = new ArrayList<Variable>();
+            List<Variable> variables = new ArrayList<>();
             Variable var = new Variable();
             var.setName("var");
             //var.setStation(true);
@@ -211,7 +217,101 @@ public class MICAPS4DataInfo extends DataInfo implements IGridDataInfo {
      */
     @Override
     public Array read(String varName, int[] origin, int[] size, int[] stride) {
-        return null;
+        try {
+            Section section = new Section(origin, size, stride);
+            Array dataArray = Array.factory(DataType.FLOAT, section.getShape());
+            int rangeIdx = 0;
+            Range yRange = section.getRange(rangeIdx++);
+            Range xRange = section.getRange(rangeIdx);
+            IndexIterator ii = dataArray.getIndexIterator();
+            readXY(yRange, xRange, ii);
+
+            return dataArray;
+        } catch (InvalidRangeException ex) {
+            Logger.getLogger(MICAPS4DataInfo.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+    
+    private void readXY(Range yRange, Range xRange, IndexIterator ii) {
+        try {
+            BufferedReader sr = new BufferedReader(new InputStreamReader(new FileInputStream(this.getFileName()), "gbk"));
+            int i, j;
+            for (i = 0; i < _headLineNum; i++) {
+                sr.readLine();
+            }
+
+            List<String> dataList = new ArrayList<>();
+            String[] dataArray;
+            int col = 0;
+            String aLine;
+            int xNum = this.getXDimension().getDimLength();
+            int yNum = this.getYDimension().getDimLength();
+            float[][] theData = new float[yNum][xNum];
+            do {
+                aLine = sr.readLine();
+                if (aLine == null) {
+                    break;
+                }
+                aLine = aLine.trim();
+                if (aLine.isEmpty())
+                    continue;
+                dataArray = aLine.split("\\s+");
+                dataList.addAll(Arrays.asList(dataArray));
+                if (col == 0) {
+                    if (!MIMath.isNumeric(dataList.get(0))) {
+                        aLine = sr.readLine().trim();
+                        dataArray = aLine.split("\\s+");
+                        dataList.clear();
+                        dataList.addAll(Arrays.asList(dataArray));
+                    }
+                }
+                for (i = 0; i < 100; i++) {
+                    if (dataList.size() < xNum) {
+                        aLine = sr.readLine();
+                        if (aLine == null) {
+                            break;
+                        }
+                        aLine = aLine.trim();
+                        dataArray = aLine.split("\\s+");
+                        dataList.addAll(Arrays.asList(dataArray));
+                    } else {
+                        break;
+                    }
+                }
+                for (i = 0; i < xNum; i++) {
+                    theData[col][i] = Float.parseFloat(dataList.get(i));
+                }
+                if (dataList.size() > xNum) {
+                    dataList = dataList.subList(xNum, dataList.size() - 1);
+                } else {
+                    dataList = new ArrayList<>();
+                }
+                col += 1;
+            } while (aLine != null);
+
+            sr.close();
+            
+            float[] data = new float[yNum * xNum];
+            for (i = 0; i < yNum; i++) {
+                for (j = 0; j < xNum; j++) {
+                    data[i * xNum + j] = theData[yNum - 1 - i][j];
+                }
+            }
+
+            for (int y = yRange.first(); y <= yRange.last();
+                    y += yRange.stride()) {
+                for (int x = xRange.first(); x <= xRange.last();
+                        x += xRange.stride()) {
+                    int index = y * xNum + x;
+                    ii.setFloatNext(data[index]);
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(MICAPS4DataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(MICAPS4DataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
@@ -223,7 +323,7 @@ public class MICAPS4DataInfo extends DataInfo implements IGridDataInfo {
                 sr.readLine();
             }
 
-            List<String> dataList = new ArrayList<String>();
+            List<String> dataList = new ArrayList<>();
             String[] dataArray;
             int col = 0;
             String aLine;
@@ -267,7 +367,7 @@ public class MICAPS4DataInfo extends DataInfo implements IGridDataInfo {
                 if (dataList.size() > xNum) {
                     dataList = dataList.subList(xNum, dataList.size() - 1);
                 } else {
-                    dataList = new ArrayList<String>();
+                    dataList = new ArrayList<>();
                 }
                 col += 1;
             } while (aLine != null);

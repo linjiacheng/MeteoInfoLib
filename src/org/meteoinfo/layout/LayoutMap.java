@@ -784,7 +784,6 @@ public class LayoutMap extends LayoutElement {
 //                        }
 //                    }
 //                }
-
             if (_mapFrame.isDrawNeatLine()) {
                 g.setColor(_mapFrame.getNeatLineColor());
                 g.setStroke(new BasicStroke(_mapFrame.getNeatLineSize()));
@@ -798,7 +797,7 @@ public class LayoutMap extends LayoutElement {
         if (_mapFrame != null) {
             PointF aP = pageToScreen(this.getLeft(), this.getTop(), pageLocation, zoom);
             Rectangle rect = new Rectangle((int) aP.X, (int) aP.Y, (int) (this.getWidth() * zoom), (int) (this.getHeight() * zoom));
-            if (this.isDrawBackColor()){
+            if (this.isDrawBackColor()) {
                 g.setColor(_mapFrame.getMapView().getBackground());
                 g.fill(rect);
             }
@@ -807,7 +806,7 @@ public class LayoutMap extends LayoutElement {
 
             //Draw lon/lat grid labels
             if (_mapFrame.isDrawGridLabel()) {
-                List<Extent> extentList = new ArrayList<Extent>();
+                List<Extent> extentList = new ArrayList<>();
                 Extent maxExtent = new Extent();
                 Extent aExtent;
                 Dimension aSF;
@@ -866,13 +865,13 @@ public class LayoutMap extends LayoutElement {
                     sP.Y = labY;
 
                     drawStr = aGL.getLabString();
-                    if (_drawDegreeSymbol)
-                        {
-                            if (drawStr.endsWith("E") || drawStr.endsWith("W") || drawStr.endsWith("N") || drawStr.endsWith("S"))
-                                drawStr = drawStr.substring(0, drawStr.length() - 1) + String.valueOf((char)186) + drawStr.substring(drawStr.length() - 1);
-                            else
-                                drawStr = drawStr + String.valueOf((char)186);
+                    if (_drawDegreeSymbol) {
+                        if (drawStr.endsWith("E") || drawStr.endsWith("W") || drawStr.endsWith("N") || drawStr.endsWith("S")) {
+                            drawStr = drawStr.substring(0, drawStr.length() - 1) + String.valueOf((char) 186) + drawStr.substring(drawStr.length() - 1);
+                        } else {
+                            drawStr = drawStr + String.valueOf((char) 186);
                         }
+                    }
                     FontMetrics metrics = g.getFontMetrics(font);
                     aSF = new Dimension(metrics.stringWidth(drawStr), metrics.getHeight());
                     switch (aGL.getLabDirection()) {
@@ -1077,20 +1076,22 @@ public class LayoutMap extends LayoutElement {
         public void setBounds(Rectangle rect) {
             _mapFrame.setLayoutBounds(rect);
         }
-        
+
         /**
          * Get is draw backcolor
+         *
          * @return Boolean
          */
-        public boolean isDrawBackColor(){
+        public boolean isDrawBackColor() {
             return LayoutMap.this.isDrawBackColor();
         }
-        
+
         /**
          * Set is draw backcolor
+         *
          * @param value Boolean
          */
-        public void setDrawBackColor(boolean value){
+        public void setDrawBackColor(boolean value) {
             LayoutMap.this.setDrawBackColor(value);
         }
 
