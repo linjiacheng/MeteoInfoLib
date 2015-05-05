@@ -58,6 +58,22 @@ public class ArrayMath {
                 return -1;
         }
     }
+    
+    private static DataType objectsToType(final Object[] objects) {
+        if (objects.length == 0) {
+            return DataType.INT;
+        }
+        short new_sz, sz = -1;
+        DataType dataType = DataType.INT;
+        for (final Object o : objects) {
+            final DataType _type = ArrayMath.getDataType(o);
+            new_sz = ArrayMath.typeToNBytes(_type);
+            if (new_sz > sz) {
+                dataType = _type;
+            }
+        }
+        return dataType;
+    }
 
     /**
      * Array add
@@ -743,5 +759,73 @@ public class ArrayMath {
                 }
         }
         return r;
+    }
+    
+    /**
+     * Array range
+     *
+     * @param start Start value
+     * @param stop Stop value
+     * @param step Step value
+     * @return Array
+     */
+    public static Array arrayRange(Number start, Number stop, final Number step) {
+        if (stop == null) {
+            stop = start;
+            start = 0;
+        }
+        DataType dataType = ArrayMath.objectsToType(new Object[]{
+            start,
+            stop,
+            step});
+        double startv = start.doubleValue();
+        double stopv = stop.doubleValue();
+        double stepv = step.doubleValue();
+        final int length = Math.max(0, (int) Math.ceil((stopv -
+                startv) / stepv));
+        Array a = Array.factory(dataType, new int[]{length});
+        for (int i = 0; i < length; i++) {
+            a.setObject(i, i * stepv + startv);
+        }
+        return a;
+    }
+    
+    /**
+     * Array line space
+     *
+     * @param start Start value
+     * @param stop Stop value
+     * @param n Number value
+     * @return Array
+     */
+    public static Array lineSpace(Number start, Number stop, final int n) {
+        if (stop == null) {
+            stop = start;
+            start = 0;
+        }
+//        DataType dataType = ArrayMath.objectsToType(new Object[]{
+//            start,
+//            stop});
+        double startv = start.doubleValue();
+        double stopv = stop.doubleValue();
+        double stepv = (stopv - startv) / (n - 1);
+        Array a = Array.factory(DataType.FLOAT, new int[]{n});
+        for (int i = 0; i < n; i++) {
+            a.setObject(i, i * stepv + startv);
+        }
+        return a;
+    }
+    
+    /**
+     * Get zero array
+     * @param n Number
+     * @return Array
+     */
+    public static Array zeros(int n){
+        Array a = Array.factory(DataType.FLOAT, new int[]{n});
+        for (int i = 0; i < n; i++)
+            a.setFloat(i, 0);
+        
+        return a;
     }
 }
