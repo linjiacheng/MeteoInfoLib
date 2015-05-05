@@ -235,7 +235,7 @@ public class ColorUtil {
         }
 
         File[] files = pathDir.listFiles();
-        List<ColorMap> cts = new ArrayList<ColorMap>();
+        List<ColorMap> cts = new ArrayList<>();
         for (File file : files) {
             //InputStream is = ColorUtil.class.getResourceAsStream(pdir + "/" + fileName);
             //System.out.println(file.getAbsolutePath());
@@ -311,7 +311,7 @@ public class ColorUtil {
      */
     public static ColorMap[] getColorTables_old() throws IOException {
         String pdir = "/org/meteoinfo/resources/colortables";
-        List<String> fns = new ArrayList<String>();
+        List<String> fns = new ArrayList<>();
         fns.add("grads_rainbow.rgb");
         fns.add("GHRSST_anomaly.rgb");
         fns.add("amwg256.rgb");
@@ -329,7 +329,7 @@ public class ColorUtil {
         fns.add("seaice_1.rgb");
         fns.add("seaice_2.rgb");
 
-        List<ColorMap> cts = new ArrayList<ColorMap>();
+        List<ColorMap> cts = new ArrayList<>();
         for (String fileName : fns) {
             InputStream is = ColorUtil.class.getResourceAsStream(pdir + "/" + fileName);
             ColorMap ct = new ColorMap();

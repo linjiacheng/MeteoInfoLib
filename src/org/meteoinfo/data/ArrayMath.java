@@ -5,6 +5,8 @@
  */
 package org.meteoinfo.data;
 
+import java.util.ArrayList;
+import java.util.List;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
 import ucar.ma2.IndexIterator;
@@ -653,6 +655,7 @@ public class ArrayMath {
 
     /**
      * Summarize array
+     *
      * @param a Array a
      * @return Summarize value
      */
@@ -667,6 +670,7 @@ public class ArrayMath {
 
     /**
      * Summarize array skip missing value
+     *
      * @param a Array a
      * @param missingValue Missing value
      * @return Summarize value
@@ -682,9 +686,10 @@ public class ArrayMath {
         }
         return sum;
     }
-    
+
     /**
      * Average array
+     *
      * @param a Array a
      * @return Average value
      */
@@ -692,9 +697,10 @@ public class ArrayMath {
         double sum = ArrayMath.sumDouble(a);
         return sum / a.getSize();
     }
-    
+
     /**
      * Average array skip missing value
+     *
      * @param a Array a
      * @param missingValue Missing value
      * @return Average value
@@ -711,5 +717,31 @@ public class ArrayMath {
             }
         }
         return sum / n;
+    }
+
+    /**
+     * As number list
+     * @param a Array a
+     * @return Result number list
+     */
+    public static List<Number> asList(Array a) {
+        IndexIterator iterA = a.getIndexIterator();
+        List<Number> r = new ArrayList<>();
+        switch (a.getDataType()) {
+            case SHORT:
+            case INT:                
+                while (iterA.hasNext()) {
+                    r.add(iterA.getIntNext());
+                }
+            case FLOAT:
+                while (iterA.hasNext()) {
+                    r.add(iterA.getFloatNext());
+                }
+            case DOUBLE:
+                while (iterA.hasNext()) {
+                    r.add(iterA.getDoubleNext());
+                }
+        }
+        return r;
     }
 }

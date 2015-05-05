@@ -716,7 +716,7 @@ public abstract class XYPlot extends Plot {
                 break;
             case RIGHT_OUTSIDE:
                 x = (float) graphArea.getX() + (float) graphArea.getWidth() + 10;
-                y = (float) area.getHeight() / 2 - dim.height / 2;
+                y = (float) graphArea.getY() + (float) graphArea.getHeight() / 2 - dim.height / 2;
                 break;
             case UPPER_RIGHT:
                 x = (float) graphArea.getWidth() - dim.width;

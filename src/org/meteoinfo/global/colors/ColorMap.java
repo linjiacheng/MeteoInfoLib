@@ -26,7 +26,7 @@ import org.meteoinfo.legend.LegendManage;
 public class ColorMap {
     // <editor-fold desc="Variables">
     private Color[] colors;
-    private String name;
+    private String name = "";
     
     final static int GRADS_RAINBOW = 0;
     // </editor-fold>
@@ -35,9 +35,17 @@ public class ColorMap {
      * Constructor
      */
     public ColorMap(){
-        name = "";
         colors = new Color[1];
         colors[0] = Color.red;
+    }
+    
+    /**
+     * Constructor
+     * @param c Color
+     */
+    public ColorMap(Color c) {
+        colors = new Color[1];
+        colors[0] = c;
     }
     
     /**
@@ -53,6 +61,16 @@ public class ColorMap {
             colors[i] = new Color(randomColor.nextInt(256),
                     randomColor.nextInt(256), randomColor.nextInt(256));
         }
+    }
+    
+    /**
+     * Constructor
+     * @param cs Colors
+     */
+    public ColorMap(List<Color> cs){
+        colors = new Color[cs.size()];
+        for (int i = 0; i < cs.size(); i++)
+            colors[i] = cs.get(i);
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -125,6 +143,14 @@ public class ColorMap {
             return this.gradsRainBowColors(n);
         } 
         
+        if (this.colors.length < n){
+            Color[] ncs = new Color[n];
+            for (int i = 0; i < n; i++)
+                ncs[i] = colors[0];
+            
+            return ncs;
+        }
+        
         Color[] ncs = new Color[n];
         int cn = this.colors.length;
         int gap = cn / n;
@@ -142,10 +168,10 @@ public class ColorMap {
                 idx = 0;
         }
         
-        if (cn > n){
-            ncs[0] = this.colors[0];
-            ncs[n - 1] = this.colors[cn - 1];
-        }
+//        if (cn > n){
+//            ncs[0] = this.colors[0];
+//            ncs[n - 1] = this.colors[cn - 1];
+//        }
 
         return ncs;
     }

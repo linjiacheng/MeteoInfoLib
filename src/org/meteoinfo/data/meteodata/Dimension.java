@@ -302,5 +302,41 @@ public class Dimension {
         
         return dim;
     }
+    
+    /**
+     * Extract dimension
+     * @param first First
+     * @param last Last
+     * @param stride Stride
+     * @return Extracted dimension
+     */
+    public Dimension extract(double first, double last, double stride){
+        Dimension dim = new Dimension(this._dimType);
+        dim.setDimId(this._dimId);
+        dim.setDimName(this._dimName);
+        List<Double> values = new ArrayList<>();
+        int idx;
+        for (double v = first; v <= last; v+=stride){
+            idx = this.getValueIndex(v);
+            values.add(this._dimValue.get(idx));
+        }
+        dim.setValues(values);
+        
+        return dim;
+    }
+    
+    /**
+     * Get value index
+     * @param v Value
+     * @return Index
+     */
+    public int getValueIndex(double v){
+        for (int i = 0; i < this.getDimLength(); i++){
+            if (v <= this._dimValue.get(i))
+                return i;
+        }
+        
+        return this.getDimLength() - 1;
+    }
     // </editor-fold>
 }

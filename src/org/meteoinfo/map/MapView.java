@@ -5653,7 +5653,7 @@ public class MapView extends JPanel {
         }
 
         Font drawFont;
-        List<Extent> extentList = new ArrayList<Extent>();
+        List<Extent> extentList = new ArrayList<>();
         Extent maxExtent = new Extent();
         Extent aExtent;
         int i, j;
