@@ -7,10 +7,15 @@ package org.meteoinfo.data;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.meteoinfo.geoprocess.GeoComputation;
+import org.meteoinfo.global.PointD;
+import org.meteoinfo.layer.VectorLayer;
+import org.meteoinfo.shape.PolygonShape;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
 import ucar.ma2.IndexIterator;
 import ucar.ma2.InvalidRangeException;
+import ucar.ma2.Range;
 
 /**
  *
@@ -18,7 +23,13 @@ import ucar.ma2.InvalidRangeException;
  */
 public class ArrayMath {
 
-    private static DataType getDataType(Object o) {
+    // <editor-fold desc="Data type">
+    /**
+     * Get data type
+     * @param o Object
+     * @return Data type
+     */
+    public static DataType getDataType(Object o) {
         if (o instanceof Integer) {
             return DataType.INT;
         } else if (o instanceof Float) {
@@ -38,8 +49,10 @@ public class ArrayMath {
 
     /**
      * Return the number of bytes per element for the given typecode.
+     * @param dataType Data type
+     * @return Bytes number
      */
-    private static short typeToNBytes(final DataType dataType) {
+    public static short typeToNBytes(final DataType dataType) {
         switch (dataType) {
             case BYTE:
                 return 1;
@@ -57,24 +70,11 @@ public class ArrayMath {
                 System.out.println("internal error in typeToNBytes");
                 return -1;
         }
-    }
+    }        
     
-    private static DataType objectsToType(final Object[] objects) {
-        if (objects.length == 0) {
-            return DataType.INT;
-        }
-        short new_sz, sz = -1;
-        DataType dataType = DataType.INT;
-        for (final Object o : objects) {
-            final DataType _type = ArrayMath.getDataType(o);
-            new_sz = ArrayMath.typeToNBytes(_type);
-            if (new_sz > sz) {
-                dataType = _type;
-            }
-        }
-        return dataType;
-    }
+    // </editor-fold>
 
+    // <editor-fold desc="Arithmetic">
     /**
      * Array add
      *
@@ -614,7 +614,41 @@ public class ArrayMath {
 
         return r;
     }
+    
+    // </editor-fold>
+    
+    // <editor-fold desc="Circular function">
+    /**
+     * Sine function
+     * @param a Array a
+     * @return Result array
+     */
+    public static Array sin(Array a){
+        Array r = Array.factory(a.getDataType() == DataType.DOUBLE ? DataType.DOUBLE : DataType.FLOAT, a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            r.setDouble(i, Math.sin(a.getDouble(i)));
+        }
 
+        return r;
+    }
+    
+    /**
+     * Cosine function
+     * @param a Array a
+     * @return Result array
+     */
+    public static Array cos(Array a){
+        Array r = Array.factory(a.getDataType() == DataType.DOUBLE ? DataType.DOUBLE : DataType.FLOAT, a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            r.setDouble(i, Math.cos(a.getDouble(i)));
+        }
+
+        return r;
+    }
+    
+    // </editor-fold>
+
+    // <editor-fold desc="Section">
     /**
      * Section array
      *
@@ -628,7 +662,21 @@ public class ArrayMath {
     public static Array section(Array a, int[] origin, int[] size, int[] stride) throws InvalidRangeException {
         return a.section(origin, size, stride);
     }
+    
+    /**
+     * Section array
+     * @param a Array a
+     * @param ranges Ranges
+     * @return Result array
+     * @throws InvalidRangeException 
+     */
+    public static Array section(Array a, List<Range> ranges) throws InvalidRangeException {
+        return a.section(ranges);
+    }
 
+    // </editor-fold>
+    
+    // <editor-fold desc="Statistics">
     /**
      * Get minimum value
      *
@@ -734,7 +782,10 @@ public class ArrayMath {
         }
         return sum / n;
     }
+    
+    // </editor-fold>
 
+    // <editor-fold desc="Convert">
     /**
      * As number list
      * @param a Array a
@@ -761,71 +812,111 @@ public class ArrayMath {
         return r;
     }
     
+    // </editor-fold>       
+    
+    // <editor-fold desc="Location">
     /**
-     * Array range
-     *
-     * @param start Start value
-     * @param stop Stop value
-     * @param step Step value
-     * @return Array
+     * In polygon function
+     * @param a Array a
+     * @param x X dimension values
+     * @param y Y dimension values
+     * @param layer Polygon vector layer
+     * @return Result array with cell values of 1 inside polygons and -1 outside polygons
      */
-    public static Array arrayRange(Number start, Number stop, final Number step) {
-        if (stop == null) {
-            stop = start;
-            start = 0;
-        }
-        DataType dataType = ArrayMath.objectsToType(new Object[]{
-            start,
-            stop,
-            step});
-        double startv = start.doubleValue();
-        double stopv = stop.doubleValue();
-        double stepv = step.doubleValue();
-        final int length = Math.max(0, (int) Math.ceil((stopv -
-                startv) / stepv));
-        Array a = Array.factory(dataType, new int[]{length});
-        for (int i = 0; i < length; i++) {
-            a.setObject(i, i * stepv + startv);
-        }
-        return a;
+    public static Array inPolygon(Array a, List<Number> x, List<Number> y, VectorLayer layer){
+        List<PolygonShape> polygons = (List<PolygonShape>)layer.getShapes();
+        return ArrayMath.inPolygon(a, x, y, polygons);
     }
     
     /**
-     * Array line space
-     *
-     * @param start Start value
-     * @param stop Stop value
-     * @param n Number value
-     * @return Array
+     * In polygon function
+     * @param a Array a
+     * @param x X dimension values
+     * @param y Y dimension values
+     * @param polygons PolygonShape list
+     * @return Result array with cell values of 1 inside polygons and -1 outside polygons
      */
-    public static Array lineSpace(Number start, Number stop, final int n) {
-        if (stop == null) {
-            stop = start;
-            start = 0;
+    public static Array inPolygon(Array a, List<Number> x, List<Number> y, List<PolygonShape> polygons){
+        int xNum = x.size();
+        int yNum = y.size();
+
+        Array r = Array.factory(DataType.INT, a.getShape());
+        for (int i = 0; i < yNum; i++) {
+            for (int j = 0; j < xNum; j++) {
+                if (GeoComputation.pointInPolygons(polygons, new PointD(x.get(j).doubleValue(), y.get(i).doubleValue()))) {
+                    r.setInt(i * xNum + j, 1);
+                } else {
+                    r.setInt(i * xNum + j, -1);
+                }
+            }
         }
-//        DataType dataType = ArrayMath.objectsToType(new Object[]{
-//            start,
-//            stop});
-        double startv = start.doubleValue();
-        double stopv = stop.doubleValue();
-        double stepv = (stopv - startv) / (n - 1);
-        Array a = Array.factory(DataType.FLOAT, new int[]{n});
-        for (int i = 0; i < n; i++) {
-            a.setObject(i, i * stepv + startv);
-        }
-        return a;
+
+        return r;
     }
     
     /**
-     * Get zero array
-     * @param n Number
-     * @return Array
+     * Maskout function
+     * @param a Array a
+     * @param x X dimension values
+     * @param y Y dimension values
+     * @param layer VectorLayer
+     * @param missingValue Missing value
+     * @return Result array with cell values of missing outside polygons
      */
-    public static Array zeros(int n){
-        Array a = Array.factory(DataType.FLOAT, new int[]{n});
-        for (int i = 0; i < n; i++)
-            a.setFloat(i, 0);
+    public static Array maskout(Array a, List<Number> x, List<Number> y, VectorLayer layer, Number missingValue){
+        List<PolygonShape> polygons = (List<PolygonShape>)layer.getShapes();
+        return ArrayMath.maskout(a, x, y, polygons, missingValue);
+    }
+    
+    /**
+     * Maskout function
+     * @param a Array a
+     * @param x X dimension values
+     * @param y Y dimension values
+     * @param polygons PolygonShape list
+     * @param missingValue Missing value
+     * @return Result array with cell values of missing outside polygons
+     */
+    public static Array maskout(Array a, List<Number> x, List<Number> y, List<PolygonShape> polygons, Number missingValue){
+        int xNum = x.size();
+        int yNum = y.size();
+
+        Array r = Array.factory(a.getDataType(), a.getShape());
+        int idx;
+        for (int i = 0; i < yNum; i++) {
+            for (int j = 0; j < xNum; j++) {
+                idx = i * xNum + j;
+                if (GeoComputation.pointInPolygons(polygons, new PointD(x.get(j).doubleValue(), y.get(i).doubleValue()))) {
+                    r.setObject(idx, a.getObject(idx));
+                } else {
+                    r.setObject(idx, missingValue);
+                }
+            }
+        }
+
+        return r;
+    }
+    
+    /**
+     * Maskout function
+     * @param a Array a
+     * @param m Array mask
+     * @param missingValue Missing value
+     * @return Result array
+     */
+    public static Array maskout(Array a, Array m, Number missingValue){
+        Array r = Array.factory(a.getDataType(), a.getShape());
+        int n = (int)a.getSize();
+        for (int i = 0; i < n; i++){
+            if (m.getDouble(i) < 0){
+                r.setObject(i, missingValue);
+            } else {
+                r.setObject(i, a.getObject(i));
+            }
+        }
         
-        return a;
+        return r;
     }
+    
+    // </editor-fold>
 }

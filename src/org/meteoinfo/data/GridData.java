@@ -30,6 +30,7 @@ import org.meteoinfo.geoprocess.analysis.ResampleMethods;
 import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.util.BigDecimalUtil;
 import org.meteoinfo.layer.VectorLayer;
+import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.projection.ProjectionManage;
 import org.meteoinfo.projection.Reproject;
@@ -37,6 +38,7 @@ import org.meteoinfo.shape.PolygonShape;
 import org.meteoinfo.shape.ShapeTypes;
 import org.meteoinfo.table.DataTable;
 import ucar.ma2.Array;
+import ucar.ma2.IndexIterator;
 
 /**
  *
@@ -142,6 +144,41 @@ public class GridData {
         
         this.missingValue = missingValue;
         this.projInfo = projInfo;
+    }
+    
+    /**
+     * Constructor
+     * @param array Data array
+     * @param xdata X data
+     * @param ydata Y data
+     * @param missingValue Missing value
+     */
+    public GridData(Array array, Array xdata, Array ydata, Number missingValue){
+        int yn = (int)ydata.getSize();
+        int xn = (int)xdata.getSize();
+        this.data = new double[yn][xn];       
+        IndexIterator iter = array.getIndexIterator();
+        int idx = 0;
+        while (iter.hasNext()) {
+            double val = iter.getDoubleNext();
+            data[idx / xn][idx % xn] = val;
+            idx += 1;
+        }
+//        for (int i = 0; i < yn; i++){
+//            for (int j = 0; j < xn; j++){
+//                data[i][j] = array.getDouble(i * xn + j);
+//            }
+//        }
+        
+        this.xArray = new double[xn];
+        this.yArray = new double[yn];
+        for (int i = 0; i < xn; i++)
+            this.xArray[i] = xdata.getDouble(i);
+        for (int i = 0; i < yn; i++)
+            this.yArray[i] = ydata.getDouble(i);
+        
+        this.missingValue = missingValue.doubleValue();
+        this.projInfo = KnownCoordinateSystems.geographic.world.WGS1984;;
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">

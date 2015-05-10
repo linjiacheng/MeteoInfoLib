@@ -121,7 +121,7 @@ public class MaskOut {
      * @return Layer names
      */
     public static List<String> getLayerNames() {
-        List<String> layerNames = new ArrayList<String>();
+        List<String> layerNames = new ArrayList<>();
         for (MapLayer aLayer : _mapView.getLayers()) {
             if (aLayer.getLayerType() == LayerTypes.VectorLayer) {
                 if (aLayer.getShapeType() == ShapeTypes.Polygon) {

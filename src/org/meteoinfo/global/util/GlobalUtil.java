@@ -640,7 +640,7 @@ public class GlobalUtil {
      * @return Splitted string array
      */
     public static String[] split(String line, String separator) {
-        if (separator == null) {
+        if (separator == null || separator.equals(" ")) {
             return line.split("\\s+");
         } else {
             return line.split(separator);

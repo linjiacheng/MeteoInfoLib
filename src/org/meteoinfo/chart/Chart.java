@@ -93,6 +93,9 @@ public class Chart {
      * @return Plot
      */
     public Plot getPlot(){
+        if (this.plots.isEmpty())
+            return null;
+        
         return this.plots.get(0);
     }
     

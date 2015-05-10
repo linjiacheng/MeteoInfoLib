@@ -115,6 +115,7 @@ public final class XY1DPlot extends XYPlot {
         dataset = (XYDataset) value;
         Extent extent = this.getAutoExtent();
         this.setDrawExtent(extent);
+        this.seriesLegends.clear();
         for (int i = 0; i < dataset.getSeriesCount(); i++) {
             PolylineBreak plb = new PolylineBreak();
             plb.setColor(ColorUtil.getCommonColor(i));
