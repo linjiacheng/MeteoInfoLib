@@ -228,6 +228,18 @@ public class Dimension {
      *
      * @param values Values
      */
+    public void setDimValues(List<Number> values) {
+        _dimValue = new ArrayList<>();
+        for (Number v : values)
+            _dimValue.add(v.doubleValue());
+        _dimLength = _dimValue.size();
+    }
+    
+    /**
+     * Set dimension values
+     *
+     * @param values Values
+     */
     public void setValues(double[] values){
         _dimValue = new ArrayList<>();
         for (double v : values){

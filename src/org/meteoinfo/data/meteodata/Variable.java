@@ -861,6 +861,43 @@ public class Variable {
     public void addDimension(int idx, Dimension dim){
         _dimensions.add(idx, dim);
     }
+    
+    /**
+     * Add a dimension
+     * @param dType Dimension type
+     * @param values Dimension values
+     */
+    public void addDimension(DimensionType dType, List<Number> values){
+        Dimension dim = new Dimension(dType);
+        dim.setDimValues(values);
+        this._dimensions.add(dim);
+    }
+    
+    /**
+     * Add a dimension
+     * @param tstr Dimension type string
+     * @param values Dimension values
+     */
+    public void addDimension(String tstr, List<Number> values){
+        DimensionType dType = DimensionType.Other;
+        switch(tstr){
+            case "X":
+                dType = DimensionType.X;
+                break;
+            case "Y":
+                dType = DimensionType.Y;
+                break;
+            case "Z":
+                dType = DimensionType.Z;
+                break;
+            case "T":
+                dType = DimensionType.T;
+                break;
+        }
+        Dimension dim = new Dimension(dType);
+        dim.setDimValues(values);
+        this._dimensions.add(dim);
+    }
 
     /**
      * Add attribute
