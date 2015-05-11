@@ -71,6 +71,7 @@ public class LayoutLegend extends LayoutElement {
     private float _leftSpace;
     private float barWidth;
     private int _columnNum = 1;
+    private boolean drawChartBreaks = true;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -365,6 +366,22 @@ public class LayoutLegend extends LayoutElement {
     public void setColumnNumber(int value) {
         _columnNum = value;
     }
+    
+    /**
+     * Get if draw chart breaks
+     * @return Boolean
+     */
+    public boolean isDrawChartBreaks(){
+        return this.drawChartBreaks;
+    }
+    
+    /**
+     * Set if draw chart breaks
+     * @param value Boolean
+     */
+    public void setDrawChartBreaks(boolean value){
+        this.drawChartBreaks = value;
+    }
 
     // </editor-fold>
     // <editor-fold desc="Methods">
@@ -424,7 +441,7 @@ public class LayoutLegend extends LayoutElement {
         g.setTransform(oldMatrix);
     }
 
-    private void drawChartLegend(Graphics2D g, float zoom, PointF aPoint) {
+    private void drawChartLegend(Graphics2D g, float zoom, PointF aPoint, boolean drawBreaks) {
         VectorLayer aLayer = (VectorLayer) _legendLayer;
         ChartBreak aCB = ((ChartBreak) aLayer.getChartPoints().get(0).getLegend()).getSampleChartBreak();
 
@@ -441,25 +458,34 @@ public class LayoutLegend extends LayoutElement {
                 break;
         }
         aPoint.Y += _breakSpace;
-
+        
         //Draw breaks
-        LegendScheme aLS = aCB.getLegendScheme();
-        drawNormalLegend(g, zoom, aLS, aPoint, false);
+        if (drawBreaks){
+            LegendScheme aLS = aCB.getLegendScheme();
+            drawNormalLegend(g, zoom, aLS, aPoint, false);
+        }
     }
 
     private void drawNormalLegend(Graphics2D g, float zoom) {
-        LegendScheme aLS = _legendLayer.getLegendScheme();
-        PointF aP = new PointF(0, 0);
-        drawNormalLegend(g, zoom, aLS, aP, true);
-        float height = getBreakHeight(g) * zoom;
-        aP.Y += height + _breakSpace;
-
-        //Draw chart legend
+        boolean drawChart = false;
         if (_legendLayer.getLayerType() == LayerTypes.VectorLayer) {
             if (((VectorLayer) _legendLayer).getChartSet().isDrawCharts()) {
-                drawChartLegend(g, zoom, aP);
+                drawChart = true;
             }
         }
+        
+        PointF aP = new PointF(0, 0);
+        if (!drawChart){
+            LegendScheme aLS = _legendLayer.getLegendScheme();        
+            drawNormalLegend(g, zoom, aLS, aP, true);
+            float height = getBreakHeight(g) * zoom;
+            aP.Y += height + _breakSpace;
+        }
+
+        //Draw chart legend
+        if (drawChart){
+            drawChartLegend(g, zoom, aP, this.drawChartBreaks);
+        }        
     }
 
     private void drawNormalLegend(Graphics2D g, float zoom, LegendScheme aLS, PointF aP, boolean drawTitle) {
@@ -1306,6 +1332,22 @@ public class LayoutLegend extends LayoutElement {
         }
         
         /**
+         * Get is draw chart breaks
+         * @return Boolean
+         */
+        public boolean isDrawChartBreaks(){
+            return drawChartBreaks;
+        }
+        
+        /**
+         * Set if draw chart breaks
+         * @param value Boolean
+         */
+        public void setDrawChartBreaks(boolean value){
+            drawChartBreaks = value;
+        }
+        
+        /**
          * Get is draw backcolor
          * @return Boolean
          */
@@ -1466,6 +1508,7 @@ public class LayoutLegend extends LayoutElement {
             addProperty("drawNeatLine").setCategory("Neat Line").setDisplayName("Draw Neat Line");
             addProperty("neatLineColor").setCategory("Neat Line").setDisplayName("Neat Line Color");
             addProperty("neatLineSize").setCategory("Neat Line").setDisplayName("Neat Line Size");
+            addProperty("drawChartBreaks").setCategory("Chart").setDisplayName("Draw Chart Breaks");
             addProperty("left").setCategory("Location").setDisplayName("Left");
             addProperty("top").setCategory("Location").setDisplayName("Top");
             addProperty("width").setCategory("Location").setDisplayName("Width");

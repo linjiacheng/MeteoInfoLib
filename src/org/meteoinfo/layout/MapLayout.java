@@ -3621,6 +3621,7 @@ public class MapLayout extends JPanel {
         Attr DrawNeatLine = doc.createAttribute("DrawNeatLine");
         Attr NeatLineColor = doc.createAttribute("NeatLineColor");
         Attr NeatLineSize = doc.createAttribute("NeatLineSize");
+        Attr drawChartBreaks = doc.createAttribute("DrawChartBreaks");
         Attr Left = doc.createAttribute("Left");
         Attr Top = doc.createAttribute("Top");
         Attr Width = doc.createAttribute("Width");
@@ -3639,6 +3640,7 @@ public class MapLayout extends JPanel {
         DrawNeatLine.setValue(String.valueOf(aLegend.isDrawNeatLine()));
         NeatLineColor.setValue(ColorUtil.toHexEncoding(aLegend.getNeatLineColor()));
         NeatLineSize.setValue(String.valueOf(aLegend.getNeatLineSize()));
+        drawChartBreaks.setValue(String.valueOf(aLegend.isDrawChartBreaks()));
         Left.setValue(String.valueOf(aLegend.getLeft()));
         Top.setValue(String.valueOf(aLegend.getTop()));
         Width.setValue(String.valueOf(aLegend.getWidth()));
@@ -3657,6 +3659,7 @@ public class MapLayout extends JPanel {
         Legend.setAttributeNode(DrawNeatLine);
         Legend.setAttributeNode(NeatLineColor);
         Legend.setAttributeNode(NeatLineSize);
+        Legend.setAttributeNode(drawChartBreaks);
         Legend.setAttributeNode(Left);
         Legend.setAttributeNode(Top);
         Legend.setAttributeNode(Width);
@@ -3987,6 +3990,7 @@ public class MapLayout extends JPanel {
             aLL.setLayerUpdateType(LayerUpdateTypes.valueOf(layoutLegend.getAttributes().getNamedItem("LayerUpdateType").getNodeValue()));
             aLL.setColumnNumber(Integer.parseInt(layoutLegend.getAttributes().getNamedItem("ColumnNumber").getNodeValue()));
             aLL.setDrawBackColor(Boolean.parseBoolean(layoutLegend.getAttributes().getNamedItem("DrawBackColor").getNodeValue()));
+            aLL.setDrawChartBreaks(Boolean.parseBoolean(layoutLegend.getAttributes().getNamedItem("DrawChartBreaks").getNodeValue()));
         } catch (Exception e) {
         }
 
