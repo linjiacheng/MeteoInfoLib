@@ -156,6 +156,18 @@ public class TableData {
             Logger.getLogger(TimeTableData.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    /**
+     * Add column data
+     * @param colName Column name
+     * @param dt Data type string
+     * @param colData The column data
+     * @throws Exception 
+     */
+    public void addColumnData(String colName, String dt, List<Number> colData) throws Exception{
+        DataTypes dataType = ArrayUtil.toDataTypes(dt);
+        this.dataTable.addColumnData(colName, dataType, colData);
+    }
 
     /**
      * Add data row

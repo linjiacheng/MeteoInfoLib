@@ -79,21 +79,7 @@ public class ArrayUtil {
 
         return a;
     }
-
-    private static DataType toDataType(String dt) {
-        switch (dt) {
-            case "C":
-                return DataType.STRING;
-            case "i":
-                return DataType.INT;
-            case "f":
-                return DataType.FLOAT;
-            case "d":
-                return DataType.DOUBLE;
-            default:
-                return DataType.OBJECT;
-        }
-    }
+    
     // </editor-fold>
 
     // <editor-fold desc="Create">
@@ -303,6 +289,48 @@ public class ArrayUtil {
         if (ndim > 1)
             sbuff.append("]");
         return sbuff.toString();
+    }
+    // </editor-fold>
+    
+    // <editor-fold desc="Convert">
+    /**
+     * To data type - ucar.ma2
+     * @param dt Data type string
+     * @return Data type
+     */
+    public static DataType toDataType(String dt) {
+        switch (dt) {
+            case "C":
+                return DataType.STRING;
+            case "i":
+                return DataType.INT;
+            case "f":
+                return DataType.FLOAT;
+            case "d":
+                return DataType.DOUBLE;
+            default:
+                return DataType.OBJECT;
+        }
+    }
+    
+    /**
+     * To data type - MeteoInfo
+     * @param dt Data type string
+     * @return Data type
+     */
+    public static DataTypes toDataTypes(String dt){
+        switch (dt) {
+            case "C":
+                return DataTypes.String;
+            case "i":
+                return DataTypes.Integer;
+            case "f":
+                return DataTypes.Float;
+            case "d":
+                return DataTypes.Double;
+            default:
+                return DataTypes.String;
+        }
     }
     // </editor-fold>
 }

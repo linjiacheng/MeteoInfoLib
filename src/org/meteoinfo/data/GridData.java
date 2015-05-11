@@ -13,14 +13,19 @@
  */
 package org.meteoinfo.data;
 
+import java.io.BufferedReader;
 import org.meteoinfo.geoprocess.GeoComputation;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -116,67 +121,78 @@ public class GridData {
         missingValue = -9999;
         data = new double[yNum][xNum];
     }
-    
+
     /**
      * Constructor
+     *
      * @param array Data array
      * @param xdata X data
      * @param ydata Y data
      * @param missingValue Missing value
      * @param projInfo Projection info
      */
-    public GridData(Array array, List<Number> xdata, List<Number> ydata, double missingValue, ProjectionInfo projInfo){
+    public GridData(Array array, List<Number> xdata, List<Number> ydata, double missingValue, ProjectionInfo projInfo) {
         int yn = ydata.size();
         int xn = xdata.size();
-        this.data = new double[yn][xn];        
-        for (int i = 0; i < yn; i++){
-            for (int j = 0; j < xn; j++){
-                data[i][j] = array.getDouble(i * xn + j);
+        this.data = new double[yn][xn];
+        IndexIterator iter = array.getIndexIterator();
+        int idx = 0;
+        while (iter.hasNext()) {
+            double val = iter.getDoubleNext();
+            if (java.lang.Double.isNaN(val)) {
+                data[idx / xn][idx % xn] = missingValue;
+            } else {
+                data[idx / xn][idx % xn] = val;
             }
+            idx += 1;
         }
-        
+
         this.xArray = new double[xn];
         this.yArray = new double[yn];
-        for (int i = 0; i < xn; i++)
+        for (int i = 0; i < xn; i++) {
             this.xArray[i] = xdata.get(i).doubleValue();
-        for (int i = 0; i < yn; i++)
+        }
+        for (int i = 0; i < yn; i++) {
             this.yArray[i] = ydata.get(i).doubleValue();
-        
+        }
+
         this.missingValue = missingValue;
         this.projInfo = projInfo;
     }
-    
+
     /**
      * Constructor
+     *
      * @param array Data array
      * @param xdata X data
      * @param ydata Y data
      * @param missingValue Missing value
      */
-    public GridData(Array array, Array xdata, Array ydata, Number missingValue){
-        int yn = (int)ydata.getSize();
-        int xn = (int)xdata.getSize();
-        this.data = new double[yn][xn];       
+    public GridData(Array array, Array xdata, Array ydata, Number missingValue) {
+        int yn = (int) ydata.getSize();
+        int xn = (int) xdata.getSize();
+        this.data = new double[yn][xn];
         IndexIterator iter = array.getIndexIterator();
         int idx = 0;
         while (iter.hasNext()) {
             double val = iter.getDoubleNext();
-            data[idx / xn][idx % xn] = val;
+            if (java.lang.Double.isNaN(val)) {
+                data[idx / xn][idx % xn] = missingValue.doubleValue();
+            } else {
+                data[idx / xn][idx % xn] = val;
+            }
             idx += 1;
         }
-//        for (int i = 0; i < yn; i++){
-//            for (int j = 0; j < xn; j++){
-//                data[i][j] = array.getDouble(i * xn + j);
-//            }
-//        }
-        
+
         this.xArray = new double[xn];
         this.yArray = new double[yn];
-        for (int i = 0; i < xn; i++)
+        for (int i = 0; i < xn; i++) {
             this.xArray[i] = xdata.getDouble(i);
-        for (int i = 0; i < yn; i++)
+        }
+        for (int i = 0; i < yn; i++) {
             this.yArray[i] = ydata.getDouble(i);
-        
+        }
+
         this.missingValue = missingValue.doubleValue();
         this.projInfo = KnownCoordinateSystems.geographic.world.WGS1984;;
     }
@@ -544,7 +560,7 @@ public class GridData {
         double b = data[i1][j2];
         double c = data[i2][j1];
         double d = data[i2][j2];
-        List<java.lang.Double> dList = new ArrayList<java.lang.Double>();
+        List<java.lang.Double> dList = new ArrayList<>();
         if (!MIMath.doubleEquals(a, missingValue)) {
             dList.add(a);
         }
@@ -575,6 +591,25 @@ public class GridData {
         }
 
         return iValue;
+    }
+    
+    /**
+     * Interpolate grid data to station points
+     * @param xlist X coordinate list
+     * @param ylist Y coordinate list
+     * @return Result data list
+     */
+    public List<java.lang.Double> toStation(List<Number> xlist, List<Number> ylist){
+        List<java.lang.Double> r = new ArrayList<>();
+        double x, y, v;
+        for (int i = 0; i < xlist.size(); i++){
+            x = xlist.get(i).doubleValue();
+            y = ylist.get(i).doubleValue();
+            v = this.toStation(x, y);
+            r.add(v);
+        }
+        
+        return r;
     }
 
     /**
@@ -626,6 +661,57 @@ public class GridData {
                 dataTable.setValue(i, fieldName, sdata.getValue(i));
             }
         }
+    }
+
+    /**
+     * Interpolate grid data to stations imported from station file
+     *
+     * @param inFile Input station file
+     * @param outFile Output station file
+     * @throws java.io.UnsupportedEncodingException
+     * @throws java.io.FileNotFoundException
+     */
+    public void toStation(String inFile, String outFile) throws UnsupportedEncodingException, FileNotFoundException, IOException {
+        if (!new File(inFile).exists()) {
+            return;
+        }
+
+        BufferedReader sr = new BufferedReader(new InputStreamReader(new FileInputStream(inFile), "utf-8"));
+        BufferedWriter sw = new BufferedWriter(new FileWriter(new File(outFile)));
+
+        //Header
+        String aLine = sr.readLine();
+        aLine = aLine + ",data";
+        sw.write(aLine);
+        sw.newLine();
+
+        //Data
+        String[] dArray;
+        String stId;
+        double x, y;
+        double value;
+        aLine = sr.readLine();
+        while (aLine != null) {
+            aLine = aLine.trim();
+            dArray = aLine.split(",");
+            if (dArray.length < 3) {
+                continue;
+            }
+
+            stId = dArray[0].trim();
+            x = java.lang.Double.parseDouble(dArray[1].trim());
+            y = java.lang.Double.parseDouble(dArray[2].trim());
+            value = toStation(x, y);
+            if (!java.lang.Double.isNaN(value)) {
+                aLine = aLine + "," + String.valueOf(value);
+                sw.write(aLine);
+                sw.newLine();
+            }
+            aLine = sr.readLine();
+        }
+
+        sr.close();
+        sw.close();
     }
 
     /**
@@ -1958,20 +2044,22 @@ public class GridData {
 
         return new double[]{max, min};
     }
-    
+
     /**
      * Get maximum value
+     *
      * @return Maximum value
      */
-    public double getMaxValue(){
+    public double getMaxValue() {
         return this.getMaxMinValue()[0];
     }
-    
+
     /**
      * Get minimum value
+     *
      * @return Minimum value
      */
-    public double getMinValue(){
+    public double getMinValue() {
         return this.getMaxMinValue()[1];
     }
 

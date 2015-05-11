@@ -107,6 +107,7 @@ public class ColorMap {
     }
     // </editor-fold>
     // <editor-fold desc="Methods">
+    
     /**
      * Get color
      * @param idx Color index

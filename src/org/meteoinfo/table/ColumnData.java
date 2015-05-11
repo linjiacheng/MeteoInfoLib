@@ -235,7 +235,7 @@ public class ColumnData {
         if (dataColumn.getDataType() == DataTypes.Double) {
             return ((List<Double>) data);
         } else {
-            List<Double> values = new ArrayList<Double>();
+            List<Double> values = new ArrayList<>();
             switch (dataColumn.getDataType()) {
                 case Integer:
                     for (int v : (List<Integer>) data) {

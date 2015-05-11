@@ -26,6 +26,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -45,14 +46,16 @@ public class LonLatStationDataInfo extends DataInfo implements IStationDataInfo 
 
     private List<String> _fields = new ArrayList<String>();
     private String delimiter = null;
+
     //private int lonIdx = 1;
     //private int latIdx = 2;
     // </editor-fold>
     // <editor-fold desc="Constructor">
+
     /**
      * Constructor
      */
-    public LonLatStationDataInfo(){
+    public LonLatStationDataInfo() {
         this.setDataType(MeteoDataType.LonLatStation);
     }
     // </editor-fold>
@@ -115,7 +118,7 @@ public class LonLatStationDataInfo extends DataInfo implements IStationDataInfo 
 
         return dataInfo;
     }
-    
+
     /**
      * Read array data of the variable
      *
@@ -133,7 +136,7 @@ public class LonLatStationDataInfo extends DataInfo implements IStationDataInfo 
     @Override
     public StationData getStationData(int timeIdx, int varIdx, int levelIdx) {
         try {
-            List<String[]> dataList = new ArrayList<String[]>();
+            List<String[]> dataList = new ArrayList<>();
             BufferedReader sr = new BufferedReader(new InputStreamReader(new FileInputStream(this.getFileName()), "UTF8"));
             sr.readLine();
             String line = sr.readLine();
@@ -149,7 +152,7 @@ public class LonLatStationDataInfo extends DataInfo implements IStationDataInfo 
             sr.close();
 
             StationData stationData = new StationData();
-            List<String> stations = new ArrayList<String>();
+            List<String> stations = new ArrayList<>();
             String stName;
             int i;
             double lon, lat, t;
@@ -169,13 +172,14 @@ public class LonLatStationDataInfo extends DataInfo implements IStationDataInfo 
                 stName = dataArray[0];
                 lon = Double.parseDouble(dataArray[1]);
                 lat = Double.parseDouble(dataArray[2]);
-                if (dataArray.length <= vIdx)
+                if (dataArray.length <= vIdx) {
                     t = stationData.missingValue;
-                else {
-                    if (dataArray[vIdx].isEmpty())
+                } else {
+                    if (dataArray[vIdx].isEmpty()) {
                         t = stationData.missingValue;
-                    else
+                    } else {
                         t = Double.parseDouble(dataArray[vIdx]);
+                    }
                 }
                 discreteData[i][0] = lon;
                 discreteData[i][1] = lat;
@@ -225,7 +229,7 @@ public class LonLatStationDataInfo extends DataInfo implements IStationDataInfo 
         BufferedReader sr = null;
         try {
             sr = new BufferedReader(new InputStreamReader(new FileInputStream(this.getFileName()), "UTF8"));
-            List<List<String>> dataList = new ArrayList<List<String>>();
+            List<List<String>> dataList = new ArrayList<>();
             sr.readLine();
             String line = sr.readLine();
             while (line != null) {
@@ -261,6 +265,86 @@ public class LonLatStationDataInfo extends DataInfo implements IStationDataInfo 
     @Override
     public StationModelData getStationModelData(int timeIdx, int levelIdx) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    /**
+     * Get Lon/Lat station data - all data are missing data
+     *
+     * @return Null station data
+     * @throws java.io.FileNotFoundException
+     * @throws java.io.UnsupportedEncodingException
+     */
+    public StationData getNullStationData() throws FileNotFoundException, UnsupportedEncodingException, IOException {
+        BufferedReader sr = new BufferedReader(new InputStreamReader(new FileInputStream(this.getFileName()), "utf-8"));
+        List<String[]> dataList = new ArrayList<>();
+        sr.readLine();
+        String line = sr.readLine();
+        while (line != null) {
+            if (line.isEmpty()) {
+                line = sr.readLine();
+                continue;
+            }
+            dataList.add(line.split(","));
+            line = sr.readLine();
+        }
+        sr.close();
+
+        StationData stationData = new StationData();
+        List<String> stations = new ArrayList<>();
+        String stName;
+        int i;
+        double lon, lat;
+        double t;
+        t = 0;
+
+        String[] dataArray;
+        double[][] discreteData = new double[3][dataList.size()];
+        double minX, maxX, minY, maxY;
+        minX = 0;
+        maxX = 0;
+        minY = 0;
+        maxY = 0;
+
+        for (i = 0; i < dataList.size(); i++) {
+            dataArray = dataList.get(i);
+            stName = dataArray[0];
+            lon = Double.parseDouble(dataArray[1]);
+            lat = Double.parseDouble(dataArray[2]);
+            t = stationData.missingValue;
+            discreteData[i][0] = lon;
+            discreteData[i][1] = lat;
+            discreteData[i][2] = t;
+            stations.add(stName);
+
+            if (i == 0) {
+                minX = lon;
+                maxX = minX;
+                minY = lat;
+                maxY = minY;
+            } else {
+                if (minX > lon) {
+                    minX = lon;
+                } else if (maxX < lon) {
+                    maxX = lon;
+                }
+                if (minY > lat) {
+                    minY = lat;
+                } else if (maxY < lat) {
+                    maxY = lat;
+                }
+            }
+        }
+        Extent dataExtent = new Extent();
+        dataExtent.minX = minX;
+        dataExtent.maxX = maxX;
+        dataExtent.minY = minY;
+        dataExtent.maxY = maxY;
+
+        stationData.data = discreteData;
+        stationData.dataExtent = dataExtent;
+        stationData.stations = stations;
+
+        return stationData;
     }
     // </editor-fold>
 }

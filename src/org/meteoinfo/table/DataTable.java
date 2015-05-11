@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.meteoinfo.data.ArrayUtil;
 import org.meteoinfo.data.mapdata.Field;
 import org.meteoinfo.global.MIMath;
 
@@ -431,6 +432,36 @@ public final class DataTable {
             }
             i++;
         }
+    }
+    
+    /**
+     * Add column data
+     * @param colName Column name
+     * @param dataType Data type
+     * @param colData The column data
+     * @throws Exception 
+     */
+    public void addColumnData(String colName, DataTypes dataType, List<Number> colData) throws Exception{
+        DataColumn col = this.addColumn(colName, dataType);
+        int i = 0;
+        for (DataRow row : this.rows){
+            if (i < colData.size()){
+                row.setValue(col, colData.get(i));
+            }
+            i++;
+        }
+    }
+    
+    /**
+     * Add column data
+     * @param colName Column name
+     * @param dt Data type string
+     * @param colData The column data
+     * @throws Exception 
+     */
+    public void addColumnData(String colName, String dt, List<Number> colData) throws Exception{
+        DataTypes dataType = ArrayUtil.toDataTypes(dt);
+        this.addColumnData(colName, dataType, colData);
     }
     
     /**

@@ -999,6 +999,7 @@ public class DrawMeteoData {
     public static RasterLayer createRasterLayer(GridData gridData, String LName, LegendScheme aLS) {
         RasterLayer aRLayer = new RasterLayer();
         aRLayer.setGridData(gridData);
+        aRLayer.setShapeType(ShapeTypes.Image);
         aRLayer.setLegendScheme(aLS.convertTo(ShapeTypes.Image));
         aRLayer.setLayerName(LName);
         aRLayer.setVisible(true);

@@ -8,8 +8,11 @@ package org.meteoinfo.data;
 import java.util.ArrayList;
 import java.util.List;
 import org.meteoinfo.geoprocess.GeoComputation;
+import org.meteoinfo.geoprocess.analysis.ResampleMethods;
+import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
 import org.meteoinfo.layer.VectorLayer;
+import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.shape.PolygonShape;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
@@ -26,6 +29,7 @@ public class ArrayMath {
     // <editor-fold desc="Data type">
     /**
      * Get data type
+     *
      * @param o Object
      * @return Data type
      */
@@ -42,13 +46,28 @@ public class ArrayMath {
     }
 
     private static DataType commonType(DataType aType, DataType bType) {
+        if (aType == bType)
+            return aType;
+        
         short anb = ArrayMath.typeToNBytes(aType);
         short bnb = ArrayMath.typeToNBytes(bType);
+        if (anb == bnb){
+            switch(aType){
+                case INT:
+                case LONG:
+                    return bType;
+                case FLOAT:
+                case DOUBLE:
+                    return aType;
+            }
+        }
+        
         return (anb > bnb) ? aType : bType;
     }
 
     /**
      * Return the number of bytes per element for the given typecode.
+     *
      * @param dataType Data type
      * @return Bytes number
      */
@@ -70,10 +89,9 @@ public class ArrayMath {
                 System.out.println("internal error in typeToNBytes");
                 return -1;
         }
-    }        
-    
-    // </editor-fold>
+    }
 
+    // </editor-fold>
     // <editor-fold desc="Arithmetic">
     /**
      * Array add
@@ -601,6 +619,16 @@ public class ArrayMath {
     }
 
     /**
+     * Sqrt function
+     *
+     * @param a Array a
+     * @return Result array
+     */
+    public static Array sqrt(Array a) {
+        return ArrayMath.pow(a, -2);
+    }
+
+    /**
      * Array absolute
      *
      * @param a Array a
@@ -614,16 +642,16 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     // </editor-fold>
-    
     // <editor-fold desc="Circular function">
     /**
      * Sine function
+     *
      * @param a Array a
      * @return Result array
      */
-    public static Array sin(Array a){
+    public static Array sin(Array a) {
         Array r = Array.factory(a.getDataType() == DataType.DOUBLE ? DataType.DOUBLE : DataType.FLOAT, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             r.setDouble(i, Math.sin(a.getDouble(i)));
@@ -631,13 +659,14 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     /**
      * Cosine function
+     *
      * @param a Array a
      * @return Result array
      */
-    public static Array cos(Array a){
+    public static Array cos(Array a) {
         Array r = Array.factory(a.getDataType() == DataType.DOUBLE ? DataType.DOUBLE : DataType.FLOAT, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             r.setDouble(i, Math.cos(a.getDouble(i)));
@@ -645,9 +674,8 @@ public class ArrayMath {
 
         return r;
     }
-    
-    // </editor-fold>
 
+    // </editor-fold>
     // <editor-fold desc="Section">
     /**
      * Section array
@@ -662,20 +690,20 @@ public class ArrayMath {
     public static Array section(Array a, int[] origin, int[] size, int[] stride) throws InvalidRangeException {
         return a.section(origin, size, stride);
     }
-    
+
     /**
      * Section array
+     *
      * @param a Array a
      * @param ranges Ranges
      * @return Result array
-     * @throws InvalidRangeException 
+     * @throws InvalidRangeException
      */
     public static Array section(Array a, List<Range> ranges) throws InvalidRangeException {
         return a.section(ranges);
     }
 
     // </editor-fold>
-    
     // <editor-fold desc="Statistics">
     /**
      * Get minimum value
@@ -709,6 +737,48 @@ public class ArrayMath {
         while (iter.hasNext()) {
             double val = iter.getDoubleNext();
             if (!Double.isNaN(val)) {
+                if (val > max) {
+                    max = val;
+                }
+            }
+        }
+        return max;
+    }
+
+    /**
+     * Get minimum value
+     *
+     * @param a Array a
+     * @param missingv Missing value
+     * @return Minimum value
+     */
+    public static double getMinimum(Array a, double missingv) {
+        IndexIterator iter = a.getIndexIterator();
+        double min = 1.7976931348623157E+308D;
+        while (iter.hasNext()) {
+            double val = iter.getDoubleNext();
+            if (!MIMath.doubleEquals(val, missingv)) {
+                if (val < min) {
+                    min = val;
+                }
+            }
+        }
+        return min;
+    }
+
+    /**
+     * Get maximum value
+     *
+     * @param a Array a
+     * @param missingv Missing value
+     * @return
+     */
+    public static double getMaximum(Array a, double missingv) {
+        IndexIterator iter = a.getIndexIterator();
+        double max = -1.797693134862316E+307D;
+        while (iter.hasNext()) {
+            double val = iter.getDoubleNext();
+            if (!MIMath.doubleEquals(val, missingv)) {
                 if (val > max) {
                     max = val;
                 }
@@ -782,12 +852,39 @@ public class ArrayMath {
         }
         return sum / n;
     }
-    
-    // </editor-fold>
 
+    // </editor-fold>
     // <editor-fold desc="Convert">
     /**
+     * Set missing value to NaN
+     *
+     * @param a Array a
+     * @param missingv Missing value
+     */
+    public static void missingToNaN(Array a, Number missingv) {
+        IndexIterator iterA = a.getIndexIterator();
+        switch (a.getDataType()) {
+            case INT:
+            case FLOAT:
+                while (iterA.hasNext()) {
+                    float val = iterA.getFloatNext();
+                    if (val == missingv.floatValue()) {
+                        iterA.setFloatCurrent(Float.NaN);
+                    }
+                }
+            default:
+                while (iterA.hasNext()) {
+                    double val = iterA.getDoubleNext();
+                    if (MIMath.doubleEquals(val, missingv.doubleValue())) {
+                        iterA.setDoubleCurrent(Double.NaN);
+                    }
+                }
+        }
+    }
+
+    /**
      * As number list
+     *
      * @param a Array a
      * @return Result number list
      */
@@ -796,7 +893,7 @@ public class ArrayMath {
         List<Number> r = new ArrayList<>();
         switch (a.getDataType()) {
             case SHORT:
-            case INT:                
+            case INT:
                 while (iterA.hasNext()) {
                     r.add(iterA.getIntNext());
                 }
@@ -811,32 +908,35 @@ public class ArrayMath {
         }
         return r;
     }
-    
+
     // </editor-fold>       
-    
     // <editor-fold desc="Location">
     /**
      * In polygon function
+     *
      * @param a Array a
      * @param x X dimension values
      * @param y Y dimension values
      * @param layer Polygon vector layer
-     * @return Result array with cell values of 1 inside polygons and -1 outside polygons
+     * @return Result array with cell values of 1 inside polygons and -1 outside
+     * polygons
      */
-    public static Array inPolygon(Array a, List<Number> x, List<Number> y, VectorLayer layer){
-        List<PolygonShape> polygons = (List<PolygonShape>)layer.getShapes();
+    public static Array inPolygon(Array a, List<Number> x, List<Number> y, VectorLayer layer) {
+        List<PolygonShape> polygons = (List<PolygonShape>) layer.getShapes();
         return ArrayMath.inPolygon(a, x, y, polygons);
     }
-    
+
     /**
      * In polygon function
+     *
      * @param a Array a
      * @param x X dimension values
      * @param y Y dimension values
      * @param polygons PolygonShape list
-     * @return Result array with cell values of 1 inside polygons and -1 outside polygons
+     * @return Result array with cell values of 1 inside polygons and -1 outside
+     * polygons
      */
-    public static Array inPolygon(Array a, List<Number> x, List<Number> y, List<PolygonShape> polygons){
+    public static Array inPolygon(Array a, List<Number> x, List<Number> y, List<PolygonShape> polygons) {
         int xNum = x.size();
         int yNum = y.size();
 
@@ -853,9 +953,10 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     /**
      * Maskout function
+     *
      * @param a Array a
      * @param x X dimension values
      * @param y Y dimension values
@@ -863,13 +964,14 @@ public class ArrayMath {
      * @param missingValue Missing value
      * @return Result array with cell values of missing outside polygons
      */
-    public static Array maskout(Array a, List<Number> x, List<Number> y, VectorLayer layer, Number missingValue){
-        List<PolygonShape> polygons = (List<PolygonShape>)layer.getShapes();
+    public static Array maskout(Array a, List<Number> x, List<Number> y, VectorLayer layer, Number missingValue) {
+        List<PolygonShape> polygons = (List<PolygonShape>) layer.getShapes();
         return ArrayMath.maskout(a, x, y, polygons, missingValue);
     }
-    
+
     /**
      * Maskout function
+     *
      * @param a Array a
      * @param x X dimension values
      * @param y Y dimension values
@@ -877,7 +979,7 @@ public class ArrayMath {
      * @param missingValue Missing value
      * @return Result array with cell values of missing outside polygons
      */
-    public static Array maskout(Array a, List<Number> x, List<Number> y, List<PolygonShape> polygons, Number missingValue){
+    public static Array maskout(Array a, List<Number> x, List<Number> y, List<PolygonShape> polygons, Number missingValue) {
         int xNum = x.size();
         int yNum = y.size();
 
@@ -896,27 +998,28 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     /**
      * Maskout function
+     *
      * @param a Array a
      * @param m Array mask
      * @param missingValue Missing value
      * @return Result array
      */
-    public static Array maskout(Array a, Array m, Number missingValue){
+    public static Array maskout(Array a, Array m, Number missingValue) {
         Array r = Array.factory(a.getDataType(), a.getShape());
-        int n = (int)a.getSize();
-        for (int i = 0; i < n; i++){
-            if (m.getDouble(i) < 0){
+        int n = (int) a.getSize();
+        for (int i = 0; i < n; i++) {
+            if (m.getDouble(i) < 0) {
                 r.setObject(i, missingValue);
             } else {
                 r.setObject(i, a.getObject(i));
             }
         }
-        
+
         return r;
     }
-    
+
     // </editor-fold>
 }
