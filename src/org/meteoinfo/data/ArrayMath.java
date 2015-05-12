@@ -8,11 +8,9 @@ package org.meteoinfo.data;
 import java.util.ArrayList;
 import java.util.List;
 import org.meteoinfo.geoprocess.GeoComputation;
-import org.meteoinfo.geoprocess.analysis.ResampleMethods;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
 import org.meteoinfo.layer.VectorLayer;
-import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.shape.PolygonShape;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
@@ -612,7 +610,7 @@ public class ArrayMath {
     private static Array powDouble(Array a, double b) {
         Array r = Array.factory(DataType.DOUBLE, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
-            r.setDouble(i, Math.pow(a.getInt(i), b));
+            r.setDouble(i, Math.pow(a.getDouble(i), b));
         }
 
         return r;
@@ -626,6 +624,20 @@ public class ArrayMath {
      */
     public static Array sqrt(Array a) {
         return ArrayMath.pow(a, -2);
+    }
+    
+    /**
+     * Exponent function
+     * @param a Array a
+     * @return Result array
+     */
+    public static Array exp(Array a){
+        Array r = Array.factory(DataType.DOUBLE, a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            r.setDouble(i, Math.exp(a.getDouble(i)));
+        }
+
+        return r;
     }
 
     /**

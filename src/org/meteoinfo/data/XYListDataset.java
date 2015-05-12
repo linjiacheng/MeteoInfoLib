@@ -192,10 +192,21 @@ public class XYListDataset extends XYDataset {
     public void addSeries(String seriesKey, List<Number> xvs, List<Number> yvs){
         double[] nxvs = new double[xvs.size()];
         double[] nyvs = new double[yvs.size()];
-        for (int i = 0; i < xvs.size(); i++)
-            nxvs[i] = Double.parseDouble(xvs.get(i).toString());
-        for (int i = 0; i < yvs.size(); i++)
-            nyvs[i] = Double.parseDouble(yvs.get(i).toString());
+        double v;
+        for (int i = 0; i < xvs.size(); i++){
+            v = xvs.get(i).doubleValue();
+            if (Double.isNaN(v))
+                nxvs[i] = this.getMissingValue();
+            else
+                nxvs[i] = xvs.get(i).doubleValue();
+        }
+        for (int i = 0; i < yvs.size(); i++){
+            v = yvs.get(i).doubleValue();
+            if (Double.isNaN(v))
+                nyvs[i] = this.getMissingValue();
+            else
+                nyvs[i] = v;
+        }
         
         this.addSeries(seriesKey, nxvs, nyvs);
     }

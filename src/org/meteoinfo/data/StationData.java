@@ -777,6 +777,24 @@ public class StationData {
 
         return stData;
     }
+    
+    /**
+     * Filter station data
+     * @param stations Station identifer list
+     * @return Result station data
+     */
+    public StationData filter(List<String> stations){
+        StationData stData = new StationData();
+        stData.projInfo = this.projInfo;
+        stData.missingValue = this.missingValue;
+        for (int i = 0; i < this.getStNum(); i++) {
+            if (stations.contains(this.getStid(i))) {
+                stData.addData(this.getStid(i), this.getX(i), this.getY(i), this.getValue(i));
+            }
+        }
+
+        return stData;
+    }
 
     /**
      * Project station data
