@@ -13,6 +13,8 @@
  */
 package org.meteoinfo.legend;
 
+import java.awt.Color;
+import java.awt.Font;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.PointF;
 import org.meteoinfo.shape.ShapeTypes;
@@ -42,6 +44,9 @@ public class ChartBreak extends ColorBreak {
     private boolean _view3D;
     private int _thickness;
     private int _shpIdx;
+    private boolean drawLabel;
+    private Font labelFont;
+    private Color labelColor;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -54,7 +59,7 @@ public class ChartBreak extends ColorBreak {
         super();
         this.setBreakType(BreakTypes.ChartBreak);
         _chartType = chartType;
-        _chartData = new ArrayList<Float>();
+        _chartData = new ArrayList<>();
         _xShift = 0;
         _yShift = 0;
         _legendScheme = new LegendScheme(ShapeTypes.Polygon);
@@ -65,6 +70,9 @@ public class ChartBreak extends ColorBreak {
         _view3D = false;
         _thickness = 5;
         _shpIdx = 0;
+        drawLabel = false;
+        labelFont = new Font("Arial", Font.PLAIN, 12);
+        labelColor = Color.black;
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -342,6 +350,54 @@ public class ChartBreak extends ColorBreak {
     public void setShapeIndex(int sIdx) {
         _shpIdx = sIdx;
     }
+    
+    /**
+     * Get if draw label
+     * @return Boolean
+     */
+    public boolean isDrawLabel(){
+        return this.drawLabel;
+    }
+    
+    /**
+     * Set if draw label
+     * @param value Boolean
+     */
+    public void setDrawLabel(boolean value){
+        this.drawLabel = value;
+    }
+    
+    /**
+     * Get label font
+     * @return Label font
+     */
+    public Font getLabelFont(){
+        return this.labelFont;
+    }
+    
+    /**
+     * Set label font
+     * @param value Label font
+     */
+    public void setLabelFont(Font value){
+        this.labelFont = value;
+    }
+    
+    /**
+     * Get label color
+     * @return Label color
+     */
+    public Color getLabelColor(){
+        return this.labelColor;
+    }
+    
+    /**
+     * Set label color
+     * @param value Label color
+     */
+    public void setLabelColor(Color value){
+        this.labelColor = value;
+    }
     // </editor-fold>
     // <editor-fold desc="Methods">
 
@@ -351,7 +407,7 @@ public class ChartBreak extends ColorBreak {
      * @return Bar heights
      */
     public List<Integer> getBarHeights() {
-        List<Integer> heights = new ArrayList<Integer>();
+        List<Integer> heights = new ArrayList<>();
         int i, h;
         for (i = 0; i < _chartData.size(); i++) {
             if (_minSize == 0) {
@@ -435,13 +491,13 @@ public class ChartBreak extends ColorBreak {
      * @return Pie angle list
      */
     public List<List<Float>> getPieAngles() {
-        List<List<Float>> angles = new ArrayList<List<Float>>();
+        List<List<Float>> angles = new ArrayList<>();
         float sum = this.getDataSum();
         float startAngle = 0;
         float sweepAngle;
-        for (int i = 0; i < _chartData.size(); i++) {
-            sweepAngle = _chartData.get(i) / sum * 360;
-            List<Float> ssa = new ArrayList<Float>();
+        for (Float value : _chartData) {
+            sweepAngle = value / sum * 360;
+            List<Float> ssa = new ArrayList<>();
             ssa.add(startAngle);
             ssa.add(sweepAngle);
             angles.add(ssa);
@@ -452,6 +508,23 @@ public class ChartBreak extends ColorBreak {
         }
 
         return angles;
+    }
+    
+    /**
+     * Get pie ratios
+     *
+     * @return Pie ratio list
+     */
+    public List<Float> getPieRatios() {
+        List<Float> ratios = new ArrayList<>();
+        float sum = this.getDataSum();
+        float ratio;
+        for (Float value : _chartData) {
+            ratio = value / sum;
+            ratios.add(ratio);
+        }
+
+        return ratios;
     }
 
     /**
@@ -477,6 +550,9 @@ public class ChartBreak extends ColorBreak {
         aCB.setView3D(_view3D);
         aCB.setXShift(_xShift);
         aCB.setYShift(_yShift);
+        aCB.setDrawLabel(this.drawLabel);
+        aCB.setLabelColor(this.labelColor);
+        aCB.setLabelFont(labelFont);
 
         return aCB;
     }

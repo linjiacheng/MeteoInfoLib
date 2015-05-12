@@ -2000,7 +2000,7 @@ public class Draw {
      * @param g Graphics2D
      */
     public static void drawCurveLine(PointF[] points, PolylineBreak aPLB, Graphics2D g) {
-        List<PointD> opoints = new ArrayList<PointD>();
+        List<PointD> opoints = new ArrayList<>();
         int i;
         for (i = 0; i < points.length; i++) {
             opoints.add(new PointD(points[i].X, points[i].Y));
@@ -2044,7 +2044,7 @@ public class Draw {
      * @param g Graphics2D
      */
     public static void drawCurveLine(PointF[] points, Graphics2D g) {
-        List<PointD> opoints = new ArrayList<PointD>();
+        List<PointD> opoints = new ArrayList<>();
         int i;
         for (i = 0; i < points.length; i++) {
             opoints.add(new PointD(points[i].X, points[i].Y));
@@ -2067,7 +2067,7 @@ public class Draw {
      * @param g Graphics2D
      */
     public static void drawCurvePolygon(PointF[] points, PolygonBreak aPGB, Graphics2D g) {
-        List<PointD> opoints = new ArrayList<PointD>();
+        List<PointD> opoints = new ArrayList<>();
         int i;
         for (i = 0; i < points.length; i++) {
             opoints.add(new PointD(points[i].X, points[i].Y));
@@ -2257,7 +2257,15 @@ public class Draw {
                 drawBarChartSymbol(aPoint, aCB, g);
                 break;
             case PieChart:
-                drawPieChartSymbol(aPoint, aCB, g);
+                List<String> rStrs = null;
+                if (aCB.isDrawLabel()) {
+                    List<Float> ratios = aCB.getPieRatios();
+                    rStrs = new ArrayList<>();
+                    for (float r : ratios) {
+                        rStrs.add(String.valueOf((int) (r * 100)) + "%");
+                    }
+                }
+                drawPieChartSymbol(aPoint, aCB, g, rStrs);
                 break;
         }
 
@@ -2394,14 +2402,16 @@ public class Draw {
      * @param aPoint Start point
      * @param aCB Chart break
      * @param g Graphics2D
+     * @param labels Labels
      */
-    public static void drawPieChartSymbol(PointF aPoint, ChartBreak aCB, Graphics2D g) {
+    public static void drawPieChartSymbol(PointF aPoint, ChartBreak aCB, Graphics2D g, List<String> labels) {
         int width = aCB.getWidth();
         int height = aCB.getHeight();
         if (width <= 0 || height <= 0) {
             return;
         }
-
+        
+        PointF sPoint = new PointF(aPoint.X + width / 2, aPoint.Y - height / 2);
         aPoint.Y -= height;
         List<List<Float>> angles = aCB.getPieAngles();
         float startAngle, sweepAngle;
@@ -2467,7 +2477,49 @@ public class Draw {
                 PolygonBreak aPGB = (PolygonBreak) aCB.getLegendScheme().getLegendBreaks().get(i);
                 drawPie(aPoint, width, width, startAngle, sweepAngle, aPGB, g);
             }
+            if (labels != null) {
+                FontMetrics metrics = g.getFontMetrics();
+                float x, y, angle, w, h;
+                for (i = 0; i < angles.size(); i++) {
+                    String label = labels.get(i);
+                    if (label.equals("0%"))
+                        continue;
+                    
+                    startAngle = angles.get(i).get(0);
+                    sweepAngle = angles.get(i).get(1);                    
+                    angle = startAngle + sweepAngle / 2;
+                    PointF lPoint = getPieLabelPoint(sPoint, width / 2, angle);
+                    x = lPoint.X;
+                    y = lPoint.Y;                    
+                    h = metrics.getHeight();
+                    w = metrics.stringWidth(label);                    
+                    if ((angle >= 0 && angle < 45) || (angle >= 315 && angle <= 360)){
+                        x = x + 3;
+                        y = y + h / 2;                        
+                    } else if (angle >= 45 && angle < 90) { 
+                        y = y - 3;
+                    } else if (angle >= 90 && angle < 135) {
+                        x = x - w - 3;
+                        y = y - 3;                        
+                    } else if (angle >=135 && angle <225){
+                        x = x - w -3;
+                        y = y + h / 2;
+                    } else if (angle >= 225 && angle < 270) {
+                        x = x - w - 3;
+                        y = y + h / 2;
+                    } else {
+                        y = y + h;
+                    }
+                    g.drawString(label, x, y);
+                }
+            }
         }
+    }
+
+    private static PointF getPieLabelPoint(PointF sPoint, float r, float angle) {
+        float x = (float) (sPoint.X + r * Math.cos(angle * Math.PI / 180));
+        float y = (float) (sPoint.Y - r * Math.sin(angle * Math.PI / 180));
+        return new PointF(x, y);
     }
     // </editor-fold>
 }

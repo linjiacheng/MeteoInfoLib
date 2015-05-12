@@ -109,7 +109,7 @@ public class LayersLegend extends JPanel {
     private Point _mouseDownPos = new Point(0, 0);
     private ItemNode _dragNode = null;
     private MapFrame _currentMapFrame;
-    private List<MapFrame> _mapFrames = new ArrayList<MapFrame>();
+    private List<MapFrame> _mapFrames = new ArrayList<>();
     //private boolean _isLayoutView = false;
     private boolean _dragMode = false;
     private int _dragPosY;
@@ -1639,7 +1639,7 @@ public class LayersLegend extends JPanel {
                         Draw.drawBarChartSymbol(aP, aChB, g, true);
                         break;
                     case PieChart:
-                        Draw.drawPieChartSymbol(aP, aChB, g);
+                        Draw.drawPieChartSymbol(aP, aChB, g, null);
                         break;
                 }
                 break;

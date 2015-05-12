@@ -345,6 +345,9 @@ public class Graphic {
                 Attr chartData = doc.createAttribute("ChartData");
                 Attr xShift = doc.createAttribute("XShift");
                 yShift = doc.createAttribute("YShift");
+                fontName = doc.createAttribute("FontName");
+                fontSize = doc.createAttribute("FontSize"); 
+                Attr labelColor = doc.createAttribute("LabelColor");
 
                 shapeIndex.setValue(String.valueOf(aChB.getShapeIndex()));
                 //legendType.InnerText = "ChartBreak";
@@ -360,6 +363,9 @@ public class Graphic {
                 chartData.setValue(cdata);
                 xShift.setValue(String.valueOf(aChB.getXShift()));
                 yShift.setValue(String.valueOf(aChB.getYShift()));
+                fontName.setValue(aChB.getLabelFont().getFontName());
+                fontSize.setValue(String.valueOf(aChB.getLabelFont().getSize()));
+                labelColor.setValue(ColorUtil.toHexEncoding(aChB.getLabelColor()));
 
                 legend.setAttributeNode(legendType);
                 legend.setAttributeNode(shapeIndex);
@@ -367,6 +373,9 @@ public class Graphic {
                 legend.setAttributeNode(chartData);
                 legend.setAttributeNode(xShift);
                 legend.setAttributeNode(yShift);
+                legend.setAttributeNode(fontName);
+                legend.setAttributeNode(fontSize);
+                legend.setAttributeNode(labelColor);
                 break;
             case VectorBreak:
                 //legendType.InnerText = "VectorBreak";
@@ -567,6 +576,10 @@ public class Graphic {
                         aChB.setChartData(cData);
                         aChB.setXShift(Integer.parseInt(legendNode.getAttributes().getNamedItem("XShift").getNodeValue()));
                         aChB.setYShift(Integer.parseInt(legendNode.getAttributes().getNamedItem("YShift").getNodeValue()));
+                        String fontName = legendNode.getAttributes().getNamedItem("FontName").getNodeValue();
+                        float fontSize = Float.parseFloat(legendNode.getAttributes().getNamedItem("FontSize").getNodeValue());
+                        aChB.setLabelFont(new Font(fontName, Font.PLAIN, (int)fontSize));
+                        aChB.setLabelColor(ColorUtil.parseToColor(legendNode.getAttributes().getNamedItem("LabelColor").getNodeValue()));
                     } catch (Exception e) {
                     } finally {
                         legend = aChB;

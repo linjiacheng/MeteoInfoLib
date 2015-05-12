@@ -32,6 +32,8 @@ public class FrmLabelSymbolSet extends javax.swing.JDialog {
 
     /**
      * Creates new form FrmLabelSymbolSet
+     * @param parent
+     * @param modal
      */
     public FrmLabelSymbolSet(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
@@ -40,6 +42,9 @@ public class FrmLabelSymbolSet extends javax.swing.JDialog {
 
     /**
      * Creates new form FrmLabelSymbolSet
+     * @param parent
+     * @param modal
+     * @param tparent
      */
     public FrmLabelSymbolSet(java.awt.Frame parent, boolean modal, Object tparent) {
         super(parent, modal);

@@ -3640,7 +3640,7 @@ public class MapLayout extends JPanel {
         DrawNeatLine.setValue(String.valueOf(aLegend.isDrawNeatLine()));
         NeatLineColor.setValue(ColorUtil.toHexEncoding(aLegend.getNeatLineColor()));
         NeatLineSize.setValue(String.valueOf(aLegend.getNeatLineSize()));
-        drawChartBreaks.setValue(String.valueOf(aLegend.isDrawChartBreaks()));
+        drawChartBreaks.setValue(String.valueOf(aLegend.isDrawChartBreaks())); 
         Left.setValue(String.valueOf(aLegend.getLeft()));
         Top.setValue(String.valueOf(aLegend.getTop()));
         Width.setValue(String.valueOf(aLegend.getWidth()));
@@ -3990,7 +3990,7 @@ public class MapLayout extends JPanel {
             aLL.setLayerUpdateType(LayerUpdateTypes.valueOf(layoutLegend.getAttributes().getNamedItem("LayerUpdateType").getNodeValue()));
             aLL.setColumnNumber(Integer.parseInt(layoutLegend.getAttributes().getNamedItem("ColumnNumber").getNodeValue()));
             aLL.setDrawBackColor(Boolean.parseBoolean(layoutLegend.getAttributes().getNamedItem("DrawBackColor").getNodeValue()));
-            aLL.setDrawChartBreaks(Boolean.parseBoolean(layoutLegend.getAttributes().getNamedItem("DrawChartBreaks").getNodeValue()));
+            aLL.setDrawChartBreaks(Boolean.parseBoolean(layoutLegend.getAttributes().getNamedItem("DrawChartBreaks").getNodeValue())); 
         } catch (Exception e) {
         }
 

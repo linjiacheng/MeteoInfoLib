@@ -13,6 +13,8 @@
  */
 package org.meteoinfo.layer;
 
+import java.awt.Color;
+import java.awt.Font;
 import org.meteoinfo.legend.AlignType;
 import org.meteoinfo.legend.ChartTypes;
 import org.meteoinfo.legend.LegendScheme;
@@ -43,6 +45,9 @@ public class ChartSet {
     private AlignType _alignType;
     private boolean _view3D;
     private int _thickness;
+    private boolean drawLabel;
+    private Font labelFont;
+    private Color labelColor;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -52,7 +57,7 @@ public class ChartSet {
     public ChartSet() {
         _chartType = ChartTypes.BarChart;
         _drawCharts = false;
-        _fieldNames = new ArrayList<String>();
+        _fieldNames = new ArrayList<>();
         _xShift = 0;
         _yShift = 0;
         _legendScheme = new LegendScheme(ShapeTypes.Polygon);
@@ -63,7 +68,10 @@ public class ChartSet {
         _alignType = AlignType.Center;
         _view3D = false;
         _thickness = 5;
-
+        drawLabel = false;
+        labelFont = new Font("Arial", Font.PLAIN, 12);
+        labelColor = Color.black;
+        
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -331,6 +339,54 @@ public class ChartSet {
      */
     public void setThickness(int value) {
         _thickness = value;
+    }
+    
+    /**
+     * Get if draw label
+     * @return Boolean
+     */
+    public boolean isDrawLabel(){
+        return this.drawLabel;
+    }
+    
+    /**
+     * Set if draw label
+     * @param value Boolean
+     */
+    public void setDrawLabel(boolean value){
+        this.drawLabel = value;
+    }
+    
+    /**
+     * Get label font
+     * @return Label font
+     */
+    public Font getLabelFont(){
+        return this.labelFont;
+    }
+    
+    /**
+     * Set label font
+     * @param value Label font
+     */
+    public void setLabelFont(Font value){
+        this.labelFont = value;
+    }
+    
+    /**
+     * Get label color
+     * @return Label color
+     */
+    public Color getLabelColor(){
+        return this.labelColor;
+    }
+    
+    /**
+     * Set label color
+     * @param value Label color
+     */
+    public void setLabelColor(Color value){
+        this.labelColor = value;
     }
     // </editor-fold>
     // <editor-fold desc="Methods">

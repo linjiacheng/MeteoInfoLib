@@ -8200,6 +8200,10 @@ public class MapView extends JPanel {
         Attr alignType = m_Doc.createAttribute("AlignType");
         Attr view3D = m_Doc.createAttribute("View3D");
         Attr thickness = m_Doc.createAttribute("Thickness");
+        Attr drawLabel = m_Doc.createAttribute("DrawLabel");
+        Attr fontName = m_Doc.createAttribute("FontName");
+        Attr fontSize = m_Doc.createAttribute("FontSize"); 
+        Attr labelColor = m_Doc.createAttribute("LabelColor");
 
         drawCharts.setValue(String.valueOf(aChartSet.isDrawCharts()));
         chartType.setValue(String.valueOf(aChartSet.getChartType()));
@@ -8223,6 +8227,10 @@ public class MapView extends JPanel {
         alignType.setValue(aChartSet.getAlignType().toString());
         view3D.setValue(String.valueOf(aChartSet.isView3D()));
         thickness.setValue(String.valueOf(aChartSet.getThickness()));
+        drawLabel.setValue(String.valueOf(aChartSet.isDrawLabel()));
+        fontName.setValue(aChartSet.getLabelFont().getFontName());
+        fontSize.setValue(String.valueOf(aChartSet.getLabelFont().getSize()));
+        labelColor.setValue(ColorUtil.toHexEncoding(aChartSet.getLabelColor()));
 
         chartSet.setAttributeNode(drawCharts);
         chartSet.setAttributeNode(chartType);
@@ -8238,6 +8246,10 @@ public class MapView extends JPanel {
         chartSet.setAttributeNode(alignType);
         chartSet.setAttributeNode(view3D);
         chartSet.setAttributeNode(thickness);
+        chartSet.setAttributeNode(drawLabel);
+        chartSet.setAttributeNode(fontName);
+        chartSet.setAttributeNode(fontSize);
+        chartSet.setAttributeNode(labelColor);
 
         //Export legend scheme
         aChartSet.getLegendScheme().exportToXML(m_Doc, chartSet);
@@ -8610,6 +8622,11 @@ public class MapView extends JPanel {
             aChartSet.setAlignType(AlignType.valueOf(chartNode.getAttributes().getNamedItem("AlignType").getNodeValue()));
             aChartSet.setView3D(Boolean.parseBoolean(chartNode.getAttributes().getNamedItem("View3D").getNodeValue()));
             aChartSet.setThickness(Integer.parseInt(chartNode.getAttributes().getNamedItem("Thickness").getNodeValue()));
+            aChartSet.setDrawLabel(Boolean.parseBoolean(chartNode.getAttributes().getNamedItem("DrawLabel").getNodeValue()));
+            String fontName = chartNode.getAttributes().getNamedItem("FontName").getNodeValue();
+            float fontSize = Float.parseFloat(chartNode.getAttributes().getNamedItem("FontSize").getNodeValue());
+            aChartSet.setLabelFont(new Font(fontName, Font.PLAIN, (int)fontSize));
+            aChartSet.setLabelColor(ColorUtil.parseToColor(chartNode.getAttributes().getNamedItem("LabelColor").getNodeValue()));            
         } catch (Exception e) {
         }
 

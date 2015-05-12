@@ -120,7 +120,7 @@ public class LayoutLegend extends LayoutElement {
             case FirstExpandedLayer:
                 for (int i = 0; i < _layoutMap.getMapFrame().getMapView().getLayerNum(); i++) {
                     MapLayer aLayer = _layoutMap.getMapFrame().getMapView().getLayers().
-                            get(_layoutMap.getMapFrame().getMapView().getLayerNum() - 1 - i);                    
+                            get(_layoutMap.getMapFrame().getMapView().getLayerNum() - 1 - i);
                     if (aLayer.hasLegendScheme()) {
                         if (aLayer.isVisible() && aLayer.isExpanded() && aLayer.getLegendScheme().getLegendType() != LegendType.SingleSymbol) {
                             this.setVisible(true);
@@ -181,9 +181,10 @@ public class LayoutLegend extends LayoutElement {
      * @param layer The legend layer
      */
     public void setLegendLayer(MapLayer layer) {
-        if (layer == null)
+        if (layer == null) {
             return;
-        
+        }
+
         _legendLayer = layer;
         String aStr = _legendLayer.getLayerName();
         if (aStr.contains("_")) {
@@ -199,10 +200,11 @@ public class LayoutLegend extends LayoutElement {
      * @return Legend layer name
      */
     public String getLayerName() {
-        if (_legendLayer != null)
+        if (_legendLayer != null) {
             return _legendLayer.getLayerName();
-        else
+        } else {
             return "";
+        }
     }
 
     /**
@@ -366,20 +368,22 @@ public class LayoutLegend extends LayoutElement {
     public void setColumnNumber(int value) {
         _columnNum = value;
     }
-    
+
     /**
      * Get if draw chart breaks
+     *
      * @return Boolean
      */
-    public boolean isDrawChartBreaks(){
+    public boolean isDrawChartBreaks() {
         return this.drawChartBreaks;
     }
-    
+
     /**
      * Set if draw chart breaks
+     *
      * @param value Boolean
      */
-    public void setDrawChartBreaks(boolean value){
+    public void setDrawChartBreaks(boolean value) {
         this.drawChartBreaks = value;
     }
 
@@ -412,7 +416,7 @@ public class LayoutLegend extends LayoutElement {
         }
 
         //Draw background color
-        if (this.isDrawBackColor()){
+        if (this.isDrawBackColor()) {
             g.setColor(this.getBackColor());
             g.fill(new Rectangle.Float(0, 0, this.getWidth() * zoom, this.getHeight() * zoom));
         }
@@ -453,14 +457,22 @@ public class LayoutLegend extends LayoutElement {
                 Draw.drawBarChartSymbol(aPoint, aCB, g, true);
                 break;
             case PieChart:
-                Draw.drawPieChartSymbol(aPoint, aCB, g);
+                if (this.drawChartBreaks) {
+                    Draw.drawPieChartSymbol(aPoint, aCB, g, null);
+                } else {                    
+                    List<String> rStrs = new ArrayList<>();
+                    for (int i = 0; i < aCB.getItemNum(); i++) {
+                        rStrs.add(aCB.getLegendScheme().getLegendBreaks().get(i).getCaption());
+                    }
+                    Draw.drawPieChartSymbol(aPoint, aCB, g, rStrs);
+                }
                 aPoint.Y += aCB.getHeight();
                 break;
         }
         aPoint.Y += _breakSpace;
-        
+
         //Draw breaks
-        if (drawBreaks){
+        if (drawBreaks) {
             LegendScheme aLS = aCB.getLegendScheme();
             drawNormalLegend(g, zoom, aLS, aPoint, false);
         }
@@ -473,19 +485,19 @@ public class LayoutLegend extends LayoutElement {
                 drawChart = true;
             }
         }
-        
+
         PointF aP = new PointF(0, 0);
-        if (!drawChart){
-            LegendScheme aLS = _legendLayer.getLegendScheme();        
+        if (!drawChart) {
+            LegendScheme aLS = _legendLayer.getLegendScheme();
             drawNormalLegend(g, zoom, aLS, aP, true);
             float height = getBreakHeight(g) * zoom;
             aP.Y += height + _breakSpace;
         }
 
         //Draw chart legend
-        if (drawChart){
+        if (drawChart) {
             drawChartLegend(g, zoom, aP, this.drawChartBreaks);
-        }        
+        }
     }
 
     private void drawNormalLegend(Graphics2D g, float zoom, LegendScheme aLS, PointF aP, boolean drawTitle) {
@@ -759,8 +771,8 @@ public class LayoutLegend extends LayoutElement {
         Font lFont = new Font(this.getFont().getFontName(), this.getFont().getStyle(), (int) (this.getFont().getSize() * zoom));
         FontMetrics metrics = g.getFontMetrics(lFont);
         barWidth = this.getHeight() - metrics.getHeight() - 5;
-        width = (this.getWidth() - 5) * zoom / bNum;        
-        height = barWidth * zoom;        
+        width = (this.getWidth() - 5) * zoom / bNum;
+        height = barWidth * zoom;
 
         for (int i = 0; i < bNum; i++) {
             switch (aLS.getShapeType()) {
@@ -771,7 +783,7 @@ public class LayoutLegend extends LayoutElement {
                     FillColor = aPB.getColor();
                     if (aLS.getLegendType() == LegendType.UniqueValue) {
                         caption = aPB.getCaption();
-                    } else {                        
+                    } else {
                         caption = DataConvert.removeTailingZeros(aPB.getEndValue().toString());
                     }
                     break;
@@ -911,7 +923,7 @@ public class LayoutLegend extends LayoutElement {
         Dimension aSF;
         int bNum = aLS.getBreakNum();
         FontMetrics metrics = g.getFontMetrics(_font);
-        if (_legendStyle == LegendStyles.Normal) {            
+        if (_legendStyle == LegendStyles.Normal) {
             aSF = new Dimension(metrics.stringWidth(_title), metrics.getHeight());
             width = aSF.width;
         } else {
@@ -972,17 +984,18 @@ public class LayoutLegend extends LayoutElement {
                 }
             }
         }
-        
+
         if (_legendStyle == LegendStyles.Normal) {
             if (_legendLayer.getLayerType() == LayerTypes.VectorLayer) {
                 if (((VectorLayer) _legendLayer).getChartSet().isDrawCharts()) {
                     ChartBreak aCB = ((ChartBreak) ((VectorLayer) _legendLayer).getChartPoints().get(0).getLegend()).getSampleChartBreak();
-                    if (aCB.getChartType() == ChartTypes.BarChart){
+                    if (aCB.getChartType() == ChartTypes.BarChart) {
                         LegendScheme ls = aCB.getLegendScheme();
-                        for (ColorBreak cb : ls.getLegendBreaks()){
+                        for (ColorBreak cb : ls.getLegendBreaks()) {
                             float labwidth = metrics.stringWidth(cb.getCaption());
-                            if (width < labwidth)
+                            if (width < labwidth) {
                                 width = metrics.stringWidth(cb.getCaption());
+                            }
                         }
                     }
                 }
@@ -1033,18 +1046,22 @@ public class LayoutLegend extends LayoutElement {
                 case Bar_Vertical:
                     nw = 10 + getLabelWidth(g) + 5;
                     nh = bNum * 20;
-                    if (nw > w)
+                    if (nw > w) {
                         this.setWidth(nw);
-                    if (nh > h)
+                    }
+                    if (nh > h) {
                         this.setHeight(bNum * 20);
+                    }
                     break;
                 case Bar_Horizontal:
                     nw = bNum * 30;
                     nh = 30;
-                    if (nw > w)
+                    if (nw > w) {
                         this.setWidth(nw);
-                    if (nh > h)
+                    }
+                    if (nh > h) {
                         this.setHeight(bNum * 20);
+                    }
                     break;
                 case Normal:
                     int aHeight = getBreakHeight(g);
@@ -1160,10 +1177,11 @@ public class LayoutLegend extends LayoutElement {
          * @return Legend layer name
          */
         public String getLayerName() {
-            if (_legendLayer != null)
+            if (_legendLayer != null) {
                 return _legendLayer.getLayerName();
-            else
+            } else {
                 return null;
+            }
         }
 
         /**
@@ -1330,36 +1348,40 @@ public class LayoutLegend extends LayoutElement {
                 updateLegendSize();
             }
         }
-        
+
         /**
          * Get is draw chart breaks
+         *
          * @return Boolean
          */
-        public boolean isDrawChartBreaks(){
+        public boolean isDrawChartBreaks() {
             return drawChartBreaks;
         }
-        
+
         /**
          * Set if draw chart breaks
+         *
          * @param value Boolean
          */
-        public void setDrawChartBreaks(boolean value){
+        public void setDrawChartBreaks(boolean value) {
             drawChartBreaks = value;
         }
-        
+
         /**
          * Get is draw backcolor
+         *
          * @return Boolean
          */
-        public boolean isDrawBackColor(){
+        public boolean isDrawBackColor() {
             return LayoutLegend.this.isDrawBackColor();
         }
-        
+
         /**
          * Set is draw backcolor
+         *
          * @param value Boolean
          */
-        public void setDrawBackColor(boolean value){
+        public void setDrawBackColor(boolean value) {
             LayoutLegend.this.setDrawBackColor(value);
         }
 
@@ -1424,7 +1446,7 @@ public class LayoutLegend extends LayoutElement {
          */
         public int getTop() {
             return LayoutLegend.this.getTop();
-        }                
+        }
 
         /**
          * Set top
@@ -1434,52 +1456,58 @@ public class LayoutLegend extends LayoutElement {
         public void setTop(int top) {
             LayoutLegend.this.setTop(top);
         }
-        
+
         /**
          * Get width
+         *
          * @return Width
          */
-        public int getWidth(){
+        public int getWidth() {
             return LayoutLegend.this.getWidth();
         }
-        
+
         /**
          * Set width
+         *
          * @param value Width
          */
-        public void setWidth(int value){
+        public void setWidth(int value) {
             LayoutLegend.this.setWidth(value);
         }
-        
+
         /**
          * Get height
+         *
          * @return Height
          */
-        public int getHeight(){
+        public int getHeight() {
             return LayoutLegend.this.getHeight();
         }
-        
+
         /**
          * Set height
+         *
          * @param value Height
          */
-        public void setHeight(int value){
+        public void setHeight(int value) {
             LayoutLegend.this.setHeight(value);
         }
-        
+
         /**
          * Get bar width
+         *
          * @return Bar width
          */
-        public float getBarWidth(){
+        public float getBarWidth() {
             return LayoutLegend.this.barWidth;
         }
-        
+
         /**
          * Set bar width
+         *
          * @param value Bar width
          */
-        public void setBarWidth(float value){
+        public void setBarWidth(float value) {
             LayoutLegend.this.barWidth = value;
         }
         // </editor-fold>
@@ -1509,6 +1537,7 @@ public class LayoutLegend extends LayoutElement {
             addProperty("neatLineColor").setCategory("Neat Line").setDisplayName("Neat Line Color");
             addProperty("neatLineSize").setCategory("Neat Line").setDisplayName("Neat Line Size");
             addProperty("drawChartBreaks").setCategory("Chart").setDisplayName("Draw Chart Breaks");
+            addProperty("drawPieLabel").setCategory("Chart").setDisplayName("Draw Pie label");
             addProperty("left").setCategory("Location").setDisplayName("Left");
             addProperty("top").setCategory("Location").setDisplayName("Top");
             addProperty("width").setCategory("Location").setDisplayName("Width");

@@ -432,6 +432,9 @@ public class VectorLayer extends MapLayer {
             aCP.setAlignType(_chartSet.getAlignType());
             aCP.setView3D(_chartSet.isView3D());
             aCP.setThickness(_chartSet.getThickness());
+            aCP.setDrawLabel(_chartSet.isDrawLabel());
+            aCP.setLabelColor(_chartSet.getLabelColor());
+            aCP.setLabelFont(_chartSet.getLabelFont());
         }
     }
 
@@ -494,6 +497,9 @@ public class VectorLayer extends MapLayer {
             aCP.setView3D(_chartSet.isView3D());
             aCP.setThickness(_chartSet.getThickness());
             aCP.setShapeIndex(shapeIdx);
+            aCP.setDrawLabel(_chartSet.isDrawLabel());
+            aCP.setLabelColor(_chartSet.getLabelColor());
+            aCP.setLabelFont(_chartSet.getLabelFont());
 
             ChartGraphic aGraphic = new ChartGraphic(aPS, aCP);
             addChart(aGraphic);
@@ -524,6 +530,9 @@ public class VectorLayer extends MapLayer {
             aCP.setAlignType(_chartSet.getAlignType());
             aCP.setView3D(_chartSet.isView3D());
             aCP.setThickness(_chartSet.getThickness());
+            aCP.setDrawLabel(_chartSet.isDrawLabel());
+            aCP.setLabelColor(_chartSet.getLabelColor());
+            aCP.setLabelFont(_chartSet.getLabelFont());
         }
         _chartSet.setDrawCharts(true);
     }
