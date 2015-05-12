@@ -634,15 +634,15 @@ public class JConsole extends JScrollPane
         });
     }
 
-    private AttributeSet setStyle(Font font) {
+    public AttributeSet setStyle(Font font) {
         return setStyle(font, null);
     }
 
-    private AttributeSet setStyle(Color color) {
+    public AttributeSet setStyle(Color color) {
         return setStyle(null, color);
     }
 
-    private AttributeSet setStyle(Font font, Color color) {
+    public AttributeSet setStyle(Font font, Color color) {
         if (font != null) {
             return setStyle(font.getFamily(), font.getSize(), color,
                     font.isBold(), font.isItalic(),
