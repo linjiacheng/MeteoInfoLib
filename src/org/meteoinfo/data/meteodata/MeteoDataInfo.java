@@ -45,6 +45,7 @@ import org.meteoinfo.global.util.DateUtil;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.data.mathparser.MathParser;
 import org.meteoinfo.data.mathparser.ParseException;
+import org.meteoinfo.data.meteodata.bandraster.GeoTiffDataInfo;
 import ucar.ma2.Array;
 import ucar.nc2.NetcdfFile;
 
@@ -489,6 +490,20 @@ public class MeteoDataInfo {
         _dataInfo = aDataInfo;
         //ProjInfo = aDataInfo.projInfo;
         //IsLonLat = aDataInfo.isLatLon;
+
+        //Get data info text
+        _infoText = aDataInfo.generateInfoText();
+    }
+    
+    /**
+     * Open ASCII grid data
+     *
+     * @param aFile File path
+     */
+    public void openGeoTiffData(String aFile) {
+        GeoTiffDataInfo aDataInfo = new GeoTiffDataInfo();
+        aDataInfo.readDataInfo(aFile);
+        _dataInfo = aDataInfo;
 
         //Get data info text
         _infoText = aDataInfo.generateInfoText();

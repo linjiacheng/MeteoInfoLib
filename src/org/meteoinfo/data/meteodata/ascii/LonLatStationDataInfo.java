@@ -44,7 +44,7 @@ import ucar.ma2.Array;
 public class LonLatStationDataInfo extends DataInfo implements IStationDataInfo {
     // <editor-fold desc="Variables">
 
-    private List<String> _fields = new ArrayList<String>();
+    private List<String> _fields = new ArrayList<>();
     private String delimiter = null;
 
     //private int lonIdx = 1;
@@ -83,7 +83,7 @@ public class LonLatStationDataInfo extends DataInfo implements IStationDataInfo 
             //Judge field type
             aLine = sr.readLine();    //First line
             dataArray = GlobalUtil.split(aLine, delimiter);
-            List<Variable> variables = new ArrayList<Variable>();
+            List<Variable> variables = new ArrayList<>();
             for (int i = 3; i < dataArray.length; i++) {
                 if (MIMath.isNumeric(dataArray[i])) {
                     Variable var = new Variable();

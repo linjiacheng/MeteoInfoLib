@@ -254,13 +254,45 @@ public class ArrayUtil {
 
     // </editor-fold>
     // <editor-fold desc="Output">
+    
     /**
      * Array to string
      *
      * @param a Array a
      * @return String
      */
-    public static String toString(Array a) {
+    public static String convertToString(Array a) {
+        StringBuilder sbuff = new StringBuilder();        
+        sbuff.append("array(");
+        int ndim = a.getRank();
+        if (ndim > 1)
+            sbuff.append("[");
+        int i = 0;
+        IndexIterator ii = a.getIndexIterator();
+        while (ii.hasNext()) {
+            if (i == 0) {                          
+                sbuff.append("[");
+            }
+            Object data = ii.getObjectNext();
+            sbuff.append(data);            
+            i += 1;
+            if (i == 100){
+                sbuff.append("...");
+                break;
+            }
+        }
+        if (ndim > 1)
+            sbuff.append("]");
+        return sbuff.toString();
+    }
+    
+    /**
+     * Array to string
+     *
+     * @param a Array a
+     * @return String
+     */
+    public static String toString_old(Array a) {
         StringBuilder sbuff = new StringBuilder();        
         sbuff.append("array(");
         int ndim = a.getRank();

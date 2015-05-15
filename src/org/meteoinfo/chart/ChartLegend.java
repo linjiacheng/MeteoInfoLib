@@ -633,7 +633,10 @@ public class ChartLegend {
         int labelGap = this.getLabelGap(g);
         List<Integer> labelIdxs = new ArrayList<>();
         int sIdx = (bNum % labelGap) / 2;
-        while (sIdx < bNum - 1) {
+        int labNum = bNum - 1;
+        if (aLS.getLegendType() == LegendType.UniqueValue)
+            labNum += 1;
+        while (sIdx < labNum) {
             labelIdxs.add(sIdx);
             sIdx += labelGap;
         }

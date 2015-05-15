@@ -533,6 +533,66 @@ public class GeoTiff {
     }
 
     /**
+     * Read X/Y coordinates
+     *
+     * @return X/Y coordinates
+     */
+    public List<double[]> readXY() {
+        IFDEntry widthIFD = this.findTag(Tag.ImageWidth);
+        IFDEntry heightIFD = this.findTag(Tag.ImageLength);
+        int width = widthIFD.value[0];
+        int height = heightIFD.value[0];
+        double[] X = new double[width];
+        double[] Y = new double[height];
+        IFDEntry modelTiePointTag = findTag(Tag.ModelTiepointTag);
+        IFDEntry modelPixelScaleTag = findTag(Tag.ModelPixelScaleTag);
+        double minLon = modelTiePointTag.valueD[3];
+        double maxLat = modelTiePointTag.valueD[4];
+        double xdelt = modelPixelScaleTag.valueD[0];
+        double ydelt = modelPixelScaleTag.valueD[1];
+        for (int i = 0; i < width; i++) {
+            X[i] = minLon + xdelt * i;
+        }
+        for (int i = 0; i < height; i++) {
+            Y[height - i - 1] = maxLat - ydelt * i;
+        }
+
+        List<double[]> xy = new ArrayList<>();
+        xy.add(X);
+        xy.add(Y);
+
+        return xy;
+    }
+    
+    /**
+     * Get grid data
+     *
+     * @return Grid data
+     */
+    public int[][] readData() {
+        try {
+            //Grid data values
+            IFDEntry widthIFD = this.findTag(Tag.ImageWidth);
+            IFDEntry heightIFD = this.findTag(Tag.ImageLength);
+            int width = widthIFD.value[0];
+            int height = heightIFD.value[0];
+            int[] values1d = readData(width, height);
+            int[][] values = new int[height][width];
+            for (int i = 0; i < height; i++) {
+                for (int j = 0; j < width; j++) {
+                    values[height - i - 1][j] = values1d[i * width + j];
+                }
+            }
+            values1d = null;
+            
+            return values;
+        } catch (IOException ex) {
+            Logger.getLogger(GeoTiff.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+
+    /**
      * Get grid data
      *
      * @return Grid data
@@ -570,7 +630,7 @@ public class GeoTiff {
             for (int i = 0; i < height; i++) {
                 Y[height - i - 1] = maxLat - ydelt * i;
             }
-            
+
             //gData.data = values;
             gData.xArray = X;
             gData.yArray = Y;
@@ -587,6 +647,50 @@ public class GeoTiff {
         } catch (IOException ex) {
             Logger.getLogger(GeoTiff.class.getName()).log(Level.SEVERE, null, ex);
             return null;
+        }
+    }
+    
+    /**
+     * Get grid data
+     *
+     * @return Grid data
+     */
+    public GridData getGridData_Value() {
+        try {
+            //Grid data values
+            IFDEntry widthIFD = this.findTag(Tag.ImageWidth);
+            IFDEntry heightIFD = this.findTag(Tag.ImageLength);
+            int width = widthIFD.value[0];
+            int height = heightIFD.value[0];
+            GridData.Integer gData = new GridData.Integer(height, width);
+            int[] values1d = readData(width, height);
+            //int[][] values = new int[height][width];
+            for (int i = 0; i < height; i++) {
+                for (int j = 0; j < width; j++) {
+                    //values[height - i - 1][j] = values1d[i * width + j];
+                    gData.setValue(height - i - 1, j, values1d[i * width + j]);
+                }
+            }
+            values1d = null;
+
+            return gData;
+        } catch (IOException ex) {
+            Logger.getLogger(GeoTiff.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+
+    /**
+     * Read projection info
+     *
+     * @return Projection info
+     */
+    public ProjectionInfo readProj() {
+        String projStr = getProjection();
+        if (projStr != null) {
+            return new ProjectionInfo(projStr);
+        } else {
+            return KnownCoordinateSystems.geographic.world.WGS1984;
         }
     }
 
@@ -659,12 +763,14 @@ public class GeoTiff {
                     buffer = testReadData(tileOffset, tileSize);
                     for (int h = 0; h < tileHeight; h++) {
                         vIdx = i * tileHeight + h;
-                        if (vIdx == height)
+                        if (vIdx == height) {
                             break;
+                        }
                         for (int w = 0; w < tileWidth; w++) {
                             hIdx = j * tileWidth + w;
-                            if (hIdx == width)
+                            if (hIdx == width) {
                                 break;
+                            }
                             idx = vIdx * width + hIdx;
                             values[idx] = buffer.getShort();
                         }

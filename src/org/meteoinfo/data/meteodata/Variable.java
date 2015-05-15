@@ -34,17 +34,17 @@ public class Variable {
     private List<Double> _levels;
     private String _units;
     private String _description;
-    private List<Dimension> _dimensions = new ArrayList<Dimension>();
+    private List<Dimension> _dimensions = new ArrayList<>();
     private String _hdfPath;
     private boolean _isStation = false;
     private boolean _isSwath = false;
     //private NetCDF4.NcType _ncType;
-    private List<Attribute> _attributes = new ArrayList<Attribute>();
+    private List<Attribute> _attributes = new ArrayList<>();
     private int _attNumber;
     private int _varId;
     private boolean _isCoordVar = false;
-    private List<Integer> _levelIdxs = new ArrayList<Integer>();
-    private List<Integer> _varInLevelIdxs = new ArrayList<Integer>();
+    private List<Integer> _levelIdxs = new ArrayList<>();
+    private List<Integer> _varInLevelIdxs = new ArrayList<>();
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -53,7 +53,7 @@ public class Variable {
      */
     public Variable() {
         _name = "Undef";
-        _levels = new ArrayList<Double>();
+        _levels = new ArrayList<>();
         _units = "Undef";
         _description = "Undef";
     }
@@ -71,7 +71,7 @@ public class Variable {
         _name = aName;
         _description = aDesc;
         _units = aUnit;
-        _levels = new ArrayList<Double>();
+        _levels = new ArrayList<>();
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">

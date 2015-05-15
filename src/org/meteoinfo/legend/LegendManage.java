@@ -462,9 +462,6 @@ public class LegendManage {
      * @return The legend scheme
      */
     public static LegendScheme createUniqValueLegendScheme(List<Number> values, ShapeTypes aST) {
-        LegendScheme legendScheme = new LegendScheme(aST);
-        legendScheme.setLegendType(LegendType.UniqueValue);
-        legendScheme.setShapeType(aST);
         Color[] colors;
         int n = values.size();
         if (n <= 13) {
@@ -472,6 +469,35 @@ public class LegendManage {
         } else {
             colors = LegendManage.createRandomColors(n);
         }
+        return LegendManage.createUniqValueLegendScheme(values, colors, aST);
+    }
+    
+    /**
+     * Create unique value legend scheme
+     *
+     * @param values Values
+     * @param cmap Color map
+     * @param aST The shape type
+     * @return The legend scheme
+     */
+    public static LegendScheme createUniqValueLegendScheme(List<Number> values, ColorMap cmap, ShapeTypes aST) {       
+        int n = values.size();
+        Color[] colors = cmap.getColors(n);
+        return LegendManage.createUniqValueLegendScheme(values, colors, aST);
+    }
+    
+    /**
+     * Create unique value legend scheme
+     *
+     * @param values Values
+     * @param colors Colors
+     * @param aST The shape type
+     * @return The legend scheme
+     */
+    public static LegendScheme createUniqValueLegendScheme(List<Number> values, Color[] colors, ShapeTypes aST) {
+        LegendScheme legendScheme = new LegendScheme(aST);
+        legendScheme.setLegendType(LegendType.UniqueValue);
+        legendScheme.setShapeType(aST);        
         
         int i;
         switch (aST) {
@@ -1277,6 +1303,25 @@ public class LegendManage {
         else
             return createLegendScheme(min, max, n, legendType, shapeType, hasMissingValue, stdata.missingValue);
     }
+    
+    /**
+     * Create image legend from grid data
+     * @param gdata Grid data
+     * @param cmap Color map
+     * @return Legend scheme
+     */
+    public static LegendScheme createImageLegend(GridData gdata, ColorMap cmap){
+        boolean isUnique = gdata.testUniqueValues();
+        LegendScheme ls;
+        if (isUnique){
+            List<Number> values = gdata.getUniqueValues();
+            ls = LegendManage.createUniqValueLegendScheme(values, cmap, ShapeTypes.Polygon);
+        } else {
+            ls = LegendManage.createLegendScheme(gdata.getMinValue(), gdata.getMaxValue(), cmap);
+        }
+        
+        return ls;
+    }
 
     /**
      * Create random colors
@@ -1309,7 +1354,7 @@ public class LegendManage {
             return getRainBowColors_HSV(cNum);
         }
         
-        List<Color> colorList = new ArrayList<Color>();
+        List<Color> colorList = new ArrayList<>();
         
         colorList.add(new Color(160, 0, 200));
         colorList.add(new Color(110, 0, 220));
