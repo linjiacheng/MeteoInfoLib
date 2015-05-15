@@ -544,13 +544,16 @@ public class GeoTiff {
             IFDEntry heightIFD = this.findTag(Tag.ImageLength);
             int width = widthIFD.value[0];
             int height = heightIFD.value[0];
-            double[] values1d = readData(width, height);
-            double[][] values = new double[height][width];
+            GridData.Integer gData = new GridData.Integer(height, width);
+            int[] values1d = readData(width, height);
+            //int[][] values = new int[height][width];
             for (int i = 0; i < height; i++) {
                 for (int j = 0; j < width; j++) {
-                    values[height - i - 1][j] = values1d[i * width + j];
+                    //values[height - i - 1][j] = values1d[i * width + j];
+                    gData.setValue(height - i - 1, j, values1d[i * width + j]);
                 }
             }
+            values1d = null;
 
             //Grid data coordinate
             double[] X = new double[width];
@@ -567,15 +570,14 @@ public class GeoTiff {
             for (int i = 0; i < height; i++) {
                 Y[height - i - 1] = maxLat - ydelt * i;
             }
-
-            GridData gData = new GridData();
-            gData.data = values;
+            
+            //gData.data = values;
             gData.xArray = X;
             gData.yArray = Y;
 
             //Projection
             String projStr = getProjection();
-            if (projStr != null){
+            if (projStr != null) {
                 gData.projInfo = new ProjectionInfo(projStr);
             } else {
                 gData.projInfo = KnownCoordinateSystems.geographic.world.WGS1984;
@@ -595,15 +597,27 @@ public class GeoTiff {
             GeoKey gtModelTypeGeoKey = geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GTModelTypeGeoKey);
             if (gtModelTypeGeoKey.value() == 1) {
                 GeoKey projCoordTrans = geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjCoordTrans);
+                GeoKey projStdParallel1 = geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjStdParallel1);
+                double lat_1 = projStdParallel1.valueD(0);
+                GeoKey projStdParallel2 = geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjStdParallel2);
+                double lat_2 = projStdParallel2.valueD(0);
+                GeoKey projCenterLong = geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjCenterLong);
+                double lon_0 = projCenterLong == null ? 0 : projCenterLong.valueD(0);
+                GeoKey projNatOriginLat = geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjNatOriginLat);
+                double lat_0 = projNatOriginLat == null ? 0 : projNatOriginLat.valueD(0);
+                GeoKey projFalseEasting = geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjFalseEasting);
+                double x_0 = projFalseEasting == null ? 0 : projFalseEasting.valueD(0);
+                GeoKey projFalseNorthing = geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjFalseNorthing);
+                double y_0 = projFalseNorthing == null ? 0 : projFalseNorthing.valueD(0);
                 switch (projCoordTrans.value()) {
                     case 11:    //AlbersEqualArea
                         projStr = "+proj=aea"
-                            + "+lat_1=" + String.valueOf(geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjStdParallel1).valueD(0))
-                            + "+lat_2=" + String.valueOf(geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjStdParallel2).valueD(0))
-                            + "+lon_0=" + String.valueOf(geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjNatOriginLong).valueD(0))
-                            + "+lat_0=" + String.valueOf(geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjNatOriginLat).valueD(0))
-                            + "+x_0=" + String.valueOf(geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjFalseEasting).valueD(0))
-                            + "+y_0=" + String.valueOf(geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjFalseNorthing).valueD(0));
+                                + "+lat_1=" + String.valueOf(lat_1)
+                                + "+lat_2=" + String.valueOf(lat_2)
+                                + "+lon_0=" + String.valueOf(lon_0)
+                                + "+lat_0=" + String.valueOf(lat_0)
+                                + "+x_0=" + String.valueOf(x_0)
+                                + "+y_0=" + String.valueOf(y_0);
                         break;
                 }
             }
@@ -617,20 +631,45 @@ public class GeoTiff {
      *
      * @param width Width
      * @param height Height
+     * @return Data
      * @throws IOException
      */
-    public double[] readData(int width, int height) throws IOException {
-        double[] values = new double[width * height];
+    public int[] readData(int width, int height) throws IOException {
+        int[] values = new int[width * height];
         IFDEntry tileOffsetTag = findTag(Tag.TileOffsets);
         ByteBuffer buffer;
         if (tileOffsetTag != null) {
             int tileOffset = tileOffsetTag.value[0];
             IFDEntry tileSizeTag = findTag(Tag.TileByteCounts);
+            IFDEntry tileLengthTag = findTag(Tag.TileLength);
+            IFDEntry tileWidthTag = findTag(Tag.TileWidth);
+            int tileWidth = tileWidthTag.value[0];
+            int tileHeight = tileLengthTag.value[0];
+            int hTileNum = (width + tileWidth - 1) / tileWidth;
+            int vTileNum = (height + tileHeight - 1) / tileHeight;
             int tileSize = tileSizeTag.value[0];
             System.out.println("tileOffset =" + tileOffset + " tileSize=" + tileSize);
-            buffer = testReadData(tileOffset, tileSize);
-            for (int i = 0; i < width * height; i++) {
-                values[i] = buffer.getShort();
+            int idx;
+            int tileIdx, vIdx, hIdx;
+            for (int i = 0; i < vTileNum; i++) {
+                for (int j = 0; j < hTileNum; j++) {
+                    tileIdx = i * hTileNum + j;
+                    tileOffset = tileOffsetTag.value[tileIdx];
+                    tileSize = tileSizeTag.value[tileIdx];
+                    buffer = testReadData(tileOffset, tileSize);
+                    for (int h = 0; h < tileHeight; h++) {
+                        vIdx = i * tileHeight + h;
+                        if (vIdx == height)
+                            break;
+                        for (int w = 0; w < tileWidth; w++) {
+                            hIdx = j * tileWidth + w;
+                            if (hIdx == width)
+                                break;
+                            idx = vIdx * width + hIdx;
+                            values[idx] = buffer.getShort();
+                        }
+                    }
+                }
             }
         } else {
             IFDEntry stripOffsetTag = findTag(Tag.StripOffsets);

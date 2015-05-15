@@ -183,6 +183,18 @@ public class GeoComputation {
 
         return isIn;
     }
+    
+    /**
+     * Determine if a point is in a polygon
+     *
+     * @param aPolygon The polygon
+     * @param x X
+     * @param y Y
+     * @return Boolean
+     */
+    public static boolean pointInPolygon(PolygonShape aPolygon, double x, double y) {
+        return pointInPolygon(aPolygon, new PointD(x, y));
+    }
 
     /**
      * Determine if a point is in a polygon

@@ -278,9 +278,9 @@ public class MapDataManage {
             GeoTiff geoTiff = new GeoTiff(fileName);
             geoTiff.read();
             GridData gData = geoTiff.getGridData();
-            LegendScheme aLS = LegendManage.createLegendSchemeFromGridData(gData, LegendType.GraduatedColor,
-                    ShapeTypes.Image);
-            RasterLayer aLayer = DrawMeteoData.createRasterLayer(gData, new File(fileName).getName(), aLS);
+//            LegendScheme aLS = LegendManage.createLegendSchemeFromGridData(gData, LegendType.GraduatedColor,
+//                    ShapeTypes.Image);
+            RasterLayer aLayer = DrawMeteoData.createRasterLayer(gData, new File(fileName).getName());
             aLayer.setProjInfo(gData.projInfo);
             aLayer.setFileName(fileName);
 
@@ -314,6 +314,7 @@ public class MapDataManage {
      *
      * @param fileName The file name
      * @return Created vector layer
+     * @throws java.io.IOException
      */
     public static VectorLayer readMapFile_WMP(String fileName) throws IOException, Exception {
         BufferedReader sr = null;
@@ -325,7 +326,7 @@ public class MapDataManage {
             String[] dataArray;
             int shapeNum;
             int i, j, pNum;
-            List<PointD> pList = new ArrayList<PointD>();
+            List<PointD> pList = new ArrayList<>();
             PointD aPoint;
             boolean IsTrue = false;
             String columnName = "Value";

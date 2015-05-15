@@ -32,9 +32,12 @@ import java.util.logging.Logger;
 import org.meteoinfo.geoprocess.GeoComputation;
 import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.PointD;
+import org.meteoinfo.layer.VectorLayer;
 import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.projection.Reproject;
 import org.meteoinfo.shape.PolygonShape;
+import org.meteoinfo.shape.ShapeTypes;
+import ucar.ma2.Array;
 
 /**
  * Template
@@ -72,9 +75,26 @@ public class StationData {
      */
     public StationData() {
         data = new double[0][3];
-        stations = new ArrayList<String>();
+        stations = new ArrayList<>();
         dataExtent = new Extent();
         missingValue = -9999;
+    }
+    
+    /**
+     * Constructor
+     * @param a Array data
+     * @param x Array x
+     * @param y Array y
+     * @param missingv Missing value
+     */
+    public StationData(Array a, Array x, Array y, Number missingv){
+        int n = (int)a.getSize();
+        this.missingValue = missingv.doubleValue();
+        stations = new ArrayList<>();
+        dataExtent = new Extent();
+        for (int i = 0; i < n; i++){
+            this.addData("s_" + String.valueOf(i + 1), x.getDouble(i), y.getDouble(i), a.getDouble(i));
+        }                
     }
 
     /**
@@ -738,7 +758,7 @@ public class StationData {
         BufferedWriter sw = null;
         try {
             sw = new BufferedWriter(new FileWriter(new File(fileName)));
-            String aStr = "Stid,Latitude,Lontitude," + fieldName;
+            String aStr = "Stid,Longitude,Latitude," + fieldName;
             sw.write(aStr);
             for (int i = 0; i < this.getStNum(); i++) {
                 if (!saveMissingData) {
@@ -779,6 +799,93 @@ public class StationData {
     }
     
     /**
+     * Maskout station data
+     *
+     * @param polygonShapes Mask polygon shapes
+     * @return Result station data
+     */
+    public StationData maskout(List<PolygonShape> polygonShapes) {
+        StationData stData = new StationData();
+        stData.projInfo = this.projInfo;
+        stData.missingValue = this.missingValue;
+        for (int i = 0; i < this.getStNum(); i++) {
+            if (GeoComputation.pointInPolygons(polygonShapes, new PointD(this.getX(i), this.getY(i)))) {
+                stData.addData(this.getStid(i), this.getX(i), this.getY(i), this.getValue(i));
+            }
+        }
+
+        return stData;
+    }
+    
+    /**
+     * Maskout station data
+     *
+     * @param maskLayer Mask layer
+     * @return Result station data
+     */
+    public StationData maskout(VectorLayer maskLayer) {
+        if (maskLayer.getShapeType() != ShapeTypes.Polygon) {
+            return this;
+        }
+        
+        List<PolygonShape> polygons = (List<PolygonShape>)maskLayer.getShapes();
+        return this.maskout(polygons);
+    }
+    
+    /**
+     * Maskin station data
+     *
+     * @param polygonShape Mask polygon shape
+     * @return Result station data
+     */
+    public StationData maskin(PolygonShape polygonShape) {
+        StationData stData = new StationData();
+        stData.projInfo = this.projInfo;
+        stData.missingValue = this.missingValue;
+        for (int i = 0; i < this.getStNum(); i++) {
+            if (!GeoComputation.pointInPolygon(polygonShape, new PointD(this.getX(i), this.getY(i)))) {
+                stData.addData(this.getStid(i), this.getX(i), this.getY(i), this.getValue(i));
+            }
+        }
+
+        return stData;
+    }
+    
+    /**
+     * Maskin station data
+     *
+     * @param polygonShapes Mask polygon shapes
+     * @return Result station data
+     */
+    public StationData maskin(List<PolygonShape> polygonShapes) {
+        StationData stData = new StationData();
+        stData.projInfo = this.projInfo;
+        stData.missingValue = this.missingValue;
+        for (int i = 0; i < this.getStNum(); i++) {
+            if (!GeoComputation.pointInPolygons(polygonShapes, new PointD(this.getX(i), this.getY(i)))) {
+                stData.addData(this.getStid(i), this.getX(i), this.getY(i), this.getValue(i));
+            }
+        }
+
+        return stData;
+    }
+    
+    /**
+     * Maskin station data
+     *
+     * @param maskLayer Mask layer
+     * @return Result station data
+     */
+    public StationData maskin(VectorLayer maskLayer) {
+        if (maskLayer.getShapeType() != ShapeTypes.Polygon) {
+            return this;
+        }
+        
+        List<PolygonShape> polygons = (List<PolygonShape>)maskLayer.getShapes();
+        return this.maskin(polygons);
+    }
+    
+    /**
      * Filter station data
      * @param stations Station identifer list
      * @return Result station data
@@ -793,6 +900,25 @@ public class StationData {
             }
         }
 
+        return stData;
+    }
+    
+    /**
+     * Join an other station data
+     * @param indata Other station data
+     * @return Joined station data
+     */
+    public StationData join(StationData indata){
+        StationData stData = new StationData(this);
+        for (int i = 0; i < this.getStNum(); i++){
+            stData.addData(this.getStid(i), this.getX(i), this.getY(i), this.getValue(i));
+        }
+        for (int i = 0; i < indata.getStNum(); i++) {
+            if (!stData.stations.contains(indata.getStid(i))) {
+                stData.addData(indata.getStid(i), indata.getX(i), indata.getY(i), indata.getValue(i));
+            }
+        }
+        
         return stData;
     }
 

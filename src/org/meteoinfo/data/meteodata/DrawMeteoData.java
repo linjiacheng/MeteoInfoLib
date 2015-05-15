@@ -983,8 +983,15 @@ public class DrawMeteoData {
      * @return Raster layer
      */
     public static RasterLayer createRasterLayer(GridData gridData, String lName) {
-        LegendScheme ls = LegendManage.createLegendSchemeFromGridData(gridData, LegendType.GraduatedColor, ShapeTypes.Polygon);
-
+        boolean isUnique = gridData.testUniqueValues();
+        LegendScheme ls;
+        if (isUnique){
+            List<Number> values = gridData.getUniqueValues();
+            ls = LegendManage.createUniqValueLegendScheme(values, ShapeTypes.Polygon);
+        } else {
+            ls = LegendManage.createLegendSchemeFromGridData(gridData, LegendType.GraduatedColor, ShapeTypes.Polygon);
+        }
+        
         return createRasterLayer(gridData, lName, ls);
     }
 

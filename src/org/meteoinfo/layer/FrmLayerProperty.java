@@ -54,6 +54,7 @@ public class FrmLayerProperty extends javax.swing.JDialog {
 
     /**
      * Creates new form frmLayerProperty
+     *
      * @param parent
      * @param modal
      */
@@ -725,9 +726,25 @@ public class FrmLayerProperty extends javax.swing.JDialog {
         }
 
         LegendType aLT = (LegendType) this.jComboBox_LegendType.getSelectedItem();
-        this._ifCreateLegendScheme = false;
-        setFieldByLegendType(aLT);
-        this._ifCreateLegendScheme = true;
+        switch (this._mapLayer.getLayerType()) {
+            case VectorLayer:
+                this._ifCreateLegendScheme = false;
+                setFieldByLegendType(aLT);
+                this._ifCreateLegendScheme = true;
+                break;
+            case RasterLayer:
+                switch (aLT){
+                    case UniqueValue:
+                        
+                        break;
+                    case GraduatedColor:
+                        this._legendScheme = LegendManage.createLegendSchemeFromGridData(((RasterLayer)_mapLayer).getGridData(), LegendType.GraduatedColor, ShapeTypes.Polygon);                        
+                        break;
+                }
+                this.legendView1.setLegendScheme(_legendScheme);
+                this.legendView1.repaint();
+                break;
+        }
     }//GEN-LAST:event_jComboBox_LegendTypeActionPerformed
 
     private void jComboBox_FieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox_FieldActionPerformed
@@ -1006,7 +1023,7 @@ public class FrmLayerProperty extends javax.swing.JDialog {
 
     private void jButton_ChartLabelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_ChartLabelActionPerformed
         // TODO add your handling code here:
-        FrmChartLabel frm = new FrmChartLabel(this, false, ((VectorLayer)_mapLayer).getChartSet());
+        FrmChartLabel frm = new FrmChartLabel(this, false, ((VectorLayer) _mapLayer).getChartSet());
         frm.setLocationRelativeTo(this);
         frm.setVisible(true);
     }//GEN-LAST:event_jButton_ChartLabelActionPerformed
@@ -1086,7 +1103,7 @@ public class FrmLayerProperty extends javax.swing.JDialog {
                     break;
                 case UniqueValue:
                     Color[] colors;
-                    List<String> valueList = new ArrayList<String>();
+                    List<String> valueList = new ArrayList<>();
 
                     VectorLayer aLayer = (VectorLayer) _mapLayer;
                     boolean isDateField = false;
@@ -1095,7 +1112,7 @@ public class FrmLayerProperty extends javax.swing.JDialog {
                         isDateField = true;
                     }
 
-                    List<String> captions = new ArrayList<String>();
+                    List<String> captions = new ArrayList<>();
 
                     for (int i = 0; i < aLayer.getAttributeTable().getNumRecords(); i++) {
                         if (!valueList.contains(aLayer.getAttributeTable().getTable().getRows().get(i).getValue(fieldName).toString())) {
@@ -1245,107 +1262,125 @@ public class FrmLayerProperty extends javax.swing.JDialog {
                 this.jTabbedPane1.addTab("Legend", jPanel_Legend);
                 break;
         }
+        
+        switch (_mapLayer.getLayerType()) {
+            case VectorLayer:                
+                this.jComboBox_LegendType.setEnabled(true);
+                this.jComboBox_Field.setEnabled(true);
+                //Set legend type             
+                this.jComboBox_LegendType.removeAllItems();
+                this.jComboBox_LegendType.addItem(LegendType.SingleSymbol);
+                this.jComboBox_LegendType.addItem(LegendType.UniqueValue);
+                this.jComboBox_LegendType.addItem(LegendType.GraduatedColor);
+                this.jComboBox_LegendType.setSelectedItem(_legendScheme.getLegendType());
+                switch ((LegendType) this.jComboBox_LegendType.getSelectedItem()) {
+                    case SingleSymbol:
+                        this.jButton_AddBreak.setEnabled(false);
+                        this.jButton_RemoveBreak.setEnabled(false);
+                        this.jButton_RemoveAllBreaks.setEnabled(false);
+                        this.jButton_MoveBreakUp.setEnabled(false);
+                        this.jButton_MoveBreakDown.setEnabled(false);
+                        this.jButton_MakeBreaks.setEnabled(false);
+                        break;
+                    default:
+                        this.jButton_AddBreak.setEnabled(true);
+                        this.jButton_RemoveBreak.setEnabled(true);
+                        this.jButton_RemoveAllBreaks.setEnabled(true);
+                        this.jButton_MoveBreakUp.setEnabled(true);
+                        this.jButton_MoveBreakDown.setEnabled(true);
+                        this.jButton_MakeBreaks.setEnabled(true);
+                        break;
+                }
 
-        if (_mapLayer.getLayerType() == LayerTypes.VectorLayer) {
-            this.jComboBox_LegendType.setEnabled(true);
-            this.jComboBox_Field.setEnabled(true);
-            //Set legend type             
-            this.jComboBox_LegendType.removeAllItems();
-            this.jComboBox_LegendType.addItem(LegendType.SingleSymbol);
-            this.jComboBox_LegendType.addItem(LegendType.UniqueValue);
-            this.jComboBox_LegendType.addItem(LegendType.GraduatedColor);
-            this.jComboBox_LegendType.setSelectedItem(_legendScheme.getLegendType());
-            switch ((LegendType) this.jComboBox_LegendType.getSelectedItem()) {
-                case SingleSymbol:
-                    this.jButton_AddBreak.setEnabled(false);
-                    this.jButton_RemoveBreak.setEnabled(false);
-                    this.jButton_RemoveAllBreaks.setEnabled(false);
-                    this.jButton_MoveBreakUp.setEnabled(false);
-                    this.jButton_MoveBreakDown.setEnabled(false);
-                    this.jButton_MakeBreaks.setEnabled(false);
-                    break;
-                default:
-                    this.jButton_AddBreak.setEnabled(true);
-                    this.jButton_RemoveBreak.setEnabled(true);
-                    this.jButton_RemoveAllBreaks.setEnabled(true);
-                    this.jButton_MoveBreakUp.setEnabled(true);
-                    this.jButton_MoveBreakDown.setEnabled(true);
-                    this.jButton_MakeBreaks.setEnabled(true);
-                    break;
-            }
+                //Set field text
+                this.jComboBox_Field.setSelectedItem(_legendScheme.getFieldName());
 
-            //Set field text
-            this.jComboBox_Field.setSelectedItem(_legendScheme.getFieldName());
-
-            switch (_mapLayer.getLegendScheme().getBreakType()) {
-                case PointBreak:
-                case PolygonBreak:
-                    //this.jTabbedPane1.setEnabledAt(2, true);
-                    this.jTabbedPane1.addTab("Chart", jPanel_Chart);
-                    VectorLayer aLayer = (VectorLayer) _mapLayer;
-                    if (_mapLayer.getShapeType() == ShapeTypes.Polygon) {
-                        this.jComboBox_ChartType.removeAllItems();
-                        this.jComboBox_ChartType.addItem(ChartTypes.BarChart.toString());
-                        this.jComboBox_ChartType.addItem(ChartTypes.PieChart.toString());
-                    } else {
-                        this.jComboBox_ChartType.removeAllItems();
-                        this.jComboBox_ChartType.addItem(ChartTypes.BarChart.toString());
-                        this.jComboBox_ChartType.addItem(ChartTypes.PieChart.toString());
-                        //CB_ChartType.Items.Add(ChartTypes.WindVector.ToString());
-                        //CB_ChartType.Items.Add(ChartTypes.WindBarb.ToString());
-                        //CB_ChartType.Items.Add(ChartTypes.StationModel.ToString());
-                    }
-                    this.jComboBox_ChartType.setSelectedItem(aLayer.getChartSet().getChartType().toString());
-
-                    //Add fields    
-                    DefaultListModel listModel = new DefaultListModel();
-                    boolean isCheck;
-                    for (int i = 0; i < aLayer.getFieldNumber(); i++) {
-                        if (MIMath.isNumeric(aLayer.getField(i))) {
-                            String fn = aLayer.getFieldName(i);
-                            isCheck = false;
-                            if (aLayer.getChartSet().getFieldNames().contains(fn)) {
-                                isCheck = true;
-                            }
-                            listModel.addElement(new CheckBoxListEntry(fn, isCheck));
+                //Set chart
+                switch (_mapLayer.getLegendScheme().getBreakType()) {
+                    case PointBreak:
+                    case PolygonBreak:
+                        //this.jTabbedPane1.setEnabledAt(2, true);
+                        this.jTabbedPane1.addTab("Chart", jPanel_Chart);
+                        VectorLayer aLayer = (VectorLayer) _mapLayer;
+                        if (_mapLayer.getShapeType() == ShapeTypes.Polygon) {
+                            this.jComboBox_ChartType.removeAllItems();
+                            this.jComboBox_ChartType.addItem(ChartTypes.BarChart.toString());
+                            this.jComboBox_ChartType.addItem(ChartTypes.PieChart.toString());
+                        } else {
+                            this.jComboBox_ChartType.removeAllItems();
+                            this.jComboBox_ChartType.addItem(ChartTypes.BarChart.toString());
+                            this.jComboBox_ChartType.addItem(ChartTypes.PieChart.toString());
+                            //CB_ChartType.Items.Add(ChartTypes.WindVector.ToString());
+                            //CB_ChartType.Items.Add(ChartTypes.WindBarb.ToString());
+                            //CB_ChartType.Items.Add(ChartTypes.StationModel.ToString());
                         }
-                    }
-                    //this.checkBoxList_Fields = new CheckBoxList();
-                    this.checkBoxList_Fields.setModel(listModel);
+                        this.jComboBox_ChartType.setSelectedItem(aLayer.getChartSet().getChartType().toString());
 
-                    this.jTextField_BarWidth.setText(String.valueOf(aLayer.getChartSet().getBarWidth()));
-                    this.jTextField_Maximum.setText(String.valueOf(aLayer.getChartSet().getMaxSize()));
-                    this.jTextField_Minimum.setText(String.valueOf(aLayer.getChartSet().getMinSize()));
-                    this.jTextField_XShift.setText(String.valueOf(aLayer.getChartSet().getXShift()));
-                    this.jTextField_YShift.setText(String.valueOf(aLayer.getChartSet().getYShift()));
-                    this.jCheckBox_CollisionAvoidance.setSelected(aLayer.getChartSet().isAvoidCollision());
-                    //Set align type
-                    this.jComboBox_Align.removeAllItems();
-                    for (AlignType align : AlignType.values()) {
-                        this.jComboBox_Align.addItem(align.toString());
-                    }
-                    this.jComboBox_Align.setSelectedItem(aLayer.getChartSet().getAlignType().toString());
-                    this.jCheckBox_DisplayIn3D.setSelected(aLayer.getChartSet().isView3D());
-                    this.jTextField_Thickness.setText(String.valueOf(aLayer.getChartSet().getThickness()));
+                        //Add fields    
+                        DefaultListModel listModel = new DefaultListModel();
+                        boolean isCheck;
+                        for (int i = 0; i < aLayer.getFieldNumber(); i++) {
+                            if (MIMath.isNumeric(aLayer.getField(i))) {
+                                String fn = aLayer.getFieldName(i);
+                                isCheck = false;
+                                if (aLayer.getChartSet().getFieldNames().contains(fn)) {
+                                    isCheck = true;
+                                }
+                                listModel.addElement(new CheckBoxListEntry(fn, isCheck));
+                            }
+                        }
+                        //this.checkBoxList_Fields = new CheckBoxList();
+                        this.checkBoxList_Fields.setModel(listModel);
 
-                    legendView_Chart.setLegendScheme(aLayer.getChartSet().getLegendScheme());
-                    break;
-                default:
-                    //this.jTabbedPane1.setEnabledAt(2, false);
-                    break;
-            }
-        } else {
-            this.jComboBox_LegendType.removeAllItems();
-            this.jComboBox_LegendType.setEnabled(false);
-            this.jComboBox_Field.removeAllItems();
-            this.jComboBox_Field.setEnabled(false);
-            this.jButton_AddBreak.setEnabled(true);
-            this.jButton_RemoveBreak.setEnabled(true);
-            this.jButton_RemoveAllBreaks.setEnabled(true);
-            this.jButton_MoveBreakUp.setEnabled(true);
-            this.jButton_MoveBreakDown.setEnabled(true);
-            this.jButton_MakeBreaks.setEnabled(true);
-            //this.jTabbedPane1.setEnabledAt(2, false);
+                        this.jTextField_BarWidth.setText(String.valueOf(aLayer.getChartSet().getBarWidth()));
+                        this.jTextField_Maximum.setText(String.valueOf(aLayer.getChartSet().getMaxSize()));
+                        this.jTextField_Minimum.setText(String.valueOf(aLayer.getChartSet().getMinSize()));
+                        this.jTextField_XShift.setText(String.valueOf(aLayer.getChartSet().getXShift()));
+                        this.jTextField_YShift.setText(String.valueOf(aLayer.getChartSet().getYShift()));
+                        this.jCheckBox_CollisionAvoidance.setSelected(aLayer.getChartSet().isAvoidCollision());
+                        //Set align type
+                        this.jComboBox_Align.removeAllItems();
+                        for (AlignType align : AlignType.values()) {
+                            this.jComboBox_Align.addItem(align.toString());
+                        }
+                        this.jComboBox_Align.setSelectedItem(aLayer.getChartSet().getAlignType().toString());
+                        this.jCheckBox_DisplayIn3D.setSelected(aLayer.getChartSet().isView3D());
+                        this.jTextField_Thickness.setText(String.valueOf(aLayer.getChartSet().getThickness()));
+
+                        legendView_Chart.setLegendScheme(aLayer.getChartSet().getLegendScheme());
+                        break;
+                    default:
+                        //this.jTabbedPane1.setEnabledAt(2, false);
+                        break;
+                }
+            case RasterLayer:
+                this.jComboBox_LegendType.setEnabled(true);
+                this.jComboBox_Field.removeAllItems();
+                this.jComboBox_Field.setEnabled(false);
+                //Set legend type             
+                this.jComboBox_LegendType.removeAllItems();
+                this.jComboBox_LegendType.addItem(LegendType.UniqueValue);
+                this.jComboBox_LegendType.addItem(LegendType.GraduatedColor);
+                this.jComboBox_LegendType.setSelectedItem(_legendScheme.getLegendType());
+                this.jButton_AddBreak.setEnabled(true);
+                this.jButton_RemoveBreak.setEnabled(true);
+                this.jButton_RemoveAllBreaks.setEnabled(true);
+                this.jButton_MoveBreakUp.setEnabled(true);
+                this.jButton_MoveBreakDown.setEnabled(true);
+                this.jButton_MakeBreaks.setEnabled(true);
+                break;
+            default:
+                this.jComboBox_LegendType.removeAllItems();
+                this.jComboBox_LegendType.setEnabled(false);
+                this.jComboBox_Field.removeAllItems();
+                this.jComboBox_Field.setEnabled(false);
+                this.jButton_AddBreak.setEnabled(true);
+                this.jButton_RemoveBreak.setEnabled(true);
+                this.jButton_RemoveAllBreaks.setEnabled(true);
+                this.jButton_MoveBreakUp.setEnabled(true);
+                this.jButton_MoveBreakDown.setEnabled(true);
+                this.jButton_MakeBreaks.setEnabled(true);
+                break;
         }
     }
 

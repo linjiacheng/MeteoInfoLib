@@ -453,6 +453,94 @@ public class LegendManage {
         
         return legendScheme;
     }
+    
+    /**
+     * Create unique value legend scheme
+     *
+     * @param values Values
+     * @param aST The shape type
+     * @return The legend scheme
+     */
+    public static LegendScheme createUniqValueLegendScheme(List<Number> values, ShapeTypes aST) {
+        LegendScheme legendScheme = new LegendScheme(aST);
+        legendScheme.setLegendType(LegendType.UniqueValue);
+        legendScheme.setShapeType(aST);
+        Color[] colors;
+        int n = values.size();
+        if (n <= 13) {
+            colors = LegendManage.createRainBowColors(n);
+        } else {
+            colors = LegendManage.createRandomColors(n);
+        }
+        
+        int i;
+        switch (aST) {
+            case Point:
+            case PointZ:
+                for (i = 0; i < colors.length; i++) {
+                    PointBreak aPB = new PointBreak();
+                    aPB.setColor(colors[i]);
+                    aPB.setStartValue(values.get(i));
+                    aPB.setEndValue(values.get(i));
+                    aPB.setSize(6);
+                    aPB.setStyle(PointStyle.Circle);
+                    aPB.setOutlineColor(Color.black);
+                    aPB.setNoData(false);
+                    aPB.setDrawOutline(true);
+                    aPB.setDrawFill(true);
+                    aPB.setDrawShape(true);
+                    aPB.setCaption(String.valueOf(values.get(i)));
+                    
+                    legendScheme.getLegendBreaks().add(aPB);
+                }
+                legendScheme.setHasNoData(false);
+                break;
+            case Polyline:
+            case PolylineM:
+            case PolylineZ:
+                int ii = 0;
+                for (i = 0; i < colors.length; i++) {
+                    PolylineBreak aPLB = new PolylineBreak();
+                    aPLB.setColor(colors[i]);
+                    aPLB.setStartValue(values.get(i));
+                    aPLB.setEndValue(values.get(i));
+                    aPLB.setSize(1.0F);
+                    aPLB.setStyle(LineStyles.Solid);
+                    aPLB.setDrawPolyline(true);
+                    aPLB.setCaption(String.valueOf(values.get(i)));
+                    aPLB.setSymbolColor(aPLB.getColor());
+                    aPLB.setSymbolStyle(PointStyle.values()[ii]);
+                    ii += 1;
+                    if (ii == PointStyle.values().length) {
+                        ii = 0;
+                    }
+                    
+                    legendScheme.getLegendBreaks().add(aPLB);
+                }
+                legendScheme.setHasNoData(false);
+                break;
+            case Polygon:
+                for (i = 0; i < colors.length; i++) {
+                    PolygonBreak aPGB = new PolygonBreak();
+                    aPGB.setColor(colors[i]);
+                    aPGB.setOutlineColor(Color.gray);
+                    aPGB.setOutlineSize(1.0F);
+                    aPGB.setDrawFill(true);
+                    aPGB.setDrawOutline(true);
+                    aPGB.setDrawShape(true);
+                    aPGB.setStartValue(values.get(i));
+                    aPGB.setEndValue(values.get(i));
+                    aPGB.setCaption(String.valueOf(values.get(i)));
+                    //aPGB.Style = (HatchStyle)idxList[i];
+
+                    legendScheme.getLegendBreaks().add(aPGB);
+                }
+                legendScheme.setHasNoData(false);
+                break;
+        }
+        
+        return legendScheme;
+    }
 
     /**
      * Create unique value legend scheme
@@ -485,8 +573,8 @@ public class LegendManage {
      */
     public static LegendScheme createUniqValueLegendScheme(double[] CValues, Color[] colors, ShapeTypes aST,
             double min, double max, Boolean hasNodata, double unDef) {
-        List<String> values = new ArrayList<String>();
-        List<String> captions = new ArrayList<String>();
+        List<String> values = new ArrayList<>();
+        List<String> captions = new ArrayList<>();
         String dFormat = "%1$." + String.valueOf(MIMath.getDecimalNum(CValues[0])) + "f";
         for (double v : CValues) {
             captions.add(String.format(dFormat, v));
@@ -508,8 +596,8 @@ public class LegendManage {
      */
     public static LegendScheme createUniqValueLegendScheme(double[] CValues, Color[] colors, ShapeTypes aST,
             double min, double max) {
-        List<String> values = new ArrayList<String>();
-        List<String> captions = new ArrayList<String>();
+        List<String> values = new ArrayList<>();
+        List<String> captions = new ArrayList<>();
         String dFormat = "%1$." + String.valueOf(MIMath.getDecimalNum(CValues[0])) + "f";
         for (double v : CValues) {
             captions.add(String.format(dFormat, v));

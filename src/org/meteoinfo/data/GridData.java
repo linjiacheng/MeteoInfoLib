@@ -299,6 +299,16 @@ public class GridData {
     public void setYStagger(boolean value) {
         _yStag = value;
     }
+    
+    /**
+     * Get value
+     * @param i I index
+     * @param j J index
+     * @return Value
+     */
+    public Number getValue(int i, int j){
+        return data[i][j];
+    }
 
     /**
      * Get double value
@@ -2062,6 +2072,64 @@ public class GridData {
     public double getMinValue() {
         return this.getMaxMinValue()[1];
     }
+    
+    /**
+     * Test unique values
+     *
+     * @return True if unique value number less then 20
+     */
+    public boolean testUniqueValues() {
+        List<Number> values = new ArrayList<>();
+        int vdNum = 0;
+        for (int i = 0; i < getYNum(); i++) {
+            for (int j = 0; j < getXNum(); j++) {
+                if (MIMath.doubleEquals(this.getValue(i, j).doubleValue(), missingValue)) {
+                    continue;
+                }
+
+                if (vdNum == 0) {
+                    values.add(this.getValue(i, j));
+                    vdNum += 1;
+                } else {
+                    if (!values.contains(this.getValue(i, j))) {
+                        values.add(this.getValue(i, j));
+                        vdNum += 1;
+                    }
+                }
+                if (vdNum > 20)
+                    return false;
+            }
+        }
+
+        return true;
+    }
+    
+    /**
+     * Get unique values
+     *
+     * @return Unique values
+     */
+    public List<Number> getUniqueValues() {
+        List<Number> values = new ArrayList<>();
+        int vdNum = 0;
+        for (int i = 0; i < getYNum(); i++) {
+            for (int j = 0; j < getXNum(); j++) {
+                if (MIMath.doubleEquals(this.getValue(i, j).doubleValue(), missingValue)) {
+                    continue;
+                }
+
+                if (vdNum == 0) {
+                    values.add(this.getValue(i, j));
+                } else {
+                    if (!values.contains(this.getValue(i, j)))
+                        values.add(this.getValue(i, j));
+                }
+                vdNum += 1;
+            }
+        }
+
+        return values;
+    }
 
     /**
      * Get grid data setting
@@ -2720,7 +2788,8 @@ public class GridData {
          * @param j J index
          * @return Value
          */
-        public int getValue(int i, int j) {
+        @Override
+        public Number getValue(int i, int j) {
             return DataConvert.byte2Int(data[i][j]);
         }
 
@@ -2744,7 +2813,7 @@ public class GridData {
          */
         @Override
         public double getDoubleValue(int i, int j) {
-            return getValue(i, j);
+            return getValue(i, j).doubleValue();
         }
 
         /**
@@ -2762,7 +2831,7 @@ public class GridData {
             int v;
             for (int i = 0; i < getYNum(); i++) {
                 for (int j = 0; j < getXNum(); j++) {
-                    v = getValue(i, j);
+                    v = getValue(i, j).intValue();
                     if (v == missingValue) {
                         hasUndef = true;
                         continue;
@@ -2794,7 +2863,7 @@ public class GridData {
      */
     public static class Integer extends GridData {
 
-        private int[][] data;
+        private final int[][] data;
         private int missingValue;
 
         /**
@@ -2833,7 +2902,8 @@ public class GridData {
          * @param j J index
          * @return Value
          */
-        public int getValue(int i, int j) {
+        @Override
+        public Number getValue(int i, int j) {
             return data[i][j];
         }
 
@@ -2944,7 +3014,8 @@ public class GridData {
          * @param j J index
          * @return Value
          */
-        public double getValue(int i, int j) {
+        @Override
+        public Number getValue(int i, int j) {
             return data[i][j];
         }
 
@@ -3016,7 +3087,8 @@ public class GridData {
          * @param j J index
          * @return Value
          */
-        public float getValue(int i, int j) {
+        @Override
+        public Number getValue(int i, int j) {
             return data[i][j];
         }
 

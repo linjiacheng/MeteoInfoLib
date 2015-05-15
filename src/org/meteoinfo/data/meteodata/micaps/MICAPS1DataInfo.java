@@ -200,6 +200,10 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:00");
         dataInfo += System.getProperty("line.separator") + "Time: " + format.format(this.getTimes().get(0));
         dataInfo += System.getProperty("line.separator") + "Station Number: " + _stNum;
+        dataInfo += System.getProperty("line.separator") + "Number of Variables = " + String.valueOf(this.getVariableNum());
+        for (int i = 0; i < this.getVariableNum(); i++){
+            dataInfo += System.getProperty("line.separator") + "\t" + this.getVariableNames().get(i);
+        }
 
         return dataInfo;
     }
