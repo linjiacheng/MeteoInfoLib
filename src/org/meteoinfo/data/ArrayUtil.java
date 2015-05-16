@@ -267,22 +267,35 @@ public class ArrayUtil {
         int ndim = a.getRank();
         if (ndim > 1)
             sbuff.append("[");
-        int i = 0;
+        int i = 0, n = 0;
+        int shapeIdx = ndim - 1;
+        int len = a.getShape()[shapeIdx];
         IndexIterator ii = a.getIndexIterator();
         while (ii.hasNext()) {
-            if (i == 0) {                          
+            if (i == 0) {         
+                if (n > 0)
+                    sbuff.append("\n      ");
                 sbuff.append("[");
             }
             Object data = ii.getObjectNext();
             sbuff.append(data);            
             i += 1;
-            if (i == 100){
-                sbuff.append("...");
+            if (i == len){
+                sbuff.append("]");                
+                len = a.getShape()[shapeIdx];
+                i = 0;
+            } else {
+                sbuff.append(", ");
+            }
+            n += 1;
+            if (n > 200) {
+                sbuff.append("...]");
                 break;
             }
         }
         if (ndim > 1)
             sbuff.append("]");
+        sbuff.append(")");
         return sbuff.toString();
     }
     
