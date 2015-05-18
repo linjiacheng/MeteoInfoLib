@@ -746,6 +746,7 @@ public class JConsole extends JScrollPane
     // MouseListener Interface
     @Override
     public void mouseClicked(MouseEvent event) {
+        this.setStyle(Color.black);
     }
 
     @Override

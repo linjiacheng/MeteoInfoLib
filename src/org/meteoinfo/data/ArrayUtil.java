@@ -151,7 +151,7 @@ public class ArrayUtil {
      * @param step Step value
      * @return Array
      */
-    public static Array arrayRange(Number start, final int length, final Number step) {
+    public static Array arrayRange1(Number start, final int length, final Number step) {
         DataType dataType = ArrayUtil.objectsToType(new Object[]{
             start,
             step});
@@ -268,9 +268,16 @@ public class ArrayUtil {
         if (ndim > 1)
             sbuff.append("[");
         int i = 0, n = 0;
-        int shapeIdx = ndim - 1;
-        int len = a.getShape()[shapeIdx];
         IndexIterator ii = a.getIndexIterator();
+        int shapeIdx = ndim - 1;
+        if (shapeIdx < 0) {
+            sbuff.append("[");
+            sbuff.append(ii.getObjectNext());
+            sbuff.append("])");
+            return sbuff.toString();
+        }
+        
+        int len = a.getShape()[shapeIdx];        
         while (ii.hasNext()) {
             if (i == 0) {         
                 if (n > 0)
@@ -281,7 +288,7 @@ public class ArrayUtil {
             sbuff.append(data);            
             i += 1;
             if (i == len){
-                sbuff.append("]");                
+                sbuff.append("]");       
                 len = a.getShape()[shapeIdx];
                 i = 0;
             } else {

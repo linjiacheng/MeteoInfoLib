@@ -14,6 +14,7 @@ import org.meteoinfo.layer.VectorLayer;
 import org.meteoinfo.shape.PolygonShape;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
+import ucar.ma2.Index;
 import ucar.ma2.IndexIterator;
 import ucar.ma2.InvalidRangeException;
 import ucar.ma2.Range;
@@ -713,6 +714,23 @@ public class ArrayMath {
      */
     public static Array section(Array a, List<Range> ranges) throws InvalidRangeException {
         return a.section(ranges);
+    }
+    
+    /**
+     * Set section
+     * @param a Array a
+     * @param ranges Ranges
+     * @param v Value
+     * @throws InvalidRangeException 
+     */
+    public static void setSection(Array a, List<Range> ranges, Number v) throws InvalidRangeException{
+        Array r = a.section(ranges);
+        IndexIterator iter = r.getIndexIterator();
+        while (iter.hasNext()){
+            iter.setObjectNext(v);
+        }
+        a = Array.factory(a.getDataType(), a.getShape(), r.getStorage());
+        r = null;
     }
 
     // </editor-fold>
