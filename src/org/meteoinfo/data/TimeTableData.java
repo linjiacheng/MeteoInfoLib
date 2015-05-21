@@ -30,7 +30,8 @@ import org.meteoinfo.global.util.GlobalUtil;
 public class TimeTableData extends TableData{
 
     // <editor-fold desc="Variables">
-
+    //private int timeColIdx = 0;
+    private String timeColName;
     // </editor-fold>
     // <editor-fold desc="Constructor">
     /**
@@ -40,10 +41,32 @@ public class TimeTableData extends TableData{
         DataColumn col = new DataColumn("Time", DataTypes.Date);
         dataTable.addColumn(col);
     }
+    
+    /**
+     * Constructor
+     * @param dataTable Data table
+     */
+    public TimeTableData(DataTable dataTable){
+        super(dataTable);
+    }
 
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
+    /**
+     * Get time column name
+     * @return Time column name
+     */
+    public String getTimeColName(){
+        return this.timeColName;
+    }
     
+    /**
+     * Set time column name
+     * @param value Time column name
+     */
+    public void setTimeColName(String value){
+        this.timeColName = value;
+    }
 
     // </editor-fold>
     // <editor-fold desc="Methods">
@@ -76,7 +99,7 @@ public class TimeTableData extends TableData{
                 dataTable.addColumn(col);
             }
             SimpleDateFormat format = new SimpleDateFormat(formatStr);
-            List<Integer> dataIdxs = new ArrayList<Integer>();
+            List<Integer> dataIdxs = new ArrayList<>();
             String fieldName;
             for (int i = 0; i < titleArray.length; i++) {
                 fieldName = titleArray[i];
@@ -141,7 +164,7 @@ public class TimeTableData extends TableData{
         } else {
             //Get fields
             SimpleDateFormat format = new SimpleDateFormat(formatStr);
-            List<Integer> dataIdxs = new ArrayList<Integer>();
+            List<Integer> dataIdxs = new ArrayList<>();
             String fieldName;
             for (int i = 0; i < titleArray.length; i++) {
                 fieldName = titleArray[i];
@@ -187,7 +210,7 @@ public class TimeTableData extends TableData{
      * @return Year list
      */
     public List<Integer> getYears(){
-        List<Integer> years = new ArrayList<Integer>();
+        List<Integer> years = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
         int year;
         for (DataRow row : dataTable.getRows()){
@@ -205,11 +228,11 @@ public class TimeTableData extends TableData{
      * @return Year month list
      */
     public List<String> getYearMonths(){
-        List<String> yms = new ArrayList<String>();
+        List<String> yms = new ArrayList<>();
         SimpleDateFormat format = new SimpleDateFormat("yyyyMM");
         String ym;
         for (DataRow row : dataTable.getRows()){
-            ym = format.format((Date)row.getValue(0));
+            ym = format.format((Date)row.getValue(this.timeColName));
             if (!yms.contains(ym))
                 yms.add(ym);
         }
@@ -223,10 +246,10 @@ public class TimeTableData extends TableData{
      * @return Data row list
      */
     public List<DataRow> getDataByYear(int year){
-        List<DataRow> rows = new ArrayList<DataRow>();
+        List<DataRow> rows = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
         for (DataRow row : dataTable.getRows()){
-            cal.setTime((Date)row.getValue(0));
+            cal.setTime((Date)row.getValue(this.timeColName));
             if (cal.get(Calendar.YEAR) == year)
                 rows.add(row);
         }
@@ -241,11 +264,11 @@ public class TimeTableData extends TableData{
      */
     public List<DataRow> getDataBySeason(String season){
         List<Integer> months = this.getMonthsBySeason(season);
-        List<DataRow> rows = new ArrayList<DataRow>();
+        List<DataRow> rows = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
         int month;
         for (DataRow row : dataTable.getRows()){
-            cal.setTime((Date)row.getValue(0));
+            cal.setTime((Date)row.getValue(this.timeColName));
             month = cal.get(Calendar.MONTH) + 1;
             if (months.contains(month))
                 rows.add(row);
@@ -255,7 +278,7 @@ public class TimeTableData extends TableData{
     }  
     
     private List<Integer> getMonthsBySeason(String season){
-        List<Integer> months = new ArrayList<Integer>();
+        List<Integer> months = new ArrayList<>();
         if (season.equalsIgnoreCase("spring")){
             months.add(3);
             months.add(4);
@@ -295,7 +318,7 @@ public class TimeTableData extends TableData{
      * @return Data row list
      */
     public List<DataRow> getDataByYearMonth(int year, int month){
-        List<DataRow> rows = new ArrayList<DataRow>();
+        List<DataRow> rows = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
         for (DataRow row : dataTable.getRows()){
             cal.setTime((Date)row.getValue(0));
@@ -315,10 +338,10 @@ public class TimeTableData extends TableData{
      * @return Data row list
      */
     public List<DataRow> getDataByMonth(int month){
-        List<DataRow> rows = new ArrayList<DataRow>();
+        List<DataRow> rows = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
         for (DataRow row : dataTable.getRows()){
-            cal.setTime((Date)row.getValue(0));
+            cal.setTime((Date)row.getValue(this.timeColName));
             if (cal.get(Calendar.MONTH) == month - 1) {
                 rows.add(row);
             }
@@ -337,10 +360,10 @@ public class TimeTableData extends TableData{
         if (dow == 8)
             dow = 1;
         
-        List<DataRow> rows = new ArrayList<DataRow>();
+        List<DataRow> rows = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
         for (DataRow row : dataTable.getRows()){
-            cal.setTime((Date)row.getValue(0));
+            cal.setTime((Date)row.getValue(this.timeColName));
             if (cal.get(Calendar.DAY_OF_WEEK) == dow) {
                 rows.add(row);
             }
@@ -355,10 +378,10 @@ public class TimeTableData extends TableData{
      * @return Result data row list
      */
     public List<DataRow> getDataByHour(int hour){
-        List<DataRow> rows = new ArrayList<DataRow>();
+        List<DataRow> rows = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
         for (DataRow row : dataTable.getRows()){
-            cal.setTime((Date)row.getValue(0));
+            cal.setTime((Date)row.getValue(this.timeColName));
             if (cal.get(Calendar.HOUR_OF_DAY) == hour) {
                 rows.add(row);
             }
@@ -436,7 +459,7 @@ public class TimeTableData extends TableData{
         
         List<String> monthNames = Arrays.asList(new String[]{"Jan", "Feb","Mar", "Apr", "May",
             "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"});
-        List<Integer> months = new ArrayList<Integer>();
+        List<Integer> months = new ArrayList<>();
         int i;
         for (i = 1; i < 13; i++){
             months.add(i);
@@ -499,7 +522,7 @@ public class TimeTableData extends TableData{
         
         List<String> dowNames = Arrays.asList(new String[]{"Sunday", "Monday","Tuesday", "Wednesday", "Thursday", "Friday",
             "Saturday"});
-        List<Integer> dows = new ArrayList<Integer>();
+        List<Integer> dows = new ArrayList<>();
         dows.add(7);
         int i;
         for (i = 1; i < 7; i++){
@@ -534,7 +557,7 @@ public class TimeTableData extends TableData{
             rTable.addColumn(col.getColumnName(), DataTypes.Double);
         }
 
-        List<Integer> hours = new ArrayList<Integer>();
+        List<Integer> hours = new ArrayList<>();
         for (int i = 0; i < 24; i++){
             hours.add(i);
         }

@@ -352,6 +352,7 @@ public class ArrayUtil {
     public static DataType toDataType(String dt) {
         switch (dt) {
             case "C":
+            case "s":
                 return DataType.STRING;
             case "i":
                 return DataType.INT;
@@ -372,6 +373,7 @@ public class ArrayUtil {
     public static DataTypes toDataTypes(String dt){
         switch (dt) {
             case "C":
+            case "s":
                 return DataTypes.String;
             case "i":
                 return DataTypes.Integer;

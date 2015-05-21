@@ -164,9 +164,17 @@ public class TableData {
      * @param colData The column data
      * @throws Exception 
      */
-    public void addColumnData(String colName, String dt, List<Number> colData) throws Exception{
+    public void addColumnData(String colName, String dt, List<Object> colData) throws Exception{
         DataTypes dataType = ArrayUtil.toDataTypes(dt);
         this.dataTable.addColumnData(colName, dataType, colData);
+    }
+    
+    /**
+     * Remove a column
+     * @param colName Column name
+     */
+    public void removeColumn(String colName){
+        this.dataTable.removeColumn(this.dataTable.findColumn(colName));
     }
 
     /**
@@ -199,7 +207,7 @@ public class TableData {
      * @return Data columns
      */
     public List<DataColumn> getDataColumns() {
-        List<DataColumn> cols = new ArrayList<DataColumn>();
+        List<DataColumn> cols = new ArrayList<>();
         for (DataColumn col : dataTable.getColumns()) {
             if (col.getDataType() != DataTypes.Date) {
                 cols.add(col);
@@ -216,7 +224,7 @@ public class TableData {
      * @return Data columns
      */
     public List<DataColumn> findColumns(List<String> colNames) {
-        List<DataColumn> cols = new ArrayList<DataColumn>();
+        List<DataColumn> cols = new ArrayList<>();
         for (DataColumn col : dataTable.getColumns()) {
             for (String colName : colNames) {
                 if (col.getColumnName().equals(colName)) {
@@ -247,7 +255,7 @@ public class TableData {
      * @return Column values
      */
     public List<Double> getValidColumnValues(List<DataRow> rows, DataColumn col) {
-        List<Double> values = new ArrayList<Double>();
+        List<Double> values = new ArrayList<>();
         String colName = col.getColumnName();
         String vstr;
         double value = Double.NaN;
@@ -557,7 +565,7 @@ public class TableData {
             for (DataColumn col : dataColumns) {
                 dTable.addColumn(col);
             }
-            List<Integer> dataIdxs = new ArrayList<Integer>();
+            List<Integer> dataIdxs = new ArrayList<>();
             String fieldName;
             for (int i = 0; i < titleArray.length; i++) {
                 fieldName = titleArray[i];
@@ -612,7 +620,7 @@ public class TableData {
             sr.close();
         } else {
             //Get fields
-            List<Integer> dataIdxs = new ArrayList<Integer>();
+            List<Integer> dataIdxs = new ArrayList<>();
             String fieldName;
             for (int i = 0; i < titleArray.length; i++) {
                 fieldName = titleArray[i];
@@ -657,7 +665,7 @@ public class TableData {
     public DataTable toSingleRowTable(DataTable inTable, String firstColName, String firstColValue) throws Exception {
         DataTable rTable = new DataTable();
         rTable.addColumn(firstColName, DataTypes.String);
-        List<Object> values = new ArrayList<Object>();
+        List<Object> values = new ArrayList<>();
 
         int i = 0;
         for (DataColumn col : inTable.getColumns()) {
@@ -729,7 +737,7 @@ public class TableData {
      * @return Year list
      */
     public List<Integer> getYears(String tColName) {
-        List<Integer> years = new ArrayList<Integer>();
+        List<Integer> years = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
         int year;
         for (DataRow row : dataTable.getRows()) {
@@ -750,7 +758,7 @@ public class TableData {
      * @return Year month list
      */
     public List<String> getYearMonths(String tColName) {
-        List<String> yms = new ArrayList<String>();
+        List<String> yms = new ArrayList<>();
         SimpleDateFormat format = new SimpleDateFormat("yyyyMM");
         String ym;
         for (DataRow row : dataTable.getRows()) {
@@ -771,7 +779,7 @@ public class TableData {
      * @return Data row list
      */
     public List<DataRow> getDataByYear(int year, String tColName) {
-        List<DataRow> rows = new ArrayList<DataRow>();
+        List<DataRow> rows = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
         for (DataRow row : dataTable.getRows()) {
             cal.setTime((Date) row.getValue(tColName));
@@ -792,7 +800,7 @@ public class TableData {
      */
     public List<DataRow> getDataBySeason(String season, String tColName) {
         List<Integer> months = this.getMonthsBySeason(season);
-        List<DataRow> rows = new ArrayList<DataRow>();
+        List<DataRow> rows = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
         int month;
         for (DataRow row : dataTable.getRows()) {
@@ -807,7 +815,7 @@ public class TableData {
     }
 
     private List<Integer> getMonthsBySeason(String season) {
-        List<Integer> months = new ArrayList<Integer>();
+        List<Integer> months = new ArrayList<>();
         if (season.equalsIgnoreCase("spring")) {
             months.add(3);
             months.add(4);
@@ -851,7 +859,7 @@ public class TableData {
      * @return Data row list
      */
     public List<DataRow> getDataByYearMonth(int year, int month, String tColName) {
-        List<DataRow> rows = new ArrayList<DataRow>();
+        List<DataRow> rows = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
         for (DataRow row : dataTable.getRows()) {
             cal.setTime((Date) row.getValue(tColName));
@@ -873,7 +881,7 @@ public class TableData {
      * @return Data row list
      */
     public List<DataRow> getDataByMonth(int month, String tColName) {
-        List<DataRow> rows = new ArrayList<DataRow>();
+        List<DataRow> rows = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
         for (DataRow row : dataTable.getRows()) {
             cal.setTime((Date) row.getValue(tColName));
@@ -898,7 +906,7 @@ public class TableData {
             dow = 1;
         }
 
-        List<DataRow> rows = new ArrayList<DataRow>();
+        List<DataRow> rows = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
         for (DataRow row : dataTable.getRows()) {
             cal.setTime((Date) row.getValue(tColName));
@@ -918,7 +926,7 @@ public class TableData {
      * @return Result data row list
      */
     public List<DataRow> getDataByHour(int hour, String tColName) {
-        List<DataRow> rows = new ArrayList<DataRow>();
+        List<DataRow> rows = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
         for (DataRow row : dataTable.getRows()) {
             cal.setTime((Date) row.getValue(tColName));

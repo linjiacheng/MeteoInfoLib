@@ -838,15 +838,15 @@ public abstract class DataMath {
      * @return Correlation coefficent
      */
     public static float getR(ColumnData xcData, ColumnData ycData){
-        List<Double> xData = xcData.getDataValues();
-        List<Double> yData = ycData.getDataValues(); 
-        List<Double> xxData = new ArrayList<Double>();
-        List<Double> yyData = new ArrayList<Double>();
+        List<Number> xData = xcData.getDataValues();
+        List<Number> yData = ycData.getDataValues(); 
+        List<Double> xxData = new ArrayList<>();
+        List<Double> yyData = new ArrayList<>();
         for (int i = 0; i < xcData.size(); i++){
-            if (Double.isNaN(xData.get(i)) || Double.isNaN(yData.get(i)))
+            if (Double.isNaN(xData.get(i).doubleValue()) || Double.isNaN(yData.get(i).doubleValue()))
                 continue;
-            xxData.add(xData.get(i));
-            yyData.add(yData.get(i));
+            xxData.add(xData.get(i).doubleValue());
+            yyData.add(yData.get(i).doubleValue());
         }
         
         return getR(xxData, yyData);

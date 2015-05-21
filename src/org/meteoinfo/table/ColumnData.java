@@ -227,24 +227,24 @@ public class ColumnData {
     }
 
     /**
-     * Get double data list
+     * Get number data list
      *
-     * @return Double data list
+     * @return Number data list
      */
-    public List<Double> getDataValues() {
+    public List<Number> getDataValues() {
         if (dataColumn.getDataType() == DataTypes.Double) {
-            return ((List<Double>) data);
+            return ((List<Number>) data);
         } else {
-            List<Double> values = new ArrayList<>();
+            List<Number> values = new ArrayList<>();
             switch (dataColumn.getDataType()) {
                 case Integer:
                     for (int v : (List<Integer>) data) {
-                        values.add((double) v);
+                        values.add(v);
                     }
                     break;
                 case Float:
                     for (float v : (List<Float>) data) {
-                        values.add((double) v);
+                        values.add(v);
                     }
                     break;
                 case String:
@@ -260,13 +260,13 @@ public class ColumnData {
     }
     
     /**
-     * Get valid double data list
-     * @return Double data list
+     * Get valid number data list
+     * @return Number data list
      */
-    public List<Double> getValidDataValues(){
-        List<Double> values = this.getDataValues();
+    public List<Number> getValidDataValues(){
+        List<Number> values = this.getDataValues();
         for (int i = 0, len = values.size(); i < len; i++) { 
-            if (Double.isNaN(values.get(i))) {                
+            if (Double.isNaN(values.get(i).doubleValue())) {                
                 values.remove(i); 
                 len--; 
                 i--;  

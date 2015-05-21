@@ -222,10 +222,16 @@ public class XYListDataset extends XYDataset {
         int yn = (int)yvs.getSize();
         double[] nxvs = new double[xn];
         double[] nyvs = new double[yn];
+        double v;
         for (int i = 0; i < xn; i++)
-            nxvs[i] = Double.parseDouble(xvs.get(i).toString());
-        for (int i = 0; i < yn; i++)
-            nyvs[i] = yvs.getDouble(i);
+            nxvs[i] = xvs.get(i).doubleValue();
+        for (int i = 0; i < yn; i++) {
+            v = yvs.getDouble(i);
+            if (Double.isNaN(v))
+                nyvs[i] = this.getMissingValue();
+            else
+                nyvs[i] = v;
+        }
         
         this.addSeries(seriesKey, nxvs, nyvs);
     } 
@@ -241,10 +247,16 @@ public class XYListDataset extends XYDataset {
         int yn = (int)yvs.getSize();
         double[] nxvs = new double[xn];
         double[] nyvs = new double[yn];
+        double v;
         for (int i = 0; i < xn; i++)
             nxvs[i] = xvs.getDouble(i);
-        for (int i = 0; i < yn; i++)
-            nyvs[i] = yvs.getDouble(i);
+        for (int i = 0; i < yn; i++){
+            v = yvs.getDouble(i);
+            if (Double.isNaN(v))
+                nyvs[i] = this.getMissingValue();
+            else
+                nyvs[i] = v;
+        }
         
         this.addSeries(seriesKey, nxvs, nyvs);
     }

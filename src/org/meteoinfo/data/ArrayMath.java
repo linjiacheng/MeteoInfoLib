@@ -17,6 +17,7 @@ import ucar.ma2.DataType;
 import ucar.ma2.Index;
 import ucar.ma2.IndexIterator;
 import ucar.ma2.InvalidRangeException;
+import ucar.ma2.MAMath;
 import ucar.ma2.Range;
 
 /**
@@ -713,7 +714,10 @@ public class ArrayMath {
      * @throws InvalidRangeException
      */
     public static Array section(Array a, List<Range> ranges) throws InvalidRangeException {
-        return a.section(ranges);
+        Array r = a.section(ranges);  
+        Array rr = Array.factory(r.getDataType(), r.getShape());
+        MAMath.copy(rr, r);
+        return rr;
     }
     
     /**

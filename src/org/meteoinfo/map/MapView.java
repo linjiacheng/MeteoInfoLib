@@ -4041,6 +4041,8 @@ public class MapView extends JPanel {
                 }
                 if (aLayer.isMaskout()) {
                     setClipRegion(g);
+                    if (oldRegion != null)
+                        g.clip(oldRegion);
                 }
 
                 switch (_layers.get(i).getLayerType()) {
@@ -5522,7 +5524,7 @@ public class MapView extends JPanel {
      * @param aShape A shape
      */
     public void drawIdShape(Graphics2D g, Shape aShape) {
-        List<Double> lonShifts = new ArrayList<Double>();
+        List<Double> lonShifts = new ArrayList<>();
         if (MIMath.isExtentCross(this.getViewExtent(), aShape.getExtent())) {
             lonShifts.add(new Double(0));
         }
