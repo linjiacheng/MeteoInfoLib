@@ -35,6 +35,7 @@ public class Clustering {
      * @param M Column number
      * @param LN Level number
      * @param disType Distant define type: Euclidean or Angle
+     * @throws java.io.FileNotFoundException
      */
     public static void calculate(String inFile, String outFile, int N, int M, int LN, DistanceType disType) throws FileNotFoundException, IOException {
         double[][] DATA = new double[N][M];
@@ -46,7 +47,7 @@ public class Clustering {
         int j;
         int row;
         int col;
-        List<String> flags = new ArrayList<String>();    //Date time and height
+        List<String> flags = new ArrayList<>();    //Date time and height
 
         BufferedReader sr = new BufferedReader(new FileReader(new File(inFile)));
         row = 0;
@@ -109,6 +110,7 @@ public class Clustering {
      * @param LN Level number
      * @param interval Point interval
      * @param disType Distant define type: Euclidean or Angle
+     * @throws java.io.IOException
      */
     public static void calculate(List<VectorLayer> trajLayers, String outFile, int N, int M, int LN, int interval, DistanceType disType) throws IOException {
         double[][] DATA = new double[N][M];
@@ -119,7 +121,7 @@ public class Clustering {
         int j;
         int row;
         int col;
-        List<String> flags = new ArrayList<String>();    //Date time and height
+        List<String> flags = new ArrayList<>();    //Date time and height
         Date aDate;
 
         row = 0;
@@ -180,6 +182,7 @@ public class Clustering {
      * @param outFile Output file
      * @param LN Level number
      * @param disType Distant define type: Euclidean or Angle
+     * @throws java.io.IOException
      */
     public static void calculation(double[][] DATA, String outFile, int LN, DistanceType disType) throws IOException {
         int N = DATA.length;
@@ -536,8 +539,6 @@ public class Clustering {
                     DISNN[i] = DMIN;
                 }
             }
-            //frmMain.CurrentWin.TSPB_Main.Value = (N - NCL) / N * 100;
-            //Application.DoEvents();
         } while (!(NCL == 1));
 
     }
@@ -632,7 +633,7 @@ public class Clustering {
                         continue;
                     }
                     ICLASS[i][j] = k + 1;
-                    break; // TODO: might not be correct. Was : Exit For
+                    break; 
                 }
             }
         }

@@ -92,6 +92,21 @@ public final class XY1DPlot extends XYPlot {
      * Constructor
      *
      * @param isTime If x axis is time
+     * @param cpMethod Plot method
+     * @param dateset Dataset
+     */
+    public XY1DPlot(boolean isTime, ChartPlotMethod cpMethod, XYDataset dateset) {
+        this();
+        this.setXAxis(new TimeAxis("X", true));
+        //this.getXAxis().setTimeAxis(isTime);
+        this.setChartPlotMethod(cpMethod);
+        this.setDataset(dateset);
+    }
+
+    /**
+     * Constructor
+     *
+     * @param isTime If x axis is time
      * @param orientation Plot orientation
      * @param dateset Dataset
      */
@@ -115,15 +130,40 @@ public final class XY1DPlot extends XYPlot {
         dataset = (XYDataset) value;
         Extent extent = this.getAutoExtent();
         this.setDrawExtent(extent);
-        this.seriesLegends.clear();
-        for (int i = 0; i < dataset.getSeriesCount(); i++) {
-            PolylineBreak plb = new PolylineBreak();
-            plb.setColor(ColorUtil.getCommonColor(i));
-            plb.setCaption(dataset.getSeriesKey(i));
-            seriesLegends.add(new SeriesLegend(plb));
-        }
+        this.updateSeriesLegend();
     }
 
+    private void updateSeriesLegend(){
+        this.seriesLegends.clear();
+        for (int i = 0; i < dataset.getSeriesCount(); i++) {
+            switch (this.chartPlotMethod) {
+                case LINE:
+                case LINE_POINT:
+                    PolylineBreak plb = new PolylineBreak();
+                    if (this.chartPlotMethod == ChartPlotMethod.LINE)
+                        plb.setDrawSymbol(false);
+                    else
+                        plb.setDrawSymbol(true);
+                    plb.setColor(ColorUtil.getCommonColor(i));
+                    plb.setCaption(dataset.getSeriesKey(i));
+                    seriesLegends.add(new SeriesLegend(plb));
+                    break;
+                case POINT:
+                    PointBreak pb = new PointBreak();
+                    pb.setColor(ColorUtil.getCommonColor(i));
+                    pb.setCaption(dataset.getSeriesKey(i));
+                    seriesLegends.add(new SeriesLegend(pb));
+                    break;
+                case BAR:
+                    PolygonBreak pgb = new PolygonBreak();
+                    pgb.setColor(ColorUtil.getCommonColor(i));
+                    pgb.setCaption(dataset.getSeriesKey(i));
+                    seriesLegends.add(new SeriesLegend(pgb));
+                    break;
+            }
+        }
+    }
+    
     /**
      * Get chart plot method
      *
@@ -140,6 +180,9 @@ public final class XY1DPlot extends XYPlot {
      */
     public void setChartPlotMethod(ChartPlotMethod value) {
         this.chartPlotMethod = value;
+        if (this.dataset != null){
+            this.updateSeriesLegend();
+        }
     }
 
     @Override
@@ -197,7 +240,7 @@ public final class XY1DPlot extends XYPlot {
         plb.setColor(ColorUtil.getCommonColor(this.dataset.getSeriesCount()));
         plb.setCaption(seriesKey);
         seriesLegends.add(new SeriesLegend(plb));
-        
+
         Extent extent = this.getAutoExtent();
         this.setDrawExtent(extent);
     }
@@ -241,8 +284,8 @@ public final class XY1DPlot extends XYPlot {
                     npoints[j] = new PointF(p.X, y);
                 }
                 points = npoints;
-                if (!mvIdx.isEmpty()){
-                    for (int j = 0; j < mvIdx.size(); j++){
+                if (!mvIdx.isEmpty()) {
+                    for (int j = 0; j < mvIdx.size(); j++) {
                         mvIdx.set(j, len - mvIdx.get(j) - 1);
                     }
                 }
@@ -257,8 +300,8 @@ public final class XY1DPlot extends XYPlot {
                     npoints[j] = new PointF(x, p.Y);
                 }
                 points = npoints;
-                if (!mvIdx.isEmpty()){
-                    for (int j = 0; j < mvIdx.size(); j++){
+                if (!mvIdx.isEmpty()) {
+                    for (int j = 0; j < mvIdx.size(); j++) {
                         mvIdx.set(j, len - mvIdx.get(j) - 1);
                     }
                 }
@@ -392,10 +435,10 @@ public final class XY1DPlot extends XYPlot {
      * Set legend break
      *
      * @param seriesIdx Series index
-     * @param plb Legend break
+     * @param cb Legend break
      */
-    public void setLegendBreak(int seriesIdx, ColorBreak plb) {
-        this.seriesLegends.get(seriesIdx).setLegendBreak(plb);
+    public void setLegendBreak(int seriesIdx, ColorBreak cb) {
+        this.seriesLegends.get(seriesIdx).setLegendBreak(cb);
     }
 
     /**
@@ -460,7 +503,7 @@ public final class XY1DPlot extends XYPlot {
         //extent = extent.extend(xgap, ygap);
         double[] xValues;
         if (this.getXAxis() instanceof TimeAxis) {
-        //if (this.getXAxis().isTimeAxis()) {
+            //if (this.getXAxis().isTimeAxis()) {
             xValues = MIMath.getIntervalValues(extent.minX, extent.maxX, false);
             xValues[0] = extent.minX;
             xValues[xValues.length - 1] = extent.maxX;
