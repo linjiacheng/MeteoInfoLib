@@ -1353,6 +1353,7 @@ public class FrmLayerProperty extends javax.swing.JDialog {
                         //this.jTabbedPane1.setEnabledAt(2, false);
                         break;
                 }
+                break;
             case RasterLayer:
                 this.jComboBox_LegendType.setEnabled(true);
                 this.jComboBox_Field.removeAllItems();
