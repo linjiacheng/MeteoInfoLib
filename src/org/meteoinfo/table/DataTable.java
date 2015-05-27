@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.meteoinfo.data.ArrayUtil;
+import org.meteoinfo.data.TableUtil;
 import org.meteoinfo.data.mapdata.Field;
 import org.meteoinfo.global.MIMath;
 
@@ -222,6 +223,17 @@ public final class DataTable {
      */
     public void setValue(int row, String colName, Object value) {
         this.rows.get(row).setValue(colName, value);
+    }
+    
+    /**
+     * Set values
+     * @param colName Column name
+     * @param values Values
+     */
+    public void setValues(String colName, List<Object> values){
+        for (int i = 0; i < values.size(); i++){
+            this.rows.get(i).setValue(colName, values.get(i));
+        }
     }
 
     /**
@@ -460,7 +472,7 @@ public final class DataTable {
      * @throws Exception 
      */
     public void addColumnData(String colName, String dt, List<Object> colData) throws Exception{
-        DataTypes dataType = ArrayUtil.toDataTypes(dt);
+        DataTypes dataType = TableUtil.toDataTypes(dt);
         this.addColumnData(colName, dataType, colData);
     }
     
@@ -908,11 +920,11 @@ public final class DataTable {
             return;
         }
         
-        List<String> values_this = (List<String>)this.getColumnData(colName_this).getData();
-        List<String> values_in = (List<String>)dataTable.getColumnData(colName_in).getData();
+        List<String> values_this = this.getColumnData(colName_this).getDataStrings();
+        List<String> values_in = dataTable.getColumnData(colName_in).getDataStrings();
         
         List<String> colNames = this.getColumnNames(); 
-        List<String> newColNames = new ArrayList<String>();
+        List<String> newColNames = new ArrayList<>();
         for (DataColumn col : dataTable.columns){        
             if (col.getColumnName().equals(colName_in))
                 continue;

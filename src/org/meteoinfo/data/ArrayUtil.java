@@ -78,9 +78,8 @@ public class ArrayUtil {
 
         return a;
     }
-    
-    // </editor-fold>
 
+    // </editor-fold>
     // <editor-fold desc="Create">
     /**
      * Create an array
@@ -254,7 +253,6 @@ public class ArrayUtil {
 
     // </editor-fold>
     // <editor-fold desc="Output">
-    
     /**
      * Array to string
      *
@@ -262,11 +260,12 @@ public class ArrayUtil {
      * @return String
      */
     public static String convertToString(Array a) {
-        StringBuilder sbuff = new StringBuilder();        
+        StringBuilder sbuff = new StringBuilder();
         sbuff.append("array(");
         int ndim = a.getRank();
-        if (ndim > 1)
+        if (ndim > 1) {
             sbuff.append("[");
+        }
         int i = 0, n = 0;
         IndexIterator ii = a.getIndexIterator();
         int shapeIdx = ndim - 1;
@@ -276,19 +275,20 @@ public class ArrayUtil {
             sbuff.append("])");
             return sbuff.toString();
         }
-        
-        int len = a.getShape()[shapeIdx];        
+
+        int len = a.getShape()[shapeIdx];
         while (ii.hasNext()) {
-            if (i == 0) {         
-                if (n > 0)
+            if (i == 0) {
+                if (n > 0) {
                     sbuff.append("\n      ");
+                }
                 sbuff.append("[");
             }
             Object data = ii.getObjectNext();
-            sbuff.append(data);            
+            sbuff.append(data);
             i += 1;
-            if (i == len){
-                sbuff.append("]");       
+            if (i == len) {
+                sbuff.append("]");
                 len = a.getShape()[shapeIdx];
                 i = 0;
             } else {
@@ -300,12 +300,13 @@ public class ArrayUtil {
                 break;
             }
         }
-        if (ndim > 1)
+        if (ndim > 1) {
             sbuff.append("]");
+        }
         sbuff.append(")");
         return sbuff.toString();
     }
-    
+
     /**
      * Array to string
      *
@@ -313,23 +314,24 @@ public class ArrayUtil {
      * @return String
      */
     public static String toString_old(Array a) {
-        StringBuilder sbuff = new StringBuilder();        
+        StringBuilder sbuff = new StringBuilder();
         sbuff.append("array(");
         int ndim = a.getRank();
-        if (ndim > 1)
+        if (ndim > 1) {
             sbuff.append("[");
+        }
         int i = 0;
         int shapeIdx = ndim - 1;
         int len = a.getShape()[shapeIdx];
         IndexIterator ii = a.getIndexIterator();
         while (ii.hasNext()) {
-            if (i == 0) {                          
+            if (i == 0) {
                 sbuff.append("[");
             }
             Object data = ii.getObjectNext();
-            sbuff.append(data);            
+            sbuff.append(data);
             i += 1;
-            if (i == len){
+            if (i == len) {
                 sbuff.append("]");
                 len = a.getShape()[shapeIdx];
                 i = 0;
@@ -337,15 +339,17 @@ public class ArrayUtil {
                 sbuff.append(", ");
             }
         }
-        if (ndim > 1)
+        if (ndim > 1) {
             sbuff.append("]");
+        }
         return sbuff.toString();
     }
     // </editor-fold>
-    
+
     // <editor-fold desc="Convert">
     /**
      * To data type - ucar.ma2
+     *
      * @param dt Data type string
      * @return Data type
      */
@@ -364,26 +368,7 @@ public class ArrayUtil {
                 return DataType.OBJECT;
         }
     }
+
     
-    /**
-     * To data type - MeteoInfo
-     * @param dt Data type string
-     * @return Data type
-     */
-    public static DataTypes toDataTypes(String dt){
-        switch (dt) {
-            case "C":
-            case "s":
-                return DataTypes.String;
-            case "i":
-                return DataTypes.Integer;
-            case "f":
-                return DataTypes.Float;
-            case "d":
-                return DataTypes.Double;
-            default:
-                return DataTypes.String;
-        }
-    }
     // </editor-fold>
 }

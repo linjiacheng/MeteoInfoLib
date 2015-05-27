@@ -214,7 +214,7 @@ public class TimeTableData extends TableData{
         Calendar cal = Calendar.getInstance();
         int year;
         for (DataRow row : dataTable.getRows()){
-            cal.setTime((Date)row.getValue(0));
+            cal.setTime((Date)row.getValue(this.timeColName));
             year = cal.get(Calendar.YEAR);
             if (!years.contains(year))
                 years.add(year);

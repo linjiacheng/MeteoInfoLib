@@ -71,7 +71,7 @@ public class DataColumn {
         this.dataType = dataType;
         this.columnName = columnName;
     }
-    
+
     /**
      * Constructor
      *
@@ -245,50 +245,76 @@ public class DataColumn {
      * @return Result object
      */
     public Object convertTo(Object value) {
-        switch (this.dataType) {
-            case Integer:
-                if (!(value instanceof Integer)) {
-                    return Integer.valueOf(value.toString());
-                }
-                break;
-            case Double:
-                if (!(value instanceof Double)) {
-                    if (value == null) {
-                        return Double.NaN;
-                    } else {
-                        return Double.valueOf(value.toString());
+        if (value == null) {
+            switch (this.dataType) {
+                case Integer:
+                    return Integer.MIN_VALUE;
+                case Float:
+                    return Float.NaN;
+                case Double:
+                    return Double.NaN;
+                case Boolean:
+                    return false;
+                case String:
+                    return "";
+                default:
+                    return value;
+            }
+        } else {
+            switch (this.dataType) {
+                case Integer:
+                    if (!(value instanceof Integer)) {
+                        String vStr = value.toString();
+                        if (vStr.isEmpty())
+                            return Integer.MIN_VALUE;
+                        return Integer.valueOf(vStr);
                     }
-                }
-                break;
-            case Float:
-                if (!(value instanceof Float)) {
-                    if (value == null) {
-                        return Float.NaN;
-                    } else {
-                        return Float.valueOf(value.toString());
+                    break;
+                case Double:
+                    if (!(value instanceof Double)) {
+                        String vStr = value.toString();
+                        if (vStr.isEmpty()) {
+                            return Double.NaN;
+                        } else {
+                            return Double.valueOf(vStr);
+                        }
                     }
-                }
-                break;
-            case Boolean:
-                if (!(value instanceof Boolean)) {
-                    return Boolean.valueOf(value.toString());
-                }
-                break;
-            case Date:
-                if (!(value instanceof Date)) {
-                    SimpleDateFormat format = new SimpleDateFormat(this.format);
-                    try {
-                        return format.parse(value.toString());
-                    } catch (ParseException ex) {
-                        Logger.getLogger(DataColumn.class.getName()).log(Level.SEVERE, null, ex);
+                    break;
+                case Float:
+                    if (!(value instanceof Float)) {
+                        String vStr = value.toString();
+                        if (vStr.isEmpty()) {
+                            return Float.NaN;
+                        } else {
+                            return Float.valueOf(vStr);
+                        }
                     }
-                }
-                break;
+                    break;
+                case Boolean:
+                    if (!(value instanceof Boolean)) {
+                        String vStr = value.toString();
+                        if (vStr.isEmpty())
+                            return false;
+                        return Boolean.valueOf(vStr);
+                    }
+                    break;
+                case Date:
+                    if (!(value instanceof Date)) {
+                        String vStr = value.toString();
+                        if (vStr.isEmpty()) {
+                            return null;
+                        }
+                        SimpleDateFormat dformat = new SimpleDateFormat(this.format);
+                        try {
+                            return dformat.parse(vStr);
+                        } catch (ParseException ex) {
+                            Logger.getLogger(DataColumn.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                    break;
+            }
         }
 
-        if (value == null) {
-            return "";
-        }
         return value;
     }
 
