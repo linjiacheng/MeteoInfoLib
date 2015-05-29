@@ -1971,7 +1971,8 @@ public class MapView extends JPanel {
                     }
                     if (selectedShapes.size() > 0) {
                         for (int shapeIdx : selectedShapes) {
-                            aLayer.getShapes().get(shapeIdx).setSelected(true);
+                            Shape shape = aLayer.getShapes().get(shapeIdx);
+                            shape.setSelected(!shape.isSelected());
                         }
                     } else {
                         this.paintLayers();

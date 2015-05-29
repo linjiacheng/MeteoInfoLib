@@ -19,6 +19,7 @@ import org.meteoinfo.table.DataTable;
  * @author yaqiang
  */
 public class TableUtil {
+
     /**
      * Read data table from ASCII file
      *
@@ -35,11 +36,12 @@ public class TableUtil {
 
         BufferedReader sr = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), encoding));
         if (headerLines > 0) {
-            for (int i = 0; i < headerLines; i++)
+            for (int i = 0; i < headerLines; i++) {
                 sr.readLine();
+            }
         }
-        
-        String title = sr.readLine().trim();        
+
+        String title = sr.readLine().trim();
         String[] titleArray = GlobalUtil.split(title, delimiter);
         int colNum = titleArray.length;
         boolean hasTimeCol = false;
@@ -50,19 +52,21 @@ public class TableUtil {
         } else {
             //Get fields
             String[] colFormats;
-            if (formatSpec == null){
+            if (formatSpec == null) {
                 colFormats = new String[colNum];
-                for (int i = 0; i < colNum; i++)
+                for (int i = 0; i < colNum; i++) {
                     colFormats[i] = "C";
-            } else
+                }
+            } else {
                 colFormats = formatSpec.split("%");
-            
+            }
+
             int idx = 0;
             for (String colFormat : colFormats) {
                 if (colFormat.isEmpty()) {
                     continue;
                 }
-                
+
                 if (colFormat.equals("C") || colFormat.equals("s")) //String
                 {
                     dTable.addColumn(titleArray[idx], DataTypes.String);
@@ -84,8 +88,9 @@ public class TableUtil {
                         String formatStr = colFormat.substring(1, eidx);
                         dTable.addColumn(new DataColumn(titleArray[idx], DataTypes.Date, formatStr));
                         hasTimeCol = true;
-                        if (tcolName == null)
+                        if (tcolName == null) {
                             tcolName = titleArray[idx];
+                        }
                     } else {
                         dTable.addColumn(titleArray[idx], DataTypes.String);
                     }
@@ -100,15 +105,17 @@ public class TableUtil {
             while (line != null) {
                 line = line.trim();
                 if (line.isEmpty()) {
+                    line = sr.readLine();
                     continue;
                 }
                 dataArray = GlobalUtil.split(line, delimiter);
-                if (dataArray.length < colNum)
-                    continue;
-                
+//                if (dataArray.length < colNum) {
+//                    continue;
+//                }
+
                 dTable.addRow();
                 int cn = 0;
-                for (int i = 0; i < colNum; i++) {
+                for (int i = 0; i < dataArray.length; i++) {
                     dTable.setValue(rn, cn, dataArray[i]);
                     cn++;
                 }
@@ -119,8 +126,8 @@ public class TableUtil {
 
             sr.close();
         }
-        
-        if (hasTimeCol){
+
+        if (hasTimeCol) {
             TimeTableData tableData = new TimeTableData();
             tableData.dataTable = dTable;
             tableData.setTimeColName(tcolName);
@@ -130,5 +137,43 @@ public class TableUtil {
             tableData.dataTable = dTable;
             return tableData;
         }
+    }
+
+    /**
+     * To data type - MeteoInfo
+     *
+     * @param dt Data type string
+     * @return Data type
+     */
+    public static DataTypes toDataTypes(String dt) {
+        switch (dt) {
+            case "C":
+            case "s":
+                return DataTypes.String;
+            case "i":
+                return DataTypes.Integer;
+            case "f":
+                return DataTypes.Float;
+            case "d":
+                return DataTypes.Double;
+            default:
+                if (dt.substring(0, 1).equals("{")) {    //Date
+                    return DataTypes.Date;
+                } else {
+                    return DataTypes.String;
+                }
+        }
+    }
+
+    /**
+     * Get date format string
+     *
+     * @param dt Format string
+     * @return Date format string
+     */
+    public static String getDateFormat(String dt) {
+        int eidx = dt.indexOf("}");
+        String formatStr = dt.substring(1, eidx);
+        return formatStr;
     }
 }

@@ -214,7 +214,7 @@ public class TimeTableData extends TableData{
         Calendar cal = Calendar.getInstance();
         int year;
         for (DataRow row : dataTable.getRows()){
-            cal.setTime((Date)row.getValue(0));
+            cal.setTime((Date)row.getValue(this.timeColName));
             year = cal.get(Calendar.YEAR);
             if (!years.contains(year))
                 years.add(year);
@@ -321,7 +321,7 @@ public class TimeTableData extends TableData{
         List<DataRow> rows = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
         for (DataRow row : dataTable.getRows()){
-            cal.setTime((Date)row.getValue(0));
+            cal.setTime((Date)row.getValue(this.timeColName));
             if (cal.get(Calendar.YEAR) == year) {
                 if (cal.get(Calendar.MONTH) == month - 1) {
                     rows.add(row);
@@ -411,6 +411,89 @@ public class TimeTableData extends TableData{
             for (DataColumn col : cols){
                 List<Double> values = this.getValidColumnValues(rows, col);
                 nRow.setValue(col.getColumnName(), Statistics.mean(values));
+            }
+        }
+        
+        return rTable;
+    }
+    
+    /**
+     * Average year by year
+     * @param cols The data columns
+     * @return Result data table
+     * @throws Exception 
+     */
+    public DataTable sum_Year(List<DataColumn> cols) throws Exception {
+        DataTable rTable = new DataTable();
+        rTable.addColumn("Year", DataTypes.Integer);
+        for (DataColumn col : cols){
+            rTable.addColumn(col.getColumnName(), DataTypes.Double);
+        }
+        
+        List<Integer> years = this.getYears();
+        for (int year : years){
+            DataRow nRow = rTable.addRow();         
+            nRow.setValue(0, year);
+            List<DataRow> rows = this.getDataByYear(year);
+            for (DataColumn col : cols){
+                List<Double> values = this.getValidColumnValues(rows, col);
+                nRow.setValue(col.getColumnName(), Statistics.sum(values));
+            }
+        }
+        
+        return rTable;
+    }
+    
+    /**
+     * Average month by year
+     * @param cols The data columns
+     * @param month The month
+     * @return Result data table
+     * @throws Exception 
+     */
+    public DataTable ave_YearMonth(List<DataColumn> cols, int month) throws Exception {
+        DataTable rTable = new DataTable();
+        rTable.addColumn("Year", DataTypes.Integer);
+        for (DataColumn col : cols){
+            rTable.addColumn(col.getColumnName(), DataTypes.Double);
+        }
+        
+        List<Integer> years = this.getYears();
+        for (int year : years){
+            DataRow nRow = rTable.addRow();         
+            nRow.setValue(0, year);
+            List<DataRow> rows = this.getDataByYearMonth(year, month);
+            for (DataColumn col : cols){
+                List<Double> values = this.getValidColumnValues(rows, col);
+                nRow.setValue(col.getColumnName(), Statistics.mean(values));
+            }
+        }
+        
+        return rTable;
+    }
+    
+    /**
+     * Sum month by year
+     * @param cols The data columns
+     * @param month The month
+     * @return Result data table
+     * @throws Exception 
+     */
+    public DataTable sum_YearMonth(List<DataColumn> cols, int month) throws Exception {
+        DataTable rTable = new DataTable();
+        rTable.addColumn("Year", DataTypes.Integer);
+        for (DataColumn col : cols){
+            rTable.addColumn(col.getColumnName(), DataTypes.Double);
+        }
+        
+        List<Integer> years = this.getYears();
+        for (int year : years){
+            DataRow nRow = rTable.addRow();         
+            nRow.setValue(0, year);
+            List<DataRow> rows = this.getDataByYearMonth(year, month);
+            for (DataColumn col : cols){
+                List<Double> values = this.getValidColumnValues(rows, col);
+                nRow.setValue(col.getColumnName(), Statistics.sum(values));
             }
         }
         

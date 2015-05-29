@@ -14,7 +14,6 @@ import org.meteoinfo.layer.VectorLayer;
 import org.meteoinfo.shape.PolygonShape;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
-import ucar.ma2.Index;
 import ucar.ma2.IndexIterator;
 import ucar.ma2.InvalidRangeException;
 import ucar.ma2.MAMath;
@@ -651,7 +650,223 @@ public class ArrayMath {
     public static Array abs(Array a) {
         Array r = Array.factory(a.getDataType(), a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
-            r.setDouble(i, Math.abs(r.getDouble(i)));
+            r.setDouble(i, Math.abs(a.getDouble(i)));
+        }
+
+        return r;
+    }
+    
+    /**
+     * Array equal
+     * @param a Array a
+     * @param b Array b
+     * @return Result array
+     */
+    public static Array equal(Array a, Array b){
+         Array r = Array.factory(DataType.INT, a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            if (a.getDouble(i) == b.getDouble(i))
+                r.setDouble(i, 1);
+            else
+                r.setDouble(i, 0);
+        }
+
+        return r;
+    }
+    
+    /**
+     * Array equal
+     * @param a Array a
+     * @param b Number b
+     * @return Result array
+     */
+    public static Array equal(Array a, Number b){
+         Array r = Array.factory(DataType.INT, a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            if (a.getDouble(i) == b.doubleValue())
+                r.setDouble(i, 1);
+            else
+                r.setDouble(i, 0);
+        }
+
+        return r;
+    }
+    
+    /**
+     * Array less than
+     * @param a Array a
+     * @param b Array b
+     * @return Result array
+     */
+    public static Array lessThan(Array a, Array b){
+         Array r = Array.factory(DataType.INT, a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            if (a.getDouble(i) < b.getDouble(i))
+                r.setDouble(i, 1);
+            else
+                r.setDouble(i, 0);
+        }
+
+        return r;
+    }
+    
+    /**
+     * Array less than
+     * @param a Array a
+     * @param b Number b
+     * @return Result array
+     */
+    public static Array lessThan(Array a, Number b){
+         Array r = Array.factory(DataType.INT, a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            if (a.getDouble(i) < b.doubleValue())
+                r.setDouble(i, 1);
+            else
+                r.setDouble(i, 0);
+        }
+
+        return r;
+    }
+    
+    /**
+     * Array less than or equal
+     * @param a Array a
+     * @param b Array b
+     * @return Result array
+     */
+    public static Array lessThanOrEqual(Array a, Array b){
+         Array r = Array.factory(DataType.INT, a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            if (a.getDouble(i) <= b.getDouble(i))
+                r.setDouble(i, 1);
+            else
+                r.setDouble(i, 0);
+        }
+
+        return r;
+    }
+    
+    /**
+     * Array less than or equal
+     * @param a Array a
+     * @param b Number b
+     * @return Result array
+     */
+    public static Array lessThanOrEqual(Array a, Number b){
+         Array r = Array.factory(DataType.INT, a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            if (a.getDouble(i) <= b.doubleValue())
+                r.setDouble(i, 1);
+            else
+                r.setDouble(i, 0);
+        }
+
+        return r;
+    }
+    
+    /**
+     * Array greater than
+     * @param a Array a
+     * @param b Array b
+     * @return Result array
+     */
+    public static Array greaterThan(Array a, Array b){
+         Array r = Array.factory(DataType.INT, a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            if (a.getDouble(i) > b.getDouble(i))
+                r.setDouble(i, 1);
+            else
+                r.setDouble(i, 0);
+        }
+
+        return r;
+    }
+    
+    /**
+     * Array greater than
+     * @param a Array a
+     * @param b Number b
+     * @return Result array
+     */
+    public static Array greaterThan(Array a, Number b){
+         Array r = Array.factory(DataType.INT, a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            if (a.getDouble(i) > b.doubleValue())
+                r.setDouble(i, 1);
+            else
+                r.setDouble(i, 0);
+        }
+
+        return r;
+    }
+    
+    /**
+     * Array greater than or equal
+     * @param a Array a
+     * @param b Array b
+     * @return Result array
+     */
+    public static Array greaterThanOrEqual(Array a, Array b){
+         Array r = Array.factory(DataType.INT, a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            if (a.getDouble(i) >= b.getDouble(i))
+                r.setDouble(i, 1);
+            else
+                r.setDouble(i, 0);
+        }
+
+        return r;
+    }
+    
+    /**
+     * Array greater than or equal
+     * @param a Array a
+     * @param b Number b
+     * @return Result array
+     */
+    public static Array greaterThanOrEqual(Array a, Number b){
+         Array r = Array.factory(DataType.INT, a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            if (a.getDouble(i) >= b.doubleValue())
+                r.setDouble(i, 1);
+            else
+                r.setDouble(i, 0);
+        }
+
+        return r;
+    }
+    
+    /**
+     * Array not equal
+     * @param a Array a
+     * @param b Array b
+     * @return Result array
+     */
+    public static Array notEqual(Array a, Array b){
+         Array r = Array.factory(DataType.INT, a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            if (a.getDouble(i) != b.getDouble(i))
+                r.setDouble(i, 1);
+            else
+                r.setDouble(i, 0);
+        }
+
+        return r;
+    }
+    
+    /**
+     * Array not equal
+     * @param a Array a
+     * @param b Number b
+     * @return Result array
+     */
+    public static Array notEqual(Array a, Number b){
+         Array r = Array.factory(DataType.INT, a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            if (a.getDouble(i) != b.doubleValue())
+                r.setDouble(i, 1);
+            else
+                r.setDouble(i, 0);
         }
 
         return r;
@@ -913,6 +1128,19 @@ public class ArrayMath {
                         iterA.setDoubleCurrent(Double.NaN);
                     }
                 }
+        }
+    }
+    
+    /**
+     * Set value
+     * @param a Array a
+     * @param b Array b - 0/1 data
+     * @param value Value
+     */
+    public static void setValue(Array a, Array b, Number value){
+        for (int i = 0; i < a.getSize(); i++) {
+            if (b.getInt(i) == 1)
+                a.setObject(i, value);
         }
     }
 

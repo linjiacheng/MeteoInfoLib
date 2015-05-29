@@ -532,7 +532,7 @@ public class MapLayout extends JPanel {
                 case Map_SelectFeatures_Polygon:
                 case Map_SelectFeatures_Lasso:
                     if (_startNewGraphic) {
-                        _graphicPoints = new ArrayList<PointF>();
+                        _graphicPoints = new ArrayList<>();
                         _startNewGraphic = false;
                     }
                     _graphicPoints.add(new PointF(e.getX(), e.getY()));
@@ -555,7 +555,7 @@ public class MapLayout extends JPanel {
                             case Length:
                             case Area:
                                 if (_startNewGraphic) {
-                                    _graphicPoints = new ArrayList<PointF>();
+                                    _graphicPoints = new ArrayList<>();
                                     _startNewGraphic = false;
                                 }
                                 _frmMeasure.setPreviousValue(_frmMeasure.getTotalValue());
@@ -1088,12 +1088,13 @@ public class MapLayout extends JPanel {
                     int height = Math.abs(aPoint.y - bPoint.y);
                     Rectangle.Float rect = new Rectangle.Float(minx, miny, width, height);
                     List<Integer> selectedShapes = _currentLayoutMap.getMapFrame().getMapView().selectShapes(aLayer, rect);
-                    if (!e.isControlDown() && !e.isShiftDown()) {
+                    if (!(e.isControlDown() || e.isShiftDown())) {
                         aLayer.clearSelectedShapes();
                     }
                     if (selectedShapes.size() > 0) {
                         for (int shapeIdx : selectedShapes) {
-                            aLayer.getShapes().get(shapeIdx).setSelected(true);
+                            Shape shape = aLayer.getShapes().get(shapeIdx);
+                            shape.setSelected(!shape.isSelected());
                         }
                         _currentLayoutMap.getMapFrame().getMapView().fireShapeSelectedEvent();
                     }
@@ -1197,12 +1198,12 @@ public class MapLayout extends JPanel {
                         }
 
                         _startNewGraphic = true;
-                        _graphicPoints = new ArrayList<PointF>();
+                        _graphicPoints = new ArrayList<>();
                         _graphicPoints.add(new PointF(_mouseDownPoint.x, _mouseDownPoint.y));
                         _graphicPoints.add(new PointF(_mouseDownPoint.x, e.getY()));
                         _graphicPoints.add(new PointF(e.getX(), e.getY()));
                         _graphicPoints.add(new PointF(e.getX(), _mouseDownPoint.y));
-                        List<PointD> points = new ArrayList<PointD>();
+                        List<PointD> points = new ArrayList<>();
                         for (PointF cPoint : _graphicPoints) {
                             PointF dPoint = screenToPage(cPoint.X, cPoint.Y);
                             points.add(new PointD(dPoint.X, dPoint.Y));
@@ -1241,7 +1242,7 @@ public class MapLayout extends JPanel {
                             break;
                         }
 
-                        List<PointD> points = new ArrayList<PointD>();
+                        List<PointD> points = new ArrayList<>();
                         for (PointF cPoint : _graphicPoints) {
                             PointF dPoint = screenToPage(cPoint.X, cPoint.Y);
                             points.add(new PointD(dPoint.X, dPoint.Y));
@@ -1266,12 +1267,12 @@ public class MapLayout extends JPanel {
                         float radius = (float) Math.sqrt(Math.pow(e.getX() - _mouseDownPoint.x, 2)
                                 + Math.pow(e.getY() - _mouseDownPoint.y, 2));
                         _startNewGraphic = true;
-                        _graphicPoints = new ArrayList<PointF>();
+                        _graphicPoints = new ArrayList<>();
                         _graphicPoints.add(new PointF(_mouseDownPoint.x - radius, _mouseDownPoint.y));
                         _graphicPoints.add(new PointF(_mouseDownPoint.x, _mouseDownPoint.y - radius));
                         _graphicPoints.add(new PointF(_mouseDownPoint.x + radius, _mouseDownPoint.y));
                         _graphicPoints.add(new PointF(_mouseDownPoint.x, _mouseDownPoint.y + radius));
-                        List<PointD> points = new ArrayList<PointD>();
+                        List<PointD> points = new ArrayList<>();
                         for (PointF cPoint : _graphicPoints) {
                             PointF dPoint = screenToPage(cPoint.X, cPoint.Y);
                             points.add(new PointD(dPoint.X, dPoint.Y));
@@ -1391,46 +1392,46 @@ public class MapLayout extends JPanel {
                             }
                         }
                         break;
-                    case Map_SelectFeatures_Rectangle:
-                        aMLayer = _currentLayoutMap.getMapFrame().getMapView().getSelectedLayer();
-                        if (aMLayer == null) {
-                            return;
-                        }
-
-                        if (aMLayer.getLayerType() != LayerTypes.VectorLayer) {
-                            return;
-                        }
-
-                        VectorLayer aLayer = (VectorLayer) aMLayer;
-                        if (!e.isControlDown() && !e.isShiftDown()) {
-                            aLayer.clearSelectedShapes();
-                            //_currentLayoutMap.getMapFrame().getMapView().paintLayers();
-                        }
-
-                        mapP = pageToScreen(_currentLayoutMap.getLeft(), _currentLayoutMap.getTop());
-                        aPoint = new PointF(e.getX() - mapP.X, e.getY() - mapP.Y);
-                        List<Integer> selectedShapes = _currentLayoutMap.getMapFrame().getMapView().selectShapes(aLayer, aPoint);
-                        this._layoutBitmap = GlobalUtil.deepCopy(this._tempImage);
-                        if (selectedShapes.size() > 0) {
-                            int shapeIdx = selectedShapes.get(0);
-                            Shape selShape = aLayer.getShapes().get(shapeIdx);
-                            Rectangle rect = getElementViewExtent(_currentLayoutMap);
-                            if (!e.isControlDown() && !e.isShiftDown()) {
-                                selShape.setSelected(true);
-                                _currentLayoutMap.getMapFrame().getMapView().drawIdShape((Graphics2D) this._layoutBitmap.getGraphics(), selShape, rect);
-                            } else {
-                                selShape.setSelected(!selShape.isSelected());
-                                for (int sIdx : aLayer.getSelectedShapeIndexes()) {
-                                    _currentLayoutMap.getMapFrame().getMapView().drawIdShape((Graphics2D) this._layoutBitmap.getGraphics(), aLayer.getShapes().get(sIdx), rect);
-                                }
-                            }
-                            this.repaint();
-                        } else {
-                            if (!e.isControlDown() && !e.isShiftDown()) {
-                                this.repaint();
-                            }
-                        }
-                        break;
+//                    case Map_SelectFeatures_Rectangle:
+//                        aMLayer = _currentLayoutMap.getMapFrame().getMapView().getSelectedLayer();
+//                        if (aMLayer == null) {
+//                            return;
+//                        }
+//
+//                        if (aMLayer.getLayerType() != LayerTypes.VectorLayer) {
+//                            return;
+//                        }
+//
+//                        VectorLayer aLayer = (VectorLayer) aMLayer;
+//                        if (!e.isControlDown() && !e.isShiftDown()) {
+//                            aLayer.clearSelectedShapes();
+//                            //_currentLayoutMap.getMapFrame().getMapView().paintLayers();
+//                        }
+//
+//                        mapP = pageToScreen(_currentLayoutMap.getLeft(), _currentLayoutMap.getTop());
+//                        aPoint = new PointF(e.getX() - mapP.X, e.getY() - mapP.Y);
+//                        List<Integer> selectedShapes = _currentLayoutMap.getMapFrame().getMapView().selectShapes(aLayer, aPoint);
+//                        this._layoutBitmap = GlobalUtil.deepCopy(this._tempImage);
+//                        if (selectedShapes.size() > 0) {
+//                            int shapeIdx = selectedShapes.get(0);
+//                            Shape selShape = aLayer.getShapes().get(shapeIdx);
+//                            Rectangle rect = getElementViewExtent(_currentLayoutMap);
+//                            if (!e.isControlDown() && !e.isShiftDown()) {
+//                                selShape.setSelected(true);
+//                                _currentLayoutMap.getMapFrame().getMapView().drawIdShape((Graphics2D) this._layoutBitmap.getGraphics(), selShape, rect);
+//                            } else {
+//                                selShape.setSelected(!selShape.isSelected());
+//                                for (int sIdx : aLayer.getSelectedShapeIndexes()) {
+//                                    _currentLayoutMap.getMapFrame().getMapView().drawIdShape((Graphics2D) this._layoutBitmap.getGraphics(), aLayer.getShapes().get(sIdx), rect);
+//                                }
+//                            }
+//                            this.repaint();
+//                        } else {
+//                            if (!e.isControlDown() && !e.isShiftDown()) {
+//                                this.repaint();
+//                            }
+//                        }
+//                        break;
                 }
             } else if (e.getButton() == MouseEvent.BUTTON3 && _mouseMode == MouseMode.Select) {
                 if (_selectedElements.isEmpty()) {

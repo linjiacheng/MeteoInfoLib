@@ -225,6 +225,19 @@ public class ColumnData {
 
         return null;
     }
+    
+    /**
+     * Get string data list
+     * @return String data list
+     */
+    public List<String> getDataStrings(){
+        List<String> r = new ArrayList<>();
+        for (Object v : data){
+            r.add(v.toString());
+        }
+        
+        return r;
+    }
 
     /**
      * Get number data list
@@ -243,8 +256,12 @@ public class ColumnData {
                     }
                     break;
                 case Float:
-                    for (float v : (List<Float>) data) {
-                        values.add(v);
+                    for (Object v : (List<Object>) data) {
+                        if (v == null){
+                            values.add(Float.NaN);
+                        } else {
+                            values.add((float)v);
+                        }
                     }
                     break;
                 case String:

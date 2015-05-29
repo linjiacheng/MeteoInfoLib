@@ -31,6 +31,22 @@ public class Statistics {
 
         return count;
     }
+    
+    /**
+     * Sum funtion
+     *
+     * @param aDataList The data list
+     * @return Sum
+     */
+    public static double sum(List<Double> aDataList) {
+        double aSum = 0.0;
+
+        for (Double v : aDataList) {
+            aSum = aSum + v;
+        }
+
+        return aSum;
+    }
 
     /**
      * Mean funtion

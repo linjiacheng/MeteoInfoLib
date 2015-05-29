@@ -44,13 +44,11 @@ import org.meteoinfo.table.DataTable;
 public class TableData {
 
     // <editor-fold desc="Variables">
-
     protected DataTable dataTable = new DataTable();
     protected double missingValue = -9999.0;
 
     // </editor-fold>
     // <editor-fold desc="Constructor">
-
     /**
      * Constructor
      */
@@ -69,7 +67,6 @@ public class TableData {
 
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
-
     /**
      * Get data table
      *
@@ -156,24 +153,39 @@ public class TableData {
             Logger.getLogger(TimeTableData.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     /**
      * Add column data
+     *
      * @param colName Column name
      * @param dt Data type string
      * @param colData The column data
-     * @throws Exception 
+     * @throws Exception
      */
-    public void addColumnData(String colName, String dt, List<Object> colData) throws Exception{
-        DataTypes dataType = ArrayUtil.toDataTypes(dt);
-        this.dataTable.addColumnData(colName, dataType, colData);
+    public void addColumnData(String colName, String dt, List<Object> colData) throws Exception {
+        DataTypes dataType = TableUtil.toDataTypes(dt.substring(1));
+        switch (dataType){
+            case Date:
+                if (colData.get(0) instanceof Date){
+                    this.dataTable.addColumnData(colName, dataType, colData);
+                } else {
+                    String dformat = TableUtil.getDateFormat(dt.substring(1));
+                    this.dataTable.addColumn(new DataColumn(colName, dataType, dformat));
+                    this.dataTable.setValues(colName, colData);
+                }
+                break;
+            default:
+                this.dataTable.addColumnData(colName, dataType, colData);
+                break;
+        }        
     }
-    
+
     /**
      * Remove a column
+     *
      * @param colName Column name
      */
-    public void removeColumn(String colName){
+    public void removeColumn(String colName) {
         this.dataTable.removeColumn(this.dataTable.findColumn(colName));
     }
 
@@ -260,6 +272,9 @@ public class TableData {
         String vstr;
         double value = Double.NaN;
         for (DataRow row : rows) {
+            if (row.getValue(colName) == null){
+                continue;
+            }
             switch (col.getDataType()) {
                 case Integer:
                     value = (double) (Integer) row.getValue(colName);
@@ -316,6 +331,15 @@ public class TableData {
      */
     public ColumnData getColumnData(List<DataRow> rows, DataColumn col) {
         return dataTable.getColumnData(rows, null);
+    }
+    
+    /**
+     * Set column data
+     * @param colName Column name
+     * @param values Values
+     */
+    public void setColumnData(String colName, List<Object> values){
+        this.dataTable.setValues(colName, values);
     }
 
     /**
@@ -428,7 +452,7 @@ public class TableData {
     public DataTable statistics() throws Exception {
         return this.statistics(this.getDataColumns());
     }
-    
+
     /**
      * Read data table from ASCII file
      *
@@ -460,55 +484,61 @@ public class TableData {
 
         BufferedReader sr = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), encoding));
         if (headerLines > 0) {
-            for (int i = 0; i < headerLines; i++)
+            for (int i = 0; i < headerLines; i++) {
                 sr.readLine();
+            }
         }
-        
-        String title = sr.readLine().trim();        
+
+        String title = sr.readLine().trim();
         String[] titleArray = GlobalUtil.split(title, delimiter);
         int colNum = titleArray.length;
         if (titleArray.length < 2) {
-            JOptionPane.showMessageDialog(null, "File Format Error!");
+            System.out.println("File Format Error!");
             sr.close();
         } else {
             //Get fields
             String[] colFormats;
-            if (formatSpec == null){
+            if (formatSpec == null) {
                 colFormats = new String[colNum];
-                for (int i = 0; i < colNum; i++)
+                for (int i = 0; i < colNum; i++) {
                     colFormats[i] = "C";
-            } else
+                }
+            } else {
                 colFormats = formatSpec.split("%");
-            
+            }
+
             int idx = 0;
             for (String colFormat : colFormats) {
                 if (colFormat.isEmpty()) {
                     continue;
                 }
 
-                if (colFormat.equals("C")) //String
-                {
-                    dTable.addColumn(titleArray[idx], DataTypes.String);
-                } else if (colFormat.equals("i")) //Integer
-                {
-                    dTable.addColumn(titleArray[idx], DataTypes.Integer);
-                } else if (colFormat.equals("f")) //Float
-                {
-                    dTable.addColumn(titleArray[idx], DataTypes.Float);
-                } else if (colFormat.equals("d")) //Double
-                {
-                    dTable.addColumn(titleArray[idx], DataTypes.Double);
-                } else if (colFormat.equals("B")) //Boolean
-                {
-                    dTable.addColumn(titleArray[idx], DataTypes.Boolean);
-                } else {
-                    if (colFormat.substring(0, 1).equals("{")) {    //Date
-                        int eidx = colFormat.indexOf("}");
-                        String formatStr = colFormat.substring(1, eidx);
-                        dTable.addColumn(new DataColumn(titleArray[idx], DataTypes.Date, formatStr));
-                    } else {
+                switch (colFormat) {
+                    case "C":
+                    case "s":
                         dTable.addColumn(titleArray[idx], DataTypes.String);
-                    }
+                        break;
+                    case "i":
+                        dTable.addColumn(titleArray[idx], DataTypes.Integer);
+                        break;
+                    case "f":
+                        dTable.addColumn(titleArray[idx], DataTypes.Float);
+                        break;
+                    case "d":
+                        dTable.addColumn(titleArray[idx], DataTypes.Double);
+                        break;
+                    case "B":
+                        dTable.addColumn(titleArray[idx], DataTypes.Boolean);
+                        break;
+                    default:
+                        if (colFormat.substring(0, 1).equals("{")) {    //Date
+                            int eidx = colFormat.indexOf("}");
+                            String formatStr = colFormat.substring(1, eidx);
+                            dTable.addColumn(new DataColumn(titleArray[idx], DataTypes.Date, formatStr));
+                        } else {
+                            dTable.addColumn(titleArray[idx], DataTypes.String);
+                        }
+                        break;
                 }
 
                 idx += 1;
@@ -520,15 +550,14 @@ public class TableData {
             while (line != null) {
                 line = line.trim();
                 if (line.isEmpty()) {
+                    line = sr.readLine();
                     continue;
                 }
-                dataArray = GlobalUtil.split(line, delimiter);
-                if (dataArray.length < colNum)
-                    continue;
-                
+                dataArray = GlobalUtil.split(line, delimiter);                
+
                 dTable.addRow();
                 int cn = 0;
-                for (int i = 0; i < colNum; i++) {
+                for (int i = 0; i < dataArray.length; i++) {
                     dTable.setValue(rn, cn, dataArray[i]);
                     cn++;
                 }
@@ -712,6 +741,25 @@ public class TableData {
      */
     public void saveAsASCIIFile(String fileName) throws IOException {
         this.dataTable.saveAsASCIIFile(fileName);
+    }
+    
+    /**
+     * Join data table
+     * @param tableData The input table data
+     * @param colName The column name for join
+     */
+    public void join(TableData tableData, String colName){
+        this.dataTable.join(tableData.dataTable, colName, colName, false);
+    }
+    
+    /**
+     * Join data table
+     * @param tableData The input table data
+     * @param thisColName The column name for join
+     * @param otherColName The other column name for join
+     */
+    public void join(TableData tableData, String thisColName, String otherColName){
+        this.dataTable.join(tableData.dataTable, thisColName, otherColName, false);
     }
 
     /**
@@ -1013,7 +1061,7 @@ public class TableData {
 
         List<String> monthNames = Arrays.asList(new String[]{"Jan", "Feb", "Mar", "Apr", "May",
             "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"});
-        List<Integer> months = new ArrayList<Integer>();
+        List<Integer> months = new ArrayList<>();
         int i;
         for (i = 1; i < 13; i++) {
             months.add(i);
@@ -1080,7 +1128,7 @@ public class TableData {
 
         List<String> dowNames = Arrays.asList(new String[]{"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday",
             "Saturday"});
-        List<Integer> dows = new ArrayList<Integer>();
+        List<Integer> dows = new ArrayList<>();
         dows.add(7);
         int i;
         for (i = 1; i < 7; i++) {
@@ -1117,7 +1165,7 @@ public class TableData {
             rTable.addColumn(col.getColumnName(), DataTypes.Double);
         }
 
-        List<Integer> hours = new ArrayList<Integer>();
+        List<Integer> hours = new ArrayList<>();
         for (int i = 0; i < 24; i++) {
             hours.add(i);
         }
