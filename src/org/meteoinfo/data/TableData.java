@@ -341,15 +341,6 @@ public class TableData {
     public void setColumnData(String colName, List<Object> values){
         this.dataTable.setValues(colName, values);
     }
-    
-    /**
-     * Set column data
-     * @param colName Column name
-     * @param values Values
-     */
-    public void setColumnData(String colName, List<Object> values){
-        this.dataTable.setValues(colName, values);
-    }
 
     /**
      * Convert a data column to double data type
