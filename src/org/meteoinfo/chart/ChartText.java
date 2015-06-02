@@ -17,6 +17,8 @@ public class ChartText {
     private Font font;
     private String text;
     private Color color;
+    private float x;
+    private float y;
     // </editor-fold>    
     // <editor-fold desc="Constructor">
     /**
@@ -93,6 +95,38 @@ public class ChartText {
      */
     public void setColor(Color value){
         this.color = value;
+    }
+    
+    /**
+     * Get x
+     * @return X
+     */
+    public float getX(){
+        return this.x;
+    }
+    
+    /**
+     * Set x
+     * @param value X
+     */
+    public void setX(float value){
+        this.x = value;
+    }
+    
+    /**
+     * Get y
+     * @return Y
+     */
+    public float getY(){
+        return this.y;
+    }
+    
+    /**
+     * Set y
+     * @param value Y
+     */
+    public void setY(float value) {
+        this.y = value;
     }
     // </editor-fold>
     // <editor-fold desc="Methods">

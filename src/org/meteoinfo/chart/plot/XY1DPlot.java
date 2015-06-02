@@ -5,6 +5,7 @@
  */
 package org.meteoinfo.chart.plot;
 
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
@@ -12,6 +13,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 import org.meteoinfo.chart.ChartLegend;
+import org.meteoinfo.chart.ChartText;
 import org.meteoinfo.chart.axis.TimeAxis;
 import org.meteoinfo.data.Dataset;
 import org.meteoinfo.data.XYDataset;
@@ -39,6 +41,7 @@ public final class XY1DPlot extends XYPlot {
     private ChartPlotMethod chartPlotMethod;
     private List<SeriesLegend> seriesLegends;
     private boolean useBreak2D;
+    private List<ChartText> texts;
 
     // </editor-fold>
     // <editor-fold desc="Constructor">
@@ -51,6 +54,7 @@ public final class XY1DPlot extends XYPlot {
         this.chartPlotMethod = ChartPlotMethod.LINE;
         this.useBreak2D = false;
         this.seriesLegends = new ArrayList<>();
+        this.texts = new ArrayList<>();
     }
 
     /**
@@ -224,6 +228,22 @@ public final class XY1DPlot extends XYPlot {
     public void setUseBeak2D(boolean value) {
         this.useBreak2D = value;
     }
+    
+    /**
+     * Get texts
+     * @return Texts
+     */
+    public List<ChartText> getTexts(){
+        return this.texts;
+    }
+    
+    /**
+     * Set texts
+     * @param value texts
+     */
+    public void setTexts(List<ChartText> value){
+        this.texts = value;
+    }
 
     // </editor-fold>
     // <editor-fold desc="Methods">    
@@ -344,55 +364,18 @@ public final class XY1DPlot extends XYPlot {
                     }
                 }
             }
-//            switch (this.chartPlotMethod) {
-//                case LINE:
-//                    this.lineBreaks[i].setDrawSymbol(false);
-//                    if (mvIdx.isEmpty()) {
-//                        Draw.drawPolyline(points, this.lineBreaks[i], g);
-//                    } else {
-//                        Draw.drawPolyline(points, this.lineBreaks[i], g, mvIdx);
-//                    }
-//                    break;
-//                case POINT:
-//                    if (this.useBreak2D) {
-//                        for (int j = 0; j < len; j++) {
-//                            if (!mvIdx.contains(j)) {
-//                                Draw.drawPoint(points[j], this.itemPointBreaks[i][j], g);
-//                            }
-//                        }
-//                    } else {
-//                        for (int j = 0; j < len; j++) {
-//                            if (!mvIdx.contains(j)) {
-//                                Draw.drawPoint(points[j], this.pointBreaks[i], g);
-//                            }
-//                        }
-//                    }
-//                    break;
-//                case LINE_POINT:
-//                    this.lineBreaks[i].setDrawSymbol(true);
-//                    if (mvIdx.isEmpty()) {
-//                        Draw.drawPolyline(points, this.lineBreaks[i], g);
-//                    } else {
-//                        Draw.drawPolyline(points, this.lineBreaks[i], g, mvIdx);
-//                    }
-//                    break;
-//                case BAR:
-//                    int width;
-//                    if (points.length > 1) {
-//                        width = (int) ((points[1].X - points[0].X) * 0.5) / this.dataset.getSeriesCount();
-//                    } else {
-//                        width = (int) (area.getWidth() / 10) / this.dataset.getSeriesCount();
-//                    }
-//                    int height;
-//                    for (int j = 0; j < len; j++) {
-//                        if (!mvIdx.contains(j)) {
-//                            height = (int) (area.getHeight() - points[j].Y);
-//                            Draw.drawBar(new PointF(points[j].X - width * this.dataset.getSeriesCount() / 2
-//                                    + i * width, (int) area.getHeight()), width, height, this.polygonBreaks[i], g, false, 5);
-//                        }
-//                    }
-//                    break;
-//            }
+        }
+        
+        //Draw texts
+        for (ChartText text : this.texts){
+            xy = this.projToScreen(text.getX(), text.getY(), area);
+            float x = (float)xy[0];
+            float y = (float)xy[1];
+            g.setFont(text.getFont());
+            g.setColor(text.getColor());
+            Dimension dim = Draw.getStringDimension(text.getText(), g);
+            y -= dim.height * 2 / 3;
+            Draw.drawString(g, text.getText(), x, y);
         }
 
         g.setTransform(oldMatrix);
@@ -563,6 +546,11 @@ public final class XY1DPlot extends XYPlot {
         } else {
             this.getLegend().setLegendScheme(this.getLegendScheme());
         }
+    }
+    
+    @Override
+    public void addText(ChartText text){
+        this.texts.add(text);
     }
 
     // </editor-fold>   

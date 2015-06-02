@@ -37,6 +37,7 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
@@ -52,6 +53,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import org.meteoinfo.shape.StationModelShape;
+import org.scilab.forge.jlatexmath.TeXConstants;
+import org.scilab.forge.jlatexmath.TeXFormula;
+import org.scilab.forge.jlatexmath.TeXIcon;
 
 /**
  * Draw class with some drawing methods
@@ -60,6 +64,117 @@ import org.meteoinfo.shape.StationModelShape;
  */
 public class Draw {
 
+    // <editor-fold desc="String/LaTeX">
+    /**
+     * Determin if the string is a LaTeX string
+     *
+     * @param str String
+     * @return Boolean
+     */
+    public static boolean isLaTeX(String str) {
+        String str1 = str.substring(0, 1);
+        String str2 = str.substring(str.length() - 1);
+        return str1.equals("$") && str2.equals("$");
+    }
+
+    /**
+     * Get string dimension
+     * @param str String
+     * @param g Graphics2D
+     * @return String dimension
+     */
+    public static Dimension getStringDimension(String str, Graphics2D g) {
+        if (isLaTeX(str)) {
+            float size = g.getFont().getSize2D();
+            // create a formula
+            TeXFormula formula = new TeXFormula(str);
+
+            // render the formla to an icon of the same size as the formula.
+            TeXIcon icon = formula.createTeXIcon(TeXConstants.STYLE_DISPLAY, size);
+            
+            // insert a border 
+            //icon.setInsets(new Insets(5, 5, 5, 5));
+            
+            //return new Dimension(icon.getIconWidth(), icon.getIconHeight());
+            int width = (int)icon.getTrueIconWidth() + 10;
+            int height = (int)icon.getTrueIconHeight();
+            return new Dimension(width, height);
+        } else {
+            FontMetrics metrics = g.getFontMetrics();
+            return new Dimension(metrics.stringWidth(str), metrics.getHeight());
+        }
+    }
+
+    /**
+     * Draw string
+     *
+     * @param g Graphics2D
+     * @param str String
+     * @param x X
+     * @param y Y
+     */
+    public static void drawString(Graphics2D g, String str, float x, float y) {
+        if (isLaTeX(str)) {
+            drawLaTeX(g, str, x, y);
+        } else {
+            g.drawString(str, x, y);
+        }
+    }
+
+    /**
+     * Draw string
+     *
+     * @param g Graphics2D
+     * @param str String
+     * @param x X
+     * @param y Y
+     * @param isLaTeX If is LaTeX
+     */
+    public static void drawString(Graphics2D g, String str, float x, float y, boolean isLaTeX) {
+        if (isLaTeX) {
+            drawLaTeX(g, str, x, y);
+        } else {
+            g.drawString(str, x, y);
+        }
+    }
+
+    /**
+     * Draw LaTeX string
+     *
+     * @param g Graphics2D
+     * @param str String
+     * @param x X
+     * @param y Y
+     */
+    public static void drawLaTeX(Graphics2D g, String str, float x, float y) {
+        float size = g.getFont().getSize2D();
+        drawLaTeX(g, str, size, x, y);
+    }
+
+    /**
+     * Draw LaTeX string
+     *
+     * @param g Graphics2D
+     * @param str String
+     * @param size Size
+     * @param x X
+     * @param y Y
+     */
+    public static void drawLaTeX(Graphics2D g, String str, float size, float x, float y) {
+        // create a formula
+        TeXFormula formula = new TeXFormula(str);
+
+        // render the formla to an icon of the same size as the formula.
+        TeXIcon icon = formula.createTeXIcon(TeXConstants.STYLE_DISPLAY, size);
+
+        // insert a border 
+        icon.setInsets(new Insets(5, 5, 5, 5));
+        icon.setForeground(g.getColor());
+        y = y - icon.getTrueIconHeight();
+        icon.paintIcon(null, g, (int) x, (int) y);
+    }
+
+    // </editor-fold>
     // <editor-fold desc="Point">
     /**
      * Create wind barb from wind direction/speed
@@ -827,7 +942,8 @@ public class Draw {
 
         g.setColor(aLB.getColor());
         g.setFont(aLB.getFont());
-        g.drawString(aLB.getText(), aPoint.X, aPoint.Y + metrics.getHeight() / 2);
+        //g.drawString(aLB.getText(), aPoint.X, aPoint.Y + metrics.getHeight() / 2);
+        Draw.drawString(g, aLB.getText(), aPoint.X, aPoint.Y + metrics.getHeight() / 2);
 
         rect.x = (int) aPoint.X;
         rect.y = (int) aPoint.Y - metrics.getHeight() / 2;
@@ -904,8 +1020,10 @@ public class Draw {
      * @param rect The extent rectangle
      */
     public static void drawLabelPoint_270(float x, float y, Font font, String text, Color color, Graphics2D g, Rectangle rect) {
-        FontMetrics metrics = g.getFontMetrics(font);
-        Dimension labSize = new Dimension(metrics.stringWidth(text), metrics.getHeight());
+        //FontMetrics metrics = g.getFontMetrics(font);
+        //Dimension labSize = new Dimension(metrics.stringWidth(text), metrics.getHeight());
+        g.setFont(font);
+        Dimension labSize = Draw.getStringDimension(text, g);
 
         float inx = x;
         float iny = y;
@@ -919,11 +1037,16 @@ public class Draw {
 
         g.setColor(color);
         g.setFont(font);
-        g.drawString(text, x - labSize.width / 2, y + labSize.height * 3 / 4);
+        if (Draw.isLaTeX(text)){
+            //Draw.drawLaTeX(g, text, x - labSize.width / 2, y - labSize.height);
+            Draw.drawLaTeX(g, text, x - labSize.width / 2, y);
+        } else {
+            g.drawString(text, x - labSize.width / 2, y + labSize.height * 3 / 4);
+        }
 
         if (rect != null) {
             rect.x = (int) x;
-            rect.y = (int) y - metrics.getHeight() / 2;
+            rect.y = (int) y - labSize.height / 2;
             rect.width = (int) labSize.getWidth();
             rect.height = (int) labSize.getHeight();
         }
@@ -2410,7 +2533,7 @@ public class Draw {
         if (width <= 0 || height <= 0) {
             return;
         }
-        
+
         PointF sPoint = new PointF(aPoint.X + width / 2, aPoint.Y - height / 2);
         aPoint.Y -= height;
         List<List<Float>> angles = aCB.getPieAngles();
@@ -2482,27 +2605,28 @@ public class Draw {
                 float x, y, angle, w, h;
                 for (i = 0; i < angles.size(); i++) {
                     String label = labels.get(i);
-                    if (label.equals("0%"))
+                    if (label.equals("0%")) {
                         continue;
-                    
+                    }
+
                     startAngle = angles.get(i).get(0);
-                    sweepAngle = angles.get(i).get(1);                    
+                    sweepAngle = angles.get(i).get(1);
                     angle = startAngle + sweepAngle / 2;
                     PointF lPoint = getPieLabelPoint(sPoint, width / 2, angle);
                     x = lPoint.X;
-                    y = lPoint.Y;                    
+                    y = lPoint.Y;
                     h = metrics.getHeight();
-                    w = metrics.stringWidth(label);                    
-                    if ((angle >= 0 && angle < 45) || (angle >= 315 && angle <= 360)){
+                    w = metrics.stringWidth(label);
+                    if ((angle >= 0 && angle < 45) || (angle >= 315 && angle <= 360)) {
                         x = x + 3;
-                        y = y + h / 2;                        
-                    } else if (angle >= 45 && angle < 90) { 
+                        y = y + h / 2;
+                    } else if (angle >= 45 && angle < 90) {
                         y = y - 3;
                     } else if (angle >= 90 && angle < 135) {
                         x = x - w - 3;
-                        y = y - 3;                        
-                    } else if (angle >=135 && angle <225){
-                        x = x - w -3;
+                        y = y - 3;
+                    } else if (angle >= 135 && angle < 225) {
+                        x = x - w - 3;
                         y = y + h / 2;
                     } else if (angle >= 225 && angle < 270) {
                         x = x - w - 3;

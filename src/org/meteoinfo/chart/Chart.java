@@ -49,7 +49,7 @@ public class Chart {
         this.antiAlias = false;
         this.rowNum = 1;
         this.columnNum = 1;
-        this.plots = new ArrayList<Plot>();
+        this.plots = new ArrayList<>();
     }
     
     /**

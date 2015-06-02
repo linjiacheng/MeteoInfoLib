@@ -640,6 +640,34 @@ public class ArrayMath {
 
         return r;
     }
+    
+    /**
+     * Log function
+     * @param a Array a
+     * @return Result array
+     */
+    public static Array log(Array a){
+        Array r = Array.factory(DataType.DOUBLE, a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            r.setDouble(i, Math.log(a.getDouble(i)));
+        }
+
+        return r;
+    }
+    
+    /**
+     * Log10 function
+     * @param a Array a
+     * @return Result array
+     */
+    public static Array log10(Array a){
+        Array r = Array.factory(DataType.DOUBLE, a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            r.setDouble(i, Math.log10(a.getDouble(i)));
+        }
+
+        return r;
+    }
 
     /**
      * Array absolute

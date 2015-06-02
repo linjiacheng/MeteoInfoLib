@@ -7,6 +7,7 @@ package org.meteoinfo.chart.plot;
 
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
+import org.meteoinfo.chart.ChartText;
 import org.meteoinfo.data.Dataset;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.layer.MapLayer;
@@ -94,6 +95,11 @@ public class XY2DPlot extends XYPlot {
     
     @Override
     public void updateLegendScheme(){
+        
+    }
+    
+    @Override
+    public void addText(ChartText text){
         
     }
     

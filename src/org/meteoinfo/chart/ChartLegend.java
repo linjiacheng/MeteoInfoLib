@@ -523,12 +523,14 @@ public class ChartLegend {
                 PointF sP = new PointF(0, 0);
                 sP.X = x + symbolWidth / 2;
                 sP.Y = y;
-                FontMetrics metrics = g.getFontMetrics(lFont);
-                aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());
+                //FontMetrics metrics = g.getFontMetrics(lFont);
+                //aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());                
                 g.setColor(this.labelColor);
                 g.setFont(lFont);
+                aSF = Draw.getStringDimension(caption, g);
                 //g.drawString(caption, sP.X + 5, sP.Y + aSF.height / 3);
-                g.drawString(caption, sP.X + 5, sP.Y + aSF.height / 4);
+                //g.drawString(caption, sP.X + 5, sP.Y + aSF.height / 4);
+                Draw.drawString(g, caption, sP.X + 5, sP.Y + aSF.height / 4);
 
                 i += 1;
             }
@@ -608,7 +610,8 @@ public class ChartLegend {
                 g.setColor(this.labelColor);
                 g.setFont(this.labelFont);
                 //g.drawString(caption, sP.X + 5, sP.Y + aSF.height / 3);
-                g.drawString(caption, sP.X + 5, sP.Y + metrics.getHeight() / 4);
+                //g.drawString(caption, sP.X + 5, sP.Y + metrics.getHeight() / 4);
+                Draw.drawString(g, caption, sP.X + 5, sP.Y + metrics.getHeight() / 4);
 
                 x += this.symbolDimension.width + metrics.stringWidth(caption) + 15;
                 i += 1;
@@ -725,7 +728,8 @@ public class ChartLegend {
                     aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());
                     g.setColor(Color.black);
                     g.setFont(this.labelFont);
-                    g.drawString(caption, sP.X, sP.Y + aSF.height / 4);
+                    //g.drawString(caption, sP.X, sP.Y + aSF.height / 4);
+                    Draw.drawString(g, caption, sP.X, sP.Y + aSF.height / 4);
                 }
             } else {
                 if (labelIdxs.contains(idx)) {
@@ -738,7 +742,8 @@ public class ChartLegend {
                         FontMetrics metrics = g.getFontMetrics(this.labelFont);
                         aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());
                         g.setFont(this.labelFont);
-                        g.drawString(caption, sP.X, sP.Y + aSF.height / 4);
+                        //g.drawString(caption, sP.X, sP.Y + aSF.height / 4);
+                        Draw.drawString(g, caption, sP.X, sP.Y + aSF.height / 4);
                     }
                 }
             }
@@ -1063,17 +1068,18 @@ public class ChartLegend {
     }
 
     private int getMaxLabelWidth(Graphics2D g) {
-        String caption = "";
+        String caption;
         Dimension aSF;
         int bNum = legendScheme.getBreakNum();
-        FontMetrics metrics = g.getFontMetrics(labelFont);
-        aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());
-        int labWidth = aSF.width;
+        //FontMetrics metrics = g.getFontMetrics(labelFont);
+        //aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());
+        int labWidth = 0;
         for (int i = 0; i < bNum; i++) {
             caption = legendScheme.getLegendBreaks().get(i).getCaption();
             boolean isValid = true;
             if (isValid) {
-                int labwidth = metrics.stringWidth(caption);
+                aSF = Draw.getStringDimension(caption, g);
+                int labwidth = aSF.width;
                 if (labWidth < labwidth) {
                     labWidth = labwidth;
                 }
@@ -1183,7 +1189,7 @@ public class ChartLegend {
                         this.height = (int) (breakHeight + this._breakSpace * 2) * this.rowColNum;
 
                         //Get width
-                        FontMetrics metrics = g.getFontMetrics(labelFont);
+                        //FontMetrics metrics = g.getFontMetrics(labelFont);
                         ave = legendScheme.getBreakNum() / rowColNum;
                         if (ave * rowColNum < legendScheme.getBreakNum()) {
                             ave += 1;
@@ -1193,14 +1199,17 @@ public class ChartLegend {
                         int tempWidth = 0;
                         for (i = 0; i < legendScheme.getBreakNum(); i++) {
                             if (num < ave) {
+                                //tempWidth += this.symbolDimension.width + 15
+                                //        + metrics.stringWidth(legendScheme.getLegendBreaks().get(i).getCaption());
                                 tempWidth += this.symbolDimension.width + 15
-                                        + metrics.stringWidth(legendScheme.getLegendBreaks().get(i).getCaption());
+                                        + Draw.getStringDimension(legendScheme.getLegendBreaks().get(i).getCaption(), g).width;
                                 num += 1;
                             } else {
                                 if (maxWidth < tempWidth) {
                                     maxWidth = tempWidth;
                                 }
-                                tempWidth = metrics.stringWidth(legendScheme.getLegendBreaks().get(i).getCaption()) + 15;
+                                //tempWidth = metrics.stringWidth(legendScheme.getLegendBreaks().get(i).getCaption()) + 15;
+                                tempWidth = Draw.getStringDimension(legendScheme.getLegendBreaks().get(i).getCaption(), g).width;
                                 num = 1;
                             }
                         }
@@ -1272,7 +1281,8 @@ public class ChartLegend {
                     break;
             }
             if (isValid) {
-                float labwidth = metrics.stringWidth(caption);
+                //float labwidth = metrics.stringWidth(caption);
+                float labwidth = Draw.getStringDimension(caption, g).width;
                 if (rwidth < labwidth) {
                     rwidth = labwidth;
                 }

@@ -15,6 +15,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import org.meteoinfo.chart.ChartLegend;
@@ -44,10 +45,10 @@ public abstract class XYPlot extends Plot {
     private Axis yAxis;
     private Rectangle2D graphArea;
     private PlotOrientation orientation;
-    private GridLine gridLine;
+    private final GridLine gridLine;
     private boolean drawTopRightAxis;
     private ChartText title;
-    private ChartText subTitle;
+    private ChartText subTitle;    
     private ChartLegend legend;
     private boolean drawLegend;
 
@@ -63,7 +64,7 @@ public abstract class XYPlot extends Plot {
         this.yAxis = new Axis("Y", false);
         this.orientation = PlotOrientation.VERTICAL;
         this.gridLine = new GridLine();
-        this.drawTopRightAxis = true;
+        this.drawTopRightAxis = true;        
     }
     // </editor-fold>
 
@@ -115,7 +116,7 @@ public abstract class XYPlot extends Plot {
      */
     public void setSubTitle(ChartText value) {
         subTitle = value;
-    }
+    }        
 
     /**
      * Get chart legend
@@ -345,11 +346,13 @@ public abstract class XYPlot extends Plot {
             g.setFont(title.getFont());
             //float x = (float) area.getWidth() / 2;
             float x = (float) (graphArea.getX() + graphArea.getWidth() / 2);
-            FontMetrics metrics = g.getFontMetrics(title.getFont());
-            x -= metrics.stringWidth(title.getText()) / 2;
+            //FontMetrics metrics = g.getFontMetrics(title.getFont());
+            Dimension dim = Draw.getStringDimension(title.getText(), g);
+            x -= dim.width / 2;
             //y += metrics.getHeight();
-            y -= metrics.getHeight() * 2 / 3;
-            g.drawString(title.getText(), x, y);
+            y -= dim.height * 2 / 3;
+            //g.drawString(title.getText(), x, y);
+            Draw.drawString(g, title.getText(), x, y);
             //y += 5;
         }
 
@@ -621,16 +624,18 @@ public abstract class XYPlot extends Plot {
         if (this.xAxis.isDrawLabel()) {
             x = (maxx - minx) / 2 + minx;
             y = maxy + space + metrics.getHeight() + 5;
-            metrics = g.getFontMetrics(this.xAxis.getLabelFont());
-            dim = new Dimension(metrics.stringWidth(this.xAxis.getLabel()), metrics.getHeight());
+            g.setFont(this.xAxis.getLabelFont());
+            g.setColor(this.xAxis.getLabelColor());
+            //metrics = g.getFontMetrics(this.xAxis.getLabelFont());
+            //dim = new Dimension(metrics.stringWidth(this.xAxis.getLabel()), metrics.getHeight());
+            dim = Draw.getStringDimension(this.xAxis.getLabel(), g);
             labx = (float) (x - dim.width / 2);
             laby = (float) (y + dim.height * 3 / 4);
             if (!this.xAxis.isInsideTick()) {
                 laby += len;
-            }
-            g.setFont(this.xAxis.getLabelFont());
-            g.setColor(this.xAxis.getLabelColor());
-            g.drawString(this.xAxis.getLabel(), labx, laby);
+            }            
+            //g.drawString(this.xAxis.getLabel(), labx, laby);
+            Draw.drawString(g, this.xAxis.getLabel(), labx, laby);
         }
 
         //Draw y axis
@@ -683,8 +688,10 @@ public abstract class XYPlot extends Plot {
         }
         //Draw label
         if (this.yAxis.isDrawLabel()) {
-            metrics = g.getFontMetrics(this.yAxis.getLabelFont());
-            x = minx - space - this.getYAxis().getMaxLabelLength(g) - metrics.getHeight() - 5;
+            g.setFont(this.yAxis.getLabelFont());
+            dim = Draw.getStringDimension(this.yAxis.getLabel(), g);
+            //metrics = g.getFontMetrics(this.yAxis.getLabelFont());
+            x = minx - space - this.getYAxis().getMaxLabelLength(g) - dim.height - 5;
             if (!this.getYAxis().isInsideTick()) {
                 x -= len;
             }
@@ -699,6 +706,7 @@ public abstract class XYPlot extends Plot {
     }
 
     void drawLegendScheme(Graphics2D g, Rectangle2D area, float y) {
+        g.setFont(this.legend.getLabelFont());
         Dimension dim = this.legend.getLegendDimension(g, new Dimension((int) area.getWidth(), (int) area.getHeight()));
         float x = 0;
         switch (this.legend.getPosition()) {
@@ -763,5 +771,7 @@ public abstract class XYPlot extends Plot {
     abstract Extent getAutoExtent();
 
     abstract void updateLegendScheme();
+    
+    abstract void addText(ChartText text);
     // </editor-fold>
 }

@@ -394,6 +394,32 @@ public class TableData {
 
         return rTable;
     }
+    
+    /**
+     * Average data and calculate standard deviation
+     *
+     * @param cols The data columns
+     * @return Result data table
+     * @throws Exception
+     */
+    public DataTable ave_stdev(List<DataColumn> cols) throws Exception {
+        DataTable rTable = new DataTable();
+        for (DataColumn col : cols) {
+            rTable.addColumn(col.getColumnName(), DataTypes.Double);
+            rTable.addColumn(col.getColumnName() + "_sd", DataTypes.Double);
+        }
+        DataRow nRow = rTable.addRow();
+
+        for (DataColumn col : cols) {
+            List<Double> values = this.getValidColumnValues(col);
+            double mean = Statistics.mean(values);
+            double stdev = Statistics.standardDeviation(values);
+            nRow.setValue(col.getColumnName(), mean);
+            nRow.setValue(col.getColumnName() + "_sd", stdev);
+        }
+
+        return rTable;
+    }
 
     /**
      * Get average data table
