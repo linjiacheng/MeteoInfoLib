@@ -103,7 +103,7 @@ public class Draw {
             FontMetrics metrics = g.getFontMetrics();
             return new Dimension(metrics.stringWidth(str), metrics.getHeight());
         }
-    }
+    }        
 
     /**
      * Draw string
@@ -914,8 +914,11 @@ public class Draw {
      * @param rect The extent rectangle
      */
     public static void drawLabelPoint(PointF aPoint, LabelBreak aLB, Graphics2D g, Rectangle rect) {
-        FontMetrics metrics = g.getFontMetrics(aLB.getFont());
-        Dimension labSize = new Dimension(metrics.stringWidth(aLB.getText()), metrics.getHeight());
+        g.setColor(aLB.getColor());
+        g.setFont(aLB.getFont());
+        Dimension labSize = Draw.getStringDimension(aLB.getText(), g);
+        //FontMetrics metrics = g.getFontMetrics(aLB.getFont());
+        //Dimension labSize = new Dimension(metrics.stringWidth(aLB.getText()), metrics.getHeight());
         switch (aLB.getAlignType()) {
             case Center:
                 aPoint.X = aPoint.X - (float) labSize.getWidth() / 2;
@@ -939,14 +942,12 @@ public class Draw {
             aPoint.X = 0;
             aPoint.Y = 0;
         }
-
-        g.setColor(aLB.getColor());
-        g.setFont(aLB.getFont());
+        
         //g.drawString(aLB.getText(), aPoint.X, aPoint.Y + metrics.getHeight() / 2);
-        Draw.drawString(g, aLB.getText(), aPoint.X, aPoint.Y + metrics.getHeight() / 2);
+        Draw.drawString(g, aLB.getText(), aPoint.X, aPoint.Y + labSize.height / 2);
 
         rect.x = (int) aPoint.X;
-        rect.y = (int) aPoint.Y - metrics.getHeight() / 2;
+        rect.y = (int) aPoint.Y - labSize.height / 2;
         rect.width = (int) labSize.getWidth();
         rect.height = (int) labSize.getHeight();
 
@@ -970,8 +971,11 @@ public class Draw {
      * @param angle Angle
      */
     public static void drawLabelPoint(float x, float y, Font font, String text, Color color, float angle, Graphics2D g, Rectangle rect) {
-        FontMetrics metrics = g.getFontMetrics(font);
-        Dimension labSize = new Dimension(metrics.stringWidth(text), metrics.getHeight());
+        g.setColor(color);
+        g.setFont(font);
+        Dimension labSize = Draw.getStringDimension(text, g);
+        //FontMetrics metrics = g.getFontMetrics(font);
+        //Dimension labSize = new Dimension(metrics.stringWidth(text), metrics.getHeight());
         x = x - (float) labSize.getWidth() / 2;
         y -= (float) labSize.getHeight() / 2;
 
@@ -987,14 +991,13 @@ public class Draw {
             x = 0;
             y = 0;
         }
-
-        g.setColor(color);
-        g.setFont(font);
-        g.drawString(text, x, y + metrics.getHeight() / 2);
+        
+        //g.drawString(text, x, y + metrics.getHeight() / 2);
+        Draw.drawString(g, text, x, y + labSize.height / 2);
 
         if (rect != null) {
             rect.x = (int) x;
-            rect.y = (int) y - metrics.getHeight() / 2;
+            rect.y = (int) y - labSize.height / 2;
             rect.width = (int) labSize.getWidth();
             rect.height = (int) labSize.getHeight();
         }

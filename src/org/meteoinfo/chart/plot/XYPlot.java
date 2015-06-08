@@ -10,17 +10,18 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.meteoinfo.chart.ChartLegend;
 import org.meteoinfo.chart.ChartText;
 import org.meteoinfo.chart.LegendPosition;
+import org.meteoinfo.chart.Location;
+import org.meteoinfo.chart.Margin;
 import org.meteoinfo.chart.axis.Axis;
 import org.meteoinfo.chart.axis.TimeAxis;
 import static org.meteoinfo.chart.plot.Plot.MINIMUM_HEIGHT_TO_DRAW;
@@ -41,14 +42,17 @@ public abstract class XYPlot extends Plot {
     private Color background;
     private boolean drawBackground;
     private Extent drawExtent;
-    private Axis xAxis;
-    private Axis yAxis;
-    private Rectangle2D graphArea;
+    private final Map<Location, Axis> axises;
+    //private Axis xAxis;
+    //private Axis yAxis;
+    private Location xAxisLocation;
+    private Location yAxisLocation;
     private PlotOrientation orientation;
     private final GridLine gridLine;
-    private boolean drawTopRightAxis;
+    private boolean drawTopAxis;
+    private boolean drawRightAxis;
     private ChartText title;
-    private ChartText subTitle;    
+    private ChartText subTitle;
     private ChartLegend legend;
     private boolean drawLegend;
 
@@ -58,13 +62,22 @@ public abstract class XYPlot extends Plot {
      * Constructor
      */
     public XYPlot() {
+        super();
         this.background = Color.white;
         this.drawBackground = false;
-        this.xAxis = new Axis("X", true);
-        this.yAxis = new Axis("Y", false);
+        //this.xAxis = new Axis("X", true);
+        //this.yAxis = new Axis("Y", false);
+        this.axises = new HashMap<>();
+        this.axises.put(Location.BOTTOM, new Axis("X", true, Location.BOTTOM));
+        this.axises.put(Location.LEFT, new Axis("Y", false, Location.LEFT));
+        this.axises.put(Location.TOP, new Axis("X", true, Location.TOP, false));
+        this.axises.put(Location.RIGHT, new Axis("Y", false, Location.RIGHT, false));
+        this.xAxisLocation = Location.BOTTOM;
+        this.yAxisLocation = Location.RIGHT;
         this.orientation = PlotOrientation.VERTICAL;
         this.gridLine = new GridLine();
-        this.drawTopRightAxis = true;        
+        this.drawTopAxis = true;
+        this.drawRightAxis = true;
     }
     // </editor-fold>
 
@@ -116,7 +129,7 @@ public abstract class XYPlot extends Plot {
      */
     public void setSubTitle(ChartText value) {
         subTitle = value;
-    }        
+    }
 
     /**
      * Get chart legend
@@ -152,6 +165,7 @@ public abstract class XYPlot extends Plot {
      */
     public void setDrawLegend(boolean value) {
         this.drawLegend = value;
+        this.updateLegendScheme();
     }
 
     /**
@@ -170,8 +184,10 @@ public abstract class XYPlot extends Plot {
      */
     public void setDrawExtent(Extent extent) {
         this.drawExtent = extent;
-        this.xAxis.setMinMaxValue(extent.minX, extent.maxX);
-        this.yAxis.setMinMaxValue(extent.minY, extent.maxY);
+        this.getAxis(Location.BOTTOM).setMinMaxValue(extent.minX, extent.maxX);
+        this.getAxis(Location.TOP).setMinMaxValue(extent.minX, extent.maxX);
+        this.getAxis(Location.LEFT).setMinMaxValue(extent.minY, extent.maxY);
+        this.getAxis(Location.RIGHT).setMinMaxValue(extent.minY, extent.maxY);
     }
 
     /**
@@ -216,56 +232,91 @@ public abstract class XYPlot extends Plot {
     }
 
     /**
-     * Get x axis
+     * Get bottom x axis
      *
-     * @return X aixs
+     * @return Bottom x aixs
      */
     public Axis getXAxis() {
-        return this.xAxis;
+        return this.axises.get(Location.BOTTOM);
     }
     
     /**
      * Set x axis
-     * @param value X axis
+     * @param axis Axis 
      */
-    public void setXAxis(Axis value) {
-        this.xAxis = value;
+    public void setXAxis(Axis axis) {
+        axis.setLocation(Location.BOTTOM);
+        this.axises.put(Location.BOTTOM, axis);
+        Axis topAxis = (Axis)axis.clone();
+        topAxis.setLocation(Location.TOP);
+        this.axises.put(Location.TOP, topAxis);
     }
 
     /**
-     * Get y axis
+     * Get left y axis
      *
-     * @return Y axis
+     * @return Left y axis
      */
     public Axis getYAxis() {
-        return this.yAxis;
+        return this.axises.get(Location.LEFT);
     }
     
     /**
      * Set y axis
-     * @param value Y axis
+     * @param axis Axis 
      */
-    public void setYAxis(Axis value){
-        this.yAxis = value;
+    public void setYAxis(Axis axis) {
+        axis.setLocation(Location.LEFT);
+        this.axises.put(Location.LEFT, axis);
+        Axis rightAxis = (Axis)axis.clone();
+        rightAxis.setLocation(Location.RIGHT);
+        this.axises.put(Location.RIGHT, rightAxis);
     }
 
     /**
-     * Get graph area
+     * Get axis
      *
-     * @return Graph area
+     * @param loc Axis location
+     * @return Axis
      */
-    @Override
-    public Rectangle2D getGraphArea() {
-        return this.graphArea;
+    public Axis getAxis(Location loc) {
+        return this.axises.get(loc);
     }
 
     /**
-     * Set graph area
+     * Get x axis location
      *
-     * @param area Graph area
+     * @return X axis location
      */
-    public void setGraphArea(Rectangle2D area) {
-        this.graphArea = area;
+    public Location getXAxisLocation() {
+        return this.xAxisLocation;
+    }
+
+    /**
+     * Set x axis location
+     *
+     * @param value X axis location
+     */
+    public void setXAxisLocation(Location value) {
+        this.xAxisLocation = value;
+    }
+
+    /**
+     * Get y axis location
+     *
+     * @return Y axis location
+     */
+    public Location getYAxisLocation() {
+        return this.yAxisLocation;
+    }
+
+    /**
+     * Set y axis location
+     *
+     * @param value Y axis location
+     */
+    public void setYAxisLocation(Location value) {
+        this.yAxisLocation = value;
     }
 
     /**
@@ -296,12 +347,12 @@ public abstract class XYPlot extends Plot {
     }
 
     /**
-     * get if draw top right axis
+     * get if draw top axis
      *
      * @return Boolean
      */
-    public boolean isDrawTopRightAxis() {
-        return this.drawTopRightAxis;
+    public boolean isDrawTopAxis() {
+        return this.drawTopAxis;
     }
 
     /**
@@ -309,11 +360,29 @@ public abstract class XYPlot extends Plot {
      *
      * @param value Boolean
      */
-    public void setDrawTopRightAxis(boolean value) {
-        this.drawTopRightAxis = value;
+    public void setDrawTopAxis(boolean value) {
+        this.drawTopAxis = value;
     }
-    // </editor-fold>
 
+    /**
+     * get if draw right axis
+     *
+     * @return Boolean
+     */
+    public boolean isDrawRightAxis() {
+        return this.drawRightAxis;
+    }
+
+    /**
+     * Set if draw right axis
+     *
+     * @param value Boolean
+     */
+    public void setDrawRightAxis(boolean value) {
+        this.drawRightAxis = value;
+    }
+
+    // </editor-fold>
     // <editor-fold desc="Method">
     /**
      * Draw plot
@@ -330,17 +399,18 @@ public abstract class XYPlot extends Plot {
             return;
         }
 
-        AffineTransform oldMatrix = g.getTransform();
-        Rectangle oldRegion = g.getClipBounds();
-        g.setClip(area);
-        g.translate(area.getX(), area.getY());
-
+//        AffineTransform oldMatrix = g.getTransform();
+//        Rectangle oldRegion = g.getClipBounds();
+//        g.setClip(area);
+//        g.translate(area.getX(), area.getY());
         //Get graphic area
-        graphArea = this.getGraphArea(g, area);
-        
+        //graphArea = this.getGraphArea(g, area);
+        //graphArea = this.getPositionArea(g, area);
+        Rectangle2D graphArea = this.getPositionArea(this.getPositionAreaZoom());
+
         //Draw title
         //float y = 5;
-        float y = (float)graphArea.getY();
+        float y = (float) graphArea.getY();
         if (title != null) {
             g.setColor(title.getColor());
             g.setFont(title.getFont());
@@ -356,13 +426,13 @@ public abstract class XYPlot extends Plot {
             //y += 5;
         }
 
-        //Update legend scheme
-        this.updateLegendScheme();
+//        //Update legend scheme
+//        this.updateLegendScheme();
 
         //Draw grid lines        
         if (graphArea.getWidth() < 10 || graphArea.getHeight() < 10) {
-            g.setTransform(oldMatrix);
-            g.setClip(oldRegion);
+//            g.setTransform(oldMatrix);
+//            g.setClip(oldRegion);
             return;
         }
 
@@ -371,9 +441,9 @@ public abstract class XYPlot extends Plot {
         //Draw graph        
         this.drawGraph(g, graphArea);
 
-        g.setStroke(new BasicStroke(1.0f));
-        g.setColor(Color.gray);
-        g.draw(graphArea);
+//        g.setStroke(new BasicStroke(1.0f));
+//        g.setColor(Color.gray);
+//        g.draw(graphArea);
 
         //Draw axis
         this.drawAxis(g, graphArea);
@@ -397,18 +467,138 @@ public abstract class XYPlot extends Plot {
                 }
             }
             if (this.legend.getPosition() == LegendPosition.CUSTOM) {
-                this.legend.draw(g, new PointF(this.legend.getX(), this.legend.getY()));
+                float x = (float)(area.getWidth() * this.legend.getX());
+                y = (float)(area.getHeight() * (1 - (this.getLegend().getHeight() / area.getHeight())
+                        - this.getLegend().getY()));
+                this.legend.draw(g, new PointF(x, y));
             } else {
-                this.drawLegendScheme(g, area, y);
+                this.drawLegendScheme(g, graphArea, y);
             }
         }
 
-        g.setTransform(oldMatrix);
-        g.setClip(oldRegion);
+//        g.setTransform(oldMatrix);
+//        g.setClip(oldRegion);
+    }
+
+    /**
+     * Get tight inset area
+     *
+     * @param g Graphics2D
+     * @param positionArea Position area
+     * @return Tight inset area
+     */
+    @Override
+    public Margin getTightInset(Graphics2D g, Rectangle2D positionArea) {
+        int left = 0, bottom = 0, right = 0, top = 0;
+        int space = 1;
+
+        if (this.title != null) {
+            FontMetrics metrics = g.getFontMetrics(this.title.getFont());
+            top += metrics.getHeight() + 10;
+        }
+
+        if (this.drawLegend && this.getLegend() != null) {
+            Dimension dim = this.legend.getLegendDimension(g, new Dimension((int) positionArea.getWidth(),
+                    (int) positionArea.getHeight()));
+            switch (this.legend.getPosition()) {
+                case UPPER_CENTER_OUTSIDE:
+                    top += dim.height + 10;
+                    break;
+                case LOWER_CENTER_OUTSIDE:
+                    bottom += dim.height + 10;
+                    break;
+                case LEFT_OUTSIDE:
+                    left += dim.width + 10;
+                    break;
+                case RIGHT_OUTSIDE:
+                    right += dim.width + 10;
+                    break;
+            }
+        }
+
+        //Get x axis space
+        bottom += this.getXAxisHeight(g, space);
+
+        //Get y axis space
+        left += this.getYAxisWidth(g, space);
+
+        //Set right space
+        right += this.getXAxis().getMaxLabelLength(g) / 2;
+
+        return new Margin(left, right, top, bottom);
+    }
+
+    /**
+     * Get tight inset area
+     *
+     * @param g Graphics2D
+     * @param positionArea Position area
+     * @return Tight inset area
+     */
+    public Rectangle2D getTightInsetArea(Graphics2D g, Rectangle2D positionArea) {
+        int left = 0, bottom = 0, right = 5, top = 5;
+        int space = 1;
+
+        if (this.title != null) {
+            FontMetrics metrics = g.getFontMetrics(this.title.getFont());
+            top += metrics.getHeight() + 10;
+        }
+
+        if (this.drawLegend && this.getLegend() != null) {
+            Dimension dim = this.legend.getLegendDimension(g, new Dimension((int) positionArea.getWidth(),
+                    (int) positionArea.getHeight()));
+            switch (this.legend.getPosition()) {
+                case UPPER_CENTER_OUTSIDE:
+                    top += dim.height + 10;
+                    break;
+                case LOWER_CENTER_OUTSIDE:
+                    bottom += dim.height + 10;
+                    break;
+                case LEFT_OUTSIDE:
+                    left += dim.width + 10;
+                    break;
+                case RIGHT_OUTSIDE:
+                    right += dim.width + 10;
+                    break;
+            }
+        }
+
+        //Get x axis space
+        bottom += this.getXAxisHeight(g, space);
+
+        //Get y axis space
+        left += this.getYAxisWidth(g, space);
+
+        //Set right space
+        right += this.getXAxis().getMaxLabelLength(g) / 2;
+
+        double x = positionArea.getX() - left;
+        double y = positionArea.getY() - top;
+        double w = positionArea.getWidth() + left + right;
+        double h = positionArea.getHeight() + top + bottom;
+
+        return new Rectangle2D.Double(x, y, w, h);
     }
 
     /**
      * Get graphic area
+     *
+     * @param g Graphic2D
+     * @param area Whole area
+     * @return Graphic area
+     */
+    @Override
+    public Rectangle2D getPositionArea(Graphics2D g, Rectangle2D area) {
+        double x = area.getWidth() * this.getPosition().getX() + area.getX();
+        double y = area.getHeight() * (1 - this.getPosition().getHeight() - this.getPosition().getY()) + area.getY();
+        double w = area.getWidth() * this.getPosition().getWidth();
+        double h = area.getHeight() * this.getPosition().getHeight();
+        return new Rectangle2D.Double(x, y, w, h);
+    }
+
+    /**
+     * Get graphic area
+     *
      * @param g Graphic2D
      * @param area Whole area
      * @return Graphic area
@@ -456,19 +646,29 @@ public abstract class XYPlot extends Plot {
     }
 
     int getXAxisHeight(Graphics2D g, int space) {
-        FontMetrics metrics = g.getFontMetrics(this.xAxis.getTickLabelFont());
+        Axis xAxis = this.getXAxis();
+        FontMetrics metrics = g.getFontMetrics(xAxis.getTickLabelFont());
         int height = metrics.getHeight();
-        height += this.xAxis.getTickLength() + space;
-        metrics = g.getFontMetrics(this.xAxis.getLabelFont());
-        height += metrics.getHeight() + 10;
+        if (!xAxis.isInsideTick())
+            height += xAxis.getTickLength() + space;
+        metrics = g.getFontMetrics(xAxis.getLabelFont());
+        height += metrics.getHeight();
+        if (xAxis.isDrawLabel()){
+            Dimension dim = Draw.getStringDimension(xAxis.getLabel(), g);
+            height += dim.height + space;
+        }
+        //height += 10;
 
         return height;
     }
 
     int getYAxisWidth(Graphics2D g, int space) {
-        int width = this.yAxis.getMaxLabelLength(g) + this.yAxis.getTickLength() + space;
-        FontMetrics metrics = g.getFontMetrics(this.yAxis.getLabelFont());
-        width += metrics.getHeight() + 10;
+        int width = this.getYAxis().getMaxLabelLength(g);
+        if (!this.getYAxis().isInsideTick())
+            width += this.getYAxis().getTickLength() + space;
+        FontMetrics metrics = g.getFontMetrics(this.getYAxis().getLabelFont());
+        width += metrics.getHeight();
+        //width += 10;
 
         return width;
     }
@@ -492,44 +692,54 @@ public abstract class XYPlot extends Plot {
 
         //Draw x grid lines
         if (this.gridLine.isDrawXLine()) {
-            this.xAxis.updateLabelGap(g, area);
+            this.getXAxis().updateLabelGap(g, area);
             int n = 0;
-            while (n < this.xAxis.getTickValues().length) {
-                double value = this.xAxis.getTickValues()[n];
+            while (n < this.getXAxis().getTickValues().length) {
+                double value = this.getXAxis().getTickValues()[n];
                 xy = this.projToScreen(value, this.drawExtent.minY, area);
                 x = xy[0];
-                if (this.xAxis.isInverse()) {
+                if (this.getXAxis().isInverse()) {
                     x = area.getWidth() - x;
                 }
                 x += minx;
                 g.draw(new Line2D.Double(x, maxy, x, miny));
 
-                n += this.xAxis.getTickLabelGap();
+                n += this.getXAxis().getTickLabelGap();
             }
         }
 
         //Draw y grid lines
         if (this.gridLine.isDrawYLine()) {
-            this.yAxis.updateLabelGap(g, area);
+            this.getYAxis().updateLabelGap(g, area);
             int n = 0;
-            while (n < this.yAxis.getTickValues().length) {
-                double value = this.yAxis.getTickValues()[n];
+            while (n < this.getYAxis().getTickValues().length) {
+                double value = this.getYAxis().getTickValues()[n];
                 xy = this.projToScreen(this.drawExtent.minX, value, area);
                 y = xy[1];
-                if (this.yAxis.isInverse()) {
+                if (this.getYAxis().isInverse()) {
                     y = area.getHeight() - y;
                 }
                 y += area.getY();
                 g.draw(new Line2D.Double(minx, y, maxx, y));
 
-                n += this.yAxis.getTickLabelGap();
+                n += this.getYAxis().getTickLabelGap();
             }
         }
     }
 
-    abstract void drawGraph(Graphics2D g, Rectangle2D area);
-
+    abstract void drawGraph(Graphics2D g, Rectangle2D area);  
+    
     void drawAxis(Graphics2D g, Rectangle2D area) {
+        for (Location loc : this.axises.keySet()){
+            Axis axis = this.axises.get(loc);
+            if (axis.isVisible()) {
+                axis.updateLabelGap(g, area);                
+                axis.draw(g, area, this);
+            }
+        }        
+    }
+
+    void drawAxis_old(Graphics2D g, Rectangle2D area) {
         double[] xy;
         double x, y;
         double miny = area.getY();
@@ -541,38 +751,38 @@ public abstract class XYPlot extends Plot {
 
         //Draw x axis
         //Draw axis line
-        g.setColor(this.xAxis.getLineColor());
-        g.setStroke(this.xAxis.getLineStroke());
+        g.setColor(this.getXAxis().getLineColor());
+        g.setStroke(this.getXAxis().getLineStroke());
         g.draw(new Line2D.Double(minx, maxy, maxx, maxy));
-        if (this.drawTopRightAxis) {
+        if (this.drawTopAxis) {
             g.draw(new Line2D.Double(minx, miny, maxx, miny));
         }
         //Draw tick lines   
-        g.setColor(this.xAxis.getTickColor());
-        g.setStroke(this.xAxis.getTickStroke());
-        g.setFont(this.xAxis.getTickLabelFont());
-        FontMetrics metrics = g.getFontMetrics(this.xAxis.getTickLabelFont());
+        g.setColor(this.getXAxis().getTickColor());
+        g.setStroke(this.getXAxis().getTickStroke());
+        g.setFont(this.getXAxis().getTickLabelFont());
+        FontMetrics metrics = g.getFontMetrics(this.getXAxis().getTickLabelFont());
         String drawStr;
         Dimension dim;
-        this.xAxis.updateLabelGap(g, area);
-        int len = this.xAxis.getTickLength();
-        List<String> tickLabels = this.xAxis.getTickLabels();
+        this.getXAxis().updateLabelGap(g, area);
+        int len = this.getXAxis().getTickLength();
+        List<String> tickLabels = this.getXAxis().getTickLabels();
         int n = 0;
-        while (n < this.xAxis.getTickValues().length) {
-            double value = this.xAxis.getTickValues()[n];
+        while (n < this.getXAxis().getTickValues().length) {
+            double value = this.getXAxis().getTickValues()[n];
             xy = this.projToScreen(value, this.drawExtent.minY, area);
             x = xy[0];
-            if (this.xAxis.isInverse()) {
+            if (this.getXAxis().isInverse()) {
                 x = area.getWidth() - x;
             }
             x += minx;
-            if (this.xAxis.isInsideTick()) {
+            if (this.getXAxis().isInsideTick()) {
                 g.draw(new Line2D.Double(x, maxy, x, maxy - len));
             } else {
                 g.draw(new Line2D.Double(x, maxy, x, maxy + len));
             }
-            if (this.drawTopRightAxis) {
-                if (this.xAxis.isInsideTick()) {
+            if (this.drawTopAxis) {
+                if (this.getXAxis().isInsideTick()) {
                     g.draw(new Line2D.Double(x, miny, x, miny + len));
                 } else {
                     g.draw(new Line2D.Double(x, miny, x, miny - len));
@@ -584,30 +794,30 @@ public abstract class XYPlot extends Plot {
             labx = (float) (x - dim.width / 2);
             laby = (float) (maxy + len + dim.height * 3 / 4 + space);
             g.drawString(drawStr, labx, laby);
-            n += this.xAxis.getTickLabelGap();
+            n += this.getXAxis().getTickLabelGap();
         }
         //Time label - left
         SimpleDateFormat format;
-        if (this.xAxis instanceof TimeAxis) {
-            TimeAxis tAxis = (TimeAxis)this.xAxis;
-        //if (this.xAxis.isTimeAxis()) {
+        if (this.getXAxis() instanceof TimeAxis) {
+            TimeAxis tAxis = (TimeAxis) this.getXAxis();
+            //if (this.getXAxis().isTimeAxis()) {
             drawStr = null;
             switch (tAxis.getTimeUnit()) {
                 case MONTH:
                     format = new SimpleDateFormat("yyyy");
-                    Date cdate = DateUtil.fromOADate(this.xAxis.getTickValues()[0]);
+                    Date cdate = DateUtil.fromOADate(this.getXAxis().getTickValues()[0]);
                     drawStr = format.format(cdate);
                     break;
                 case DAY:
                     format = new SimpleDateFormat("yyyy-MM");
-                    cdate = DateUtil.fromOADate(this.xAxis.getTickValues()[0]);
+                    cdate = DateUtil.fromOADate(this.getXAxis().getTickValues()[0]);
                     drawStr = format.format(cdate);
                     break;
                 case HOUR:
                 case MINITUE:
                 case SECOND:
                     format = new SimpleDateFormat("yyyy-MM-dd");
-                    cdate = DateUtil.fromOADate(this.xAxis.getTickValues()[0]);
+                    cdate = DateUtil.fromOADate(this.getXAxis().getTickValues()[0]);
                     drawStr = format.format(cdate);
                     break;
             }
@@ -621,45 +831,45 @@ public abstract class XYPlot extends Plot {
             }
         }
         //Draw label
-        if (this.xAxis.isDrawLabel()) {
+        if (this.getXAxis().isDrawLabel()) {
             x = (maxx - minx) / 2 + minx;
             y = maxy + space + metrics.getHeight() + 5;
-            g.setFont(this.xAxis.getLabelFont());
-            g.setColor(this.xAxis.getLabelColor());
-            //metrics = g.getFontMetrics(this.xAxis.getLabelFont());
-            //dim = new Dimension(metrics.stringWidth(this.xAxis.getLabel()), metrics.getHeight());
-            dim = Draw.getStringDimension(this.xAxis.getLabel(), g);
+            g.setFont(this.getXAxis().getLabelFont());
+            g.setColor(this.getXAxis().getLabelColor());
+            //metrics = g.getFontMetrics(this.getXAxis().getLabelFont());
+            //dim = new Dimension(metrics.stringWidth(this.getXAxis().getLabel()), metrics.getHeight());
+            dim = Draw.getStringDimension(this.getXAxis().getLabel(), g);
             labx = (float) (x - dim.width / 2);
             laby = (float) (y + dim.height * 3 / 4);
-            if (!this.xAxis.isInsideTick()) {
+            if (!this.getXAxis().isInsideTick()) {
                 laby += len;
-            }            
-            //g.drawString(this.xAxis.getLabel(), labx, laby);
-            Draw.drawString(g, this.xAxis.getLabel(), labx, laby);
+            }
+            //g.drawString(this.getXAxis().getLabel(), labx, laby);
+            Draw.drawString(g, this.getXAxis().getLabel(), labx, laby);
         }
 
         //Draw y axis
         //Draw axis line
-        g.setColor(this.yAxis.getLineColor());
-        g.setStroke(this.yAxis.getLineStroke());
+        g.setColor(this.getYAxis().getLineColor());
+        g.setStroke(this.getYAxis().getLineStroke());
         g.draw(new Line2D.Double(minx, maxy, minx, miny));
-        if (this.drawTopRightAxis) {
+        if (this.drawRightAxis) {
             g.draw(new Line2D.Double(maxx, maxy, maxx, miny));
         }
         //Draw tick lines   
-        g.setColor(this.yAxis.getTickColor());
-        g.setStroke(this.yAxis.getTickStroke());
-        g.setFont(this.yAxis.getTickLabelFont());
-        metrics = g.getFontMetrics(this.yAxis.getTickLabelFont());
-        this.yAxis.updateLabelGap(g, area);
-        len = this.yAxis.getTickLength();
-        tickLabels = this.yAxis.getTickLabels();
+        g.setColor(this.getYAxis().getTickColor());
+        g.setStroke(this.getYAxis().getTickStroke());
+        g.setFont(this.getYAxis().getTickLabelFont());
+        metrics = g.getFontMetrics(this.getYAxis().getTickLabelFont());
+        this.getYAxis().updateLabelGap(g, area);
+        len = this.getYAxis().getTickLength();
+        tickLabels = this.getYAxis().getTickLabels();
         n = 0;
-        while (n < this.yAxis.getTickValues().length) {
-            double value = this.yAxis.getTickValues()[n];
+        while (n < this.getYAxis().getTickValues().length) {
+            double value = this.getYAxis().getTickValues()[n];
             xy = this.projToScreen(this.drawExtent.minX, value, area);
             y = xy[1];
-            if (this.yAxis.isInverse()) {
+            if (this.getYAxis().isInverse()) {
                 y = area.getHeight() - y;
             }
             y += area.getY();
@@ -668,7 +878,7 @@ public abstract class XYPlot extends Plot {
             } else {
                 g.draw(new Line2D.Double(minx, y, minx - len, y));
             }
-            if (this.drawTopRightAxis) {
+            if (this.drawRightAxis) {
                 if (this.getYAxis().isInsideTick()) {
                     g.draw(new Line2D.Double(maxx, y, maxx - len, y));
                 } else {
@@ -684,13 +894,13 @@ public abstract class XYPlot extends Plot {
             }
             laby = (float) (y + dim.height / 3);
             g.drawString(drawStr, labx, laby);
-            n += this.yAxis.getTickLabelGap();
+            n += this.getYAxis().getTickLabelGap();
         }
         //Draw label
-        if (this.yAxis.isDrawLabel()) {
-            g.setFont(this.yAxis.getLabelFont());
-            dim = Draw.getStringDimension(this.yAxis.getLabel(), g);
-            //metrics = g.getFontMetrics(this.yAxis.getLabelFont());
+        if (this.getYAxis().isDrawLabel()) {
+            g.setFont(this.getYAxis().getLabelFont());
+            dim = Draw.getStringDimension(this.getYAxis().getLabel(), g);
+            //metrics = g.getFontMetrics(this.getYAxis().getLabelFont());
             x = minx - space - this.getYAxis().getMaxLabelLength(g) - dim.height - 5;
             if (!this.getYAxis().isInsideTick()) {
                 x -= len;
@@ -698,10 +908,10 @@ public abstract class XYPlot extends Plot {
             y = (maxy - miny) / 2 + miny;
             //x = g.getTransform().getTranslateX() + x;
             //y = g.getTransform().getTranslateY() + y;
-            //Draw.drawLabelPoint((float)x, (float)y, this.yAxis.getLabelFont(), this.yAxis.getLabel(), 
-            //        this.yAxis.getLabelColor(), -90, g, null);
-            Draw.drawLabelPoint_270((float) x, (float) y, this.yAxis.getLabelFont(), this.yAxis.getLabel(),
-                    this.yAxis.getLabelColor(), g, null);
+            //Draw.drawLabelPoint((float)x, (float)y, this.getYAxis().getLabelFont(), this.getYAxis().getLabel(), 
+            //        this.getYAxis().getLabelColor(), -90, g, null);
+            Draw.drawLabelPoint_270((float) x, (float) y, this.getYAxis().getLabelFont(), this.getYAxis().getLabel(),
+                    this.getYAxis().getLabelColor(), g, null);
         }
     }
 
@@ -709,6 +919,7 @@ public abstract class XYPlot extends Plot {
         g.setFont(this.legend.getLabelFont());
         Dimension dim = this.legend.getLegendDimension(g, new Dimension((int) area.getWidth(), (int) area.getHeight()));
         float x = 0;
+        //Rectangle2D graphArea = this.getPositionArea();
         switch (this.legend.getPosition()) {
             case UPPER_CENTER_OUTSIDE:
                 x = (float) area.getWidth() / 2 - dim.width / 2;
@@ -716,18 +927,18 @@ public abstract class XYPlot extends Plot {
                 break;
             case LOWER_CENTER_OUTSIDE:
                 x = (float) area.getWidth() / 2 - dim.width / 2;
-                y += graphArea.getHeight() + this.getXAxisHeight(g, 1) + 5;
+                y += area.getHeight() + this.getXAxisHeight(g, 1) + 5;
                 break;
             case LEFT_OUTSIDE:
                 x = 10;
                 y = (float) area.getHeight() / 2 - dim.height / 2;
                 break;
             case RIGHT_OUTSIDE:
-                x = (float) graphArea.getX() + (float) graphArea.getWidth() + 10;
-                y = (float) graphArea.getY() + (float) graphArea.getHeight() / 2 - dim.height / 2;
+                x = (float) area.getX() + (float) area.getWidth() + 10;
+                y = (float) area.getY() + (float) area.getHeight() / 2 - dim.height / 2;
                 break;
             case UPPER_RIGHT:
-                x = (float) graphArea.getWidth() - dim.width;
+                x = (float) area.getWidth() - dim.width;
                 y = y + 20;
                 break;
         }
@@ -771,7 +982,7 @@ public abstract class XYPlot extends Plot {
     abstract Extent getAutoExtent();
 
     abstract void updateLegendScheme();
-    
+
     abstract void addText(ChartText text);
     // </editor-fold>
 }

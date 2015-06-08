@@ -73,7 +73,7 @@ public abstract class LayoutElement {
     }
     // </editor-fold>
     // <editor-fold desc="Variables">
-    private EventListenerList _listeners = new EventListenerList();
+    private final EventListenerList _listeners = new EventListenerList();
     private int _left;
     private int _top;
     private int _width;

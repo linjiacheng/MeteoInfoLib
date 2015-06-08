@@ -14,6 +14,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
+import org.meteoinfo.chart.Location;
 import org.meteoinfo.chart.axis.LonLatAxis;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
@@ -40,6 +41,7 @@ public class MapPlot extends XY2DPlot {
         super();
         this.setXAxis(new LonLatAxis("Longitude", true));
         this.setYAxis(new LonLatAxis("Latitude", false));
+        this.getAxis(Location.RIGHT).setDrawTickLabel(false);
     }
 
     /**
@@ -113,14 +115,14 @@ public class MapPlot extends XY2DPlot {
 //    }
     
     /**
-     * Get graphic area
+     * Get position area
      * @param g Graphic2D
      * @param area Whole area
      * @return Graphic area
      */
     @Override
-    public Rectangle2D getGraphArea(Graphics2D g, Rectangle2D area) {
-        Rectangle2D plotArea = super.getGraphArea(g, area);
+    public Rectangle2D getPositionArea(Graphics2D g, Rectangle2D area) {
+        Rectangle2D plotArea = super.getPositionArea(g, area);
         MapView mapView = this.mapFrame.getMapView();
         mapView.setViewExtent((Extent)this.getDrawExtent().clone());
         Extent extent = mapView.getViewExtent();

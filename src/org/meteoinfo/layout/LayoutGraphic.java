@@ -38,6 +38,7 @@ import org.meteoinfo.shape.WindArraw;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -260,8 +261,11 @@ public class LayoutGraphic extends LayoutElement {
                     LabelBreak aLB = (LabelBreak) _graphic.getLegend();
                     //FontMetrics metrics = _mapLayout.getGraphics().getFontMetrics(aLB.getFont());
                     BufferedImage image = new BufferedImage(_mapLayout.getPageBounds().width, _mapLayout.getPageBounds().height, BufferedImage.TYPE_INT_ARGB);
-                    FontMetrics metrics = image.getGraphics().getFontMetrics(aLB.getFont());
-                    Dimension aSF = new Dimension(metrics.stringWidth(aLB.getText()), metrics.getHeight());
+                    Graphics2D g = (Graphics2D)image.getGraphics();
+                    g.setFont(aLB.getFont());
+                    Dimension aSF = Draw.getStringDimension(aLB.getText(), g);
+                    //FontMetrics metrics = image.getGraphics().getFontMetrics(aLB.getFont());
+                    //Dimension aSF = new Dimension(metrics.stringWidth(aLB.getText()), metrics.getHeight());
                     this.setLeft(this.getLeft() - (int) (aSF.width / 2));
                     this.setTop(this.getTop() - (int) (aSF.height * 2 / 3));
                     this.setWidth((int) Math.ceil(aSF.width));
@@ -516,7 +520,7 @@ public class LayoutGraphic extends LayoutElement {
                     break;
                 case Rectangle:
                 case Ellipse:
-                    points = new ArrayList<PointD>();
+                    points = new ArrayList<>();
                     points.add(new PointD(this.getLeft(), this.getTop()));
                     points.add(new PointD(this.getLeft(), this.getBottom()));
                     points.add(new PointD(this.getRight(), this.getBottom()));
@@ -527,7 +531,7 @@ public class LayoutGraphic extends LayoutElement {
                     _graphic.getShape().setPoints(points);
                     break;
                 case Circle:
-                    points = new ArrayList<PointD>();
+                    points = new ArrayList<>();
                     points.add(new PointD(this.getLeft(), this.getTop() + this.getWidth() / 2));
                     points.add(new PointD(this.getLeft() + this.getWidth() / 2, this.getTop()));
                     points.add(new PointD(this.getLeft() + this.getWidth(), this.getTop() + this.getWidth() / 2));

@@ -42,7 +42,7 @@ public class Chart {
     /**
      * Constructor
      */
-    public Chart(){
+    public Chart() {
         this.drawLegend = false;
         this.background = Color.white;
         this.drawBackground = false;
@@ -51,7 +51,7 @@ public class Chart {
         this.columnNum = 1;
         this.plots = new ArrayList<>();
     }
-    
+
     /**
      * Constructor
      *
@@ -87,47 +87,53 @@ public class Chart {
     public List<Plot> getPlots() {
         return plots;
     }
-    
+
     /**
      * Get the first plot
+     *
      * @return Plot
      */
-    public Plot getPlot(){
-        if (this.plots.isEmpty())
+    public Plot getPlot() {
+        if (this.plots.isEmpty()) {
             return null;
-        
+        }
+
         return this.plots.get(0);
     }
-    
+
     /**
      * Get row number of sub plots
+     *
      * @return Row number of sub plots
      */
-    public int getRowNum(){
+    public int getRowNum() {
         return this.rowNum;
     }
-    
+
     /**
      * Set row number of sub plots
+     *
      * @param value Row number of sub plots
      */
-    public void setRowNum(int value){
+    public void setRowNum(int value) {
         this.rowNum = value;
     }
-    
+
     /**
      * Get column number of sub plots
+     *
      * @return Column number of sub plots
      */
-    public int getColumnNum(){
+    public int getColumnNum() {
         return this.columnNum;
     }
-    
+
     /**
      * Set column number of sub plots
+     *
      * @param value Column number of sub plots
      */
-    public void setColumnNum(int value){
+    public void setColumnNum(int value) {
         this.columnNum = value;
     }
 
@@ -316,19 +322,23 @@ public class Chart {
             g.setClip(oldRegion);
             return;
         }
-        
+
         if (this.plots.size() > 0) {
+            double zoom = this.getPositionAreaZoom(g, area);
             for (Plot plot : this.plots) {
-                Rectangle2D subPlotArea = this.getSubPlotArea(g, plot, plotArea);
-                plot.draw(g, subPlotArea);
+                plot.setPositionAreaZoom(zoom);
+                //Rectangle2D subPlotArea = this.getSubPlotArea(g, plot, plotArea);                
+                //Rectangle2D subPlotArea = plot.getOuterPositionArea();
+                //plot.draw(g, subPlotArea);
+                plot.draw(g, area);
             }
         }
-        
+
         //Draw legend
-        if (this.drawLegend){
-            Dimension dim = this.legend.getLegendDimension(g, new Dimension((int)area.getWidth(), (int)area.getHeight()));
+        if (this.drawLegend) {
+            Dimension dim = this.legend.getLegendDimension(g, new Dimension((int) area.getWidth(), (int) area.getHeight()));
             float x = 0;
-            switch (this.legend.getPosition()){
+            switch (this.legend.getPosition()) {
                 case UPPER_CENTER_OUTSIDE:
                     x = (float) area.getWidth() / 2 - dim.width / 2;
                     y += 5;
@@ -362,10 +372,10 @@ public class Chart {
         if (this.title != null) {
             FontMetrics metrics = g.getFontMetrics(this.title.getFont());
             top += metrics.getHeight() + 10;
-        }        
-        if (this.drawLegend){
-            Dimension dim = this.legend.getLegendDimension(g, new Dimension((int)area.getWidth(), (int)area.getHeight()));
-            switch (this.legend.getPosition()){
+        }
+        if (this.drawLegend) {
+            Dimension dim = this.legend.getLegendDimension(g, new Dimension((int) area.getWidth(), (int) area.getHeight()));
+            switch (this.legend.getPosition()) {
                 case UPPER_CENTER_OUTSIDE:
                     top += dim.height + 10;
                     break;
@@ -384,17 +394,68 @@ public class Chart {
 
         return pArea;
     }
-    
+
+    private double getPositionAreaZoom(Graphics2D g, Rectangle2D area) {
+        double zoom = 1.0;
+        for (Plot plot : this.plots) {
+            if (plot.isSubPlot) {
+                double rowHeight = area.getHeight() / this.rowNum;
+                double colWidth = area.getWidth() / this.columnNum;
+                double x = area.getX() + plot.columnIndex * colWidth;
+                double y = area.getY() + plot.rowIndex * rowHeight;
+                Rectangle2D subPlotArea = new Rectangle2D.Double(x, y, colWidth, rowHeight);
+                plot.setOuterPositionArea(subPlotArea);
+                plot.updatePosition(area, subPlotArea);
+                Rectangle2D positionArea = plot.getPositionArea(g, area);
+                plot.setPositionArea(positionArea);
+                Margin tightInset = plot.getTightInset(g, positionArea);
+                plot.setTightInset(tightInset);
+                double zoom1 = plot.updatePostionAreaZoom();
+                if (zoom1 < zoom) {
+                    zoom = zoom1;
+                }
+            } else {
+                plot.setOuterPositionArea(area);
+                Rectangle2D positionArea = plot.getPositionArea(g, area);
+                plot.setPositionArea(positionArea);
+                Margin tightInset = plot.getTightInset(g, positionArea);
+                plot.setTightInset(tightInset);
+                double zoom1 = plot.updatePostionAreaZoom();
+                if (zoom1 < zoom) {
+                    zoom = zoom1;
+                }
+            }
+        }
+
+        return zoom;
+    }
+
     private Rectangle2D getSubPlotArea(Graphics2D g, Plot plot, Rectangle2D area) {
-        if (this.rowNum == 1 && this.columnNum == 1){
-            return this.plotArea;
-        } else {
-            double rowHeight = area.getHeight()/ this.rowNum;
-            double colWidth = area.getWidth()/ this.columnNum;
+        if (plot.isSubPlot) {
+            double rowHeight = area.getHeight() / this.rowNum;
+            double colWidth = area.getWidth() / this.columnNum;
             double x = area.getX() + plot.columnIndex * colWidth;
-            double y = area.getY()+ plot.rowIndex * rowHeight; 
+            double y = area.getY() + plot.rowIndex * rowHeight;
             Rectangle2D subPlotArea = new Rectangle2D.Double(x, y, colWidth, rowHeight);
+            plot.setOuterPositionArea(subPlotArea);
+            plot.updatePosition(area, subPlotArea);
+            Rectangle2D positionArea = plot.getPositionArea(g, area);
+            plot.setPositionArea(positionArea);
+            Margin tightInset = plot.getTightInset(g, positionArea);
+            plot.setTightInset(tightInset);
+            double zoom = plot.updatePostionAreaZoom();
+            plot.setPositionAreaZoom(zoom);
             return subPlotArea;
+        } else {
+            plot.setOuterPositionArea(area);
+            Rectangle2D positionArea = plot.getPositionArea(g, area);
+            plot.setPositionArea(positionArea);
+            Margin tightInset = plot.getTightInset(g, positionArea);
+            plot.setTightInset(tightInset);
+            double zoom = plot.updatePostionAreaZoom();
+            plot.setPositionAreaZoom(zoom);
+            //return tightInset.getArea(positionArea);
+            return area;
         }
     }
 
@@ -404,49 +465,61 @@ public class Chart {
      * @return Get graph area
      */
     public Rectangle2D getGraphArea() {
-        Rectangle2D rect = this.plots.get(0).getGraphArea();
+        Rectangle2D rect = this.plots.get(0).getPositionArea();
         double left = rect.getX() + this.plotArea.getX();
         double top = rect.getY() + this.plotArea.getY();
         return new Rectangle2D.Double(left, top, rect.getWidth(), rect.getHeight());
     }
-    
+
     /**
      * Clear plots
      */
-    public void clearPlots(){
+    public void clearPlots() {
         this.plots.clear();
     }
-    
+
+    /**
+     * Remove a plot
+     *
+     * @param plot The plot
+     */
+    public void removePlot(Plot plot) {
+        this.plots.remove(plot);
+    }
+
     /**
      * Add a plot
+     *
      * @param plot Plot
      */
-    public void addPlot(Plot plot){
+    public void addPlot(Plot plot) {
         this.plots.add(plot);
     }
-    
+
     /**
      * Set plot
+     *
      * @param plot Plot
      */
-    public void setPlot(Plot plot){
+    public void setPlot(Plot plot) {
         this.plots.clear();
         this.plots.add(plot);
     }
-    
+
     /**
      * Get plot by plot index
+     *
      * @param plotIdx Plot index - begin with 1
-     * @return 
+     * @return
      */
-    public Plot getPlot(int plotIdx){
-        for (Plot plot : this.plots){
+    public Plot getPlot(int plotIdx) {
+        for (Plot plot : this.plots) {
             int pIdx = plot.columnIndex * this.columnNum + plot.rowIndex + 1;
-            if (pIdx == plotIdx){
+            if (pIdx == plotIdx) {
                 return plot;
             }
         }
-        
+
         return null;
     }
     // </editor-fold>

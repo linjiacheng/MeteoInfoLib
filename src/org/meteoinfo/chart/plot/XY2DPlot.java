@@ -121,5 +121,12 @@ public class XY2DPlot extends XYPlot {
         this.mapView.addLayer(idx, layer);
         this.setDrawExtent(layer.getExtent());
     }
+    
+    /**
+     * Remove last added layer
+     */
+    public void removeLastLayer(){
+        this.mapView.removeLayer(this.mapView.getLastAddedLayer());
+    }
     // </editor-fold>            
 }

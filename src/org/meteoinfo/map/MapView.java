@@ -189,6 +189,7 @@ import org.w3c.dom.NodeList;
 import org.meteoinfo.shape.WindArraw;
 import org.meteoinfo.shape.WindBarb;
 import org.meteoinfo.shape.PointZ;
+import org.w3c.dom.DOMException;
 
 /**
  * MapView class
@@ -208,7 +209,7 @@ public class MapView extends JPanel {
     private boolean _pointAntiAlias = true;
     private boolean _highSpeedWheelZoom = true;
     private boolean _lockViewUpdate = false;
-    private LayerCollection _layers = new LayerCollection();
+    private LayerCollection layers = new LayerCollection();
     private int _selectedLayer;
     private Extent _extent = new Extent();
     private Extent _viewExtent = new Extent();
@@ -386,7 +387,7 @@ public class MapView extends JPanel {
      * @return The layer collection
      */
     public LayerCollection getLayers() {
-        return _layers;
+        return layers;
     }
 
     /**
@@ -395,7 +396,7 @@ public class MapView extends JPanel {
      * @param layers The layer collection
      */
     public void setLayers(LayerCollection layers) {
-        _layers = layers;
+        this.layers = layers;
     }
 
     /**
@@ -404,7 +405,7 @@ public class MapView extends JPanel {
      * @return Layer number
      */
     public int getLayerNum() {
-        return _layers.size();
+        return layers.size();
     }
 
     /**
@@ -432,9 +433,9 @@ public class MapView extends JPanel {
      */
     public MapLayer getLastAddedLayer() {
         int hnd = 0;
-        for (int i = 0; i < _layers.size(); i++) {
-            if (_layers.get(i).getHandle() > hnd) {
-                hnd = _layers.get(i).getHandle();
+        for (MapLayer layer : layers) {
+            if (layer.getHandle() > hnd) {
+                hnd = layer.getHandle();
             }
         }
 
@@ -1384,7 +1385,7 @@ public class MapView extends JPanel {
                                 }
                             } else {
                                 if (_startNewGraphic) {
-                                    _graphicPoints = new ArrayList<PointF>();
+                                    _graphicPoints = new ArrayList<>();
                                     _startNewGraphic = false;
                                 }
                                 _graphicPoints.add(new PointF(e.getX(), e.getY()));
@@ -1400,7 +1401,7 @@ public class MapView extends JPanel {
                 case SelectFeatures_Polygon:
                 case SelectFeatures_Lasso:
                     if (_startNewGraphic) {
-                        _graphicPoints = new ArrayList<PointF>();
+                        _graphicPoints = new ArrayList<>();
                         _startNewGraphic = false;
                     }
                     _graphicPoints.add(new PointF(e.getX(), e.getY()));
@@ -1441,7 +1442,7 @@ public class MapView extends JPanel {
                             case Length:
                             case Area:
                                 if (_startNewGraphic) {
-                                    _graphicPoints = new ArrayList<PointF>();
+                                    _graphicPoints = new ArrayList<>();
                                     _startNewGraphic = false;
                                 }
                                 _frmMeasure.setPreviousValue(_frmMeasure.getTotalValue());
@@ -1831,9 +1832,9 @@ public class MapView extends JPanel {
 
                                     _frmMeasure.setCurrentValue(dist);
                                 } else {
-                                    List<PointD> mPoints = new ArrayList<PointD>();
-                                    for (int i = 0; i < points.length; i++) {
-                                        pXY = screenToProj(points[i].X, points[i].Y);
+                                    List<PointD> mPoints = new ArrayList<>();
+                                    for (PointF point : points) {
+                                        pXY = screenToProj(point.X, point.Y);
                                         mPoints.add(new PointD(pXY[0], pXY[1]));
                                     }
                                     double area = GeoComputation.getArea(mPoints);
@@ -2200,12 +2201,12 @@ public class MapView extends JPanel {
                     }
 
                     _startNewGraphic = true;
-                    _graphicPoints = new ArrayList<PointF>();
+                    _graphicPoints = new ArrayList<>();
                     _graphicPoints.add(new PointF(_mouseDownPoint.x, _mouseDownPoint.y));
                     _graphicPoints.add(new PointF(_mouseDownPoint.x, e.getY()));
                     _graphicPoints.add(new PointF(e.getX(), e.getY()));
                     _graphicPoints.add(new PointF(e.getX(), _mouseDownPoint.y));
-                    List<PointD> points = new ArrayList<PointD>();
+                    List<PointD> points = new ArrayList<>();
                     float[] pXY;
                     for (PointF aPoint : _graphicPoints) {
                         pXY = screenToProj(aPoint.X, aPoint.Y);
@@ -2245,7 +2246,7 @@ public class MapView extends JPanel {
                         break;
                     }
 
-                    List<PointD> points = new ArrayList<PointD>();
+                    List<PointD> points = new ArrayList<>();
                     float[] pXY;
                     for (PointF aPoint : _graphicPoints) {
                         pXY = screenToProj(aPoint.X, aPoint.Y);
@@ -2291,12 +2292,12 @@ public class MapView extends JPanel {
                     float radius = (float) Math.sqrt(Math.pow(e.getX() - _mouseDownPoint.x, 2)
                             + Math.pow(e.getY() - _mouseDownPoint.y, 2));
                     _startNewGraphic = true;
-                    _graphicPoints = new ArrayList<PointF>();
+                    _graphicPoints = new ArrayList<>();
                     _graphicPoints.add(new PointF(_mouseDownPoint.x - radius, _mouseDownPoint.y));
                     _graphicPoints.add(new PointF(_mouseDownPoint.x, _mouseDownPoint.y - radius));
                     _graphicPoints.add(new PointF(_mouseDownPoint.x + radius, _mouseDownPoint.y));
                     _graphicPoints.add(new PointF(_mouseDownPoint.x, _mouseDownPoint.y + radius));
-                    List<PointD> points = new ArrayList<PointD>();
+                    List<PointD> points = new ArrayList<>();
                     float[] pXY;
                     for (PointF aPoint : _graphicPoints) {
                         pXY = screenToProj(aPoint.X, aPoint.Y);
@@ -2783,7 +2784,7 @@ public class MapView extends JPanel {
                     if (!_startNewGraphic) {
                         _startNewGraphic = true;
                         _graphicPoints.remove(_graphicPoints.size() - 1);
-                        List<PointD> points = new ArrayList<PointD>();
+                        List<PointD> points = new ArrayList<>();
                         float[] pXY;
                         for (PointF aPoint : _graphicPoints) {
                             pXY = screenToProj(aPoint.X, aPoint.Y);
@@ -2830,7 +2831,7 @@ public class MapView extends JPanel {
                         _startNewGraphic = true;
                         //_graphicPoints.Add(new PointF(e.getX(), e.getY()));
                         _graphicPoints.remove(_graphicPoints.size() - 1);
-                        List<PointD> points = new ArrayList<PointD>();
+                        List<PointD> points = new ArrayList<>();
                         float[] pXY;
                         for (PointF aPoint : _graphicPoints) {
                             pXY = screenToProj(aPoint.X, aPoint.Y);
@@ -2999,8 +3000,8 @@ public class MapView extends JPanel {
 
     private void onGrahpicSmoothClick(ActionEvent e) {
         Graphic aGraphic = _selectedGraphics.get(0);
-        List<wContour.Global.PointD> pointList = new ArrayList<wContour.Global.PointD>();
-        List<PointD> newPoints = new ArrayList<PointD>();
+        List<wContour.Global.PointD> pointList = new ArrayList<>();
+        List<PointD> newPoints = new ArrayList<>();
 
         for (PointD aP : aGraphic.getShape().getPoints()) {
             pointList.add(new wContour.Global.PointD(aP.X, aP.Y));
@@ -3023,8 +3024,8 @@ public class MapView extends JPanel {
     }
 
     private void onShapeSmoothClick(VectorLayer layer, Shape shape) {
-        List<wContour.Global.PointD> pointList = new ArrayList<wContour.Global.PointD>();
-        List<PointD> newPoints = new ArrayList<PointD>();
+        List<wContour.Global.PointD> pointList = new ArrayList<>();
+        List<PointD> newPoints = new ArrayList<>();
 
         for (PointD aP : shape.getPoints()) {
             pointList.add(new wContour.Global.PointD(aP.X, aP.Y));
@@ -3186,10 +3187,10 @@ public class MapView extends JPanel {
                 break;
         }
 
-        _layers.add(aLayer);
+        layers.add(aLayer);
         this.fireLayersUpdatedEvent();
         _extent = getLayersWholeExtent();
-        if (_layers.size() == 1) {
+        if (layers.size() == 1) {
             this.zoomToExtent(_extent);
         } else {
             this.paintLayers();
@@ -3214,10 +3215,10 @@ public class MapView extends JPanel {
                 break;
         }
 
-        _layers.add(index, aLayer);
+        layers.add(index, aLayer);
         this.fireLayersUpdatedEvent();
         _extent = getLayersWholeExtent();
-        if (_layers.size() == 1) {
+        if (layers.size() == 1) {
             this.zoomToExtent(_extent);
         } else {
             this.paintLayers();
@@ -3252,7 +3253,7 @@ public class MapView extends JPanel {
             }
 
         }
-        _layers.add(aLayer);
+        layers.add(aLayer);
         _extent = getLayersWholeExtent();
         this.paintLayers();
         this.fireLayersUpdatedEvent();
@@ -3294,9 +3295,9 @@ public class MapView extends JPanel {
      */
     public int getNewLayerHandle() {
         int handle = 0;
-        for (int i = 0; i < _layers.size(); i++) {
-            if (handle < _layers.get(i).getHandle()) {
-                handle = _layers.get(i).getHandle();
+        for (MapLayer layer : layers) {
+            if (handle < layer.getHandle()) {
+                handle = layer.getHandle();
             }
         }
         handle += 1;
@@ -3321,8 +3322,8 @@ public class MapView extends JPanel {
     public Extent getLayersWholeExtent() {
         Extent aExtent = new Extent();
         Extent bExtent;
-        for (int i = 0; i < _layers.size(); i++) {
-            bExtent = _layers.get(i).getExtent();
+        for (int i = 0; i < layers.size(); i++) {
+            bExtent = layers.get(i).getExtent();
             if (i == 0) {
                 aExtent = bExtent;
             } else {
@@ -3342,8 +3343,7 @@ public class MapView extends JPanel {
         Extent aExtent = null;
         Extent bExtent;
         int n = 0;
-        for (int i = 0; i < _layers.size(); i++) {
-            MapLayer layer = this._layers.get(i);
+        for (MapLayer layer : layers) {
             if (!layer.getFileName().isEmpty()) {
                 continue;
             }
@@ -3368,9 +3368,9 @@ public class MapView extends JPanel {
      */
     public int getLayerHandleFromName(String name) {
         int handle = -1;
-        for (int i = 0; i < _layers.size(); i++) {
-            if (_layers.get(i).getLayerName().equals(name)) {
-                handle = _layers.get(i).getHandle();
+        for (MapLayer layer : layers) {
+            if (layer.getLayerName().equals(name)) {
+                handle = layer.getHandle();
                 break;
             }
         }
@@ -3385,7 +3385,7 @@ public class MapView extends JPanel {
      * @return Layer handle
      */
     public int getLayerHandleFromIdx(int lIdx) {
-        return _layers.get(lIdx).getHandle();
+        return layers.get(lIdx).getHandle();
     }
 
     /**
@@ -3396,9 +3396,9 @@ public class MapView extends JPanel {
      */
     public MapLayer getLayerByHandle(int handle) {
         MapLayer aLayer = null;
-        for (int i = 0; i < _layers.size(); i++) {
-            if (_layers.get(i).getHandle() == handle) {
-                aLayer = _layers.get(i);
+        for (MapLayer layer : layers) {
+            if (layer.getHandle() == handle) {
+                aLayer = layer;
                 break;
             }
         }
@@ -3414,7 +3414,7 @@ public class MapView extends JPanel {
      */
     public MapLayer getLayer(String name) {
         MapLayer aLayer = null;
-        for (MapLayer ml : _layers) {
+        for (MapLayer ml : layers) {
             if (ml.getLayerName().equals(name)) {
                 aLayer = ml;
                 break;
@@ -3432,8 +3432,8 @@ public class MapView extends JPanel {
      */
     public int getLayerIdxFromHandle(int handle) {
         int lIdx = -1;
-        for (int i = 0; i < _layers.size(); i++) {
-            if (_layers.get(i).getHandle() == handle) {
+        for (int i = 0; i < layers.size(); i++) {
+            if (layers.get(i).getHandle() == handle) {
                 lIdx = i;
                 break;
             }
@@ -3451,15 +3451,15 @@ public class MapView extends JPanel {
     public void moveLayer(int lPreIdx, int lNewIdx) {
 
         if (lNewIdx > lPreIdx) {
-            if (lNewIdx == _layers.size() - 1) {
-                _layers.add(_layers.get(lPreIdx));
+            if (lNewIdx == layers.size() - 1) {
+                layers.add(layers.get(lPreIdx));
             } else {
-                _layers.add(lNewIdx + 1, _layers.get(lPreIdx));
+                layers.add(lNewIdx + 1, layers.get(lPreIdx));
             }
-            _layers.remove(lPreIdx);
+            layers.remove(lPreIdx);
         } else {
-            _layers.add(lNewIdx, _layers.get(lPreIdx));
-            _layers.remove(lPreIdx + 1);
+            layers.add(lNewIdx, layers.get(lPreIdx));
+            layers.remove(lPreIdx + 1);
         }
     }
 
@@ -3469,7 +3469,7 @@ public class MapView extends JPanel {
      * @param aIdx Layer index
      */
     public void removeLayer(int aIdx) {
-        _layers.remove(aIdx);
+        layers.remove(aIdx);
         _extent = getLayersWholeExtent();
     }
 
@@ -3499,7 +3499,7 @@ public class MapView extends JPanel {
      * Remove all layers
      */
     public void removeAllLayers() {
-        int aNum = _layers.size();
+        int aNum = layers.size();
         for (int i = 0; i < aNum; i++) {
             removeLayer(0);
         }
@@ -3515,9 +3515,9 @@ public class MapView extends JPanel {
     public int getLineLayerIdx() {
         VectorLayer bLayer;
         int lIdx = -1;
-        for (int i = _layers.size() - 1; i >= 0; i--) {
-            if (_layers.get(i).getLayerType() == LayerTypes.VectorLayer) {
-                bLayer = (VectorLayer) _layers.get(i);
+        for (int i = layers.size() - 1; i >= 0; i--) {
+            if (layers.get(i).getLayerType() == LayerTypes.VectorLayer) {
+                bLayer = (VectorLayer) layers.get(i);
                 switch (bLayer.getShapeType()) {
                     case Polyline:
                     case PolylineM:
@@ -3548,9 +3548,9 @@ public class MapView extends JPanel {
     public int getPolygonLayerIdx() {
         VectorLayer bLayer;
         int lIdx = -1;
-        for (int i = _layers.size() - 1; i >= 0; i--) {
-            if (_layers.get(i).getLayerType() == LayerTypes.VectorLayer) {
-                bLayer = (VectorLayer) _layers.get(i);
+        for (int i = layers.size() - 1; i >= 0; i--) {
+            if (layers.get(i).getLayerType() == LayerTypes.VectorLayer) {
+                bLayer = (VectorLayer) layers.get(i);
                 switch (bLayer.getShapeType()) {
                     case Polygon:
                     case PolygonM:
@@ -3577,9 +3577,9 @@ public class MapView extends JPanel {
      */
     public int getImageLayerIdx() {
         int lIdx = -1;
-        for (int i = _layers.size() - 1; i >= 0; i--) {
-            if (_layers.get(i).getLayerType() == LayerTypes.ImageLayer
-                    || _layers.get(i).getLayerType() == LayerTypes.RasterLayer) {
+        for (int i = layers.size() - 1; i >= 0; i--) {
+            if (layers.get(i).getLayerType() == LayerTypes.ImageLayer
+                    || layers.get(i).getLayerType() == LayerTypes.RasterLayer) {
                 lIdx = i;
                 break;
             }
@@ -3658,7 +3658,7 @@ public class MapView extends JPanel {
                     break;
                 case New_Freehand:
                 case SelectFeatures_Lasso:
-                    List<PointF> points = new ArrayList<PointF>(_graphicPoints);
+                    List<PointF> points = new ArrayList<>(_graphicPoints);
                     points.add(new PointF(_mouseLastPos.x, _mouseLastPos.y));
                     g2.setColor(this.getForeground());
                     _graphicPoints.add(new PointF(_mouseLastPos.x, _mouseLastPos.y));
@@ -3696,7 +3696,7 @@ public class MapView extends JPanel {
             case Edit_NewFeature:
                 VectorLayer selLayer = (VectorLayer) this.getSelectedLayer();
                 if (!_startNewGraphic) {
-                    List<PointF> points = new ArrayList<PointF>(_graphicPoints);
+                    List<PointF> points = new ArrayList<>(_graphicPoints);
                     points.add(new PointF(_mouseLastPos.x, _mouseLastPos.y));
                     g.setColor(this.getForeground());
                     if (selLayer.getShapeType().isLine()) {
@@ -3715,7 +3715,7 @@ public class MapView extends JPanel {
                 //case New_Freehand:
                 if (!_startNewGraphic) {
                     //this.repaint();
-                    List<PointF> points = new ArrayList<PointF>(_graphicPoints);
+                    List<PointF> points = new ArrayList<>(_graphicPoints);
                     points.add(new PointF(_mouseLastPos.x, _mouseLastPos.y));
                     g.setColor(this.getForeground());
                     switch (_mouseTool) {
@@ -4027,8 +4027,7 @@ public class MapView extends JPanel {
     private void drawLayers(Graphics2D g, int width, int height) {
         java.awt.Shape oldRegion = g.getClip();
         double geoScale = this.getGeoScale();
-        for (int i = 0; i < _layers.size(); i++) {
-            MapLayer aLayer = _layers.get(i);
+        for (MapLayer aLayer : layers) {
             if (aLayer.isVisible()) {
                 if (aLayer.getVisibleScale().isEnableMinVisScale()) {
                     if (geoScale > aLayer.getVisibleScale().getMinVisScale()) {
@@ -4042,11 +4041,11 @@ public class MapView extends JPanel {
                 }
                 if (aLayer.isMaskout()) {
                     setClipRegion(g);
-                    if (oldRegion != null)
+                    if (oldRegion != null) {
                         g.clip(oldRegion);
+                    }
                 }
-
-                switch (_layers.get(i).getLayerType()) {
+                switch (aLayer.getLayerType()) {
                     case ImageLayer:
                         ImageLayer aImageLayer = (ImageLayer) aLayer;
                         drawImage(g, aImageLayer, 0, width, height);
@@ -4125,7 +4124,6 @@ public class MapView extends JPanel {
                         this.drawWebMapLayer(webLayer, g, width, height);
                         break;
                 }
-
                 if (aLayer.isMaskout()) {
                     g.setClip(oldRegion);
                 }
@@ -4287,13 +4285,12 @@ public class MapView extends JPanel {
 
     private void drawProjectedLayers(Graphics2D g, int width, int height) {
         java.awt.Shape oldRegion = g.getClip();
-        for (int i = 0; i < _layers.size(); i++) {
-            MapLayer aLayer = _layers.get(i);
+        for (MapLayer aLayer : layers) {
             if (aLayer.isVisible()) {
                 if (aLayer.isMaskout()) {
                     setClipRegion(g);
                 }
-                switch (_layers.get(i).getLayerType()) {
+                switch (aLayer.getLayerType()) {
                     case ImageLayer:
                         ImageLayer aImageLayer = (ImageLayer) aLayer;
                         drawImage(g, aImageLayer, 0, width, height);
@@ -4311,7 +4308,7 @@ public class MapView extends JPanel {
                             case Barb:
                                 drawBarbLayerWithLegendScheme(aVLayer, g, 0);
                                 break;
-//                                case WeatherSymbol:                                    
+//                                case WeatherSymbol:
 //                                    drawWeatherLayerWithLegendScheme(aLayer, g, 0);                                    
 //                                    break;
                             case StationModel:
@@ -4327,7 +4324,6 @@ public class MapView extends JPanel {
                         this.drawWebMapLayer(webLayer, g, width, height);
                         break;
                 }
-
                 if (aLayer.isMaskout()) {
                     g.setClip(oldRegion);
                 }
@@ -4404,13 +4400,13 @@ public class MapView extends JPanel {
         PointD aPoint;
         PointF sPoint = new PointF(0, 0);
         //Pen aPen = new Pen(Color.Black);
-        double zoom = 1;
+        double zoom;
         float max;
         max = ((PointBreak) aLayer.getLegendScheme().getLegendBreaks().get(0)).getSize() * 3;
-        List<WindArraw> windArraws = new ArrayList<WindArraw>();
+        List<WindArraw> windArraws = new ArrayList<>();
 
         int shapeIdx = 0;
-        List<Integer> idxList = new ArrayList<Integer>();
+        List<Integer> idxList = new ArrayList<>();
         for (Shape aShape : aLayer.getShapes()) {
             WindArraw aArraw = (WindArraw) aShape;
             aPoint = aArraw.getPoint();
@@ -4455,7 +4451,7 @@ public class MapView extends JPanel {
                     sPoint.Y = (float) xy[1];
 
                     String vStr = aLayer.getCellValue(aLS.getFieldName(), shapeIdx).toString().trim();
-                    if (vStr.isEmpty() || vStr == null) {
+                    if (vStr.isEmpty()) {
                         value = 0;
                     } else {
                         value = Double.parseDouble(vStr);
@@ -4494,9 +4490,9 @@ public class MapView extends JPanel {
         LegendScheme aLS = aLayer.getLegendScheme();
         Color aColor;
         double value;
-        List<WindBarb> windBarbs = new ArrayList<WindBarb>();
+        List<WindBarb> windBarbs = new ArrayList<>();
         int shapeIdx = 0;
-        List<Integer> idxList = new ArrayList<Integer>();
+        List<Integer> idxList = new ArrayList<>();
         for (Shape aShape : aLayer.getShapes()) {
             WindBarb wBarb = (WindBarb) aShape;
             aPoint = wBarb.getPoint();
@@ -4508,7 +4504,7 @@ public class MapView extends JPanel {
             shapeIdx += 1;
         }
 
-        List<Extent> extentList = new ArrayList<Extent>();
+        List<Extent> extentList = new ArrayList<>();
         Extent maxExtent = new Extent();
         Extent aExtent = new Extent();
         if (aLS.getLegendType() == LegendType.SingleSymbol) {
@@ -4750,7 +4746,7 @@ public class MapView extends JPanel {
 
         PointF aPoint = new PointF();
         LegendScheme aLS = aLayer.getLegendScheme();
-        List<Extent> extentList = new ArrayList<Extent>();
+        List<Extent> extentList = new ArrayList<>();
         Extent maxExtent = new Extent();
         for (PointShape aPS : (List<PointShape>) aLayer.getShapes()) {
             if (!aPS.isVisible()) {
@@ -4787,8 +4783,8 @@ public class MapView extends JPanel {
                             extentList.add(aExtent);
                             maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
                         } else {
-                            for (int i = 0; i < extentList.size(); i++) {
-                                if (MIMath.isExtentCross(aExtent, extentList.get(i))) {
+                            for (Extent extent : extentList) {
+                                if (MIMath.isExtentCross(aExtent, extent)) {
                                     ifDraw = false;
                                     break;
                                 }
@@ -4856,7 +4852,7 @@ public class MapView extends JPanel {
 
         PointF aPoint = new PointF();
         LegendScheme aLS = aLayer.getLegendScheme();
-        List<Extent> extentList = new ArrayList<Extent>();
+        List<Extent> extentList = new ArrayList<>();
         Extent maxExtent = new Extent();
         Extent aExtent;
         for (StationModelShape aPS : (List<StationModelShape>) aLayer.getShapes()) {
@@ -4890,8 +4886,8 @@ public class MapView extends JPanel {
                             extentList.add(aExtent);
                             maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
                         } else {
-                            for (int i = 0; i < extentList.size(); i++) {
-                                if (MIMath.isExtentCross(aExtent, extentList.get(i))) {
+                            for (Extent extent : extentList) {
+                                if (MIMath.isExtentCross(aExtent, extent)) {
                                     ifDraw = false;
                                     break;
                                 }
@@ -4959,9 +4955,9 @@ public class MapView extends JPanel {
         for (PolygonShape aPGS : (List<PolygonShape>) aLayer.getShapes()) {
             //Draw selected vertices
             if (aPGS.isEditing()) {
-                List<PointF> pointList = new ArrayList<PointF>();
+                List<PointF> pointList = new ArrayList<>();
                 for (Polygon aPG : aPGS.getPolygons()) {
-                    List<PointF> rPoints = new ArrayList<PointF>();
+                    List<PointF> rPoints = new ArrayList<>();
                     for (int i = 0; i < aPG.getOutLine().size(); i++) {
                         PointD wPoint = aPG.getOutLine().get(i);
                         double[] sXY = projToScreen(wPoint.X, wPoint.Y, LonShift);
@@ -5091,7 +5087,7 @@ public class MapView extends JPanel {
         g.setColor(aColor);
         g.setStroke(pen);
 
-        List<PointF> drawPs = new ArrayList<PointF>();
+        List<PointF> drawPs = new ArrayList<>();
         if (aPLB.getDrawPolyline()) {
             for (Polyline aline : aPLS.getPolylines()) {
                 double[] sXY;
@@ -5194,7 +5190,7 @@ public class MapView extends JPanel {
             return;
         }
 
-        List<PointF> pointList = new ArrayList<PointF>();
+        List<PointF> pointList = new ArrayList<>();
         for (Polygon aPolygon : aPGS.getPolygons()) {
             pointList.addAll(drawPolygon(g, aPolygon, aPGB, LonShift, aPGS.isSelected()));
         }
@@ -5215,7 +5211,7 @@ public class MapView extends JPanel {
         GeneralPath path = new GeneralPath(GeneralPath.WIND_EVEN_ODD, len);
         PointD wPoint;
         double[] sXY;
-        List<PointF> rPoints = new ArrayList<PointF>();
+        List<PointF> rPoints = new ArrayList<>();
         for (int i = 0; i < aPG.getOutLine().size(); i++) {
             wPoint = aPG.getOutLine().get(i);
             sXY = projToScreen(wPoint.X, wPoint.Y, LonShift);
@@ -5400,7 +5396,7 @@ public class MapView extends JPanel {
      * @return The web map layer
      */
     public WebMapLayer getWebMapLayer() {
-        for (MapLayer layer : this._layers) {
+        for (MapLayer layer : this.layers) {
             if (layer.getLayerType() == LayerTypes.WebMapLayer) {
                 return (WebMapLayer) layer;
             }
@@ -5587,7 +5583,7 @@ public class MapView extends JPanel {
      * @param rect Rectangle extent
      */
     public void drawIdShape(Graphics2D g, Shape aShape, Rectangle rect) {
-        List<Double> lonShifts = new ArrayList<Double>();
+        List<Double> lonShifts = new ArrayList<>();
         if (MIMath.isExtentCross(this.getViewExtent(), aShape.getExtent())) {
             lonShifts.add(new Double(0));
         }
@@ -5798,7 +5794,7 @@ public class MapView extends JPanel {
             aPoint.X = (float) xy[0];
             aPoint.Y = (float) xy[1];
 
-            aExtent = aCB.getDrawExtent((PointF)aPoint.clone());        
+            aExtent = aCB.getDrawExtent((PointF) aPoint.clone());
 
             boolean ifDraw = true;
             if (aLayer.getChartSet().isAvoidCollision()) {
@@ -5850,7 +5846,7 @@ public class MapView extends JPanel {
     }
 
     private void drawXYGrid(Graphics2D g, List<String> XGridStrs, List<String> YGridStrs) {
-        if (this._layers.size() == 0) {
+        if (this.layers.size() == 0) {
             return;
         }
 
@@ -5885,7 +5881,7 @@ public class MapView extends JPanel {
         int YGridNum = YGridStrs.size();
 
         //Draw X grid
-        _gridLabels = new ArrayList<GridLabel>();
+        _gridLabels = new ArrayList<>();
         for (i = 0; i < XGridNum; i += XDelt) {
             if (i >= _drawExtent.minX && i <= _drawExtent.maxX) {
                 double[] sXY = projToScreen(i, _drawExtent.minY, 0);
@@ -6090,7 +6086,7 @@ public class MapView extends JPanel {
             extent.minY = -90;
             extent.maxY = 90;
             aPLS.setExtent(extent);
-            PList = new ArrayList<PointD>();
+            PList = new ArrayList<>();
 
             lat = -90;
             while (lat <= 90) {
@@ -6134,7 +6130,7 @@ public class MapView extends JPanel {
                 extent.minY = -90;
                 extent.maxY = 90;
                 aPLS.setExtent(extent);
-                PList = new ArrayList<PointD>();
+                PList = new ArrayList<>();
 
                 lat = -90;
                 while (lat <= 90) {
@@ -6170,7 +6166,7 @@ public class MapView extends JPanel {
                 extent.minY = -90;
                 extent.maxY = 90;
                 aPLS.setExtent(extent);
-                PList = new ArrayList<PointD>();
+                PList = new ArrayList<>();
 
                 lat = -90;
                 while (lat <= 90) {
@@ -6207,7 +6203,7 @@ public class MapView extends JPanel {
             extent.maxY = lat;
             extent.maxX = 180;
             aPLS.setExtent(extent);
-            PList = new ArrayList<PointD>();
+            PList = new ArrayList<>();
 
             lon = -180;
             while (lon <= 180) {
@@ -6313,8 +6309,8 @@ public class MapView extends JPanel {
                             aPL = new Polyline();
                             aPL.setPointList(aPList);
                             gLabels.addAll(GeoComputation.getGridLabels_StraightLine(aPL, _drawExtent, isLon));
-                            for (int j = 0; j < aPList.size(); j++) {
-                                PointD aP = (PointD) aPList.get(j).clone();
+                            for (PointD p : aPList) {
+                                PointD aP = (PointD) p.clone();
                                 aP.X = aP.X - 720;
                             }
                             aPL = new Polyline();
@@ -6323,8 +6319,8 @@ public class MapView extends JPanel {
                         }
                     }
 
-                    for (int j = 0; j < gLabels.size(); j++) {
-                        gLabels.get(j).setLabString(labStr);
+                    for (GridLabel gLabel : gLabels) {
+                        gLabel.setLabString(labStr);
                     }
 
                     _gridLabels.addAll(gLabels);
@@ -6334,7 +6330,7 @@ public class MapView extends JPanel {
                     return;
                 }
 
-                List<GridLabel> gridLabels = new ArrayList<GridLabel>();
+                List<GridLabel> gridLabels = new ArrayList<>();
                 for (int i = 0; i < _lonLatLayer.getShapeNum(); i++) {
                     PolylineShape aPLS = (PolylineShape) _lonLatLayer.getShapes().get(i);
                     String labStr = _lonLatLayer.getCellValue(0, i).toString().trim();
@@ -6369,14 +6365,14 @@ public class MapView extends JPanel {
                             }
                         }
                     }
-                    List<GridLabel> gLabels = new ArrayList<GridLabel>();
+                    List<GridLabel> gLabels = new ArrayList<>();
                     for (Polyline aPL : aPLS.getPolylines()) {
                         gLabels.addAll(GeoComputation.getGridLabels(aPL, _drawExtent, isLon));
                     }
 
-                    for (int j = 0; j < gLabels.size(); j++) {
-                        gLabels.get(j).setLabString(labStr);
-                        gLabels.get(j).setValue(value);
+                    for (GridLabel gLabel : gLabels) {
+                        gLabel.setLabString(labStr);
+                        gLabel.setValue(value);
                     }
 
                     gridLabels.addAll(gLabels);
@@ -6545,8 +6541,7 @@ public class MapView extends JPanel {
                 }
             }
 
-            for (int i = 0; i < _gridLabels.size(); i++) {
-                GridLabel aGL = _gridLabels.get(i);
+            for (GridLabel aGL : _gridLabels) {
                 double[] sXY = projToScreen(aGL.getLabPoint().X, aGL.getLabPoint().Y);
                 aGL.setLabPoint(new PointD(sXY[0], sXY[1]));
                 //_gridLabels[i] = aGL;
@@ -6713,8 +6708,7 @@ public class MapView extends JPanel {
 
     private void moveShape(Shape aShape, double xShift, double yShift) {
         List<PointD> points = (List<PointD>) aShape.getPoints();
-        for (int i = 0; i < points.size(); i++) {
-            PointD aPoint = points.get(i);
+        for (PointD aPoint : points) {
             aPoint.X += xShift;
             aPoint.Y += yShift;
         }
@@ -6764,7 +6758,7 @@ public class MapView extends JPanel {
                 break;
             case Rectangle:
             case Ellipse:
-                points = new ArrayList<PointD>();
+                points = new ArrayList<>();
                 points.add(new PointD(newExtent.minX, newExtent.minY));
                 points.add(new PointD(newExtent.minX, newExtent.maxY));
                 points.add(new PointD(newExtent.maxX, newExtent.maxY));
@@ -7095,7 +7089,7 @@ public class MapView extends JPanel {
             graphicCollection.add(aGraphic);
         }
 
-        for (MapLayer aLayer : _layers) {
+        for (MapLayer aLayer : layers) {
             if (aLayer.getLayerType() == LayerTypes.VectorLayer && aLayer.isVisible()) {
                 VectorLayer vLayer = (VectorLayer) aLayer;
                 for (Graphic aGraphic : vLayer.getLabelPoints()) {
@@ -7132,7 +7126,7 @@ public class MapView extends JPanel {
 
         selectedGraphics.clear();
         int i;
-        Graphics g = this.getGraphics();
+        Graphics2D g = (Graphics2D)this.getGraphics();
         boolean ifSel = true;
 
         if (_projection.isLonLatMap()) {
@@ -7183,11 +7177,7 @@ public class MapView extends JPanel {
             }
         }
 
-        if (selectedGraphics.size() > 0) {
-            return true;
-        } else {
-            return false;
-        }
+        return selectedGraphics.size() > 0;
     }
 
     /**
@@ -7208,7 +7198,7 @@ public class MapView extends JPanel {
 
         selectedGraphics.clear();
         int i;
-        Graphics g = this.getGraphics();
+        Graphics2D g = (Graphics2D)this.getGraphics();
         boolean ifSel = true;
         double[] projXY = screenToProj((double) aPoint.X, (double) aPoint.Y);
         double projX = projXY[0] + lonShift;
@@ -7284,11 +7274,7 @@ public class MapView extends JPanel {
             }
         }
 
-        if (selectedGraphics.size() > 0) {
-            return true;
-        } else {
-            return false;
-        }
+        return selectedGraphics.size() > 0;
     }
 
     /**
@@ -7321,7 +7307,7 @@ public class MapView extends JPanel {
 
         selectedGraphics.clear();
         int i;
-        Graphics g = this.getGraphics();
+        Graphics2D g = (Graphics2D)this.getGraphics();
         boolean ifSel = true;
 
         if (_projection.isLonLatMap()) {
@@ -7369,11 +7355,7 @@ public class MapView extends JPanel {
             }
         }
 
-        if (selectedGraphics.size() > 0) {
-            return true;
-        } else {
-            return false;
-        }
+        return selectedGraphics.size() > 0;
     }
 
     /**
@@ -7393,7 +7375,7 @@ public class MapView extends JPanel {
 
         selectedGraphics.clear();
         int i;
-        Graphics g = this.getGraphics();
+        Graphics2D g = (Graphics2D)this.getGraphics();
         boolean ifSel = true;
 
         if (_projection.isLonLatMap()) {
@@ -7439,11 +7421,7 @@ public class MapView extends JPanel {
             }
         }
 
-        if (selectedGraphics.size() > 0) {
-            return true;
-        } else {
-            return false;
-        }
+        return selectedGraphics.size() > 0;
     }
 
     /**
@@ -7787,7 +7765,7 @@ public class MapView extends JPanel {
      * @param lonShift Longitude shift
      * @return Rectangle
      */
-    public Rectangle getGraphicRectangle(Graphics g, Graphic aGraphic, double lonShift) {
+    public Rectangle getGraphicRectangle(Graphics2D g, Graphic aGraphic, double lonShift) {
         Rectangle rect = new Rectangle();
         double[] sXY;
         float aX, aY;
@@ -7809,9 +7787,10 @@ public class MapView extends JPanel {
                         break;
                     case LabelBreak:
                         LabelBreak aLB = (LabelBreak) aGraphic.getLegend();
-                        //FontMetrics metrics = this.getGraphics().getFontMetrics(aLB.getFont());
-                        FontMetrics metrics = g.getFontMetrics(aLB.getFont());
-                        Dimension labSize = new Dimension(metrics.stringWidth(aLB.getText()), metrics.getHeight());
+                        g.setFont(aLB.getFont());
+                        //FontMetrics metrics = g.getFontMetrics(aLB.getFont());
+                        //Dimension labSize = new Dimension(metrics.stringWidth(aLB.getText()), metrics.getHeight());
+                        Dimension labSize = Draw.getStringDimension(aLB.getText(), g);
                         switch (aLB.getAlignType()) {
                             case Center:
                                 aX = aX - labSize.width / 2;
@@ -7841,9 +7820,8 @@ public class MapView extends JPanel {
             case Circle:
             case CurvePolygon:
                 List<PointD> newPList = (List<PointD>) aGraphic.getShape().getPoints();
-                List<PointD> points = new ArrayList<PointD>();
-                for (int i = 0; i < newPList.size(); i++) {
-                    PointD wPoint = newPList.get(i);
+                List<PointD> points = new ArrayList<>();
+                for (PointD wPoint : newPList) {
                     sXY = projToScreen(wPoint.X, wPoint.Y, lonShift);
                     aX = (float) sXY[0];
                     aY = (float) sXY[1];
@@ -7868,7 +7846,7 @@ public class MapView extends JPanel {
      * @return Rectangle
      */
     public Rectangle getGraphicRectangle(Graphic aGraphic, double lonShift) {
-        return getGraphicRectangle(this.getGraphics(), aGraphic, lonShift);
+        return getGraphicRectangle((Graphics2D)this.getGraphics(), aGraphic, lonShift);
     }
 
     /**
@@ -7878,7 +7856,7 @@ public class MapView extends JPanel {
      * @return Rectangle
      */
     public Rectangle getGraphicRectangle(Graphic aGraphic) {
-        return getGraphicRectangle(this.getGraphics(), aGraphic, 0);
+        return getGraphicRectangle((Graphics2D)this.getGraphics(), aGraphic, 0);
     }
 
     /**
@@ -7888,7 +7866,7 @@ public class MapView extends JPanel {
      */
     public void removeGraphic(Graphic aGraphic) {
         if (aGraphic.getClass().equals(ChartGraphic.class)) {
-            for (MapLayer aLayer : _layers) {
+            for (MapLayer aLayer : layers) {
                 if (aLayer.getLayerType() == LayerTypes.VectorLayer) {
                     VectorLayer aVLayer = (VectorLayer) aLayer;
                     if (aVLayer.getChartPoints().contains((ChartGraphic) aGraphic)) {
@@ -7901,7 +7879,7 @@ public class MapView extends JPanel {
             if (_graphicCollection.contains(aGraphic)) {
                 _graphicCollection.remove(aGraphic);
             } else {
-                for (MapLayer aLayer : _layers) {
+                for (MapLayer aLayer : layers) {
                     if (aLayer.getLayerType() == LayerTypes.VectorLayer) {
                         VectorLayer aVLayer = (VectorLayer) aLayer;
                         if (aVLayer.getLabelPoints().contains(aGraphic)) {
@@ -8205,7 +8183,7 @@ public class MapView extends JPanel {
         Attr thickness = m_Doc.createAttribute("Thickness");
         Attr drawLabel = m_Doc.createAttribute("DrawLabel");
         Attr fontName = m_Doc.createAttribute("FontName");
-        Attr fontSize = m_Doc.createAttribute("FontSize"); 
+        Attr fontSize = m_Doc.createAttribute("FontSize");
         Attr labelColor = m_Doc.createAttribute("LabelColor");
 
         drawCharts.setValue(String.valueOf(aChartSet.isDrawCharts()));
@@ -8435,7 +8413,7 @@ public class MapView extends JPanel {
             this._multiGlobalDraw = Boolean.parseBoolean(mapProperty.getAttributes().getNamedItem("MultiGlobalDraw").getNodeValue());
             this._selectColor = ColorUtil.parseToColor(mapProperty.getAttributes().getNamedItem("SelectColor").getNodeValue());
             this._highSpeedWheelZoom = Boolean.parseBoolean(mapProperty.getAttributes().getNamedItem("HighSpeedWheelZoom").getNodeValue());
-        } catch (Exception e) {
+        } catch (DOMException | NumberFormatException e) {
         }
     }
 
@@ -8452,7 +8430,7 @@ public class MapView extends JPanel {
             _gridLineStyle = LineStyles.valueOf(GridLine.getAttributes().getNamedItem("GridLineStyle").getNodeValue());
             _drawGridLine = Boolean.parseBoolean(GridLine.getAttributes().getNamedItem("DrawGridLine").getNodeValue());
             _drawGridTickLine = Boolean.parseBoolean(GridLine.getAttributes().getNamedItem("DrawGridTickLine").getNodeValue());
-        } catch (Exception e) {
+        } catch (DOMException | NumberFormatException e) {
         }
     }
 
@@ -8486,7 +8464,7 @@ public class MapView extends JPanel {
                 ProjectionInfo toProj = new ProjectionInfo(_projection.getProjStr());
                 projectLayers(toProj);
             }
-        } catch (Exception e) {
+        } catch (DOMException | NumberFormatException e) {
         }
     }
 
@@ -8545,7 +8523,7 @@ public class MapView extends JPanel {
                 aLayer.setExpanded(Boolean.parseBoolean(aVLayer.getAttributes().getNamedItem("Expanded").getNodeValue()));
                 aLayer.setLayerType(LayerTypes.valueOf(aVLayer.getAttributes().getNamedItem("LayerType").getNodeValue()));
                 aLayer.setLayerDrawType(LayerDrawType.valueOf(aVLayer.getAttributes().getNamedItem("LayerDrawType").getNodeValue()));
-            } catch (Exception e) {
+            } catch (DOMException | NumberFormatException e) {
             }
 
             //Load legend scheme
@@ -8605,7 +8583,7 @@ public class MapView extends JPanel {
             aLabelSet.setAvoidCollision(Boolean.parseBoolean(LabelNode.getAttributes().getNamedItem("AvoidCollision").getNodeValue()));
             aLabelSet.setAutoDecimal(Boolean.parseBoolean(LabelNode.getAttributes().getNamedItem("AutoDecimal").getNodeValue()));
             aLabelSet.setDecimalDigits(Integer.parseInt(LabelNode.getAttributes().getNamedItem("DecimalDigits").getNodeValue()));
-        } catch (Exception e) {
+        } catch (DOMException | NumberFormatException e) {
         }
     }
 
@@ -8613,7 +8591,7 @@ public class MapView extends JPanel {
         try {
             aChartSet.setDrawCharts(Boolean.parseBoolean(chartNode.getAttributes().getNamedItem("DrawCharts").getNodeValue()));
             aChartSet.setChartType(ChartTypes.valueOf(chartNode.getAttributes().getNamedItem("ChartType").getNodeValue()));
-            aChartSet.setFieldNames(new ArrayList<String>(Arrays.asList(chartNode.getAttributes().getNamedItem("FieldNames").getNodeValue().split(","))));
+            aChartSet.setFieldNames(new ArrayList<>(Arrays.asList(chartNode.getAttributes().getNamedItem("FieldNames").getNodeValue().split(","))));
             aChartSet.setXShift(Integer.parseInt(chartNode.getAttributes().getNamedItem("XShift").getNodeValue()));
             aChartSet.setYShift(Integer.parseInt(chartNode.getAttributes().getNamedItem("YShift").getNodeValue()));
             aChartSet.setMaxSize(Integer.parseInt(chartNode.getAttributes().getNamedItem("MaxSize").getNodeValue()));
@@ -8628,8 +8606,8 @@ public class MapView extends JPanel {
             aChartSet.setDrawLabel(Boolean.parseBoolean(chartNode.getAttributes().getNamedItem("DrawLabel").getNodeValue()));
             String fontName = chartNode.getAttributes().getNamedItem("FontName").getNodeValue();
             float fontSize = Float.parseFloat(chartNode.getAttributes().getNamedItem("FontSize").getNodeValue());
-            aChartSet.setLabelFont(new Font(fontName, Font.PLAIN, (int)fontSize));
-            aChartSet.setLabelColor(ColorUtil.parseToColor(chartNode.getAttributes().getNamedItem("LabelColor").getNodeValue()));            
+            aChartSet.setLabelFont(new Font(fontName, Font.PLAIN, (int) fontSize));
+            aChartSet.setLabelColor(ColorUtil.parseToColor(chartNode.getAttributes().getNamedItem("LabelColor").getNodeValue()));
         } catch (Exception e) {
         }
 
@@ -8644,7 +8622,7 @@ public class MapView extends JPanel {
             visibleScale.setEnableMaxVisScale(Boolean.parseBoolean(visScaleNode.getAttributes().getNamedItem("EnableMaxVisScale").getNodeValue()));
             visibleScale.setMinVisScale(Double.parseDouble(visScaleNode.getAttributes().getNamedItem("MinVisScale").getNodeValue()));
             visibleScale.setMaxVisScale(Double.parseDouble(visScaleNode.getAttributes().getNamedItem("MaxVisScale").getNodeValue()));
-        } catch (Exception e) {
+        } catch (DOMException | NumberFormatException e) {
         }
     }
 
@@ -8741,7 +8719,7 @@ public class MapView extends JPanel {
                     VisibleScale visScale = aLayer.getVisibleScale();
                     loadVisibleScale(visScaleNode, visScale);
                 }
-            } catch (Exception e) {
+            } catch (DOMException | NumberFormatException e) {
             }
         }
 
@@ -8758,7 +8736,7 @@ public class MapView extends JPanel {
     }
 
     private List<ChartGraphic> loadChartGraphicCollection(Element parent) {
-        List<ChartGraphic> gc = new ArrayList<ChartGraphic>();
+        List<ChartGraphic> gc = new ArrayList<>();
         Element graphics = (Element) parent.getElementsByTagName("ChartGraphics").item(0);
 //        for (int i = 0; i < parent.getChildNodes().getLength(); i++) {
 //            Node aNode = parent.getChildNodes().item(i);

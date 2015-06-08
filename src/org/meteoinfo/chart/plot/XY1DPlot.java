@@ -51,6 +51,7 @@ public final class XY1DPlot extends XYPlot {
     public XY1DPlot() {
         super();
 
+        this.dataset = new XYListDataset();
         this.chartPlotMethod = ChartPlotMethod.LINE;
         this.useBreak2D = false;
         this.seriesLegends = new ArrayList<>();
@@ -138,8 +139,11 @@ public final class XY1DPlot extends XYPlot {
     }
 
     private void updateSeriesLegend(){
-        this.seriesLegends.clear();
-        for (int i = 0; i < dataset.getSeriesCount(); i++) {
+        //this.seriesLegends.clear();
+        int si = this.seriesLegends.size();
+        if (si > dataset.getSeriesCount())
+            si = 0;
+        for (int i = si; i < dataset.getSeriesCount(); i++) {
             switch (this.chartPlotMethod) {
                 case LINE:
                 case LINE_POINT:
@@ -261,6 +265,18 @@ public final class XY1DPlot extends XYPlot {
         plb.setCaption(seriesKey);
         seriesLegends.add(new SeriesLegend(plb));
 
+        Extent extent = this.getAutoExtent();
+        this.setDrawExtent(extent);
+    }
+    
+    /**
+     * Remove last series
+     */
+    public void removeLastSeries(){
+        XYListDataset ds = (XYListDataset)this.dataset;
+        ds.removeSeries(dataset.getSeriesCount() - 1);
+        this.seriesLegends.remove(this.seriesLegends.size() - 1);
+        
         Extent extent = this.getAutoExtent();
         this.setDrawExtent(extent);
     }

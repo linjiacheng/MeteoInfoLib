@@ -85,7 +85,7 @@ public class PlotUtil {
             ChartPanel cp = new ChartPanel(chart);
             cp.setSize(width, height);
             cp.paintGraphics();
-            cp.exportToPicture(fileName);
+            cp.saveImage(fileName);
         } catch (IOException ex) {
             Logger.getLogger(PlotUtil.class.getName()).log(Level.SEVERE, null, ex);
         } catch (PrintException ex) {

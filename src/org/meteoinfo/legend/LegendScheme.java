@@ -78,7 +78,7 @@ public class LegendScheme {
      */
     public LegendScheme(){
         this.shapeType = ShapeTypes.Image;
-        legendBreaks = new ArrayList<ColorBreak>();
+        legendBreaks = new ArrayList<>();
     }
 
     /**

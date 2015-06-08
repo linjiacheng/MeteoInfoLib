@@ -7,6 +7,7 @@ package org.meteoinfo.chart.plot;
 
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
+import org.meteoinfo.chart.Margin;
 import org.meteoinfo.data.CategoryDataset;
 import org.meteoinfo.data.Dataset;
 
@@ -39,7 +40,17 @@ public class CategoryPlot extends Plot{
     }
 
     @Override
-    public Rectangle2D getGraphArea() {
+    public Rectangle2D getPositionArea() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Margin getTightInset(Graphics2D g, Rectangle2D positionArea) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Rectangle2D getPositionArea(Graphics2D g, Rectangle2D figureArea) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

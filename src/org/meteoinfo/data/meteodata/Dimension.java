@@ -307,7 +307,8 @@ public class Dimension {
         dim.setDimId(this._dimId);
         dim.setDimName(this._dimName);
         List<Double> values = new ArrayList<>();
-        for (int i = first; i <= last; i+=stride){
+        int step = Math.abs(stride);
+        for (int i = first; i <= last; i+=step){
             values.add(this._dimValue.get(i));
         }
         dim.setValues(values);
@@ -343,9 +344,16 @@ public class Dimension {
      * @return Index
      */
     public int getValueIndex(double v){
-        for (int i = 0; i < this.getDimLength(); i++){
-            if (v <= this._dimValue.get(i))
-                return i;
+        if (this.getDeltaValue() > 0){
+            for (int i = 0; i < this.getDimLength(); i++){
+                if (v <= this._dimValue.get(i))
+                    return i;
+            }
+        } else {
+            for (int i = 0; i < this.getDimLength(); i++){
+                if (v >= this._dimValue.get(i))
+                    return i;
+            }
         }
         
         return this.getDimLength() - 1;

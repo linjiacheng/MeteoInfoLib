@@ -7,26 +7,37 @@ package org.meteoinfo.chart.axis;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
+import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import org.meteoinfo.chart.Location;
+import org.meteoinfo.chart.plot.XYPlot;
+import org.meteoinfo.drawing.Draw;
 import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.MIMath;
+import org.meteoinfo.global.util.DateUtil;
 
 /**
  *
  * @author yaqiang
  */
-public class Axis {
+public class Axis implements Cloneable {
 
     // <editor-fold desc="Variables">
     private boolean xAxis;
+    private Location location;
     private String label;
     private boolean visible;
+    private boolean drawTickLine;
+    private boolean drawTickLabel;
     private boolean drawLabel;
     private Color lineColor;
     private Stroke lineStroke;
@@ -40,7 +51,7 @@ public class Axis {
     private Color tickLabelColor;
     private int tickLabelGap;
     private double tickStartValue;
-    private double tickDeltaValue;    
+    private double tickDeltaValue;
     private double minValue;
     private double maxValue;
     private double[] tickValues;
@@ -48,16 +59,19 @@ public class Axis {
     //private String timeFormat;
     //private TimeUnit timeUnit;
     private boolean inverse;
+    private float shift;
 
     // </editor-fold>
     // <editor-fold desc="Constructor">
     /**
      * Constructor
      */
-    public Axis(){
+    public Axis() {
         this.xAxis = true;
         this.label = "";
         this.visible = true;
+        this.drawTickLine = true;
+        this.drawTickLabel = true;
         this.drawLabel = false;
         this.lineColor = Color.darkGray;
         this.lineStroke = new BasicStroke(1.0f);
@@ -70,12 +84,15 @@ public class Axis {
         this.tickLabelFont = new Font("Arial", Font.PLAIN, 14);
         this.tickLabelColor = Color.darkGray;
         this.tickLabelGap = 1;
+        this.minValue = 0;
+        this.maxValue = 1;
         //this.timeAxis = false;
         //this.timeFormat = "yyyy-MM-dd";
         //this.timeUnit = TimeUnit.DAY;
         this.inverse = false;
+        this.shift = 0;
     }
-    
+
     /**
      * Constructor
      *
@@ -95,6 +112,39 @@ public class Axis {
     public Axis(String label, boolean xAxis) {
         this(label);
         this.xAxis = xAxis;
+        if (this.xAxis) {
+            this.location = Location.BOTTOM;
+        } else {
+            this.location = Location.LEFT;
+        }
+    }
+
+    /**
+     * Constructor
+     *
+     * @param label Axis label
+     * @param xAxis If is x axis
+     * @param loc Location
+     */
+    public Axis(String label, boolean xAxis, Location loc) {
+        this(label);
+        this.xAxis = xAxis;
+        this.location = loc;
+    }
+
+    /**
+     * Constructor
+     *
+     * @param label Axis label
+     * @param xAxis If is x axis
+     * @param loc Location
+     * @param drawTickLabel If draw tick label
+     */
+    public Axis(String label, boolean xAxis, Location loc, boolean drawTickLabel) {
+        this(label);
+        this.xAxis = xAxis;
+        this.location = loc;
+        this.drawTickLabel = drawTickLabel;
     }
 
     // </editor-fold>
@@ -115,6 +165,24 @@ public class Axis {
      */
     public void setXAxis(boolean value) {
         this.xAxis = value;
+    }
+
+    /**
+     * Get location
+     *
+     * @return Location
+     */
+    public Location getLocation() {
+        return this.location;
+    }
+
+    /**
+     * Set location
+     *
+     * @param value Location
+     */
+    public void setLocation(Location value) {
+        this.location = value;
     }
 
     /**
@@ -151,6 +219,42 @@ public class Axis {
      */
     public void setVisible(boolean value) {
         visible = value;
+    }
+
+    /**
+     * Get if draw tick lines
+     *
+     * @return Boolean
+     */
+    public boolean isDrawTickLine() {
+        return this.drawTickLine;
+    }
+
+    /**
+     * Set if draw tick lines
+     *
+     * @param value Boolean
+     */
+    public void setDrawTickLine(boolean value) {
+        this.drawTickLine = value;
+    }
+
+    /**
+     * Get is draw tick label
+     *
+     * @return Boolean
+     */
+    public boolean isDrawTickLabel() {
+        return this.drawTickLabel;
+    }
+
+    /**
+     * Set if draw tick label
+     *
+     * @param value Boolean
+     */
+    public void setDrawTickLabel(boolean value) {
+        this.drawTickLabel = value;
     }
 
     /**
@@ -260,20 +364,22 @@ public class Axis {
     public void setTickLength(int value) {
         this.tickLength = value;
     }
-    
+
     /**
      * Get if is inside tick
+     *
      * @return Boolean
      */
-    public boolean isInsideTick(){
+    public boolean isInsideTick() {
         return this.insideTick;
     }
-    
+
     /**
      * Set if is inside tick
+     *
      * @param value Boolean
      */
-    public void setInsideTick(boolean value){
+    public void setInsideTick(boolean value) {
         this.insideTick = value;
     }
 
@@ -447,22 +553,24 @@ public class Axis {
     public double[] getTickValues() {
         return this.tickValues;
     }
-    
+
     /**
      * Set tick values
+     *
      * @param value Tick values
      */
-    public void setTickValues(double[] value){
+    public void setTickValues(double[] value) {
         this.tickValues = value;
     }
-    
+
     /**
      * Set tick values
+     *
      * @param value Tick value list
      */
-    public void setTickValues(List<Double> value){
+    public void setTickValues(List<Double> value) {
         this.tickValues = new double[value.size()];
-        for (int i = 0; i < value.size(); i++){
+        for (int i = 0; i < value.size(); i++) {
             this.tickValues[i] = value.get(i);
         }
     }
@@ -484,7 +592,6 @@ public class Axis {
 //    public void setTimeAxis(boolean value) {
 //        this.timeAxis = value;
 //    }
-    
 //    /**
 //     * Get time format
 //     * @return Time format
@@ -516,7 +623,6 @@ public class Axis {
 //    public void setTimeUnit(TimeUnit value){
 //        this.timeUnit = value;
 //    }
-
     /**
      * Get if is inverse
      *
@@ -524,7 +630,7 @@ public class Axis {
      */
     public boolean isInverse() {
         return this.inverse;
-    }
+    }        
 
     /**
      * Set if is inverse
@@ -533,6 +639,22 @@ public class Axis {
      */
     public void setInverse(boolean value) {
         this.inverse = value;
+    }
+    
+    /**
+     * Get shift
+     * @return Shift
+     */
+    public float getShift(){
+        return this.shift;
+    }
+    
+    /**
+     * Set shift
+     * @param value Shift
+     */
+    public void setShift(float value){
+        this.shift = value;
     }
     // </editor-fold>
     // <editor-fold desc="Methods">
@@ -552,7 +674,7 @@ public class Axis {
 //        } else {
 //            tickValues = MIMath.getIntervalValues(minValue, maxValue);
 //        }
-    }    
+    }
 
 //    /**
 //     * Update time labels
@@ -683,7 +805,6 @@ public class Axis {
 //            tickValues[i] = DateUtil.toOADate(dates.get(i));
 //        }
 //    }
-
     /**
      * Get tick labels
      *
@@ -693,10 +814,10 @@ public class Axis {
         List<String> tls = new ArrayList<>();
         String lab;
         for (double value : this.getTickValues()) {
-                lab = String.valueOf(value);
-                lab = DataConvert.removeTailingZeros(lab);
-                tls.add(lab);
-            }
+            lab = String.valueOf(value);
+            lab = DataConvert.removeTailingZeros(lab);
+            tls.add(lab);
+        }
 //        if (this.timeAxis) {
 //            SimpleDateFormat format = new SimpleDateFormat(this.timeFormat);
 //            Date date;
@@ -756,10 +877,273 @@ public class Axis {
             FontMetrics metrics = g.getFontMetrics(labelFont);
             nn = (int) (len / metrics.getHeight());
         }
-        if (nn == 0)
+        if (nn == 0) {
             nn = 1;
+        }
         this.tickLabelGap = n / nn + 1;
     }
-        
+    
+    /**
+     * Set color to all elements
+     * @param c Color
+     */
+    public void setColor_All(Color c){
+        this.lineColor = c;
+        this.tickColor = c;
+        this.tickLabelColor = c;
+        this.labelColor = c;
+    }
+
+    /**
+     * Draw axis
+     *
+     * @param g Graphics2D
+     * @param area Area
+     * @param plot XYPlot
+     */
+    public void draw(Graphics2D g, Rectangle2D area, XYPlot plot) {
+        if (this.xAxis) {
+            this.drawXAxis(g, area, plot);
+        } else {
+            this.drawYAxis(g, area, plot);
+        }
+    }
+
+    private void drawXAxis(Graphics2D g, Rectangle2D area, XYPlot plot) {
+        double[] xy;
+        double x, y;
+        double miny = area.getY();
+        double minx = area.getX();
+        double maxx = area.getX() + area.getWidth();
+        double maxy = area.getY() + area.getHeight();
+        float labx, laby;
+        int space = 2;
+
+        //Draw x axis
+        //Draw axis line
+        g.setColor(this.lineColor);
+        g.setStroke(this.lineStroke);
+        if (this.location == Location.BOTTOM) {
+            g.draw(new Line2D.Double(minx, maxy, maxx, maxy));
+        } else {
+            g.draw(new Line2D.Double(minx, miny, maxx, miny));
+        }
+
+        //Draw tick lines   
+        g.setColor(this.tickColor);
+        g.setStroke(this.tickStroke);
+        g.setFont(this.tickLabelFont);
+        FontMetrics metrics = g.getFontMetrics();
+        String drawStr;
+        Dimension dim;
+        //this.updateLabelGap(g, area);
+        int len = this.tickLength;
+        List<String> tickLabels = this.getTickLabels();
+        int n = 0;
+        while (n < this.getTickValues().length) {
+            double value = this.getTickValues()[n];
+            xy = plot.projToScreen(value, plot.getDrawExtent().minY, area);
+            x = xy[0];
+            if (this.inverse) {
+                x = area.getWidth() - x;
+            }
+            x += minx;
+            if (this.location == Location.BOTTOM) {
+                if (this.insideTick) {
+                    g.draw(new Line2D.Double(x, maxy, x, maxy - len));
+                } else {
+                    g.draw(new Line2D.Double(x, maxy, x, maxy + len));
+                }
+            } else {
+                if (this.insideTick) {
+                    g.draw(new Line2D.Double(x, miny, x, miny + len));
+                } else {
+                    g.draw(new Line2D.Double(x, miny, x, miny - len));
+                }
+            }
+            //Draw tick label
+            if (this.drawTickLabel) {
+                drawStr = tickLabels.get(n);
+                dim = new Dimension(metrics.stringWidth(drawStr), metrics.getHeight());
+                labx = (float) (x - dim.width / 2);
+                laby = (float) (maxy + len + dim.height * 3 / 4 + space);
+                g.drawString(drawStr, labx, laby);
+            }
+            n += this.getTickLabelGap();
+        }
+        //Time label - left
+        SimpleDateFormat format;
+        if (this instanceof TimeAxis) {
+            TimeAxis tAxis = (TimeAxis) this;
+            //if (this.xAxis.isTimeAxis()) {
+            drawStr = null;
+            switch (tAxis.getTimeUnit()) {
+                case MONTH:
+                    format = new SimpleDateFormat("yyyy");
+                    Date cdate = DateUtil.fromOADate(this.getTickValues()[0]);
+                    drawStr = format.format(cdate);
+                    break;
+                case DAY:
+                    format = new SimpleDateFormat("yyyy-MM");
+                    cdate = DateUtil.fromOADate(this.getTickValues()[0]);
+                    drawStr = format.format(cdate);
+                    break;
+                case HOUR:
+                case MINITUE:
+                case SECOND:
+                    format = new SimpleDateFormat("yyyy-MM-dd");
+                    cdate = DateUtil.fromOADate(this.getTickValues()[0]);
+                    drawStr = format.format(cdate);
+                    break;
+            }
+            if (drawStr != null) {
+                labx = (float) minx;
+                laby = (float) (maxy + metrics.getHeight() * 2 + space);
+                if (!this.isInsideTick()) {
+                    laby += len;
+                }
+                g.drawString(drawStr, labx, laby);
+            }
+        }
+        //Draw label
+        if (this.isDrawLabel()) {
+            x = (maxx - minx) / 2 + minx;
+            y = maxy + space + metrics.getHeight() + 5;
+            g.setFont(this.getLabelFont());
+            g.setColor(this.getLabelColor());
+            //metrics = g.getFontMetrics(this.xAxis.getLabelFont());
+            //dim = new Dimension(metrics.stringWidth(this.xAxis.getLabel()), metrics.getHeight());
+            dim = Draw.getStringDimension(this.getLabel(), g);
+            labx = (float) (x - dim.width / 2);
+            laby = (float) (y + dim.height * 3 / 4);
+            if (!this.isInsideTick()) {
+                laby += len;
+            }
+            //g.drawString(this.xAxis.getLabel(), labx, laby);
+            Draw.drawString(g, this.getLabel(), labx, laby);
+        }
+    }
+
+    private void drawYAxis(Graphics2D g, Rectangle2D area, XYPlot plot) {
+        double[] xy;
+        double x, y, sx;
+        double miny = area.getY();
+        double minx = area.getX();
+        double maxx = area.getX() + area.getWidth();
+        double maxy = area.getY() + area.getHeight();
+        float labx, laby;
+        int space = 2;
+
+        //Draw y axis
+        //Draw axis line
+        g.setColor(this.getLineColor());
+        g.setStroke(this.getLineStroke());
+        if (this.location == Location.LEFT) {
+            sx = minx - shift;
+            g.draw(new Line2D.Double(sx, maxy, sx, miny));
+        } else {
+            sx = maxx + shift;
+            g.draw(new Line2D.Double(sx, maxy, sx, miny));
+        }
+
+        //Draw tick lines   
+        g.setColor(this.getTickColor());
+        g.setStroke(this.getTickStroke());
+        g.setFont(this.getTickLabelFont());
+        FontMetrics metrics = g.getFontMetrics();
+        this.updateLabelGap(g, area);
+        int len = this.getTickLength();
+        List<String> tickLabels = this.getTickLabels();
+        String drawStr;
+        Dimension dim;
+        int n = 0;
+        while (n < this.getTickValues().length) {
+            double value = this.getTickValues()[n];
+            xy = plot.projToScreen(plot.getDrawExtent().minX, value, area);
+            y = xy[1];
+            if (this.isInverse()) {
+                y = area.getHeight() - y;
+            }
+            y += area.getY();
+            if (this.location == Location.LEFT) {
+                if (this.isInsideTick()) {
+                    g.draw(new Line2D.Double(sx, y, sx + len, y));
+                } else {
+                    g.draw(new Line2D.Double(sx, y, sx - len, y));
+                }
+            } else {
+                if (this.isInsideTick()) {
+                    g.draw(new Line2D.Double(sx, y, sx - len, y));
+                } else {
+                    g.draw(new Line2D.Double(sx, y, sx + len, y));
+                }
+            }
+            //Draw tick label
+            if (this.drawTickLabel) {
+                drawStr = tickLabels.get(n);
+                dim = new Dimension(metrics.stringWidth(drawStr), metrics.getHeight());
+                if (this.location == Location.LEFT) {
+                    labx = (float) (sx - dim.width - space - space);
+                    if (!this.isInsideTick()) {
+                        labx -= len;
+                    }
+                    laby = (float) (y + dim.height / 3);
+                    g.drawString(drawStr, labx, laby);
+                } else {
+                    labx = (float) (sx + space + space);
+                    if (!this.isInsideTick()) {
+                        labx += len;
+                    }
+                    laby = (float) (y + dim.height / 3);
+                    g.drawString(drawStr, labx, laby);
+                }
+            }
+            n += this.getTickLabelGap();
+        }
+        //Draw label
+        if (this.isDrawLabel()) {
+            g.setFont(this.getLabelFont());
+            dim = Draw.getStringDimension(this.getLabel(), g);
+            //metrics = g.getFontMetrics(this.yAxis.getLabelFont());
+            if (this.location == Location.LEFT) {
+                x = sx - space - this.getMaxLabelLength(g) - dim.height - 5;
+                if (!this.isInsideTick()) {
+                    x -= len;
+                }
+                y = (maxy - miny) / 2 + miny;
+                //x = g.getTransform().getTranslateX() + x;
+                //y = g.getTransform().getTranslateY() + y;
+                //Draw.drawLabelPoint((float)x, (float)y, this.yAxis.getLabelFont(), this.yAxis.getLabel(), 
+                //        this.yAxis.getLabelColor(), -90, g, null);
+                Draw.drawLabelPoint_270((float) x, (float) y, this.getLabelFont(), this.getLabel(),
+                        this.getLabelColor(), g, null);
+            } else {
+                x = sx + space + this.getMaxLabelLength(g) + 5;
+                if (!this.isInsideTick()) {
+                    x += len;
+                }
+                y = (maxy - miny) / 2 + miny;
+                //x = g.getTransform().getTranslateX() + x;
+                //y = g.getTransform().getTranslateY() + y;
+                //Draw.drawLabelPoint((float)x, (float)y, this.yAxis.getLabelFont(), this.yAxis.getLabel(), 
+                //        this.yAxis.getLabelColor(), -90, g, null);
+                Draw.drawLabelPoint_270((float) x, (float) y, this.getLabelFont(), this.getLabel(),
+                        this.getLabelColor(), g, null);
+            }
+        }
+    }
+
+    @Override
+    public Object clone() {
+        Axis o = null;
+        try {
+            o = (Axis) super.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+
+        return o;
+    }
+
     // </editor-fold>
 }

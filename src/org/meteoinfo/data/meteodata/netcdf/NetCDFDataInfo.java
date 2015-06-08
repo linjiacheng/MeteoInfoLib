@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import org.meteoinfo.data.ArrayMath;
 import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.global.util.DateUtil;
 import org.meteoinfo.projection.KnownCoordinateSystems;
@@ -46,6 +47,7 @@ import ucar.ma2.Array;
 import ucar.ma2.ArrayInt;
 import ucar.ma2.DataType;
 import ucar.ma2.InvalidRangeException;
+import ucar.ma2.MAMath;
 import ucar.ma2.Section;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.NetcdfFileWriter;
@@ -2961,8 +2963,43 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             ncfile = NetcdfFile.open(this.getFileName());
             ucar.nc2.Variable var = ncfile.findVariable(varName);
 
-            Section section = new Section(origin, size, stride);
-            Array data = var.read(section);
+            boolean negStride = false;
+            for (int s : stride){
+                if (s < 0){
+                    negStride = true;
+                    break;
+                }
+            }
+            
+            Array data;
+            if (negStride){
+                int[] pStride = new int[stride.length];
+                List<Integer> flips = new ArrayList<>();
+                for (int i = 0; i < stride.length; i++){
+                    pStride[i] = Math.abs(stride[i]);
+                    if (stride[i] < 0){
+                        flips.add(i);
+                    }
+                }
+                Section section = new Section(origin, size, pStride);
+                Array r = var.read(section);
+                data = Array.factory(r.getDataType(), r.getShape());
+                MAMath.copy(data, r);
+                for (int i : flips){
+                    data = data.flip(i);
+                }
+            } else {
+                Section section = new Section(origin, size, stride);
+                data = var.read(section);
+            }
+            
+            //Get pack info
+            double add_offset, scale_factor, missingValue;
+            double[] packData = this.getPackData(var);
+            add_offset = packData[0];
+            scale_factor = packData[1];
+            missingValue = packData[2];
+            data = ArrayMath.add(ArrayMath.mul(data, scale_factor), add_offset);
 
             return data;
         } catch (IOException | InvalidRangeException ex) {

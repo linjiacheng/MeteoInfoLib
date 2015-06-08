@@ -13,6 +13,7 @@ import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
+import org.meteoinfo.chart.Margin;
 import org.meteoinfo.data.Dataset;
 
 /**
@@ -51,11 +52,110 @@ public abstract class Plot {
     public static final Shape DEFAULT_LEGEND_ITEM_CIRCLE
             = new Ellipse2D.Double(-4.0, -4.0, 8.0, 8.0);   
     
+    /** If is sub plot. */
+    public boolean isSubPlot = false;
+    
     /** Column index as a sub plot. */
     public int columnIndex = 0;
     
     /** Row index as a sub plot. */
     public int rowIndex = 0;
+    
+    private Rectangle2D position = new Rectangle2D.Double(0.13, 0.11, 0.775, 0.815);
+    
+    /**
+     * Get position
+     * @return Position
+     */
+    public Rectangle2D getPosition(){
+        return this.position;
+    }
+    
+    /**
+     * Set position
+     * @param value Position 
+     */
+    public void setPosition(Rectangle2D value){
+        this.position = value;
+    }
+    
+    /**
+     * Set position
+     * @param xmin Minimum x
+     * @param ymin Minimum y
+     * @param width Width
+     * @param height Height
+     */
+    public void setPosition(double xmin, double ymin, double width, double height){
+        this.position = new Rectangle2D.Double(xmin, ymin, width, height);
+    }
+    
+    /**
+     * Update position
+     * @param figureArea Figure area
+     * @param outerArea Outer position area
+     */
+    public void updatePosition(Rectangle2D figureArea, Rectangle2D outerArea){
+        double x = outerArea.getX() / figureArea.getWidth();
+        double y = 1.0 - (outerArea.getY() + outerArea.getHeight()) / figureArea.getHeight();
+        double w = outerArea.getWidth() / figureArea.getWidth();
+        double h = outerArea.getHeight() / figureArea.getHeight();
+        this.setPosition(x, y, w, h);
+    }
+    
+    private Margin tightInset = new Margin();
+    
+    /**
+     * Get tight inset
+     * @return Tight inset
+     */
+    public Margin getTightInset(){
+        return this.tightInset;
+    }
+    
+    /**
+     * Set tight inset
+     * @param value Tight inset
+     */
+    public void setTightInset(Margin value){
+        this.tightInset = value;
+    }
+    
+    private Rectangle2D outerPosition = new Rectangle2D.Double(0, 0, 1, 1);
+    
+    /**
+     * Get outer position
+     * @return Outer position
+     */
+    public Rectangle2D getOuterPosition(){
+        return this.outerPosition;
+    }
+    
+    /**
+     * Set outer postion
+     * @param value Outer position
+     */
+    public void setOuterPosition(Rectangle2D value){
+        this.outerPosition = value;
+    }
+    
+    private Rectangle2D outerPositionArea;
+    
+    /**
+     * Get outer position area
+     * @return Outer positoin area
+     */
+    public Rectangle2D getOuterPositionArea(){
+        return this.outerPositionArea;
+    }
+    
+    /**
+     * Set outer position area
+     * @param value Outer position area
+     */
+    public void setOuterPositionArea(Rectangle2D value){
+        this.outerPositionArea = value;
+    }
     
     /**
      * Get dataset
@@ -82,10 +182,102 @@ public abstract class Plot {
      */
     public abstract void draw(Graphics2D g2, Rectangle2D area);
     
+    private Rectangle2D positionArea;
+    
     /**
-     * Get graphic area
-     * @return Grahic area
+     * Get positioin area
+     * @return position area
      */
-    public abstract Rectangle2D getGraphArea();        
+    public Rectangle2D getPositionArea() {
+        return this.positionArea;
+    }
+    
+    /**
+     * Get position area
+     * @param zoom Zoom
+     * @return Position area
+     */
+    public Rectangle2D getPositionArea(double zoom) {
+        double w = this.positionArea.getWidth() * zoom;
+        double h = this.positionArea.getHeight() * zoom;
+        double xshift = (this.positionArea.getWidth() - w) / 2.0;
+        double yshift = (this.positionArea.getHeight() - h) / 2.0;
+        double x = this.positionArea.getX() + xshift;
+        double y = this.positionArea.getY() + yshift;
         
+        return new Rectangle2D.Double(x, y, w, h);
+    }
+    
+    /**
+     * Set position area
+     * @param value Position area
+     */
+    public void setPositionArea(Rectangle2D value){
+        this.positionArea = value;
+    }
+    
+    /**
+     * Get position area
+     * @param g Graphics2D
+     * @param figureArea Figure area
+     * @return Position area
+     */
+    public abstract Rectangle2D getPositionArea(Graphics2D g, Rectangle2D figureArea);
+    
+    /**
+     * Get tight inset
+     * @param g Graphics2D
+     * @param positionArea Position area
+     * @return Tight inset margin
+     */
+    public abstract Margin getTightInset(Graphics2D g, Rectangle2D positionArea);
+        
+    private double positionAreaZoom = 1.0;
+    
+    /**
+     * Get position area zoom
+     * @return Position area zoom
+     */
+    public double getPositionAreaZoom(){
+        return this.positionAreaZoom;
+    }
+    
+    /**
+     * Set position area zoom
+     * @param value Position area zoom
+     */
+    public void setPositionAreaZoom(double value){
+        this.positionAreaZoom = value;
+    }
+    
+    /**
+     * Update position area zoom
+     * @return Position area zoom
+     */
+    public double updatePostionAreaZoom(){
+        Rectangle2D tightInsetArea = this.tightInset.getArea(this.positionArea);
+        double left = tightInsetArea.getX() - this.outerPositionArea.getX();
+        double right = this.outerPositionArea.getX() + this.outerPositionArea.getWidth() - 
+                (tightInsetArea.getX() + tightInsetArea.getWidth());
+        double top = tightInsetArea.getY() - this.outerPositionArea.getY();
+        double bottom = this.outerPositionArea.getY() + this.outerPositionArea.getHeight() - 
+            (tightInsetArea.getY() + tightInsetArea.getHeight());
+        double minh = Math.min(left, right);
+        double minv = Math.min(top, bottom);
+        double min = Math.min(minh, minv);
+        double zoom = 1.0;
+        double factor = 2;
+        if (this.isSubPlot)
+            factor = 1.5;
+        if (min < 0){
+            double zoomh = (this.positionArea.getWidth() - Math.abs(minh) * factor) / this.positionArea.getWidth();
+            double zoomv = (this.positionArea.getHeight() - Math.abs(minv) * factor) / this.positionArea.getHeight();
+            zoom = Math.min(zoomh, zoomv);
+            if (zoom < 0){
+                zoom = 0.2;
+            }
+        }        
+        
+        return zoom;
+    }
 }

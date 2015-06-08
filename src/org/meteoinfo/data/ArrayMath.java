@@ -945,7 +945,10 @@ public class ArrayMath {
      * @throws InvalidRangeException
      */
     public static Array section(Array a, int[] origin, int[] size, int[] stride) throws InvalidRangeException {
-        return a.section(origin, size, stride);
+        Array r = a.section(origin, size, stride);  
+        Array rr = Array.factory(r.getDataType(), r.getShape());
+        MAMath.copy(rr, r);
+        return rr;
     }
 
     /**

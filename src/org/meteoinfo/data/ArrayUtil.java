@@ -169,9 +169,10 @@ public class ArrayUtil {
      * @param start Start value
      * @param stop Stop value
      * @param n Number value
+     * @param endpoint If stop is included
      * @return Array
      */
-    public static Array lineSpace(Number start, Number stop, final int n) {
+    public static Array lineSpace(Number start, Number stop, final int n, boolean endpoint) {
         if (stop == null) {
             stop = start;
             start = 0;
@@ -182,10 +183,22 @@ public class ArrayUtil {
         double startv = start.doubleValue();
         double stopv = stop.doubleValue();
         double stepv = (stopv - startv) / (n - 1);
+        double endv = n * stepv + startv;
+        int nn = n;
+        if (endpoint){
+            if (endv < stopv){
+                nn += 1;
+            }
+        } else {
+            if (endv >= stopv){
+                nn -= 1;
+            }
+        }
         Array a = Array.factory(DataType.FLOAT, new int[]{n});
         for (int i = 0; i < n; i++) {
             a.setObject(i, i * stepv + startv);
         }
+
         return a;
     }
 

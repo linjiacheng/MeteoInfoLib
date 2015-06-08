@@ -30,11 +30,22 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageTypeSpecifier;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.metadata.IIOInvalidTreeException;
+import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.metadata.IIOMetadataNode;
+import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
+import javax.imageio.stream.FileImageOutputStream;
+import javax.imageio.stream.ImageOutputStream;
 import javax.print.DocFlavor;
 import javax.print.DocPrintJob;
 import javax.print.PrintException;
@@ -57,6 +68,10 @@ import org.meteoinfo.chart.plot.XY2DPlot;
 import org.meteoinfo.chart.plot.XYPlot;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.GenericFileFilter;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  *
@@ -74,6 +89,7 @@ public class ChartPanel extends JPanel {
     private JPopupMenu popupMenu;
     private MouseMode mouseMode = MouseMode.ZOOM;
     private List<int[]> selectedPoints;
+    private final double INCH_2_CM = 2.54;
     // </editor-fold>
 
     // <editor-fold desc="Constructor">
@@ -353,7 +369,7 @@ public class ChartPanel extends JPanel {
                             plot.setDrawExtent(extent);
                             this.paintGraphics();
                         }
-                    } else if (xyplot instanceof XY2DPlot){
+                    } else if (xyplot instanceof XY2DPlot) {
                         XY2DPlot plot = (XY2DPlot) xyplot;
                         Rectangle2D graphArea = this.chart.getGraphArea();
                         if (graphArea.contains(mouseDownPoint.x, mouseDownPoint.y) || graphArea.contains(mouseLastPos.x, mouseLastPos.y)) {
@@ -363,7 +379,7 @@ public class ChartPanel extends JPanel {
                             extent.minX = Math.min(xy1[0], xy2[0]);
                             extent.maxX = Math.max(xy1[0], xy2[0]);
                             extent.minY = Math.min(xy1[1], xy2[1]);
-                            extent.maxY = Math.max(xy1[1], xy2[1]);                            
+                            extent.maxY = Math.max(xy1[1], xy2[1]);
                             plot.setDrawExtent(extent);
                             this.paintGraphics();
                         }
@@ -413,10 +429,10 @@ public class ChartPanel extends JPanel {
 
     private void onUndoZoomClick(ActionEvent e) {
         XYPlot xyplot = (XYPlot) this.chart.getPlots().get(0);
-        if (xyplot instanceof XY1DPlot){
+        if (xyplot instanceof XY1DPlot) {
             XY1DPlot plot = (XY1DPlot) xyplot;
-            plot.setAutoExtent();            
-        } else if (xyplot instanceof XY2DPlot){
+            plot.setAutoExtent();
+        } else if (xyplot instanceof XY2DPlot) {
             XY2DPlot plot = (XY2DPlot) xyplot;
             plot.setDrawExtent(plot.getMapView().getExtent());
         }
@@ -458,7 +474,7 @@ public class ChartPanel extends JPanel {
             }
 
             try {
-                this.exportToPicture(fileName);
+                this.saveImage(fileName);
             } catch (PrintException ex) {
                 Logger.getLogger(ChartPanel.class.getName()).log(Level.SEVERE, null, ex);
             } catch (IOException ex) {
@@ -468,13 +484,13 @@ public class ChartPanel extends JPanel {
     }
 
     /**
-     * Export to a picture file
+     * Save image to a picture file
      *
      * @param aFile File path
      * @throws java.io.FileNotFoundException
      * @throws javax.print.PrintException
      */
-    public void exportToPicture(String aFile) throws FileNotFoundException, PrintException, IOException {
+    public void saveImage(String aFile) throws FileNotFoundException, PrintException, IOException {
         if (aFile.endsWith(".ps")) {
             DocFlavor flavor = DocFlavor.SERVICE_FORMATTED.PRINTABLE;
             String mimeType = "application/postscript";
@@ -549,12 +565,210 @@ public class ChartPanel extends JPanel {
             ImageIO.write(this.mapBitmap, extension, new File(aFile));
         }
     }
-    
+
+    /**
+     * Save image to Jpeg file
+     *
+     * @param fileName File name
+     * @param dpi DPI
+     * @throws java.io.IOException
+     */
+    public void saveImage_Jpeg_old(String fileName, int dpi) throws IOException {
+        BufferedImage image = this.mapBitmap;
+        Iterator i = ImageIO.getImageWritersByFormatName("jpeg");
+        //are there any jpeg encoders available?
+
+        if (i.hasNext()) //there's at least one ImageWriter, just use the first one
+        {
+            ImageWriter imageWriter = (ImageWriter) i.next();
+            //get the param
+            ImageWriteParam param = imageWriter.getDefaultWriteParam();
+            ImageTypeSpecifier its = new ImageTypeSpecifier(image.getColorModel(), image.getSampleModel());
+
+            //get metadata
+            IIOMetadata iomd = imageWriter.getDefaultImageMetadata(its,
+                    param);
+
+            String formatName = "javax_imageio_jpeg_image_1.0";//this is the DOCTYPE of the metadata we need
+
+            Node node = iomd.getAsTree(formatName);
+            //what are child nodes?
+            NodeList nl = node.getChildNodes();
+            for (int j = 0; j < nl.getLength(); j++) {
+                Node n = nl.item(j);
+                System.out.println("node from IOMetadata is : "
+                        + n.getNodeName());
+
+                if (n.getNodeName().equals("JPEGvariety")) {
+                    NodeList childNodes = n.getChildNodes();
+
+                    for (int k = 0; k < childNodes.getLength(); k++) {
+                        System.out.println("node #" + k + " is "
+                                + childNodes.item(k).getNodeName());
+                        if (childNodes.item(k).getNodeName().equals("app0JFIF")) {
+                            NamedNodeMap nnm = childNodes.item(k).getAttributes();
+                            //get the resUnits, Xdensity, and Ydensity attribuutes 
+                            Node resUnitsNode = getAttributeByName(childNodes.item(k), "resUnits");
+                            Node XdensityNode = getAttributeByName(childNodes.item(k), "Xdensity");
+                            Node YdensityNode = getAttributeByName(childNodes.item(k), "Ydensity");
+
+                            //reset values for nodes
+                            resUnitsNode.setNodeValue("1"); //indicate DPI mode 
+                            XdensityNode.setNodeValue(String.valueOf(dpi));
+                            YdensityNode.setNodeValue(String.valueOf(dpi));
+
+                            System.out.println("name="
+                                    + resUnitsNode.getNodeName() + ", value=" + resUnitsNode.getNodeValue());
+                            System.out.println("name="
+                                    + XdensityNode.getNodeName() + ", value=" + XdensityNode.getNodeValue());
+                            System.out.println("name="
+                                    + YdensityNode.getNodeName() + ", value=" + YdensityNode.getNodeValue());
+
+                        } //end if (childNodes.item(k).getNodeName().equals("app0JFIF"))
+                    } //end if (n.getNodeName().equals("JPEGvariety")
+                    break; //we don't care about the rest of the children
+                } //end if (n.getNodeName().equals("JPEGvariety"))
+
+            } //end  for (int j = 0; j < nl.getLength(); j++)
+
+            try {
+                iomd.setFromTree(formatName, node);
+            } catch (IIOInvalidTreeException e) {
+                e.printStackTrace();  //To change body of catch statement use Options | File Templates.
+            }
+            //attach the metadata to an image
+            IIOImage iioimage = new IIOImage(image, null, iomd);
+            FileImageOutputStream stream = new FileImageOutputStream(new File(fileName));
+            try {
+                imageWriter.setOutput(stream);
+                imageWriter.write(iioimage);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                stream.close();
+            }
+        }  //end if (i.hasNext()) //there's at least one ImageWriter, just use the first one
+    }
+
+    /**
+     * @param node
+     * @param attributeName - name of child node to return
+     * @return
+     */
+    private Node getAttributeByName(Node node, String attributeName) {
+        if (node == null) {
+            return null;
+        }
+        NamedNodeMap nnm = node.getAttributes();
+        for (int i = 0; i < nnm.getLength(); i++) {
+            Node n = nnm.item(i);
+            if (n.getNodeName().equals(attributeName)) {
+                return n;
+            }
+        }
+        return null; // no such attribute was found
+    }
+
+    public boolean saveImage_Jpeg(String file, int dpi) {
+        BufferedImage bufferedImage = this.mapBitmap;
+
+        try {
+            // Image writer 
+            ImageWriter imageWriter = ImageIO.getImageWritersBySuffix("jpeg").next();
+            ImageOutputStream ios = ImageIO.createImageOutputStream(new File(file));
+            imageWriter.setOutput(ios);
+
+            // Compression
+            JPEGImageWriteParam jpegParams = (JPEGImageWriteParam) imageWriter.getDefaultWriteParam();
+            jpegParams.setCompressionMode(JPEGImageWriteParam.MODE_EXPLICIT);
+            jpegParams.setCompressionQuality(0.85f);
+
+            // Metadata (dpi)
+            IIOMetadata data = imageWriter.getDefaultImageMetadata(new ImageTypeSpecifier(bufferedImage), jpegParams);
+            Element tree = (Element) data.getAsTree("javax_imageio_jpeg_image_1.0");
+            Element jfif = (Element) tree.getElementsByTagName("app0JFIF").item(0);
+            jfif.setAttribute("Xdensity", Integer.toString(dpi));
+            jfif.setAttribute("Ydensity", Integer.toString(dpi));
+            jfif.setAttribute("resUnits", "1"); // density is dots per inch	
+            data.setFromTree("javax_imageio_jpeg_image_1.0", tree);
+
+            // Write and clean up
+            imageWriter.write(null, new IIOImage(bufferedImage, null, data), jpegParams);
+            ios.close();
+            imageWriter.dispose();
+        } catch (Exception e) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Save image
+     *
+     * @param fileName File name
+     * @param dpi DPI
+     * @throws IOException
+     */
+    public void saveImage(String fileName, float dpi) throws IOException {
+        File output = new File(fileName);
+        output.delete();
+
+        BufferedImage image = this.mapBitmap;
+        String formatName = fileName.substring(fileName.lastIndexOf('.') + 1);
+        if (formatName.equals("jpg")) {
+            formatName = "jpeg";
+        }
+
+        for (Iterator<ImageWriter> iw = ImageIO.getImageWritersByFormatName(formatName); iw.hasNext();) {
+            ImageWriter writer = iw.next();
+            ImageWriteParam writeParam = writer.getDefaultWriteParam();
+            ImageTypeSpecifier typeSpecifier = ImageTypeSpecifier.createFromBufferedImageType(BufferedImage.TYPE_INT_RGB);
+            IIOMetadata metadata = writer.getDefaultImageMetadata(typeSpecifier, writeParam);
+            if (metadata.isReadOnly() || !metadata.isStandardMetadataFormatSupported()) {
+                continue;
+            }
+
+            setDPI(metadata, dpi);
+
+            final ImageOutputStream stream = ImageIO.createImageOutputStream(output);
+            try {
+                writer.setOutput(stream);
+                writer.write(metadata, new IIOImage(image, null, metadata), writeParam);
+            } finally {
+                stream.close();
+            }
+            break;
+        }
+    }
+
+    private void setDPI(IIOMetadata metadata, float dpi) throws IIOInvalidTreeException {
+
+        // for PMG, it's dots per millimeter
+        double dotsPerMilli = 1.0 * dpi / 10 / INCH_2_CM;
+
+        IIOMetadataNode horiz = new IIOMetadataNode("HorizontalPixelSize");
+        horiz.setAttribute("value", Double.toString(dotsPerMilli));
+
+        IIOMetadataNode vert = new IIOMetadataNode("VerticalPixelSize");
+        vert.setAttribute("value", Double.toString(dotsPerMilli));
+
+        IIOMetadataNode dim = new IIOMetadataNode("Dimension");
+        dim.appendChild(horiz);
+        dim.appendChild(vert);
+
+        IIOMetadataNode root = new IIOMetadataNode("javax_imageio_1.0");
+        root.appendChild(dim);
+
+        metadata.mergeTree("javax_imageio_1.0", root);
+    }
+
     /**
      * Get view image
+     *
      * @return View image
      */
-    public BufferedImage getViewImage(){
+    public BufferedImage getViewImage() {
         return this.mapBitmap;
     }
     // </editor-fold>
