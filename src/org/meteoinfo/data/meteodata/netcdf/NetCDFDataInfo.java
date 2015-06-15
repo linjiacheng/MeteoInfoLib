@@ -395,8 +395,10 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 }
             }
             if (aAtts.getShortName().toUpperCase().equals("WEST-EAST_GRID_DIMENSION")) {
-                isWRFOUT = true;
-                break;
+                if (!this.getGlobalAttStr("MAP_PROJ").isEmpty()){
+                    isWRFOUT = true;
+                    break;
+                }
             }
         }
 
@@ -770,7 +772,11 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
     private String getProjection_WRFOUT() {
         String projStr = this.getProjectionInfo().toProj4String();
-        int mapProj = Integer.parseInt(getGlobalAttStr("MAP_PROJ"));
+        String pstr = this.getGlobalAttStr("MAP_PROJ");
+        if (pstr.isEmpty())
+            return projStr;
+        
+        int mapProj = Integer.parseInt(pstr);
         switch (mapProj) {
             case 1:    //Lambert conformal
                 projStr = "+proj=lcc"
@@ -2982,12 +2988,12 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                     }
                 }
                 Section section = new Section(origin, size, pStride);
-                Array r = var.read(section);
+                Array r = var.read(section);                
+                for (int i : flips){
+                    r = r.flip(i);
+                }
                 data = Array.factory(r.getDataType(), r.getShape());
                 MAMath.copy(data, r);
-                for (int i : flips){
-                    data = data.flip(i);
-                }
             } else {
                 Section section = new Section(origin, size, stride);
                 data = var.read(section);

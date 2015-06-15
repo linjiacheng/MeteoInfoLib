@@ -1315,4 +1315,274 @@ public class ArrayMath {
     }
 
     // </editor-fold>
+    // <editor-fold desc="Regress">
+    /**
+     * Get correlation coefficient
+     * How well did the forecast values correspond to the observed values?
+     * Range: -1 to 1.  Perfect score: 1.
+     * @param xData X data array
+     * @param yData Y data array
+     * @return Correlation coefficent
+     */
+    public static float getR(List<Number> xData, List<Number> yData){
+        int n = xData.size();
+        double x_sum = 0;
+        double y_sum = 0;
+        for (int i = 0; i < n; i++){
+            x_sum += xData.get(i).doubleValue();
+            y_sum += yData.get(i).doubleValue();
+        }
+        double sx_sum = 0.0;
+        double sy_sum = 0.0;
+        double xy_sum = 0.0;
+        for (int i = 0; i < n; i++){
+            sx_sum += xData.get(i).doubleValue() * xData.get(i).doubleValue();
+            sy_sum += yData.get(i).doubleValue() * yData.get(i).doubleValue();
+            xy_sum += xData.get(i).doubleValue() * yData.get(i).doubleValue();
+        }
+        
+        double r = (n * xy_sum - x_sum * y_sum) / (Math.sqrt(n * sx_sum - x_sum * x_sum) * Math.sqrt(n * sy_sum - y_sum * y_sum));
+        return (float)r;
+    }
+    
+    /**
+     * Determine the least square trend equation - linear fitting
+     *
+     * @param xData X data array
+     * @param yData Y data array
+     * @return Result array - y intercept and slope
+     */
+    public static double[] leastSquareTrend(List<Number> xData, List<Number> yData) {
+        int n = xData.size();
+        double sumX = 0.0;
+        double sumY = 0.0;
+        double sumSquareX = 0.0;
+        double sumXY = 0.0;
+        for (int i = 0; i < n; i++) {
+            sumX += xData.get(i).doubleValue();
+            sumY += yData.get(i).doubleValue();
+            sumSquareX += xData.get(i).doubleValue() * xData.get(i).doubleValue();
+            sumXY += xData.get(i).doubleValue() * yData.get(i).doubleValue();
+        }
+
+        double a = (sumSquareX * sumY - sumX * sumXY) / (n * sumSquareX - sumX * sumX);
+        double b = (n * sumXY - sumX * sumY) / (n * sumSquareX - sumX * sumX);
+
+        return new double[]{a, b};
+    } 
+    
+    /**
+     * Linear regress
+     * 
+     * @param xData X data array
+     * @param yData Y data array
+     * @return Result array - y intercept, slope and correlation coefficent
+     */
+    public static double[] lineRegress(List<Number> xData, List<Number> yData){
+        int n = xData.size();
+        double x_sum = 0;
+        double y_sum = 0;
+        double sx_sum = 0.0;
+        double sy_sum = 0.0;
+        double xy_sum = 0.0;
+        for (int i = 0; i < n; i++){
+            x_sum += xData.get(i).doubleValue();
+            y_sum += yData.get(i).doubleValue();
+            sx_sum += xData.get(i).doubleValue() * xData.get(i).doubleValue();
+            sy_sum += yData.get(i).doubleValue() * yData.get(i).doubleValue();
+            xy_sum += xData.get(i).doubleValue() * yData.get(i).doubleValue();
+        }        
+        
+        double r = (n * xy_sum - x_sum * y_sum) / (Math.sqrt(n * sx_sum - x_sum * x_sum) * Math.sqrt(n * sy_sum - y_sum * y_sum));
+        double a = (sx_sum * y_sum - x_sum * xy_sum) / (n * sx_sum - x_sum * x_sum);
+        double b = (n * xy_sum - x_sum * y_sum) / (n * sx_sum - x_sum * x_sum);
+        
+        return new double[]{a, b, r};
+    }
+    
+    /**
+     * Linear regress
+     * 
+     * @param xData X data array
+     * @param yData Y data array
+     * @return Result array - y intercept, slope and correlation coefficent
+     */
+    public static double[] lineRegress(Array xData, Array yData){        
+        double x_sum = 0;
+        double y_sum = 0;
+        double sx_sum = 0.0;
+        double sy_sum = 0.0;
+        double xy_sum = 0.0;
+        int n = 0;
+        for (int i = 0; i < xData.getSize(); i++){
+            if (Double.isNaN(xData.getDouble(i)))
+                continue;
+            if (Double.isNaN(yData.getDouble(i)))
+                continue;
+            x_sum += xData.getDouble(i);
+            y_sum += yData.getDouble(i);
+            sx_sum += xData.getDouble(i) * xData.getDouble(i);
+            sy_sum += yData.getDouble(i) * yData.getDouble(i);
+            xy_sum += xData.getDouble(i) * yData.getDouble(i);
+            n += 1;
+        }        
+        
+        double r = (n * xy_sum - x_sum * y_sum) / (Math.sqrt(n * sx_sum - x_sum * x_sum) * Math.sqrt(n * sy_sum - y_sum * y_sum));
+        double intercept = (sx_sum * y_sum - x_sum * xy_sum) / (n * sx_sum - x_sum * x_sum);
+        double slope = (n * xy_sum - x_sum * y_sum) / (n * sx_sum - x_sum * x_sum);
+        
+        return new double[]{slope, intercept, r};
+    }
+    
+    /**
+     * Evaluate a polynomial at specific values.
+     * If p is of length N, this function returns the value:
+     * p[0]*x**(N-1) + p[1]*x**(N-2) + ... + p[N-2]*x + p[N-1]
+     * @param p array_like or poly1d object
+     * @param x array_like or poly1d object
+     * @return ndarray or poly1d
+     */
+    public static Array polyVal(List<Number> p, Array x){
+        int n = p.size();
+        Array r = Array.factory(DataType.DOUBLE, x.getShape());
+        for (int i = 0; i < x.getSize(); i++) {
+            double val = x.getDouble(i);
+            double rval = 0.0;
+            for (int j = 0; j < n; j++){
+                rval += p.get(j).doubleValue() * Math.pow(val, n - j - 1);
+            }
+            r.setDouble(i, rval);
+        }
+        
+        return r;
+    }
+    // </editor-fold>    
+    // <editor-fold desc="Meteo">
+    /**
+     * Performs a centered difference operation on a grid data in the x or y
+     * direction
+     *
+     * @param data The grid data
+     * @param isX If is x direction
+     * @return Result grid data
+     */
+    public static Array cdiff(Array data, boolean isX) {
+        int xnum = data.getShape()[1];
+        int ynum = data.getShape()[0];
+        Array r = Array.factory(DataType.DOUBLE, data.getShape());
+        for (int i = 0; i < ynum; i++) {
+            for (int j = 0; j < xnum; j++) {
+                if (i == 0 || i == ynum - 1 || j == 0 || j == xnum - 1) {
+                    r.setDouble(i * xnum + j, Double.NaN);
+                } else {
+                    double a, b;
+                    if (isX) {
+                        a = data.getDouble(i * xnum + j + 1);
+                        b = data.getDouble(i * xnum + j - 1);
+                    } else {
+                        a = data.getDouble((i + 1) * xnum + j);
+                        b = data.getDouble((i - 1) * xnum + j);
+                    }
+                    if (Double.isNaN(a) || Double.isNaN(b)) {
+                        r.setDouble(i * xnum + j, Double.NaN);
+                    } else {
+                        r.setDouble(i * xnum + j, a - b);
+                    }
+                }
+            }
+        }
+
+        return r;
+    }
+    
+    /**
+     * Calculates the vertical component of the curl (ie, vorticity)
+     *
+     * @param uData U component
+     * @param vData V component
+     * @param xx X dimension value
+     * @param yy Y dimension value
+     * @return Curl
+     */
+    public static Array hcurl(Array uData, Array vData, List<Number> xx, List<Number> yy) {
+        Array lonData = Array.factory(DataType.DOUBLE, uData.getShape());
+        Array latData = Array.factory(DataType.DOUBLE, vData.getShape());
+        int[] shape = uData.getShape();
+        int ynum = shape[0];
+        int xnum = shape[1];
+        int i, j;
+        for (i = 0; i < ynum; i++) {
+            for (j = 0; j < xnum; j++) {
+                lonData.setDouble(i * xnum + j, xx.get(j).doubleValue());
+                latData.setDouble(i * xnum + j, yy.get(i).doubleValue());
+            }
+        }
+        Array dv = cdiff(vData, true);
+        Array dx = mul(cdiff(lonData, true), Math.PI / 180);
+        Array du = cdiff(mul(uData, cos(mul(latData, Math.PI / 180))), false);
+        Array dy = mul(cdiff(latData, false), Math.PI / 180);
+        Array gData = div(sub(div(dv, dx), div(du, dy)), mul(cos(mul(latData, Math.PI / 180)), 6.37e6));
+
+        return gData;
+    }
+
+    /**
+     * Calculates the horizontal divergence using finite differencing
+     *
+     * @param uData U component
+     * @param vData V component
+     * @param xx X dimension value
+     * @param yy Y dimension value
+     * @return Divergence
+     */
+    public static Array hdivg(Array uData, Array vData, List<Number> xx, List<Number> yy) {
+        Array lonData = Array.factory(DataType.DOUBLE, uData.getShape());
+        Array latData = Array.factory(DataType.DOUBLE, vData.getShape());
+        int[] shape = uData.getShape();
+        int ynum = shape[0];
+        int xnum = shape[1];
+        int i, j;
+        for (i = 0; i < ynum; i++) {
+            for (j = 0; j < xnum; j++) {
+                lonData.setDouble(i * xnum + j, xx.get(j).doubleValue());
+                latData.setDouble(i * xnum + j, yy.get(i).doubleValue());
+            }
+        }
+        Array du = cdiff(uData, true);
+        Array dx = mul(cdiff(lonData, true), Math.PI / 180);
+        Array dv = cdiff(mul(vData, cos(mul(latData, Math.PI / 180))), false);
+        Array dy = mul(cdiff(latData, false), Math.PI / 180);
+        Array gData = div(add(div(du, dx), div(dv, dy)), mul(cos(mul(latData, Math.PI / 180)), 6.37e6));
+
+        return gData;
+    }
+    
+    /**
+     * Take magnitude value from U/V grid data
+     *
+     * @param uData U grid data
+     * @param vData V grid data
+     * @return Magnitude grid data
+     */
+    public static Array magnitude(Array uData, Array vData) {
+        int[] shape = uData.getShape();
+        int xNum = shape[1];
+        int yNum = shape[0];
+        int idx;
+
+        Array r = Array.factory(DataType.DOUBLE, shape);
+        for (int i = 0; i < yNum; i++) {
+            for (int j = 0; j < xNum; j++) {
+                idx = i * xNum + j;
+                if (Double.isNaN(uData.getDouble(idx)) || Double.isNaN(vData.getDouble(idx))) {
+                    r.setDouble(idx, Double.NaN);
+                } else {
+                    r.setDouble(idx, Math.sqrt(Math.pow(uData.getDouble(idx), 2) + Math.pow(vData.getDouble(idx), 2)));                    
+                }
+            }
+        }
+
+        return r;
+    }
+    // </editor-fold>
 }

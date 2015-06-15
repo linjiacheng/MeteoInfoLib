@@ -461,9 +461,9 @@ public abstract class XYPlot extends Plot {
             }
             if (this.legend.isColorbar()) {
                 if (this.legend.getPlotOrientation() == PlotOrientation.VERTICAL) {
-                    this.legend.setHeight((int) graphArea.getHeight());
+                    this.legend.setHeight((int) (graphArea.getHeight() * this.legend.getShrink()));
                 } else {
-                    this.legend.setWidth((int) graphArea.getWidth());
+                    this.legend.setWidth((int) (graphArea.getWidth() * this.legend.getShrink()));
                 }
             }
             if (this.legend.getPosition() == LegendPosition.CUSTOM) {
@@ -505,7 +505,7 @@ public abstract class XYPlot extends Plot {
                     top += dim.height + 10;
                     break;
                 case LOWER_CENTER_OUTSIDE:
-                    bottom += dim.height + 10;
+                    bottom += dim.height;
                     break;
                 case LEFT_OUTSIDE:
                     left += dim.width + 10;
@@ -926,7 +926,7 @@ public abstract class XYPlot extends Plot {
                 y += 5;
                 break;
             case LOWER_CENTER_OUTSIDE:
-                x = (float) area.getWidth() / 2 - dim.width / 2;
+                x = (float)(area.getX() + area.getWidth() / 2 - dim.width / 2);
                 y += area.getHeight() + this.getXAxisHeight(g, 1) + 5;
                 break;
             case LEFT_OUTSIDE:
@@ -938,8 +938,8 @@ public abstract class XYPlot extends Plot {
                 y = (float) area.getY() + (float) area.getHeight() / 2 - dim.height / 2;
                 break;
             case UPPER_RIGHT:
-                x = (float) area.getWidth() - dim.width;
-                y = y + 20;
+                x = (float) (area.getX() + area.getWidth()) - dim.width - 10;
+                y = (float) area.getY() + 10;
                 break;
         }
         this.legend.draw(g, new PointF(x, y));

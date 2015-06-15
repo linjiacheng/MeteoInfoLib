@@ -96,7 +96,7 @@ public class Spline {
      * @return Splined points
      */
     public static PointD[] cardinalSpline(PointD[] points, int samplesInSegment) {
-        List<PointD> result = new ArrayList<PointD>();
+        List<PointD> result = new ArrayList<>();
         for (int i = 0; i < points.length - 1; i++) {
             result.add(points[i]);
             PointD[] pds = interpolateCardinalSpline(

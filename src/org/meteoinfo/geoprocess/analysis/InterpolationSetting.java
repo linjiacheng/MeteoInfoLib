@@ -13,10 +13,6 @@
  */
 package org.meteoinfo.geoprocess.analysis;
 
-import org.meteoinfo.data.GridData;
-import org.meteoinfo.data.StationData;
-import org.meteoinfo.drawing.ContourDraw;
-import org.meteoinfo.global.Extent;
 import java.util.ArrayList;
 import java.util.List;
 import org.meteoinfo.data.meteodata.GridDataSetting;
@@ -46,7 +42,7 @@ public class InterpolationSetting {
         _gridInterMethod = InterpolationMethods.IDW_Radius;
         _minPointNum = 1;
         _radius = 1;
-        _radList = new ArrayList<Double>();
+        _radList = new ArrayList<>();
         double[] values = new double[]{10, 7, 4, 2, 1};
         for (double v : values) {
             _radList.add(v);
@@ -81,7 +77,7 @@ public class InterpolationSetting {
         _radius = radius;
         _minPointNum = minNum;
 
-        _radList = new ArrayList<Double>();
+        _radList = new ArrayList<>();
         double[] values = new double[]{10, 7, 4, 2, 1};
         for (double v : values) {
             _radList.add(v);

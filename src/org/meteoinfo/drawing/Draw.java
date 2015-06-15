@@ -1042,7 +1042,7 @@ public class Draw {
         g.setFont(font);
         if (Draw.isLaTeX(text)){
             //Draw.drawLaTeX(g, text, x - labSize.width / 2, y - labSize.height);
-            Draw.drawLaTeX(g, text, x - labSize.width / 2, y);
+            Draw.drawLaTeX(g, text, x - labSize.width / 2, y + labSize.height / 2);
         } else {
             g.drawString(text, x - labSize.width / 2, y + labSize.height * 3 / 4);
         }

@@ -1106,7 +1106,7 @@ public class Axis implements Cloneable {
             dim = Draw.getStringDimension(this.getLabel(), g);
             //metrics = g.getFontMetrics(this.yAxis.getLabelFont());
             if (this.location == Location.LEFT) {
-                x = sx - space - this.getMaxLabelLength(g) - dim.height - 5;
+                x = sx - space - this.getMaxLabelLength(g) - dim.height - 10;
                 if (!this.isInsideTick()) {
                     x -= len;
                 }
@@ -1118,7 +1118,7 @@ public class Axis implements Cloneable {
                 Draw.drawLabelPoint_270((float) x, (float) y, this.getLabelFont(), this.getLabel(),
                         this.getLabelColor(), g, null);
             } else {
-                x = sx + space + this.getMaxLabelLength(g) + 5;
+                x = sx + space + this.getMaxLabelLength(g) + 10;
                 if (!this.isInsideTick()) {
                     x += len;
                 }
@@ -1137,7 +1137,7 @@ public class Axis implements Cloneable {
     public Object clone() {
         Axis o = null;
         try {
-            o = (Axis) super.clone();
+        o = (Axis) super.clone();
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }

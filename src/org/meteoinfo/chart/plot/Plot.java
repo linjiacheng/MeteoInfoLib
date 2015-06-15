@@ -270,8 +270,12 @@ public abstract class Plot {
         if (this.isSubPlot)
             factor = 1.5;
         if (min < 0){
-            double zoomh = (this.positionArea.getWidth() - Math.abs(minh) * factor) / this.positionArea.getWidth();
-            double zoomv = (this.positionArea.getHeight() - Math.abs(minv) * factor) / this.positionArea.getHeight();
+            double zoomh = 1.0;
+            if (minh < 0)
+                zoomh = (this.positionArea.getWidth() - Math.abs(minh) * factor) / this.positionArea.getWidth();
+            double zoomv = 1.0;
+            if (minv < 0)
+                zoomv = (this.positionArea.getHeight() - Math.abs(minv) * factor) / this.positionArea.getHeight();
             zoom = Math.min(zoomh, zoomv);
             if (zoom < 0){
                 zoom = 0.2;
