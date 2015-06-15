@@ -51,6 +51,7 @@ public abstract class XYPlot extends Plot {
     private final GridLine gridLine;
     private boolean drawTopAxis;
     private boolean drawRightAxis;
+    private boolean drawNeatLine;
     private ChartText title;
     private ChartText subTitle;
     private ChartLegend legend;
@@ -78,6 +79,7 @@ public abstract class XYPlot extends Plot {
         this.gridLine = new GridLine();
         this.drawTopAxis = true;
         this.drawRightAxis = true;
+        this.drawNeatLine = false;
     }
     // </editor-fold>
 
@@ -381,6 +383,22 @@ public abstract class XYPlot extends Plot {
     public void setDrawRightAxis(boolean value) {
         this.drawRightAxis = value;
     }
+    
+    /**
+     * Get if draw neat line
+     * @return Boolean
+     */
+    public boolean isDrawNeatLine(){
+        return this.drawNeatLine;
+    }
+    
+    /**
+     * Set if draw neat line
+     * @param value Boolean
+     */
+    public void setDrawNeatLine(boolean value){
+        this.drawNeatLine = value;
+    }
 
     // </editor-fold>
     // <editor-fold desc="Method">
@@ -441,9 +459,12 @@ public abstract class XYPlot extends Plot {
         //Draw graph        
         this.drawGraph(g, graphArea);
 
-//        g.setStroke(new BasicStroke(1.0f));
-//        g.setColor(Color.gray);
-//        g.draw(graphArea);
+        //Draw neat line
+        if (this.drawNeatLine){
+            g.setStroke(new BasicStroke(1.0f));
+            g.setColor(Color.black);
+            g.draw(graphArea);
+        }
 
         //Draw axis
         this.drawAxis(g, graphArea);

@@ -42,6 +42,7 @@ public class MapPlot extends XY2DPlot {
         this.setXAxis(new LonLatAxis("Longitude", true));
         this.setYAxis(new LonLatAxis("Latitude", false));
         this.getAxis(Location.RIGHT).setDrawTickLabel(false);
+        this.setDrawNeatLine(true);
     }
 
     /**
