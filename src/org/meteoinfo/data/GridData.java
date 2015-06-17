@@ -2267,6 +2267,7 @@ public class GridData {
      *
      * @param toGridData The grid data
      * @param method The resample method
+     * @return Result grid data
      */
     public GridData resample(GridData toGridData, ResampleMethods method) {
         GridData gridData;
@@ -2347,6 +2348,182 @@ public class GridData {
         gData.yArray = newY;
 
         return gData;
+    }
+    
+    /**
+     * Interpolate grid data
+     * @return Result grid data
+     */
+    public GridData interpolate(){
+        int nxNum = this.xArray.length * 2 - 1;
+        int nyNum = this.yArray.length * 2 - 1;
+        double[] newX = new double[nxNum];
+        double[] newY = new double[nyNum];
+        
+        double[][] newData = interpolation_Grid(data, this.xArray, this.yArray, missingValue, newX, newY);
+        int i;
+        for (i = 0; i < nxNum; i++) {
+            if (i % 2 == 0) {
+                newX[i] = this.xArray[i / 2];
+            } else {
+                newX[i] = (this.xArray[(i - 1) / 2] + this.xArray[(i - 1) / 2 + 1]) / 2;
+            }
+        }
+        for (i = 0; i < nyNum; i++) {
+            if (i % 2 == 0) {
+                newY[i] = this.yArray[i / 2];
+            } else {
+                newY[i] = (this.yArray[(i - 1) / 2] + this.yArray[(i - 1) / 2 + 1]) / 2;
+            }
+        }
+        GridData gdata = new GridData();
+        gdata.data = newData;
+        gdata.xArray = newX;
+        gdata.yArray = newY;
+        gdata.missingValue = this.missingValue;
+        
+        return gdata;
+    }
+    
+    /**
+     * Interpolate from grid data
+     *
+     * @param GridData input grid data
+     * @param X input x coordinates
+     * @param Y input y coordinates
+     * @param unDefData undefine data
+     * @param nX output x coordinate
+     * @param nY output y coordinate
+     * @return output grid data
+     */
+    public double[][] interpolation_Grid(double[][] GridData, double[] X, double[] Y, double unDefData,
+            double[] nX, double[] nY) {
+        //int xNum = X.length;
+        //int yNum = Y.length;
+        int nxNum = X.length * 2 - 1;
+        int nyNum = Y.length * 2 - 1;
+        nX = new double[nxNum];
+        nY = new double[nyNum];
+        double[][] nGridData = new double[nyNum][nxNum];
+        int i, j;
+        double a, b, c, d;
+        List<java.lang.Double> dList;
+        for (i = 0; i < nxNum; i++) {
+            if (i % 2 == 0) {
+                nX[i] = X[i / 2];
+            } else {
+                nX[i] = (X[(i - 1) / 2] + X[(i - 1) / 2 + 1]) / 2;
+            }
+        }
+        for (i = 0; i < nyNum; i++) {
+            if (i % 2 == 0) {
+                nY[i] = Y[i / 2];
+            } else {
+                nY[i] = (Y[(i - 1) / 2] + Y[(i - 1) / 2 + 1]) / 2;
+            }
+            for (j = 0; j < nxNum; j++) {
+                if (i % 2 == 0 && j % 2 == 0) {
+                    nGridData[i][j] = GridData[i / 2][j / 2];
+                } else if (i % 2 == 0 && j % 2 != 0) {
+                    a = GridData[i / 2][(j - 1) / 2];
+                    b = GridData[i / 2][(j - 1) / 2 + 1];
+                    dList = new ArrayList<>();
+                    if (a != unDefData) {
+                        dList.add(a);
+                    }
+                    if (b != unDefData) {
+                        dList.add(b);
+                    }
+
+                    if (dList.isEmpty()) {
+                        nGridData[i][j] = unDefData;
+                    } else if (dList.size() == 1) {
+                        nGridData[i][j] = dList.get(0);
+                    } else {
+                        nGridData[i][j] = (a + b) / 2;
+                    }
+                } else if (i % 2 != 0 && j % 2 == 0) {
+                    a = GridData[(i - 1) / 2][j / 2];
+                    b = GridData[(i - 1) / 2 + 1][j / 2];
+                    dList = new ArrayList<>();
+                    if (a != unDefData) {
+                        dList.add(a);
+                    }
+                    if (b != unDefData) {
+                        dList.add(b);
+                    }
+
+                    if (dList.isEmpty()) {
+                        nGridData[i][j] = unDefData;
+                    } else if (dList.size() == 1) {
+                        nGridData[i][j] = dList.get(0);
+                    } else {
+                        nGridData[i][j] = (a + b) / 2;
+                    }
+                } else {
+                    a = GridData[(i - 1) / 2][(j - 1) / 2];
+                    b = GridData[(i - 1) / 2][(j - 1) / 2 + 1];
+                    c = GridData[(i - 1) / 2 + 1][(j - 1) / 2 + 1];
+                    d = GridData[(i - 1) / 2 + 1][(j - 1) / 2];
+                    dList = new ArrayList<>();
+                    if (a != unDefData) {
+                        dList.add(a);
+                    }
+                    if (b != unDefData) {
+                        dList.add(b);
+                    }
+                    if (c != unDefData) {
+                        dList.add(c);
+                    }
+                    if (d != unDefData) {
+                        dList.add(d);
+                    }
+
+                    if (dList.isEmpty()) {
+                        nGridData[i][j] = unDefData;
+                    } else if (dList.size() == 1) {
+                        nGridData[i][j] = dList.get(0);
+                    } else {
+                        double aSum = 0;
+                        for (double dd : dList) {
+                            aSum += dd;
+                        }
+                        nGridData[i][j] = aSum / dList.size();
+                    }
+                }
+            }
+        }
+
+        return nGridData;
+    }
+    
+    /**
+     * Interpolate grid data
+     * @return Result grid data
+     */
+    public GridData interpolate_old(){
+        int nxNum = this.xArray.length * 2 - 1;
+        int nyNum = this.yArray.length * 2 - 1;
+        double[] newX = new double[nxNum];
+        double[] newY = new double[nyNum];
+        int i;
+        
+        for (i = 0; i < nxNum; i++) {
+            if (i % 2 == 0) {
+                newX[i] = this.xArray[i / 2];
+            } else {
+                newX[i] = (this.xArray[(i - 1) / 2] + this.xArray[(i - 1) / 2 + 1]) / 2;
+            }
+        }
+        for (i = 0; i < nyNum; i++) {
+            if (i % 2 == 0) {
+                newY[i] = this.yArray[i / 2];
+            } else {
+                newY[i] = (this.yArray[(i - 1) / 2] + this.yArray[(i - 1) / 2 + 1]) / 2;
+            }
+        }
+        
+        return this.resample_Bilinear(newX, newY);
     }
 
     /**

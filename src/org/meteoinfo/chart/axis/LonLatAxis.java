@@ -25,7 +25,7 @@ public class LonLatAxis extends Axis {
     public LonLatAxis(String label, boolean isX){
         super(label, isX);
         
-        this.drawDegreeSymbol = false;
+        this.drawDegreeSymbol = true;
     }
     
     /**

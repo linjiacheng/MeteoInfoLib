@@ -11,7 +11,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.List;
+import org.meteoinfo.global.util.BigDecimalUtil;
 import org.meteoinfo.global.util.GlobalUtil;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
@@ -136,8 +138,14 @@ public class ArrayUtil {
         final int length = Math.max(0, (int) Math.ceil((stopv
                 - startv) / stepv));
         Array a = Array.factory(dataType, new int[]{length});
-        for (int i = 0; i < length; i++) {
-            a.setObject(i, i * stepv + startv);
+        if (dataType == DataType.FLOAT || dataType == DataType.DOUBLE) {
+            for (int i = 0; i < length; i++) {
+                a.setObject(i, BigDecimalUtil.add(BigDecimalUtil.mul(i, stepv), startv));
+            }
+        } else {
+            for (int i = 0; i < length; i++) {
+                a.setObject(i, i * stepv + startv);
+            }
         }
         return a;
     }
@@ -157,8 +165,14 @@ public class ArrayUtil {
         double startv = start.doubleValue();
         double stepv = step.doubleValue();
         Array a = Array.factory(dataType, new int[]{length});
-        for (int i = 0; i < length; i++) {
-            a.setObject(i, i * stepv + startv);
+        if (dataType == DataType.FLOAT || dataType == DataType.DOUBLE) {
+            for (int i = 0; i < length; i++) {
+                a.setObject(i, BigDecimalUtil.add(BigDecimalUtil.mul(i, stepv), startv));
+            }
+        } else {
+            for (int i = 0; i < length; i++) {
+                a.setObject(i, i * stepv + startv);
+            }
         }
         return a;
     }
@@ -196,7 +210,7 @@ public class ArrayUtil {
         }
         Array a = Array.factory(DataType.FLOAT, new int[]{n});
         for (int i = 0; i < n; i++) {
-            a.setObject(i, i * stepv + startv);
+            a.setObject(i, BigDecimalUtil.add(BigDecimalUtil.mul(i, stepv), startv));
         }
 
         return a;
@@ -358,7 +372,6 @@ public class ArrayUtil {
         return sbuff.toString();
     }
     // </editor-fold>
-
     // <editor-fold desc="Convert">
     /**
      * To data type - ucar.ma2
@@ -384,4 +397,62 @@ public class ArrayUtil {
 
     
     // </editor-fold>
+    // <editor-fold desc="Resample">
+    private static Array resample_Bilinear(Array a, List<Number> X, List<Number> Y, List<Number> newX, List<Number> newY) {
+        Array r = Array.factory(DataType.DOUBLE, a.getShape());
+        int i, j;
+        int xn = newX.size();
+        int yn = newY.size();
+        double x, y;
+
+        for (i = 0; i < yn; i++) {
+            y = newY.get(i).doubleValue();
+            for (j = 0; j < xn; j++) {
+                x = newX.get(j).doubleValue();
+                if (x < X.get(0).doubleValue() || x > X.get(X.size() - 1).doubleValue()) {
+                    r.setDouble(i * xn + j, Double.NaN);
+                } else if (y < Y.get(0).doubleValue() || y > Y.get(Y.size() - 1).doubleValue()) {
+                    r.setDouble(i * xn + j, Double.NaN);
+                } else {
+                    r.setDouble(i * xn + j, 9999.0);
+                    //newdata[i][j] = this.toStation(x, y);
+                }
+            }
+        }
+
+        return r;
+    }
+    
+    /**
+     * Interpolate array data
+     * @param a Array
+     * @param X X coordinates
+     * @param Y Y coordinates
+     * @return Result array data
+     */
+    public Array interpolate(Array a, List<Number> X, List<Number> Y){
+        int nxNum = X.size() * 2 - 1;
+        int nyNum = Y.size() * 2 - 1;
+        List<Number> newX = new ArrayList<>();
+        List<Number> newY = new ArrayList<>();
+        int i;
+        
+        for (i = 0; i < nxNum; i++) {
+            if (i % 2 == 0) {
+                newX.add(X.get(i / 2).doubleValue());
+            } else {
+                newX.add((X.get((i - 1) / 2).doubleValue() + X.get((i - 1) / 2 + 1).doubleValue()) / 2);
+            }
+        }
+        for (i = 0; i < nyNum; i++) {
+            if (i % 2 == 0) {
+                newY.add(Y.get(i / 2).doubleValue());
+            } else {
+                newY.add((Y.get((i - 1) / 2).doubleValue() + Y.get((i - 1) / 2 + 1).doubleValue()) / 2);
+            }
+        }
+        
+        return resample_Bilinear(a, X, Y, newX, newY);
+    }
+    // </editor-fold>    
 }
