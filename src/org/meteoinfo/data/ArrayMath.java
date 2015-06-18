@@ -624,7 +624,7 @@ public class ArrayMath {
      * @return Result array
      */
     public static Array sqrt(Array a) {
-        return ArrayMath.pow(a, -2);
+        return ArrayMath.pow(a, 0.5);
     }
     
     /**
