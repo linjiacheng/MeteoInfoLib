@@ -21,6 +21,7 @@ public class XY2DPlot extends XYPlot {
 
     // <editor-fold desc="Variables">
     private MapView mapView;
+    private boolean antialias;
     // </editor-fold>
     // <editor-fold desc="Constructor">
     /**
@@ -28,6 +29,7 @@ public class XY2DPlot extends XYPlot {
      */
     public XY2DPlot() {
         super();
+        this.antialias = false;
     }
     
     /**
@@ -74,11 +76,28 @@ public class XY2DPlot extends XYPlot {
     public PlotType getPlotType() {
         return PlotType.XY2D;
     }
+    
+    /**
+     * Get if is antialias
+     * @return Boolean
+     */
+    public boolean isAntialias(){
+        return this.antialias;
+    }
+    
+    /**
+     * Set if is antialias
+     * @param value Boolean
+     */
+    public void setAntialias(boolean value){
+        this.antialias = value;
+    }
     // </editor-fold>
     // <editor-fold desc="Methods">
     
     @Override
     void drawGraph(Graphics2D g, Rectangle2D area) {
+        this.mapView.setAntiAlias(this.antialias);
         this.mapView.setViewExtent((Extent)this.getDrawExtent().clone());
         this.mapView.paintGraphics(g, area);
     }

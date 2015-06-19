@@ -21,6 +21,8 @@ import org.meteoinfo.global.MIMath;
 import org.meteoinfo.shape.ShapeTypes;
 import java.awt.Color;
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -1488,7 +1490,9 @@ public class LegendManage {
             return cValues;
         }
         
-        eStr = String.format("%1$E", range);
+        NumberFormat formatter = new DecimalFormat("0.#E0");
+        eStr = formatter.format(range);
+        //eStr = String.format("%1$E", range);
         aD = Integer.parseInt(eStr.substring(0, 1));
         aE = (int) Math.floor(Math.log10(range));
 //        int idx = eStr.indexOf("E");

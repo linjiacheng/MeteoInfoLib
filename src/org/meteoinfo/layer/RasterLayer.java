@@ -23,6 +23,7 @@ import org.meteoinfo.shape.ShapeTypes;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import org.meteoinfo.legend.LegendType;
 
 /**
  *
@@ -204,11 +205,20 @@ public class RasterLayer extends ImageLayer {
                     oneColor = undefColor;
                 } else {
                     oneColor = defaultColor;
-                    //循环只到breakNum-1 是因为最后一个LegendBreaks的EndValue和StartValue是一样的
-                    for (int k = 0; k < breakNum - 1; k++) {
-                        if (oneValue < breakValue[k]) {
-                            oneColor = breakColor[k];
-                            break;
+                    if (als.getLegendType() == LegendType.GraduatedColor){
+                        //循环只到breakNum-1 是因为最后一个LegendBreaks的EndValue和StartValue是一样的
+                        for (int k = 0; k < breakNum - 1; k++) {
+                            if (oneValue < breakValue[k]) {
+                                oneColor = breakColor[k];
+                                break;
+                            }
+                        }
+                    } else {
+                        for (int k = 0; k < breakNum - 1; k++) {
+                            if (oneValue == breakValue[k]) {
+                                oneColor = breakColor[k];
+                                break;
+                            }
                         }
                     }
                 }

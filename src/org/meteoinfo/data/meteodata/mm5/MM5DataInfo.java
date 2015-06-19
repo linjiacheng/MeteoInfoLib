@@ -43,7 +43,7 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
     // <editor-fold desc="Variables">
     private ByteOrder _byteOrder = ByteOrder.BIG_ENDIAN;
     private BigHeader _bigHeader = new BigHeader();
-    List<SubHeader> _subHeaders = new ArrayList<SubHeader>();
+    List<SubHeader> _subHeaders = new ArrayList<>();
     // </editor-fold>
     // <editor-fold desc="Constructor">
 

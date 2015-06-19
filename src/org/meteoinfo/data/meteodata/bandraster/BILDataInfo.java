@@ -168,7 +168,7 @@ public class BILDataInfo extends DataInfo implements IGridDataInfo {
                 yDim.setValues(Y);
                 this.setYDimension(yDim);
 
-                List<Variable> variables = new ArrayList<Variable>();
+                List<Variable> variables = new ArrayList<>();
                 for (i = 0; i < this._nbands; i++) {
                     Variable aVar = new Variable();
                     aVar.setName("band" + String.valueOf(i));

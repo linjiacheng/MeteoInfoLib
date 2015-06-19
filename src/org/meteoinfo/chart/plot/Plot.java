@@ -61,6 +61,24 @@ public abstract class Plot {
     /** Row index as a sub plot. */
     public int rowIndex = 0;
     
+    private boolean autoPosition = false;
+    
+    /**
+     * Get if automaticly set position
+     * @return Boolean
+     */
+    public boolean isAutoPosition(){
+        return this.autoPosition;
+    }
+    
+    /**
+     * Set if automaticly set position
+     * @param value Boolean
+     */
+    public void setAutoPosition(boolean value){
+        this.autoPosition = value;
+    }
+    
     private Rectangle2D position = new Rectangle2D.Double(0.13, 0.11, 0.775, 0.815);
     
     /**

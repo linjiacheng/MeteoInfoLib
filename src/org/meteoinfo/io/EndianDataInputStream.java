@@ -22,25 +22,26 @@ import java.io.IOException;
  * @author yaqiang - come from OpenJump
  */
 public class EndianDataInputStream {
-    private java.io.DataInputStream inputStream;
-    private byte[] workSpace = new byte[8]; //chars are 16 bits, so we always quash the 1st 8 bits
+    private final java.io.DataInputStream inputStream;
+    private final byte[] workSpace = new byte[8]; //chars are 16 bits, so we always quash the 1st 8 bits
 
-    /** Creates new EndianDataInputStream */
+    /** Creates new EndianDataInputStream
+     * @param in */
     public EndianDataInputStream(java.io.InputStream in) {
         inputStream = new DataInputStream(new BufferedInputStream(in));
     }
 
-    /** close the stream**/
+    /** close the strea*/
     public void close() throws IOException {
         inputStream.close();
     }
 
-    /** read a byte in BigEndian - the same as LE because its only 1 byte*/
+    /** read a byte in BigEndian - the same as LE because its only 1 byt*/
     public byte readByteBE() throws IOException {
         return inputStream.readByte();
     }
 
-    /** read a byte in LittleEndian - the same as BE because its only 1 byte*/
+    /** read a byte in LittleEndian - the same as BE because its only 1 byt*/
     public byte readByteLE() throws IOException {
         return inputStream.readByte();
     }

@@ -424,7 +424,12 @@ public abstract class XYPlot extends Plot {
         //Get graphic area
         //graphArea = this.getGraphArea(g, area);
         //graphArea = this.getPositionArea(g, area);
-        Rectangle2D graphArea = this.getPositionArea(this.getPositionAreaZoom());
+        Rectangle2D graphArea;
+        if (this.isAutoPosition()){
+            graphArea = this.getGraphArea(g, area);
+        } else {
+            graphArea = this.getPositionArea(this.getPositionAreaZoom());
+        }
 
         //Draw title
         //float y = 5;

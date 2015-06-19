@@ -45,6 +45,7 @@ import org.meteoinfo.global.util.DateUtil;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.data.mathparser.MathParser;
 import org.meteoinfo.data.mathparser.ParseException;
+import org.meteoinfo.data.meteodata.awx.AWXDataInfo;
 import org.meteoinfo.data.meteodata.bandraster.GeoTiffDataInfo;
 import ucar.ma2.Array;
 import ucar.nc2.NetcdfFile;
@@ -61,7 +62,7 @@ public class MeteoDataInfo {
     private int _timeIdx;
     private int _levelIdx;
     private int _latIdx;
-    private int _lonIdx;    
+    private int _lonIdx;
     /// <summary>
     /// Is Lont/Lat
     /// </summary>
@@ -292,7 +293,7 @@ public class MeteoDataInfo {
      * @return Boolean
      */
     public boolean isGridData() {
-        
+
         switch (this.getDataType()) {
             case ARL_Grid:
             case ASCII_Grid:
@@ -313,20 +314,17 @@ public class MeteoDataInfo {
                 } else {
                     return true;
                 }
-//                    case AWX:
-//                        if (((AWXDataInfo)DataInfo).ProductType == 3) {
-//                return true;
-//            }
-//                        else {
-//                return false;
-//            }
-//                    case HDF:
-//                        if (((HDF5DataInfo)DataInfo).CurrentVariable.IsSwath) {
-//                return false;
-//            }
-//                        else {
-//                return true;
-//            }
+            case GEOTIFF:
+                return true;
+            case AWX:
+                switch (((AWXDataInfo) this.getDataInfo()).getProductType()) {
+                    case 1:
+                    case 2:
+                    case 3:
+                        return true;
+                    default:
+                        return false;
+                }
             default:
                 return false;
         }
@@ -350,16 +348,12 @@ public class MeteoDataInfo {
             case SYNOP:
             case HYSPLIT_Particle:
                 return true;
-//                    case AWX:
-//                        if (((AWXDataInfo)DataInfo).ProductType == 4)
-//                            return true;
-//                        else
-//                            return false;
-//                    case HDF:
-//                        if (((HDF5DataInfo)DataInfo).CurrentVariable.IsSwath)
-//                            return true;
-//                        else
-//                            return false;
+            case AWX:
+                if (((AWXDataInfo) this.getDataInfo()).getProductType() == 4) {
+                    return true;
+                } else {
+                    return false;
+                }
             default:
                 return false;
         }
@@ -419,23 +413,25 @@ public class MeteoDataInfo {
                 dn = 1;
                 break;
         }
-        
+
         return dn;
     }
+
     // </editor-fold>
     // <editor-fold desc="Methods">
     // <editor-fold desc="Open Data">
     /**
      * Open data file
+     *
      * @param fileName File name
      */
-    public void openData(String fileName){
+    public void openData(String fileName) {
         try {
             boolean canOpen = NetcdfFile.canOpen(fileName);
-            if (canOpen){
+            if (canOpen) {
                 this.openNetCDFData(fileName);
             } else {
-                if (ARLDataInfo.canOpen(fileName)){
+                if (ARLDataInfo.canOpen(fileName)) {
                     this.openARLData(fileName);
                 }
             }
@@ -456,7 +452,7 @@ public class MeteoDataInfo {
         GrADSDataInfo aDataInfo = (GrADSDataInfo) _dataInfo;
         if (aDataInfo.DTYPE.equals("Gridded")) {
             yReserve = aDataInfo.OPTIONS.yrev;
-            
+
             if (!aDataInfo.isLatLon) {
                 IsLonLat = false;
                 EarthWind = aDataInfo.EarthWind;
@@ -480,6 +476,21 @@ public class MeteoDataInfo {
     }
 
     /**
+     * Open AWX data
+     *
+     * @param aFile File path
+     */
+    public void openAWXData(String aFile) {
+        AWXDataInfo aDataInfo = new AWXDataInfo();
+        aDataInfo.readDataInfo(aFile);
+        _dataInfo = aDataInfo;
+        //IsLonLat = aDataInfo.isLatLon;
+
+        //Get data info text
+        _infoText = aDataInfo.generateInfoText();
+    }
+
+    /**
      * Open ASCII grid data
      *
      * @param aFile File path
@@ -494,7 +505,7 @@ public class MeteoDataInfo {
         //Get data info text
         _infoText = aDataInfo.generateInfoText();
     }
-    
+
     /**
      * Open ASCII grid data
      *
@@ -601,10 +612,10 @@ public class MeteoDataInfo {
         _dataInfo.readDataInfo(fileName);
         _infoText = _dataInfo.generateInfoText();
     }
-    
+
     /**
      * Open MM5 Output data
-     * 
+     *
      * @param fileName File path
      */
     public void openMM5Data(String fileName) {
@@ -612,10 +623,10 @@ public class MeteoDataInfo {
         _dataInfo.readDataInfo(fileName);
         _infoText = _dataInfo.generateInfoText();
     }
-    
+
     /**
      * Open MM5 Intermediate data
-     * 
+     *
      * @param fileName File path
      */
     public void openMM5IMData(String fileName) {
@@ -634,7 +645,7 @@ public class MeteoDataInfo {
         if (mdType == null) {
             return;
         }
-        
+
         switch (mdType) {
             case MICAPS_1:
                 _dataInfo = new MICAPS1DataInfo();
@@ -680,7 +691,7 @@ public class MeteoDataInfo {
     public String getFileName() {
         return _dataInfo.getFileName();
     }
-    
+
     /**
      * Read array data of the variable
      *
@@ -693,7 +704,7 @@ public class MeteoDataInfo {
     public Array read(String varName, int[] origin, int[] size, int[] stride) {
         return this._dataInfo.read(varName, origin, size, stride);
     }
-    
+
     /**
      * Read array data of the variable
      *
@@ -708,21 +719,23 @@ public class MeteoDataInfo {
         int[] origin_a = new int[n];
         int[] size_a = new int[n];
         int[] stride_a = new int[n];
-        for (int i = 0; i < n; i++){
+        for (int i = 0; i < n; i++) {
             origin_a[i] = origin.get(i);
             size_a[i] = size.get(i);
         }
-        if (stride == null){
-            for (int i = 0; i < n; i++)
-                stride_a[i] = 1;            
+        if (stride == null) {
+            for (int i = 0; i < n; i++) {
+                stride_a[i] = 1;
+            }
         } else {
-            for (int i = 0; i < n; i++)
-                stride_a[i] = stride.get(i);    
+            for (int i = 0; i < n; i++) {
+                stride_a[i] = stride.get(i);
+            }
         }
-        
+
         return this._dataInfo.read(varName, origin_a, size_a, stride_a);
     }
-    
+
     /**
      * Read array data of the variable
      *
@@ -770,7 +783,7 @@ public class MeteoDataInfo {
         if (_varIdx < 0) {
             return null;
         }
-        
+
         GridData gdata = null;
         switch (_dimensionSet) {
             case Lat_Lon:
@@ -804,10 +817,11 @@ public class MeteoDataInfo {
                 gdata = ((IGridDataInfo) _dataInfo).getGridData_Time(_lonIdx, _latIdx, _varIdx, _levelIdx);
                 break;
         }
-        
-        if (gdata != null)
+
+        if (gdata != null) {
             gdata.projInfo = this.getProjectionInfo();
-        
+        }
+
         return gdata;
     }
 
@@ -889,7 +903,7 @@ public class MeteoDataInfo {
     public int getVariableIndex(String varName) {
         List<String> varList = _dataInfo.getVariableNames();
         int idx = varList.indexOf(varName);
-        
+
         return idx;
     }
 
@@ -928,7 +942,7 @@ public class MeteoDataInfo {
                 }
             }
         }
-        
+
         return tData;
     }
 
@@ -948,7 +962,7 @@ public class MeteoDataInfo {
         if (t.before(times.get(0)) || t.after(times.get(tnum - 1))) {
             return this.getDataInfo().getMissingValue();
         }
-        
+
         double ivalue = this.getDataInfo().getMissingValue();
         double v_t1, v_t2;
         for (int i = 0; i < tnum; i++) {
@@ -964,10 +978,10 @@ public class MeteoDataInfo {
                 ivalue = (v_t2 - v_t1) * h / th + v_t1;
             }
         }
-        
+
         return ivalue;
     }
-    
+
     /**
      * Interpolate data to a station point
      *
@@ -998,14 +1012,14 @@ public class MeteoDataInfo {
                 v_t2s = this.toStation(varNames, x, y, z, i);
                 int h = DateUtil.getTimeDeltaValue(t, times.get(i - 1), "hours");
                 int th = DateUtil.getTimeDeltaValue(times.get(i), times.get(i - 1), "hours");
-                for (int j = 0; j < v_t1s.size(); j ++){
+                for (int j = 0; j < v_t1s.size(); j++) {
                     v_t1 = v_t1s.get(j);
                     v_t2 = v_t2s.get(j);
                     ivalues.add((v_t2 - v_t1) * h / th + v_t1);
-                }                
+                }
             }
         }
-        
+
         return ivalues;
     }
 
@@ -1033,8 +1047,9 @@ public class MeteoDataInfo {
                 break;
             }
             if (z < levels.get(j)) {
-                if (j == 0)
+                if (j == 0) {
                     j = 1;
+                }
                 this.setLevelIndex(j - 1);
                 v_z1 = this.getGridData(varName).toStation(x, y);
                 this.setLatIndex(j);
@@ -1043,7 +1058,7 @@ public class MeteoDataInfo {
                 break;
             }
         }
-        
+
         return ivalue;
     }
 
@@ -1084,7 +1099,7 @@ public class MeteoDataInfo {
                 }
             }
         }
-        
+
         return ivalues;
     }
     // </eidtor-fold>

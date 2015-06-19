@@ -16,6 +16,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 import org.meteoinfo.chart.plot.Plot;
+import org.meteoinfo.chart.plot.XY2DPlot;
 import org.meteoinfo.global.PointF;
 
 /**
@@ -330,6 +331,9 @@ public class Chart {
                 //Rectangle2D subPlotArea = this.getSubPlotArea(g, plot, plotArea);                
                 //Rectangle2D subPlotArea = plot.getOuterPositionArea();
                 //plot.draw(g, subPlotArea);
+                if (plot instanceof XY2DPlot){
+                    ((XY2DPlot)plot).setAntialias(this.antiAlias);
+                }
                 plot.draw(g, area);
             }
         }
