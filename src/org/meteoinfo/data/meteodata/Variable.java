@@ -616,6 +616,32 @@ public class Variable {
 
         return aDim;
     }
+    
+    /**
+     * Set a dimension
+     * @param tstr Dimension type string
+     * @param values Dimension values
+     */
+    public void setDimension(String tstr, List<Number> values){
+        DimensionType dType = DimensionType.Other;
+        switch(tstr){
+            case "X":
+                dType = DimensionType.X;
+                break;
+            case "Y":
+                dType = DimensionType.Y;
+                break;
+            case "Z":
+                dType = DimensionType.Z;
+                break;
+            case "T":
+                dType = DimensionType.T;
+                break;
+        }
+        Dimension dim = new Dimension(dType);
+        dim.setDimValues(values);
+        this.setDimension(dim);
+    }
 
     /**
      * Set dimension
