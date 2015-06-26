@@ -474,6 +474,23 @@ public class Chart {
         double top = rect.getY() + this.plotArea.getY();
         return new Rectangle2D.Double(left, top, rect.getWidth(), rect.getHeight());
     }
+    
+    /**
+     * Find a plot by point
+     * @param x X
+     * @param y Y 
+     * @return Plot
+     */
+    public Plot findPlot(int x, int y){
+        for (Plot plot : this.plots){
+            Rectangle2D area = plot.getPositionArea();
+            if (area.contains(x, y)){
+                return plot;
+            }
+        }
+        
+        return null;
+    }
 
     /**
      * Clear plots

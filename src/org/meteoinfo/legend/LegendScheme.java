@@ -315,7 +315,13 @@ public class LegendScheme {
     }
     // </editor-fold>
     // <editor-fold desc="Methods">
-    /// <summary>
+    /**
+     * Add a legend break
+     * @param lb Legend break
+     */
+    public void addLegendBreak(ColorBreak lb){
+        this.legendBreaks.add(lb);
+    }
 
     /**
      * Get color list
@@ -323,7 +329,7 @@ public class LegendScheme {
      * @return Color list
      */
     public List<Color> getColors() {
-        List<Color> colors = new ArrayList<Color>();
+        List<Color> colors = new ArrayList<>();
         for (int i = 0; i < legendBreaks.size(); i++) {
             colors.add(legendBreaks.get(i).getColor());
         }

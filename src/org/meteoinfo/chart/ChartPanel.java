@@ -63,6 +63,7 @@ import org.freehep.graphics2d.VectorGraphics;
 import org.freehep.graphicsio.emf.EMFGraphics2D;
 import org.freehep.graphicsio.pdf.PDFGraphics2D;
 import org.freehep.graphicsio.ps.PSGraphics2D;
+import org.meteoinfo.chart.plot.Plot;
 import org.meteoinfo.chart.plot.XY1DPlot;
 import org.meteoinfo.chart.plot.XY2DPlot;
 import org.meteoinfo.chart.plot.XYPlot;
@@ -315,7 +316,7 @@ public class ChartPanel extends JPanel {
             Rectangle2D chartArea = new Rectangle2D.Double(0.0, 0.0, this.mapBitmap.getWidth(), this.mapBitmap.getHeight());
             this.chart.draw(g, chartArea);
         }
-    }
+    }        
 
     void onComponentResized(ComponentEvent e) {
         if (this.chart != null) {
@@ -338,7 +339,10 @@ public class ChartPanel extends JPanel {
         switch (this.mouseMode) {
             case ZOOM:
                 if (Math.abs(mouseLastPos.x - mouseDownPoint.x) > 5) {
-                    XYPlot xyplot = (XYPlot) this.chart.getPlots().get(0);
+                    XYPlot xyplot = (XYPlot) this.chart.findPlot(mouseLastPos.x, mouseLastPos.y);
+                    if (xyplot == null)
+                        return;
+                    
                     if (xyplot instanceof XY1DPlot) {
                         XY1DPlot plot = (XY1DPlot) xyplot;
                         Rectangle2D graphArea = this.chart.getGraphArea();
@@ -434,7 +438,7 @@ public class ChartPanel extends JPanel {
             plot.setAutoExtent();
         } else if (xyplot instanceof XY2DPlot) {
             XY2DPlot plot = (XY2DPlot) xyplot;
-            plot.setDrawExtent(plot.getMapView().getExtent());
+            plot.setDrawExtent(plot.getMapView().getLastAddedLayer().getExtent());
         }
         this.paintGraphics();
     }

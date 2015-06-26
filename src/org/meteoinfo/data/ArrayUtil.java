@@ -230,17 +230,59 @@ public class ArrayUtil {
 
         return a;
     }
+    
+    /**
+     * Get zero array
+     *
+     * @param shape Shape
+     * @param dtype Data type
+     * @return Array Result array
+     */
+    public static Array zeros(List<Integer> shape, String dtype) {
+        DataType dt = toDataType(dtype);
+        int[] ashape = new int[shape.size()];
+        for (int i = 0; i < shape.size(); i++){
+            ashape[i] = shape.get(i);
+        }
+        Array a = Array.factory(dt, ashape);
+        for (int i = 0; i < a.getSize(); i++) {
+            a.setObject(i, 0);
+        }
+
+        return a;
+    }
 
     /**
      * Get ones array
      *
      * @param n Number
-     * @return Array
+     * @return Array Result array
      */
     public static Array ones(int n) {
         Array a = Array.factory(DataType.FLOAT, new int[]{n});
         for (int i = 0; i < n; i++) {
             a.setFloat(i, 1);
+        }
+
+        return a;
+    }
+    
+    /**
+     * Get ones array
+     *
+     * @param shape Shape
+     * @param dtype Data type
+     * @return Array Result array
+     */
+    public static Array ones(List<Integer> shape, String dtype) {
+        DataType dt = toDataType(dtype);
+        int[] ashape = new int[shape.size()];
+        for (int i = 0; i < shape.size(); i++){
+            ashape[i] = shape.get(i);
+        }
+        Array a = Array.factory(dt, ashape);
+        for (int i = 0; i < a.getSize(); i++) {
+            a.setObject(i, 1);
         }
 
         return a;
@@ -383,12 +425,16 @@ public class ArrayUtil {
         switch (dt) {
             case "C":
             case "s":
+            case "string":
                 return DataType.STRING;
             case "i":
+            case "int":
                 return DataType.INT;
             case "f":
+            case "float":
                 return DataType.FLOAT;
             case "d":
+            case "double":
                 return DataType.DOUBLE;
             default:
                 return DataType.OBJECT;
