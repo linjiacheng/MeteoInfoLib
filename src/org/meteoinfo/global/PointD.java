@@ -18,7 +18,7 @@ package org.meteoinfo.global;
  *
  * @author User
  */
-public class PointD {
+public class PointD implements Cloneable{
     // <editor-fold desc="Variables">
 
     public double X;
@@ -53,10 +53,14 @@ public class PointD {
      */
     @Override
     public Object clone() {
-        PointD aP = new PointD();
-        aP.X = X;
-        aP.Y = Y;
-        return aP;
+        PointD o = null;
+        try {
+            o = (PointD)super.clone();
+        } catch (CloneNotSupportedException ex) {
+            ex.printStackTrace();
+        }
+        
+        return o;
     }
     // </editor-fold>
 }

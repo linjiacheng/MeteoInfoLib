@@ -36,7 +36,7 @@ public class PolylineZ {
      */
     public PolylineZ() {
         _extent = new Extent();
-        _pointList = new ArrayList<PointZ>();
+        _pointList = new ArrayList<>();
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -72,7 +72,7 @@ public class PolylineZ {
     // </editor-fold>
     // <editor-fold desc="Methods">
     private List<PointD> getPointDList() {
-        List<PointD> pList = new ArrayList<PointD>();
+        List<PointD> pList = new ArrayList<>();
         for (PointZ aP : _pointList) {
             pList.add(aP.toPointD());
         }
@@ -85,7 +85,7 @@ public class PolylineZ {
      *
      * @return Boolean
      */
-    public boolean IsClosed() {
+    public boolean isClosed() {
         PointZ sPoint = _pointList.get(0);
         PointZ ePoint = _pointList.get(_pointList.size() - 1);
         if (MIMath.doubleEquals(sPoint.X, ePoint.X) && MIMath.doubleEquals(sPoint.Y, ePoint.Y)) {

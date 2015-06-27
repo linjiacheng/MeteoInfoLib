@@ -24,7 +24,7 @@ import java.util.List;
  * 
  * @author Yaqiang Wang
  */
-public class PointShape extends Shape {
+public class PointShape extends Shape implements Cloneable{
     // <editor-fold desc="Variables">
 
     private PointD _point = new PointD();
@@ -89,7 +89,7 @@ public class PointShape extends Shape {
      */
     @Override
     public List<PointD> getPoints() {
-        List<PointD> pList = new ArrayList<PointD>();
+        List<PointD> pList = new ArrayList<>();
         pList.add(_point);
 
         return pList;
@@ -111,14 +111,8 @@ public class PointShape extends Shape {
      */
     @Override
     public Object clone() {
-        PointShape aPS = new PointShape();
-        aPS.setPoint(_point);
-        aPS.setValue(_value);
-        aPS.setVisible(this.isVisible());
-        aPS.setSelected(this.isSelected());
-        aPS.setLegendIndex(this.getLegendIndex());
-
-        return aPS;
+        PointShape o = (PointShape)super.clone();
+        return o;
     }
     // </editor-fold>
 }

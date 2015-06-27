@@ -864,7 +864,7 @@ public class GeoComputation {
             if (!isAllIn) //Put start point outside of the cut polygon
             {
                 if (inPolyLine.isClosed()) {
-                    List<PointD> bPList = new ArrayList<PointD>();
+                    List<PointD> bPList = new ArrayList<>();
                     bPList.addAll(aPList.subList(notInIdx, aPList.size()));
                     bPList.addAll(aPList.subList(0, notInIdx));
 
@@ -980,7 +980,7 @@ public class GeoComputation {
                         newPlist.add(IPoint);
 
                         bLine = new Polyline();
-                        bLine.setPointList(new ArrayList<PointD>(newPlist));
+                        bLine.setPointList(new ArrayList<>(newPlist));
                         newPolylines.add(bLine);
 
                         isInPolygon = false;

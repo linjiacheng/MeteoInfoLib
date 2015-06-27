@@ -19,7 +19,7 @@ import org.meteoinfo.global.PointD;
  *
  * @author yaqiang
  */
-public class PointZ extends PointD {
+public class PointZ extends PointD implements Cloneable{
     // <editor-fold desc="Variables">
 
     /**
@@ -65,6 +65,16 @@ public class PointZ extends PointD {
      */
     public PointD toPointD() {
         return new PointD(X, Y);
+    }
+    
+    /**
+     * Clone
+     * 
+     * @return PointZ object
+     */
+    @Override
+    public Object clone() {
+        return (PointZ)super.clone();
     }
     // </editor-fold>
 }

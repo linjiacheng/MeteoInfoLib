@@ -51,7 +51,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.EventListenerList;
 import org.meteoinfo.projection.proj4j.CRSFactory;
-import org.meteoinfo.shape.PointZ;
 
 /**
  *
@@ -295,10 +294,10 @@ public class ProjectionSet {
                 }
 
                 if (isJoin) {
-                    List<Polyline> polyLines = new ArrayList<Polyline>();
+                    List<Polyline> polyLines = new ArrayList<>();
                     Polyline aPL = new Polyline();
-                    List<PointD> pList = new ArrayList<PointD>(aPLS.getPolylines().get(1).getPointList());
-                    List<PointD> bPList = new ArrayList<PointD>(aPLS.getPolylines().get(0).getPointList());
+                    List<PointD> pList = new ArrayList<>(aPLS.getPolylines().get(1).getPointList());
+                    List<PointD> bPList = new ArrayList<>(aPLS.getPolylines().get(0).getPointList());
                     Collections.reverse(bPList);
                     pList.addAll(bPList);
                     aPL.setPointList(pList);
@@ -374,7 +373,7 @@ public class ProjectionSet {
      */
     public void projectLayer(VectorLayer oLayer, ProjectionInfo toProj, boolean projectLabels) {
         ProjectionInfo fromProj = oLayer.getProjInfo();
-        if (fromProj.toProj4String().equals(toProj.toProj4String())) {
+        if (fromProj.equals(toProj)) {
             if (oLayer.isProjected()) {
                 oLayer.getOriginData();
             }
@@ -414,7 +413,7 @@ public class ProjectionSet {
             case WindArraw:
             case WindBarb:
             case StationModel:
-                List<Shape> shapePoints = new ArrayList<Shape>();
+                List<Shape> shapePoints = new ArrayList<>();
                 newPoints.clear();
                 for (s = 0; s < oLayer.getShapeNum(); s++) {
                     PointShape aPS = (PointShape) oLayer.getShapes().get(s);
@@ -455,17 +454,17 @@ public class ProjectionSet {
                         }
                     }
                 }
-                oLayer.setShapes(new ArrayList<Shape>(shapePoints));
+                oLayer.setShapes(new ArrayList<>(shapePoints));
                 oLayer.setExtent(MIMath.getPointsExtent(newPoints));
 
                 break;
             case Polyline:
             case PolylineM:
             case PolylineZ:
-                List<Shape> newPolylines = new ArrayList<Shape>();
+                List<Shape> newPolylines = new ArrayList<>();
                 for (s = 0; s < oLayer.getShapeNum(); s++) {
                     PolylineShape aPLS = (PolylineShape) oLayer.getShapes().get(s);
-                    List<PolylineShape> plsList = new ArrayList<PolylineShape>();
+                    List<PolylineShape> plsList = new ArrayList<>();
                     if (fromProj.getProjectionName() == ProjectionNames.LongLat) {
                         switch (toProj.getProjectionName()) {
                             case Lambert_Conformal_Conic:
@@ -532,17 +531,17 @@ public class ProjectionSet {
                         }
                     }
                 }
-                oLayer.setShapes(new ArrayList<Shape>(newPolylines));
+                oLayer.setShapes(new ArrayList<>(newPolylines));
                 newPolylines.clear();
                 oLayer.setExtent(lExtent);
                 break;
             case Polygon:
             case PolygonM:
-                List<Shape> newPolygons = new ArrayList<Shape>();
+                List<Shape> newPolygons = new ArrayList<>();
                 for (s = 0; s < oLayer.getShapeNum(); s++) {
                     DataRow aDR = oLayer.getAttributeTable().getTable().getRows().get(s);
                     PolygonShape aPGS = (PolygonShape) oLayer.getShapes().get(s);
-                    List<PolygonShape> pgsList = new ArrayList<PolygonShape>();
+                    List<PolygonShape> pgsList = new ArrayList<>();
                     if (fromProj.getProjectionName() == ProjectionNames.LongLat) {
                         switch (toProj.getProjectionName()) {
                             case Lambert_Conformal_Conic:
@@ -599,7 +598,7 @@ public class ProjectionSet {
                         }
                     }
                 }
-                oLayer.setShapes(new ArrayList<Shape>(newPolygons));
+                oLayer.setShapes(new ArrayList<>(newPolygons));
                 newPolygons.clear();
                 oLayer.setExtent(lExtent);
                 break;
@@ -610,7 +609,7 @@ public class ProjectionSet {
             if (projectLabels) {
                 oLayer.setLabelPoints(projectGraphics(oLayer.getLabelPoints(), fromProj, toProj));
             } else {
-                oLayer.setLabelPoints(new ArrayList<Graphic>(oLayer.getLabelPoints()));
+                oLayer.setLabelPoints(new ArrayList<>(oLayer.getLabelPoints()));
             }
         }
     }
@@ -637,7 +636,7 @@ public class ProjectionSet {
         }
 
         int s;
-        List<Shape> vectors = new ArrayList<Shape>();
+        List<Shape> vectors = new ArrayList<>();
         newPoints.clear();
         for (s = 0; s < aLayer.getShapeNum(); s++) {
             PointShape aPS = (PointShape) aLayer.getShapes().get(s);
@@ -683,7 +682,7 @@ public class ProjectionSet {
             } catch (Exception e) {
             }
         }
-        aLayer.setShapes(new ArrayList<Shape>(vectors));
+        aLayer.setShapes(new ArrayList<>(vectors));
         aLayer.setExtent(MIMath.getPointsExtent(newPoints));
         aLayer.getAttributeTable().setTable(aTable);
 
@@ -725,11 +724,11 @@ public class ProjectionSet {
         }
 
         //coordinate transform process
-        int i, j, s;
-        PointD wPoint = new PointD();
-        PointD aPoint = new PointD();
-        List<PointD> newPoints = new ArrayList<PointD>();
-        Extent lExtent = new Extent();
+        int s;
+        //PointD wPoint = new PointD();
+        PointD aPoint;
+        List<PointD> newPoints = new ArrayList<>();
+        //Extent lExtent = new Extent();
 
         DataTable aTable = new DataTable();
         for (DataColumn aDC : oLayer.getAttributeTable().getTable().getColumns()) {
@@ -737,7 +736,7 @@ public class ProjectionSet {
             aTable.getColumns().add(bDC);
         }
 
-        List<Shape> shapes = new ArrayList<Shape>();
+        List<Shape> shapes = new ArrayList<>();
         newPoints.clear();
         for (s = 0; s < oLayer.getShapeNum(); s++) {
             PointShape aPS = (PointShape) oLayer.getShapes().get(s);
@@ -788,7 +787,7 @@ public class ProjectionSet {
             } catch (Exception e) {
             }
         }
-        oLayer.setShapes(new ArrayList<Shape>(shapes));
+        oLayer.setShapes(new ArrayList<>(shapes));
         oLayer.setExtent(MIMath.getPointsExtent(newPoints));
         oLayer.getAttributeTable().setTable(aTable);
 
@@ -828,15 +827,24 @@ public class ProjectionSet {
     }
 
     private PolylineShape projectPolylineShape(PolylineShape aPLS, ProjectionInfo fromProj, ProjectionInfo toProj) {
-        List<Polyline> polyLines = new ArrayList<Polyline>();
+        List<Polyline> polyLines = new ArrayList<>();
         for (int i = 0; i < aPLS.getPolylines().size(); i++) {
-            List<PointD> newPoints = new ArrayList<PointD>();
+            List<PointD> newPoints = new ArrayList<>();
             Polyline aPL = aPLS.getPolylines().get(i);
-            Polyline bPL = null;
+            Polyline bPL;
+            double x;
             for (int j = 0; j < aPL.getPointList().size(); j++) {
                 double[][] points = new double[1][];
                 PointD wPoint = aPL.getPointList().get(j);
-                points[0] = new double[]{wPoint.X, wPoint.Y};
+                x = wPoint.X;
+                if (fromProj.isLonLat()){
+                    if (x > 180){
+                        x -= 360;
+                    } else if (x < -180){
+                        x += 360;
+                    }                    
+                }
+                points[0] = new double[]{x, wPoint.Y};
                 try {
                     Reproject.reprojectPoints(points, fromProj, toProj, 0, points.length);
                     if (!Double.isNaN(points[0][0]) && !Double.isNaN(points[0][1])) {
@@ -868,11 +876,11 @@ public class ProjectionSet {
     }
 
     private CurveLineShape projectCurvelineShape(CurveLineShape aPLS, ProjectionInfo fromProj, ProjectionInfo toProj) {
-        List<Polyline> polyLines = new ArrayList<Polyline>();
+        List<Polyline> polyLines = new ArrayList<>();
         for (int i = 0; i < aPLS.getPolylines().size(); i++) {
-            List<PointD> newPoints = new ArrayList<PointD>();
+            List<PointD> newPoints = new ArrayList<>();
             Polyline aPL = aPLS.getPolylines().get(i);
-            Polyline bPL = null;
+            Polyline bPL;
             for (int j = 0; j < aPL.getPointList().size(); j++) {
                 double[][] points = new double[1][];
                 PointD wPoint = aPL.getPointList().get(j);
@@ -916,13 +924,13 @@ public class ProjectionSet {
      * @return Projected polygon shape
      */
     public PolygonShape projectPolygonShape(PolygonShape aPGS, ProjectionInfo fromProj, ProjectionInfo toProj) {
-        List<Polygon> polygons = new ArrayList<Polygon>();
+        List<Polygon> polygons = new ArrayList<>();
         for (int i = 0; i < aPGS.getPolygons().size(); i++) {
             Polygon aPG = aPGS.getPolygons().get(i);
             Polygon bPG = null;
             for (int r = 0; r < aPG.getRingNumber(); r++) {
                 List<PointD> pList = aPG.getRings().get(r);
-                List<PointD> newPoints = new ArrayList<PointD>();
+                List<PointD> newPoints = new ArrayList<>();
                 for (int j = 0; j < pList.size(); j++) {
                     double[][] points = new double[1][];
                     PointD wPoint = pList.get(j);
@@ -969,13 +977,13 @@ public class ProjectionSet {
     }
 
     private CurvePolygonShape projectCurvePolygonShape(CurvePolygonShape aPGS, ProjectionInfo fromProj, ProjectionInfo toProj) {
-        List<Polygon> polygons = new ArrayList<Polygon>();
+        List<Polygon> polygons = new ArrayList<>();
         for (int i = 0; i < aPGS.getPolygons().size(); i++) {
             Polygon aPG = aPGS.getPolygons().get(i);
             Polygon bPG = null;
             for (int r = 0; r < aPG.getRingNumber(); r++) {
                 List<PointD> pList = aPG.getRings().get(r);
-                List<PointD> newPoints = new ArrayList<PointD>();
+                List<PointD> newPoints = new ArrayList<>();
                 for (int j = 0; j < pList.size(); j++) {
                     double[][] points = new double[1][];
                     PointD wPoint = pList.get(j);
@@ -1054,7 +1062,7 @@ public class ProjectionSet {
         }
 
         radius = Math.abs(centerPoint.X - leftPoint.X);
-        List<PointD> newPoints = new ArrayList<PointD>();
+        List<PointD> newPoints = new ArrayList<>();
         newPoints.add(new PointD(centerPoint.X - radius, centerPoint.Y));
         newPoints.add(new PointD(centerPoint.X, centerPoint.Y - radius));
         newPoints.add(new PointD(centerPoint.X + radius, centerPoint.Y));
@@ -1100,7 +1108,7 @@ public class ProjectionSet {
 
         xRadius = Math.abs(centerPoint.X - lbPoint.X);
         yRadius = Math.abs(centerPoint.Y - lbPoint.Y);
-        List<PointD> newPoints = new ArrayList<PointD>();
+        List<PointD> newPoints = new ArrayList<>();
         newPoints.add(new PointD(centerPoint.X - xRadius, centerPoint.Y - yRadius));
         newPoints.add(new PointD(centerPoint.X - xRadius, centerPoint.Y + yRadius));
         newPoints.add(new PointD(centerPoint.X + xRadius, centerPoint.Y + yRadius));
@@ -1210,7 +1218,7 @@ public class ProjectionSet {
     }
 
     private List<Graphic> projectGraphics(List<Graphic> graphics, ProjectionInfo fromProj, ProjectionInfo toProj) {
-        List<Graphic> newGraphics = new ArrayList<Graphic>();
+        List<Graphic> newGraphics = new ArrayList<>();
         for (Graphic aGraphic : graphics) {
             Shape aShape = projectShape(aGraphic.getShape(), fromProj, toProj);
             if (aShape != null) {

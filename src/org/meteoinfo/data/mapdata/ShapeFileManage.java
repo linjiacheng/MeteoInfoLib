@@ -64,6 +64,7 @@ public class ShapeFileManage {
      * @param shpfilepath Shape file path
      * @return Vector layer
      * @throws IOException
+     * @throws java.io.FileNotFoundException
      */
     public static VectorLayer loadShapeFile(String shpfilepath) throws IOException, FileNotFoundException, Exception {
         //Set file names                       
@@ -257,7 +258,7 @@ public class ShapeFileManage {
             aPL.setPartNum(buffer.getInt());
             int numPoints = buffer.getInt();
             aPL.parts = new int[aPL.getPartNum()];
-            List<PointD> points = new ArrayList<PointD>();
+            List<PointD> points = new ArrayList<>();
 
             //firstly read out parts begin pos in file 
             for (int j = 0; j < aPL.getPartNum(); j++) {
@@ -319,7 +320,7 @@ public class ShapeFileManage {
             aPL.setPartNum(buffer.getInt());
             int numPoints = buffer.getInt();
             aPL.parts = new int[aPL.getPartNum()];
-            List<PointD> points = new ArrayList<PointD>();
+            List<PointD> points = new ArrayList<>();
 
             //firstly read out parts begin position in file 
             for (int j = 0; j < aPL.getPartNum(); j++) {
@@ -354,7 +355,7 @@ public class ShapeFileManage {
             }
 
             //Get pointZ list
-            List<PointZ> pointZs = new ArrayList<PointZ>();
+            List<PointZ> pointZs = new ArrayList<>();
             for (int j = 0; j < numPoints; j++) {
                 pointZs.add(new PointZ(points.get(j).X, points.get(j).Y, zArray[j], mArray[j]));
             }
@@ -402,7 +403,7 @@ public class ShapeFileManage {
             aSPG.setPartNum(buffer.getInt());
             int numPoints = buffer.getInt();
             aSPG.parts = new int[aSPG.getPartNum()];
-            List<PointD> points = new ArrayList<PointD>();
+            List<PointD> points = new ArrayList<>();
 
             //firstly read out parts begin pos in file 
             for (int j = 0; j < aSPG.getPartNum(); j++) {
@@ -461,7 +462,7 @@ public class ShapeFileManage {
             aSPG.setPartNum(buffer.getInt());
             int numPoints = buffer.getInt();
             aSPG.parts = new int[aSPG.getPartNum()];
-            List<PointD> points = new ArrayList<PointD>();
+            List<PointD> points = new ArrayList<>();
 
             //firstly read out parts begin pos in file 
             for (int j = 0; j < aSPG.getPartNum(); j++) {
@@ -487,7 +488,7 @@ public class ShapeFileManage {
             }
             
             //Get pointM list
-            List<PointM> pointMs = new ArrayList<PointM>();
+            List<PointM> pointMs = new ArrayList<>();
             for (int j = 0; j < numPoints; j++) {
                 pointMs.add(new PointM(points.get(j).X, points.get(j).Y, mArray[j]));
             }
@@ -540,7 +541,7 @@ public class ShapeFileManage {
      * @param shpfilepath Shape file path
      * @param aLayer Vector layer
      * @return Boolean
-     */
+     * @throws java.io.IOException*/
     public static boolean saveShapeFile(String shpfilepath, VectorLayer aLayer) throws IOException {
         String shxfilepath = shpfilepath.replace(shpfilepath.substring(shpfilepath.lastIndexOf(".")), ".shx");
         String dbffilepath = shpfilepath.replace(shpfilepath.substring(shpfilepath.lastIndexOf(".")), ".dbf");

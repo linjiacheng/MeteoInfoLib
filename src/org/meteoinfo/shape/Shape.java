@@ -23,7 +23,7 @@ import java.util.List;
  *
  * @author Yaqiang Wang
  */
-public class Shape {
+public class Shape implements Cloneable{
     // <editor-fold desc="Variables">
 
     private ShapeTypes _shapeType;
@@ -227,13 +227,13 @@ public class Shape {
      */
     @Override
     public Object clone() {
-        Shape aShape = new Shape();
-        aShape.setShapeType(this._shapeType);
-        aShape.setVisible(_visible);
-        aShape.setExtent(_extent);
-        aShape.setSelected(_visible);
-        aShape.setLegendIndex(_legendIndex);
-        return aShape;
+        Shape o = null;
+        try {
+            o = (Shape)super.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        return o;
     }
     // </editor-fold>
 }

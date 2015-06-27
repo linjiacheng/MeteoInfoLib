@@ -14,8 +14,9 @@
 package org.meteoinfo.shape;
 
 import org.meteoinfo.global.MIMath;
-import org.meteoinfo.global.PointD;
 import java.util.ArrayList;
+import java.util.List;
+import org.meteoinfo.global.Extent;
 
 /**
  * PolylineZ shape class
@@ -85,6 +86,18 @@ public class PolylineZShape extends PolylineShape {
     public double[] getMRange() {
         return MIMath.arrayMinMax(getMArray());
     }
+    
+    @Override
+    public Object clone(){
+        PolylineZShape o = (PolylineZShape)super.clone();
+//        List<PointZ> points = new ArrayList<>();
+//        for (PointZ point : (List<PointZ>)this.getPoints()){
+//            points.add((PointZ)point.clone());
+//        }
+//        o.setPoints(points);
+        
+        return o;
+    }
 
     /**
      * Clone
@@ -92,13 +105,17 @@ public class PolylineZShape extends PolylineShape {
      * @return PolylineZShape object
      */
     @Override
-    public Object clone() {
+    public Object clone_old() {
         PolylineZShape aPLS = new PolylineZShape();
         aPLS.value = value;
-        aPLS.setExtent(this.getExtent());
+        aPLS.setExtent((Extent)this.getExtent().clone());
         aPLS.setPartNum(this.getPartNum());
         aPLS.parts = (int[]) parts.clone();
-        aPLS.setPoints(new ArrayList<PointD>(this.getPoints()));
+        List<PointZ> points = new ArrayList<>();
+        for (PointZ point : (List<PointZ>)this.getPoints()){
+            points.add((PointZ)point.clone());
+        }
+        aPLS.setPoints(points);
         aPLS.setVisible(this.isVisible());
         aPLS.setSelected(this.isSelected());
         aPLS.setLegendIndex(this.getLegendIndex());

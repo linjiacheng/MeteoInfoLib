@@ -14,13 +14,15 @@
 package org.meteoinfo.global;
 
 import java.awt.Rectangle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Template
  *
  * @author Yaqiang Wang
  */
-public class Extent {
+public class Extent implements Cloneable{
     // <editor-fold desc="Variables">
     /// <summary>
     /// minimun x
@@ -147,8 +149,14 @@ public class Extent {
      */
     @Override
     public Object clone() {
-        Extent aExtent = new Extent(this.minX, this.maxX, this.minY, this.maxY);
-        return aExtent;
+        Extent o = null;
+        try {
+            o = (Extent)super.clone();
+        } catch (CloneNotSupportedException ex) {
+            ex.printStackTrace();
+        }
+        
+        return o;
     }
     // </editor-fold>
 }

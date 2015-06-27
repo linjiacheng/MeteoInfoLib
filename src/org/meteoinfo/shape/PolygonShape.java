@@ -25,7 +25,7 @@ import java.util.List;
  * 
  * @author Yaqiang Wang
  */
-public class PolygonShape extends Shape {
+public class PolygonShape extends Shape implements Cloneable{
     // <editor-fold desc="Variables">
 
     private List<PointD> _points;
@@ -54,11 +54,11 @@ public class PolygonShape extends Shape {
      */
     public PolygonShape() {
         this.setShapeType(ShapeTypes.Polygon);
-        _points = new ArrayList<PointD>();
+        _points = new ArrayList<>();
         _numParts = 1;
         parts = new int[1];
         parts[0] = 0;
-        _polygons = new ArrayList<Polygon>();
+        _polygons = new ArrayList<>();
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -164,7 +164,7 @@ public class PolygonShape extends Shape {
     // <editor-fold desc="Methods">
 
     private void updatePolygons() {
-        _polygons = new ArrayList<Polygon>();
+        _polygons = new ArrayList<>();
         if (_numParts == 1) {
             Polygon aPolygon = new Polygon();
             aPolygon.setOutLine(_points);
@@ -209,8 +209,8 @@ public class PolygonShape extends Shape {
 
     private void updatePartsPoints() {
         _numParts = 0;
-        _points = new ArrayList<PointD>();
-        List<Integer> partList = new ArrayList<Integer>();
+        _points = new ArrayList<>();
+        List<Integer> partList = new ArrayList<>();
         for (int i = 0; i < _polygons.size(); i++) {
             _numParts += _polygons.get(i).getRingNumber();
             for (int j = 0; j < _polygons.get(i).getRingNumber(); j++) {
@@ -286,12 +286,16 @@ public class PolygonShape extends Shape {
         this.updatePolygons();
     }
 
+    @Override
+    public Object clone() {
+        return (PolygonShape)super.clone();
+    }
+    
     /** 
      * Clone
      * @return PolygonShape
      */
-    @Override
-    public Object clone() {
+    public Object clone_old() {
         PolygonShape aPGS = new PolygonShape();
         aPGS.setExtent(this.getExtent());
         aPGS.highValue = highValue;

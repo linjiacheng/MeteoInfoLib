@@ -662,7 +662,7 @@ public final class DataTable {
         for (DataColumn col : this.columns){
             DataColumn newcol = (DataColumn)col.clone();
             //newcol.setTable(table);
-            table.addColumn(newcol);
+            table.addColumn(new Field(newcol));
         }
         
         for (DataRow row : this.rows){

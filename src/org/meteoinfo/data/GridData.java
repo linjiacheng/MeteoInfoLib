@@ -1738,7 +1738,7 @@ public class GridData {
         double b = data[i1][j2];
         double c = data[i2][j1];
         double d = data[i2][j2];
-        List<java.lang.Double> dList = new ArrayList<java.lang.Double>();
+        List<java.lang.Double> dList = new ArrayList<>();
         if (a != missingValue) {
             dList.add(a);
         }
@@ -2135,8 +2135,9 @@ public class GridData {
      * Get grid data setting
      *
      * @return Grid data setting
+     * @throws java.lang.CloneNotSupportedException
      */
-    public GridDataSetting getGridDataSetting() {
+    public GridDataSetting getGridDataSetting() throws CloneNotSupportedException {
         GridDataSetting gDataSet = new GridDataSetting();
         gDataSet.dataExtent = (Extent) this.getExtent().clone();
         gDataSet.xNum = this.getXNum();

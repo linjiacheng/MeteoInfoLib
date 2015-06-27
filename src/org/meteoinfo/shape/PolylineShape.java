@@ -21,10 +21,10 @@ import java.util.List;
 
 /**
  * Poyline shape class
- * 
+ *
  * @author Yaqiang Wang
  */
-public class PolylineShape extends Shape {
+public class PolylineShape extends Shape implements Cloneable {
     // <editor-fold desc="Variables">
 
     private List<? extends PointD> _points;
@@ -49,7 +49,7 @@ public class PolylineShape extends Shape {
      */
     public PolylineShape() {
         this.setShapeType(ShapeTypes.Polyline);
-        _points = new ArrayList<PointD>();
+        _points = new ArrayList<>();
         _numParts = 1;
         parts = new int[1];
         parts[0] = 0;
@@ -59,7 +59,7 @@ public class PolylineShape extends Shape {
 
     /**
      * Get points
-     * 
+     *
      * @return point list
      */
     @Override
@@ -69,7 +69,7 @@ public class PolylineShape extends Shape {
 
     /**
      * Set points
-     * 
+     *
      * @param points point list
      */
     @Override
@@ -78,34 +78,37 @@ public class PolylineShape extends Shape {
         this.setExtent(MIMath.getPointsExtent(_points));
         updatePolyLines();
     }
-    
+
     /**
      * Get part number
+     *
      * @return Part number
      */
-    public int getPartNum(){
+    public int getPartNum() {
         return this._numParts;
     }
-    
+
     /**
      * Set part number
+     *
      * @param value Part number
      */
-    public void setPartNum(int value){
+    public void setPartNum(int value) {
         this._numParts = value;
     }
-    
+
     /**
      * Get point number
+     *
      * @return Point number
      */
-    public int getPointNum(){
+    public int getPointNum() {
         return this._points.size();
     }
 
     /**
      * Get polylines
-     * 
+     *
      * @return polyline list
      */
     public List<? extends Polyline> getPolylines() {
@@ -119,7 +122,7 @@ public class PolylineShape extends Shape {
 
     /**
      * Get length
-     * 
+     *
      * @return length
      */
     public double getLength() {
@@ -139,7 +142,7 @@ public class PolylineShape extends Shape {
     // <editor-fold desc="Methods">
 
     private void updatePolyLines() {
-        List<Polyline> polylines = new ArrayList<Polyline>();
+        List<Polyline> polylines = new ArrayList<>();
         if (_numParts == 1) {
             Polyline aPolyLine = new Polyline();
             aPolyLine.setPointList(_points);
@@ -166,14 +169,14 @@ public class PolylineShape extends Shape {
                 polylines.add(aPolyLine);
             }
         }
-        
+
         _polylines = polylines;
     }
 
     private void updatePartsPoints() {
         _numParts = 0;
-        List<PointD> points = new ArrayList<PointD>();
-        List<Integer> partList = new ArrayList<Integer>();
+        List<PointD> points = new ArrayList<>();
+        List<Integer> partList = new ArrayList<>();
         for (int i = 0; i < _polylines.size(); i++) {
             _numParts += 1;
             partList.add(points.size());
@@ -186,62 +189,79 @@ public class PolylineShape extends Shape {
         }
         this.setExtent(MIMath.getPointsExtent(_points));
     }
-    
+
     /**
      * Get part index
+     *
      * @param vIdx The vertice index
      * @return Part index
      */
-    public int getPartIndex(int vIdx){
-        if (_numParts == 1)
+    public int getPartIndex(int vIdx) {
+        if (_numParts == 1) {
             return 0;
-        else {
+        } else {
             for (int p = 1; p < _numParts; p++) {
-                if (vIdx < parts[p])
+                if (vIdx < parts[p]) {
                     return p - 1;
+                }
             }
             return _numParts - 1;
         }
     }
-    
+
     /**
      * Add a vertice
+     *
      * @param vIdx Vertice index
      * @param vertice The vertice
      */
     @Override
-    public void addVertice(int vIdx, PointD vertice){     
+    public void addVertice(int vIdx, PointD vertice) {
         int partIdx = getPartIndex(vIdx);
-        if (partIdx < _numParts - 1)
+        if (partIdx < _numParts - 1) {
             parts[partIdx + 1] += 1;
-        
-        ((List<PointD>)_points).add(vIdx, vertice);
-        this.setExtent(MIMath.getPointsExtent(_points));
-        updatePolyLines();
-    }
-    
-    /**
-     * Remove a vertice
-     * @param vIdx Vertice index
-     */
-    @Override
-    public void removeVerice(int vIdx){      
-        int partIdx = getPartIndex(vIdx);
-        if (partIdx < _numParts - 1)
-            parts[partIdx + 1] -= 1;
-        
-        ((List<PointD>)_points).remove(vIdx);
+        }
+
+        ((List<PointD>) _points).add(vIdx, vertice);
         this.setExtent(MIMath.getPointsExtent(_points));
         updatePolyLines();
     }
 
     /**
-     * Clone
-     * 
-     * @return PolylineShape
+     * Remove a vertice
+     *
+     * @param vIdx Vertice index
      */
     @Override
+    public void removeVerice(int vIdx) {
+        int partIdx = getPartIndex(vIdx);
+        if (partIdx < _numParts - 1) {
+            parts[partIdx + 1] -= 1;
+        }
+
+        ((List<PointD>) _points).remove(vIdx);
+        this.setExtent(MIMath.getPointsExtent(_points));
+        updatePolyLines();
+    }
+
+    @Override
     public Object clone() {
+        PolylineShape o = (PolylineShape) super.clone();
+        List<PointD> points = new ArrayList<>();
+        for (PointD point : (List<PointD>)_points){
+            points.add((PointD)point.clone());
+        }
+        o.setPoints(points);
+        
+        return o;
+    }
+
+    /**
+     * Clone
+     *
+     * @return PolylineShape
+     */
+    public Object clone_old() {
         PolylineShape aPLS = new PolylineShape();
         aPLS.value = value;
         aPLS.setExtent(this.getExtent());
@@ -257,6 +277,7 @@ public class PolylineShape extends Shape {
 
     /**
      * Value clone
+     *
      * @return PolylineShape
      */
     public PolylineShape valueClone() {

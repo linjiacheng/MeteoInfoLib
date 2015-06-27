@@ -115,10 +115,10 @@ public class VectorLayer extends MapLayer {
         _avoidCollision = false;
         _attributeTable = new AttributeTable();
         _labelSet = new LabelSet();
-        _labelPoints = new ArrayList<Graphic>();
+        _labelPoints = new ArrayList<>();
         _chartSet = new ChartSet();
-        _chartPoints = new ArrayList<ChartGraphic>();
-        _shapeList = new ArrayList<Shape>();
+        _chartPoints = new ArrayList<>();
+        _shapeList = new ArrayList<>();
         LegendScheme ls = LegendManage.createSingleSymbolLegendScheme(shapeType);
         super.setLegendScheme(ls);
         //_isEditing = false;
@@ -596,7 +596,7 @@ public class VectorLayer extends MapLayer {
      * @return Selected shapes
      */
     public List<Integer> selectShapes(Extent aExtent, List<Shape> shapes, boolean isSingleSel) {
-        List<Integer> selectedShapes = new ArrayList<Integer>();
+        List<Integer> selectedShapes = new ArrayList<>();
         int i, j;
         PointD sp = aExtent.getCenterPoint();
 
@@ -622,7 +622,7 @@ public class VectorLayer extends MapLayer {
             case PolylineM:
             case PolylineZ:
                 Object sel;
-                List<Double> dislist = new ArrayList<Double>();
+                List<Double> dislist = new ArrayList<>();
                 for (i = 0; i < shapes.size(); i++) {
                     PolylineShape aPLS = (PolylineShape) shapes.get(i);
                     if (MIMath.isExtentCross(aExtent, aPLS.getExtent())) {
@@ -684,7 +684,7 @@ public class VectorLayer extends MapLayer {
      * @return Selected shape indexes
      */
     public List<Integer> selectShapes(PolygonShape polygonShape) {
-        List<Integer> selIdxs = new ArrayList<Integer>();
+        List<Integer> selIdxs = new ArrayList<>();
         for (int i = 0; i < _shapeList.size(); i++) {
             boolean isIn = false;
             List<PointD> points = (List<PointD>) _shapeList.get(i).getPoints();
@@ -710,7 +710,7 @@ public class VectorLayer extends MapLayer {
      * @return Selected shapes
      */
     public List<Shape> getSelectedShapes() {
-        List<Shape> selShapes = new ArrayList<Shape>();
+        List<Shape> selShapes = new ArrayList<>();
         for (Shape shape : _shapeList) {
             if (shape.isSelected()) {
                 selShapes.add(shape);
@@ -726,7 +726,7 @@ public class VectorLayer extends MapLayer {
      * @return Index list
      */
     public List<Integer> getSelectedShapeIndexes() {
-        List<Integer> selIndexes = new ArrayList<Integer>();
+        List<Integer> selIndexes = new ArrayList<>();
         for (int i = 0; i < this.getShapeNum(); i++) {
             if (_shapeList.get(i).isSelected()) {
                 selIndexes.add(i);
@@ -742,7 +742,7 @@ public class VectorLayer extends MapLayer {
      * @return The visible shapes
      */
     public List<Shape> getVisibleShapes() {
-        List<Shape> visShapes = new ArrayList<Shape>();
+        List<Shape> visShapes = new ArrayList<>();
         for (Shape shape : _shapeList) {
             if (shape.isVisible()) {
                 visShapes.add(shape);
@@ -814,7 +814,7 @@ public class VectorLayer extends MapLayer {
      * @return The field name list
      */
     public List<String> getFieldNames() {
-        List<String> FNList = new ArrayList<String>();
+        List<String> FNList = new ArrayList<>();
         for (int i = 0; i < this.getFieldNumber(); i++) {
             FNList.add(getFieldName(i));
         }
@@ -828,7 +828,7 @@ public class VectorLayer extends MapLayer {
      */
     public List<Field> getFields() {
         DataColumnCollection cols = _attributeTable.getTable().getColumns();
-        List<Field> fields = new ArrayList<Field>();
+        List<Field> fields = new ArrayList<>();
         for (DataColumn col : cols) {
             fields.add((Field)col);
         }
@@ -1176,7 +1176,7 @@ public class VectorLayer extends MapLayer {
      * @return Clipped result layer
      */
     public VectorLayer clip(VectorLayer clipLayer, boolean onlySel) {
-        List<Shape> shapes = new ArrayList<Shape>();
+        List<Shape> shapes = new ArrayList<>();
         if (onlySel) {
             for (Shape aShape : clipLayer.getShapes()) {
                 if (aShape.isSelected()) {
@@ -1459,13 +1459,13 @@ public class VectorLayer extends MapLayer {
      */
     public void updateOriginData() {
         _originAttributeTable = (AttributeTable) _attributeTable.clone();
-        _originShapes = new ArrayList<Shape>();
+        _originShapes = new ArrayList<>();
         for (Shape aShape : _shapeList) {
             _originShapes.add((Shape) aShape.clone());
         }
 
-        _originLabelPoints = new ArrayList<Graphic>(_labelPoints);
-        _originChartPoints = new ArrayList<ChartGraphic>(_chartPoints);
+        _originLabelPoints = new ArrayList<>(_labelPoints);
+        _originChartPoints = new ArrayList<>(_chartPoints);
         _projected = true;
     }
 
@@ -1474,7 +1474,7 @@ public class VectorLayer extends MapLayer {
      */
     public void getOriginData() {
         _attributeTable = (AttributeTable) _originAttributeTable.clone();
-        _shapeList = new ArrayList<Shape>();
+        _shapeList = new ArrayList<>();
         for (Shape aShape : _originShapes) {
             _shapeList.add((Shape) aShape.clone());
         }
@@ -2144,14 +2144,14 @@ public class VectorLayer extends MapLayer {
                 break;
             case UniqueValue:
                 Color[] colors;
-                List<String> valueList = new ArrayList<String>();
+                List<String> valueList = new ArrayList<>();
                 boolean isDateField = false;
                 DataTypes colType = this.getAttributeTable().getTable().getColumns().get(fieldName).getDataType();
                 if (colType == DataTypes.Date) {
                     isDateField = true;
                 }
 
-                List<String> captions = new ArrayList<String>();
+                List<String> captions = new ArrayList<>();
                 SimpleDateFormat format = new SimpleDateFormat("yyyy/M/d");
 
                 for (int i = 0; i < this.getAttributeTable().getTable().getRows().size(); i++) {

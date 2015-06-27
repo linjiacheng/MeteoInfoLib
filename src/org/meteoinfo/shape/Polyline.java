@@ -36,7 +36,7 @@ public class Polyline {
 
     public Polyline() {
         _extent = new Extent();
-        _pointList = new ArrayList<PointD>();
+        _pointList = new ArrayList<>();
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -74,7 +74,7 @@ public class Polyline {
      * @param points point array
      */
     public void setPoints(PointF[] points) {
-        List<PointD> pointList = new ArrayList<PointD>();
+        List<PointD> pointList = new ArrayList<>();
         for (PointF aP : points) {
             pointList.add(new PointD(aP.X, aP.Y));
         }
@@ -144,7 +144,7 @@ public class Polyline {
             return null;
         }
 
-        List<double[]> pos = new ArrayList<double[]>();
+        List<double[]> pos = new ArrayList<>();
         double x, y, angle;
         double[] lengths = getLengths();
         int idx = 0;

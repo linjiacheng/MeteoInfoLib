@@ -68,7 +68,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
     /// <summary>
     /// Projection info
     /// </summary>
-    public ProjectionInfo projInfo;
+    //public ProjectionInfo projInfo;
     /// <summary>
     /// Data head
     /// </summary>
@@ -137,7 +137,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         //varLevList = new List<ARLVAR>();
         missingValue = -9999;
         isGlobal = false;
-        projInfo = KnownCoordinateSystems.geographic.world.WGS1984;
+        //projInfo = KnownCoordinateSystems.geographic.world.WGS1984;
         this.setDataType(MeteoDataType.ARL_Grid);
     }
     // </editor-fold>
@@ -380,7 +380,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                 }
 
                 theProj = new ProjectionInfo(ProjStr);
-                projInfo = theProj;
+                this.setProjectionInfo(theProj);
 
                 //Set X Y
                 X = new double[aDH.NX];

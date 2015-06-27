@@ -19,7 +19,7 @@ package org.meteoinfo.global;
  * 
  * @author Yaqiang Wang
  */
-public class PointF {
+public class PointF implements Cloneable{
      // <editor-fold desc="Variables">
 
     public float X;
@@ -51,12 +51,18 @@ public class PointF {
      * Clone
      * 
      * @return PointF object
+     * @throws java.lang.CloneNotSupportedException
      */
+    @Override
     public Object clone() {
-        PointF aP = new PointF();
-        aP.X = X;
-        aP.Y = Y;
-        return aP;
+        PointF o = null;
+        try {
+            o = (PointF)super.clone();
+        } catch (CloneNotSupportedException ex) {
+            ex.printStackTrace();
+        }
+        
+        return o;
     }
     // </editor-fold>
 }

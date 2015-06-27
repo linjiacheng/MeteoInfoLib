@@ -96,6 +96,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.print.DocFlavor;
 import javax.print.DocPrintJob;
@@ -206,7 +208,11 @@ public class MapLayout extends JPanel {
         this.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                onMouseClicked(e);
+                try {
+                    onMouseClicked(e);
+                } catch (CloneNotSupportedException ex) {
+                    Logger.getLogger(MapLayout.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
 
             @Override
@@ -216,7 +222,11 @@ public class MapLayout extends JPanel {
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                onMouseReleased(e);
+                try {
+                    onMouseReleased(e);
+                } catch (CloneNotSupportedException ex) {
+                    Logger.getLogger(MapLayout.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         });
         this.addMouseMotionListener(new MouseMotionAdapter() {
@@ -970,7 +980,7 @@ public class MapLayout extends JPanel {
 
                                     _frmMeasure.setCurrentValue(dist);
                                 } else {
-                                    List<PointD> mPoints = new ArrayList<PointD>();
+                                    List<PointD> mPoints = new ArrayList<>();
                                     for (int i = 0; i < points.length; i++) {
                                         aPoint = new PointF(points[i].X - mapP.X, points[i].Y - mapP.Y);
                                         pXY = _currentLayoutMap.getMapFrame().getMapView().screenToProj(aPoint.X, aPoint.Y);
@@ -993,7 +1003,7 @@ public class MapLayout extends JPanel {
         }
     }
 
-    void onMouseReleased(MouseEvent e) {
+    void onMouseReleased(MouseEvent e) throws CloneNotSupportedException {
         _dragMode = false;
         double MinX, MaxX, MinY, MaxY, ZoomF;
         Point pageP = screenToPage(e.getX(), e.getY());
@@ -1301,7 +1311,7 @@ public class MapLayout extends JPanel {
         }
     }
 
-    void onMouseClicked(MouseEvent e) {
+    void onMouseClicked(MouseEvent e) throws CloneNotSupportedException {
         int clickTimes = e.getClickCount();
         if (clickTimes == 1) {
             Point pageP = screenToPage(e.getX(), e.getY());
@@ -1594,7 +1604,7 @@ public class MapLayout extends JPanel {
 
                         if (_mouseMode == MouseMode.Map_SelectFeatures_Polygon) {
                             PointF mapP = pageToScreen(_currentLayoutMap.getLeft(), _currentLayoutMap.getTop());
-                            List<PointD> points = new ArrayList<PointD>();
+                            List<PointD> points = new ArrayList<>();
                             MapView currentMapView = _currentLayoutMap.getMapFrame().getMapView();
                             for (PointF aPoint : _graphicPoints) {
                                 float[] pXY = currentMapView.screenToProj(aPoint.X - mapP.X, aPoint.Y - mapP.Y);
@@ -1619,7 +1629,7 @@ public class MapLayout extends JPanel {
                             aLayer.selectShapes(aPGS);
                             _currentLayoutMap.getMapFrame().getMapView().fireShapeSelectedEvent();
                         } else {
-                            List<PointD> points = new ArrayList<PointD>();
+                            List<PointD> points = new ArrayList<>();
                             for (PointF aPoint : _graphicPoints) {
                                 PointF bPoint = screenToPage(aPoint.X, aPoint.Y);
                                 points.add(new PointD(bPoint.X, bPoint.Y));
@@ -1729,8 +1739,8 @@ public class MapLayout extends JPanel {
     private void onGrahpicSmoothClick(ActionEvent e) {
         LayoutElement aElement = _selectedElements.get(0);
         Graphic aGraphic = ((LayoutGraphic) aElement).getGraphic();
-        List<wContour.Global.PointD> pointList = new ArrayList<wContour.Global.PointD>();
-        List<PointD> newPoints = new ArrayList<PointD>();
+        List<wContour.Global.PointD> pointList = new ArrayList<>();
+        List<PointD> newPoints = new ArrayList<>();
 
         for (PointD aP : aGraphic.getShape().getPoints()) {
             pointList.add(new wContour.Global.PointD(aP.X, aP.Y));
@@ -1955,7 +1965,7 @@ public class MapLayout extends JPanel {
      */
     public void setMapFrames(List<MapFrame> mfs) {
         _mapFrames = mfs;
-        _mapFrames = new ArrayList<MapFrame>();
+        _mapFrames = new ArrayList<>();
         for (MapFrame mf : mfs) {
             boolean isInsert = false;
             for (int i = 0; i < _mapFrames.size(); i++) {
@@ -2015,6 +2025,7 @@ public class MapLayout extends JPanel {
 
     /**
      * Set if is landscape
+     * @param istrue
      */
     public void setLandscape(boolean istrue) {
         _isLandscape = istrue;
@@ -2183,7 +2194,7 @@ public class MapLayout extends JPanel {
      * @return The layout map elements
      */
     public List<LayoutMap> getLayoutMaps() {
-        List<LayoutMap> layoutMaps = new ArrayList<LayoutMap>();
+        List<LayoutMap> layoutMaps = new ArrayList<>();
         for (LayoutElement aLE : _layoutElements) {
             if (aLE.getElementType() == ElementType.LayoutMap) {
                 layoutMaps.add((LayoutMap) aLE);
@@ -2414,7 +2425,7 @@ public class MapLayout extends JPanel {
                     break;
                 case New_Freehand:
                 case Map_SelectFeatures_Lasso:
-                    List<PointF> points = new ArrayList<PointF>(_graphicPoints);
+                    List<PointF> points = new ArrayList<>(_graphicPoints);
                     points.add(new PointF(_mouseLastPos.x, _mouseLastPos.y));
                     g2.setColor(this.getForeground());
                     _graphicPoints.add(new PointF(_mouseLastPos.x, _mouseLastPos.y));
@@ -2454,7 +2465,7 @@ public class MapLayout extends JPanel {
             case New_CurvePolygon:
             case Map_SelectFeatures_Polygon:
                 if (!_startNewGraphic) {
-                    List<PointF> points = new ArrayList<PointF>(_graphicPoints);
+                    List<PointF> points = new ArrayList<>(_graphicPoints);
                     points.add(new PointF(_mouseLastPos.x, _mouseLastPos.y));
                     g2.setColor(this.getForeground());
                     switch (_mouseMode) {
@@ -3166,7 +3177,7 @@ public class MapLayout extends JPanel {
      * @return Layout graphic list
      */
     public List<LayoutGraphic> getLayoutGraphics() {
-        List<LayoutGraphic> graphics = new ArrayList<LayoutGraphic>();
+        List<LayoutGraphic> graphics = new ArrayList<>();
         for (LayoutElement aLE : _layoutElements) {
             if (aLE.getElementType() == ElementType.LayoutGraphic) {
                 graphics.add((LayoutGraphic) aLE);
@@ -3182,7 +3193,7 @@ public class MapLayout extends JPanel {
      * @return Text graphic list
      */
     public List<LayoutGraphic> getTexts() {
-        List<LayoutGraphic> texts = new ArrayList<LayoutGraphic>();
+        List<LayoutGraphic> texts = new ArrayList<>();
         List<LayoutGraphic> graphics = getLayoutGraphics();
         for (LayoutGraphic aLG : graphics) {
             if (aLG.getGraphic().getLegend().getBreakType() == BreakTypes.LabelBreak) {
@@ -3216,7 +3227,7 @@ public class MapLayout extends JPanel {
      * @return Layout legend list
      */
     public List<LayoutLegend> getLegends() {
-        List<LayoutLegend> legends = new ArrayList<LayoutLegend>();
+        List<LayoutLegend> legends = new ArrayList<>();
         for (LayoutElement aLE : _layoutElements) {
             if (aLE.getElementType() == ElementType.LayoutLegend) {
                 legends.add((LayoutLegend) aLE);
@@ -3282,7 +3293,7 @@ public class MapLayout extends JPanel {
     }
 
     private List<LayoutElement> selectElements(Point aPoint, List<LayoutElement> baseElements, int limit) {
-        List<LayoutElement> selectedElements = new ArrayList<LayoutElement>();
+        List<LayoutElement> selectedElements = new ArrayList<>();
         for (int i = baseElements.size() - 1; i >= 0; i--) {
             LayoutElement element = baseElements.get(i);
             if (element.isVisible()) {
@@ -3811,6 +3822,9 @@ public class MapLayout extends JPanel {
      * Load project file
      *
      * @param aFile The project file
+     * @throws javax.xml.parsers.ParserConfigurationException
+     * @throws org.xml.sax.SAXException
+     * @throws java.io.IOException
      */
     public void loadProjectFile(String aFile) throws ParserConfigurationException, SAXException, IOException {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -3824,7 +3838,7 @@ public class MapLayout extends JPanel {
         property.setProperty("user.dir", new File(aFile).getAbsolutePath());
 
         //Load map frames content
-        List<MapFrame> mfs = new ArrayList<MapFrame>();
+        List<MapFrame> mfs = new ArrayList<>();
         Element mapFrames = (Element) root.getElementsByTagName("MapFrames").item(0);
         if (mapFrames == null) {
             MapFrame mf = new MapFrame();
