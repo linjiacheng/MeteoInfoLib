@@ -14,14 +14,21 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
+import org.meteoinfo.chart.ChartText;
 import org.meteoinfo.chart.Location;
 import org.meteoinfo.chart.axis.LonLatAxis;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
+import org.meteoinfo.global.PointD;
 import org.meteoinfo.global.PointF;
+import org.meteoinfo.legend.LabelBreak;
 import org.meteoinfo.legend.MapFrame;
 import org.meteoinfo.map.GridLabel;
 import org.meteoinfo.map.MapView;
+import org.meteoinfo.projection.KnownCoordinateSystems;
+import org.meteoinfo.projection.Reproject;
+import org.meteoinfo.shape.Graphic;
+import org.meteoinfo.shape.PointShape;
 
 /**
  *
@@ -89,6 +96,49 @@ public class MapPlot extends XY2DPlot {
     
     // </editor-fold>
     // <editor-fold desc="Methods">
+    /**
+     * Set all axis visible or not
+     * @param value Boolean
+     */
+    @Override
+    public void setAxisOn(boolean value){
+        super.setAxisOn(value);
+        this.mapFrame.setDrawGridTickLine(value);
+        this.mapFrame.setDrawGridLabel(value);
+    }
+    
+    /**
+     * Set longitude/latitude extent
+     *
+     * @param extent Extent
+     */
+    public void setLonLatExtent(Extent extent) {
+        if (this.getMapView().getProjection().isLonLatMap()){
+            super.setDrawExtent(extent);
+        } else {
+            this.getMapView().zoomToExtentLonLatEx(extent);
+        }
+    }
+    
+     @Override
+    public void addText(ChartText text) {
+        if (this.getMapView().getProjection().isLonLatMap()){
+            super.addText(text);
+        } else {
+            PointShape ps = new PointShape();
+            PointD lonlatp = new PointD(text.getX(), text.getY());
+            PointD xyp = Reproject.reprojectPoint(lonlatp, KnownCoordinateSystems.geographic.world.WGS1984, 
+                    this.getMapView().getProjection().getProjInfo());
+            ps.setPoint(xyp);
+            LabelBreak lb = new LabelBreak();
+            lb.setText(text.getText());
+            lb.setFont(text.getFont());
+            lb.setColor(text.getColor());
+            Graphic aGraphic = new Graphic(ps, lb);
+            this.getMapView().addGraphic(aGraphic);
+        }
+    }
+    
 //    /**
 //     * Add a layer
 //     * @param idx Index

@@ -10,8 +10,12 @@ import java.awt.geom.Rectangle2D;
 import org.meteoinfo.chart.ChartText;
 import org.meteoinfo.data.Dataset;
 import org.meteoinfo.global.Extent;
+import org.meteoinfo.global.PointD;
 import org.meteoinfo.layer.MapLayer;
+import org.meteoinfo.legend.LabelBreak;
 import org.meteoinfo.map.MapView;
+import org.meteoinfo.shape.Graphic;
+import org.meteoinfo.shape.PointShape;
 
 /**
  *
@@ -22,8 +26,10 @@ public class XY2DPlot extends XYPlot {
     // <editor-fold desc="Variables">
     private MapView mapView;
     private boolean antialias;
+
     // </editor-fold>
     // <editor-fold desc="Constructor">
+
     /**
      * Constructor
      */
@@ -31,17 +37,20 @@ public class XY2DPlot extends XYPlot {
         super();
         this.antialias = false;
     }
-    
+
     /**
      * Constructor
+     *
      * @param mapView Map view
      */
-    public XY2DPlot(MapView mapView){
+    public XY2DPlot(MapView mapView) {
         this();
         this.setMapView(mapView, false);
     }
+
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
+
     @Override
     public Dataset getDataset() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -51,21 +60,23 @@ public class XY2DPlot extends XYPlot {
     public void setDataset(Dataset dataset) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
     /**
      * Get map view
+     *
      * @return Map view
      */
-    public MapView getMapView(){
+    public MapView getMapView() {
         return this.mapView;
     }
-    
+
     /**
      * Set map view
+     *
      * @param value Map view
      * @param isGeoMap If is geo map
      */
-    public void setMapView(MapView value, boolean isGeoMap){
+    public void setMapView(MapView value, boolean isGeoMap) {
         this.mapView = value;
         this.mapView.setGeoMap(isGeoMap);
         Extent extent = this.getAutoExtent();
@@ -76,32 +87,34 @@ public class XY2DPlot extends XYPlot {
     public PlotType getPlotType() {
         return PlotType.XY2D;
     }
-    
+
     /**
      * Get if is antialias
+     *
      * @return Boolean
      */
-    public boolean isAntialias(){
+    public boolean isAntialias() {
         return this.antialias;
     }
-    
+
     /**
      * Set if is antialias
+     *
      * @param value Boolean
      */
-    public void setAntialias(boolean value){
+    public void setAntialias(boolean value) {
         this.antialias = value;
     }
     // </editor-fold>
     // <editor-fold desc="Methods">
-    
+
     @Override
     void drawGraph(Graphics2D g, Rectangle2D area) {
         this.mapView.setAntiAlias(this.antialias);
-        this.mapView.setViewExtent((Extent)this.getDrawExtent().clone());
+        this.mapView.setViewExtent((Extent) this.getDrawExtent().clone());
         this.mapView.paintGraphics(g, area);
     }
-    
+
     /**
      * Get auto extent
      *
@@ -111,40 +124,49 @@ public class XY2DPlot extends XYPlot {
     public Extent getAutoExtent() {
         return this.mapView.getLayersWholeExtent();
     }
-    
+
     @Override
-    public void updateLegendScheme(){
-        
+    public void updateLegendScheme() {
+
     }
-    
+
     @Override
-    public void addText(ChartText text){
-        
+    public void addText(ChartText text) {
+        PointShape ps = new PointShape();
+        ps.setPoint(new PointD(text.getX(), text.getY()));
+        LabelBreak lb = new LabelBreak();
+        lb.setText(text.getText());
+        lb.setFont(text.getFont());
+        lb.setColor(text.getColor());
+        Graphic aGraphic = new Graphic(ps, lb);
+        this.mapView.addGraphic(aGraphic);
     }
-    
+
     /**
      * Add a layer
-     * @param layer The layer 
+     *
+     * @param layer The layer
      */
-    public void addLayer(MapLayer layer){
+    public void addLayer(MapLayer layer) {
         this.mapView.addLayer(layer);
         this.setDrawExtent(layer.getExtent());
     }
-    
+
     /**
      * Add a layer
+     *
      * @param idx Index
      * @param layer Layer
      */
-    public void addLayer(int idx, MapLayer layer){
+    public void addLayer(int idx, MapLayer layer) {
         this.mapView.addLayer(idx, layer);
         this.setDrawExtent(layer.getExtent());
     }
-    
+
     /**
      * Remove last added layer
      */
-    public void removeLastLayer(){
+    public void removeLastLayer() {
         this.mapView.removeLayer(this.mapView.getLastAddedLayer());
     }
     // </editor-fold>            

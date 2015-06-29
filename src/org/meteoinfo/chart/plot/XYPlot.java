@@ -403,6 +403,16 @@ public abstract class XYPlot extends Plot {
     // </editor-fold>
     // <editor-fold desc="Method">
     /**
+     * Set all axis visible or not
+     * @param value Boolean
+     */
+    public void setAxisOn(boolean value){
+        for (Axis axis : this.axises.values()){
+            axis.setVisible(value);
+        }
+    }
+    
+    /**
      * Draw plot
      *
      * @param g Graphics2D
@@ -516,7 +526,7 @@ public abstract class XYPlot extends Plot {
      */
     @Override
     public Margin getTightInset(Graphics2D g, Rectangle2D positionArea) {
-        int left = 0, bottom = 0, right = 0, top = 0;
+        int left = 2, bottom = 2, right = 2, top = 2;
         int space = 1;
 
         if (this.title != null) {
@@ -551,7 +561,10 @@ public abstract class XYPlot extends Plot {
         left += this.getYAxisWidth(g, space);
 
         //Set right space
-        right += this.getXAxis().getMaxLabelLength(g) / 2;
+        if (this.getXAxis().isVisible()){
+            if (this.getXAxis().isDrawTickLabel())
+                right += this.getXAxis().getMaxLabelLength(g) / 2;
+        }
 
         return new Margin(left, right, top, bottom);
     }
@@ -599,7 +612,10 @@ public abstract class XYPlot extends Plot {
         left += this.getYAxisWidth(g, space);
 
         //Set right space
-        right += this.getXAxis().getMaxLabelLength(g) / 2;
+        if (this.getXAxis().isVisible()){
+            if (this.getXAxis().isDrawTickLabel())
+                right += this.getXAxis().getMaxLabelLength(g) / 2;
+        }
 
         double x = positionArea.getX() - left;
         double y = positionArea.getY() - top;
@@ -667,7 +683,10 @@ public abstract class XYPlot extends Plot {
         left += this.getYAxisWidth(g, space);
 
         //Set right space
-        right += this.getXAxis().getMaxLabelLength(g) / 2;
+        if (this.getXAxis().isVisible()){
+            if (this.getXAxis().isDrawTickLabel())
+                right += this.getXAxis().getMaxLabelLength(g) / 2;
+        }        
 
         //Set area
         Rectangle2D plotArea = new Rectangle2D.Double(left, top,
@@ -675,8 +694,11 @@ public abstract class XYPlot extends Plot {
         return plotArea;
     }
 
-    int getXAxisHeight(Graphics2D g, int space) {
+    int getXAxisHeight(Graphics2D g, int space) {        
         Axis xAxis = this.getXAxis();
+        if (!xAxis.isVisible())
+            return 0;
+        
         FontMetrics metrics = g.getFontMetrics(xAxis.getTickLabelFont());
         int height = metrics.getHeight();
         if (!xAxis.isInsideTick())
@@ -693,6 +715,9 @@ public abstract class XYPlot extends Plot {
     }
 
     int getYAxisWidth(Graphics2D g, int space) {
+        if (!this.getYAxis().isVisible())
+            return 0;
+        
         int width = this.getYAxis().getMaxLabelLength(g);
         if (!this.getYAxis().isInsideTick())
             width += this.getYAxis().getTickLength() + space;

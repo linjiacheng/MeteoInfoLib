@@ -7860,6 +7860,14 @@ public class MapView extends JPanel {
     }
 
     /**
+     * Add a graphic
+     * @param graphic Graphic 
+     */
+    public void addGraphic(Graphic graphic){
+        this._graphicCollection.add(graphic);
+    }
+    
+    /**
      * Remove a graphic
      *
      * @param aGraphic The graphic
