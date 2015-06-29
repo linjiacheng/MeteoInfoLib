@@ -2135,9 +2135,8 @@ public class GridData {
      * Get grid data setting
      *
      * @return Grid data setting
-     * @throws java.lang.CloneNotSupportedException
      */
-    public GridDataSetting getGridDataSetting() throws CloneNotSupportedException {
+    public GridDataSetting getGridDataSetting() {
         GridDataSetting gDataSet = new GridDataSetting();
         gDataSet.dataExtent = (Extent) this.getExtent().clone();
         gDataSet.xNum = this.getXNum();

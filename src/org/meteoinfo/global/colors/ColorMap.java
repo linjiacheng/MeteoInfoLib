@@ -268,6 +268,25 @@ public class ColorMap {
         return cs;
     }
     
+    /**
+     * Reverse colors
+     */
+    public void reverse(){
+        int left = 0;          // index of leftmost element
+        int right = this.colors.length - 1; // index of rightmost element
+
+        while (left < right) {
+            // exchange the left and right elements
+            Color temp = this.colors[left];
+            this.colors[left] = this.colors[right];
+            this.colors[right] = temp;
+
+            // move the bounds toward the center
+            left++;
+            right--;
+        }
+    }
+    
     private void readFromFile(BufferedReader sr) throws IOException{
         String line = sr.readLine();
         String[] strs;

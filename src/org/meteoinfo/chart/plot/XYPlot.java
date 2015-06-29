@@ -443,7 +443,8 @@ public abstract class XYPlot extends Plot {
             Dimension dim = Draw.getStringDimension(title.getText(), g);
             x -= dim.width / 2;
             //y += metrics.getHeight();
-            y -= dim.height * 2 / 3;
+            y -= 10;
+            //y -= dim.height * 2 / 3;
             //g.drawString(title.getText(), x, y);
             Draw.drawString(g, title.getText(), x, y);
             //y += 5;
@@ -519,8 +520,9 @@ public abstract class XYPlot extends Plot {
         int space = 1;
 
         if (this.title != null) {
-            FontMetrics metrics = g.getFontMetrics(this.title.getFont());
-            top += metrics.getHeight() + 10;
+            g.setFont(this.title.getFont());
+            Dimension dim = Draw.getStringDimension(this.title.getText(), g);
+            top += dim.getHeight() + 10;
         }
 
         if (this.drawLegend && this.getLegend() != null) {
@@ -566,8 +568,9 @@ public abstract class XYPlot extends Plot {
         int space = 1;
 
         if (this.title != null) {
-            FontMetrics metrics = g.getFontMetrics(this.title.getFont());
-            top += metrics.getHeight() + 10;
+            g.setFont(this.title.getFont());
+            Dimension dim = Draw.getStringDimension(this.title.getText(), g);
+            top += dim.getHeight() + 10;
         }
 
         if (this.drawLegend && this.getLegend() != null) {
@@ -634,8 +637,9 @@ public abstract class XYPlot extends Plot {
         int space = 1;
 
         if (this.title != null) {
-            FontMetrics metrics = g.getFontMetrics(this.title.getFont());
-            top += metrics.getHeight() + 10;
+            g.setFont(this.title.getFont());
+            Dimension dim = Draw.getStringDimension(this.title.getText(), g);
+            top += dim.getHeight() + 10;
         }
 
         if (this.drawLegend && this.getLegend() != null) {

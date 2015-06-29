@@ -90,14 +90,15 @@ public class Draw {
             TeXFormula formula = new TeXFormula(str);
 
             // render the formla to an icon of the same size as the formula.
-            TeXIcon icon = formula.createTeXIcon(TeXConstants.STYLE_DISPLAY, size);
+            TeXIcon icon = formula.createTeXIcon(TeXConstants.STYLE_TEXT, size);
             
             // insert a border 
             //icon.setInsets(new Insets(5, 5, 5, 5));
             
             //return new Dimension(icon.getIconWidth(), icon.getIconHeight());
             int width = (int)icon.getTrueIconWidth() + 10;
-            int height = (int)icon.getTrueIconHeight();
+            //int height = (int)icon.getTrueIconHeight();
+            int height = icon.getIconHeight();
             return new Dimension(width, height);
         } else {
             FontMetrics metrics = g.getFontMetrics();
@@ -165,12 +166,12 @@ public class Draw {
         TeXFormula formula = new TeXFormula(str);
 
         // render the formla to an icon of the same size as the formula.
-        TeXIcon icon = formula.createTeXIcon(TeXConstants.STYLE_DISPLAY, size);
+        TeXIcon icon = formula.createTeXIcon(TeXConstants.STYLE_TEXT, size);
 
         // insert a border 
         icon.setInsets(new Insets(5, 5, 5, 5));
         icon.setForeground(g.getColor());
-        y = y - icon.getTrueIconHeight();
+        y = y - (icon.getIconHeight() * 2 / 3);
         icon.paintIcon(null, g, (int) x, (int) y);
     }
 

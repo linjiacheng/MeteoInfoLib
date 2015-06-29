@@ -45,13 +45,14 @@ public class ArrayMath {
     }
 
     private static DataType commonType(DataType aType, DataType bType) {
-        if (aType == bType)
+        if (aType == bType) {
             return aType;
-        
+        }
+
         short anb = ArrayMath.typeToNBytes(aType);
         short bnb = ArrayMath.typeToNBytes(bType);
-        if (anb == bnb){
-            switch(aType){
+        if (anb == bnb) {
+            switch (aType) {
                 case INT:
                 case LONG:
                     return bType;
@@ -60,7 +61,7 @@ public class ArrayMath {
                     return aType;
             }
         }
-        
+
         return (anb > bnb) ? aType : bType;
     }
 
@@ -626,13 +627,14 @@ public class ArrayMath {
     public static Array sqrt(Array a) {
         return ArrayMath.pow(a, 0.5);
     }
-    
+
     /**
      * Exponent function
+     *
      * @param a Array a
      * @return Result array
      */
-    public static Array exp(Array a){
+    public static Array exp(Array a) {
         Array r = Array.factory(DataType.DOUBLE, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             r.setDouble(i, Math.exp(a.getDouble(i)));
@@ -640,13 +642,14 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     /**
      * Log function
+     *
      * @param a Array a
      * @return Result array
      */
-    public static Array log(Array a){
+    public static Array log(Array a) {
         Array r = Array.factory(DataType.DOUBLE, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             r.setDouble(i, Math.log(a.getDouble(i)));
@@ -654,13 +657,14 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     /**
      * Log10 function
+     *
      * @param a Array a
      * @return Result array
      */
-    public static Array log10(Array a){
+    public static Array log10(Array a) {
         Array r = Array.factory(DataType.DOUBLE, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             r.setDouble(i, Math.log10(a.getDouble(i)));
@@ -683,218 +687,242 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     /**
      * Array equal
+     *
      * @param a Array a
      * @param b Array b
      * @return Result array
      */
-    public static Array equal(Array a, Array b){
-         Array r = Array.factory(DataType.INT, a.getShape());
+    public static Array equal(Array a, Array b) {
+        Array r = Array.factory(DataType.INT, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
-            if (a.getDouble(i) == b.getDouble(i))
+            if (a.getDouble(i) == b.getDouble(i)) {
                 r.setDouble(i, 1);
-            else
+            } else {
                 r.setDouble(i, 0);
+            }
         }
 
         return r;
     }
-    
+
     /**
      * Array equal
+     *
      * @param a Array a
      * @param b Number b
      * @return Result array
      */
-    public static Array equal(Array a, Number b){
-         Array r = Array.factory(DataType.INT, a.getShape());
+    public static Array equal(Array a, Number b) {
+        Array r = Array.factory(DataType.INT, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
-            if (a.getDouble(i) == b.doubleValue())
+            if (a.getDouble(i) == b.doubleValue()) {
                 r.setDouble(i, 1);
-            else
+            } else {
                 r.setDouble(i, 0);
+            }
         }
 
         return r;
     }
-    
+
     /**
      * Array less than
+     *
      * @param a Array a
      * @param b Array b
      * @return Result array
      */
-    public static Array lessThan(Array a, Array b){
-         Array r = Array.factory(DataType.INT, a.getShape());
+    public static Array lessThan(Array a, Array b) {
+        Array r = Array.factory(DataType.INT, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
-            if (a.getDouble(i) < b.getDouble(i))
+            if (a.getDouble(i) < b.getDouble(i)) {
                 r.setDouble(i, 1);
-            else
+            } else {
                 r.setDouble(i, 0);
+            }
         }
 
         return r;
     }
-    
+
     /**
      * Array less than
+     *
      * @param a Array a
      * @param b Number b
      * @return Result array
      */
-    public static Array lessThan(Array a, Number b){
-         Array r = Array.factory(DataType.INT, a.getShape());
+    public static Array lessThan(Array a, Number b) {
+        Array r = Array.factory(DataType.INT, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
-            if (a.getDouble(i) < b.doubleValue())
+            if (a.getDouble(i) < b.doubleValue()) {
                 r.setDouble(i, 1);
-            else
+            } else {
                 r.setDouble(i, 0);
+            }
         }
 
         return r;
     }
-    
+
     /**
      * Array less than or equal
+     *
      * @param a Array a
      * @param b Array b
      * @return Result array
      */
-    public static Array lessThanOrEqual(Array a, Array b){
-         Array r = Array.factory(DataType.INT, a.getShape());
+    public static Array lessThanOrEqual(Array a, Array b) {
+        Array r = Array.factory(DataType.INT, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
-            if (a.getDouble(i) <= b.getDouble(i))
+            if (a.getDouble(i) <= b.getDouble(i)) {
                 r.setDouble(i, 1);
-            else
+            } else {
                 r.setDouble(i, 0);
+            }
         }
 
         return r;
     }
-    
+
     /**
      * Array less than or equal
+     *
      * @param a Array a
      * @param b Number b
      * @return Result array
      */
-    public static Array lessThanOrEqual(Array a, Number b){
-         Array r = Array.factory(DataType.INT, a.getShape());
+    public static Array lessThanOrEqual(Array a, Number b) {
+        Array r = Array.factory(DataType.INT, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
-            if (a.getDouble(i) <= b.doubleValue())
+            if (a.getDouble(i) <= b.doubleValue()) {
                 r.setDouble(i, 1);
-            else
+            } else {
                 r.setDouble(i, 0);
+            }
         }
 
         return r;
     }
-    
+
     /**
      * Array greater than
+     *
      * @param a Array a
      * @param b Array b
      * @return Result array
      */
-    public static Array greaterThan(Array a, Array b){
-         Array r = Array.factory(DataType.INT, a.getShape());
+    public static Array greaterThan(Array a, Array b) {
+        Array r = Array.factory(DataType.INT, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
-            if (a.getDouble(i) > b.getDouble(i))
+            if (a.getDouble(i) > b.getDouble(i)) {
                 r.setDouble(i, 1);
-            else
+            } else {
                 r.setDouble(i, 0);
+            }
         }
 
         return r;
     }
-    
+
     /**
      * Array greater than
+     *
      * @param a Array a
      * @param b Number b
      * @return Result array
      */
-    public static Array greaterThan(Array a, Number b){
-         Array r = Array.factory(DataType.INT, a.getShape());
+    public static Array greaterThan(Array a, Number b) {
+        Array r = Array.factory(DataType.INT, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
-            if (a.getDouble(i) > b.doubleValue())
+            if (a.getDouble(i) > b.doubleValue()) {
                 r.setDouble(i, 1);
-            else
+            } else {
                 r.setDouble(i, 0);
+            }
         }
 
         return r;
     }
-    
+
     /**
      * Array greater than or equal
+     *
      * @param a Array a
      * @param b Array b
      * @return Result array
      */
-    public static Array greaterThanOrEqual(Array a, Array b){
-         Array r = Array.factory(DataType.INT, a.getShape());
+    public static Array greaterThanOrEqual(Array a, Array b) {
+        Array r = Array.factory(DataType.INT, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
-            if (a.getDouble(i) >= b.getDouble(i))
+            if (a.getDouble(i) >= b.getDouble(i)) {
                 r.setDouble(i, 1);
-            else
+            } else {
                 r.setDouble(i, 0);
+            }
         }
 
         return r;
     }
-    
+
     /**
      * Array greater than or equal
+     *
      * @param a Array a
      * @param b Number b
      * @return Result array
      */
-    public static Array greaterThanOrEqual(Array a, Number b){
-         Array r = Array.factory(DataType.INT, a.getShape());
+    public static Array greaterThanOrEqual(Array a, Number b) {
+        Array r = Array.factory(DataType.INT, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
-            if (a.getDouble(i) >= b.doubleValue())
+            if (a.getDouble(i) >= b.doubleValue()) {
                 r.setDouble(i, 1);
-            else
+            } else {
                 r.setDouble(i, 0);
+            }
         }
 
         return r;
     }
-    
+
     /**
      * Array not equal
+     *
      * @param a Array a
      * @param b Array b
      * @return Result array
      */
-    public static Array notEqual(Array a, Array b){
-         Array r = Array.factory(DataType.INT, a.getShape());
+    public static Array notEqual(Array a, Array b) {
+        Array r = Array.factory(DataType.INT, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
-            if (a.getDouble(i) != b.getDouble(i))
+            if (a.getDouble(i) != b.getDouble(i)) {
                 r.setDouble(i, 1);
-            else
+            } else {
                 r.setDouble(i, 0);
+            }
         }
 
         return r;
     }
-    
+
     /**
      * Array not equal
+     *
      * @param a Array a
      * @param b Number b
      * @return Result array
      */
-    public static Array notEqual(Array a, Number b){
-         Array r = Array.factory(DataType.INT, a.getShape());
+    public static Array notEqual(Array a, Number b) {
+        Array r = Array.factory(DataType.INT, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
-            if (a.getDouble(i) != b.doubleValue())
+            if (a.getDouble(i) != b.doubleValue()) {
                 r.setDouble(i, 1);
-            else
+            } else {
                 r.setDouble(i, 0);
+            }
         }
 
         return r;
@@ -945,7 +973,7 @@ public class ArrayMath {
      * @throws InvalidRangeException
      */
     public static Array section(Array a, int[] origin, int[] size, int[] stride) throws InvalidRangeException {
-        Array r = a.section(origin, size, stride);  
+        Array r = a.section(origin, size, stride);
         Array rr = Array.factory(r.getDataType(), r.getShape());
         MAMath.copy(rr, r);
         return rr;
@@ -960,23 +988,24 @@ public class ArrayMath {
      * @throws InvalidRangeException
      */
     public static Array section(Array a, List<Range> ranges) throws InvalidRangeException {
-        Array r = a.section(ranges);  
+        Array r = a.section(ranges);
         Array rr = Array.factory(r.getDataType(), r.getShape());
         MAMath.copy(rr, r);
         return rr;
     }
-    
+
     /**
      * Set section
+     *
      * @param a Array a
      * @param ranges Ranges
      * @param v Value
-     * @throws InvalidRangeException 
+     * @throws InvalidRangeException
      */
-    public static void setSection(Array a, List<Range> ranges, Number v) throws InvalidRangeException{
+    public static void setSection(Array a, List<Range> ranges, Number v) throws InvalidRangeException {
         Array r = a.section(ranges);
         IndexIterator iter = r.getIndexIterator();
-        while (iter.hasNext()){
+        while (iter.hasNext()) {
             iter.setObjectNext(v);
         }
         a = Array.factory(a.getDataType(), a.getShape(), r.getStorage());
@@ -1161,17 +1190,19 @@ public class ArrayMath {
                 }
         }
     }
-    
+
     /**
      * Set value
+     *
      * @param a Array a
      * @param b Array b - 0/1 data
      * @param value Value
      */
-    public static void setValue(Array a, Array b, Number value){
+    public static void setValue(Array a, Array b, Number value) {
         for (int i = 0; i < a.getSize(); i++) {
-            if (b.getInt(i) == 1)
+            if (b.getInt(i) == 1) {
                 a.setObject(i, value);
+            }
         }
     }
 
@@ -1230,21 +1261,61 @@ public class ArrayMath {
      * polygons
      */
     public static Array inPolygon(Array a, List<Number> x, List<Number> y, List<PolygonShape> polygons) {
-        int xNum = x.size();
-        int yNum = y.size();
+        if (a.getRank() == 2) {
+            int xNum = x.size();
+            int yNum = y.size();
 
-        Array r = Array.factory(DataType.INT, a.getShape());
-        for (int i = 0; i < yNum; i++) {
-            for (int j = 0; j < xNum; j++) {
-                if (GeoComputation.pointInPolygons(polygons, new PointD(x.get(j).doubleValue(), y.get(i).doubleValue()))) {
-                    r.setInt(i * xNum + j, 1);
-                } else {
-                    r.setInt(i * xNum + j, -1);
+            Array r = Array.factory(DataType.INT, a.getShape());
+            for (int i = 0; i < yNum; i++) {
+                for (int j = 0; j < xNum; j++) {
+                    if (GeoComputation.pointInPolygons(polygons, new PointD(x.get(j).doubleValue(), y.get(i).doubleValue()))) {
+                        r.setInt(i * xNum + j, 1);
+                    } else {
+                        r.setInt(i * xNum + j, -1);
+                    }
                 }
             }
+
+            return r;
+        } else if (a.getRank() == 1) {
+            int n = x.size();
+            Array r = Array.factory(DataType.INT, a.getShape());
+            for (int i = 0; i < n; i++) {
+                if (GeoComputation.pointInPolygons(polygons, new PointD(x.get(i).doubleValue(), y.get(i).doubleValue()))) {
+                    r.setInt(i, 1);
+                } else {
+                    r.setInt(i, -1);
+                }
+            }
+
+            return r;
         }
 
-        return r;
+        return null;
+    }
+
+    /**
+     * In polygon function
+     *
+     * @param a Array a
+     * @param x X dimension values
+     * @param y Y dimension values
+     * @param x_p X coordinate of the polygon
+     * @param y_p Y coordinate of the polygon
+     * @return Result array with cell values of 1 inside polygons and -1 outside
+     * polygons
+     */
+    public static Array inPolygon(Array a, List<Number> x, List<Number> y, List<Number> x_p, List<Number> y_p) {
+        PolygonShape ps = new PolygonShape();
+        List<PointD> points = new ArrayList<>();
+        for (int i = 0; i < x_p.size(); i++){
+            points.add(new PointD(x_p.get(i).doubleValue(), y_p.get(i).doubleValue()));
+        }
+        ps.setPoints(points);
+        List<PolygonShape> shapes = new ArrayList<>();
+        shapes.add(ps);
+        
+        return inPolygon(a, x, y, shapes);
     }
 
     /**
@@ -1317,34 +1388,34 @@ public class ArrayMath {
     // </editor-fold>
     // <editor-fold desc="Regress">
     /**
-     * Get correlation coefficient
-     * How well did the forecast values correspond to the observed values?
-     * Range: -1 to 1.  Perfect score: 1.
+     * Get correlation coefficient How well did the forecast values correspond
+     * to the observed values? Range: -1 to 1. Perfect score: 1.
+     *
      * @param xData X data array
      * @param yData Y data array
      * @return Correlation coefficent
      */
-    public static float getR(List<Number> xData, List<Number> yData){
+    public static float getR(List<Number> xData, List<Number> yData) {
         int n = xData.size();
         double x_sum = 0;
         double y_sum = 0;
-        for (int i = 0; i < n; i++){
+        for (int i = 0; i < n; i++) {
             x_sum += xData.get(i).doubleValue();
             y_sum += yData.get(i).doubleValue();
         }
         double sx_sum = 0.0;
         double sy_sum = 0.0;
         double xy_sum = 0.0;
-        for (int i = 0; i < n; i++){
+        for (int i = 0; i < n; i++) {
             sx_sum += xData.get(i).doubleValue() * xData.get(i).doubleValue();
             sy_sum += yData.get(i).doubleValue() * yData.get(i).doubleValue();
             xy_sum += xData.get(i).doubleValue() * yData.get(i).doubleValue();
         }
-        
+
         double r = (n * xy_sum - x_sum * y_sum) / (Math.sqrt(n * sx_sum - x_sum * x_sum) * Math.sqrt(n * sy_sum - y_sum * y_sum));
-        return (float)r;
+        return (float) r;
     }
-    
+
     /**
      * Determine the least square trend equation - linear fitting
      *
@@ -1369,95 +1440,100 @@ public class ArrayMath {
         double b = (n * sumXY - sumX * sumY) / (n * sumSquareX - sumX * sumX);
 
         return new double[]{a, b};
-    } 
-    
+    }
+
     /**
      * Linear regress
-     * 
+     *
      * @param xData X data array
      * @param yData Y data array
      * @return Result array - y intercept, slope and correlation coefficent
      */
-    public static double[] lineRegress(List<Number> xData, List<Number> yData){
+    public static double[] lineRegress(List<Number> xData, List<Number> yData) {
         int n = xData.size();
         double x_sum = 0;
         double y_sum = 0;
         double sx_sum = 0.0;
         double sy_sum = 0.0;
         double xy_sum = 0.0;
-        for (int i = 0; i < n; i++){
+        for (int i = 0; i < n; i++) {
             x_sum += xData.get(i).doubleValue();
             y_sum += yData.get(i).doubleValue();
             sx_sum += xData.get(i).doubleValue() * xData.get(i).doubleValue();
             sy_sum += yData.get(i).doubleValue() * yData.get(i).doubleValue();
             xy_sum += xData.get(i).doubleValue() * yData.get(i).doubleValue();
-        }        
-        
+        }
+
         double r = (n * xy_sum - x_sum * y_sum) / (Math.sqrt(n * sx_sum - x_sum * x_sum) * Math.sqrt(n * sy_sum - y_sum * y_sum));
         double a = (sx_sum * y_sum - x_sum * xy_sum) / (n * sx_sum - x_sum * x_sum);
         double b = (n * xy_sum - x_sum * y_sum) / (n * sx_sum - x_sum * x_sum);
-        
+
         return new double[]{a, b, r};
     }
-    
+
     /**
      * Linear regress
-     * 
+     *
      * @param xData X data array
      * @param yData Y data array
      * @return Result array - y intercept, slope and correlation coefficent
      */
-    public static double[] lineRegress(Array xData, Array yData){        
+    public static double[] lineRegress(Array xData, Array yData) {
         double x_sum = 0;
         double y_sum = 0;
         double sx_sum = 0.0;
         double sy_sum = 0.0;
         double xy_sum = 0.0;
         int n = 0;
-        for (int i = 0; i < xData.getSize(); i++){
-            if (Double.isNaN(xData.getDouble(i)))
+        for (int i = 0; i < xData.getSize(); i++) {
+            if (Double.isNaN(xData.getDouble(i))) {
                 continue;
-            if (Double.isNaN(yData.getDouble(i)))
+            }
+            if (Double.isNaN(yData.getDouble(i))) {
                 continue;
+            }
             x_sum += xData.getDouble(i);
             y_sum += yData.getDouble(i);
             sx_sum += xData.getDouble(i) * xData.getDouble(i);
             sy_sum += yData.getDouble(i) * yData.getDouble(i);
             xy_sum += xData.getDouble(i) * yData.getDouble(i);
             n += 1;
-        }        
-        
+        }
+
         double r = (n * xy_sum - x_sum * y_sum) / (Math.sqrt(n * sx_sum - x_sum * x_sum) * Math.sqrt(n * sy_sum - y_sum * y_sum));
         double intercept = (sx_sum * y_sum - x_sum * xy_sum) / (n * sx_sum - x_sum * x_sum);
         double slope = (n * xy_sum - x_sum * y_sum) / (n * sx_sum - x_sum * x_sum);
-        
+
         return new double[]{slope, intercept, r};
     }
-    
+
     /**
-     * Evaluate a polynomial at specific values.
-     * If p is of length N, this function returns the value:
-     * p[0]*x**(N-1) + p[1]*x**(N-2) + ... + p[N-2]*x + p[N-1]
+     * Evaluate a polynomial at specific values. If p is of length N, this
+     * function returns the value: p[0]*x**(N-1) + p[1]*x**(N-2) + ... +
+     * p[N-2]*x + p[N-1]
+     *
      * @param p array_like or poly1d object
      * @param x array_like or poly1d object
      * @return ndarray or poly1d
      */
-    public static Array polyVal(List<Number> p, Array x){
+    public static Array polyVal(List<Number> p, Array x) {
         int n = p.size();
         Array r = Array.factory(DataType.DOUBLE, x.getShape());
         for (int i = 0; i < x.getSize(); i++) {
             double val = x.getDouble(i);
             double rval = 0.0;
-            for (int j = 0; j < n; j++){
+            for (int j = 0; j < n; j++) {
                 rval += p.get(j).doubleValue() * Math.pow(val, n - j - 1);
             }
             r.setDouble(i, rval);
         }
-        
+
         return r;
     }
+
     // </editor-fold>    
     // <editor-fold desc="Meteo">
+
     /**
      * Performs a centered difference operation on a grid data in the x or y
      * direction
@@ -1494,7 +1570,7 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     /**
      * Calculates the vertical component of the curl (ie, vorticity)
      *
@@ -1556,7 +1632,7 @@ public class ArrayMath {
 
         return gData;
     }
-    
+
     /**
      * Take magnitude value from U/V grid data
      *
@@ -1577,7 +1653,7 @@ public class ArrayMath {
                 if (Double.isNaN(uData.getDouble(idx)) || Double.isNaN(vData.getDouble(idx))) {
                     r.setDouble(idx, Double.NaN);
                 } else {
-                    r.setDouble(idx, Math.sqrt(Math.pow(uData.getDouble(idx), 2) + Math.pow(vData.getDouble(idx), 2)));                    
+                    r.setDouble(idx, Math.sqrt(Math.pow(uData.getDouble(idx), 2) + Math.pow(vData.getDouble(idx), 2)));
                 }
             }
         }

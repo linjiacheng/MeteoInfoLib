@@ -13,6 +13,9 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import org.meteoinfo.data.meteodata.GridDataSetting;
+import org.meteoinfo.geoprocess.analysis.InterpolationSetting;
+import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.util.BigDecimalUtil;
 import org.meteoinfo.global.util.GlobalUtil;
 import ucar.ma2.Array;
@@ -199,12 +202,12 @@ public class ArrayUtil {
         double stepv = (stopv - startv) / (n - 1);
         double endv = n * stepv + startv;
         int nn = n;
-        if (endpoint){
-            if (endv < stopv){
+        if (endpoint) {
+            if (endv < stopv) {
                 nn += 1;
             }
         } else {
-            if (endv >= stopv){
+            if (endv >= stopv) {
                 nn -= 1;
             }
         }
@@ -230,7 +233,7 @@ public class ArrayUtil {
 
         return a;
     }
-    
+
     /**
      * Get zero array
      *
@@ -241,7 +244,7 @@ public class ArrayUtil {
     public static Array zeros(List<Integer> shape, String dtype) {
         DataType dt = toDataType(dtype);
         int[] ashape = new int[shape.size()];
-        for (int i = 0; i < shape.size(); i++){
+        for (int i = 0; i < shape.size(); i++) {
             ashape[i] = shape.get(i);
         }
         Array a = Array.factory(dt, ashape);
@@ -266,7 +269,7 @@ public class ArrayUtil {
 
         return a;
     }
-    
+
     /**
      * Get ones array
      *
@@ -277,7 +280,7 @@ public class ArrayUtil {
     public static Array ones(List<Integer> shape, String dtype) {
         DataType dt = toDataType(dtype);
         int[] ashape = new int[shape.size()];
-        for (int i = 0; i < shape.size(); i++){
+        for (int i = 0; i < shape.size(); i++) {
             ashape[i] = shape.get(i);
         }
         Array a = Array.factory(dt, ashape);
@@ -413,8 +416,10 @@ public class ArrayUtil {
         }
         return sbuff.toString();
     }
+
     // </editor-fold>
     // <editor-fold desc="Convert">
+
     /**
      * To data type - ucar.ma2
      *
@@ -441,9 +446,462 @@ public class ArrayUtil {
         }
     }
 
-    
     // </editor-fold>
-    // <editor-fold desc="Resample">
+    // <editor-fold desc="Resample/Interpolate">
+    /**
+     * Smooth with 5 points
+     * @param a Array
+     * @param rowNum Row number
+     * @param colNum Column number
+     * @param unDefData Missing value
+     * @return Result array
+     */
+    public static Array smooth5(Array a, int rowNum, int colNum, double unDefData){
+        Array r = Array.factory(a.getDataType(), a.getShape());
+        double s = 0.5;
+        for (int i = 1; i < rowNum - 1; i++) {
+            for (int j = 1; j < colNum - 2; j++) {
+                if (r.getDouble(i * colNum + j) == unDefData || r.getDouble((i + 1) * colNum + j) == unDefData || r.getDouble((i - 1) * colNum + j)
+                        == unDefData || r.getDouble(i * colNum + j + 1) == unDefData || r.getDouble(i * colNum + j - 1) == unDefData) {
+                    continue;
+                }
+                r.setDouble(i * colNum + j, r.getDouble(i * colNum + j) + s / 4 * (r.getDouble((i + 1) * colNum + j) + r.getDouble((i - 1) * colNum + j) + r.getDouble(i * colNum + j + 1)
+                        + r.getDouble(i * colNum + j - 1) - 4 * r.getDouble(i * colNum + j)));
+            }
+        }
+
+        return r;
+    }
+    
+    /**
+     * Interpolation with IDW radius method
+     *
+     * @param x_s scatter X array
+     * @param y_s scatter Y array
+     * @param a scatter value array
+     * @param X grid X array
+     * @param Y grid Y array
+     * @param NeededPointNum needed at least point number
+     * @param radius search radius
+     * @param unDefData undefine data
+     * @return interpolated grid data
+     */
+    public static Array interpolation_IDW_Radius(List<Number> x_s, List<Number> y_s, Array a,
+            List<Number> X, List<Number> Y, int NeededPointNum, double radius, double unDefData) {
+        int rowNum, colNum, pNum;
+        colNum = X.size();
+        rowNum = Y.size();
+        pNum = x_s.size();
+        //double[][] GCoords = new double[rowNum][colNum];
+        Array r = Array.factory(DataType.DOUBLE, new int[]{rowNum, colNum});
+        int i, j, p, vNum;
+        double w, SV, SW;
+        boolean ifPointGrid;
+        double x, y, v;
+
+        //---- Do interpolation
+        for (i = 0; i < rowNum; i++) {
+            for (j = 0; j < colNum; j++) {
+                r.setDouble(i * colNum + j, unDefData);
+                ifPointGrid = false;
+                SV = 0;
+                SW = 0;
+                vNum = 0;
+                for (p = 0; p < pNum; p++) {
+                    v = a.getDouble(p);
+                    if (MIMath.doubleEquals(v, unDefData)) {
+                        continue;
+                    }
+                    x = x_s.get(p).doubleValue();
+                    y = y_s.get(p).doubleValue();
+                    if (x < X.get(j).doubleValue() - radius || x > X.get(j).doubleValue() + radius || y < Y.get(i).doubleValue() - radius
+                            || y > Y.get(i).doubleValue() + radius) {
+                        continue;
+                    }
+
+                    if (Math.pow(X.get(j).doubleValue() - x, 2) + Math.pow(Y.get(i).doubleValue() - y, 2) == 0) {
+                        r.setDouble(i * colNum + j, v);
+                        ifPointGrid = true;
+                        break;
+                    } else if (Math.sqrt(Math.pow(X.get(j).doubleValue() - x, 2)
+                            + Math.pow(Y.get(i).doubleValue() - y, 2)) <= radius) {
+                        w = 1 / (Math.pow(X.get(j).doubleValue() - x, 2) + Math.pow(Y.get(i).doubleValue() - y, 2));
+                        SW = SW + w;
+                        SV = SV + v * w;
+                        vNum += 1;
+                    }
+                }
+
+                if (!ifPointGrid) {
+                    if (vNum >= NeededPointNum) {
+                        r.setDouble(i * colNum + j, SV / SW);
+                    }
+                }
+            }
+        }
+
+        //---- Smooth with 5 points
+        r = smooth5(r, rowNum, colNum, unDefData);
+        
+        return r;
+    }
+    
+    /**
+     * Interpolation with IDW neighbor method
+     *
+     * @param x_s scatter X array
+     * @param y_s scatter Y array
+     * @param a scatter value array
+     * @param X grid X array
+     * @param Y grid Y array
+     * @param NumberOfNearestNeighbors
+     * @param unDefData undefine data
+     * @return interpolated grid data
+     */
+    public static Array interpolation_IDW_Neighbor(List<Number> x_s, List<Number> y_s, Array a, 
+            List<Number> X, List<Number> Y, int NumberOfNearestNeighbors, double unDefData) {
+        int rowNum, colNum, pNum;
+        colNum = X.size();
+        rowNum = Y.size();
+        pNum = x_s.size();
+        Array r = Array.factory(DataType.DOUBLE, new int[]{rowNum, colNum});
+        int i, j, p, l, aP;
+        double w, SV, SW, aMin;
+        int points;
+        points = NumberOfNearestNeighbors;
+        double[] AllWeights = new double[pNum];
+        double[][] NW = new double[2][points];
+        int NWIdx;
+        double x, y, v;
+
+        //---- Do interpolation with IDW method 
+        for (i = 0; i < rowNum; i++) {
+            for (j = 0; j < colNum; j++) {
+                r.setDouble(i * colNum + j, unDefData);
+                SV = 0;
+                SW = 0;
+                NWIdx = 0;
+                for (p = 0; p < pNum; p++) {
+                    v = a.getDouble(p);
+                    if (v == unDefData) {
+                        AllWeights[p] = -1;
+                        continue;
+                    }
+                    x = x_s.get(p).doubleValue();
+                    y = y_s.get(p).doubleValue();
+                    if (Math.pow(X.get(j).doubleValue() - x, 2) + Math.pow(Y.get(i).doubleValue() - y, 2) == 0) {
+                        r.setDouble(i * colNum + j, v);
+                        break;
+                    } else {
+                        w = 1 / (Math.pow(X.get(j).doubleValue() - x, 2) + Math.pow(Y.get(i).doubleValue() - y, 2));
+                        AllWeights[p] = w;
+                        if (NWIdx < points) {
+                            NW[0][NWIdx] = w;
+                            NW[1][NWIdx] = p;
+                        }
+                        NWIdx += 1;
+                    }
+                }
+
+                if (r.getDouble(i * colNum + j) == unDefData) {
+                    for (p = 0; p < pNum; p++) {
+                        w = AllWeights[p];
+                        if (w == -1) {
+                            continue;
+                        }
+
+                        aMin = NW[0][0];
+                        aP = 0;
+                        for (l = 1; l < points; l++) {
+                            if ((double) NW[0][l] < aMin) {
+                                aMin = (double) NW[0][l];
+                                aP = l;
+                            }
+                        }
+                        if (w > aMin) {
+                            NW[0][aP] = w;
+                            NW[1][aP] = p;
+                        }
+                    }
+                    for (p = 0; p < points; p++) {
+                        SV += (double) NW[0][p] * a.getDouble((int) NW[1][p]);
+                        SW += (double) NW[0][p];
+                    }
+                    r.setDouble(i * colNum + j, SV / SW);
+                }
+            }
+        }
+
+        //---- Smooth with 5 points
+        r = smooth5(r, rowNum, colNum, unDefData);
+
+        return r;
+    }
+    
+    /**
+     * Interpolate with nearest method
+     *
+     * @param x_s scatter X array
+     * @param y_s scatter Y array
+     * @param a scatter value array
+     * @param X x coordinate
+     * @param Y y coordinate
+     * @param unDefData undefine value
+     * @return grid data
+     */
+    public static Array interpolation_Nearest(List<Number> x_s, List<Number> y_s, Array a, List<Number> X, List<Number> Y,
+            double unDefData) {
+        int rowNum, colNum, pNum;
+        colNum = X.size();
+        rowNum = Y.size();
+        pNum = x_s.size();
+        //double[][] GCoords = new double[rowNum][colNum];
+        Array r = Array.factory(DataType.DOUBLE, new int[]{rowNum, colNum});
+        double dX = X.get(1).doubleValue() - X.get(0).doubleValue();
+        double dY = Y.get(1).doubleValue() - Y.get(0).doubleValue();
+        int[][] pNums = new int[rowNum][colNum];
+        double x, y, v;
+
+        for (int i = 0; i < rowNum; i++) {
+            for (int j = 0; j < colNum; j++) {
+                pNums[i][j] = 0;
+                r.setDouble(i * colNum + j, 0.0);
+            }
+        }
+
+        for (int p = 0; p < pNum; p++) {
+            v = a.getDouble(p);
+            if (MIMath.doubleEquals(v, unDefData)) {
+                continue;
+            }
+
+            x = x_s.get(p).doubleValue();
+            y = y_s.get(p).doubleValue();
+            if (x < X.get(0).doubleValue() || x > X.get(colNum - 1).doubleValue()) {
+                continue;
+            }
+            if (y < Y.get(0).doubleValue() || y > Y.get(rowNum - 1).doubleValue()) {
+                continue;
+            }
+
+            int j = (int) ((x - X.get(0).doubleValue()) / dX);
+            int i = (int) ((y - Y.get(0).doubleValue()) / dY);
+            pNums[i][j] += 1;
+            r.setDouble(i * colNum + j, r.getDouble(i * colNum + j) + v);
+        }
+
+        for (int i = 0; i < rowNum; i++) {
+            for (int j = 0; j < colNum; j++) {
+                if (pNums[i][j] == 0) {
+                    r.setDouble(i * colNum + j, unDefData);
+                } else {
+                    r.setDouble(i * colNum + j, r.getDouble(i * colNum + j) / pNums[i][j]);
+                }
+            }
+        }
+
+        return r;
+    }
+
+    /**
+     * Cressman analysis
+     *
+     * @param x_s scatter X array
+     * @param y_s scatter Y array
+     * @param v_s scatter value array
+     * @param X x array
+     * @param Y y array
+     * @param unDefData undefine data
+     * @param radList radii list
+     * @return result grid data
+     */
+    public static Array cressman(List<Number> x_s, List<Number> y_s, Array v_s, List<Number> X, List<Number> Y,
+            double unDefData, List<Number> radList) {
+        int xNum = X.size();
+        int yNum = Y.size();
+        int pNum = x_s.size();
+        //double[][] gridData = new double[yNum][xNum];
+        Array r = Array.factory(DataType.DOUBLE, new int[]{yNum, xNum});
+        int irad = radList.size();
+        int i, j;
+
+        //Loop through each stn report and convert stn lat/lon to grid coordinates
+        double xMin = X.get(0).doubleValue();
+        double xMax;
+        double yMin = Y.get(0).doubleValue();
+        double yMax;
+        double xDelt = X.get(1).doubleValue() - X.get(0).doubleValue();
+        double yDelt = Y.get(1).doubleValue() - Y.get(0).doubleValue();
+        double x, y;
+        double sum;
+        int stNum = 0;
+        double[][] stationData = new double[pNum][3];
+        for (i = 0; i < pNum; i++) {
+            x = x_s.get(i).doubleValue();
+            y = y_s.get(i).doubleValue();
+            stationData[i][0] = (x - xMin) / xDelt;
+            stationData[i][1] = (y - yMin) / yDelt;
+            stationData[i][2] = v_s.getDouble(i);
+            if (stationData[i][2] != unDefData) {
+                //total += stationData[i][2];
+                stNum += 1;
+            }
+        }
+        //total = total / stNum;
+
+        double HITOP = -999900000000000000000.0;
+        double HIBOT = 999900000000000000000.0;
+        double[][] TOP = new double[yNum][xNum];
+        double[][] BOT = new double[yNum][xNum];
+        for (i = 0; i < yNum; i++) {
+            for (j = 0; j < xNum; j++) {
+                TOP[i][j] = HITOP;
+                BOT[i][j] = HIBOT;
+            }
+        }
+
+        //Initial grid values are average of station reports within the first radius
+        double rad;
+        if (radList.size() > 0) {
+            rad = radList.get(0).doubleValue();
+        } else {
+            rad = 4;
+        }
+        for (i = 0; i < yNum; i++) {
+            y = (double) i;
+            yMin = y - rad;
+            yMax = y + rad;
+            for (j = 0; j < xNum; j++) {
+                x = (double) j;
+                xMin = x - rad;
+                xMax = x + rad;
+                stNum = 0;
+                sum = 0;
+                for (int s = 0; s < pNum; s++) {
+                    double val = stationData[s][2];
+                    double sx = stationData[s][0];
+                    double sy = stationData[s][1];
+                    if (sx < 0 || sx >= xNum - 1 || sy < 0 || sy >= yNum - 1) {
+                        continue;
+                    }
+
+                    if (val == unDefData || sx < xMin || sx > xMax || sy < yMin || sy > yMax) {
+                        continue;
+                    }
+
+                    double dis = Math.sqrt(Math.pow(sx - x, 2) + Math.pow(sy - y, 2));
+                    if (dis > rad) {
+                        continue;
+                    }
+
+                    sum += val;
+                    stNum += 1;
+                    if (TOP[i][j] < val) {
+                        TOP[i][j] = val;
+                    }
+                    if (BOT[i][j] > val) {
+                        BOT[i][j] = val;
+                    }
+                }
+                if (stNum == 0) {
+                    r.setDouble(i * xNum + j, unDefData);
+                } else {
+                    r.setDouble(i * xNum + j, sum / stNum);
+                }
+            }
+        }
+
+        //Perform the objective analysis
+        for (int p = 0; p < irad; p++) {
+            rad = radList.get(p).doubleValue();
+            for (i = 0; i < yNum; i++) {
+                y = (double) i;
+                yMin = y - rad;
+                yMax = y + rad;
+                for (j = 0; j < xNum; j++) {
+                    if (r.getDouble(i * xNum + j) == unDefData) {
+                        continue;
+                    }
+
+                    x = (double) j;
+                    xMin = x - rad;
+                    xMax = x + rad;
+                    sum = 0;
+                    double wSum = 0;
+                    for (int s = 0; s < pNum; s++) {
+                        double val = stationData[s][2];
+                        double sx = stationData[s][0];
+                        double sy = stationData[s][1];
+                        if (sx < 0 || sx >= xNum - 1 || sy < 0 || sy >= yNum - 1) {
+                            continue;
+                        }
+
+                        if (val == unDefData || sx < xMin || sx > xMax || sy < yMin || sy > yMax) {
+                            continue;
+                        }
+
+                        double dis = Math.sqrt(Math.pow(sx - x, 2) + Math.pow(sy - y, 2));
+                        if (dis > rad) {
+                            continue;
+                        }
+
+                        int i1 = (int) sy;
+                        int j1 = (int) sx;
+                        int i2 = i1 + 1;
+                        int j2 = j1 + 1;
+                        double a = r.getDouble(i1 * xNum + j1);
+                        double b = r.getDouble(i1 * xNum + j2);
+                        double c = r.getDouble(i2 * xNum + j1);
+                        double d = r.getDouble(i2 * xNum + j2);
+                        List<Double> dList = new ArrayList<>();
+                        if (a != unDefData) {
+                            dList.add(a);
+                        }
+                        if (b != unDefData) {
+                            dList.add(b);
+                        }
+                        if (c != unDefData) {
+                            dList.add(c);
+                        }
+                        if (d != unDefData) {
+                            dList.add(d);
+                        }
+
+                        double calVal;
+                        if (dList.isEmpty()) {
+                            continue;
+                        } else if (dList.size() == 1) {
+                            calVal = dList.get(0);
+                        } else if (dList.size() <= 3) {
+                            double aSum = 0;
+                            for (double dd : dList) {
+                                aSum += dd;
+                            }
+                            calVal = aSum / dList.size();
+                        } else {
+                            double x1val = a + (c - a) * (sy - i1);
+                            double x2val = b + (d - b) * (sy - i1);
+                            calVal = x1val + (x2val - x1val) * (sx - j1);
+                        }
+                        double eVal = val - calVal;
+                        double w = (rad * rad - dis * dis) / (rad * rad + dis * dis);
+                        sum += eVal * w;
+                        wSum += w;
+                    }
+                    if (wSum < 0.000001) {
+                        r.setDouble(i * xNum + j, unDefData);
+                    } else {
+                        double aData = r.getDouble(i * xNum + j) + sum / wSum;
+                        r.setDouble(i * xNum + j, Math.max(BOT[i][j], Math.min(TOP[i][j], aData)));
+                    }
+                }
+            }
+        }
+
+        //Return
+        return r;
+    }
+    
     private static Array resample_Bilinear(Array a, List<Number> X, List<Number> Y, List<Number> newX, List<Number> newY) {
         Array r = Array.factory(DataType.DOUBLE, a.getShape());
         int i, j;
@@ -468,21 +926,22 @@ public class ArrayUtil {
 
         return r;
     }
-    
+
     /**
      * Interpolate array data
+     *
      * @param a Array
      * @param X X coordinates
      * @param Y Y coordinates
      * @return Result array data
      */
-    public Array interpolate(Array a, List<Number> X, List<Number> Y){
+    public Array interpolate(Array a, List<Number> X, List<Number> Y) {
         int nxNum = X.size() * 2 - 1;
         int nyNum = Y.size() * 2 - 1;
         List<Number> newX = new ArrayList<>();
         List<Number> newY = new ArrayList<>();
         int i;
-        
+
         for (i = 0; i < nxNum; i++) {
             if (i % 2 == 0) {
                 newX.add(X.get(i / 2).doubleValue());
@@ -497,7 +956,7 @@ public class ArrayUtil {
                 newY.add((Y.get((i - 1) / 2).doubleValue() + Y.get((i - 1) / 2 + 1).doubleValue()) / 2);
             }
         }
-        
+
         return resample_Bilinear(a, X, Y, newX, newY);
     }
     // </editor-fold>    

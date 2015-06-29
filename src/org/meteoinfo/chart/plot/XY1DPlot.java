@@ -389,8 +389,8 @@ public final class XY1DPlot extends XYPlot {
             float y = (float)xy[1];
             g.setFont(text.getFont());
             g.setColor(text.getColor());
-            Dimension dim = Draw.getStringDimension(text.getText(), g);
-            y -= dim.height * 2 / 3;
+            //Dimension dim = Draw.getStringDimension(text.getText(), g);
+            //y -= dim.height * 2 / 3;
             Draw.drawString(g, text.getText(), x, y);
         }
 

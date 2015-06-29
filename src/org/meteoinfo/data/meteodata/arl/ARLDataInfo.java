@@ -1592,6 +1592,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
      *
      * @param aDL The data label
      * @param gridData The grid data
+     * @throws java.io.IOException
      */
     public void writeGridData(DataLabel aDL, GridData gridData) throws IOException {
         byte[] dataBytes = packARLGridData(gridData, aDL);
