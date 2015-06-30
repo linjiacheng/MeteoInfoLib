@@ -117,6 +117,7 @@ public class MapPlot extends XY2DPlot {
             super.setDrawExtent(extent);
         } else {
             this.getMapView().zoomToExtentLonLatEx(extent);
+            super.setDrawExtent(this.getMapView().getViewExtent());
         }
     }
     
