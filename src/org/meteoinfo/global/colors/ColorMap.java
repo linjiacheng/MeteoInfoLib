@@ -144,13 +144,13 @@ public class ColorMap {
             return this.gradsRainBowColors(n);
         } 
         
-        if (this.colors.length < n){
-            Color[] ncs = new Color[n];
-            for (int i = 0; i < n; i++)
-                ncs[i] = colors[0];
-            
-            return ncs;
-        }
+//        if (this.colors.length < n){
+//            Color[] ncs = new Color[n];
+//            for (int i = 0; i < n; i++)
+//                ncs[i] = colors[0];
+//            
+//            return ncs;
+//        }
         
         Color[] ncs = new Color[n];
         int cn = this.colors.length;
@@ -175,6 +175,21 @@ public class ColorMap {
 //        }
 
         return ncs;
+    }
+    
+    /**
+     * Get color list
+     * @param n Color number
+     * @return Color list
+     */
+    public List<Color> getColorList(int n){
+        Color[] cs = this.getColors(n);
+        List<Color> cols = new ArrayList<>();
+        for (Color c : cs){
+            cols.add(c);
+        }
+        
+        return cols;
     }
     
     /**

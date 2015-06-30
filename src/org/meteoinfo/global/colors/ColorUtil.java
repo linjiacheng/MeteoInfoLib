@@ -21,7 +21,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import org.meteoinfo.global.util.GlobalUtil;
+import static org.meteoinfo.legend.LegendManage.getRainBowColors_HSV;
 
 /**
  * ColorUtiles class
@@ -343,6 +345,171 @@ public class ColorUtil {
         }
 
         return ncts;
+    }
+    
+    /**
+     * Create colors from start and end color
+     *
+     * @param sColor Start color
+     * @param eColor End color
+     * @param cNum Color number
+     * @return Color array
+     */
+    public static Color[] createColors(Color sColor, Color eColor, int cNum) {
+        Color[] colors = new Color[cNum];
+        int sR, sG, sB, eR, eG, eB;
+        int rStep, gStep, bStep;
+        int i;
+        
+        sR = sColor.getRed();
+        sG = sColor.getGreen();
+        sB = sColor.getBlue();
+        eR = eColor.getRed();
+        eG = eColor.getGreen();
+        eB = eColor.getBlue();
+        rStep = (int) ((eR - sR) / cNum);
+        gStep = (int) ((eG - sG) / cNum);
+        bStep = (int) ((eB - sB) / cNum);
+        for (i = 0; i < colors.length; i++) {
+            colors[i] = new Color(sR + i * rStep, sG + i * gStep, sB + i * bStep);
+        }
+        
+        return colors;
+    }
+    
+    /**
+     * Create rainbow colors
+     *
+     * @param cNum Color number
+     * @return Rainbow color array
+     */
+    public static Color[] createRainBowColors(int cNum) {
+        if (cNum > 13) {
+            //return getRainBowColors_HSL(cNum);
+            return getRainBowColors_HSV(cNum);
+        }
+        
+        List<Color> colorList = new ArrayList<>();
+        
+        colorList.add(new Color(160, 0, 200));
+        colorList.add(new Color(110, 0, 220));
+        colorList.add(new Color(30, 60, 255));
+        colorList.add(new Color(0, 160, 255));
+        colorList.add(new Color(0, 200, 200));
+        colorList.add(new Color(0, 210, 140));
+        colorList.add(new Color(0, 220, 0));
+        colorList.add(new Color(160, 230, 50));
+        colorList.add(new Color(230, 220, 50));
+        colorList.add(new Color(230, 175, 45));
+        colorList.add(new Color(240, 130, 40));
+        colorList.add(new Color(250, 60, 60));
+        colorList.add(new Color(240, 0, 130));
+        
+        switch (cNum) {
+            case 12:
+                colorList.remove(new Color(0, 210, 140));
+                break;
+            case 11:
+                colorList.remove(new Color(0, 210, 140));
+                colorList.remove(new Color(30, 60, 255));
+                break;
+            case 10:
+                colorList.remove(new Color(0, 210, 140));
+                colorList.remove(new Color(30, 60, 255));
+                colorList.remove(new Color(230, 175, 45));
+                break;
+            case 9:
+                colorList.remove(new Color(0, 210, 140));
+                colorList.remove(new Color(30, 60, 255));
+                colorList.remove(new Color(230, 175, 45));
+                colorList.remove(new Color(160, 230, 50));
+                break;
+            case 8:
+                colorList.remove(new Color(0, 210, 140));
+                colorList.remove(new Color(30, 60, 255));
+                colorList.remove(new Color(230, 175, 45));
+                colorList.remove(new Color(160, 230, 50));
+                colorList.remove(new Color(110, 0, 220));
+                break;
+            case 7:
+                colorList.remove(new Color(0, 210, 140));
+                colorList.remove(new Color(30, 60, 255));
+                colorList.remove(new Color(230, 175, 45));
+                colorList.remove(new Color(160, 230, 50));
+                colorList.remove(new Color(110, 0, 220));
+                colorList.remove(new Color(0, 200, 200));
+                break;
+            case 6:
+                colorList.remove(new Color(0, 210, 140));
+                colorList.remove(new Color(30, 60, 255));
+                colorList.remove(new Color(230, 175, 45));
+                colorList.remove(new Color(160, 230, 50));
+                colorList.remove(new Color(110, 0, 220));
+                colorList.remove(new Color(0, 200, 200));
+                colorList.remove(new Color(240, 130, 40));
+                break;
+            case 5:
+                colorList.remove(new Color(0, 210, 140));
+                colorList.remove(new Color(30, 60, 255));
+                colorList.remove(new Color(230, 175, 45));
+                colorList.remove(new Color(160, 230, 50));
+                colorList.remove(new Color(110, 0, 220));
+                colorList.remove(new Color(0, 200, 200));
+                colorList.remove(new Color(240, 130, 40));
+                colorList.remove(new Color(160, 0, 200));
+                break;
+        }
+        
+        Color[] colors = new Color[cNum];
+        for (int i = 0; i < cNum; i++) {
+            colors[i] = colorList.get(i);
+        }
+        
+        return colors;
+    }
+    
+    /**
+     * Get rainbow color by HSV/HSB
+     *
+     * @param cNum Color number
+     * @return Rainbow colors
+     */
+    public static Color[] getRainBowColors_HSV(int cNum) {
+        double p = 360.0 / cNum;
+        Color[] colors = new Color[cNum];
+        for (int i = 0; i < cNum; i++) {
+            colors[cNum - i - 1] = Color.getHSBColor((float) (i * p), 1.0f, 1.0f);
+        }
+        
+        return colors;
+    }
+    
+    /**
+     * Create a random color
+     * @return A random color
+     */
+    public static Color createRandomColor(){
+        Random randomColor = new Random();
+        return new Color(randomColor.nextInt(256), randomColor.nextInt(256), randomColor.nextInt(256));
+    }
+    
+    /**
+     * Create random colors
+     *
+     * @param cNum Color number
+     * @return The random colors
+     */
+    public static Color[] createRandomColors(int cNum) {
+        Color[] colors = new Color[cNum];
+        int i;
+        Random randomColor = new Random();
+        
+        for (i = 0; i < cNum; i++) {
+            colors[i] = new Color(randomColor.nextInt(256),
+                    randomColor.nextInt(256), randomColor.nextInt(256));
+        }
+        
+        return colors;
     }
     // </editor-fold>
 }
