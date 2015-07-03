@@ -6,6 +6,7 @@
 package org.meteoinfo.data;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -13,8 +14,7 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
-import org.meteoinfo.data.meteodata.GridDataSetting;
-import org.meteoinfo.geoprocess.analysis.InterpolationSetting;
+import java.util.Scanner;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.util.BigDecimalUtil;
 import org.meteoinfo.global.util.GlobalUtil;
@@ -52,7 +52,8 @@ public class ArrayUtil {
 
         DataType dt = DataType.DOUBLE;
         if (dataType != null) {
-            dataType = dataType.split("%")[1];
+            if (dataType.contains("%"))
+                dataType = dataType.split("%")[1];
             dt = ArrayUtil.toDataType(dataType);
         }
 
@@ -82,6 +83,48 @@ public class ArrayUtil {
         sr.close();
 
         return a;
+    }
+    
+    /**
+     * Get row number of a ASCII file
+     * @param fileName File name
+     * @return Row number
+     * @throws FileNotFoundException 
+     */
+    public static int numASCIIRow(String fileName) throws FileNotFoundException{
+        File f = new File(fileName);
+        int lineNumber;
+        try (Scanner fileScanner = new Scanner(f)) {
+            lineNumber = 0;
+            while(fileScanner.hasNextLine()){
+                fileScanner.nextLine();
+                lineNumber++;
+            }
+        }
+        
+        return lineNumber;
+    }
+    
+    /**
+     * Get row number of a ASCII file
+     * @param fileName File name
+     * @param delimiter
+     * @param headerLines
+     * @return Row number
+     * @throws FileNotFoundException 
+     */
+    public static int numASCIICol(String fileName, String delimiter, int headerLines) throws FileNotFoundException, IOException{
+        String[] dataArray;
+        try (BufferedReader sr = new BufferedReader(new InputStreamReader(new FileInputStream(fileName)))) {
+            if (headerLines > 0) {
+                for (int i = 0; i < headerLines; i++) {
+                    sr.readLine();
+                }
+            }   String line = sr.readLine();
+            dataArray = GlobalUtil.split(line, delimiter);
+        }
+        
+        return dataArray.length;
     }
 
     // </editor-fold>

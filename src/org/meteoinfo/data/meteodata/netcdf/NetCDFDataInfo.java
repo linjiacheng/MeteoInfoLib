@@ -260,11 +260,12 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                         Dimension ndim = _miDims.get(idx);
                         nvar.addDimension(ndim);
                     }
-//                    else {
-//                        Dimension ndim = new Dimension(DimensionType.Other);
-//                        ndim.setDimName(dim.getShortName());
-//                        ndim.setDimLength(dim.getLength());
-//                    }
+                    else {
+                        Dimension ndim = new Dimension(DimensionType.Other);
+                        ndim.setDimName(dim.getShortName());
+                        ndim.setDimLength(dim.getLength());
+                        nvar.addDimension(ndim);
+                    }
                 }
 
                 vars.add(nvar);

@@ -112,7 +112,7 @@ public class Clustering {
      * @param disType Distant define type: Euclidean or Angle
      * @throws java.io.IOException
      */
-    public static void calculate(List<VectorLayer> trajLayers, String outFile, int N, int M, int LN, int interval, DistanceType disType) throws IOException {
+    public static void calculate(List<VectorLayer> trajLayers, String outFile, int N, int M, int LN, int interval, DistanceType disType) throws IOException {        
         double[][] DATA = new double[N][M];
 
         //---- Get data array           

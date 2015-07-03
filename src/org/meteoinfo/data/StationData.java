@@ -89,8 +89,13 @@ public class StationData {
         this.missingValue = missingv.doubleValue();
         stations = new ArrayList<>();
         dataExtent = new Extent();
+        data = new double[n][3];
         for (int i = 0; i < n; i++) {
-            this.addData("s_" + String.valueOf(i + 1), x.getDouble(i), y.getDouble(i), a.getDouble(i));
+            stations.add("s_" + String.valueOf(i + 1));
+            data[i][0] = x.getDouble(i);
+            data[i][1] = y.getDouble(i);
+            data[i][2] = a.getDouble(i);
+            //this.addData("s_" + String.valueOf(i + 1), x.getDouble(i), y.getDouble(i), a.getDouble(i));
         }
     }
 
