@@ -642,6 +642,33 @@ public class Variable {
         dim.setDimValues(values);
         this.setDimension(dim);
     }
+    
+    /**
+     * Set a dimension
+     * @param tstr Dimension type string
+     * @param values Dimension values
+     * @param index Index
+     */
+    public void setDimension(String tstr, List<Number> values, int index){
+        DimensionType dType = DimensionType.Other;
+        switch(tstr){
+            case "X":
+                dType = DimensionType.X;
+                break;
+            case "Y":
+                dType = DimensionType.Y;
+                break;
+            case "Z":
+                dType = DimensionType.Z;
+                break;
+            case "T":
+                dType = DimensionType.T;
+                break;
+        }
+        Dimension dim = new Dimension(dType);
+        dim.setDimValues(values);
+        this.setDimension(dim, index);
+    }
 
     /**
      * Set dimension
@@ -668,6 +695,23 @@ public class Variable {
                 _dimensions.add(aDim);
             }
         }
+    }
+    
+    /**
+     * Set dimension
+     *
+     * @param aDim The dimension
+     * @param idx Index
+     */
+    public void setDimension(Dimension aDim, int idx) {
+        if (aDim == null)
+            return;
+        
+        if (this._dimensions.size() > idx){
+            this._dimensions.set(idx, aDim);
+        } else {
+            this.setDimension(aDim);
+        }        
     }
 
     /**
