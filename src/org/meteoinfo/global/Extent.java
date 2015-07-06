@@ -14,8 +14,6 @@
 package org.meteoinfo.global;
 
 import java.awt.Rectangle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Template

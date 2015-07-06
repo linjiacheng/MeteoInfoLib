@@ -26,6 +26,7 @@ import org.meteoinfo.legend.MapFrame;
 import org.meteoinfo.map.GridLabel;
 import org.meteoinfo.map.MapView;
 import org.meteoinfo.projection.KnownCoordinateSystems;
+import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.projection.Reproject;
 import org.meteoinfo.shape.Graphic;
 import org.meteoinfo.shape.PointShape;
@@ -92,6 +93,14 @@ public class MapPlot extends XY2DPlot {
     public void setMapFrame(MapFrame value){
         this.mapFrame = value;
         this.setMapView(mapFrame.getMapView(), true);
+    }
+    
+    /**
+     * Get projection info
+     * @return Projection info
+     */
+    public ProjectionInfo getProjInfo(){
+        return this.getMapView().getProjection().getProjInfo();
     }
     
     // </editor-fold>

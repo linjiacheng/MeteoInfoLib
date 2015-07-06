@@ -36,8 +36,8 @@ public class Polygon {
     // <editor-fold desc="Constructor">
 
     public Polygon() {
-        _outLine = new ArrayList<PointD>();
-        _holeLines = new ArrayList<List<PointD>>();
+        _outLine = new ArrayList<>();
+        _holeLines = new ArrayList<>();
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -94,7 +94,7 @@ public class Polygon {
      * @return Rings
      */
     public List<List<PointD>> getRings() {
-        List<List<PointD>> rings = new ArrayList<List<PointD>>();
+        List<List<PointD>> rings = new ArrayList<>();
         rings.add(_outLine);
         if (hasHole()) {
             rings.addAll(_holeLines);

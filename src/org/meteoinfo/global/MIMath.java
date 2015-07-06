@@ -856,6 +856,11 @@ public class MIMath {
         range = BigDecimalUtil.sub(max, min);
         if (range == 0.0) {
             return new double[]{min};
+        } else if (range < 0) {
+            range = -range;
+            double temp = min;
+            min = max;
+            max = temp;
         }
 
         eStr = String.format("%1$E", range);

@@ -1332,6 +1332,22 @@ public class ArrayMath {
         List<PolygonShape> polygons = (List<PolygonShape>) layer.getShapes();
         return ArrayMath.maskout(a, x, y, polygons, missingValue);
     }
+    
+    /**
+     * Maskout function
+     *
+     * @param a Array a
+     * @param x X dimension values
+     * @param y Y dimension values
+     * @param polygon Polygon shape
+     * @param missingValue Missing value
+     * @return Result array with cell values of missing outside polygons
+     */
+    public static Array maskout(Array a, List<Number> x, List<Number> y, PolygonShape polygon, Number missingValue) {
+        List<PolygonShape> polygons = new ArrayList<>();
+        polygons.add(polygon);
+        return ArrayMath.maskout(a, x, y, polygons, missingValue);
+    }
 
     /**
      * Maskout function

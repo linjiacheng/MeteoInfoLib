@@ -72,6 +72,7 @@ public class LayoutLegend extends LayoutElement {
     private float barWidth;
     private int _columnNum = 1;
     private boolean drawChartBreaks = true;
+    private boolean drawPieLabel = false;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -385,6 +386,22 @@ public class LayoutLegend extends LayoutElement {
      */
     public void setDrawChartBreaks(boolean value) {
         this.drawChartBreaks = value;
+    }
+    
+    /**
+     * Get if draw pie label
+     * @return Boolean
+     */
+    public boolean isDrawPieLabel(){
+        return this.drawPieLabel;
+    }
+    
+    /**
+     * Set if draw pie label
+     * @param value Boolean
+     */
+    public void setDrawPieLabel(boolean value){
+        this.drawPieLabel = value;
     }
 
     // </editor-fold>
@@ -1537,7 +1554,7 @@ public class LayoutLegend extends LayoutElement {
             addProperty("neatLineColor").setCategory("Neat Line").setDisplayName("Neat Line Color");
             addProperty("neatLineSize").setCategory("Neat Line").setDisplayName("Neat Line Size");
             addProperty("drawChartBreaks").setCategory("Chart").setDisplayName("Draw Chart Breaks");
-            addProperty("drawPieLabel").setCategory("Chart").setDisplayName("Draw Pie label");
+            //addProperty("drawPieLabel").setCategory("Chart").setDisplayName("Draw Pie label");
             addProperty("left").setCategory("Location").setDisplayName("Left");
             addProperty("top").setCategory("Location").setDisplayName("Top");
             addProperty("width").setCategory("Location").setDisplayName("Width");

@@ -13,11 +13,18 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
+import org.meteoinfo.geoprocess.GeoComputation;
 import org.meteoinfo.global.MIMath;
+import org.meteoinfo.global.PointD;
 import org.meteoinfo.global.util.BigDecimalUtil;
 import org.meteoinfo.global.util.GlobalUtil;
+import org.meteoinfo.projection.KnownCoordinateSystems;
+import org.meteoinfo.projection.ProjectionInfo;
+import org.meteoinfo.projection.Reproject;
+import org.meteoinfo.shape.PolygonShape;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
 import ucar.ma2.IndexIterator;
@@ -52,8 +59,9 @@ public class ArrayUtil {
 
         DataType dt = DataType.DOUBLE;
         if (dataType != null) {
-            if (dataType.contains("%"))
+            if (dataType.contains("%")) {
                 dataType = dataType.split("%")[1];
+            }
             dt = ArrayUtil.toDataType(dataType);
         }
 
@@ -84,46 +92,49 @@ public class ArrayUtil {
 
         return a;
     }
-    
+
     /**
      * Get row number of a ASCII file
+     *
      * @param fileName File name
      * @return Row number
-     * @throws FileNotFoundException 
+     * @throws FileNotFoundException
      */
-    public static int numASCIIRow(String fileName) throws FileNotFoundException{
+    public static int numASCIIRow(String fileName) throws FileNotFoundException {
         File f = new File(fileName);
         int lineNumber;
         try (Scanner fileScanner = new Scanner(f)) {
             lineNumber = 0;
-            while(fileScanner.hasNextLine()){
+            while (fileScanner.hasNextLine()) {
                 fileScanner.nextLine();
                 lineNumber++;
             }
         }
-        
+
         return lineNumber;
     }
-    
+
     /**
      * Get row number of a ASCII file
+     *
      * @param fileName File name
      * @param delimiter
      * @param headerLines
      * @return Row number
-     * @throws FileNotFoundException 
+     * @throws FileNotFoundException
      */
-    public static int numASCIICol(String fileName, String delimiter, int headerLines) throws FileNotFoundException, IOException{
+    public static int numASCIICol(String fileName, String delimiter, int headerLines) throws FileNotFoundException, IOException {
         String[] dataArray;
         try (BufferedReader sr = new BufferedReader(new InputStreamReader(new FileInputStream(fileName)))) {
             if (headerLines > 0) {
                 for (int i = 0; i < headerLines; i++) {
                     sr.readLine();
                 }
-            }   String line = sr.readLine();
+            }
+            String line = sr.readLine();
             dataArray = GlobalUtil.split(line, delimiter);
         }
-        
+
         return dataArray.length;
     }
 
@@ -462,7 +473,6 @@ public class ArrayUtil {
 
     // </editor-fold>
     // <editor-fold desc="Convert">
-
     /**
      * To data type - ucar.ma2
      *
@@ -492,14 +502,38 @@ public class ArrayUtil {
     // </editor-fold>
     // <editor-fold desc="Resample/Interpolate">
     /**
+     * Mesh grid
+     *
+     * @param x X array - vector
+     * @param y Y array - vector
+     * @return Result arrays - matrix
+     */
+    public static Array[] meshgrid(Array x, Array y) {
+        int xn = (int) x.getSize();
+        int yn = (int) y.getSize();
+        int[] shape = new int[]{yn, xn};
+        Array rx = Array.factory(x.getDataType(), shape);
+        Array ry = Array.factory(y.getDataType(), shape);
+        for (int i = 0; i < yn; i++) {
+            for (int j = 0; j < xn; j++) {
+                rx.setObject(i * xn + j, x.getObject(j));
+                ry.setObject(i * xn + j, y.getObject(i));
+            }
+        }
+
+        return new Array[]{rx, ry};
+    }
+
+    /**
      * Smooth with 5 points
+     *
      * @param a Array
      * @param rowNum Row number
      * @param colNum Column number
      * @param unDefData Missing value
      * @return Result array
      */
-    public static Array smooth5(Array a, int rowNum, int colNum, double unDefData){
+    public static Array smooth5(Array a, int rowNum, int colNum, double unDefData) {
         Array r = Array.factory(a.getDataType(), a.getShape());
         double s = 0.5;
         for (int i = 1; i < rowNum - 1; i++) {
@@ -515,7 +549,7 @@ public class ArrayUtil {
 
         return r;
     }
-    
+
     /**
      * Interpolation with IDW radius method
      *
@@ -585,10 +619,10 @@ public class ArrayUtil {
 
         //---- Smooth with 5 points
         r = smooth5(r, rowNum, colNum, unDefData);
-        
+
         return r;
     }
-    
+
     /**
      * Interpolation with IDW neighbor method
      *
@@ -601,7 +635,7 @@ public class ArrayUtil {
      * @param unDefData undefine data
      * @return interpolated grid data
      */
-    public static Array interpolation_IDW_Neighbor(List<Number> x_s, List<Number> y_s, Array a, 
+    public static Array interpolation_IDW_Neighbor(List<Number> x_s, List<Number> y_s, Array a,
             List<Number> X, List<Number> Y, int NumberOfNearestNeighbors, double unDefData) {
         int rowNum, colNum, pNum;
         colNum = X.size();
@@ -680,7 +714,7 @@ public class ArrayUtil {
 
         return r;
     }
-    
+
     /**
      * Interpolate with nearest method
      *
@@ -739,6 +773,70 @@ public class ArrayUtil {
                     r.setDouble(i * colNum + j, unDefData);
                 } else {
                     r.setDouble(i * colNum + j, r.getDouble(i * colNum + j) / pNums[i][j]);
+                }
+            }
+        }
+
+        return r;
+    }
+
+    /**
+     * Interpolate with surface method
+     *
+     * @param x_s scatter X array
+     * @param y_s scatter Y array
+     * @param a scatter value array
+     * @param X x coordinate
+     * @param Y y coordinate
+     * @param unDefData undefine value
+     * @return grid data
+     */
+    public static Array interpolation_Surface(Array x_s, Array y_s, Array a, Array X, Array Y,
+            double unDefData) {
+        int rowNum, colNum, xn, yn;
+        int[] shape = x_s.getShape();
+        colNum = shape[1];
+        rowNum = shape[0];
+        xn = (int) X.getSize();
+        yn = (int) Y.getSize();
+        Array r = Array.factory(DataType.DOUBLE, new int[]{yn, xn});
+        double x, y;
+        boolean isIn;
+
+        PolygonShape[][] polygons = new PolygonShape[rowNum - 1][colNum - 1];
+        for (int i = 0; i < rowNum - 1; i++) {
+            for (int j = 0; j < colNum - 1; j++) {
+                PolygonShape ps = new PolygonShape();
+                List<PointD> points = new ArrayList<>();
+                points.add(new PointD(x_s.getDouble(i * colNum + j), y_s.getDouble(i * colNum + j)));
+                points.add(new PointD(x_s.getDouble((i + 1) * colNum + j), y_s.getDouble((i + 1) * colNum + j)));
+                points.add(new PointD(x_s.getDouble((i + 1) * colNum + j + 1), y_s.getDouble((i + 1) * colNum + j + 1)));
+                points.add(new PointD(x_s.getDouble(i * colNum + j + 1), y_s.getDouble(i * colNum + j + 1)));
+                points.add((PointD) points.get(0).clone());
+                ps.setPoints(points);
+                polygons[i][j] = ps;
+            }
+        }
+
+        for (int i = 0; i < yn; i++) {
+            y = Y.getDouble(i);
+            for (int j = 0; j < xn; j++) {
+                x = X.getDouble(j);
+                isIn = false;
+                for (int ii = 0; ii < rowNum - 1; ii++) {
+                    for (int jj = 0; jj < colNum - 1; jj++) {
+                        if (GeoComputation.pointInPolygon(polygons[ii][jj], x, y)) {
+                            r.setDouble(i * xn + j, a.getDouble(ii * colNum + jj));
+                            isIn = true;
+                            break;
+                        }
+                    }
+                    if (isIn) {
+                        break;
+                    }
+                }
+                if (!isIn) {
+                    r.setDouble(i * xn + j, unDefData);
                 }
             }
         }
@@ -944,7 +1042,7 @@ public class ArrayUtil {
         //Return
         return r;
     }
-    
+
     private static Array resample_Bilinear(Array a, List<Number> X, List<Number> Y, List<Number> newX, List<Number> newY) {
         Array r = Array.factory(DataType.DOUBLE, a.getShape());
         int i, j;
@@ -1002,5 +1100,47 @@ public class ArrayUtil {
 
         return resample_Bilinear(a, X, Y, newX, newY);
     }
+
     // </editor-fold>    
+    // <editor-fold desc="Projection">
+
+    /**
+     * Reproject
+     *
+     * @param x X array
+     * @param y Y array
+     * @param toProj To projection
+     * @return Result arrays
+     */
+    public static Array[] reproject(Array x, Array y, ProjectionInfo toProj) {
+        ProjectionInfo fromProj = KnownCoordinateSystems.geographic.world.WGS1984;
+        return reproject(x, y, fromProj, toProj);
+    }
+
+    /**
+     * Reproject
+     *
+     * @param x X array
+     * @param y Y array
+     * @param fromProj From projection
+     * @param toProj To projection
+     * @return Result arrays
+     */
+    public static Array[] reproject(Array x, Array y, ProjectionInfo fromProj, ProjectionInfo toProj) {
+        Array rx = Array.factory(DataType.DOUBLE, x.getShape());
+        Array ry = Array.factory(DataType.DOUBLE, x.getShape());
+        int n = (int) x.getSize();
+        double[][] points = new double[n][];
+        for (int i = 0; i < n; i++) {
+            points[i] = new double[]{x.getDouble(i), y.getDouble(i)};
+        }
+        Reproject.reprojectPoints(points, fromProj, toProj, 0, points.length);
+        for (int i = 0; i < n; i++) {
+            rx.setDouble(i, points[i][0]);
+            ry.setDouble(i, points[i][1]);
+        }
+
+        return new Array[]{rx, ry};
+    }
+    // </editor-fold>
 }

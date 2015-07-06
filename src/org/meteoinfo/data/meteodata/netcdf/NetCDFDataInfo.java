@@ -965,7 +965,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             }
 
             var = this.findNCVariable("Time");
-            if (var != null) {
+            if (var != null && var.getDimensions().size() == 1) {
                 Array darray = var.read();
 //                int n = (int) darray.getSize();
 //                double[] values = new double[n];

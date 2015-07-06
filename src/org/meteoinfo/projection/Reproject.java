@@ -24,7 +24,7 @@ import org.meteoinfo.projection.proj4j.ProjCoordinate;
  */
 public class Reproject {
 
-    private static CoordinateTransformFactory ctFactory = new CoordinateTransformFactory();
+    private static final CoordinateTransformFactory ctFactory = new CoordinateTransformFactory();
 
     /**
      * Reproject a point

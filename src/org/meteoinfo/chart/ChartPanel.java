@@ -339,7 +339,7 @@ public class ChartPanel extends JPanel {
         switch (this.mouseMode) {
             case ZOOM:
                 if (Math.abs(mouseLastPos.x - mouseDownPoint.x) > 5) {
-                    XYPlot xyplot = (XYPlot) this.chart.findPlot(mouseLastPos.x, mouseLastPos.y);
+                    XYPlot xyplot = (XYPlot) this.chart.findPlot(mouseDownPoint.x, mouseDownPoint.y);
                     if (xyplot == null)
                         return;
                     
