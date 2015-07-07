@@ -47,8 +47,8 @@ public class MICAPS120DataInfo extends DataInfo implements IStationDataInfo {
 
     // <editor-fold desc="Variables">
     private String _description;
-    private List<String> _varList = new ArrayList<String>();
-    private List<String> _fieldList = new ArrayList<String>();
+    private List<String> _varList = new ArrayList<>();
+    private List<String> _fieldList = new ArrayList<>();
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -90,12 +90,13 @@ public class MICAPS120DataInfo extends DataInfo implements IStationDataInfo {
             values[0] = DateUtil.toOADate(time);
             tdim.setValues(values);
             this.setTimeDimension(tdim);
-            List<Variable> variables = new ArrayList<Variable>();
+            List<Variable> variables = new ArrayList<>();
             for (String vName : _varList) {
                 Variable var = new Variable();
                 var.setName(vName);
                 var.setStation(true);
                 var.setDimension(tdim);
+                var.setFillValue(this.getMissingValue());
                 variables.add(var);
             }
             this.setVariables(variables);

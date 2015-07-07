@@ -5,10 +5,7 @@
  */
 package org.meteoinfo.data.meteodata.awx;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteOrder;
@@ -30,10 +27,8 @@ import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.data.meteodata.StationInfoData;
 import org.meteoinfo.data.meteodata.StationModelData;
 import org.meteoinfo.data.meteodata.Variable;
-import org.meteoinfo.data.meteodata.ascii.ASCIIGridDataInfo;
 import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.Extent;
-import org.meteoinfo.global.MIMath;
 import org.meteoinfo.layer.WorldFilePara;
 import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;

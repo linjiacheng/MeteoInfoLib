@@ -25,6 +25,8 @@ import ucar.ma2.Range;
  */
 public class ArrayMath {
 
+    public static double fill_value = -9999.0;
+
     // <editor-fold desc="Data type">
     /**
      * Get data type
@@ -138,8 +140,13 @@ public class ArrayMath {
 
     private static Array addInt(Array a, Array b) {
         Array r = Array.factory(DataType.INT, a.getShape());
+        int fv = (int) fill_value;
         for (int i = 0; i < a.getSize(); i++) {
-            r.setInt(i, a.getInt(i) + b.getInt(i));
+            if (a.getInt(i) == fv || b.getInt(i) == fv) {
+                r.setInt(i, fv);
+            } else {
+                r.setInt(i, a.getInt(i) + b.getInt(i));
+            }
         }
 
         return r;
@@ -147,8 +154,13 @@ public class ArrayMath {
 
     private static Array addInt(Array a, int b) {
         Array r = Array.factory(DataType.INT, a.getShape());
+        int fv = (int) fill_value;
         for (int i = 0; i < a.getSize(); i++) {
-            r.setInt(i, a.getInt(i) + b);
+            if (a.getInt(i) == fv) {
+                r.setInt(i, fv);
+            } else {
+                r.setInt(i, a.getInt(i) + b);
+            }
         }
 
         return r;
@@ -156,8 +168,13 @@ public class ArrayMath {
 
     private static Array addFloat(Array a, Array b) {
         Array r = Array.factory(DataType.FLOAT, a.getShape());
+        float fv = (float) fill_value;
         for (int i = 0; i < a.getSize(); i++) {
-            r.setFloat(i, a.getFloat(i) + b.getFloat(i));
+            if (a.getFloat(i) == fv || b.getFloat(i) == fv) {
+                r.setFloat(i, fv);
+            } else {
+                r.setFloat(i, a.getFloat(i) + b.getFloat(i));
+            }
         }
 
         return r;
@@ -165,8 +182,13 @@ public class ArrayMath {
 
     private static Array addFloat(Array a, float b) {
         Array r = Array.factory(DataType.FLOAT, a.getShape());
+        float fv = (float) fill_value;
         for (int i = 0; i < a.getSize(); i++) {
-            r.setFloat(i, a.getFloat(i) + b);
+            if (a.getFloat(i) == fv) {
+                r.setFloat(i, fv);
+            } else {
+                r.setFloat(i, a.getFloat(i) + b);
+            }
         }
 
         return r;
@@ -175,7 +197,11 @@ public class ArrayMath {
     private static Array addDouble(Array a, Array b) {
         Array r = Array.factory(DataType.DOUBLE, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
-            r.setDouble(i, a.getDouble(i) + b.getDouble(i));
+            if (a.getDouble(i) == fill_value || b.getDouble(i) == fill_value) {
+                r.setDouble(i, fill_value);
+            } else {
+                r.setDouble(i, a.getDouble(i) + b.getDouble(i));
+            }
         }
 
         return r;
@@ -184,7 +210,11 @@ public class ArrayMath {
     private static Array addDouble(Array a, double b) {
         Array r = Array.factory(DataType.DOUBLE, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
-            r.setDouble(i, a.getDouble(i) + b);
+            if (a.getDouble(i) == fill_value) {
+                r.setDouble(i, fill_value);
+            } else {
+                r.setDouble(i, a.getDouble(i) + b);
+            }
         }
 
         return r;
@@ -381,8 +411,13 @@ public class ArrayMath {
 
     private static Array mulInt(Array a, Array b) {
         Array r = Array.factory(DataType.INT, a.getShape());
+        int fv = (int) fill_value;
         for (int i = 0; i < a.getSize(); i++) {
-            r.setInt(i, a.getInt(i) * b.getInt(i));
+            if (a.getInt(i) == fv || b.getInt(i) == fv) {
+                r.setInt(i, fv);
+            } else {
+                r.setInt(i, a.getInt(i) * b.getInt(i));
+            }
         }
 
         return r;
@@ -390,8 +425,13 @@ public class ArrayMath {
 
     private static Array mulInt(Array a, int b) {
         Array r = Array.factory(DataType.INT, a.getShape());
+        int fv = (int) fill_value;
         for (int i = 0; i < a.getSize(); i++) {
-            r.setInt(i, a.getInt(i) * b);
+            if (a.getInt(i) == fv) {
+                r.setInt(i, fv);
+            } else {
+                r.setInt(i, a.getInt(i) * b);
+            }
         }
 
         return r;
@@ -399,8 +439,13 @@ public class ArrayMath {
 
     private static Array mulFloat(Array a, Array b) {
         Array r = Array.factory(DataType.FLOAT, a.getShape());
+        float fv = (float) fill_value;
         for (int i = 0; i < a.getSize(); i++) {
-            r.setFloat(i, a.getFloat(i) * b.getFloat(i));
+            if (a.getFloat(i) == fv || b.getFloat(i) == fv) {
+                r.setFloat(i, fv);
+            } else {
+                r.setFloat(i, a.getFloat(i) * b.getFloat(i));
+            }
         }
 
         return r;
@@ -408,8 +453,13 @@ public class ArrayMath {
 
     private static Array mulFloat(Array a, float b) {
         Array r = Array.factory(DataType.FLOAT, a.getShape());
+        float fv = (float) fill_value;
         for (int i = 0; i < a.getSize(); i++) {
-            r.setFloat(i, a.getFloat(i) * b);
+            if (a.getFloat(i) == fv) {
+                r.setFloat(i, fv);
+            } else {
+                r.setFloat(i, a.getFloat(i) * b);
+            }
         }
 
         return r;
@@ -418,7 +468,11 @@ public class ArrayMath {
     private static Array mulDouble(Array a, Array b) {
         Array r = Array.factory(DataType.DOUBLE, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
-            r.setDouble(i, a.getDouble(i) * b.getDouble(i));
+            if (a.getDouble(i) == fill_value || b.getDouble(i) == fill_value) {
+                r.setDouble(i, fill_value);
+            } else {
+                r.setDouble(i, a.getDouble(i) * b.getDouble(i));
+            }
         }
 
         return r;
@@ -427,7 +481,11 @@ public class ArrayMath {
     private static Array mulDouble(Array a, double b) {
         Array r = Array.factory(DataType.DOUBLE, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
-            r.setDouble(i, a.getDouble(i) * b);
+            if (a.getDouble(i) == fill_value) {
+                r.setDouble(i, fill_value);
+            } else {
+                r.setDouble(i, a.getDouble(i) * b);
+            }
         }
 
         return r;
@@ -1308,13 +1366,13 @@ public class ArrayMath {
     public static Array inPolygon(Array a, List<Number> x, List<Number> y, List<Number> x_p, List<Number> y_p) {
         PolygonShape ps = new PolygonShape();
         List<PointD> points = new ArrayList<>();
-        for (int i = 0; i < x_p.size(); i++){
+        for (int i = 0; i < x_p.size(); i++) {
             points.add(new PointD(x_p.get(i).doubleValue(), y_p.get(i).doubleValue()));
         }
         ps.setPoints(points);
         List<PolygonShape> shapes = new ArrayList<>();
         shapes.add(ps);
-        
+
         return inPolygon(a, x, y, shapes);
     }
 
@@ -1332,7 +1390,7 @@ public class ArrayMath {
         List<PolygonShape> polygons = (List<PolygonShape>) layer.getShapes();
         return ArrayMath.maskout(a, x, y, polygons, missingValue);
     }
-    
+
     /**
      * Maskout function
      *
@@ -1549,7 +1607,6 @@ public class ArrayMath {
 
     // </editor-fold>    
     // <editor-fold desc="Meteo">
-
     /**
      * Performs a centered difference operation on a grid data in the x or y
      * direction
@@ -1559,32 +1616,56 @@ public class ArrayMath {
      * @return Result grid data
      */
     public static Array cdiff(Array data, boolean isX) {
-        int xnum = data.getShape()[1];
-        int ynum = data.getShape()[0];
-        Array r = Array.factory(DataType.DOUBLE, data.getShape());
-        for (int i = 0; i < ynum; i++) {
-            for (int j = 0; j < xnum; j++) {
-                if (i == 0 || i == ynum - 1 || j == 0 || j == xnum - 1) {
-                    r.setDouble(i * xnum + j, Double.NaN);
-                } else {
-                    double a, b;
-                    if (isX) {
-                        a = data.getDouble(i * xnum + j + 1);
-                        b = data.getDouble(i * xnum + j - 1);
-                    } else {
-                        a = data.getDouble((i + 1) * xnum + j);
-                        b = data.getDouble((i - 1) * xnum + j);
-                    }
-                    if (Double.isNaN(a) || Double.isNaN(b)) {
+        if (data.getRank() == 2) {
+            int xnum = data.getShape()[1];
+            int ynum = data.getShape()[0];
+            Array r = Array.factory(DataType.DOUBLE, data.getShape());
+            for (int i = 0; i < ynum; i++) {
+                for (int j = 0; j < xnum; j++) {
+                    if (i == 0 || i == ynum - 1 || j == 0 || j == xnum - 1) {
                         r.setDouble(i * xnum + j, Double.NaN);
                     } else {
-                        r.setDouble(i * xnum + j, a - b);
+                        double a, b;
+                        if (isX) {
+                            a = data.getDouble(i * xnum + j + 1);
+                            b = data.getDouble(i * xnum + j - 1);
+                        } else {
+                            a = data.getDouble((i + 1) * xnum + j);
+                            b = data.getDouble((i - 1) * xnum + j);
+                        }
+                        if (Double.isNaN(a) || Double.isNaN(b)) {
+                            r.setDouble(i * xnum + j, Double.NaN);
+                        } else {
+                            r.setDouble(i * xnum + j, a - b);
+                        }
                     }
                 }
             }
-        }
 
-        return r;
+            return r;
+        } else if (data.getRank() == 1) {
+            int n = data.getShape()[0];
+            Array r = Array.factory(DataType.DOUBLE, data.getShape());
+            for (int i = 0; i < n; i++) {
+                if (i == 0 || i == n - 1) {
+                    r.setDouble(i, Double.NaN);
+                } else {
+                    double a, b;
+                    a = data.getDouble(i + 1);
+                    b = data.getDouble(i - 1);
+                    if (Double.isNaN(a) || Double.isNaN(b)) {
+                        r.setDouble(i, Double.NaN);
+                    } else {
+                        r.setDouble(i, a - b);
+                    }
+                }
+            }
+
+            return r;
+        } else {
+            System.out.println("Data dimension number must be 1 or 2!");
+            return null;
+        }
     }
 
     /**

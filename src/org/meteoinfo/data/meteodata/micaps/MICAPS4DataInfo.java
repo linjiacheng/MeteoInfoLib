@@ -184,6 +184,7 @@ public class MICAPS4DataInfo extends DataInfo implements IGridDataInfo {
             var.setDimension(zdim);
             var.setDimension(ydim);
             var.setDimension(xdim);
+            var.setFillValue(this.getMissingValue());
             variables.add(var);
             this.setVariables(variables);
         } catch (IOException ex) {

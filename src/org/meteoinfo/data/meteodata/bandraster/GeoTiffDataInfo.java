@@ -13,15 +13,8 @@
  */
 package org.meteoinfo.data.meteodata.bandraster;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,8 +27,6 @@ import org.meteoinfo.data.meteodata.IGridDataInfo;
 import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.data.meteodata.Variable;
 import org.meteoinfo.data.meteodata.ascii.ASCIIGridDataInfo;
-import org.meteoinfo.global.DataConvert;
-import org.meteoinfo.global.MIMath;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
 import ucar.ma2.IndexIterator;

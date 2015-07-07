@@ -790,6 +790,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                     if (this.getDataType() == MeteoDataType.GrADS_Station) {
                         aVar.setStation(true);
                     }
+                    aVar.setFillValue(this.getMissingValue());
 
                     VARDEF.addVar(aVar);
                 }

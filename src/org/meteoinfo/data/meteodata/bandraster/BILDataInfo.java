@@ -174,6 +174,7 @@ public class BILDataInfo extends DataInfo implements IGridDataInfo {
                     aVar.setName("band" + String.valueOf(i));
                     aVar.addDimension(xDim);
                     aVar.addDimension(yDim);
+                    aVar.setFillValue(nodata);
                     variables.add(aVar);
                 }
                 this.setVariables(variables);

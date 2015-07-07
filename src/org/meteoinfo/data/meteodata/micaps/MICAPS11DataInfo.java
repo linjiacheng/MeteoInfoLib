@@ -73,7 +73,7 @@ public class MICAPS11DataInfo extends DataInfo implements IGridDataInfo {
             String aLine;
             String[] dataArray;
             int i, n;
-            List<String> dataList = new ArrayList<String>();
+            List<String> dataList = new ArrayList<>();
 
             this.setFileName(fileName);
             aLine = sr.readLine().trim();
@@ -159,8 +159,8 @@ public class MICAPS11DataInfo extends DataInfo implements IGridDataInfo {
             ydim.setValues(_yArray);
             this.setYDimension(ydim);
 
-            List<Variable> variables = new ArrayList<Variable>();
-            List<String> varNames = new ArrayList<String>();
+            List<Variable> variables = new ArrayList<>();
+            List<String> varNames = new ArrayList<>();
             varNames.add("U");
             varNames.add("V");
             for (String varName : varNames) {
@@ -171,6 +171,7 @@ public class MICAPS11DataInfo extends DataInfo implements IGridDataInfo {
                 var.setDimension(zdim);
                 var.setDimension(ydim);
                 var.setDimension(xdim);
+                var.setFillValue(this.getMissingValue());
                 variables.add(var);
             }
             this.setVariables(variables);

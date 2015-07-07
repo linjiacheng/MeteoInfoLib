@@ -100,14 +100,14 @@ public class MICAPS7DataInfo extends DataInfo implements TrajDataInfo {
     }
 
     private void initVariables() {
-        FileNames = new ArrayList<String>();
-        MeteoFileNums = new ArrayList<Integer>();
-        TrajeoryNums = new ArrayList<Integer>();
-        TrajDirections = new ArrayList<String>();
-        VerticalMotions = new ArrayList<String>();
-        TrajInfos = new ArrayList<List<TrajectoryInfo>>();
-        VarNums = new ArrayList<Integer>();
-        VarNames = new ArrayList<List<String>>();
+        FileNames = new ArrayList<>();
+        MeteoFileNums = new ArrayList<>();
+        TrajeoryNums = new ArrayList<>();
+        TrajDirections = new ArrayList<>();
+        VerticalMotions = new ArrayList<>();
+        TrajInfos = new ArrayList<>();
+        VarNums = new ArrayList<>();
+        VarNames = new ArrayList<>();
         TrajeoryNumber = 0;
     }
     // </editor-fold>
@@ -133,7 +133,7 @@ public class MICAPS7DataInfo extends DataInfo implements TrajDataInfo {
         int t;
 
         initVariables();
-        List<Double> times = new ArrayList<Double>();
+        List<Double> times = new ArrayList<>();
 
         for (t = 0; t < trajFiles.length; t++) {
             String aFile = trajFiles[t];
@@ -142,7 +142,7 @@ public class MICAPS7DataInfo extends DataInfo implements TrajDataInfo {
             BufferedReader sr = new BufferedReader(new FileReader(new File(aFile)));
 
             TrajectoryInfo aTrajInfo = new TrajectoryInfo();
-            List<TrajectoryInfo> trajInfoList = new ArrayList<TrajectoryInfo>();
+            List<TrajectoryInfo> trajInfoList = new ArrayList<>();
             sr.readLine();
             aLine = sr.readLine();
             int trajIdx = -1;
@@ -200,7 +200,7 @@ public class MICAPS7DataInfo extends DataInfo implements TrajDataInfo {
             var.setName("Traj");
             var.setStation(true);
             var.setDimension(tdim);
-            List<Variable> variables = new ArrayList<Variable>();
+            List<Variable> variables = new ArrayList<>();
             variables.add(var);
             this.setVariables(variables);
 
@@ -268,9 +268,9 @@ public class MICAPS7DataInfo extends DataInfo implements TrajDataInfo {
                 int i;
                 int TrajIdx = -1;
                 List<PointD> pList;
-                List<List<PointD>> PointList = new ArrayList<List<PointD>>();
+                List<List<PointD>> PointList = new ArrayList<>();
                 for (i = 0; i < TrajeoryNums.get(t); i++) {
-                    pList = new ArrayList<PointD>();
+                    pList = new ArrayList<>();
                     PointList.add(pList);
                 }
                 PointD aPoint;
@@ -365,9 +365,9 @@ public class MICAPS7DataInfo extends DataInfo implements TrajDataInfo {
                 //
                 int TrajIdx = -1;
                 List<List<Object>> pList;
-                List<List<List<Object>>> PointList = new ArrayList<List<List<Object>>>();
+                List<List<List<Object>>> PointList = new ArrayList<>();
                 for (i = 0; i < TrajeoryNums.get(t); i++) {
-                    pList = new ArrayList<List<Object>>();
+                    pList = new ArrayList<>();
                     PointList.add(pList);
                 }
                 PointD aPoint;
@@ -382,7 +382,7 @@ public class MICAPS7DataInfo extends DataInfo implements TrajDataInfo {
                     if (dataArray.length == 4) {
                         TrajIdx += 1;
                     } else if (dataArray.length == 13) {
-                        List<Object> dList = new ArrayList<Object>();
+                        List<Object> dList = new ArrayList<>();
                         Calendar cal = new GregorianCalendar(Integer.parseInt(dataArray[0]), Integer.parseInt(dataArray[1]) - 1,
                                 Integer.parseInt(dataArray[2]), Integer.parseInt(dataArray[3]), 0, 0);
                         aPoint = new PointD();
@@ -469,7 +469,7 @@ public class MICAPS7DataInfo extends DataInfo implements TrajDataInfo {
 
                 //
                 int TrajIdx = -1;
-                List<PointD> PointList = new ArrayList<PointD>();
+                List<PointD> PointList = new ArrayList<>();
                 PointD aPoint;
                 for (i = 0; i < TrajeoryNums.get(t); i++) {
                     PointList.add(new PointD());
@@ -547,7 +547,7 @@ public class MICAPS7DataInfo extends DataInfo implements TrajDataInfo {
      * @return A trajectory points data
      */
     public List<List<Object>> getATrajData(int aTrajIdx) {
-        List<List<Object>> trajPointsData = new ArrayList<List<Object>>();
+        List<List<Object>> trajPointsData = new ArrayList<>();
 
         boolean ifExit = false;
         for (int t = 0; t < FileNames.size(); t++) {
@@ -578,7 +578,7 @@ public class MICAPS7DataInfo extends DataInfo implements TrajDataInfo {
                             break;
                         case 13:
                             if (TrajIdx == aTrajIdx) {
-                                List<Object> dList = new ArrayList<Object>();
+                                List<Object> dList = new ArrayList<>();
                                 Calendar cal = new GregorianCalendar(Integer.parseInt(dataArray[0]), Integer.parseInt(dataArray[1]) - 1,
                                         Integer.parseInt(dataArray[2]), Integer.parseInt(dataArray[3]), 0, 0);
                                 aPoint = new PointD();

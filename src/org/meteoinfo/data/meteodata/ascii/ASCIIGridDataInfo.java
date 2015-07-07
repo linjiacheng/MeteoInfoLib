@@ -108,7 +108,8 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
             Variable aVar = new Variable();
             aVar.setName("var");
             aVar.addDimension(yDim);
-            aVar.addDimension(xDim);            
+            aVar.addDimension(xDim); 
+            aVar.setFillValue(nodata_value);
             variables.add(aVar);
             this.setVariables(variables);
             

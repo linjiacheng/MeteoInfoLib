@@ -48,9 +48,9 @@ public class MICAPS3DataInfo extends DataInfo implements IStationDataInfo {
 
     // <editor-fold desc="Variables">
     private String _description;
-    private List<String> _varList = new ArrayList<String>();
-    private List<String> _fieldList = new ArrayList<String>();
-    private List<List<String>> _dataList = new ArrayList<List<String>>();
+    private List<String> _varList = new ArrayList<>();
+    private List<String> _fieldList = new ArrayList<>();
+    private List<List<String>> _dataList = new ArrayList<>();
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -75,7 +75,7 @@ public class MICAPS3DataInfo extends DataInfo implements IStationDataInfo {
             int i;
             sr = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "gbk"));
             String[] dataArray;
-            List<String> dataList = new ArrayList<String>();
+            List<String> dataList = new ArrayList<>();
 
             //Read file head
             String aLine = sr.readLine().trim();
@@ -108,7 +108,7 @@ public class MICAPS3DataInfo extends DataInfo implements IStationDataInfo {
             Date time = cal.getTime();
             int level = Integer.parseInt(dataList.get(4));
             int contourNum = Integer.parseInt(dataList.get(5));
-            List<Float> contours = new ArrayList<Float>();
+            List<Float> contours = new ArrayList<>();
             for (i = 0; i < contourNum; i++) {
                 contours.add(Float.parseFloat(dataList.get(6 + i)));
             }
@@ -128,7 +128,7 @@ public class MICAPS3DataInfo extends DataInfo implements IStationDataInfo {
             _fieldList.add("Altitude");
             _fieldList.addAll(_varList);
             while (idx + 3 + varNum < dataList.size()) {
-                List<String> aData = new ArrayList<String>();
+                List<String> aData = new ArrayList<>();
                 for (int j = 0; j < 4 + varNum; j++) {
                     aData.add(dataList.get(idx));
                     idx += 1;
@@ -145,13 +145,14 @@ public class MICAPS3DataInfo extends DataInfo implements IStationDataInfo {
             Dimension zdim = new Dimension(DimensionType.Z);
             zdim.setValues(new double[]{level});
             this.setZDimension(zdim);
-            List<Variable> variables = new ArrayList<Variable>();
+            List<Variable> variables = new ArrayList<>();
             for (String vName : _varList) {
                 Variable var = new Variable();
                 var.setName(vName);
                 var.setStation(true);
                 var.setDimension(tdim);
                 var.setDimension(zdim);
+                var.setFillValue(this.getMissingValue());
                 variables.add(var);
             }
             this.setVariables(variables);
