@@ -51,6 +51,7 @@ import ucar.ma2.MAMath;
 import ucar.ma2.Section;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.NetcdfFileWriter;
+import ucar.nc2.dataset.NetcdfDataset;
 
 /**
  *
@@ -161,7 +162,8 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
         this.setFileName(fileName);
         NetcdfFile ncfile = null;
         try {
-            ncfile = NetcdfFile.open(fileName);
+            //ncfile = NetcdfFile.open(fileName);
+            ncfile = NetcdfDataset.openFile(fileName, null);
             _fileTypeStr = ncfile.getFileTypeDescription();
             _fileTypeId = ncfile.getFileTypeId();
 //            if (_fileTypeId.equals("GRIB2")){
@@ -3030,7 +3032,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
     public Array read(String varName, int[] origin, int[] size, int[] stride) {
         NetcdfFile ncfile = null;
         try {
-            ncfile = NetcdfFile.open(this.getFileName());
+            ncfile = NetcdfDataset.openFile(this.getFileName(), null);
             ucar.nc2.Variable var = ncfile.findVariable(varName);
             if (var == null) {
                 List<ucar.nc2.Variable> vars = ncfile.getVariables();
