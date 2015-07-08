@@ -1019,7 +1019,7 @@ public class ArrayMath {
     }
 
     // </editor-fold>
-    // <editor-fold desc="Section">
+    // <editor-fold desc="Section/Flip/Transpos">
     /**
      * Section array
      *
@@ -1068,6 +1068,49 @@ public class ArrayMath {
         }
         a = Array.factory(a.getDataType(), a.getShape(), r.getStorage());
         r = null;
+    }
+    
+    /**
+     * Flip array
+     * @param a Array a
+     * @param idxs Dimension index list
+     * @return Result array
+     */
+    public static Array flip(Array a, List<Integer> idxs){
+        Array r = Array.factory(a.getDataType(), a.getShape());
+        for (int i : idxs){
+            r = a.flip(i);
+        }
+        Array rr = Array.factory(r.getDataType(), r.getShape());
+        MAMath.copy(rr, r);
+        return rr;
+    }
+    
+    /**
+     * Flip array
+     * @param a Array a
+     * @param idx Dimension idex
+     * @return Result array
+     */
+    public static Array flip(Array a, int idx){
+        Array r = a.flip(idx);
+        Array rr = Array.factory(r.getDataType(), r.getShape());
+        MAMath.copy(rr, r);
+        return rr;
+    }
+    
+    /**
+     * Transpose array
+     * @param a Array a
+     * @param dim1 Dimension index 1
+     * @param dim2 Dimension index 2
+     * @return Result array
+     */
+    public static Array transpose(Array a, int dim1, int dim2){
+        Array r = a.transpose(dim1, dim2);
+        //Array rr = Array.factory(r.getDataType(), r.getShape());
+        //MAMath.copy(rr, r);
+        return r;
     }
 
     // </editor-fold>
