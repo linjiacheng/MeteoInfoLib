@@ -422,7 +422,7 @@ public class DrawMeteoData {
         double YDelt = gridData.yArray[1] - gridData.yArray[0];
         for (i = 0; i < gridData.getYNum(); i++) {
             for (j = 0; j < gridData.getXNum(); j++) {
-                PList = new ArrayList<PointD>();
+                PList = new ArrayList<>();
                 aPoint = new PointD();
                 aPoint.X = gridData.xArray[j] - XDelt / 2;
                 aPoint.Y = gridData.yArray[i] - YDelt / 2;

@@ -13,18 +13,21 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
+import org.meteoinfo.data.mapdata.Field;
 import org.meteoinfo.geoprocess.GeoComputation;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
 import org.meteoinfo.global.util.BigDecimalUtil;
 import org.meteoinfo.global.util.GlobalUtil;
+import org.meteoinfo.layer.VectorLayer;
+import org.meteoinfo.legend.LegendScheme;
 import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.projection.Reproject;
 import org.meteoinfo.shape.PolygonShape;
+import org.meteoinfo.shape.ShapeTypes;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
 import ucar.ma2.IndexIterator;
@@ -523,6 +526,65 @@ public class ArrayUtil {
 
         return new Array[]{rx, ry};
     }
+    
+    /**
+     * Create mesh polygon layer
+     * @param x_s scatter X array
+     * @param y_s scatter Y array
+     * @param a scatter value array
+     * @param ls Legend scheme
+     * @param lonlim Longiutde limitation - to avoid the polygon cross -180/180
+     * @return Mesh polygon layer
+     */
+    public static VectorLayer meshLayer(Array x_s, Array y_s, Array a, LegendScheme ls, double lonlim){
+        VectorLayer layer = new VectorLayer(ShapeTypes.Polygon);
+        String fieldName = "Data";
+        Field aDC = new Field(fieldName, DataTypes.Double);
+        layer.editAddField(aDC);
+
+        int[] shape = x_s.getShape();
+        int colNum = shape[1];
+        int rowNum = shape[0];
+        double x1, x2, x3, x4;
+        for (int i = 0; i < rowNum - 1; i++) {
+            for (int j = 0; j < colNum - 1; j++) {                
+                x1 = x_s.getDouble(i * colNum + j);
+                x2 = x_s.getDouble(i * colNum + j + 1);
+                x3 = x_s.getDouble((i + 1) * colNum + j);
+                x4 = x_s.getDouble((i + 1) * colNum + j + 1);
+                if (lonlim > 0){
+                    if (Math.abs(x2 - x4) > lonlim || Math.abs(x1 - x4) > lonlim
+                            || Math.abs(x3 - x4) > lonlim || Math.abs(x1 - x2) > lonlim
+                            || Math.abs(x2 - x3) > lonlim)
+                        continue;
+                }
+                
+                PolygonShape ps = new PolygonShape();
+                List<PointD> points = new ArrayList<>();
+                points.add(new PointD(x1, y_s.getDouble(i * colNum + j)));
+                points.add(new PointD(x3, y_s.getDouble((i + 1) * colNum + j)));
+                points.add(new PointD(x4, y_s.getDouble((i + 1) * colNum + j + 1)));
+                points.add(new PointD(x2, y_s.getDouble(i * colNum + j + 1)));
+                points.add((PointD) points.get(0).clone());
+                ps.setPoints(points);
+                ps.lowValue = a.getDouble(i * colNum +j);
+                ps.highValue = ps.lowValue;
+                int shapeNum = layer.getShapeNum();
+                try {
+                    if (layer.editInsertShape(ps, shapeNum)) {
+                        layer.editCellValue(fieldName, shapeNum, ps.lowValue);
+                    }
+                } catch (Exception ex) {
+                    
+                }
+            }
+        }
+        layer.setLayerName("Mesh_Layer");
+        ls.setFieldName(fieldName);
+        layer.setLegendScheme(ls.convertTo(ShapeTypes.Polygon));
+        
+        return layer;
+    }
 
     /**
      * Smooth with 5 points
@@ -780,6 +842,72 @@ public class ArrayUtil {
         return r;
     }
 
+    /**
+     * Interpolate with surface method
+     *
+     * @param x_s scatter X array
+     * @param y_s scatter Y array
+     * @param a scatter value array
+     * @param X x coordinate
+     * @param Y y coordinate
+     * @param unDefData undefine value
+     * @return grid data
+     */
+    public static Array interpolation_Surface_1(Array x_s, Array y_s, Array a, Array X, Array Y,
+            double unDefData) {
+        int rowNum, colNum, xn, yn;
+        int[] shape = x_s.getShape();
+        colNum = shape[1];
+        rowNum = shape[0];
+        xn = (int) X.getSize();
+        yn = (int) Y.getSize();
+        Array r = Array.factory(DataType.DOUBLE, new int[]{yn, xn});
+        double x, y;
+
+        PolygonShape[][] polygons = new PolygonShape[rowNum - 1][colNum - 1];
+        PolygonShape ps;
+        for (int i = 0; i < rowNum - 1; i++) {
+            for (int j = 0; j < colNum - 1; j++) {
+                ps = new PolygonShape();
+                List<PointD> points = new ArrayList<>();
+                points.add(new PointD(x_s.getDouble(i * colNum + j), y_s.getDouble(i * colNum + j)));
+                points.add(new PointD(x_s.getDouble((i + 1) * colNum + j), y_s.getDouble((i + 1) * colNum + j)));
+                points.add(new PointD(x_s.getDouble((i + 1) * colNum + j + 1), y_s.getDouble((i + 1) * colNum + j + 1)));
+                points.add(new PointD(x_s.getDouble(i * colNum + j + 1), y_s.getDouble(i * colNum + j + 1)));
+                points.add((PointD) points.get(0).clone());
+                ps.setPoints(points);
+                polygons[i][j] = ps;
+            }
+        }
+        
+        for (int i = 0; i < yn; i++) {            
+            for (int j = 0; j < xn; j++) {
+                r.setDouble(i * xn + j, unDefData);
+            }
+        }
+                
+        double v;
+        for (int i = 0; i < rowNum - 1; i++){
+            for (int j = 0; j < colNum - 1; j++){
+                ps = polygons[i][j];
+                v = a.getDouble(i * colNum + j);
+                for (int ii = 0; ii < yn; ii++){
+                    y = Y.getDouble(ii);
+                    for (int jj = 0; jj < xn; jj++){
+                        x = X.getDouble(jj);
+                        if (Double.isNaN(r.getDouble(ii * xn + jj)) || r.getDouble(ii * xn + jj) == unDefData){
+                            if (GeoComputation.pointInPolygon(ps, x, y)) {
+                                r.setDouble(ii * xn + jj, v);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return r;
+    }
+    
     /**
      * Interpolate with surface method
      *
@@ -1126,7 +1254,7 @@ public class ArrayUtil {
      * @param toProj To projection
      * @return Result arrays
      */
-    public static Array[] reproject(Array x, Array y, ProjectionInfo fromProj, ProjectionInfo toProj) {
+    public static Array[] reproject(Array x, Array y, ProjectionInfo fromProj, ProjectionInfo toProj) {        
         Array rx = Array.factory(DataType.DOUBLE, x.getShape());
         Array ry = Array.factory(DataType.DOUBLE, x.getShape());
         int n = (int) x.getSize();
