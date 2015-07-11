@@ -16,7 +16,7 @@ import org.meteoinfo.global.util.DateUtil;
  *
  * @author wyq
  */
-public class TimeAxis extends Axis {
+public class TimeAxis extends Axis implements Cloneable {
     private String timeFormat;
     private TimeUnit timeUnit;
     
@@ -72,6 +72,7 @@ public class TimeAxis extends Axis {
      */
     @Override
     public List<String> getTickLabels() {
+        //this.updateTimeTickValues();
         List<String> tls = new ArrayList<>();
         String lab;
         SimpleDateFormat format = new SimpleDateFormat(this.timeFormat);
@@ -83,12 +84,20 @@ public class TimeAxis extends Axis {
             }
 
         return tls;
+    }    
+    
+    /**
+     * Update time tick values
+     */
+    @Override
+    public void updateTickValues() {
+        this.updateTimeTickValues();
     }
     
     /**
-     * Update time labels
+     * Update time tick values
      */
-    public void updateTimeLabels() {
+    private void updateTimeTickValues() {
         Date sdate = DateUtil.fromOADate(this.getMinValue());
         Date edate = DateUtil.fromOADate(this.getMaxValue());
         Calendar scal = Calendar.getInstance();
@@ -350,5 +359,10 @@ public class TimeAxis extends Axis {
             tvs[i] = DateUtil.toOADate(dates.get(i));
         }
         this.setTickValues(tvs);
+    }
+    
+    @Override
+    public Object clone() {
+        return (TimeAxis)super.clone();
     }
 }

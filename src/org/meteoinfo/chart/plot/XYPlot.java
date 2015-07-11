@@ -649,8 +649,8 @@ public abstract class XYPlot extends Plot {
      * @return Graphic area
      */
     public Rectangle2D getGraphArea(Graphics2D g, Rectangle2D area) {
-        int left = 0, bottom = 0, right = 5, top = 5;
-        int space = 1;
+        int left = 5, bottom = 5, right = 5, top = 5;
+        int space = 5;
 
         if (this.title != null) {
             g.setFont(this.title.getFont());
@@ -698,32 +698,39 @@ public abstract class XYPlot extends Plot {
         Axis xAxis = this.getXAxis();
         if (!xAxis.isVisible())
             return 0;
-        
-        FontMetrics metrics = g.getFontMetrics(xAxis.getTickLabelFont());
-        int height = metrics.getHeight();
-        if (!xAxis.isInsideTick())
-            height += xAxis.getTickLength() + space;
-        metrics = g.getFontMetrics(xAxis.getLabelFont());
-        height += metrics.getHeight();
-        if (xAxis.isDrawLabel()){
-            Dimension dim = Draw.getStringDimension(xAxis.getLabel(), g);
+
+        int height = space;
+        if (xAxis.isDrawTickLabel()){
+            g.setFont(xAxis.getTickLabelFont());
+            Dimension dim = Draw.getStringDimension("label", g);
             height += dim.height + space;
         }
-        //height += 10;
+        if (!xAxis.isInsideTick())
+            height += xAxis.getTickLength();
+        if (xAxis.isDrawLabel()){
+            g.setFont(xAxis.getLabelFont());
+            Dimension dim = Draw.getStringDimension(xAxis.getLabel(), g);
+            height += dim.height;
+        }
 
         return height;
     }
 
     int getYAxisWidth(Graphics2D g, int space) {
-        if (!this.getYAxis().isVisible())
+        Axis yAxis = this.getYAxis();
+        if (!yAxis.isVisible())
             return 0;
         
-        int width = this.getYAxis().getMaxLabelLength(g);
-        if (!this.getYAxis().isInsideTick())
-            width += this.getYAxis().getTickLength() + space;
-        FontMetrics metrics = g.getFontMetrics(this.getYAxis().getLabelFont());
-        width += metrics.getHeight();
-        //width += 10;
+        int width = space;
+        if (yAxis.isDrawTickLabel())
+            width = yAxis.getMaxLabelLength(g) + space;
+        if (!yAxis.isInsideTick())
+            width += this.getYAxis().getTickLength();
+        if (yAxis.isDrawLabel()){
+             g.setFont(yAxis.getLabelFont());
+            Dimension dim = Draw.getStringDimension(yAxis.getLabel(), g);
+            width += dim.height + space;
+        }
 
         return width;
     }

@@ -13,7 +13,7 @@ import org.meteoinfo.global.DataConvert;
  *
  * @author wyq
  */
-public class LonLatAxis extends Axis {
+public class LonLatAxis extends Axis implements Cloneable {
 
     private boolean drawDegreeSymbol;
     
@@ -43,6 +43,7 @@ public class LonLatAxis extends Axis {
     public void setDrawDegreeSymbol(boolean value){
         this.drawDegreeSymbol = value;
     }
+    
     /**
      * Get tick labels
      *
@@ -89,5 +90,10 @@ public class LonLatAxis extends Axis {
         }
 
         return tls;
+    }
+    
+    @Override
+    public Object clone() {
+        return (LonLatAxis)super.clone();
     }
 }

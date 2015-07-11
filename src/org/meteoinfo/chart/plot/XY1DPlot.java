@@ -5,7 +5,6 @@
  */
 package org.meteoinfo.chart.plot;
 
-import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
@@ -88,7 +87,8 @@ public final class XY1DPlot extends XYPlot {
      */
     public XY1DPlot(boolean isTime, XYDataset dateset) {
         this();
-        this.setXAxis(new TimeAxis("X", true));
+        if (isTime)
+            this.setXAxis(new TimeAxis("X", true));
         //this.getXAxis().setTimeAxis(isTime);
         this.setDataset(dateset);
     }
@@ -102,7 +102,8 @@ public final class XY1DPlot extends XYPlot {
      */
     public XY1DPlot(boolean isTime, ChartPlotMethod cpMethod, XYDataset dateset) {
         this();
-        this.setXAxis(new TimeAxis("X", true));
+        if (isTime)
+            this.setXAxis(new TimeAxis("X", true));
         //this.getXAxis().setTimeAxis(isTime);
         this.setChartPlotMethod(cpMethod);
         this.setDataset(dateset);
@@ -117,7 +118,8 @@ public final class XY1DPlot extends XYPlot {
      */
     public XY1DPlot(boolean isTime, PlotOrientation orientation, XYDataset dateset) {
         this();
-        this.setXAxis(new TimeAxis("X", true));
+        if (isTime)
+            this.setXAxis(new TimeAxis("X", true));
         //this.getXAxis().setTimeAxis(isTime);
         this.setPlotOrientation(orientation);
         this.setDataset(dateset);

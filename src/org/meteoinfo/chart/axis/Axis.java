@@ -201,6 +201,8 @@ public class Axis implements Cloneable {
      */
     public void setLabel(String value) {
         label = value;
+        if (!label.isEmpty() && (this.location == Location.BOTTOM || this.location == location.LEFT))
+            this.drawLabel = true;
     }
 
     /**
@@ -668,12 +670,19 @@ public class Axis implements Cloneable {
     public void setMinMaxValue(double minValue, double maxValue) {
         this.minValue = minValue;
         this.maxValue = maxValue;
-        tickValues = MIMath.getIntervalValues(minValue, maxValue);
+        updateTickValues();
 //        if (this.timeAxis) {
 //            this.updateTimeLabels();
 //        } else {
 //            tickValues = MIMath.getIntervalValues(minValue, maxValue);
 //        }
+    }
+    
+    /**
+     * Update tick values
+     */
+    public void updateTickValues(){
+        tickValues = MIMath.getIntervalValues(minValue, maxValue);
     }
 
 //    /**

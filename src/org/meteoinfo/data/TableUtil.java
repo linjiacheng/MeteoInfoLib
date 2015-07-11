@@ -98,6 +98,12 @@ public class TableUtil {
 
                 idx += 1;
             }
+            
+            if (idx < colNum){
+                for (int i = idx; i < colNum; i++){
+                    dTable.addColumn(titleArray[i], DataTypes.String);
+                }
+            }
 
             String[] dataArray;
             int rn = 0;
