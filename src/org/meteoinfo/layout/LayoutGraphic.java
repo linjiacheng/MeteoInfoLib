@@ -38,7 +38,6 @@ import org.meteoinfo.shape.WindArraw;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -46,6 +45,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import org.meteoinfo.global.DataConvert;
+import org.meteoinfo.shape.EllipseShape;
 
 /**
  *
@@ -457,7 +457,8 @@ public class LayoutGraphic extends LayoutElement {
                         aPGB = (PolygonBreak) ((PolygonBreak) _graphic.getLegend()).clone();
                         size = aPGB.getOutlineSize();
                         aPGB.setOutlineSize(size * zoom);
-                        Draw.drawEllipse(points, (PolygonBreak) _graphic.getLegend(), g);
+                        float angle = ((EllipseShape)_graphic.getShape()).getAngle();
+                        Draw.drawEllipse(points, angle, (PolygonBreak) _graphic.getLegend(), g);
                         aPGB.setOutlineSize(size);
                         break;
                 }

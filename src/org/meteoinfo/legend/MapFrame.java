@@ -38,7 +38,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.event.EventListenerList;
+import static org.meteoinfo.layer.LayerTypes.WebMapLayer;
 import org.meteoinfo.layer.RasterLayer;
+import org.meteoinfo.layer.WebMapLayer;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -1657,6 +1659,11 @@ public class MapFrame extends ItemNode {
                     _mapView.exportRasterLayer(m_Doc, parent, aRLayer, projectFilePath);
                     break;
             }
+        } else {
+            if (aLayer.getLayerType() == LayerTypes.WebMapLayer) {
+                WebMapLayer wmLayer = (WebMapLayer) aLayer;
+                _mapView.exportWebMapLayer(m_Doc, parent, wmLayer, projectFilePath);
+            }
         }
     }
 
@@ -1759,7 +1766,7 @@ public class MapFrame extends ItemNode {
     private void loadLayer(Node aLayer, int groupHnd) {
         try {
             LayerTypes aLayerType = LayerTypes.valueOf(aLayer.getAttributes().getNamedItem("LayerType").getNodeValue());
-            
+
             switch (aLayerType) {
                 case VectorLayer:
                     VectorLayer aVLayer = _mapView.loadVectorLayer(aLayer);
@@ -1779,6 +1786,11 @@ public class MapFrame extends ItemNode {
                         addLayer(aRLayer, groupHnd);
                     }
                     break;
+                case WebMapLayer:
+                    WebMapLayer wmLayer = _mapView.loadWebMapLayer(aLayer);
+                    if (wmLayer != null) {
+                        addLayer(wmLayer, groupHnd);
+                    }
             }
         } catch (Exception ex) {
             Logger.getLogger(MapFrame.class.getName()).log(Level.SEVERE, null, ex);

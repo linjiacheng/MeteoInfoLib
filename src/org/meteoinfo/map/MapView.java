@@ -142,6 +142,7 @@ import javax.print.attribute.PrintRequestAttributeSet;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
@@ -157,6 +158,7 @@ import org.freehep.graphicsio.ps.PSGraphics2D;
 import org.meteoinfo.data.mapdata.webmap.GeoPosition;
 import org.meteoinfo.data.mapdata.webmap.Tile;
 import org.meteoinfo.data.mapdata.webmap.TileFactoryInfo;
+import org.meteoinfo.data.mapdata.webmap.WebMapProvider;
 import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.event.IShapeSelectedListener;
 import org.meteoinfo.global.event.IUndoEditListener;
@@ -2645,6 +2647,17 @@ public class MapView extends JPanel {
                                 }
                             }
 
+                            if (aGraphic.getShape().getShapeType() == ShapeTypes.Ellipse) {
+                                JMenuItem jMenuItem_Angle = new JMenuItem("Set Angle");
+                                jMenuItem_Angle.addActionListener(new ActionListener() {
+                                    @Override
+                                    public void actionPerformed(ActionEvent e) {
+                                        onAngleGraphicClick(e);
+                                    }
+                                });
+                                jPopupMenu_Graphic.add(jMenuItem_Angle);
+                            }
+
                             jPopupMenu_Graphic.show(this, e.getX(), e.getY());
                         }
                         break;
@@ -2996,6 +3009,16 @@ public class MapView extends JPanel {
         Collections.reverse(points);
         aGraphic.getShape().setPoints(points);
         this.paintLayers();
+    }
+
+    private void onAngleGraphicClick(ActionEvent e) {
+        Graphic aGraphic = _selectedGraphics.get(0);
+        EllipseShape es = (EllipseShape) aGraphic.getShape();
+        String angleStr = JOptionPane.showInputDialog(this, "Ellipse angle:", es.getAngle());
+        if (angleStr != null) {
+            es.setAngle(Float.parseFloat(angleStr));
+            this.paintLayers();
+        }
     }
 
     private void onGrahpicSmoothClick(ActionEvent e) {
@@ -5240,7 +5263,7 @@ public class MapView extends JPanel {
         }
         path.closePath();
 
-        if (aPGB.getDrawFill()) {
+        if (aPGB.isDrawFill()) {
             //int alpha = (int)((1 - (double)transparencyPerc / 100.0) * 255);
             //Color aColor = Color.FromArgb(alpha, aPGB.Color);
             Color aColor = aPGB.getColor();
@@ -5262,7 +5285,7 @@ public class MapView extends JPanel {
             }
         }
 
-        if (aPGB.getDrawOutline()) {
+        if (aPGB.isDrawOutline()) {
             BasicStroke pen = new BasicStroke(aPGB.getOutlineSize());
             g.setStroke(pen);
             g.setColor(aPGB.getOutlineColor());
@@ -5280,7 +5303,7 @@ public class MapView extends JPanel {
             int minZoom = layer.getTileFactory().getInfo().getMinimumZoomLevel();
             int maxZoom = layer.getTileFactory().getInfo().getMaximumZoomLevel();
             //int totalZoom = layer.getTileFactory().getInfo().getTotalMapZoom();
-            zoom = minZoom;
+            int nzoom = minZoom;
             double scale;
             for (int i = maxZoom; i >= minZoom; i--) {
                 //int z = totalZoom - i;
@@ -5291,11 +5314,34 @@ public class MapView extends JPanel {
                 scale = getWebMapScale(layer, i, width, height);
                 if (_scaleX < scale || MIMath.doubleEquals(_scaleX, scale)) {
                     this.setScale(scale, width, height);
-                    zoom = i;
+                    nzoom = i;
                     _webMapScale = scale;
                     break;
                 }
             }
+            if (nzoom != zoom){
+                zoom = nzoom;
+            } else {
+                boolean addOne = false;
+                if (zoom == minZoom){
+                    addOne = true;
+//                    if (_scaleX > getWebMapScale(layer, zoom, width, height)) {
+//                        addOne = true;
+//                    }
+                } else {
+                    if (nzoom < maxZoom){
+                        addOne = true;
+                    }
+                }
+                if (addOne){
+                    zoom = nzoom + 1;
+                    _webMapScale = getWebMapScale(layer, zoom, width, height);
+                    this.setScale(_webMapScale, width, height);
+                    layer.setZoom(zoom);
+                } else {
+                    zoom = nzoom;
+                }
+            }            
         }
 
         //layer.setZoom(zoom);
@@ -7126,7 +7172,7 @@ public class MapView extends JPanel {
 
         selectedGraphics.clear();
         int i;
-        Graphics2D g = (Graphics2D)this.getGraphics();
+        Graphics2D g = (Graphics2D) this.getGraphics();
         boolean ifSel = true;
 
         if (_projection.isLonLatMap()) {
@@ -7198,7 +7244,7 @@ public class MapView extends JPanel {
 
         selectedGraphics.clear();
         int i;
-        Graphics2D g = (Graphics2D)this.getGraphics();
+        Graphics2D g = (Graphics2D) this.getGraphics();
         boolean ifSel = true;
         double[] projXY = screenToProj((double) aPoint.X, (double) aPoint.Y);
         double projX = projXY[0] + lonShift;
@@ -7307,7 +7353,7 @@ public class MapView extends JPanel {
 
         selectedGraphics.clear();
         int i;
-        Graphics2D g = (Graphics2D)this.getGraphics();
+        Graphics2D g = (Graphics2D) this.getGraphics();
         boolean ifSel = true;
 
         if (_projection.isLonLatMap()) {
@@ -7375,7 +7421,7 @@ public class MapView extends JPanel {
 
         selectedGraphics.clear();
         int i;
-        Graphics2D g = (Graphics2D)this.getGraphics();
+        Graphics2D g = (Graphics2D) this.getGraphics();
         boolean ifSel = true;
 
         if (_projection.isLonLatMap()) {
@@ -7846,7 +7892,7 @@ public class MapView extends JPanel {
      * @return Rectangle
      */
     public Rectangle getGraphicRectangle(Graphic aGraphic, double lonShift) {
-        return getGraphicRectangle((Graphics2D)this.getGraphics(), aGraphic, lonShift);
+        return getGraphicRectangle((Graphics2D) this.getGraphics(), aGraphic, lonShift);
     }
 
     /**
@@ -7856,17 +7902,18 @@ public class MapView extends JPanel {
      * @return Rectangle
      */
     public Rectangle getGraphicRectangle(Graphic aGraphic) {
-        return getGraphicRectangle((Graphics2D)this.getGraphics(), aGraphic, 0);
+        return getGraphicRectangle((Graphics2D) this.getGraphics(), aGraphic, 0);
     }
 
     /**
      * Add a graphic
-     * @param graphic Graphic 
+     *
+     * @param graphic Graphic
      */
-    public void addGraphic(Graphic graphic){
+    public void addGraphic(Graphic graphic) {
         this._graphicCollection.add(graphic);
     }
-    
+
     /**
      * Remove a graphic
      *
@@ -8406,6 +8453,46 @@ public class MapView extends JPanel {
     }
 
     /**
+     * Export web map layer element
+     *
+     * @param m_Doc XML document
+     * @param parent Parent element
+     * @param wmLayer The web map layer
+     * @param projectFilePath Project file path
+     */
+    public void exportWebMapLayer(Document m_Doc, Element parent, WebMapLayer wmLayer, String projectFilePath) {
+        Element Layer = m_Doc.createElement("Layer");
+        Attr Handle = m_Doc.createAttribute("Handle");
+        Attr LayerName = m_Doc.createAttribute("LayerName");
+        Attr webProvider = m_Doc.createAttribute("WebMapProvider");
+        Attr Visible = m_Doc.createAttribute("Visible");
+        Attr IsMaskout = m_Doc.createAttribute("IsMaskout");
+        Attr LayerType = m_Doc.createAttribute("LayerType");
+        Attr LayerDrawType = m_Doc.createAttribute("LayerDrawType");
+        Attr transparencyPerc = m_Doc.createAttribute("TransparencyPerc");
+
+        Handle.setValue(String.valueOf(wmLayer.getHandle()));
+        LayerName.setValue(wmLayer.getLayerName());
+        Visible.setValue(String.valueOf(wmLayer.isVisible()));
+        webProvider.setValue(wmLayer.getWebMapProvider().toString());
+        IsMaskout.setValue(String.valueOf(wmLayer.isMaskout()));
+        LayerType.setValue(wmLayer.getLayerType().toString());
+        LayerDrawType.setValue(wmLayer.getLayerDrawType().toString());
+        transparencyPerc.setValue(String.valueOf(wmLayer.getTransparency()));
+
+        Layer.setAttributeNode(Handle);
+        Layer.setAttributeNode(LayerName);
+        Layer.setAttributeNode(Visible);
+        Layer.setAttributeNode(webProvider);
+        Layer.setAttributeNode(IsMaskout);
+        Layer.setAttributeNode(LayerType);
+        Layer.setAttributeNode(LayerDrawType);
+        Layer.setAttributeNode(transparencyPerc);
+
+        parent.appendChild(Layer);
+    }
+
+    /**
      * Load map property element
      *
      * @param parent Parent XML element
@@ -8686,6 +8773,7 @@ public class MapView extends JPanel {
      *
      * @param aILayer Raster layer XML node
      * @return Raster layer
+     * @throws java.lang.Exception
      */
     public RasterLayer loadRasterLayer(Node aILayer) throws Exception {
         String aFile = aILayer.getAttributes().getNamedItem("FileName").getNodeValue();
@@ -8729,6 +8817,30 @@ public class MapView extends JPanel {
                 }
             } catch (DOMException | NumberFormatException e) {
             }
+        }
+
+        return aLayer;
+    }
+
+    /**
+     * Load web map layer
+     *
+     * @param wmLayer Web map layer XML node
+     * @return Web map layer
+     * @throws java.lang.Exception
+     */
+    public WebMapLayer loadWebMapLayer(Node wmLayer) throws Exception {
+        WebMapLayer aLayer = new WebMapLayer();
+        try {
+            aLayer.setHandle(Integer.parseInt(wmLayer.getAttributes().getNamedItem("Handle").getNodeValue()));
+            aLayer.setLayerName(wmLayer.getAttributes().getNamedItem("LayerName").getNodeValue());
+            aLayer.setVisible(Boolean.parseBoolean(wmLayer.getAttributes().getNamedItem("Visible").getNodeValue()));
+            aLayer.setWebMapProvider(WebMapProvider.valueOf(wmLayer.getAttributes().getNamedItem("WebMapProvider").getNodeValue()));
+            aLayer.setMaskout(Boolean.parseBoolean(wmLayer.getAttributes().getNamedItem("IsMaskout").getNodeValue()));
+            aLayer.setLayerType(LayerTypes.valueOf(wmLayer.getAttributes().getNamedItem("LayerType").getNodeValue()));
+            aLayer.setLayerDrawType(LayerDrawType.valueOf(wmLayer.getAttributes().getNamedItem("LayerDrawType").getNodeValue()));
+            aLayer.setTransparency(Integer.parseInt(wmLayer.getAttributes().getNamedItem("TransparencyPerc").getNodeValue()));
+        } catch (DOMException | NumberFormatException e) {
         }
 
         return aLayer;

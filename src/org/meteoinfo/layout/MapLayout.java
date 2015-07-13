@@ -300,7 +300,7 @@ public class MapLayout extends JPanel {
     }
 
     private void initComponents() {
-        _vScrollBar = new JScrollBar(JScrollBar.VERTICAL);        
+        _vScrollBar = new JScrollBar(JScrollBar.VERTICAL);
         _vScrollBar.addAdjustmentListener(new AdjustmentListener() {
             @Override
             public void adjustmentValueChanged(AdjustmentEvent e) {
@@ -308,7 +308,7 @@ public class MapLayout extends JPanel {
             }
         });
         this.add(_vScrollBar, BorderLayout.EAST);
-        
+
         _hScrollBar = new JScrollBar(JScrollBar.HORIZONTAL);
         _hScrollBar.addAdjustmentListener(new AdjustmentListener() {
             @Override
@@ -317,18 +317,20 @@ public class MapLayout extends JPanel {
             }
         });
         this.add(_hScrollBar, BorderLayout.SOUTH);
-        
+
         this._vScrollBar.setLocation(this.getWidth() - this._vScrollBar.getWidth(), 0);
-        if (this._hScrollBar.isVisible())
+        if (this._hScrollBar.isVisible()) {
             this._vScrollBar.setSize(21, this.getHeight() - 21);
-        else
+        } else {
             this._vScrollBar.setSize(21, this.getHeight());
-        
-        this._hScrollBar.setLocation(0, this.getHeight()- this._hScrollBar.getHeight());
-        if (this._vScrollBar.isVisible())
+        }
+
+        this._hScrollBar.setLocation(0, this.getHeight() - this._hScrollBar.getHeight());
+        if (this._vScrollBar.isVisible()) {
             this._hScrollBar.setSize(this.getWidth() - 21, 21);
-        else
+        } else {
             this._hScrollBar.setSize(this.getWidth(), 21);
+        }
     }
     // </editor-fold>
 
@@ -442,17 +444,19 @@ public class MapLayout extends JPanel {
         if (e.getSource() == _vScrollBar) {
             //_vScrollBar.setValue(e.getValue());            
             //this._yShift = - this._vScrollBar.getValue();
-            int y = - e.getValue();
-            if (y == 1)
+            int y = -e.getValue();
+            if (y == 1) {
                 y = 0;
+            }
             this._pageLocation.Y = y;
         }
         if (e.getSource() == _hScrollBar) {
             //_hScrollBar.setValue(e.getValue());       
             //this._xShift = - this._hScrollBar.getValue();
-            int x = - e.getValue();
-            if (x == 1)
+            int x = -e.getValue();
+            if (x == 1) {
                 x = 0;
+            }
             this._pageLocation.X = x;
         }
         this.paintGraphics();
@@ -462,16 +466,18 @@ public class MapLayout extends JPanel {
     void onComponentResized(ComponentEvent e) {
         if (this.getWidth() > 0 && this.getHeight() > 0) {
             this._vScrollBar.setLocation(this.getWidth() - this._vScrollBar.getWidth(), 0);
-            if (this._hScrollBar.isVisible())
+            if (this._hScrollBar.isVisible()) {
                 this._vScrollBar.setSize(this._vScrollBar.getWidth(), this.getHeight() - this._vScrollBar.getWidth());
-            else
+            } else {
                 this._vScrollBar.setSize(this._vScrollBar.getWidth(), this.getHeight());
+            }
 
-            this._hScrollBar.setLocation(0, this.getHeight()- this._hScrollBar.getHeight());
-            if (this._vScrollBar.isVisible())
+            this._hScrollBar.setLocation(0, this.getHeight() - this._hScrollBar.getHeight());
+            if (this._vScrollBar.isVisible()) {
                 this._hScrollBar.setSize(this.getWidth() - this._hScrollBar.getHeight(), this._hScrollBar.getHeight());
-            else
+            } else {
                 this._hScrollBar.setSize(this.getWidth(), this._hScrollBar.getHeight());
+            }
 
             this.paintGraphics();
         }
@@ -1524,10 +1530,21 @@ public class MapLayout extends JPanel {
                                             jMenuItem_Smooth.addActionListener(new ActionListener() {
                                                 @Override
                                                 public void actionPerformed(ActionEvent e) {
-                                                    onGrahpicSmoothClick(e);
+                                                    onGraphicSmoothClick(e);
                                                 }
                                             });
                                             jPopupMenu_Element.add(jMenuItem_Smooth);
+                                        }
+
+                                        if (aGraphic.getShape().getShapeType() == ShapeTypes.Ellipse) {
+                                            JMenuItem jMenuItem_Angle = new JMenuItem("Set Angle");
+                                            jMenuItem_Angle.addActionListener(new ActionListener() {
+                                                @Override
+                                                public void actionPerformed(ActionEvent e) {
+                                                    onGraphicAngleClick(e);
+                                                }
+                                            });
+                                            jPopupMenu_Element.add(jMenuItem_Angle);
                                         }
                                     }
                                 }
@@ -1736,7 +1753,7 @@ public class MapLayout extends JPanel {
         this.paintGraphics();
     }
 
-    private void onGrahpicSmoothClick(ActionEvent e) {
+    private void onGraphicSmoothClick(ActionEvent e) {
         LayoutElement aElement = _selectedElements.get(0);
         Graphic aGraphic = ((LayoutGraphic) aElement).getGraphic();
         List<wContour.Global.PointD> pointList = new ArrayList<>();
@@ -1757,6 +1774,17 @@ public class MapLayout extends JPanel {
         aGraphic.getShape().setPoints(newPoints);
         ((LayoutGraphic) aElement).updateControlSize();
         this.paintGraphics();
+    }
+    
+    private void onGraphicAngleClick(ActionEvent e) {
+        LayoutElement aElement = _selectedElements.get(0);
+        Graphic aGraphic = ((LayoutGraphic) aElement).getGraphic();
+        EllipseShape es = (EllipseShape)aGraphic.getShape();
+        String angleStr = JOptionPane.showInputDialog(this, "Ellipse angle:", es.getAngle());
+        if (angleStr != null){
+            es.setAngle(Float.parseFloat(angleStr));
+            this.paintGraphics();
+        }       
     }
 
     private void showSymbolSetForm(ColorBreak aCB) {
@@ -1807,7 +1835,7 @@ public class MapLayout extends JPanel {
                 break;
         }
     }
-    
+
     private void showSymbolSetForm(Graphic graphic) {
         Shape shape = graphic.getShape();
         ColorBreak aCB = graphic.getLegend();
@@ -1857,11 +1885,11 @@ public class MapLayout extends JPanel {
                 _frmPolygonSymbolSet.setVisible(true);
                 break;
             case VectorBreak:
-                WindArraw wa = (WindArraw)shape;
+                WindArraw wa = (WindArraw) shape;
                 //VectorBreak vb = (VectorBreak) aCB;
                 Object[] lens = {5, 10, 15, 20, 25, 30};
-                Object lenObj = JOptionPane.showInputDialog((JFrame) SwingUtilities.getWindowAncestor(this), 
-                        "Select wind speed:", "Selection", JOptionPane.PLAIN_MESSAGE, null, lens, (int)wa.length);
+                Object lenObj = JOptionPane.showInputDialog((JFrame) SwingUtilities.getWindowAncestor(this),
+                        "Select wind speed:", "Selection", JOptionPane.PLAIN_MESSAGE, null, lens, (int) wa.length);
                 if (lenObj != null) {
                     wa.length = Integer.parseInt(lenObj.toString());
                     this.paintGraphics();
@@ -1883,8 +1911,9 @@ public class MapLayout extends JPanel {
                     int x = 0;
                     int y = 0;
                     int d = 5;
-                    if (e.isControlDown())
+                    if (e.isControlDown()) {
                         d = 1;
+                    }
                     switch (e.getKeyCode()) {
                         case KeyEvent.VK_LEFT:
                             x = -d;
@@ -2025,6 +2054,7 @@ public class MapLayout extends JPanel {
 
     /**
      * Set if is landscape
+     *
      * @param istrue
      */
     public void setLandscape(boolean istrue) {
@@ -2549,17 +2579,18 @@ public class MapLayout extends JPanel {
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
         //Judge if show scroll bar
-        int pageHeight = (int)(_pageBounds.height * _zoom);
-        int pageWidth = (int)(_pageBounds.width * _zoom);
+        int pageHeight = (int) (_pageBounds.height * _zoom);
+        int pageWidth = (int) (_pageBounds.width * _zoom);
         if (pageHeight > this.getHeight()) {
             int sHeight = pageHeight - this.getHeight() + 40;
             _vScrollBar.setMinimum(0);
             _vScrollBar.setMaximum(pageHeight);
             _vScrollBar.setVisibleAmount(pageHeight - sHeight);
             _vScrollBar.setUnitIncrement(pageHeight / 10);
-            _vScrollBar.setBlockIncrement(pageHeight / 5);            
-            if (_vScrollBar.getWidth() == 0)
+            _vScrollBar.setBlockIncrement(pageHeight / 5);
+            if (_vScrollBar.getWidth() == 0) {
                 _vScrollBar.setSize(21, this._vScrollBar.getHeight());
+            }
 
             if (_vScrollBar.isVisible() == false) {
                 _vScrollBar.setValue(0);
@@ -2577,9 +2608,10 @@ public class MapLayout extends JPanel {
             _hScrollBar.setMaximum(pageWidth);
             _hScrollBar.setVisibleAmount(pageWidth - sWidth);
             _hScrollBar.setUnitIncrement(pageWidth / 10);
-            _hScrollBar.setBlockIncrement(pageWidth / 5);            
-            if (this._hScrollBar.getHeight() == 0)
+            _hScrollBar.setBlockIncrement(pageWidth / 5);
+            if (this._hScrollBar.getHeight() == 0) {
                 this._hScrollBar.setSize(this._hScrollBar.getWidth(), 21);
+            }
 
             if (_hScrollBar.isVisible() == false) {
                 _hScrollBar.setValue(0);
@@ -2590,11 +2622,11 @@ public class MapLayout extends JPanel {
             this._pageLocation.X = 0;
             _hScrollBar.setVisible(false);
         }
-        
+
         //Draw bound rectangle
         Rectangle.Float aRect = pageToScreen(_pageBounds.x, _pageBounds.y, _pageBounds.width, _pageBounds.height);
         g.setColor(_pageBackColor);
-        g.fill(aRect);        
+        g.fill(aRect);
 
         //Draw layout elements
         paintGraphicsOnLayout(g);
@@ -2787,30 +2819,30 @@ public class MapLayout extends JPanel {
 //                file.close();
 //                g.dispose();
 //            }
-            
+
             Properties p = new Properties();
-            p.setProperty("PageSize","A5");
-            VectorGraphics g = new PSGraphics2D(new File(aFile), new Dimension(width, height)); 
+            p.setProperty("PageSize", "A5");
+            VectorGraphics g = new PSGraphics2D(new File(aFile), new Dimension(width, height));
             //g.setProperties(p);
-            g.startExport(); 
+            g.startExport();
             this.paintGraphics(g);
             g.endExport();
             g.dispose();
         } else if (aFile.endsWith(".pdf")) {
             int width = this.getPaperWidth();
             int height = this.getPaperHeight();
-            VectorGraphics g = new PDFGraphics2D(new File(aFile), new Dimension(width, height)); 
+            VectorGraphics g = new PDFGraphics2D(new File(aFile), new Dimension(width, height));
             //g.setProperties(p);
-            g.startExport(); 
+            g.startExport();
             this.paintGraphics(g);
             g.endExport();
             g.dispose();
         } else if (aFile.endsWith(".emf")) {
             int width = this.getPaperWidth();
             int height = this.getPaperHeight();
-            VectorGraphics g = new EMFGraphics2D(new File(aFile), new Dimension(width, height)); 
+            VectorGraphics g = new EMFGraphics2D(new File(aFile), new Dimension(width, height));
             //g.setProperties(p);
-            g.startExport(); 
+            g.startExport();
             this.paintGraphics(g);
             g.endExport();
             g.dispose();
@@ -3652,7 +3684,7 @@ public class MapLayout extends JPanel {
         DrawNeatLine.setValue(String.valueOf(aLegend.isDrawNeatLine()));
         NeatLineColor.setValue(ColorUtil.toHexEncoding(aLegend.getNeatLineColor()));
         NeatLineSize.setValue(String.valueOf(aLegend.getNeatLineSize()));
-        drawChartBreaks.setValue(String.valueOf(aLegend.isDrawChartBreaks())); 
+        drawChartBreaks.setValue(String.valueOf(aLegend.isDrawChartBreaks()));
         Left.setValue(String.valueOf(aLegend.getLeft()));
         Top.setValue(String.valueOf(aLegend.getTop()));
         Width.setValue(String.valueOf(aLegend.getWidth()));
@@ -4005,7 +4037,7 @@ public class MapLayout extends JPanel {
             aLL.setLayerUpdateType(LayerUpdateTypes.valueOf(layoutLegend.getAttributes().getNamedItem("LayerUpdateType").getNodeValue()));
             aLL.setColumnNumber(Integer.parseInt(layoutLegend.getAttributes().getNamedItem("ColumnNumber").getNodeValue()));
             aLL.setDrawBackColor(Boolean.parseBoolean(layoutLegend.getAttributes().getNamedItem("DrawBackColor").getNodeValue()));
-            aLL.setDrawChartBreaks(Boolean.parseBoolean(layoutLegend.getAttributes().getNamedItem("DrawChartBreaks").getNodeValue())); 
+            aLL.setDrawChartBreaks(Boolean.parseBoolean(layoutLegend.getAttributes().getNamedItem("DrawChartBreaks").getNodeValue()));
         } catch (Exception e) {
         }
 

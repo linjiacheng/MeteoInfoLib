@@ -654,7 +654,7 @@ public class LayoutLegend extends LayoutElement {
                 case Polygon:
                     PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(i);
                     DrawShape = aPGB.isDrawShape();
-                    DrawFill = aPGB.getDrawFill();
+                    DrawFill = aPGB.isDrawFill();
                     FillColor = aPGB.getColor();
                     if (aLS.getLegendType() == LegendType.UniqueValue) {
                         caption = aPGB.getCaption();
@@ -817,7 +817,7 @@ public class LayoutLegend extends LayoutElement {
                 case Polygon:
                     PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(i);
                     DrawShape = aPGB.isDrawShape();
-                    DrawFill = aPGB.getDrawFill();
+                    DrawFill = aPGB.isDrawFill();
                     FillColor = aPGB.getColor();
                     if (aLS.getLegendType() == LegendType.UniqueValue) {
                         caption = aPGB.getCaption();

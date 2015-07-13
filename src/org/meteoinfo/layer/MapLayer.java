@@ -353,11 +353,16 @@ public class MapLayer implements Cloneable {
     
     /**
      * To string
-     * @return The layer name string
+     * @return String
      */
     @Override
     public String toString(){
-        return this._layerName;
+        String str = "Layer name: " + this.getLayerName();
+        str += System.getProperty("line.separator") + "Layer file: " + this.getFileName();
+        str += System.getProperty("line.separator") + "Layer type: " + this.getLayerType();
+        str += System.getProperty("line.separator") + "Shape type: " + this.getShapeType();
+        
+        return str;
     }
     // </editor-fold>
 

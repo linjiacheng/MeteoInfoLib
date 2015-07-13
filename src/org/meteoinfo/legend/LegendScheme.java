@@ -650,8 +650,8 @@ public class LegendScheme {
                     color.setValue(ColorUtil.toHexEncoding(aPGB.getColor()));
                     drawShape.setValue(String.valueOf(aPGB.isDrawShape()));
                     outlineColor.setValue(ColorUtil.toHexEncoding(aPGB.getOutlineColor()));
-                    drawOutline.setValue(String.valueOf(aPGB.getDrawOutline()));
-                    drawFill.setValue(String.valueOf(aPGB.getDrawFill()));
+                    drawOutline.setValue(String.valueOf(aPGB.isDrawOutline()));
+                    drawFill.setValue(String.valueOf(aPGB.isDrawFill()));
                     outlineSize.setValue(String.valueOf(aPGB.getOutlineSize()));
                     //usingHatchStyle.InnerText = aPGB.UsingHatchStyle.ToString();
                     //style.InnerText = aPGB.Style.ToString();

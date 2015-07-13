@@ -220,11 +220,12 @@ public class Graphic {
      */
     protected void addShape(Document doc, Element parent, Shape aShape) {
         Element shape = doc.createElement("Shape");
+        boolean hasAngle = aShape.getShapeType() == ShapeTypes.Ellipse;        
 
         //Add general attribute
         Attr shapeType = doc.createAttribute("ShapeType");
         Attr visible = doc.createAttribute("Visible");
-        Attr selected = doc.createAttribute("Selected");
+        Attr selected = doc.createAttribute("Selected");        
 
         //shapeType.InnerText = Enum.GetName(typeof(ShapeTypes), aShape.ShapeType);
         shapeType.setValue(aShape.getShapeType().toString());
@@ -234,6 +235,12 @@ public class Graphic {
         shape.setAttributeNode(shapeType);
         shape.setAttributeNode(visible);
         shape.setAttributeNode(selected);
+        
+        if (hasAngle){
+            Attr angle = doc.createAttribute("Angle");
+            angle.setValue(String.valueOf(((EllipseShape)aShape).getAngle()));
+            shape.setAttributeNode(angle);
+        }
 
         //Add points
         Element points = doc.createElement("Points");
@@ -423,8 +430,8 @@ public class Graphic {
 
                 //legendType.InnerText = "PolygonBreak";
                 outlineColor.setValue(ColorUtil.toHexEncoding(aPGB.getOutlineColor()));
-                drawOutline.setValue(String.valueOf(aPGB.getDrawOutline()));
-                drawFill.setValue(String.valueOf(aPGB.getDrawFill()));
+                drawOutline.setValue(String.valueOf(aPGB.isDrawOutline()));
+                drawFill.setValue(String.valueOf(aPGB.isDrawFill()));
                 outlineSize.setValue(String.valueOf(aPGB.getOutlineSize()));
                 //usingHatchStyle.setValue(String.valueOf(aPGB.getUsingHatchStyle()));
                 //style.setValue(String.valueOf(aPGB.getStyle()));
@@ -497,8 +504,13 @@ public class Graphic {
 
             aShape.setVisible(Boolean.parseBoolean(shapeNode.getAttributes().getNamedItem("Visible").getNodeValue()));
             aShape.setSelected(Boolean.parseBoolean(shapeNode.getAttributes().getNamedItem("Selected").getNodeValue()));
+            if (aShape.getShapeType() == ShapeTypes.Ellipse){
+                Node angleNode = shapeNode.getAttributes().getNamedItem("Angle");
+                if (angleNode != null)
+                    ((EllipseShape)aShape).setAngle(Float.parseFloat(angleNode.getNodeValue()));
+            }
 
-            List<PointD> pointList = new ArrayList<PointD>();
+            List<PointD> pointList = new ArrayList<>();
             Node pointsNode = ((Element)shapeNode).getElementsByTagName("Points").item(0);
             NodeList nl = ((Element)pointsNode).getElementsByTagName("Point");
             for (int i = 0; i < nl.getLength(); i++) {

@@ -1579,7 +1579,7 @@ public class VectorLayer extends MapLayer {
                 handler.endElement("", "", "color");    //color
                 handler.startElement("", "", "fill", atts);
                 str = "1";
-                if (!pgb.getDrawFill()) {
+                if (!pgb.isDrawFill()) {
                     str = "0";
                 }
                 handler.characters(str.toCharArray(), 0, str.length());
@@ -1661,7 +1661,7 @@ public class VectorLayer extends MapLayer {
                     handler.endElement("", "", "outerBoundaryIs");    //outerBoundaryIs
 
                     // If Fill=true then add innerBoundaryIs for the contour 'holes'
-                    if (((PolygonBreak) this.getLegendScheme().getLegendBreaks().get(levelNum)).getDrawFill()) {
+                    if (((PolygonBreak) this.getLegendScheme().getLegendBreaks().get(levelNum)).isDrawFill()) {
                         if (polygon.hasHole()) {
                             for (List<PointD> hole : polygon.getHoleLines()) {
                                 handler.startElement("", "", "innerBoundaryIs", atts);
@@ -2314,6 +2314,25 @@ public class VectorLayer extends MapLayer {
         //aLayer.setTag(this.getTag());
 
         return aLayer;
+    }
+    
+    /**
+     * To string
+     * @return String
+     */
+    @Override
+    public String toString(){
+        String str = "Layer name: " + this.getLayerName();
+        str += System.getProperty("line.separator") + "Layer file: " + this.getFileName();
+        str += System.getProperty("line.separator") + "Layer type: " + this.getLayerType();
+        str += System.getProperty("line.separator") + "Shape type: " + this.getShapeType();
+        str += System.getProperty("line.separator") + "Shape count: " + String.valueOf(this.getShapeNum());
+        str += System.getProperty("line.separator") + "Fields:";
+        for (Field field : this.getFields()){
+            str += System.getProperty("line.separator") + "\t" + field.getColumnName() + ": " + field.getDataTypeName();
+        }
+        
+        return str;
     }
     // </editor-fold>
     // </editor-fold>

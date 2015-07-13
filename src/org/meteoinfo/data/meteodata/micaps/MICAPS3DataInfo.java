@@ -216,7 +216,7 @@ public class MICAPS3DataInfo extends DataInfo implements IStationDataInfo {
         maxX = 0;
         minY = 0;
         maxY = 0;
-        List<String> stations = new ArrayList<String>();
+        List<String> stations = new ArrayList<>();
 
         //Get real variable index
         varIdx = _fieldList.indexOf(_varList.get(varIdx));

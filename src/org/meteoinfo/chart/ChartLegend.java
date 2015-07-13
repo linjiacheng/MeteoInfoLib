@@ -701,7 +701,7 @@ public class ChartLegend {
                 case Polygon:
                     PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(idx);
                     DrawShape = aPGB.isDrawShape();
-                    DrawFill = aPGB.getDrawFill();
+                    DrawFill = aPGB.isDrawFill();
                     FillColor = aPGB.getColor();
                     break;
                 case Image:
@@ -831,7 +831,7 @@ public class ChartLegend {
                 case Polygon:
                     PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(idx);
                     DrawShape = aPGB.isDrawShape();
-                    DrawFill = aPGB.getDrawFill();
+                    DrawFill = aPGB.isDrawFill();
                     FillColor = aPGB.getColor();
                     break;
                 case Image:

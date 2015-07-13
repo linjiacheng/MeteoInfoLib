@@ -93,7 +93,7 @@ public class PolygonBreak extends ColorBreak {
      *
      * @return Boolean
      */
-    public boolean getDrawOutline() {
+    public boolean isDrawOutline() {
         return _drawOutline;
     }
 
@@ -111,7 +111,7 @@ public class PolygonBreak extends ColorBreak {
      *
      * @return Boolean
      */
-    public boolean getDrawFill() {
+    public boolean isDrawFill() {
         return _drawFill;
     }
 
@@ -164,51 +164,51 @@ public class PolygonBreak extends ColorBreak {
 
     /**
      * Get property object
+     *
      * @return Custom property object
      */
     @Override
-        public Object getPropertyObject()
-        {
-            HashMap objAttr = new HashMap();
-            objAttr.put("Color", "Color");
-            objAttr.put("OutlineColor", "OutlineColor");
-            objAttr.put("OutlineSize", "OutlineSize");
-            objAttr.put("DrawOutline", "DrawOutline");
-            objAttr.put("DrawFill", "DrawFill");
-            objAttr.put("DrawPolygon", "DrawPolygon");
-            objAttr.put("UsingHatchStyle", "UsingHatchStyle");
-            objAttr.put("Style", "Style");
-            objAttr.put("BackColor", "BackColor");
-            objAttr.put("TransparencyPercent", "TransparencyPercent");
-            //CustomProperty cp = new CustomProperty(this, objAttr);
-            return objAttr;
-        }
+    public Object getPropertyObject() {
+        HashMap objAttr = new HashMap();
+        objAttr.put("Color", "Color");
+        objAttr.put("OutlineColor", "OutlineColor");
+        objAttr.put("OutlineSize", "OutlineSize");
+        objAttr.put("DrawOutline", "DrawOutline");
+        objAttr.put("DrawFill", "DrawFill");
+        objAttr.put("DrawPolygon", "DrawPolygon");
+        objAttr.put("UsingHatchStyle", "UsingHatchStyle");
+        objAttr.put("Style", "Style");
+        objAttr.put("BackColor", "BackColor");
+        objAttr.put("TransparencyPercent", "TransparencyPercent");
+        //CustomProperty cp = new CustomProperty(this, objAttr);
+        return objAttr;
+    }
 
-        /**
-         * Cloen
-         * @return PolygonBreak 
-         */
+    /**
+     * Cloen
+     *
+     * @return PolygonBreak
+     */
     @Override
-        public Object clone()
-        {
-            PolygonBreak aCB = new PolygonBreak();
-            aCB.setCaption(this.getCaption());
-            aCB.setColor(this.getColor());
-            aCB.setDrawShape(this.isDrawShape());
-            aCB.setEndValue(this.getEndValue());
-            aCB.setNoData(this.isNoData());
-            aCB.setStartValue(this.getStartValue());            
-            aCB.setOutlineColor(_outlineColor);
-            aCB.setOutlineSize(_outlineSize);
-            aCB.setDrawOutline(_drawOutline);
-            aCB.setDrawFill(_drawFill);
+    public Object clone() {
+        PolygonBreak aCB = new PolygonBreak();
+        aCB.setCaption(this.getCaption());
+        aCB.setColor(this.getColor());
+        aCB.setDrawShape(this.isDrawShape());
+        aCB.setEndValue(this.getEndValue());
+        aCB.setNoData(this.isNoData());
+        aCB.setStartValue(this.getStartValue());
+        aCB.setOutlineColor(_outlineColor);
+        aCB.setOutlineSize(_outlineSize);
+        aCB.setDrawOutline(_drawOutline);
+        aCB.setDrawFill(_drawFill);
             //aCB.UsingHatchStyle = _usingHatchStyle;
-            //aCB.Style = _style;
-            aCB.setBackColor(_backColor);
-            //aCB.TransparencyPercent = _transparencyPerc;
-            aCB.setMaskout(_isMaskout);
+        //aCB.Style = _style;
+        aCB.setBackColor(_backColor);
+        //aCB.TransparencyPercent = _transparencyPerc;
+        aCB.setMaskout(_isMaskout);
 
-            return aCB;
-        }
+        return aCB;
+    }
     // </editor-fold>
 }

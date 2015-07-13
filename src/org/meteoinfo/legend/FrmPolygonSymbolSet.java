@@ -9,6 +9,7 @@ import org.meteoinfo.map.MapView;
 import java.awt.Color;
 import java.awt.Dimension;
 import javax.swing.JColorChooser;
+import org.meteoinfo.shape.EllipseShape;
 
 /**
  *
@@ -22,6 +23,8 @@ public class FrmPolygonSymbolSet extends javax.swing.JDialog {
 
     /**
      * Creates new form FrmPolygonSymbolSet
+     * @param parent
+     * @param modal
      */
     public FrmPolygonSymbolSet(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
@@ -34,6 +37,7 @@ public class FrmPolygonSymbolSet extends javax.swing.JDialog {
      *
      * @param parent
      * @param modal
+     * @param tparent
      */
     public FrmPolygonSymbolSet(java.awt.Dialog parent, boolean modal, Object tparent) {
         super(parent, modal);
@@ -52,6 +56,7 @@ public class FrmPolygonSymbolSet extends javax.swing.JDialog {
      *
      * @param parent
      * @param modal
+     * @param tparent
      */
     public FrmPolygonSymbolSet(java.awt.Frame parent, boolean modal, Object tparent) {
         super(parent, modal);
@@ -213,6 +218,12 @@ public class FrmPolygonSymbolSet extends javax.swing.JDialog {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jButton_OK, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(38, 38, 38)
+                .addComponent(jButton_Apply, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(45, 45, 45))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -239,12 +250,6 @@ public class FrmPolygonSymbolSet extends javax.swing.JDialog {
                             .addComponent(jLabel_BackColor, javax.swing.GroupLayout.DEFAULT_SIZE, 59, Short.MAX_VALUE)
                             .addComponent(jSpinner_TransParency))
                         .addGap(29, 29, 29))))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jButton_OK, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(38, 38, 38)
-                .addComponent(jButton_Apply, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(45, 45, 45))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -268,9 +273,9 @@ public class FrmPolygonSymbolSet extends javax.swing.JDialog {
                         .addComponent(jLabel_FillColor, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel_BackColor, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(18, 18, 18)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton_OK)
                     .addComponent(jButton_Apply))
@@ -289,7 +294,8 @@ public class FrmPolygonSymbolSet extends javax.swing.JDialog {
         this.jLabel_FillColor.setBackground(aColor);
         _polygonBreak.setColor(aColor);
         if (_parent.getClass() == LegendView.class) {
-            ((LegendView) _parent).setLegendBreak_Color(aColor);
+            //((LegendView) _parent).setLegendBreak_Color(aColor);
+            ((LegendView) _parent).repaint();
         }
     }//GEN-LAST:event_jLabel_FillColorMouseClicked
 
@@ -305,7 +311,8 @@ public class FrmPolygonSymbolSet extends javax.swing.JDialog {
         // TODO add your handling code here:
         _polygonBreak.setDrawFill(this.jCheckBox_DrawFill.isSelected());
         if (_parent.getClass() == LegendView.class) {
-            ((LegendView) _parent).setLegendBreak_DrawFill(this.jCheckBox_DrawFill.isSelected());
+            //((LegendView) _parent).setLegendBreak_DrawFill(this.jCheckBox_DrawFill.isSelected());
+            ((LegendView) _parent).repaint();
         }
     }//GEN-LAST:event_jCheckBox_DrawFillActionPerformed
 
@@ -398,8 +405,8 @@ public class FrmPolygonSymbolSet extends javax.swing.JDialog {
         this.jCheckBox_DrawShape.setSelected(_polygonBreak.isDrawShape());
         int trans = (int)((1 - (double)_polygonBreak.getColor().getAlpha() / 255) * 100);
         this.jSpinner_TransParency.setValue(trans);
-        this.jCheckBox_DrawFill.setSelected(_polygonBreak.getDrawFill());
-        this.jCheckBox_DrawOutline.setSelected(_polygonBreak.getDrawOutline());
+        this.jCheckBox_DrawFill.setSelected(_polygonBreak.isDrawFill());
+        this.jCheckBox_DrawOutline.setSelected(_polygonBreak.isDrawOutline());
         this.jSpinner_OutlineSize.setValue(_polygonBreak.getOutlineSize());
         this.jLabel_OutlineColor.setBackground(_polygonBreak.getOutlineColor());
 

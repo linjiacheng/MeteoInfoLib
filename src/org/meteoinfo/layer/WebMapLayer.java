@@ -21,7 +21,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
-import org.meteoinfo.data.mapdata.webmap.ArcGISImageInfo;
 import org.meteoinfo.data.mapdata.webmap.BingHybridMapInfo;
 import org.meteoinfo.data.mapdata.webmap.BingMapInfo;
 import org.meteoinfo.data.mapdata.webmap.BingSatelliteMapInfo;
@@ -40,13 +39,8 @@ import org.meteoinfo.data.mapdata.webmap.TileFactoryInfo;
 import org.meteoinfo.data.mapdata.webmap.YahooHybridMapInfo;
 import org.meteoinfo.data.mapdata.webmap.YahooMapInfo;
 import org.meteoinfo.data.mapdata.webmap.YahooSatelliteMapInfo;
-import org.meteoinfo.data.mapdata.webmap.bmng.CylindricalProjectionTileFactory;
 import org.meteoinfo.data.mapdata.webmap.empty.EmptyTileFactory;
 import org.meteoinfo.global.Extent;
-import org.meteoinfo.global.PointD;
-import org.meteoinfo.global.util.GeoUtil;
-import org.meteoinfo.projection.KnownCoordinateSystems;
-import org.meteoinfo.projection.Reproject;
 import org.meteoinfo.shape.ShapeTypes;
 
 /**
@@ -123,7 +117,7 @@ public class WebMapLayer extends MapLayer {
     private Graphics2D graphics;
     private int width;
     private int height;
-    private List<Double> scales = new ArrayList<Double>();
+    private List<Double> scales = new ArrayList<>();
     // </editor-fold>
     // <editor-fold desc="Event">
     // a property change listener which forces repaints when tiles finish loading
@@ -582,6 +576,7 @@ public class WebMapLayer extends MapLayer {
     /**
      * Calculate view port bounds
      *
+     * @param g Graphic2D
      * @param width The width
      * @param height The height
      * @return View port bounds rectangle
@@ -593,6 +588,20 @@ public class WebMapLayer extends MapLayer {
         double viewportX = (center.getX() - width / 2);
         double viewportY = (center.getY() - height / 2);
         return new Rectangle((int) viewportX, (int) viewportY, width, height);
+    }
+    
+    /**
+     * To string
+     * @return String
+     */
+    @Override
+    public String toString(){
+        String str = "Layer name: " + this.getLayerName();
+        str += System.getProperty("line.separator") + "Layer file: " + this.getFileName();
+        str += System.getProperty("line.separator") + "Layer type: " + this.getLayerType();
+        str += System.getProperty("line.separator") + "Data provider: " + this.defaultProvider;        
+        
+        return str;
     }
     // </editor-fold>
     // <editor-fold desc="BeanInfo">

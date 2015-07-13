@@ -20,6 +20,7 @@ package org.meteoinfo.shape;
  */
 public class EllipseShape extends PolygonShape {
     // <editor-fold desc="Variables">
+    private float angle = 0.0f;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -31,6 +32,21 @@ public class EllipseShape extends PolygonShape {
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
+    /**
+     * Get angle
+     * @return Angle
+     */
+    public float getAngle(){
+        return this.angle;
+    }
+    
+    /**
+     * Set angle
+     * @param value Angle
+     */
+    public void setAngle(float value){
+        this.angle = value;
+    }
     // </editor-fold>
     // <editor-fold desc="Methods">
 

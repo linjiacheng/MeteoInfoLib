@@ -457,7 +457,7 @@ public abstract class XYPlot extends Plot {
             //y -= dim.height * 2 / 3;
             //g.drawString(title.getText(), x, y);
             Draw.drawString(g, title.getText(), x, y);
-            //y += 5;
+            y += 5;
         }
 
 //        //Update legend scheme
@@ -543,7 +543,7 @@ public abstract class XYPlot extends Plot {
                     top += dim.height + 10;
                     break;
                 case LOWER_CENTER_OUTSIDE:
-                    bottom += dim.height;
+                    bottom += dim.height + 10;
                     break;
                 case LEFT_OUTSIDE:
                     left += dim.width + 10;
@@ -989,7 +989,7 @@ public abstract class XYPlot extends Plot {
                 break;
             case LOWER_CENTER_OUTSIDE:
                 x = (float)(area.getX() + area.getWidth() / 2 - dim.width / 2);
-                y += area.getHeight() + this.getXAxisHeight(g, 1) + 5;
+                y = (float)(area.getY() + area.getHeight() + this.getXAxisHeight(g, 1) + 10);
                 break;
             case LEFT_OUTSIDE:
                 x = 10;

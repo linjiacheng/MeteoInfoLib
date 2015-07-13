@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import org.meteoinfo.shape.EllipseShape;
 import org.meteoinfo.shape.StationModelShape;
 import org.scilab.forge.jlatexmath.TeXConstants;
 import org.scilab.forge.jlatexmath.TeXFormula;
@@ -72,9 +73,10 @@ public class Draw {
      * @return Boolean
      */
     public static boolean isLaTeX(String str) {
-        if (str.length() < 2)
+        if (str.length() < 2) {
             return false;
-        
+        }
+
         String str1 = str.substring(0, 1);
         String str2 = str.substring(str.length() - 1);
         return str1.equals("$") && str2.equals("$");
@@ -82,6 +84,7 @@ public class Draw {
 
     /**
      * Get string dimension
+     *
      * @param str String
      * @param g Graphics2D
      * @return String dimension
@@ -94,12 +97,11 @@ public class Draw {
 
             // render the formla to an icon of the same size as the formula.
             TeXIcon icon = formula.createTeXIcon(TeXConstants.STYLE_TEXT, size);
-            
+
             // insert a border 
             //icon.setInsets(new Insets(5, 5, 5, 5));
-            
             //return new Dimension(icon.getIconWidth(), icon.getIconHeight());
-            int width = (int)icon.getTrueIconWidth() + 10;
+            int width = (int) icon.getTrueIconWidth() + 10;
             //int height = (int)icon.getTrueIconHeight();
             int height = icon.getIconHeight();
             return new Dimension(width, height);
@@ -107,7 +109,7 @@ public class Draw {
             FontMetrics metrics = g.getFontMetrics();
             return new Dimension(metrics.stringWidth(str), metrics.getHeight());
         }
-    }        
+    }
 
     /**
      * Draw string
@@ -946,7 +948,7 @@ public class Draw {
             aPoint.X = 0;
             aPoint.Y = 0;
         }
-        
+
         //g.drawString(aLB.getText(), aPoint.X, aPoint.Y + metrics.getHeight() / 2);
         Draw.drawString(g, aLB.getText(), aPoint.X, aPoint.Y + labSize.height / 2);
 
@@ -995,7 +997,7 @@ public class Draw {
             x = 0;
             y = 0;
         }
-        
+
         //g.drawString(text, x, y + metrics.getHeight() / 2);
         Draw.drawString(g, text, x, y + labSize.height / 2);
 
@@ -1044,7 +1046,7 @@ public class Draw {
 
         g.setColor(color);
         g.setFont(font);
-        if (Draw.isLaTeX(text)){
+        if (Draw.isLaTeX(text)) {
             //Draw.drawLaTeX(g, text, x - labSize.width / 2, y - labSize.height);
             Draw.drawLaTeX(g, text, x - labSize.width / 2, y + labSize.height / 2);
         } else {
@@ -1217,7 +1219,8 @@ public class Draw {
                 drawCircle(points, (PolygonBreak) aGraphic.getLegend(), g);
                 break;
             case Ellipse:
-                drawEllipse(points, (PolygonBreak) aGraphic.getLegend(), g);
+                EllipseShape eshape = (EllipseShape) aGraphic.getShape();
+                drawEllipse(points, eshape.getAngle(), (PolygonBreak) aGraphic.getLegend(), g);
                 break;
         }
 
@@ -1345,11 +1348,11 @@ public class Draw {
      * @param g Graphics2D
      */
     public static void drawPolygon(PointF[] points, PolygonBreak aPGB, Graphics2D g) {
-        if (aPGB.getDrawFill()) {
+        if (aPGB.isDrawFill()) {
             g.setColor(aPGB.getColor());
             fillPolygon(points, g);
         }
-        if (aPGB.getDrawOutline()) {
+        if (aPGB.isDrawOutline()) {
             g.setColor(aPGB.getOutlineColor());
             g.setStroke(new BasicStroke(aPGB.getOutlineSize()));
             drawPolyline(points, g);
@@ -2039,11 +2042,11 @@ public class Draw {
 
         aP.X = aP.X - width / 2;
         aP.Y = aP.Y - height / 2;
-        if (aPGB.getDrawFill()) {
+        if (aPGB.isDrawFill()) {
             g.setColor(aPGB.getColor());
             g.fill(new Rectangle.Float(aP.X, aP.Y, width, height));
         }
-        if (aPGB.getDrawOutline()) {
+        if (aPGB.isDrawOutline()) {
             g.setColor(aPGB.getOutlineColor());
             g.setStroke(new BasicStroke(aPGB.getOutlineSize()));
             g.draw(new Rectangle.Float(aP.X, aP.Y, width, height));
@@ -2087,11 +2090,11 @@ public class Draw {
      */
     public static void drawRectangle(PointF aPoint, float width, float height, PolygonBreak aPGB, Graphics2D g) {
         Color aColor = aPGB.getColor();
-        if (aPGB.getDrawFill()) {
+        if (aPGB.isDrawFill()) {
             g.setColor(aColor);
             g.fill(new Rectangle.Float(aPoint.X, aPoint.Y, width, height));
         }
-        if (aPGB.getDrawOutline()) {
+        if (aPGB.isDrawOutline()) {
             g.setColor(aPGB.getOutlineColor());
             g.setStroke(new BasicStroke(aPGB.getOutlineSize()));
             g.draw(new Rectangle.Float(aPoint.X, aPoint.Y, width, height));
@@ -2111,11 +2114,11 @@ public class Draw {
      */
     public static void drawPie(PointF aPoint, float width, float height, float startAngle, float sweepAngle, PolygonBreak aPGB, Graphics2D g) {
         Color aColor = aPGB.getColor();
-        if (aPGB.getDrawFill()) {
+        if (aPGB.isDrawFill()) {
             g.setColor(aColor);
             g.fill(new Arc2D.Float(aPoint.X, aPoint.Y, width, height, startAngle, sweepAngle, Arc2D.PIE));
         }
-        if (aPGB.getDrawOutline()) {
+        if (aPGB.isDrawOutline()) {
             g.setColor(aPGB.getOutlineColor());
             g.setStroke(new BasicStroke(aPGB.getOutlineSize()));
             g.draw(new Arc2D.Float(aPoint.X, aPoint.Y, width, height, startAngle, sweepAngle, Arc2D.PIE));
@@ -2222,14 +2225,61 @@ public class Draw {
     public static void drawCircle(PointF[] points, PolygonBreak aPGB, Graphics2D g) {
         float radius = Math.abs(points[1].X - points[0].X);
 
-        if (aPGB.getDrawFill()) {
+        if (aPGB.isDrawFill()) {
             g.setColor(aPGB.getColor());
             g.fill(new Ellipse2D.Float(points[0].X, points[0].Y - radius, radius * 2, radius * 2));
         }
-        if (aPGB.getDrawOutline()) {
+        if (aPGB.isDrawOutline()) {
             g.setColor(aPGB.getOutlineColor());
             g.setStroke(new BasicStroke(aPGB.getOutlineSize()));
             g.draw(new Ellipse2D.Float(points[0].X, points[0].Y - radius, radius * 2, radius * 2));
+        }
+    }
+
+    /**
+     * Draw ellipse
+     *
+     * @param points The points
+     * @param angle The angle
+     * @param aPGB The polygon break
+     * @param g Grahpics2D
+     */
+    public static void drawEllipse(PointF[] points, float angle, PolygonBreak aPGB, Graphics2D g) {
+        float sx = Math.min(points[0].X, points[2].X);
+        float sy = Math.min(points[0].Y, points[2].Y);
+        float width = Math.abs(points[2].X - points[0].X);
+        float height = Math.abs(points[2].Y - points[0].Y);
+        
+        if (angle != 0) {
+            AffineTransform tempTrans = g.getTransform();
+            AffineTransform myTrans = AffineTransform.getRotateInstance(Math.toRadians(angle), 
+                    sx + width / 2 + tempTrans.getTranslateX(), sy + height / 2 + tempTrans.getTranslateY());
+            g.setTransform(myTrans);
+            sx += tempTrans.getTranslateX();
+            sy += tempTrans.getTranslateY();
+
+            if (aPGB.isDrawFill()) {
+                g.setColor(aPGB.getColor());
+                g.fill(new Ellipse2D.Float(sx, sy, width, height));
+            }
+            if (aPGB.isDrawOutline()) {
+                g.setColor(aPGB.getOutlineColor());
+                g.setStroke(new BasicStroke(aPGB.getOutlineSize()));
+                g.draw(new Ellipse2D.Float(sx, sy, width, height));
+            }
+
+            g.setTransform(tempTrans);
+        } else {
+
+            if (aPGB.isDrawFill()) {
+                g.setColor(aPGB.getColor());
+                g.fill(new Ellipse2D.Float(sx, sy, width, height));
+            }
+            if (aPGB.isDrawOutline()) {
+                g.setColor(aPGB.getOutlineColor());
+                g.setStroke(new BasicStroke(aPGB.getOutlineSize()));
+                g.draw(new Ellipse2D.Float(sx, sy, width, height));
+            }
         }
     }
 
@@ -2246,11 +2296,11 @@ public class Draw {
         float width = Math.abs(points[2].X - points[0].X);
         float height = Math.abs(points[2].Y - points[0].Y);
 
-        if (aPGB.getDrawFill()) {
+        if (aPGB.isDrawFill()) {
             g.setColor(aPGB.getColor());
             g.fill(new Ellipse2D.Float(sx, sy, width, height));
         }
-        if (aPGB.getDrawOutline()) {
+        if (aPGB.isDrawOutline()) {
             g.setColor(aPGB.getOutlineColor());
             g.setStroke(new BasicStroke(aPGB.getOutlineSize()));
             g.draw(new Ellipse2D.Float(sx, sy, width, height));
