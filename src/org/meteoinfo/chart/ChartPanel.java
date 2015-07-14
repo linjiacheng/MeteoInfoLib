@@ -63,7 +63,6 @@ import org.freehep.graphics2d.VectorGraphics;
 import org.freehep.graphicsio.emf.EMFGraphics2D;
 import org.freehep.graphicsio.pdf.PDFGraphics2D;
 import org.freehep.graphicsio.ps.PSGraphics2D;
-import org.meteoinfo.chart.plot.Plot;
 import org.meteoinfo.chart.plot.XY1DPlot;
 import org.meteoinfo.chart.plot.XY2DPlot;
 import org.meteoinfo.chart.plot.XYPlot;

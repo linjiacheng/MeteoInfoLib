@@ -6308,7 +6308,7 @@ public class MapView extends JPanel {
 
     private void getLonLatGridLabels() {
         if (_isGeoMap) {
-            _gridLabels = new ArrayList<>();
+            List<GridLabel> labels = new ArrayList<>();
             if (_projection.isLonLatMap()) {
                 if (_lonLatLayer == null) {
                     return;
@@ -6369,7 +6369,7 @@ public class MapView extends JPanel {
                         gLabel.setLabString(labStr);
                     }
 
-                    _gridLabels.addAll(gLabels);
+                    labels.addAll(gLabels);
                 }
             } else {
                 if (_lonLatLayer == null) {
@@ -6448,7 +6448,7 @@ public class MapView extends JPanel {
                                     }
                                 }
                             }
-                            _gridLabels.add(aGL);
+                            labels.add(aGL);
                         }
                         break;
                     case Albers_Equal_Area:
@@ -6472,7 +6472,7 @@ public class MapView extends JPanel {
                                     }
                                 }
                             }
-                            _gridLabels.add(aGL);
+                            labels.add(aGL);
                         }
                         break;
                     case North_Polar_Stereographic_Azimuthal:
@@ -6512,7 +6512,7 @@ public class MapView extends JPanel {
                                 }
                             }
 
-                            _gridLabels.add(aGL);
+                            labels.add(aGL);
                         }
                         break;
                     case Robinson:
@@ -6533,7 +6533,7 @@ public class MapView extends JPanel {
                                 }
                             }
 
-                            _gridLabels.add(aGL);
+                            labels.add(aGL);
                         }
                         break;
                     case Molleweide:
@@ -6550,7 +6550,7 @@ public class MapView extends JPanel {
                                 }
                             }
 
-                            _gridLabels.add(aGL);
+                            labels.add(aGL);
                         }
                         break;
                     case Orthographic_Azimuthal:
@@ -6568,7 +6568,7 @@ public class MapView extends JPanel {
                                 }
                             }
 
-                            _gridLabels.add(aGL);
+                            labels.add(aGL);
                         }
                         break;
                     case Oblique_Stereographic_Alternative:
@@ -6578,19 +6578,21 @@ public class MapView extends JPanel {
                                 continue;
                             }
 
-                            _gridLabels.add(aGL);
+                            labels.add(aGL);
                         }
                         break;
                     default:
-                        _gridLabels = gridLabels;
+                        labels = gridLabels;
                         break;
                 }
             }
 
-            for (GridLabel aGL : _gridLabels) {
+            this._gridLabels.clear();
+            for (GridLabel aGL : labels) {
                 double[] sXY = projToScreen(aGL.getLabPoint().X, aGL.getLabPoint().Y);
                 aGL.setLabPoint(new PointD(sXY[0], sXY[1]));
                 //_gridLabels[i] = aGL;
+                this._gridLabels.add(aGL);
             }
         }
     }
