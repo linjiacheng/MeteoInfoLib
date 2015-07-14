@@ -28,7 +28,7 @@ public class ArcGISImageInfo extends TileFactoryInfo {
 //    // <editor-fold desc="Methods">
 
     @Override
-    public String getTileUrl(int x, int y, int zoom, String language) {
+    public String getTileUrl(int x, int y, int zoom) {
         zoom = this.getTotalMapZoom() - zoom;
         String url = String.format(this.baseURL, zoom, x, y);
         return url;

@@ -8,7 +8,6 @@
  */
 package org.meteoinfo.data.mapdata.webmap;
 
-import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.util.Locale;
 
@@ -248,10 +247,9 @@ public class TileFactoryInfo {
      * @param x X
      * @param y Y
      * @param zoom the zoom level
-     * @param language The language
      * @return a valid url to load the tile
      */
-    public String getTileUrl(int x, int y, int zoom, String language) {
+    public String getTileUrl(int x, int y, int zoom) {
         zoom = this.getTotalMapZoom() - zoom;
         String url = String.format(this.baseURL, zoom, x, y);
         return url;
@@ -260,6 +258,7 @@ public class TileFactoryInfo {
     /**
      * Get the tile size.
      *
+     * @param zoom Zoom
      * @return the tile size
      */
     public int getTileSize(int zoom) {

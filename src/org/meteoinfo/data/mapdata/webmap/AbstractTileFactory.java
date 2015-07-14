@@ -88,7 +88,7 @@ public abstract class AbstractTileFactory extends TileFactory {
         tileX = tileX % numTilesWide;
         int tileY = tpy;
         //TilePoint tilePoint = new TilePoint(tileX, tpy);
-        String url = getInfo().getTileUrl(tileX, tileY, zoom, getInfo().getLanguage());//tilePoint);
+        String url = getInfo().getTileUrl(tileX, tileY, zoom);//tilePoint);
         //System.out.println("loading: " + url);
 
 

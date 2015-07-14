@@ -21,12 +21,18 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
+import org.meteoinfo.data.mapdata.webmap.BaiduMapInfo;
 import org.meteoinfo.data.mapdata.webmap.BingHybridMapInfo;
 import org.meteoinfo.data.mapdata.webmap.BingMapInfo;
 import org.meteoinfo.data.mapdata.webmap.BingSatelliteMapInfo;
 import org.meteoinfo.data.mapdata.webmap.WebMapProvider;
 import org.meteoinfo.data.mapdata.webmap.DefaultTileFactory;
 import org.meteoinfo.data.mapdata.webmap.GeoPosition;
+import org.meteoinfo.data.mapdata.webmap.GoogleHybridMapInfo;
+import org.meteoinfo.data.mapdata.webmap.GoogleHybridTerrainMapInfo;
+import org.meteoinfo.data.mapdata.webmap.GoogleMapInfo;
+import org.meteoinfo.data.mapdata.webmap.GoogleSatelliteMapInfo;
+import org.meteoinfo.data.mapdata.webmap.GoogleTerrainMapInfo;
 import org.meteoinfo.data.mapdata.webmap.OpenStreetMapInfo;
 import org.meteoinfo.data.mapdata.webmap.OpenStreetMapQuestSatelliteInfo;
 import org.meteoinfo.data.mapdata.webmap.OviHybridMapInfo;
@@ -434,6 +440,24 @@ public class WebMapLayer extends MapLayer {
             case YahooHybridMap:
                 info = new YahooHybridMapInfo();
                 break;
+            case GoogleMap:
+                info = new GoogleMapInfo();
+                break;
+            case GoogleSatelliteMap:
+                info = new GoogleSatelliteMapInfo();
+                break;
+            case GoogleTerrainMap:
+                info = new GoogleTerrainMapInfo();
+                break;
+            case GoogleHybridMap:
+                info = new GoogleHybridMapInfo();
+                break;
+            case GoogleHybridTerrainMap:
+                info = new GoogleHybridTerrainMapInfo();
+                break;
+//            case BaiduMap:
+//                info = new BaiduMapInfo();
+//                break;
         }
 
         if (info != null) {

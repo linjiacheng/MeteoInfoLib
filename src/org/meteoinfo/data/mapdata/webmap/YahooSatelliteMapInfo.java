@@ -29,10 +29,10 @@ public class YahooSatelliteMapInfo extends TileFactoryInfo {
 //    // <editor-fold desc="Methods">
 
     @Override
-    public String getTileUrl(int x, int y, int zoom, String language) {
+    public String getTileUrl(int x, int y, int zoom) {
         zoom = this.getTotalMapZoom() - zoom;
         int serverNum = this.getServerNum(x, y, 2) + 1;
-        String url = String.format(this.baseURL, serverNum, version, language, x, ((1 << zoom) >> 1) - 1 - y, zoom + 1);
+        String url = String.format(this.baseURL, serverNum, version, this.getLanguage(), x, ((1 << zoom) >> 1) - 1 - y, zoom + 1);
         return url;
     }
    

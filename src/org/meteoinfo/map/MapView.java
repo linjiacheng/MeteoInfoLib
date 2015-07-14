@@ -5364,7 +5364,7 @@ public class MapView extends JPanel {
         //p("top tile = " + topLeftTile);
         //fetch the tiles from the factory and store them in the tiles cache
         //attach the tileLoadListener
-        String language = layer.getTileFactory().getInfo().getLanguage();
+        //String language = layer.getTileFactory().getInfo().getLanguage();
         for (int x = 0; x <= numWide; x++) {
             for (int y = 0; y <= numHigh; y++) {
                 int itpx = x + tpx;//topLeftTile.getX();

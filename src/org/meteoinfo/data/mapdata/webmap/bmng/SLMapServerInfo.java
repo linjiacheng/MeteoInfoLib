@@ -58,7 +58,7 @@ public class SLMapServerInfo extends TileFactoryInfo {
     }
     
     @Override
-    public String getTileUrl(int x, int y, int zoom, String language) {
+    public String getTileUrl(int x, int y, int zoom) {
         int ty = y;
         int tx = x;
         

@@ -15,13 +15,19 @@ public enum WebMapProvider {
     BingMap,
     BingSatelliteMap,
     BingHybridMap,
+    GoogleMap,
+    GoogleSatelliteMap,
+    GoogleTerrainMap,
+    GoogleHybridMap,
+    GoogleHybridTerrainMap,
+    //BaiduMap,
     OviMap,
     OviSatelliteMap,
     OviTerrainMap,
     OviHybridMap,
     YahooMap,
     YahooSatelliteMap,
-    YahooHybridMap
+    YahooHybridMap,    
     //ArcGISImage,
     //Custom
 }

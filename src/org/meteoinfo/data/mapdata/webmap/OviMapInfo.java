@@ -29,7 +29,7 @@ public class OviMapInfo extends TileFactoryInfo {
 //    // <editor-fold desc="Methods">
 
     @Override
-    public String getTileUrl(int x, int y, int zoom, String language) {
+    public String getTileUrl(int x, int y, int zoom) {
         zoom = this.getTotalMapZoom() - zoom;
         int serverNum = this.getServerNum(x, y, 3) + 1;
         String url = String.format(this.baseURL, urlServerLetters[serverNum], zoom, x, y);

@@ -45,14 +45,14 @@ public class BingMapInfo extends TileFactoryInfo {
     // <editor-fold desc="Methods">
 
     @Override
-    public String getTileUrl(int x, int y, int zoom, String language) {
+    public String getTileUrl(int x, int y, int zoom) {
         zoom = this.getTotalMapZoom() - zoom;
         int serverNum = this.getServerNum(x, y, 4);
         String key = this.tileXYToQuadKey(x, y, zoom);
         String ckey = this.clientKey;
         if (ckey == null)
             ckey = "";
-        String url = String.format(this.baseURL, serverNum, key, version, language, zoom);
+        String url = String.format(this.baseURL, serverNum, key, version, this.getLanguage(), zoom);
         return url;
     }
     
