@@ -1934,7 +1934,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
     public GridData getGridData_LonLat(int timeIdx, int varIdx, int levelIdx) {
         NetcdfFile ncfile = null;
         try {
-            ncfile = NetcdfFile.open(this.getFileName());
+            ncfile = NetcdfDataset.openFile(this.getFileName(), null);
 
             int i, j;
             //int tVarIdx = this.getTrueVarIndex(varIdx);
@@ -2055,7 +2055,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
     public GridData getGridData_TimeLat(int lonIdx, int varIdx, int levelIdx) {
         NetcdfFile ncfile = null;
         try {
-            ncfile = NetcdfFile.open(this.getFileName());
+            ncfile = NetcdfDataset.openFile(this.getFileName(), null);
 
             int xNum, yNum;
             xNum = this.getYDimension().getDimLength();
@@ -2149,7 +2149,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
     public GridData getGridData_TimeLon(int latIdx, int varIdx, int levelIdx) {
         NetcdfFile ncfile = null;
         try {
-            ncfile = NetcdfFile.open(this.getFileName());
+            ncfile = NetcdfDataset.openFile(this.getFileName(), null);
 
             int xNum, yNum;
             xNum = this.getXDimension().getDimLength();
@@ -2239,7 +2239,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
     public GridData getGridData_LevelLat(int lonIdx, int varIdx, int timeIdx) {
         NetcdfFile ncfile = null;
         try {
-            ncfile = NetcdfFile.open(this.getFileName());
+            ncfile = NetcdfDataset.openFile(this.getFileName(), null);
 
             int xNum, yNum;
             xNum = this.getYDimension().getDimLength();
@@ -2333,7 +2333,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
     public GridData getGridData_LevelLon(int latIdx, int varIdx, int timeIdx) {
         NetcdfFile ncfile = null;
         try {
-            ncfile = NetcdfFile.open(this.getFileName());
+            ncfile = NetcdfDataset.openFile(this.getFileName(), null);
 
             int xNum, yNum;
             xNum = this.getXDimension().getDimLength();
@@ -2423,7 +2423,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
     public GridData getGridData_LevelTime(int latIdx, int varIdx, int lonIdx) {
         NetcdfFile ncfile = null;
         try {
-            ncfile = NetcdfFile.open(this.getFileName());
+            ncfile = NetcdfDataset.openFile(this.getFileName(), null);
 
             int xNum, yNum;
             xNum = this.getTimeDimension().getDimLength();
@@ -2513,7 +2513,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
     public GridData getGridData_Time(int lonIdx, int latIdx, int varIdx, int levelIdx) {
         NetcdfFile ncfile = null;
         try {
-            ncfile = NetcdfFile.open(this.getFileName());
+            ncfile = NetcdfDataset.openFile(this.getFileName(), null);
 
             int dNum = this.getTimeDimension().getDimLength();
             double[][] gridData = new double[1][dNum];
@@ -2599,7 +2599,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
     public GridData getGridData_Level(int lonIdx, int latIdx, int varIdx, int timeIdx) {
         NetcdfFile ncfile = null;
         try {
-            ncfile = NetcdfFile.open(this.getFileName());
+            ncfile = NetcdfDataset.openFile(this.getFileName(), null);
 
             int dNum = this.getZDimension().getDimLength();
             double[][] gridData = new double[1][dNum];
@@ -2685,7 +2685,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
     public GridData getGridData_Lon(int timeIdx, int latIdx, int varIdx, int levelIdx) {
         NetcdfFile ncfile = null;
         try {
-            ncfile = NetcdfFile.open(this.getFileName());
+            ncfile = NetcdfDataset.openFile(this.getFileName(), null);
 
             int dNum = this.getXDimension().getDimLength();
             double[][] gridData = new double[1][dNum];
@@ -2771,7 +2771,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
     public GridData getGridData_Lat(int timeIdx, int lonIdx, int varIdx, int levelIdx) {
         NetcdfFile ncfile = null;
         try {
-            ncfile = NetcdfFile.open(this.getFileName());
+            ncfile = NetcdfDataset.openFile(this.getFileName(), null);
 
             int dNum = this.getYDimension().getDimLength();
             double[][] gridData = new double[1][dNum];
@@ -3085,8 +3085,10 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             add_offset = packData[0];
             scale_factor = packData[1];
             missingValue = packData[2];
-            ArrayMath.fill_value = missingValue;
-            data = ArrayMath.add(ArrayMath.mul(data, scale_factor), add_offset);
+            if (add_offset != 0 || scale_factor != 1) {
+                ArrayMath.fill_value = missingValue;
+                data = ArrayMath.add(ArrayMath.mul(data, scale_factor), add_offset);
+            }
 
             return data;
         } catch (IOException | InvalidRangeException ex) {
