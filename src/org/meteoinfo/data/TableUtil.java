@@ -98,9 +98,9 @@ public class TableUtil {
 
                 idx += 1;
             }
-            
-            if (idx < colNum){
-                for (int i = idx; i < colNum; i++){
+
+            if (idx < colNum) {
+                for (int i = idx; i < colNum; i++) {
                     dTable.addColumn(titleArray[i], DataTypes.String);
                 }
             }
@@ -152,15 +152,22 @@ public class TableUtil {
      * @return Data type
      */
     public static DataTypes toDataTypes(String dt) {
-        switch (dt) {
-            case "C":
+        if (dt.contains("%")) {
+            dt = dt.split("%")[1];
+        }
+        switch (dt.toLowerCase()) {
+            case "c":
             case "s":
+            case "string":
                 return DataTypes.String;
             case "i":
+            case "int":
                 return DataTypes.Integer;
             case "f":
+            case "float":
                 return DataTypes.Float;
             case "d":
+            case "double":
                 return DataTypes.Double;
             default:
                 if (dt.substring(0, 1).equals("{")) {    //Date
@@ -178,8 +185,9 @@ public class TableUtil {
      * @return Date format string
      */
     public static String getDateFormat(String dt) {
+        int sidx = dt.indexOf("{");
         int eidx = dt.indexOf("}");
-        String formatStr = dt.substring(1, eidx);
+        String formatStr = dt.substring(sidx + 1, eidx);
         return formatStr;
     }
 }

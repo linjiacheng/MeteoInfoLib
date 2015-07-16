@@ -483,8 +483,11 @@ public class ArrayUtil {
      * @return Data type
      */
     public static DataType toDataType(String dt) {
-        switch (dt) {
-            case "C":
+        if (dt.contains("%")) {
+            dt = dt.split("%")[1];
+        }
+        switch (dt.toLowerCase()) {
+            case "c":
             case "s":
             case "string":
                 return DataType.STRING;
@@ -526,9 +529,10 @@ public class ArrayUtil {
 
         return new Array[]{rx, ry};
     }
-    
+
     /**
      * Create mesh polygon layer
+     *
      * @param x_s scatter X array
      * @param y_s scatter Y array
      * @param a scatter value array
@@ -536,7 +540,7 @@ public class ArrayUtil {
      * @param lonlim Longiutde limitation - to avoid the polygon cross -180/180
      * @return Mesh polygon layer
      */
-    public static VectorLayer meshLayer(Array x_s, Array y_s, Array a, LegendScheme ls, double lonlim){
+    public static VectorLayer meshLayer(Array x_s, Array y_s, Array a, LegendScheme ls, double lonlim) {
         VectorLayer layer = new VectorLayer(ShapeTypes.Polygon);
         String fieldName = "Data";
         Field aDC = new Field(fieldName, DataTypes.Double);
@@ -547,18 +551,19 @@ public class ArrayUtil {
         int rowNum = shape[0];
         double x1, x2, x3, x4;
         for (int i = 0; i < rowNum - 1; i++) {
-            for (int j = 0; j < colNum - 1; j++) {                
+            for (int j = 0; j < colNum - 1; j++) {
                 x1 = x_s.getDouble(i * colNum + j);
                 x2 = x_s.getDouble(i * colNum + j + 1);
                 x3 = x_s.getDouble((i + 1) * colNum + j);
                 x4 = x_s.getDouble((i + 1) * colNum + j + 1);
-                if (lonlim > 0){
+                if (lonlim > 0) {
                     if (Math.abs(x2 - x4) > lonlim || Math.abs(x1 - x4) > lonlim
                             || Math.abs(x3 - x4) > lonlim || Math.abs(x1 - x2) > lonlim
-                            || Math.abs(x2 - x3) > lonlim)
+                            || Math.abs(x2 - x3) > lonlim) {
                         continue;
+                    }
                 }
-                
+
                 PolygonShape ps = new PolygonShape();
                 List<PointD> points = new ArrayList<>();
                 points.add(new PointD(x1, y_s.getDouble(i * colNum + j)));
@@ -567,7 +572,7 @@ public class ArrayUtil {
                 points.add(new PointD(x2, y_s.getDouble(i * colNum + j + 1)));
                 points.add((PointD) points.get(0).clone());
                 ps.setPoints(points);
-                ps.lowValue = a.getDouble(i * colNum +j);
+                ps.lowValue = a.getDouble(i * colNum + j);
                 ps.highValue = ps.lowValue;
                 int shapeNum = layer.getShapeNum();
                 try {
@@ -575,14 +580,14 @@ public class ArrayUtil {
                         layer.editCellValue(fieldName, shapeNum, ps.lowValue);
                     }
                 } catch (Exception ex) {
-                    
+
                 }
             }
         }
         layer.setLayerName("Mesh_Layer");
         ls.setFieldName(fieldName);
         layer.setLegendScheme(ls.convertTo(ShapeTypes.Polygon));
-        
+
         return layer;
     }
 
@@ -785,16 +790,122 @@ public class ArrayUtil {
      * @param a scatter value array
      * @param X x coordinate
      * @param Y y coordinate
-     * @param unDefData undefine value
+     * @param radius Radius
+     * @param fill_value undefine value
      * @return grid data
      */
-    public static Array interpolation_Nearest(List<Number> x_s, List<Number> y_s, Array a, List<Number> X, List<Number> Y,
-            double unDefData) {
+    public static Array interpolation_Nearest_1(List<Number> x_s, List<Number> y_s, Array a, List<Number> X, List<Number> Y,
+            double radius, double fill_value) {
         int rowNum, colNum, pNum;
         colNum = X.size();
         rowNum = Y.size();
         pNum = x_s.size();
-        //double[][] GCoords = new double[rowNum][colNum];
+        Array rdata = Array.factory(DataType.DOUBLE, new int[]{rowNum, colNum});
+        double gx, gy;
+        double x, y, r, v, minr;
+        int rr = (int) Math.ceil(radius);
+
+        List<int[]> pIJ = getPointsIJ(x_s, y_s, X, Y);
+
+        for (int i = 0; i < rowNum; i++) {
+            gy = Y.get(i).doubleValue();
+            for (int j = 0; j < colNum; j++) {
+                rdata.setDouble(i * colNum + j, fill_value);
+                gx = X.get(j).doubleValue();
+                minr = Double.MAX_VALUE;
+                List<Integer> pIdx = getPointsIdx(pIJ, i, j, rr);
+                for (int p : pIdx) {
+                    v = a.getDouble(p);
+                    if (MIMath.doubleEquals(v, fill_value)) {
+                        continue;
+                    }
+
+                    x = x_s.get(p).doubleValue();
+                    y = y_s.get(p).doubleValue();
+                    r = Math.sqrt((gx - x) * (gx - x) + (gy - y) * (gy - y));
+                    if (r < minr) {
+                        rdata.setDouble(i * colNum + j, v);
+                        minr = r;
+                    }
+                }
+            }
+        }
+
+        return rdata;
+    }
+
+    /**
+     * Interpolate with nearest method
+     *
+     * @param x_s scatter X array
+     * @param y_s scatter Y array
+     * @param a scatter value array
+     * @param X x coordinate
+     * @param Y y coordinate
+     * @param radius Radius
+     * @param fill_value undefine value
+     * @return grid data
+     */
+    public static Array interpolation_Nearest(List<Number> x_s, List<Number> y_s, Array a, List<Number> X, List<Number> Y,
+            double radius, double fill_value) {
+        int rowNum, colNum, pNum;
+        colNum = X.size();
+        rowNum = Y.size();
+        pNum = x_s.size();
+        Array rdata = Array.factory(DataType.DOUBLE, new int[]{rowNum, colNum});
+        double gx, gy;
+        double x, y, r, v, minr;
+
+        for (int i = 0; i < rowNum; i++) {
+            gy = Y.get(i).doubleValue();
+            for (int j = 0; j < colNum; j++) {
+                rdata.setDouble(i * colNum + j, fill_value);
+                gx = X.get(j).doubleValue();
+                minr = Double.MAX_VALUE;
+                for (int p = 0; p < pNum; p++) {
+                    v = a.getDouble(p);
+                    if (MIMath.doubleEquals(v, fill_value)) {
+                        continue;
+                    }
+
+                    x = x_s.get(p).doubleValue();
+                    y = y_s.get(p).doubleValue();
+                    if (Math.abs(gx - x) > radius || Math.abs(gy - y) > radius) {
+                        continue;
+                    }
+
+                    r = Math.sqrt((gx - x) * (gx - x) + (gy - y) * (gy - y));
+                    if (r < radius) {
+                        if (r < minr) {
+                            rdata.setDouble(i * colNum + j, v);
+                            minr = r;
+                        }
+                    }
+                }
+            }
+        }
+
+        return rdata;
+    }
+
+    /**
+     * Interpolate with inside method - The grid cell value is the average value
+     * of the inside points or fill value if no inside point.
+     *
+     * @param x_s scatter X array
+     * @param y_s scatter Y array
+     * @param a scatter value array
+     * @param X x coordinate
+     * @param Y y coordinate
+     * @param fill_value Fill value
+     * @return grid data
+     */
+    public static Array interpolation_Inside(List<Number> x_s, List<Number> y_s, Array a, List<Number> X, List<Number> Y,
+            double fill_value) {
+        int rowNum, colNum, pNum;
+        colNum = X.size();
+        rowNum = Y.size();
+        pNum = x_s.size();
         Array r = Array.factory(DataType.DOUBLE, new int[]{rowNum, colNum});
         double dX = X.get(1).doubleValue() - X.get(0).doubleValue();
         double dY = Y.get(1).doubleValue() - Y.get(0).doubleValue();
@@ -810,7 +921,7 @@ public class ArrayUtil {
 
         for (int p = 0; p < pNum; p++) {
             v = a.getDouble(p);
-            if (MIMath.doubleEquals(v, unDefData)) {
+            if (MIMath.doubleEquals(v, fill_value)) {
                 continue;
             }
 
@@ -832,7 +943,7 @@ public class ArrayUtil {
         for (int i = 0; i < rowNum; i++) {
             for (int j = 0; j < colNum; j++) {
                 if (pNums[i][j] == 0) {
-                    r.setDouble(i * colNum + j, unDefData);
+                    r.setDouble(i * colNum + j, fill_value);
                 } else {
                     r.setDouble(i * colNum + j, r.getDouble(i * colNum + j) / pNums[i][j]);
                 }
@@ -840,6 +951,50 @@ public class ArrayUtil {
         }
 
         return r;
+    }
+
+    private static List<int[]> getPointsIJ(List<Number> x_s, List<Number> y_s, List<Number> X, List<Number> Y) {
+        int rowNum, colNum, pNum;
+        colNum = X.size();
+        rowNum = Y.size();
+        pNum = x_s.size();
+        double dX = X.get(1).doubleValue() - X.get(0).doubleValue();
+        double dY = Y.get(1).doubleValue() - Y.get(0).doubleValue();
+        List<int[]> pIndices = new ArrayList<>();
+        double x, y;
+        int i, j;
+        for (int p = 0; p < pNum; p++) {
+            x = x_s.get(p).doubleValue();
+            y = y_s.get(p).doubleValue();
+            if (x < X.get(0).doubleValue() || x > X.get(colNum - 1).doubleValue()) {
+                continue;
+            }
+            if (y < Y.get(0).doubleValue() || y > Y.get(rowNum - 1).doubleValue()) {
+                continue;
+            }
+
+            j = (int) ((x - X.get(0).doubleValue()) / dX);
+            i = (int) ((y - Y.get(0).doubleValue()) / dY);
+            pIndices.add(new int[]{i, j});
+        }
+
+        return pIndices;
+    }
+
+    private static List<Integer> getPointsIdx(List<int[]> pIJ, int ii, int jj, int radius) {
+        List<Integer> pIdx = new ArrayList<>();
+        int[] ij;
+        int i, j;
+        for (int p = 0; p < pIJ.size(); p++) {
+            ij = pIJ.get(p);
+            i = ij[0];
+            j = ij[1];
+            if (Math.abs(i - ii) <= radius && Math.abs(j - jj) <= radius) {
+                pIdx.add(p);
+            }
+        }
+
+        return pIdx;
     }
 
     /**
@@ -879,23 +1034,23 @@ public class ArrayUtil {
                 polygons[i][j] = ps;
             }
         }
-        
-        for (int i = 0; i < yn; i++) {            
+
+        for (int i = 0; i < yn; i++) {
             for (int j = 0; j < xn; j++) {
                 r.setDouble(i * xn + j, unDefData);
             }
         }
-                
+
         double v;
-        for (int i = 0; i < rowNum - 1; i++){
-            for (int j = 0; j < colNum - 1; j++){
+        for (int i = 0; i < rowNum - 1; i++) {
+            for (int j = 0; j < colNum - 1; j++) {
                 ps = polygons[i][j];
                 v = a.getDouble(i * colNum + j);
-                for (int ii = 0; ii < yn; ii++){
+                for (int ii = 0; ii < yn; ii++) {
                     y = Y.getDouble(ii);
-                    for (int jj = 0; jj < xn; jj++){
+                    for (int jj = 0; jj < xn; jj++) {
                         x = X.getDouble(jj);
-                        if (Double.isNaN(r.getDouble(ii * xn + jj)) || r.getDouble(ii * xn + jj) == unDefData){
+                        if (Double.isNaN(r.getDouble(ii * xn + jj)) || r.getDouble(ii * xn + jj) == unDefData) {
                             if (GeoComputation.pointInPolygon(ps, x, y)) {
                                 r.setDouble(ii * xn + jj, v);
                             }
@@ -907,7 +1062,7 @@ public class ArrayUtil {
 
         return r;
     }
-    
+
     /**
      * Interpolate with surface method
      *
@@ -1231,7 +1386,6 @@ public class ArrayUtil {
 
     // </editor-fold>    
     // <editor-fold desc="Projection">
-
     /**
      * Reproject
      *
@@ -1254,7 +1408,7 @@ public class ArrayUtil {
      * @param toProj To projection
      * @return Result arrays
      */
-    public static Array[] reproject(Array x, Array y, ProjectionInfo fromProj, ProjectionInfo toProj) {        
+    public static Array[] reproject(Array x, Array y, ProjectionInfo fromProj, ProjectionInfo toProj) {
         Array rx = Array.factory(DataType.DOUBLE, x.getShape());
         Array ry = Array.factory(DataType.DOUBLE, x.getShape());
         int n = (int) x.getSize();

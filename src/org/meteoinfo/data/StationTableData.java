@@ -142,7 +142,7 @@ public class StationTableData extends TableData{
             sr.close();
         } else {
             //Get fields
-            List<Integer> dataIdxs = new ArrayList<Integer>();
+            List<Integer> dataIdxs = new ArrayList<>();
             String fieldName;
             for (int i = 0; i < titleArray.length; i++) {
                 fieldName = titleArray[i];

@@ -7,6 +7,7 @@ package org.meteoinfo.data;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.meteoinfo.data.analysis.MeteoMath;
 import org.meteoinfo.geoprocess.GeoComputation;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
@@ -1798,6 +1799,87 @@ public class ArrayMath {
             }
         }
 
+        return r;
+    }
+    
+    /**
+     * Calculate fahrenheit temperature from celsius temperature
+     * @param tc Celsius temperature
+     * @return Fahrenheit temperature
+     */
+    public static Array tc2tf(Array tc){
+        Array r = Array.factory(tc.getDataType(), tc.getShape());
+        for (int i = 0; i < r.getSize(); i++){
+            r.setDouble(i, MeteoMath.tc2tf(tc.getDouble(i)));
+        }
+        
+        return r;
+    }
+    
+    /**
+     * Calculate celsius temperature from fahrenheit temperature
+     * @param tf Fahrenheit temperature
+     * @return Celsius temperature
+     */
+    public static Array tf2tc(Array tf){
+        Array r = Array.factory(tf.getDataType(), tf.getShape());
+        for (int i = 0; i < r.getSize(); i++){
+            r.setDouble(i, MeteoMath.tf2tc(tf.getDouble(i)));
+        }
+        
+        return r;
+    }
+    
+    /**
+     * Calculate relative humidity from dewpoint
+     * @param tdc Dewpoint temperature
+     * @param tc Temperature
+     * @return Relative humidity as percent (i.e. 80%)
+     */
+    public static Array dewpoint2rh(Array tdc, Array tc) {
+        Array r = Array.factory(tdc.getDataType(), tdc.getShape());
+        for (int i = 0; i < r.getSize(); i++){
+            r.setDouble(i, MeteoMath.dewpoint2rh(tc.getDouble(i), tdc.getDouble(i)));
+        }
+        
+        return r;
+    }
+    
+    /**
+     * Calculate relative humidity from specific humidity
+     * 
+     * @param qair Specific humidity, dimensionless (e.g. kg/kg) ratio of water mass / total air mass
+     * @param temp Temperature - degree c
+     * @param press Pressure - hPa (mb)
+     * @return Relative humidity as percent (i.e. 80%)
+     */
+    public static Array qair2rh(Array qair, Array temp, double press){
+        Array r = Array.factory(DataType.DOUBLE, qair.getShape());
+        double rh;
+        for (int i = 0; i < r.getSize(); i++){
+            rh = MeteoMath.qair2rh(qair.getDouble(i), temp.getDouble(i), press);
+            r.setDouble(i, rh);
+        }
+        
+        return r;
+    }
+    
+    /**
+     * Calculate relative humidity
+     * 
+     * @param qair Specific humidity, dimensionless (e.g. kg/kg) ratio of water mass / total air mass
+     * @param temp Temperature - degree c
+     * @param press Pressure - hPa (mb)
+     * @return Relative humidity as percent (i.e. 80%)
+     */
+    public static Array qair2rh(Array qair, Array temp, Array press){
+        Array r = Array.factory(DataType.DOUBLE, qair.getShape());
+        double rh;
+        for (int i = 0; i < r.getSize(); i++){
+            rh = MeteoMath.qair2rh(qair.getDouble(i), temp.getDouble(i), press.getDouble(i));
+            r.setDouble(i, rh);
+        }
+        
         return r;
     }
     // </editor-fold>

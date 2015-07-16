@@ -163,13 +163,13 @@ public class TableData {
      * @throws Exception
      */
     public void addColumnData(String colName, String dt, List<Object> colData) throws Exception {
-        DataTypes dataType = TableUtil.toDataTypes(dt.substring(1));
+        DataTypes dataType = TableUtil.toDataTypes(dt);
         switch (dataType){
             case Date:
                 if (colData.get(0) instanceof Date){
                     this.dataTable.addColumnData(colName, dataType, colData);
                 } else {
-                    String dformat = TableUtil.getDateFormat(dt.substring(1));
+                    String dformat = TableUtil.getDateFormat(dt);
                     this.dataTable.addColumn(new DataColumn(colName, dataType, dformat));
                     this.dataTable.setValues(colName, colData);
                 }

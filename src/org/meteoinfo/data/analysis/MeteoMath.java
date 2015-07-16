@@ -27,6 +27,24 @@ public class MeteoMath {
         pol1 = 6.1078 / Math.pow(pol, 8);
         return pol1;
     }
+    
+    /**
+     * Calculate saturation vapor pressure (Es)
+     * @param tc Air temperature
+     * @return Saturation vapor pressure
+     */
+    public static double cal_Es_1(double tc){
+        return 6.11 * Math.pow(10.0, (7.5 * tc / (237.7 + tc)));
+    }
+    
+    /**
+     * Calculate saturation vapor pressure (Es)
+     * @param tc Air temperature - degree C
+     * @return Saturation vapor pressure
+     */
+    public static double cal_Es_2(double tc){
+        return 6.112 * Math.exp((17.67 * tc)/(tc + 243.5));
+    }
 
     /**
      * Calculate dewpoint from actual water vapor pressure
@@ -69,27 +87,34 @@ public class MeteoMath {
     }
     
     /**
-     * Calculate relative humidity
-     * @param t Temperature
-     * @param tdc Dewpoint
-     * @return Relative humidity as percent (i.e. 80%)
-     */
-    public static double cal_RH(double t, double tdc){
-        double esw1 = cal_Es(t);
-        double esw2 = cal_Es(tdc);
-        return esw2 / esw1 * 100;
-    }
-    
-    /**
-     * Calculate relative humidity
+     * Calculate relative humidity from dewpoint
      * @param tc Temperature
      * @param tdc Dewpoint temperature
      * @return Relative humidity as percent (i.e. 80%)
      */
-    public static double cal_RH_1(double tc, double tdc){
+    public static double dewpoint2rh(double tc, double tdc){
         double es = cal_Es(tc);
         double e = cal_Es(tdc);
         return e / es * 100;
+    }
+    
+    /**
+     * Calculate relative humidity from specific humidity
+     * @param qair Specific humidity, dimensionless (e.g. kg/kg) ratio of water mass / total air mass
+     * @param tc Temperature - degree c
+     * @param press Pressure - hPa (mb)
+     * @return Relative humidity as percent (i.e. 80%)
+     */
+    public static double qair2rh(double qair, double tc, double press){
+        double es = cal_Es_2(tc);
+        double e = qair * press / (0.378 * qair + 0.622);
+        double rh = e / es * 100;
+        if (rh > 100)
+            rh = 100;
+        else if (rh < 0)
+            rh = 0;
+        
+        return rh;
     }
     
     /**
@@ -118,7 +143,7 @@ public class MeteoMath {
      * @param tf Fahrenheit temperature
      * @return Celsius temperature
      */
-    public static double cal_Celsius(double tf){
+    public static double tf2tc(double tf){
         return 5.0 / 9.0 * (tf - 32.0);
     }
     
@@ -127,18 +152,9 @@ public class MeteoMath {
      * @param tc Celsius temperature
      * @return Fahrenheit temperature
      */
-    public static double cal_Fahrenheit(double tc){
+    public static double tc2tf(double tc){
         return (9.0 / 5.0) * tc + 32;
-    }
-    
-    /**
-     * Calculate saturation vapor pressure (Es)
-     * @param tc Air temperature
-     * @return Saturation vapor pressure
-     */
-    public static double cal_Es_1(double tc){
-        return 6.11 * Math.pow(10.0, (7.5 * tc / (237.7 + tc)));
-    }
+    }       
     
     /**
      * Calculate actual vapor pressure (E) of the air
