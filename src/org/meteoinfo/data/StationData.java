@@ -1391,7 +1391,25 @@ public class StationData {
      *
      * @return Minimum value
      */
-    public Object[] getMinValue() {
+    public double getMinValue() {
+        return (double)this.getMinValueIndex()[0];
+    }
+
+    /**
+     * Get maximum value
+     *
+     * @return Maximum value
+     */
+    public double getMaxValue() {
+        return (double)this.getMaxValueIndex()[0];
+    }
+    
+    /**
+     * Get minimum value and index
+     *
+     * @return Minimum value and index
+     */
+    public Object[] getMinValueIndex() {
         double min = 0;
         int vdNum = 0;
         int idx = 0;
@@ -1416,11 +1434,11 @@ public class StationData {
     }
 
     /**
-     * Get maximum value
+     * Get maximum value and index
      *
-     * @return Maximum value
+     * @return Maximum value and index
      */
-    public Object[] getMaxValue() {
+    public Object[] getMaxValueIndex() {
         double max = 0;
         int vdNum = 0;
         int idx = 0;
