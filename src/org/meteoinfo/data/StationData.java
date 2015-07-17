@@ -828,6 +828,15 @@ public class StationData {
         
         return values;
     }
+    
+    /**
+     * Index of - by station identifer
+     * @param stid Station identifer
+     * @return Data index
+     */
+    public int indexOf(int stid){
+        return this.stations.indexOf(stid);
+    }
 
     /**
      * Save station data to a CVS file
@@ -1382,9 +1391,10 @@ public class StationData {
      *
      * @return Minimum value
      */
-    public double getMinValue() {
+    public Object[] getMinValue() {
         double min = 0;
         int vdNum = 0;
+        int idx = 0;
         for (int i = 0; i < this.getStNum(); i++) {
             if (MIMath.doubleEquals(data[i][2], missingValue)) {
                 continue;
@@ -1392,15 +1402,17 @@ public class StationData {
 
             if (vdNum == 0) {
                 min = data[i][2];
+                idx = i;
             } else {
                 if (min > data[i][2]) {
                     min = data[i][2];
+                    idx = i;
                 }
             }
             vdNum += 1;
         }
 
-        return min;
+        return new Object[]{min, idx};
     }
 
     /**
@@ -1408,9 +1420,10 @@ public class StationData {
      *
      * @return Maximum value
      */
-    public double getMaxValue() {
+    public Object[] getMaxValue() {
         double max = 0;
         int vdNum = 0;
+        int idx = 0;
         for (int i = 0; i < this.getStNum(); i++) {
             if (MIMath.doubleEquals(data[i][2], missingValue)) {
                 continue;
@@ -1418,15 +1431,17 @@ public class StationData {
 
             if (vdNum == 0) {
                 max = data[i][2];
+                idx = i;
             } else {
                 if (max < data[i][2]) {
                     max = data[i][2];
+                    idx = i;
                 }
             }
             vdNum += 1;
         }
 
-        return max;
+        return new Object[]{max, idx};
     }
 
     /**
