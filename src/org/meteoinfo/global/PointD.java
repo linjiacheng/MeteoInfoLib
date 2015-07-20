@@ -47,6 +47,18 @@ public class PointD implements Cloneable{
     // <editor-fold desc="Methods">
 
     /**
+     * Equals of two pointDs
+     * @param p PointD
+     * @return Boolean
+     */
+    public boolean equals(PointD p){
+        if (this.X != p.X)
+            return false;
+        
+        return this.Y == p.Y;
+    }
+    
+    /**
      * Clone
      * 
      * @return PointD object

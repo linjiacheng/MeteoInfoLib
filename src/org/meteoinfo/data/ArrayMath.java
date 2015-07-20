@@ -1351,6 +1351,22 @@ public class ArrayMath {
         List<PolygonShape> polygons = (List<PolygonShape>) layer.getShapes();
         return ArrayMath.inPolygon(a, x, y, polygons);
     }
+    
+    /**
+     * In polygon function
+     *
+     * @param a Array a
+     * @param x X dimension values
+     * @param y Y dimension values
+     * @param ps Polygon shape
+     * @return Result array with cell values of 1 inside polygons and -1 outside
+     * polygons
+     */
+    public static Array inPolygon(Array a, List<Number> x, List<Number> y, PolygonShape ps) {
+        List<PolygonShape> polygons = new ArrayList<>();
+        polygons.add(ps);
+        return ArrayMath.inPolygon(a, x, y, polygons);
+    }
 
     /**
      * In polygon function
