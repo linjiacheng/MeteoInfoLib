@@ -237,7 +237,7 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
         maxX = 0;
         minY = 0;
         maxY = 0;
-        List<String> stations = new ArrayList<String>();
+        List<String> stations = new ArrayList<>();
 
         for (i = 0; i < _dataList.size(); i++) {
             dataList = _dataList.get(i);
@@ -302,7 +302,7 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
         stInfoData.setFields(_fieldList);
         stInfoData.setVariables(_varList);
 
-        List<String> stations = new ArrayList<String>();
+        List<String> stations = new ArrayList<>();
         int stNum = _dataList.size();
         for (int i = 0; i < stNum; i++) {
             stations.add(_dataList.get(i).get(0));

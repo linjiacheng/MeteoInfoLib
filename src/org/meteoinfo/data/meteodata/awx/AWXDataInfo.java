@@ -577,14 +577,16 @@ public class AWXDataInfo extends DataInfo implements IGridDataInfo, IStationData
         String dataInfo;
         dataInfo = "File Name: " + this.getFileName();
         dataInfo += System.getProperty("line.separator") + "Data Type: AWX";
-        Dimension xdim = this.getXDimension();
-        Dimension ydim = this.getYDimension();
-        dataInfo += System.getProperty("line.separator") + "XNum = " + String.valueOf(xdim.getDimLength())
-                + "  YNum = " + String.valueOf(ydim.getDimLength());
-        dataInfo += System.getProperty("line.separator") + "XMin = " + String.valueOf(xdim.getValues()[0])
-                + "  YMin = " + String.valueOf(ydim.getValues()[0]);
-        dataInfo += System.getProperty("line.separator") + "XSize = " + String.valueOf(xdim.getValues()[1] - xdim.getValues()[0])
-                + "  YSize = " + String.valueOf(ydim.getValues()[1] - ydim.getValues()[0]);
+        if (this._productType != 4) {
+            Dimension xdim = this.getXDimension();
+            Dimension ydim = this.getYDimension();
+            dataInfo += System.getProperty("line.separator") + "XNum = " + String.valueOf(xdim.getDimLength())
+                    + "  YNum = " + String.valueOf(ydim.getDimLength());
+            dataInfo += System.getProperty("line.separator") + "XMin = " + String.valueOf(xdim.getValues()[0])
+                    + "  YMin = " + String.valueOf(ydim.getValues()[0]);
+            dataInfo += System.getProperty("line.separator") + "XSize = " + String.valueOf(xdim.getValues()[1] - xdim.getValues()[0])
+                    + "  YSize = " + String.valueOf(ydim.getValues()[1] - ydim.getValues()[0]);
+        }
         dataInfo += System.getProperty("line.separator") + "Product Type = " + String.valueOf(this._productType);
         //SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         //dataInfo += System.getProperty("line.separator") + "Start Time = " + format.format(STime);
@@ -951,11 +953,11 @@ public class AWXDataInfo extends DataInfo implements IGridDataInfo, IStationData
             dataExtent.maxY = maxY;
             br.close();
 
-            double[][] discreteData = new double[3][disDataList.size()];
+            double[][] discreteData = new double[disDataList.size()][3];
             for (int i = 0; i < disDataList.size(); i++) {
-                discreteData[0][i] = disDataList.get(i)[0];
-                discreteData[1][i] = disDataList.get(i)[1];
-                discreteData[2][i] = disDataList.get(i)[2];
+                discreteData[i][0] = disDataList.get(i)[0];
+                discreteData[i][1] = disDataList.get(i)[1];
+                discreteData[i][2] = disDataList.get(i)[2];
             }
             stationData.data = discreteData;
             stationData.dataExtent = dataExtent;

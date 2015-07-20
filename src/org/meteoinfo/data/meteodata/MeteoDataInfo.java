@@ -488,6 +488,12 @@ public class MeteoDataInfo {
 
         //Get data info text
         _infoText = aDataInfo.generateInfoText();
+        if (aDataInfo.getProductType() == 4) {
+            _meteoUVSet.setUV(false);
+            _meteoUVSet.setFixUVStr(true);
+            _meteoUVSet.setUStr("WindDirection");
+            _meteoUVSet.setVStr("WindSpeed");
+        }
     }
 
     /**
