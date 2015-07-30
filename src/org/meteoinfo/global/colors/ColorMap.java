@@ -192,6 +192,23 @@ public class ColorMap {
     }
     
     /**
+     * Get color list
+     * @param n Color number
+     * @param alpha Alpha
+     * @return Color list
+     */
+    public List<Color> getColorList(int n, int alpha){
+        Color[] cs = this.getColors(n);
+        List<Color> cols = new ArrayList<>();
+        for (Color c : cs){
+            c = new Color(c.getRed(), c.getGreen(), c.getBlue(), alpha);
+            cols.add(c);
+        }        
+        
+        return cols;
+    }
+    
+    /**
      * Create rainbow colors
      *
      * @param cNum Color number
