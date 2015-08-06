@@ -8505,7 +8505,9 @@ public class MapView extends JPanel {
             this.setBackground(ColorUtil.parseToColor(mapProperty.getAttributes().getNamedItem("BackColor").getNodeValue()));
             this.setForeground(ColorUtil.parseToColor(mapProperty.getAttributes().getNamedItem("ForeColor").getNodeValue()));
             _antiAlias = Boolean.parseBoolean(mapProperty.getAttributes().getNamedItem("SmoothingMode").getNodeValue());
-            this._pointAntiAlias = Boolean.parseBoolean(mapProperty.getAttributes().getNamedItem("PointSmoothingMode").getNodeValue());
+            Node paa = mapProperty.getAttributes().getNamedItem("PointSmoothingMode");
+            if (paa != null)
+                this._pointAntiAlias = Boolean.parseBoolean(paa.getNodeValue());
             this._XYScaleFactor = Double.parseDouble(mapProperty.getAttributes().getNamedItem("XYScaleFactor").getNodeValue());
             this._multiGlobalDraw = Boolean.parseBoolean(mapProperty.getAttributes().getNamedItem("MultiGlobalDraw").getNodeValue());
             this._selectColor = ColorUtil.parseToColor(mapProperty.getAttributes().getNamedItem("SelectColor").getNodeValue());

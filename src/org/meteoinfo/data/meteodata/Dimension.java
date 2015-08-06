@@ -292,6 +292,9 @@ public class Dimension {
      * @return Delta value
      */
     public double getDeltaValue(){
+        if (_dimValue.size() <= 1)
+            return 1;
+        
         return _dimValue.get(1) - _dimValue.get(0);
     }
     

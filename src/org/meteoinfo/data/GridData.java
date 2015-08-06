@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.meteoinfo.data.meteodata.Dimension;
+import org.meteoinfo.data.meteodata.DimensionType;
 import org.meteoinfo.data.meteodata.GridDataSetting;
 import org.meteoinfo.geoprocess.analysis.ResampleMethods;
 import org.meteoinfo.global.DataConvert;
@@ -43,7 +45,9 @@ import org.meteoinfo.shape.PolygonShape;
 import org.meteoinfo.shape.ShapeTypes;
 import org.meteoinfo.table.DataTable;
 import ucar.ma2.Array;
+import ucar.ma2.DataType;
 import ucar.ma2.IndexIterator;
+import ucar.nc2.stream.NcStreamProto;
 
 /**
  *
@@ -1368,6 +1372,40 @@ public class GridData {
 
         data = newGriddata;
         xArray = newX;
+    }
+    
+    /**
+     * Get array from data
+     * @return Array
+     */
+    public Array getArray(){
+        int yn = this.getYNum();
+        int xn = this.getXNum();
+        int[] shape = new int[]{yn, xn};
+        Array r = Array.factory(DataType.DOUBLE, shape);
+        for (int i = 0; i < yn; i++){
+            for (int j = 0; j < xn; j++){
+                r.setDouble(i * xn + j, this.data[i][j]);
+            }
+        }
+        
+        return r;
+    }
+    
+    /**
+     * Get dimensions
+     * @return Dimensions
+     */
+    public List<Dimension> getDimensions(){
+        List<Dimension> dims = new ArrayList<>();
+        Dimension ydim = new Dimension(DimensionType.Y);
+        ydim.setValues(this.yArray);
+        dims.add(ydim);
+        Dimension xdim = new Dimension(DimensionType.X);
+        xdim.setValues(this.xArray);
+        dims.add(xdim);
+        
+        return dims;
     }
 
     // </editor-fold>
