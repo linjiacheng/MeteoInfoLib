@@ -46,7 +46,7 @@ public class Chart {
     public Chart() {
         this.drawLegend = false;
         this.background = Color.white;
-        this.drawBackground = false;
+        this.drawBackground = true;
         this.antiAlias = false;
         this.rowNum = 1;
         this.columnNum = 1;
