@@ -2847,10 +2847,14 @@ public class MapLayout extends JPanel {
             g.endExport();
             g.dispose();
         } else {
-            BufferedImage aImage = new BufferedImage(_pageBounds.width, _pageBounds.height, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g = aImage.createGraphics();
-            paintGraphics(g);
             String extension = aFile.substring(aFile.lastIndexOf('.') + 1);
+            BufferedImage aImage;
+            if (extension.equalsIgnoreCase("bmp"))
+                aImage = new BufferedImage(_pageBounds.width, _pageBounds.height, BufferedImage.TYPE_INT_RGB);
+            else
+                aImage = new BufferedImage(_pageBounds.width, _pageBounds.height, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = aImage.createGraphics();
+            paintGraphics(g);            
             ImageIO.write(aImage, extension, new File(aFile));
         }
     }

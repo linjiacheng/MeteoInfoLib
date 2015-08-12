@@ -6062,7 +6062,14 @@ public class MapView extends JPanel {
             g.dispose();
         } else {
             String extension = aFile.substring(aFile.lastIndexOf('.') + 1);
-            ImageIO.write(this._mapBitmap, extension, new File(aFile));
+            if (extension.equalsIgnoreCase("bmp")){
+                BufferedImage bi = new BufferedImage(this.getWidth(), this.getHeight(), BufferedImage.TYPE_INT_RGB);
+                Graphics2D g = bi.createGraphics();
+                paintGraphics(g);
+                ImageIO.write(bi, extension, new File(aFile));
+            } else {
+                ImageIO.write(this._mapBitmap, extension, new File(aFile));
+            }
         }
     }
 
@@ -8508,10 +8515,18 @@ public class MapView extends JPanel {
             Node paa = mapProperty.getAttributes().getNamedItem("PointSmoothingMode");
             if (paa != null)
                 this._pointAntiAlias = Boolean.parseBoolean(paa.getNodeValue());
-            this._XYScaleFactor = Double.parseDouble(mapProperty.getAttributes().getNamedItem("XYScaleFactor").getNodeValue());
-            this._multiGlobalDraw = Boolean.parseBoolean(mapProperty.getAttributes().getNamedItem("MultiGlobalDraw").getNodeValue());
-            this._selectColor = ColorUtil.parseToColor(mapProperty.getAttributes().getNamedItem("SelectColor").getNodeValue());
-            this._highSpeedWheelZoom = Boolean.parseBoolean(mapProperty.getAttributes().getNamedItem("HighSpeedWheelZoom").getNodeValue());
+            Node scaleFactor = mapProperty.getAttributes().getNamedItem("XYScaleFactor");
+            if (scaleFactor != null)
+                this._XYScaleFactor = Double.parseDouble(scaleFactor.getNodeValue());
+            Node mgd = mapProperty.getAttributes().getNamedItem("MultiGlobalDraw");
+            if (mgd != null)
+                this._multiGlobalDraw = Boolean.parseBoolean(mgd.getNodeValue());
+            Node selColor = mapProperty.getAttributes().getNamedItem("SelectColor");
+            if (selColor != null)
+                this._selectColor = ColorUtil.parseToColor(selColor.getNodeValue());
+            Node hswz = mapProperty.getAttributes().getNamedItem("HighSpeedWheelZoom");
+            if (hswz != null)
+                this._highSpeedWheelZoom = Boolean.parseBoolean(hswz.getNodeValue());
         } catch (DOMException | NumberFormatException e) {
         }
     }
