@@ -1000,14 +1000,14 @@ public class LayersLegend extends JPanel {
             JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
             frmLayerProp = new FrmLayerProperty(frame, false);
             frmLayerProp.setMapLayer(aLayer);
-            frmLayerProp.setMapFrame(this.getActiveMapFrame());
+            frmLayerProp.setMapFrame(this.getCurrentMapFrame());
             //frmLayerProp.Legend = this;                        
             frmLayerProp.setLocationRelativeTo(frame);
             frmLayerProp.setVisible(true);
             //frmLayerProp.setAlwaysOnTop(true);
         } else {
             frmLayerProp.setMapLayer(aLayer);
-            frmLayerProp.setMapFrame(this.getActiveMapFrame());
+            frmLayerProp.setMapFrame(this.getCurrentMapFrame());
             //frmLayerProp.Legend = this;
             frmLayerProp.setVisible(true);
         }

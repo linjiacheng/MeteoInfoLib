@@ -3293,9 +3293,9 @@ public class MapView extends JPanel {
         switch (layer.getLayerType()) {
             case VectorLayer:
                 VectorLayer aLayer = (VectorLayer) layer;
-                boolean projectLabels = true;
+                boolean projectLabels = false;
                 if (aLayer.getLabelPoints().size() > 0) {
-                    projectLabels = false;
+                    projectLabels = true;
                 }
 
                 if (!aLayer.getProjInfo().equals(_projection.getProjInfo())) {
@@ -4312,6 +4312,9 @@ public class MapView extends JPanel {
             if (aLayer.isVisible()) {
                 if (aLayer.isMaskout()) {
                     setClipRegion(g);
+                    if (oldRegion != null) {
+                        g.clip(oldRegion);
+                    }
                 }
                 switch (aLayer.getLayerType()) {
                     case ImageLayer:
