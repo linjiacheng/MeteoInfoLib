@@ -17,7 +17,7 @@ public class GoogleHybridMapInfo extends TileFactoryInfo {
      * Constructor
      */
     public GoogleHybridMapInfo() {
-        super("GoogleHybridMap", 0, 18, 19,
+        super("GoogleHybridMap", 1, 17, 19,
                 256, true, true, // tile size is 256 and x/y orientation is normal
                 "http://mt1.google.cn/vt/lyrs=y&hl=%1$s&gl=cn&x=%2$d&y=%3$d&z=%4$d&s=Galil",
                 "x", "y", "z");

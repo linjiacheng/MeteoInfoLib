@@ -23,7 +23,7 @@ public class GoogleMapInfo extends TileFactoryInfo {
 //                256, true, true, // tile size is 256 and x/y orientation is normal
 //                "http://ecn.t%1$d.tiles.virtualearth.net/tiles/r%2$s?g=%3$s&mkt=%4$s&lbl=l1&stl=h&shading=hill&n=z%5$s",
 //                "x", "y", "z");
-        super("GoogleMap", 0, 18, 19,
+        super("GoogleMap", 1, 17, 19,
                 256, true, true, // tile size is 256 and x/y orientation is normal
                 "http://mt2.google.cn/vt/lyrs=m&hl=%1$s&gl=cn&x=%2$d&y=%3$d&z=%4$d&s=Galil",
                 "x", "y", "z");
