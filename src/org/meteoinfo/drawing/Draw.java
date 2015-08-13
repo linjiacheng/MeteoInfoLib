@@ -640,6 +640,15 @@ public class Draw {
                     g.draw(path);
                 }
                 break;
+            case Minus:                
+                path.moveTo(aP.X - aSize / 2, aP.Y);
+                path.lineTo(aP.X + aSize / 2, aP.Y);
+                path.closePath();
+                if (drawFill || drawOutline) {
+                    g.setColor(color);
+                    g.draw(path);
+                }
+                break;
             case StarLines:
                 path.moveTo(aP.X - aSize / 2, aP.Y - aSize / 2);
                 path.lineTo(aP.X + aSize / 2, aP.Y + aSize / 2);

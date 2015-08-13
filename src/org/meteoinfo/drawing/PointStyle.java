@@ -27,6 +27,7 @@ public enum PointStyle {
     Diamond,
     XCross,
     Plus,
+    Minus,
     Star,
     StarLines,
     Pentagon,
