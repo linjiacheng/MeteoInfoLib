@@ -705,7 +705,9 @@ public class GeoTiff {
                 double lat_1 = projStdParallel1.valueD(0);
                 GeoKey projStdParallel2 = geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjStdParallel2);
                 double lat_2 = projStdParallel2.valueD(0);
-                GeoKey projCenterLong = geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjCenterLong);
+                //GeoKey projCenterLong = geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjCenterLong);
+                //double lon_0 = projCenterLong == null ? 0 : projCenterLong.valueD(0);
+                GeoKey projCenterLong = geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjNatOriginLong);
                 double lon_0 = projCenterLong == null ? 0 : projCenterLong.valueD(0);
                 GeoKey projNatOriginLat = geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjNatOriginLat);
                 double lat_0 = projNatOriginLat == null ? 0 : projNatOriginLat.valueD(0);
@@ -740,6 +742,8 @@ public class GeoTiff {
      */
     public int[] readData(int width, int height) throws IOException {
         int[] values = new int[width * height];
+        IFDEntry bitsPerSampleTag = findTag(Tag.BitsPerSample);
+        int bitsPerSample = bitsPerSampleTag.value[0];
         IFDEntry tileOffsetTag = findTag(Tag.TileOffsets);
         ByteBuffer buffer;
         if (tileOffsetTag != null) {
@@ -755,24 +759,49 @@ public class GeoTiff {
             System.out.println("tileOffset =" + tileOffset + " tileSize=" + tileSize);
             int idx;
             int tileIdx, vIdx, hIdx;
-            for (int i = 0; i < vTileNum; i++) {
-                for (int j = 0; j < hTileNum; j++) {
-                    tileIdx = i * hTileNum + j;
-                    tileOffset = tileOffsetTag.value[tileIdx];
-                    tileSize = tileSizeTag.value[tileIdx];
-                    buffer = testReadData(tileOffset, tileSize);
-                    for (int h = 0; h < tileHeight; h++) {
-                        vIdx = i * tileHeight + h;
-                        if (vIdx == height) {
-                            break;
-                        }
-                        for (int w = 0; w < tileWidth; w++) {
-                            hIdx = j * tileWidth + w;
-                            if (hIdx == width) {
+            if (bitsPerSample == 8){
+                for (int i = 0; i < vTileNum; i++) {
+                    for (int j = 0; j < hTileNum; j++) {
+                        tileIdx = i * hTileNum + j;
+                        tileOffset = tileOffsetTag.value[tileIdx];
+                        tileSize = tileSizeTag.value[tileIdx];
+                        buffer = testReadData(tileOffset, tileSize);
+                        for (int h = 0; h < tileHeight; h++) {
+                            vIdx = i * tileHeight + h;
+                            if (vIdx == height) {
                                 break;
                             }
-                            idx = vIdx * width + hIdx;
-                            values[idx] = buffer.getShort();
+                            for (int w = 0; w < tileWidth; w++) {
+                                hIdx = j * tileWidth + w;
+                                if (hIdx == width) {
+                                    break;
+                                }
+                                idx = vIdx * width + hIdx;
+                                values[idx] = buffer.get();
+                            }
+                        }
+                    }
+                }
+            } else if (bitsPerSample == 16){
+                for (int i = 0; i < vTileNum; i++) {
+                    for (int j = 0; j < hTileNum; j++) {
+                        tileIdx = i * hTileNum + j;
+                        tileOffset = tileOffsetTag.value[tileIdx];
+                        tileSize = tileSizeTag.value[tileIdx];
+                        buffer = testReadData(tileOffset, tileSize);
+                        for (int h = 0; h < tileHeight; h++) {
+                            vIdx = i * tileHeight + h;
+                            if (vIdx == height) {
+                                break;
+                            }
+                            for (int w = 0; w < tileWidth; w++) {
+                                hIdx = j * tileWidth + w;
+                                if (hIdx == width) {
+                                    break;
+                                }
+                                idx = vIdx * width + hIdx;
+                                values[idx] = buffer.getShort();
+                            }
                         }
                     }
                 }
