@@ -21,7 +21,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
-import org.meteoinfo.data.mapdata.webmap.BaiduMapInfo;
 import org.meteoinfo.data.mapdata.webmap.BingHybridMapInfo;
 import org.meteoinfo.data.mapdata.webmap.BingMapInfo;
 import org.meteoinfo.data.mapdata.webmap.BingSatelliteMapInfo;
@@ -619,7 +618,7 @@ public class WebMapLayer extends MapLayer {
      * @return String
      */
     @Override
-    public String toString(){
+    public String getLayerInfo(){
         String str = "Layer name: " + this.getLayerName();
         str += System.getProperty("line.separator") + "Layer file: " + this.getFileName();
         str += System.getProperty("line.separator") + "Layer type: " + this.getLayerType();

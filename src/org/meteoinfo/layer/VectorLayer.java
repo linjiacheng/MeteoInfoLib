@@ -2321,7 +2321,7 @@ public class VectorLayer extends MapLayer {
      * @return String
      */
     @Override
-    public String toString(){
+    public String getLayerInfo(){
         String str = "Layer name: " + this.getLayerName();
         str += System.getProperty("line.separator") + "Layer file: " + this.getFileName();
         str += System.getProperty("line.separator") + "Layer type: " + this.getLayerType();

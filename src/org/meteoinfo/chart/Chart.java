@@ -325,7 +325,7 @@ public class Chart {
         }
 
         if (this.plots.size() > 0) {
-            double zoom = this.getPositionAreaZoom(g, area);
+            double zoom = this.getPositionAreaZoom(g, plotArea);
             for (Plot plot : this.plots) {
                 plot.setPositionAreaZoom(zoom);
                 //Rectangle2D subPlotArea = this.getSubPlotArea(g, plot, plotArea);                
@@ -334,7 +334,7 @@ public class Chart {
                 if (plot instanceof XY2DPlot){
                     ((XY2DPlot)plot).setAntialias(this.antiAlias);
                 }
-                plot.draw(g, area);
+                plot.draw(g, plotArea);
             }
         }
 
