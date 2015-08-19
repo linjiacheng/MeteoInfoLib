@@ -3206,7 +3206,7 @@ public class MapView extends JPanel {
         switch (aLayer.getLayerType()) {
             case VectorLayer:
             case RasterLayer:
-                this.projectLayer(aLayer);
+                this.projectLayer(aLayer, false);
                 break;
         }
 
@@ -3298,6 +3298,28 @@ public class MapView extends JPanel {
                     projectLabels = true;
                 }
 
+                if (!aLayer.getProjInfo().equals(_projection.getProjInfo())) {
+                    _projection.projectLayer(aLayer, _projection.getProjInfo(), projectLabels);
+                }
+                break;
+            case RasterLayer:
+                RasterLayer rLayer = (RasterLayer) layer;
+                if (!rLayer.getProjInfo().equals(_projection.getProjInfo())) {
+                    _projection.projectLayer(rLayer, _projection.getProjInfo());
+                }
+                break;
+        }
+    }
+    
+     /**
+     * Project a layer
+     *
+     * @param aLayer The vector layer
+     */
+    private void projectLayer(MapLayer layer, boolean projectLabels) {
+        switch (layer.getLayerType()) {
+            case VectorLayer:
+                VectorLayer aLayer = (VectorLayer) layer;                
                 if (!aLayer.getProjInfo().equals(_projection.getProjInfo())) {
                     _projection.projectLayer(aLayer, _projection.getProjInfo(), projectLabels);
                 }
