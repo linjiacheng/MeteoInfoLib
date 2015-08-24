@@ -319,7 +319,7 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
         float lon, lat;
         String aStid;
         List<String> dataList;
-        List<StationModel> smList = new ArrayList<StationModel>();        
+        List<StationModel> smList = new ArrayList<>();        
         float minX, maxX, minY, maxY;
         minX = 0;
         maxX = 0;
