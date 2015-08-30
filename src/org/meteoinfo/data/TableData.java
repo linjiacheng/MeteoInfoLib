@@ -1208,6 +1208,11 @@ public class TableData {
 
         return rTable;
     }
+    
+    @Override
+    public String toString(){
+        return this.dataTable.toString();
+    }
     // </editor-fold>
 
     // </editor-fold>

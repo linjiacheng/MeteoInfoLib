@@ -306,7 +306,7 @@ public class MICAPS13DataInfo extends DataInfo implements IGridDataInfo {
         double[][] gData = new double[_yNum][_xNum];
         for (int i = 0; i < _yNum; i++) {
             for (int j = 0; j < _xNum; j++) {
-                gData[i][j] = DataConvert.byte2Int(_imageBytes[i * _yNum + j]);
+                gData[i][j] = DataConvert.byte2Int(_imageBytes[i * _xNum + j]);
             }
         }
         gridData.data = gData;

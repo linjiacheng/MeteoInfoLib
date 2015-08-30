@@ -715,7 +715,41 @@ public final class DataTable {
      */
     @Override
     public String toString(){
-        return this.toString("yyyyMMddHH");
+        StringBuilder sb = new StringBuilder();
+        for (DataColumn col : this.columns){
+            if (sb.length() == 0)
+                sb.append(col.getColumnName());
+            else {
+                sb.append("\t");
+                sb.append(col.getColumnName());
+            }
+        }
+        sb.append("\n");
+     
+        SimpleDateFormat format;
+        int n = this.getRowCount();
+        if (n > 100)
+            n = 100;
+        for (int r = 0; r < n; r++){
+            DataRow row = this.rows.get(r);
+            int i = 0;
+            for (DataColumn col : this.columns){
+                if (i > 0)
+                    sb.append("\t");
+                if (col.getDataType() == DataTypes.Date){
+                    format = new SimpleDateFormat(col.getFormat());
+                    sb.append(format.format((Date)row.getValue(col.getColumnName())));
+                }
+                else if (col.getDataType() == DataTypes.String)
+                    sb.append("'").append(row.getValue(col.getColumnName()).toString()).append("'");
+                else
+                    sb.append(row.getValue(col.getColumnName()).toString());
+                i += 1;
+            }
+            sb.append("\n");
+        }
+        
+        return sb.toString();
     }
     
     /**

@@ -231,8 +231,13 @@ public class TimeTableData extends TableData{
         List<String> yms = new ArrayList<>();
         SimpleDateFormat format = new SimpleDateFormat("yyyyMM");
         String ym;
+        Date date;
         for (DataRow row : dataTable.getRows()){
-            ym = format.format((Date)row.getValue(this.timeColName));
+            date = (Date)row.getValue(this.timeColName);
+            if (date == null){
+                continue;
+            }
+            ym = format.format(date);
             if (!yms.contains(ym))
                 yms.add(ym);
         }
