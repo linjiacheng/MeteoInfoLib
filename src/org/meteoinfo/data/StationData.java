@@ -95,6 +95,8 @@ public class StationData {
             data[i][0] = x.getDouble(i);
             data[i][1] = y.getDouble(i);
             data[i][2] = a.getDouble(i);
+            if (Double.isNaN(data[i][2]))
+                data[i][2] = missingv.doubleValue();
             //this.addData("s_" + String.valueOf(i + 1), x.getDouble(i), y.getDouble(i), a.getDouble(i));
         }
     }

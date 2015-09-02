@@ -1070,44 +1070,47 @@ public class ArrayMath {
         a = Array.factory(a.getDataType(), a.getShape(), r.getStorage());
         r = null;
     }
-    
+
     /**
      * Flip array
+     *
      * @param a Array a
      * @param idxs Dimension index list
      * @return Result array
      */
-    public static Array flip(Array a, List<Integer> idxs){
+    public static Array flip(Array a, List<Integer> idxs) {
         Array r = Array.factory(a.getDataType(), a.getShape());
-        for (int i : idxs){
+        for (int i : idxs) {
             r = a.flip(i);
         }
         Array rr = Array.factory(r.getDataType(), r.getShape());
         MAMath.copy(rr, r);
         return rr;
     }
-    
+
     /**
      * Flip array
+     *
      * @param a Array a
      * @param idx Dimension idex
      * @return Result array
      */
-    public static Array flip(Array a, int idx){
+    public static Array flip(Array a, int idx) {
         Array r = a.flip(idx);
         Array rr = Array.factory(r.getDataType(), r.getShape());
         MAMath.copy(rr, r);
         return rr;
     }
-    
+
     /**
      * Transpose array
+     *
      * @param a Array a
      * @param dim1 Dimension index 1
      * @param dim2 Dimension index 2
      * @return Result array
      */
-    public static Array transpose(Array a, int dim1, int dim2){
+    public static Array transpose(Array a, int dim1, int dim2) {
         Array r = a.transpose(dim1, dim2);
         //Array rr = Array.factory(r.getDataType(), r.getShape());
         //MAMath.copy(rr, r);
@@ -1351,7 +1354,7 @@ public class ArrayMath {
         List<PolygonShape> polygons = (List<PolygonShape>) layer.getShapes();
         return ArrayMath.inPolygon(a, x, y, polygons);
     }
-    
+
     /**
      * In polygon function
      *
@@ -1482,14 +1485,24 @@ public class ArrayMath {
         int yNum = y.size();
 
         Array r = Array.factory(a.getDataType(), a.getShape());
-        int idx;
-        for (int i = 0; i < yNum; i++) {
-            for (int j = 0; j < xNum; j++) {
-                idx = i * xNum + j;
-                if (GeoComputation.pointInPolygons(polygons, new PointD(x.get(j).doubleValue(), y.get(i).doubleValue()))) {
-                    r.setObject(idx, a.getObject(idx));
+        if (a.getRank() == 1) {
+            for (int i = 0; i < xNum; i++) {
+                if (GeoComputation.pointInPolygons(polygons, new PointD(x.get(i).doubleValue(), y.get(i).doubleValue()))) {
+                    r.setObject(i, a.getObject(i));
                 } else {
-                    r.setObject(idx, missingValue);
+                    r.setObject(i, missingValue);
+                }
+            }
+        } else if (a.getRank() == 2) {
+            int idx;
+            for (int i = 0; i < yNum; i++) {
+                for (int j = 0; j < xNum; j++) {
+                    idx = i * xNum + j;
+                    if (GeoComputation.pointInPolygons(polygons, new PointD(x.get(j).doubleValue(), y.get(i).doubleValue()))) {
+                        r.setObject(idx, a.getObject(idx));
+                    } else {
+                        r.setObject(idx, missingValue);
+                    }
                 }
             }
         }
@@ -1817,85 +1830,90 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     /**
      * Calculate fahrenheit temperature from celsius temperature
+     *
      * @param tc Celsius temperature
      * @return Fahrenheit temperature
      */
-    public static Array tc2tf(Array tc){
+    public static Array tc2tf(Array tc) {
         Array r = Array.factory(tc.getDataType(), tc.getShape());
-        for (int i = 0; i < r.getSize(); i++){
+        for (int i = 0; i < r.getSize(); i++) {
             r.setDouble(i, MeteoMath.tc2tf(tc.getDouble(i)));
         }
-        
+
         return r;
     }
-    
+
     /**
      * Calculate celsius temperature from fahrenheit temperature
+     *
      * @param tf Fahrenheit temperature
      * @return Celsius temperature
      */
-    public static Array tf2tc(Array tf){
+    public static Array tf2tc(Array tf) {
         Array r = Array.factory(tf.getDataType(), tf.getShape());
-        for (int i = 0; i < r.getSize(); i++){
+        for (int i = 0; i < r.getSize(); i++) {
             r.setDouble(i, MeteoMath.tf2tc(tf.getDouble(i)));
         }
-        
+
         return r;
     }
-    
+
     /**
      * Calculate relative humidity from dewpoint
+     *
      * @param tdc Dewpoint temperature
      * @param tc Temperature
      * @return Relative humidity as percent (i.e. 80%)
      */
     public static Array dewpoint2rh(Array tdc, Array tc) {
         Array r = Array.factory(tdc.getDataType(), tdc.getShape());
-        for (int i = 0; i < r.getSize(); i++){
+        for (int i = 0; i < r.getSize(); i++) {
             r.setDouble(i, MeteoMath.dewpoint2rh(tc.getDouble(i), tdc.getDouble(i)));
         }
-        
+
         return r;
     }
-    
+
     /**
      * Calculate relative humidity from specific humidity
-     * 
-     * @param qair Specific humidity, dimensionless (e.g. kg/kg) ratio of water mass / total air mass
+     *
+     * @param qair Specific humidity, dimensionless (e.g. kg/kg) ratio of water
+     * mass / total air mass
      * @param temp Temperature - degree c
      * @param press Pressure - hPa (mb)
      * @return Relative humidity as percent (i.e. 80%)
      */
-    public static Array qair2rh(Array qair, Array temp, double press){
+    public static Array qair2rh(Array qair, Array temp, double press) {
         Array r = Array.factory(DataType.DOUBLE, qair.getShape());
         double rh;
-        for (int i = 0; i < r.getSize(); i++){
+        for (int i = 0; i < r.getSize(); i++) {
             rh = MeteoMath.qair2rh(qair.getDouble(i), temp.getDouble(i), press);
             r.setDouble(i, rh);
         }
-        
+
         return r;
     }
-    
+
     /**
      * Calculate relative humidity
-     * 
-     * @param qair Specific humidity, dimensionless (e.g. kg/kg) ratio of water mass / total air mass
+     *
+     * @param qair Specific humidity, dimensionless (e.g. kg/kg) ratio of water
+     * mass / total air mass
      * @param temp Temperature - degree c
      * @param press Pressure - hPa (mb)
      * @return Relative humidity as percent (i.e. 80%)
      */
-    public static Array qair2rh(Array qair, Array temp, Array press){
+    public static Array qair2rh(Array qair, Array temp, Array press) {
         Array r = Array.factory(DataType.DOUBLE, qair.getShape());
         double rh;
-        for (int i = 0; i < r.getSize(); i++){
+        for (int i = 0; i < r.getSize(); i++) {
             rh = MeteoMath.qair2rh(qair.getDouble(i), temp.getDouble(i), press.getDouble(i));
             r.setDouble(i, rh);
         }
-        
+
         return r;
     }
     // </editor-fold>

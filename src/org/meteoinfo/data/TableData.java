@@ -164,9 +164,9 @@ public class TableData {
      */
     public void addColumnData(String colName, String dt, List<Object> colData) throws Exception {
         DataTypes dataType = TableUtil.toDataTypes(dt);
-        switch (dataType){
+        switch (dataType) {
             case Date:
-                if (colData.get(0) instanceof Date){
+                if (colData.get(0) instanceof Date) {
                     this.dataTable.addColumnData(colName, dataType, colData);
                 } else {
                     String dformat = TableUtil.getDateFormat(dt);
@@ -177,7 +177,7 @@ public class TableData {
             default:
                 this.dataTable.addColumnData(colName, dataType, colData);
                 break;
-        }        
+        }
     }
 
     /**
@@ -211,6 +211,15 @@ public class TableData {
         } catch (Exception ex) {
             Logger.getLogger(TimeTableData.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    /**
+     * Get data row
+     * @param idx Index
+     * @return Data row
+     */
+    public DataRow getRow(int idx){
+        return this.dataTable.getRows().get(idx);
     }
 
     /**
@@ -272,7 +281,7 @@ public class TableData {
         String vstr;
         double value = Double.NaN;
         for (DataRow row : rows) {
-            if (row.getValue(colName) == null){
+            if (row.getValue(colName) == null) {
                 continue;
             }
             switch (col.getDataType()) {
@@ -300,6 +309,50 @@ public class TableData {
         }
 
         return values;
+    }
+    
+    /**
+     * Get the value by row index and column name
+     *
+     * @param row Row index
+     * @param colName Column name
+     * @return Object The value
+     */
+    public Object getValue(int row, String colName) {
+        return this.dataTable.getValue(row, colName);
+    }
+
+    /**
+     * Get the value by row and column index
+     *
+     * @param row Row index
+     * @param col Column index
+     * @return Object The value
+     */
+    public Object getValue(int row, int col) {
+        return this.dataTable.getValue(row, col);
+    }
+    
+    /**
+     * Set a vlaue by row and column index
+     *
+     * @param row Row index
+     * @param col Column index
+     * @param value The value
+     */
+    public void setValue(int row, int col, Object value) {
+        this.dataTable.setValue(row, col, value);
+    }
+
+    /**
+     * Set a value
+     *
+     * @param row Row index
+     * @param colName Column name
+     * @param value The value
+     */
+    public void setValue(int row, String colName, Object value) {
+        this.dataTable.setValue(row, colName, value);
     }
 
     /**
@@ -332,13 +385,14 @@ public class TableData {
     public ColumnData getColumnData(List<DataRow> rows, DataColumn col) {
         return dataTable.getColumnData(rows, null);
     }
-    
+
     /**
      * Set column data
+     *
      * @param colName Column name
      * @param values Values
      */
-    public void setColumnData(String colName, List<Object> values){
+    public void setColumnData(String colName, List<Object> values) {
         this.dataTable.setValues(colName, values);
     }
 
@@ -394,7 +448,7 @@ public class TableData {
 
         return rTable;
     }
-    
+
     /**
      * Average data and calculate standard deviation
      *
@@ -579,7 +633,7 @@ public class TableData {
                     line = sr.readLine();
                     continue;
                 }
-                dataArray = GlobalUtil.split(line, delimiter);                
+                dataArray = GlobalUtil.split(line, delimiter);
 
                 dTable.addRow();
                 int cn = 0;
@@ -722,25 +776,88 @@ public class TableData {
         rTable.addColumn(firstColName, DataTypes.String);
         List<Object> values = new ArrayList<>();
 
-        int i = 0;
-        for (DataColumn col : inTable.getColumns()) {
-            if (i > 0) {
-                String colName = col.getColumnName();
-                int r = 0;
-                for (DataRow row : inTable.getRows()) {
-                    String rowName = row.getValue(0).toString();
-                    DataColumn newCol = new DataColumn(rowName + "_" + colName, col.getDataType());
-                    rTable.addColumn(newCol);
-                    values.add(inTable.getValue(r, colName));
-                    r++;
-                }
+        if (inTable.getColumnCount() == 2) {
+            DataColumn col = inTable.getColumns().get(1);
+            String colName = col.getColumnName();
+            int r = 0;
+            for (DataRow row : inTable.getRows()) {
+                String rowName = row.getValue(0).toString();
+                DataColumn newCol = new DataColumn(rowName, col.getDataType());
+                rTable.addColumn(newCol);
+                values.add(inTable.getValue(r, colName));
+                r++;
             }
-            i++;
+        } else {
+            int i = 0;
+            for (DataColumn col : inTable.getColumns()) {
+                if (i > 0) {
+                    String colName = col.getColumnName();
+                    int r = 0;
+                    for (DataRow row : inTable.getRows()) {
+                        String rowName = row.getValue(0).toString();
+                        DataColumn newCol = new DataColumn(rowName + "_" + colName, col.getDataType());
+                        rTable.addColumn(newCol);
+                        values.add(inTable.getValue(r, colName));
+                        r++;
+                    }
+                }
+                i++;
+            }
         }
 
         rTable.addRow();
         rTable.setValue(0, 0, firstColValue);
-        i = 1;
+        int i = 1;
+        for (Object value : values) {
+            rTable.setValue(0, i, value);
+            i++;
+        }
+
+        return rTable;
+    }
+    
+    /**
+     * Convert a multi rows data table to single row data table
+     *
+     * @param inTable Input data table - multi rows
+     * @return Result data table
+     * @throws Exception
+     */
+    public DataTable toSingleRowTable(DataTable inTable) throws Exception {
+        DataTable rTable = new DataTable();
+        List<Object> values = new ArrayList<>();
+
+        if (inTable.getColumnCount() == 2) {
+            DataColumn col = inTable.getColumns().get(1);
+            String colName = col.getColumnName();
+            int r = 0;
+            for (DataRow row : inTable.getRows()) {
+                String rowName = row.getValue(0).toString();
+                DataColumn newCol = new DataColumn(rowName, col.getDataType());
+                rTable.addColumn(newCol);
+                values.add(inTable.getValue(r, colName));
+                r++;
+            }
+        } else {
+            int i = 0;
+            for (DataColumn col : inTable.getColumns()) {
+                if (i > 0) {
+                    String colName = col.getColumnName();
+                    int r = 0;
+                    for (DataRow row : inTable.getRows()) {
+                        String rowName = row.getValue(0).toString();
+                        DataColumn newCol = new DataColumn(rowName + "_" + colName, col.getDataType());
+                        rTable.addColumn(newCol);
+                        values.add(inTable.getValue(r, colName));
+                        r++;
+                    }
+                }
+                i++;
+            }
+        }
+
+        rTable.addRow();
+        int i = 0;
         for (Object value : values) {
             rTable.setValue(0, i, value);
             i++;
@@ -768,23 +885,25 @@ public class TableData {
     public void saveAsASCIIFile(String fileName) throws IOException {
         this.dataTable.saveAsASCIIFile(fileName);
     }
-    
+
     /**
      * Join data table
+     *
      * @param tableData The input table data
      * @param colName The column name for join
      */
-    public void join(TableData tableData, String colName){
+    public void join(TableData tableData, String colName) {
         this.dataTable.join(tableData.dataTable, colName, colName, false);
     }
-    
+
     /**
      * Join data table
+     *
      * @param tableData The input table data
      * @param thisColName The column name for join
      * @param otherColName The other column name for join
      */
-    public void join(TableData tableData, String thisColName, String otherColName){
+    public void join(TableData tableData, String thisColName, String otherColName) {
         this.dataTable.join(tableData.dataTable, thisColName, otherColName, false);
     }
 
@@ -1208,9 +1327,9 @@ public class TableData {
 
         return rTable;
     }
-    
+
     @Override
-    public String toString(){
+    public String toString() {
         return this.dataTable.toString();
     }
     // </editor-fold>

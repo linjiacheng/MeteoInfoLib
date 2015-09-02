@@ -71,7 +71,7 @@ public class TimeAxis extends Axis implements Cloneable {
      * @return Tick labels
      */
     @Override
-    public List<String> getTickLabels() {
+    public List<String> updateTickLabels() {
         //this.updateTimeTickValues();
         List<String> tls = new ArrayList<>();
         String lab;

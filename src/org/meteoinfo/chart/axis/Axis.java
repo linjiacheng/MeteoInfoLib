@@ -60,6 +60,9 @@ public class Axis implements Cloneable {
     //private TimeUnit timeUnit;
     private boolean inverse;
     private float shift;
+    private List<Double> tickLocations;
+    private List<String> tickLabels;
+    private boolean autoTick;
 
     // </editor-fold>
     // <editor-fold desc="Constructor">
@@ -91,6 +94,9 @@ public class Axis implements Cloneable {
         //this.timeUnit = TimeUnit.DAY;
         this.inverse = false;
         this.shift = 0;
+        this.tickLocations = new ArrayList<>();
+        this.tickLabels = new ArrayList<>();
+        this.autoTick = true;
     }
 
     /**
@@ -553,7 +559,19 @@ public class Axis implements Cloneable {
      * @return Tick values
      */
     public double[] getTickValues() {
-        return this.tickValues;
+        if (this.autoTick)
+            return this.tickValues;
+        else {
+            List<Double> values = new ArrayList<>();
+            for (double v : this.tickLocations){
+                if (v >= this.minValue && v <= this.maxValue)
+                    values.add(v);
+            }
+            double[] vs = new double[values.size()];
+            for (int i = 0; i < values.size(); i++)
+                vs[i] = values.get(i);
+            return vs;
+        }
     }
 
     /**
@@ -657,6 +675,61 @@ public class Axis implements Cloneable {
      */
     public void setShift(float value){
         this.shift = value;
+    }
+    
+    /**
+     * Tick locations
+     * @return Tick locations
+     */
+    public List<Double> getTickLocations(){
+        return this.tickLocations;
+    }
+    
+    /**
+     * Set tick locations
+     * @param value Tick locations
+     */
+    public void setTickLocations(List<Number> value){
+        this.tickLocations.clear();
+        this.tickLabels.clear();
+        for (Number v : value){
+            this.tickLocations.add(v.doubleValue());
+            this.tickLabels.add(String.valueOf(v));
+        }
+        this.autoTick = false;
+    }
+    
+    /**
+     * Get tick labels
+     * @return Tick labels
+     */
+    public List<String> getTickLabels(){
+        return this.tickLabels;
+    }
+    
+    /**
+     * Set tick labels
+     * @param value Tick labels
+     */
+    public void setTickLabels(List<String> value){
+        this.tickLabels = value;
+        this.autoTick = false;
+    }
+    
+    /**
+     * Get if is auto tick labels
+     * @return Boolean
+     */
+    public boolean isAutoTick(){
+        return this.autoTick;
+    }
+    
+    /**
+     * Set if auto tick labels
+     * @param value Boolean
+     */
+    public void setAutoTick(boolean value){
+        this.autoTick = value;
     }
     // </editor-fold>
     // <editor-fold desc="Methods">
@@ -819,29 +892,22 @@ public class Axis implements Cloneable {
      *
      * @return Tick labels
      */
-    public List<String> getTickLabels() {
+    public List<String> updateTickLabels() {
         List<String> tls = new ArrayList<>();
         String lab;
-        for (double value : this.getTickValues()) {
-            lab = String.valueOf(value);
-            lab = DataConvert.removeTailingZeros(lab);
-            tls.add(lab);
+        if (this.autoTick){
+            for (double value : this.getTickValues()) {
+                lab = String.valueOf(value);
+                lab = DataConvert.removeTailingZeros(lab);
+                tls.add(lab);
+            }
+        } else {
+            for (int i = 0; i < this.tickLocations.size(); i++){
+                double v = this.tickLocations.get(i);
+                if (v >= this.minValue && v <= this.maxValue)
+                    tls.add(this.tickLabels.get(i));
+            }
         }
-//        if (this.timeAxis) {
-//            SimpleDateFormat format = new SimpleDateFormat(this.timeFormat);
-//            Date date;
-//            for (double value : this.getTickValues()) {
-//                date = DateUtil.fromOADate(value);
-//                lab = format.format(date);
-//                tls.add(lab);
-//            }
-//        } else {
-//            for (double value : this.getTickValues()) {
-//                lab = String.valueOf(value);
-//                lab = DataConvert.removeTailingZeros(lab);
-//                tls.add(lab);
-//            }
-//        }
 
         return tls;
     }
@@ -854,7 +920,7 @@ public class Axis implements Cloneable {
      */
     public int getMaxLabelLength(Graphics2D g) {
         FontMetrics metrics = g.getFontMetrics(this.tickLabelFont);
-        List<String> tls = this.getTickLabels();
+        List<String> tls = this.updateTickLabels();
         int max = 0;
         int width;
         for (String lab : tls) {
@@ -875,7 +941,7 @@ public class Axis implements Cloneable {
      */
     public void updateLabelGap(Graphics2D g, Rectangle2D rect) {
         double len;
-        int n = this.tickValues.length;
+        int n = this.getTickValues().length;
         int nn;
         if (this.xAxis) {
             len = rect.getWidth();
@@ -947,7 +1013,7 @@ public class Axis implements Cloneable {
         Dimension dim;
         //this.updateLabelGap(g, area);
         int len = this.tickLength;
-        List<String> tickLabels = this.getTickLabels();
+        List<String> xTickLabels = this.updateTickLabels();
         int n = 0;
         while (n < this.getTickValues().length) {
             double value = this.getTickValues()[n];
@@ -972,7 +1038,7 @@ public class Axis implements Cloneable {
             }
             //Draw tick label
             if (this.drawTickLabel) {
-                drawStr = tickLabels.get(n);
+                drawStr = xTickLabels.get(n);
                 dim = new Dimension(metrics.stringWidth(drawStr), metrics.getHeight());
                 labx = (float) (x - dim.width / 2);
                 laby = (float) (maxy + len + dim.height * 3 / 4 + space);
@@ -1062,7 +1128,7 @@ public class Axis implements Cloneable {
         FontMetrics metrics = g.getFontMetrics();
         this.updateLabelGap(g, area);
         int len = this.getTickLength();
-        List<String> tickLabels = this.getTickLabels();
+        List<String> yTickLabels = this.updateTickLabels();
         String drawStr;
         Dimension dim;
         int n = 0;
@@ -1089,7 +1155,7 @@ public class Axis implements Cloneable {
             }
             //Draw tick label
             if (this.drawTickLabel) {
-                drawStr = tickLabels.get(n);
+                drawStr = yTickLabels.get(n);
                 dim = new Dimension(metrics.stringWidth(drawStr), metrics.getHeight());
                 if (this.location == Location.LEFT) {
                     labx = (float) (sx - dim.width - space - space);

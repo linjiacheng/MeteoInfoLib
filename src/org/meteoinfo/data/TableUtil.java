@@ -62,41 +62,58 @@ public class TableUtil {
             }
 
             int idx = 0;
+            boolean isBreak = false;
             for (String colFormat : colFormats) {
                 if (colFormat.isEmpty()) {
                     continue;
                 }
 
-                if (colFormat.equals("C") || colFormat.equals("s")) //String
-                {
-                    dTable.addColumn(titleArray[idx], DataTypes.String);
-                } else if (colFormat.equals("i")) //Integer
-                {
-                    dTable.addColumn(titleArray[idx], DataTypes.Integer);
-                } else if (colFormat.equals("f")) //Float
-                {
-                    dTable.addColumn(titleArray[idx], DataTypes.Float);
-                } else if (colFormat.equals("d")) //Double
-                {
-                    dTable.addColumn(titleArray[idx], DataTypes.Double);
-                } else if (colFormat.equals("B")) //Boolean
-                {
-                    dTable.addColumn(titleArray[idx], DataTypes.Boolean);
-                } else {
-                    if (colFormat.substring(0, 1).equals("{")) {    //Date
-                        int eidx = colFormat.indexOf("}");
-                        String formatStr = colFormat.substring(1, eidx);
-                        dTable.addColumn(new DataColumn(titleArray[idx], DataTypes.Date, formatStr));
-                        hasTimeCol = true;
-                        if (tcolName == null) {
-                            tcolName = titleArray[idx];
-                        }
-                    } else {
+                int num = 1;
+                if (colFormat.length() > 1 && !colFormat.substring(0, 1).equals("{")) {
+                    int index = colFormat.indexOf("{");
+                    if (index < 0) {
+                        index = colFormat.length() - 1;
+                    }
+                    num = Integer.parseInt(colFormat.substring(0, index));
+                    colFormat = colFormat.substring(index);
+                }
+                for (int i = 0; i < num; i++) {
+                    if (colFormat.equals("C") || colFormat.equals("s")) //String
+                    {
                         dTable.addColumn(titleArray[idx], DataTypes.String);
+                    } else if (colFormat.equals("i")) //Integer
+                    {
+                        dTable.addColumn(titleArray[idx], DataTypes.Integer);
+                    } else if (colFormat.equals("f")) //Float
+                    {
+                        dTable.addColumn(titleArray[idx], DataTypes.Float);
+                    } else if (colFormat.equals("d")) //Double
+                    {
+                        dTable.addColumn(titleArray[idx], DataTypes.Double);
+                    } else if (colFormat.equals("B")) //Boolean
+                    {
+                        dTable.addColumn(titleArray[idx], DataTypes.Boolean);
+                    } else {
+                        if (colFormat.substring(0, 1).equals("{")) {    //Date
+                            int eidx = colFormat.indexOf("}");
+                            String formatStr = colFormat.substring(1, eidx);
+                            dTable.addColumn(new DataColumn(titleArray[idx], DataTypes.Date, formatStr));
+                            hasTimeCol = true;
+                            if (tcolName == null) {
+                                tcolName = titleArray[idx];
+                            }
+                        } else {
+                            dTable.addColumn(titleArray[idx], DataTypes.String);
+                        }
+                    }
+                    idx += 1; 
+                    if (idx == colNum) {
+                        isBreak = true;
+                        break;
                     }
                 }
-
-                idx += 1;
+                if (isBreak)
+                    break;
             }
 
             if (idx < colNum) {
@@ -124,6 +141,10 @@ public class TableUtil {
                 for (int i = 0; i < dataArray.length; i++) {
                     dTable.setValue(rn, cn, dataArray[i]);
                     cn++;
+                }
+                if (cn < colNum){
+                    for (int i = cn; i < colNum; i++)
+                        dTable.setValue(rn, i, "");
                 }
 
                 rn += 1;

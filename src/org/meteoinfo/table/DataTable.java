@@ -24,7 +24,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.meteoinfo.data.ArrayUtil;
 import org.meteoinfo.data.TableUtil;
 import org.meteoinfo.data.mapdata.Field;
 import org.meteoinfo.global.MIMath;

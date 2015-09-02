@@ -50,7 +50,7 @@ public class LonLatAxis extends Axis implements Cloneable {
      * @return Tick labels
      */
     @Override
-    public List<String> getTickLabels() {
+    public List<String> updateTickLabels() {
         List<String> tls = new ArrayList<>();
         String lab;
         for (double v : this.getTickValues()) {
