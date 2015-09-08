@@ -361,5 +361,21 @@ public class Dimension {
         
         return this.getDimLength() - 1;
     }
+    
+    @Override
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("Name: ").append(this._dimName);
+        sb.append("\n");
+        sb.append("Min value: ").append(String.valueOf(this.getMinValue()));
+        sb.append("\n");
+        sb.append("Max value: ").append(String.valueOf(this.getMaxValue()));
+        sb.append("\n");
+        sb.append("Size: ").append(String.valueOf(this._dimLength));
+        sb.append("\n");
+        sb.append("Delta: ").append(String.valueOf(this.getDeltaValue()));
+        
+        return sb.toString();
+    }
     // </editor-fold>
 }
