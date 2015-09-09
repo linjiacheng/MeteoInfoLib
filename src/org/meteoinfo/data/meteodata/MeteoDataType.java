@@ -143,4 +143,18 @@ public enum MeteoDataType {
                     return false;
             }
         }
+        
+        /**
+         * If is GrADS data
+         * @return Is or not GrADS data
+         */
+        public boolean isGrADS() {
+            switch(this){
+                case GrADS_Grid:
+                case GrADS_Station:
+                    return true;
+                default:
+                    return false;
+            }
+        }
 }
