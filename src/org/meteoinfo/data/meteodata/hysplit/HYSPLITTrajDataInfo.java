@@ -107,14 +107,14 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
     }
 
     private void initVariables() {
-        fileNames = new ArrayList<String>();
-        meteoFileNums = new ArrayList<Integer>();
-        trajeoryNums = new ArrayList<Integer>();
-        trajDirections = new ArrayList<String>();
-        verticalMotions = new ArrayList<String>();
-        trajInfos = new ArrayList<List<TrajectoryInfo>>();
-        varNums = new ArrayList<Integer>();
-        varNames = new ArrayList<List<String>>();
+        fileNames = new ArrayList<>();
+        meteoFileNums = new ArrayList<>();
+        trajeoryNums = new ArrayList<>();
+        trajDirections = new ArrayList<>();
+        verticalMotions = new ArrayList<>();
+        trajInfos = new ArrayList<>();
+        varNums = new ArrayList<>();
+        varNames = new ArrayList<>();
         trajeoryNumber = 0;
     }
     // </editor-fold>
@@ -146,7 +146,7 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
         int i, t;
 
         initVariables();
-        List<Double> times = new ArrayList<Double>();
+        List<Double> times = new ArrayList<>();
 
         for (t = 0; t < trajFiles.length; t++) {
             String aFile = trajFiles[t];
@@ -174,7 +174,7 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
 
             //Record #4  
             TrajectoryInfo aTrajInfo;
-            List<TrajectoryInfo> trajInfoList = new ArrayList<TrajectoryInfo>();
+            List<TrajectoryInfo> trajInfoList = new ArrayList<>();
             for (i = 0; i < trajeoryNums.get(t); i++) {
                 aLine = sr.readLine().trim();
                 dataArray = aLine.split("\\s+");
@@ -207,7 +207,7 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
             aLine = sr.readLine().trim();
             dataArray = aLine.split("\\s+");
             varNums.add(Integer.parseInt(dataArray[0]));
-            List<String> varNameList = new ArrayList<String>();
+            List<String> varNameList = new ArrayList<>();
             for (i = 0; i < varNums.get(t); i++) {
                 varNameList.add(dataArray[i + 1]);
             }
@@ -217,7 +217,7 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
             var.setName("Traj");
             var.setStation(true);
             var.setDimension(tdim);
-            List<Variable> variables = new ArrayList<Variable>();
+            List<Variable> variables = new ArrayList<>();
             variables.add(var);
             this.setVariables(variables);
 
@@ -313,9 +313,9 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                 //Record #6
                 int TrajIdx;
                 List<PointZ> pList;
-                List<List<PointZ>> PointList = new ArrayList<List<PointZ>>();
+                List<List<PointZ>> PointList = new ArrayList<>();
                 for (i = 0; i < trajeoryNums.get(t); i++) {
-                    pList = new ArrayList<PointZ>();
+                    pList = new ArrayList<>();
                     PointList.add(pList);
                 }
                 PointZ aPoint;
@@ -451,9 +451,9 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                 //Record #6
                 int TrajIdx;
                 List<List<Object>> pList;
-                List<List<List<Object>>> PointList = new ArrayList<List<List<Object>>>();
+                List<List<List<Object>>> PointList = new ArrayList<>();
                 for (i = 0; i < trajeoryNums.get(t); i++) {
-                    pList = new ArrayList<List<Object>>();
+                    pList = new ArrayList<>();
                     PointList.add(pList);
                 }
                 PointD aPoint;
@@ -468,7 +468,7 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                     }
                     aLine = aLine.trim();
                     dataArray = aLine.split("\\s+");
-                    List<Object> dList = new ArrayList<Object>();
+                    List<Object> dList = new ArrayList<>();
                     TrajIdx = Integer.parseInt(dataArray[0]) - 1;
                     int y = Integer.parseInt(dataArray[2]);
                     if (y < 100) {
@@ -579,8 +579,8 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
 
                 //Record #6
                 int TrajIdx;
-                List<Object> pList = new ArrayList<Object>();
-                List<PointD> PointList = new ArrayList<PointD>();
+                List<Object> pList = new ArrayList<>();
+                List<PointD> PointList = new ArrayList<>();
                 PointD aPoint = new PointD();
                 for (i = 0; i < trajeoryNums.get(t); i++) {
                     PointList.add(aPoint);
@@ -681,9 +681,9 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                 //Record #6
                 int TrajIdx;
                 List<PointD> pList;
-                List<List<PointD>> PointList = new ArrayList<List<PointD>>();
+                List<List<PointD>> PointList = new ArrayList<>();
                 for (i = 0; i < trajeoryNums.get(t); i++) {
-                    pList = new ArrayList<PointD>();
+                    pList = new ArrayList<>();
                     PointList.add(pList);
                 }
                 PointD aPoint;
@@ -730,15 +730,13 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                 }
 
                 sr.close();
-            } catch (IOException ex) {
-                Logger.getLogger(HYSPLITTrajDataInfo.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (Exception ex) {
+            } catch (IOException | NumberFormatException ex) {
                 Logger.getLogger(HYSPLITTrajDataInfo.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
 
         return dataset;
     }
-
+    
     // </editor-fold>
 }

@@ -681,6 +681,7 @@ public class LayersLegend extends JPanel {
 
                 aLN.getMapFrame().fireLayersUpdatedEvent();
                 aLN.getMapFrame().getMapView().paintLayers();
+                //aLN.getMapFrame().fireMapViewUpdatedEvent();
             }
         } else {
             if (e.getButton() == MouseEvent.BUTTON3) {
