@@ -44,6 +44,11 @@ public class TableUtil {
         String title = sr.readLine().trim();
         String[] titleArray = GlobalUtil.split(title, delimiter);
         int colNum = titleArray.length;
+        if (headerLines == -1){
+            for (int i = 0; i < colNum; i++){
+                titleArray[i] = "Col_" + String.valueOf(i);
+            }
+        }
         boolean hasTimeCol = false;
         String tcolName = null;
         if (titleArray.length < 2) {
@@ -124,7 +129,11 @@ public class TableUtil {
 
             String[] dataArray;
             int rn = 0;
-            String line = sr.readLine();
+            String line;
+            if (headerLines == -1)
+                line = title;
+            else
+                line = sr.readLine();
             while (line != null) {
                 line = line.trim();
                 if (line.isEmpty()) {

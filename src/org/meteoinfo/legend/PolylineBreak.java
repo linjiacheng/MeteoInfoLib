@@ -84,7 +84,8 @@ public class PolylineBreak extends ColorBreak {
      * @param style Line style
      */
     public void setStyle(LineStyles style) {
-        _style = style;
+        if (style != null)
+            _style = style;
     }
 
     /**
@@ -156,7 +157,8 @@ public class PolylineBreak extends ColorBreak {
      * @param style Symbol style
      */
     public void setSymbolStyle(PointStyle style) {
-        _symbolStyle = style;
+        if (style != null)
+            _symbolStyle = style;
     }
 
     /**

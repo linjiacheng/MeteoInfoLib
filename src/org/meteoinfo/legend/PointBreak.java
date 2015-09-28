@@ -184,7 +184,8 @@ public class PointBreak extends ColorBreak {
      * @param style Point style
      */
     public void setStyle(PointStyle style) {
-        _style = style;
+        if (style != null)
+            _style = style;
     }
 
     /**
