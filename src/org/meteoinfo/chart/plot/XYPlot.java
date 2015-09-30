@@ -8,14 +8,10 @@ package org.meteoinfo.chart.plot;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.meteoinfo.chart.ChartLegend;
 import org.meteoinfo.chart.ChartText;
@@ -23,14 +19,12 @@ import org.meteoinfo.chart.LegendPosition;
 import org.meteoinfo.chart.Location;
 import org.meteoinfo.chart.Margin;
 import org.meteoinfo.chart.axis.Axis;
-import org.meteoinfo.chart.axis.TimeAxis;
 import static org.meteoinfo.chart.plot.Plot.MINIMUM_HEIGHT_TO_DRAW;
 import static org.meteoinfo.chart.plot.Plot.MINIMUM_WIDTH_TO_DRAW;
 import org.meteoinfo.drawing.Draw;
 import static org.meteoinfo.drawing.Draw.getDashPattern;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.PointF;
-import org.meteoinfo.global.util.DateUtil;
 
 /**
  *

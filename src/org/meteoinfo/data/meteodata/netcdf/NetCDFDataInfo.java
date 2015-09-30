@@ -1845,7 +1845,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                     + String.valueOf(ydim.getDimLength()) + "; Ydelta = " + String.valueOf(ydim.getDeltaValue());
         }
 
-        dataInfo += System.getProperty("line.separator") + "Global Attributes: " + this._gAtts;
+        dataInfo += System.getProperty("line.separator") + "Global Attributes: ";
         for (i = 0; i < _gAtts.size(); i++) {
             aAttS = _gAtts.get(i);
             dataInfo += System.getProperty("line.separator") + "\t: " + aAttS.toString();

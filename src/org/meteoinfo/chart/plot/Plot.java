@@ -285,8 +285,8 @@ public abstract class Plot {
         double min = Math.min(minh, minv);
         double zoom = 1.0;
         double factor = 2;
-        if (this.isSubPlot)
-            factor = 1.5;
+        //if (this.isSubPlot)
+        //    factor = 1.5;
         if (min < 0){
             double zoomh = 1.0;
             if (minh < 0)

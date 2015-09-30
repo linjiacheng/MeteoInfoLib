@@ -27,6 +27,7 @@ public class Chart {
 
     // <editor-fold desc="Variables">
     private List<Plot> plots;
+    private int currentPlot;
     private int rowNum;
     private int columnNum;
     private ChartText title;
@@ -51,6 +52,7 @@ public class Chart {
         this.rowNum = 1;
         this.columnNum = 1;
         this.plots = new ArrayList<>();
+        this.currentPlot = -1;
     }
 
     /**
@@ -87,6 +89,47 @@ public class Chart {
      */
     public List<Plot> getPlots() {
         return plots;
+    }
+    
+    /**
+     * Get current plot
+     * @return Current plot
+     */
+    public Plot getCurrentPlot(){
+        if (this.currentPlot < 0 || this.currentPlot >= this.plots.size())
+            this.currentPlot = this.plots.size() - 1;
+        return this.plots.get(this.currentPlot);
+    }
+    
+    /**
+     * Set current plot
+     * @param value Current plot
+     */
+    public void setCurrentPlot(Plot value){
+        if (this.plots.isEmpty()){
+            this.addPlot(value);
+            //this.currentPlot = 0;
+        } else {
+            if (this.currentPlot == -1){
+                this.plots.add(value);
+            } else {
+                if (this.currentPlot >= this.plots.size())
+                    this.currentPlot = this.plots.size() - 1;
+                Plot plot = this.plots.get(this.currentPlot);
+                value.isSubPlot = plot.isSubPlot;
+                value.columnIndex = plot.columnIndex;
+                value.rowIndex = plot.rowIndex;
+                this.plots.set(this.currentPlot, value);
+            }
+        }
+    }
+    
+    /**
+     * Set current plot index
+     * @param value Current plot index
+     */
+    public void setCurrentPlot(int value){
+        this.currentPlot = value;
     }
 
     /**
