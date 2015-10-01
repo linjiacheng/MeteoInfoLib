@@ -1009,6 +1009,42 @@ public class MeteoDataInfo {
 
         return ivalue;
     }
+    
+    /**
+     * Interpolate data to a station point
+     *
+     * @param varName Variable name
+     * @param x X coordinate of the station
+     * @param y Y coordinate of the station
+     * @param t Time coordinate of the station
+     * @return Interpolated value
+     */
+    public double toStation(String varName, double x, double y, Date t) {
+        List<Date> times = this.getDataInfo().getTimes();
+        int tnum = times.size();
+        if (t.before(times.get(0)) || t.after(times.get(tnum - 1))) {
+            return this.getDataInfo().getMissingValue();
+        }
+        
+        double ivalue = this.getDataInfo().getMissingValue();
+        double v_t1, v_t2;
+        for (int i = 0; i < tnum; i++) {
+            if (t.toString().equals(times.get(i).toString())) {
+                ivalue = this.toStation(varName, x, y, i);
+                break;
+            }
+            if (t.before(times.get(i))) {
+                v_t1 = this.toStation(varName, x, y, i - 1);
+                v_t2 = this.toStation(varName, x, y, i);
+                int h = DateUtil.getTimeDeltaValue(t, times.get(i - 1), "hours");
+                int th = DateUtil.getTimeDeltaValue(times.get(i), times.get(i - 1), "hours");
+                ivalue = (v_t2 - v_t1) * h / th + v_t1;
+                break;
+            }
+        }
+
+        return ivalue;
+    }
 
     /**
      * Interpolate data to a station point
@@ -1027,7 +1063,7 @@ public class MeteoDataInfo {
             return null;
         }
 
-        List<Double> ivalues = new ArrayList<Double>();
+        List<Double> ivalues = new ArrayList<>();
         double v_t1, v_t2;
         List<Double> v_t1s, v_t2s;
         for (int i = 0; i < tnum; i++) {
@@ -1045,6 +1081,7 @@ public class MeteoDataInfo {
                     v_t2 = v_t2s.get(j);
                     ivalues.add((v_t2 - v_t1) * h / th + v_t1);
                 }
+                break;
             }
         }
 
@@ -1089,6 +1126,22 @@ public class MeteoDataInfo {
 
         return ivalue;
     }
+    
+    /**
+     * Interpolate data to a station point
+     *
+     * @param varName Variable name
+     * @param x X coordinate of the station
+     * @param y Y coordinate of the station
+     * @param tidx Time index
+     * @return Interpolated value
+     */
+    public double toStation(String varName, double x, double y, int tidx) {
+        this.setTimeIndex(tidx);
+        double ivalue = this.getGridData(varName).toStation(x, y);
+        
+        return ivalue;
+    }
 
     /**
      * Interpolate data to a station point
@@ -1101,7 +1154,7 @@ public class MeteoDataInfo {
      * @return Interpolated values
      */
     public List<Double> toStation(List<String> varNames, double x, double y, double z, int tidx) {
-        List<Double> ivalues = new ArrayList<Double>();
+        List<Double> ivalues = new ArrayList<>();
         double ivalue;
         Variable var = this.getDataInfo().getVariable(varNames.get(0));
         List<Double> levels = var.getZDimension().getDimValue();
