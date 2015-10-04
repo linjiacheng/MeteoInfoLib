@@ -2859,7 +2859,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
         try {
             ncfile = NetcdfFile.open(this.getFileName());
 
-            int i, j;
+            int i;
             int tVarIdx = varIdx;
             ucar.nc2.Variable var = ncfile.getVariables().get(tVarIdx);
 
@@ -2899,8 +2899,8 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                     ucar.nc2.Dimension dim = var.getDimension(i);
                     switch (ndim.getDimType()) {
                         case T:
-                            origin[i] = 0;
-                            size[i] = dim.getLength();
+                            origin[i] = timeIdx;
+                            size[i] = 1;
                             break;
                         case Xtrack:
                             origin[i] = levelIdx;

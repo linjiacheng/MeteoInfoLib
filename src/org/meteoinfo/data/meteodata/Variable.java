@@ -883,9 +883,13 @@ public class Variable {
         if (this.getDimNumber() < var.getDimNumber())
             return false;
         
-        for (int i = 0; i < var.getDimNumber(); i++){
+        int sidx = 0;
+        if (this.getDimNumber() > var.getDimNumber()){
+            sidx = this.getDimNumber() - var.getDimNumber();
+        }
+        for (int i = sidx; i < var.getDimNumber(); i++){
             Dimension adim = this._dimensions.get(i);
-            Dimension bdim = var.getDimensions().get(i);
+            Dimension bdim = var.getDimensions().get(i - sidx);
             if (adim.getDimLength() != bdim.getDimLength())
                 return false;
         }
