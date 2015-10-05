@@ -1020,7 +1020,7 @@ public class ArrayMath {
     }
 
     // </editor-fold>
-    // <editor-fold desc="Section/Flip/Transpos">
+    // <editor-fold desc="Section/Flip/Transpos...">
     /**
      * Section array
      *
@@ -1058,7 +1058,7 @@ public class ArrayMath {
      *
      * @param a Array a
      * @param ranges Ranges
-     * @param v Value
+     * @param v Number value
      * @throws InvalidRangeException
      */
     public static void setSection(Array a, List<Range> ranges, Number v) throws InvalidRangeException {
@@ -1066,6 +1066,23 @@ public class ArrayMath {
         IndexIterator iter = r.getIndexIterator();
         while (iter.hasNext()) {
             iter.setObjectNext(v);
+        }
+        a = Array.factory(a.getDataType(), a.getShape(), r.getStorage());
+        r = null;
+    }
+    
+    /**
+     * Set section
+     *
+     * @param a Array a
+     * @param ranges Ranges
+     * @param v Array value
+     * @throws InvalidRangeException
+     */
+    public static void setSection(Array a, List<Range> ranges, Array v) throws InvalidRangeException {
+        Array r = a.section(ranges);
+        for (int i = 0; i < r.getSize(); i++){
+            r.setObject(i, v.getObject(i));
         }
         a = Array.factory(a.getDataType(), a.getShape(), r.getStorage());
         r = null;
@@ -1114,6 +1131,40 @@ public class ArrayMath {
         Array r = a.transpose(dim1, dim2);
         //Array rr = Array.factory(r.getDataType(), r.getShape());
         //MAMath.copy(rr, r);
+        return r;
+    }
+    
+    /**
+     * Join two arrays by a dimension
+     * @param a Array a
+     * @param b Array b
+     * @param dim Dimension for join
+     * @return Joined array
+     */
+    public static Array join(Array a, Array b, int dim){
+        int[] shape = a.getShape();
+        int na = shape[dim];
+        shape[dim] = shape[dim] + b.getShape()[dim];
+        int n = shape[dim];
+        Array r = Array.factory(a.getDataType(), shape);
+        IndexIterator iter = r.getIndexIterator();
+        IndexIterator itera = a.getIndexIterator();
+        IndexIterator iterb = b.getIndexIterator();
+        int[] current;
+        int i = 0;
+        while (iter.hasNext()) {
+            if (i > 0){
+                current = iter.getCurrentCounter();
+                if (current[dim] < na - 1 || current[dim] == n - 1)
+                    iter.setObjectNext(itera.getObjectNext());
+                else
+                    iter.setObjectNext(iterb.getObjectNext());
+            } else {
+                iter.setObjectNext(itera.getObjectNext());
+            }
+            i += 1;
+        }
+        
         return r;
     }
 
