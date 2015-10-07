@@ -53,5 +53,10 @@ public class CategoryPlot extends Plot{
     public Rectangle2D getPositionArea(Graphics2D g, Rectangle2D figureArea) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+    
+    @Override
+    public Rectangle2D getPositionAreaOrigin(Graphics2D g, Rectangle2D figureArea) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
 }

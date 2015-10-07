@@ -432,7 +432,8 @@ public abstract class XYPlot extends Plot {
         if (this.isAutoPosition()){
             graphArea = this.getGraphArea(g, area);
         } else {
-            graphArea = this.getPositionArea(this.getPositionAreaZoom());
+            //graphArea = this.getPositionArea(this.getPositionAreaZoom());
+            graphArea = this.getPositionArea(g, area);
         }
 
         //Draw title
@@ -498,6 +499,7 @@ public abstract class XYPlot extends Plot {
                 }
             }
             if (this.legend.getPosition() == LegendPosition.CUSTOM) {
+                this.legend.getLegendDimension(g, new Dimension((int) area.getWidth(), (int) area.getHeight()));
                 float x = (float)(area.getWidth() * this.legend.getX());
                 y = (float)(area.getHeight() * (1 - (this.getLegend().getHeight() / area.getHeight())
                         - this.getLegend().getY()));
@@ -520,8 +522,8 @@ public abstract class XYPlot extends Plot {
      */
     @Override
     public Margin getTightInset(Graphics2D g, Rectangle2D positionArea) {
-        int left = 2, bottom = 2, right = 2, top = 2;
-        int space = 1;
+        int left = 2, bottom = 2, right = 2, top = 5;
+        int space = 2;
 
         if (this.title != null) {
             g.setFont(this.title.getFont());
@@ -620,14 +622,25 @@ public abstract class XYPlot extends Plot {
     }
 
     /**
-     * Get graphic area
+     * Get position area
      *
      * @param g Graphic2D
      * @param area Whole area
-     * @return Graphic area
+     * @return Position area
      */
     @Override
     public Rectangle2D getPositionArea(Graphics2D g, Rectangle2D area) {
+        return this.getPositionArea();
+    }
+    
+    /**
+     * Get position area
+     *
+     * @param g Graphic2D
+     * @param area Whole area
+     * @return Position area
+     */
+    public Rectangle2D getPositionAreaOrigin(Graphics2D g, Rectangle2D area) {
         double x = area.getWidth() * this.getPosition().getX() + area.getX();
         double y = area.getHeight() * (1 - this.getPosition().getHeight() - this.getPosition().getY()) + area.getY();
         double w = area.getWidth() * this.getPosition().getWidth();
@@ -717,13 +730,13 @@ public abstract class XYPlot extends Plot {
         
         int width = space;
         if (yAxis.isDrawTickLabel())
-            width = yAxis.getMaxLabelLength(g) + space;
+            width += yAxis.getMaxLabelLength(g) + space + space;
         if (!yAxis.isInsideTick())
             width += this.getYAxis().getTickLength();
         if (yAxis.isDrawLabel()){
              g.setFont(yAxis.getLabelFont());
             Dimension dim = Draw.getStringDimension(yAxis.getLabel(), g);
-            width += dim.height + space;
+            width += dim.height + 10 - space;
         }
 
         return width;
@@ -821,6 +834,18 @@ public abstract class XYPlot extends Plot {
                 x = (float) (area.getX() + area.getWidth()) - dim.width - 10;
                 y = (float) area.getY() + 10;
                 break;
+            case LOWER_RIGHT:
+                x = (float) (area.getX() + area.getWidth()) - dim.width - 10;
+                y = (float) (area.getY() + area.getHeight()) - dim.height - 10;
+                break;
+            case UPPER_LEFT:
+                x = (float) area.getX() + 10;
+                y = (float) area.getY() + 10;
+                break;
+            case LOWER_LEFT:
+                x = (float) area.getX() +  10;
+                y = (float) (area.getY() + area.getHeight()) - dim.height - 10;
+                break;    
         }
         this.legend.draw(g, new PointF(x, y));
     }

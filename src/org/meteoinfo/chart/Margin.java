@@ -119,5 +119,20 @@ public class Margin {
         
         return new Rectangle2D.Double(x, y, w, h);
     }
+    
+    /**
+     * Extent
+     * @param a Margin
+     * @return Extented margin
+     */
+    public Margin extend(Margin a){
+        Margin r = new Margin();
+        r.setLeft(Math.max(this.left, a.left));
+        r.setRight(Math.max(this.right, a.right));
+        r.setTop(Math.max(this.top, a.top));
+        r.setBottom(Math.max(this.bottom, a.bottom));
+        
+        return r;
+    }
     // </editor-fold>
 }

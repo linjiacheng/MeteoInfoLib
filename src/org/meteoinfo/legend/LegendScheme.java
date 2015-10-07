@@ -763,7 +763,7 @@ public class LegendScheme {
      * @param keepShape if keep the legend shape type
      */
     public void importFromXML(Node LSNode, boolean keepShape) {
-        legendBreaks = new ArrayList<ColorBreak>();
+        legendBreaks = new ArrayList<>();
 
         if (LSNode.getAttributes().getNamedItem("FieldName") != null) {
             fieldName = LSNode.getAttributes().getNamedItem("FieldName").getNodeValue();

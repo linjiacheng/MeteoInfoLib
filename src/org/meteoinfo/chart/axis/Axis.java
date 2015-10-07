@@ -89,6 +89,7 @@ public class Axis implements Cloneable {
         this.tickLabelGap = 1;
         this.minValue = 0;
         this.maxValue = 1;
+        this.updateTickValues();
         //this.timeAxis = false;
         //this.timeFormat = "yyyy-MM-dd";
         //this.timeUnit = TimeUnit.DAY;
@@ -896,6 +897,8 @@ public class Axis implements Cloneable {
         List<String> tls = new ArrayList<>();
         String lab;
         if (this.autoTick){
+            if (this.getTickValues() == null)
+                return tls;
             for (double value : this.getTickValues()) {
                 lab = String.valueOf(value);
                 lab = DataConvert.removeTailingZeros(lab);
@@ -940,6 +943,10 @@ public class Axis implements Cloneable {
      * @param rect The rectangle
      */
     public void updateLabelGap(Graphics2D g, Rectangle2D rect) {
+        if (this.getTickValues() == null){
+            return;
+        }
+        
         double len;
         int n = this.getTickValues().length;
         int nn;

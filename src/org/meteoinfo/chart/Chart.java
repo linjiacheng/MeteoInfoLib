@@ -368,12 +368,14 @@ public class Chart {
         }
 
         if (this.plots.size() > 0) {
-            double zoom = this.getPositionAreaZoom(g, plotArea);
+            //double zoom = this.getPositionAreaZoom(g, plotArea);
+            //Margin tightInset = this.getPlotsTightInset(g, plotArea);
+            Margin shrink = this.getPlotsShrink(g, plotArea);
             for (Plot plot : this.plots) {
-                plot.setPositionAreaZoom(zoom);
-                //Rectangle2D subPlotArea = this.getSubPlotArea(g, plot, plotArea);                
-                //Rectangle2D subPlotArea = plot.getOuterPositionArea();
-                //plot.draw(g, subPlotArea);
+                //plot.setPositionAreaZoom(zoom);
+                //plot.setTightInset(tightInset);
+                //plot.updatePositionArea();
+                plot.setPlotShrink(shrink);
                 if (plot instanceof XY2DPlot){
                     ((XY2DPlot)plot).setAntialias(this.antiAlias);
                 }
@@ -412,10 +414,11 @@ public class Chart {
 
     private Rectangle2D getPlotArea(Graphics2D g, Rectangle2D area) {
         Rectangle2D pArea = new Rectangle2D.Double();
-        int top = 5;
-        int left = 0;
-        int right = 0;
-        int bottom = 0;
+        int edge = 2;
+        int top = edge;
+        int left = edge;
+        int right = edge;
+        int bottom = edge;
         if (this.title != null) {
             FontMetrics metrics = g.getFontMetrics(this.title.getFont());
             top += metrics.getHeight() + 10;
@@ -442,6 +445,76 @@ public class Chart {
         return pArea;
     }
 
+    private Margin getPlotsShrink(Graphics2D g, Rectangle2D area) {
+        int i = 0;
+        Margin pshrink = null, shrink;
+        for (Plot plot : this.plots) {
+            if (plot.isSubPlot) {
+                double rowHeight = area.getHeight() / this.rowNum;
+                double colWidth = area.getWidth() / this.columnNum;
+                double x = area.getX() + plot.columnIndex * colWidth;
+                double y = area.getY() + plot.rowIndex * rowHeight;
+                Rectangle2D subPlotArea = new Rectangle2D.Double(x, y, colWidth, rowHeight);
+                plot.setOuterPositionArea(subPlotArea);
+                plot.updatePosition(area, subPlotArea);
+                Rectangle2D positionArea = plot.getPositionAreaOrigin(g, area);
+                plot.setPositionArea(positionArea);
+                Margin tightInset = plot.getTightInset(g, positionArea);
+                plot.setTightInset(tightInset);
+                shrink = plot.getPlotShrink();
+            } else {
+                plot.setOuterPositionArea(area);
+                Rectangle2D positionArea = plot.getPositionAreaOrigin(g, area);
+                plot.setPositionArea(positionArea);
+                Margin tightInset = plot.getTightInset(g, positionArea);
+                plot.setTightInset(tightInset);
+                shrink = plot.getPlotShrink();
+            }
+            if (i == 0){
+                pshrink = shrink;
+            } else {
+                if (pshrink != null)
+                    pshrink = pshrink.extend(shrink);
+            }
+            i += 1;
+        }
+
+        return pshrink;
+    }
+    
+    private Margin getPlotsTightInset(Graphics2D g, Rectangle2D area) {
+        int i = 0;
+        Margin pti = null, tightInset;
+        for (Plot plot : this.plots) {
+            if (plot.isSubPlot) {
+                double rowHeight = area.getHeight() / this.rowNum;
+                double colWidth = area.getWidth() / this.columnNum;
+                double x = area.getX() + plot.columnIndex * colWidth;
+                double y = area.getY() + plot.rowIndex * rowHeight;
+                Rectangle2D subPlotArea = new Rectangle2D.Double(x, y, colWidth, rowHeight);
+                plot.setOuterPositionArea(subPlotArea);
+                plot.updatePosition(area, subPlotArea);
+                Rectangle2D positionArea = plot.getPositionArea(g, area);
+                plot.setPositionArea(positionArea);
+                tightInset = plot.getTightInset(g, positionArea);
+            } else {
+                plot.setOuterPositionArea(area);
+                Rectangle2D positionArea = plot.getPositionArea(g, area);
+                plot.setPositionArea(positionArea);
+                tightInset = plot.getTightInset(g, positionArea);
+            }
+            if (i == 0){
+                pti = tightInset;
+            } else {
+                if (pti != null)
+                    pti = pti.extend(tightInset);
+            }
+            i += 1;
+        }
+
+        return pti;
+    }
+    
     private double getPositionAreaZoom(Graphics2D g, Rectangle2D area) {
         double zoom = 1.0;
         for (Plot plot : this.plots) {
@@ -578,7 +651,7 @@ public class Chart {
      */
     public Plot getPlot(int plotIdx) {
         for (Plot plot : this.plots) {
-            int pIdx = plot.columnIndex * this.columnNum + plot.rowIndex + 1;
+            int pIdx = plot.rowIndex * this.rowNum + plot.columnIndex + 1;
             if (pIdx == plotIdx) {
                 return plot;
             }

@@ -131,7 +131,7 @@ public class DrawMeteoData {
 
             PolylineShape aPolyline = new PolylineShape();
             PointD aPoint;
-            List<PointD> pList = new ArrayList<PointD>();
+            List<PointD> pList = new ArrayList<>();
             for (int j = 0; j < aLine.PointList.size(); j++) {
                 aPoint = new PointD();
                 aPoint.X = aLine.PointList.get(j).X;

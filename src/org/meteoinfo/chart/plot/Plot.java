@@ -121,6 +121,18 @@ public abstract class Plot {
         this.setPosition(x, y, w, h);
     }
     
+    /**
+     * Update position
+     * @param figureArea Figure areaa
+     */
+    public void updatePosition(Rectangle2D figureArea){
+        double x = this.positionArea.getX() / figureArea.getWidth();
+        double y = 1.0 - (this.positionArea.getY() + this.positionArea.getHeight()) / figureArea.getHeight();
+        double w = this.positionArea.getWidth() / figureArea.getWidth();
+        double h = this.positionArea.getHeight() / figureArea.getHeight();
+        this.setPosition(x, y, w, h);
+    }
+    
     private Margin tightInset = new Margin();
     
     /**
@@ -243,6 +255,14 @@ public abstract class Plot {
     public abstract Rectangle2D getPositionArea(Graphics2D g, Rectangle2D figureArea);
     
     /**
+     * Get position origin area
+     * @param g Graphics2D
+     * @param figureArea Figure area
+     * @return Position area
+     */
+    public abstract Rectangle2D getPositionAreaOrigin(Graphics2D g, Rectangle2D figureArea);
+    
+    /**
      * Get tight inset
      * @param g Graphics2D
      * @param positionArea Position area
@@ -266,6 +286,45 @@ public abstract class Plot {
      */
     public void setPositionAreaZoom(double value){
         this.positionAreaZoom = value;
+    }
+    
+    /**
+     * Get plot shrink
+     * @return Plot shrink
+     */
+    public Margin getPlotShrink(){
+        Margin shrink = new Margin();
+        if (this.tightInset.getLeft() + this.outerPositionArea.getX() > this.positionArea.getX()){
+            shrink.setLeft(this.tightInset.getLeft() + this.outerPositionArea.getX() - this.positionArea.getX());
+        }
+        if (this.tightInset.getRight()+ this.positionArea.getX() + this.positionArea.getWidth() > 
+                this.outerPositionArea.getX() + this.outerPositionArea.getWidth()){
+            shrink.setRight(this.tightInset.getRight()+ this.positionArea.getX() + this.positionArea.getWidth() -
+                (this.outerPositionArea.getX() + this.outerPositionArea.getWidth()));
+        }  
+        if (this.tightInset.getTop()+ this.outerPositionArea.getY()> this.positionArea.getY()){
+            shrink.setTop(this.tightInset.getTop()+ this.outerPositionArea.getY()- this.positionArea.getY());
+        }
+        if (this.tightInset.getBottom()+ this.positionArea.getY()+ this.positionArea.getHeight()> 
+                this.outerPositionArea.getY() + this.outerPositionArea.getHeight()){
+            shrink.setBottom(this.tightInset.getBottom()+ this.positionArea.getY()+ this.positionArea.getHeight() -
+                (this.outerPositionArea.getY() + this.outerPositionArea.getHeight()));
+        }  
+        
+        return shrink;
+    }
+    
+    /**
+     * Set plot shrink
+     * @param shrink Shrink
+     */
+    public void setPlotShrink(Margin shrink){
+        double x = this.positionArea.getX() + shrink.getLeft();
+        double y = this.positionArea.getY() + shrink.getTop();
+        double w = this.positionArea.getWidth() - (shrink.getLeft() + shrink.getRight());
+        double h = this.positionArea.getHeight() - (shrink.getTop() + shrink.getBottom());
+        
+        this.positionArea = new Rectangle2D.Double(x, y, w, h);
     }
     
     /**
@@ -301,5 +360,17 @@ public abstract class Plot {
         }        
         
         return zoom;
+    }
+    
+    /**
+     * Update position area
+     */
+    public void updatePositionArea(){
+        double w = this.outerPositionArea.getWidth() - this.tightInset.getLeft() - this.tightInset.getRight();
+        double h = this.outerPositionArea.getHeight() - this.tightInset.getTop() - this.tightInset.getBottom();
+        double x = this.outerPositionArea.getX() + this.tightInset.getLeft();
+        double y = this.outerPositionArea.getY() + this.tightInset.getTop();
+        
+        this.positionArea = new Rectangle2D.Double(x, y, w, h);
     }
 }
