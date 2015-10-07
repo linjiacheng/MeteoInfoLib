@@ -1018,6 +1018,66 @@ public class ArrayMath {
 
         return r;
     }
+    
+    /**
+     * Tangent function
+     *
+     * @param a Array a
+     * @return Result array
+     */
+    public static Array tan(Array a) {
+        Array r = Array.factory(a.getDataType() == DataType.DOUBLE ? DataType.DOUBLE : DataType.FLOAT, a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            r.setDouble(i, Math.tan(a.getDouble(i)));
+        }
+
+        return r;
+    }
+    
+    /**
+     * Arc sine function
+     *
+     * @param a Array a
+     * @return Result array
+     */
+    public static Array asin(Array a) {
+        Array r = Array.factory(a.getDataType() == DataType.DOUBLE ? DataType.DOUBLE : DataType.FLOAT, a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            r.setDouble(i, Math.asin(a.getDouble(i)));
+        }
+
+        return r;
+    }
+    
+    /**
+     * Arc cosine function
+     *
+     * @param a Array a
+     * @return Result array
+     */
+    public static Array acos(Array a) {
+        Array r = Array.factory(a.getDataType() == DataType.DOUBLE ? DataType.DOUBLE : DataType.FLOAT, a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            r.setDouble(i, Math.acos(a.getDouble(i)));
+        }
+
+        return r;
+    }
+    
+    /**
+     * Arc tangen function
+     *
+     * @param a Array a
+     * @return Result array
+     */
+    public static Array atan(Array a) {
+        Array r = Array.factory(a.getDataType() == DataType.DOUBLE ? DataType.DOUBLE : DataType.FLOAT, a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            r.setDouble(i, Math.atan(a.getDouble(i)));
+        }
+
+        return r;
+    }
 
     // </editor-fold>
     // <editor-fold desc="Section/Flip/Transpos...">
