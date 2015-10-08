@@ -1078,6 +1078,22 @@ public class ArrayMath {
 
         return r;
     }
+    
+    /**
+     * Arc tangen function
+     *
+     * @param a Array a
+     * @param b Array b
+     * @return Result array
+     */
+    public static Array atan2(Array a, Array b) {
+        Array r = Array.factory(a.getDataType() == DataType.DOUBLE ? DataType.DOUBLE : DataType.FLOAT, a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            r.setDouble(i, Math.atan2(a.getDouble(i), b.getDouble(i)));
+        }
+
+        return r;
+    }
 
     // </editor-fold>
     // <editor-fold desc="Section/Flip/Transpos...">
