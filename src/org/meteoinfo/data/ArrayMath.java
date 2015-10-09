@@ -6,8 +6,10 @@
 package org.meteoinfo.data;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.meteoinfo.data.analysis.MeteoMath;
+import org.meteoinfo.data.meteodata.Dimension;
 import org.meteoinfo.geoprocess.GeoComputation;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
@@ -15,6 +17,7 @@ import org.meteoinfo.layer.VectorLayer;
 import org.meteoinfo.shape.PolygonShape;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
+import ucar.ma2.Index;
 import ucar.ma2.IndexIterator;
 import ucar.ma2.InvalidRangeException;
 import ucar.ma2.MAMath;
@@ -1018,7 +1021,7 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     /**
      * Tangent function
      *
@@ -1033,7 +1036,7 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     /**
      * Arc sine function
      *
@@ -1048,7 +1051,7 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     /**
      * Arc cosine function
      *
@@ -1063,7 +1066,7 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     /**
      * Arc tangen function
      *
@@ -1078,7 +1081,7 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     /**
      * Arc tangen function
      *
@@ -1146,7 +1149,7 @@ public class ArrayMath {
         a = Array.factory(a.getDataType(), a.getShape(), r.getStorage());
         r = null;
     }
-    
+
     /**
      * Set section
      *
@@ -1157,7 +1160,7 @@ public class ArrayMath {
      */
     public static void setSection(Array a, List<Range> ranges, Array v) throws InvalidRangeException {
         Array r = a.section(ranges);
-        for (int i = 0; i < r.getSize(); i++){
+        for (int i = 0; i < r.getSize(); i++) {
             r.setObject(i, v.getObject(i));
         }
         a = Array.factory(a.getDataType(), a.getShape(), r.getStorage());
@@ -1209,15 +1212,16 @@ public class ArrayMath {
         //MAMath.copy(rr, r);
         return r;
     }
-    
+
     /**
      * Join two arrays by a dimension
+     *
      * @param a Array a
      * @param b Array b
      * @param dim Dimension for join
      * @return Joined array
      */
-    public static Array join(Array a, Array b, int dim){
+    public static Array join(Array a, Array b, int dim) {
         int[] shape = a.getShape();
         int na = shape[dim];
         shape[dim] = shape[dim] + b.getShape()[dim];
@@ -1229,18 +1233,19 @@ public class ArrayMath {
         int[] current;
         int i = 0;
         while (iter.hasNext()) {
-            if (i > 0){
+            if (i > 0) {
                 current = iter.getCurrentCounter();
-                if (current[dim] < na - 1 || current[dim] == n - 1)
+                if (current[dim] < na - 1 || current[dim] == n - 1) {
                     iter.setObjectNext(itera.getObjectNext());
-                else
+                } else {
                     iter.setObjectNext(iterb.getObjectNext());
+                }
             } else {
                 iter.setObjectNext(itera.getObjectNext());
             }
             i += 1;
         }
-        
+
         return r;
     }
 
@@ -1808,6 +1813,45 @@ public class ArrayMath {
     // </editor-fold>    
     // <editor-fold desc="Meteo">
     /**
+     * Performs a centered difference operation on a grid data along one
+     * dimension direction
+     *
+     * @param data The grid data
+     * @param dimIdx Direction dimension index
+     * @return Result grid data
+     */
+    public static Array cdiff(Array data, int dimIdx) {
+        Array r = Array.factory(DataType.DOUBLE, data.getShape());
+        Index index = data.getIndex();
+        Index indexr = r.getIndex();
+        int[] shape = data.getShape();
+        int[] current, cc;
+        double a, b;
+        for (int i = 0; i < r.getSize(); i++) {
+            current = indexr.getCurrentCounter();
+            if (current[dimIdx] == 0 || current[dimIdx] == shape[dimIdx] - 1) {
+                r.setDouble(indexr, Double.NaN);
+            } else {
+                cc = Arrays.copyOf(current, current.length);
+                cc[dimIdx] = cc[dimIdx] - 1;
+                index.set(cc);
+                a = data.getDouble(index);
+                cc[dimIdx] = cc[dimIdx] + 2;
+                index.set(cc);
+                b = data.getDouble(index);
+                if (Double.isNaN(a) || Double.isNaN(b)) {
+                    r.setDouble(indexr, Double.NaN);
+                } else {
+                    r.setDouble(indexr, a - b);
+                }
+            }
+            indexr.incr();
+        }
+
+        return r;
+    }
+
+    /**
      * Performs a centered difference operation on a grid data in the x or y
      * direction
      *
@@ -1815,7 +1859,7 @@ public class ArrayMath {
      * @param isX If is x direction
      * @return Result grid data
      */
-    public static Array cdiff(Array data, boolean isX) {
+    public static Array cdiff_bak(Array data, boolean isX) {
         if (data.getRank() == 2) {
             int xnum = data.getShape()[1];
             int ynum = data.getShape()[0];
@@ -1878,22 +1922,23 @@ public class ArrayMath {
      * @return Curl
      */
     public static Array hcurl(Array uData, Array vData, List<Number> xx, List<Number> yy) {
-        Array lonData = Array.factory(DataType.DOUBLE, uData.getShape());
-        Array latData = Array.factory(DataType.DOUBLE, vData.getShape());
+        int rank = uData.getRank();
         int[] shape = uData.getShape();
-        int ynum = shape[0];
-        int xnum = shape[1];
-        int i, j;
-        for (i = 0; i < ynum; i++) {
-            for (j = 0; j < xnum; j++) {
-                lonData.setDouble(i * xnum + j, xx.get(j).doubleValue());
-                latData.setDouble(i * xnum + j, yy.get(i).doubleValue());
-            }
+        Array lonData = Array.factory(DataType.DOUBLE, shape);
+        Array latData = Array.factory(DataType.DOUBLE, shape);
+        Index index = lonData.getIndex();
+        int[] current;
+        for (int i = 0; i < lonData.getSize(); i++){
+            current = index.getCurrentCounter();
+            lonData.setDouble(index, xx.get(current[rank - 1]).doubleValue());
+            latData.setDouble(index, yy.get(current[rank - 2]).doubleValue());
+            index.incr();
         }
-        Array dv = cdiff(vData, true);
-        Array dx = mul(cdiff(lonData, true), Math.PI / 180);
-        Array du = cdiff(mul(uData, cos(mul(latData, Math.PI / 180))), false);
-        Array dy = mul(cdiff(latData, false), Math.PI / 180);
+        
+        Array dv = cdiff(vData, rank - 1);
+        Array dx = mul(cdiff(lonData, rank - 1), Math.PI / 180);
+        Array du = cdiff(mul(uData, cos(mul(latData, Math.PI / 180))), rank - 2);
+        Array dy = mul(cdiff(latData, rank - 2), Math.PI / 180);
         Array gData = div(sub(div(dv, dx), div(du, dy)), mul(cos(mul(latData, Math.PI / 180)), 6.37e6));
 
         return gData;
@@ -1909,22 +1954,23 @@ public class ArrayMath {
      * @return Divergence
      */
     public static Array hdivg(Array uData, Array vData, List<Number> xx, List<Number> yy) {
-        Array lonData = Array.factory(DataType.DOUBLE, uData.getShape());
-        Array latData = Array.factory(DataType.DOUBLE, vData.getShape());
+        int rank = uData.getRank();
         int[] shape = uData.getShape();
-        int ynum = shape[0];
-        int xnum = shape[1];
-        int i, j;
-        for (i = 0; i < ynum; i++) {
-            for (j = 0; j < xnum; j++) {
-                lonData.setDouble(i * xnum + j, xx.get(j).doubleValue());
-                latData.setDouble(i * xnum + j, yy.get(i).doubleValue());
-            }
+        Array lonData = Array.factory(DataType.DOUBLE, shape);
+        Array latData = Array.factory(DataType.DOUBLE, shape);
+        Index index = lonData.getIndex();
+        int[] current;
+        for (int i = 0; i < lonData.getSize(); i++){
+            current = index.getCurrentCounter();
+            lonData.setDouble(index, xx.get(current[rank - 1]).doubleValue());
+            latData.setDouble(index, yy.get(current[rank - 2]).doubleValue());
+            index.incr();
         }
-        Array du = cdiff(uData, true);
-        Array dx = mul(cdiff(lonData, true), Math.PI / 180);
-        Array dv = cdiff(mul(vData, cos(mul(latData, Math.PI / 180))), false);
-        Array dy = mul(cdiff(latData, false), Math.PI / 180);
+        
+        Array du = cdiff(uData, rank - 1);
+        Array dx = mul(cdiff(lonData, rank - 1), Math.PI / 180);
+        Array dv = cdiff(mul(vData, cos(mul(latData, Math.PI / 180))), rank - 2);
+        Array dy = mul(cdiff(latData, rank - 2), Math.PI / 180);
         Array gData = div(add(div(du, dx), div(dv, dy)), mul(cos(mul(latData, Math.PI / 180)), 6.37e6));
 
         return gData;
