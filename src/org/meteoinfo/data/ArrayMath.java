@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.meteoinfo.data.analysis.MeteoMath;
-import org.meteoinfo.data.meteodata.Dimension;
 import org.meteoinfo.geoprocess.GeoComputation;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
@@ -2084,6 +2083,22 @@ public class ArrayMath {
         double rh;
         for (int i = 0; i < r.getSize(); i++) {
             rh = MeteoMath.qair2rh(qair.getDouble(i), temp.getDouble(i), press.getDouble(i));
+            r.setDouble(i, rh);
+        }
+
+        return r;
+    }
+    
+    /**
+     * Calculate height form pressure
+     * @param press Pressure
+     * @return Height
+     */
+    public static Array press2Height(Array press){
+        Array r = Array.factory(DataType.DOUBLE, press.getShape());
+        double rh;
+        for (int i = 0; i < r.getSize(); i++) {
+            rh = MeteoMath.press2Height(press.getDouble(i));
             r.setDouble(i, rh);
         }
 
