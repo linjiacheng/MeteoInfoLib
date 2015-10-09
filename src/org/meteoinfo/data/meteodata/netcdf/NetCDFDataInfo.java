@@ -268,6 +268,10 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                         nvar.addDimension(ndim);
                     }
                 }
+                
+                for (ucar.nc2.Attribute attr : var.getAttributes()){
+                    nvar.addAttribute(attr.getShortName(), attr.getValues());
+                }
                 double[] packData = this.getPackData(var);
                 nvar.setAddOffset(packData[0]);
                 nvar.setScaleFactor(packData[1]);
@@ -353,7 +357,12 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
         return null;
     }
 
-    private ucar.nc2.Attribute findGlobalAttribute(String attName) {
+    /**
+     * Find global attribute
+     * @param attName Attribute name
+     * @return Global attribute
+     */
+    public ucar.nc2.Attribute findGlobalAttribute(String attName) {
         for (ucar.nc2.Attribute att : this._gAtts) {
             if (att.getShortName().equalsIgnoreCase(attName)) {
                 return att;

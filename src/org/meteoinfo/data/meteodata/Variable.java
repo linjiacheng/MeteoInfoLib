@@ -926,12 +926,28 @@ public class Variable {
         }
 
         List<Double> values = tDim.getDimValue();
-        List<Date> times = new ArrayList<Date>();
+        List<Date> times = new ArrayList<>();
         for (Double v : values) {
             times.add(DateUtil.fromOADate(v));
         }
 
         return times;
+    }
+    
+    /**
+     * Get attribute by name, return null if the name not exist.
+     *
+     * @param attName Attribute name
+     * @return Attribute
+     */
+    public Attribute findAttribute(String attName) {
+        for (int i = 0; i < _attributes.size(); i++) {
+            if (_attributes.get(i).attName.equalsIgnoreCase(attName)) {
+                return _attributes.get(i);
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -1022,6 +1038,23 @@ public class Variable {
         Dimension dim = new Dimension(dType);
         dim.setDimValues(values);
         this._dimensions.add(dim);
+    }
+    
+    /**
+     * Add attribute
+     *
+     * @param attName Attribute name
+     * @param attValue Attribute value
+     */
+    public void addAttribute(String attName, Object attValue) {
+        Attribute aAtt = new Attribute();
+        //aAtt.NCType = NetCDF4.NcType.NC_CHAR;
+        aAtt.attName = attName;
+        aAtt.attValue = attValue;
+        //aAtt.attLen = attValue.length();
+
+        _attributes.add(aAtt);
+        _attNumber = _attributes.size();
     }
 
     /**
