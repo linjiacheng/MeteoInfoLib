@@ -3946,6 +3946,9 @@ public class MapView extends JPanel {
         }
 
         refreshXYScale(rect.width, rect.height);
+        
+        g.setColor(this.getBackground());
+        g.fill(rect);
 
         AffineTransform oldMatrix = g.getTransform();
         Rectangle oldRegion = g.getClipBounds();
@@ -3956,8 +3959,8 @@ public class MapView extends JPanel {
         getMaskOutGraphicsPath(g);
 
         g.translate(rect.x, rect.y);
-        _maskOutGraphicsPath.transform(g.getTransform());
-
+        _maskOutGraphicsPath.transform(g.getTransform()); 
+        
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         if (_antiAlias) {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);

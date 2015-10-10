@@ -797,8 +797,8 @@ public class LayoutMap extends LayoutElement {
         if (_mapFrame != null) {
             PointF aP = pageToScreen(this.getLeft(), this.getTop(), pageLocation, zoom);
             Rectangle rect = new Rectangle((int) aP.X, (int) aP.Y, (int) (this.getWidth() * zoom), (int) (this.getHeight() * zoom));
-            g.setColor(_mapFrame.getMapView().getBackground());
-            g.fill(rect);
+            //g.setColor(_mapFrame.getMapView().getBackground());
+            //g.fill(rect);
 
             _mapFrame.getMapView().paintGraphics(g, rect);
 

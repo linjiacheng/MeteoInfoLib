@@ -246,7 +246,7 @@ public class DrawMeteoData {
 
         return aLayer;
     }
-    
+
     /**
      * Create shaded layer
      *
@@ -325,7 +325,7 @@ public class DrawMeteoData {
             //aPolygon = ContourPolygon;
             aValue = aPolygon.LowValue;
             PointD aPoint;
-            List<PointD> pList = new ArrayList<PointD>();
+            List<PointD> pList = new ArrayList<>();
             for (wContour.Global.PointD pointList : aPolygon.OutLine.PointList) {
                 aPoint = new PointD();
                 aPoint.X = pointList.X;
@@ -341,7 +341,7 @@ public class DrawMeteoData {
             aPolygonShape.lowValue = aValue;
             if (aPolygon.HasHoles()) {
                 for (PolyLine holeLine : aPolygon.HoleLines) {
-                    pList = new ArrayList<PointD>();
+                    pList = new ArrayList<>();
                     for (wContour.Global.PointD pointList : holeLine.PointList) {
                         aPoint = new PointD();
                         aPoint.X = pointList.X;
@@ -358,12 +358,14 @@ public class DrawMeteoData {
             } else {
                 aPolygonShape.highValue = cValues[valueIdx + 1];
             }
-            if (!aPolygon.IsHighCenter) {
-                aPolygonShape.highValue = aValue;
-                if (valueIdx == 0) {
-                    aPolygonShape.lowValue = minData;
-                } else {
-                    aPolygonShape.lowValue = cValues[valueIdx - 1];
+            if (!aPolygon.IsBorder) {
+                if (!aPolygon.IsHighCenter) {
+                    aPolygonShape.highValue = aValue;
+                    if (valueIdx == 0) {
+                        aPolygonShape.lowValue = minData;
+                    } else {
+                        aPolygonShape.lowValue = cValues[valueIdx - 1];
+                    }
                 }
             }
             int shapeNum = aLayer.getShapeNum();
@@ -985,13 +987,13 @@ public class DrawMeteoData {
     public static RasterLayer createRasterLayer(GridData gridData, String lName) {
         boolean isUnique = gridData.testUniqueValues();
         LegendScheme ls;
-        if (isUnique){
+        if (isUnique) {
             List<Number> values = gridData.getUniqueValues();
             ls = LegendManage.createUniqValueLegendScheme(values, ShapeTypes.Polygon);
         } else {
             ls = LegendManage.createLegendSchemeFromGridData(gridData, LegendType.GraduatedColor, ShapeTypes.Polygon);
         }
-        
+
         return createRasterLayer(gridData, lName, ls);
     }
 
@@ -1760,7 +1762,7 @@ public class DrawMeteoData {
      */
     public static VectorLayer createWeatherSymbolLayer(StationData weatherData, List<Integer> wList,
             String layerName) {
-        LegendScheme aLS = createWeatherLegendScheme(wList);
+        LegendScheme aLS = createWeatherLegendScheme(wList, 20, Color.blue);
         return createWeatherSymbolLayer(weatherData, wList, aLS, layerName);
     }
 
@@ -1814,14 +1816,21 @@ public class DrawMeteoData {
         return aLayer;
     }
 
-    private static LegendScheme createWeatherLegendScheme(List<Integer> wList) {
+    /**
+     * Create weather legend scheme
+     * @param wList Weather inex list
+     * @param size Size
+     * @param color Color
+     * @return Weather legend scheme
+     */
+    public static LegendScheme createWeatherLegendScheme(List<Integer> wList, int size, Color color) {
         LegendScheme aLS = new LegendScheme(ShapeTypes.Point);
         aLS.setLegendType(LegendType.UniqueValue);
         for (int w : wList) {
             PointBreak aPB = new PointBreak();
             aPB.setMarkerType(MarkerType.Character);
-            aPB.setSize(20);
-            aPB.setColor(Color.blue);
+            aPB.setSize(size);
+            aPB.setColor(color);
             aPB.setFontName("Weather");
             aPB.setStartValue(w);
             aPB.setEndValue(w);
@@ -1845,31 +1854,43 @@ public class DrawMeteoData {
      * @return Weather list
      */
     public static List<Integer> getWeatherTypes(String weatherType) {
-        List<Integer> weatherList = new ArrayList<Integer>();
+        List<Integer> weatherList = new ArrayList<>();
         int i;
-        int[] weathers = new int[1];
-        if (weatherType.equals("All Weather")) {
-            weathers = new int[96];
-            for (i = 4; i < 100; i++) {
-                weathers[i - 4] = i;
-            }
-        } else if (weatherType.equals("SDS")) {
-            weathers = new int[]{6, 7, 8, 9, 30, 31, 32, 33, 34, 35};
-        } else if (weatherType.equals("SDS, Haze")) {
-            weathers = new int[]{5, 6, 7, 8, 9, 30, 31, 32, 33, 34, 35};
-        } else if (weatherType.equals("Smoke, Haze, Mist")) {
-            weathers = new int[]{4, 5, 10};
-        } else if (weatherType.equals("Smoke")) {
-            weathers = new int[]{4};
-        } else if (weatherType.equals("Haze")) {
-            weathers = new int[]{5};
-        } else if (weatherType.equals("Mist")) {
-            weathers = new int[]{10};
-        } else if (weatherType.equals("Fog")) {
-            weathers = new int[10];
-            for (i = 40; i < 50; i++) {
-                weathers[i - 40] = i;
-            }
+        int[] weathers;
+        switch (weatherType.toLowerCase()) {
+            case "all weather":
+            case "all":
+            default:
+                weathers = new int[96];
+                for (i = 4; i < 100; i++) {
+                    weathers[i - 4] = i;
+                }
+                break;
+            case "sds":
+            case "dust":
+                weathers = new int[]{6, 7, 8, 9, 30, 31, 32, 33, 34, 35};
+                break;
+            case "sds, haze":
+                weathers = new int[]{5, 6, 7, 8, 9, 30, 31, 32, 33, 34, 35};
+                break;
+            case "smoke, haze, mist":
+                weathers = new int[]{4, 5, 10};
+                break;
+            case "smoke":
+                weathers = new int[]{4};
+                break;
+            case "haze":
+                weathers = new int[]{5};
+                break;
+            case "mist":
+                weathers = new int[]{10};
+                break;
+            case "Fog":
+                weathers = new int[10];
+                for (i = 40; i < 50; i++) {
+                    weathers[i - 40] = i;
+                }
+                break;
         }
 
         for (int w : weathers) {

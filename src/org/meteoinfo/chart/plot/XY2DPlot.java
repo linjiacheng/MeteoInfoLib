@@ -5,6 +5,7 @@
  */
 package org.meteoinfo.chart.plot;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import org.meteoinfo.chart.ChartText;
@@ -104,6 +105,24 @@ public class XY2DPlot extends XYPlot {
      */
     public void setAntialias(boolean value) {
         this.antialias = value;
+    }
+    
+    /**
+     * Get background color
+     * @return Background color
+     */
+    @Override
+    public Color getBackground(){
+        return this.mapView.getBackground();
+    }
+    
+    /**
+     * Set background color
+     * @param value Background color
+     */
+    @Override
+    public void setBackground(Color value){
+        this.mapView.setBackground(value);
     }
     // </editor-fold>
     // <editor-fold desc="Methods">
