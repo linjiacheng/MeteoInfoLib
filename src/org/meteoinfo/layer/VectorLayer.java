@@ -128,12 +128,13 @@ public class VectorLayer extends MapLayer {
     // <editor-fold desc="Get Set Methods">
     /**
      * Get UndoManager
+     *
      * @return UndoManager
      */
-    public UndoManager getUndoManager(){
+    public UndoManager getUndoManager() {
         return undoManager;
     }
-    
+
     /**
      * Get if avoid collision
      *
@@ -378,39 +379,44 @@ public class VectorLayer extends MapLayer {
         }
         updateLegendIndexes();
     }
-    
+
     /**
      * Get if is editing
+     *
      * @return Boolean
      */
-    public boolean isEditing(){
+    public boolean isEditing() {
         return editing;
     }
-    
+
     /**
      * Set if is editing
+     *
      * @param value Boolean
      */
-    public void setEditing(boolean value){
+    public void setEditing(boolean value) {
         editing = value;
     }
-    
+
     /**
      * Get editing shape
+     *
      * @return Editing shape
      */
-    public Shape getEditingShape(){
+    public Shape getEditingShape() {
         return editingShape;
     }
-    
+
     /**
      * Set editing shape
+     *
      * @param value The shape
      */
-    public void setEditingShape(Shape value){
+    public void setEditingShape(Shape value) {
         editingShape = value;
-        for (Shape shape : _shapeList)
+        for (Shape shape : _shapeList) {
             shape.setEditing(false);
+        }
         editingShape.setEditing(true);
     }
 
@@ -481,7 +487,7 @@ public class VectorLayer extends MapLayer {
                     break;
             }
 
-            ChartBreak aCP = new ChartBreak(_chartSet.getChartType());            
+            ChartBreak aCP = new ChartBreak(_chartSet.getChartType());
             for (String fn : _chartSet.getFieldNames()) {
                 aCP.getChartData().add(Float.parseFloat(getCellValue(fn, shapeIdx).toString()));
             }
@@ -506,14 +512,14 @@ public class VectorLayer extends MapLayer {
         }
         _chartSet.setDrawCharts(true);
     }
-    
+
     /**
      * Update charts
      */
     public void updateCharts() {
         int shapeIdx;
-        for (ChartGraphic cg : this._chartPoints) {                       
-            ChartBreak aCP = (ChartBreak)cg.getLegend();
+        for (ChartGraphic cg : this._chartPoints) {
+            ChartBreak aCP = (ChartBreak) cg.getLegend();
             shapeIdx = aCP.getShapeIndex();
             aCP.getChartData().clear();
             for (String fn : _chartSet.getFieldNames()) {
@@ -777,12 +783,12 @@ public class VectorLayer extends MapLayer {
 
         return false;
     }
-    
+
     /**
      * Clear editing shape
      */
-    public void clearEditingShape(){
-        if (editingShape != null){
+    public void clearEditingShape() {
+        if (editingShape != null) {
             editingShape.setEditing(false);
         }
     }
@@ -830,7 +836,7 @@ public class VectorLayer extends MapLayer {
         DataColumnCollection cols = _attributeTable.getTable().getColumns();
         List<Field> fields = new ArrayList<>();
         for (DataColumn col : cols) {
-            fields.add((Field)col);
+            fields.add((Field) col);
         }
 
         return fields;
@@ -925,8 +931,8 @@ public class VectorLayer extends MapLayer {
         DataRow aDR = _attributeTable.getTable().newRow();
         _attributeTable.getTable().getRows().add(position, aDR);
     }
-    
-    private void insertRecord(int position, DataRow record) throws Exception {        
+
+    private void insertRecord(int position, DataRow record) throws Exception {
         _attributeTable.getTable().getRows().add(position, record);
     }
 
@@ -982,49 +988,53 @@ public class VectorLayer extends MapLayer {
             return 0;
         }
     }
-    
+
     /**
      * Join data table
+     *
      * @param dataTable The input data table
      * @param colName The column name for join
      */
-    public void joinTable(DataTable dataTable, String colName){
+    public void joinTable(DataTable dataTable, String colName) {
         this.joinTable(dataTable, colName, false);
     }
-    
+
     /**
      * Join data table
+     *
      * @param dataTable The input data table
      * @param colName The column name for join
      * @param isUpdate
      */
-    public void joinTable(DataTable dataTable, String colName, boolean isUpdate){
+    public void joinTable(DataTable dataTable, String colName, boolean isUpdate) {
         DataTable thisTable = this._attributeTable.getTable();
         thisTable.join(dataTable, colName, isUpdate);
         this._attributeTable.updateDataTable();
     }
-    
+
     /**
      * Join data table
+     *
      * @param dataTable The input data table
      * @param colName_this The column name of this data table for join
      * @param colName_in The column name of the input data table for join
      * @param isUpdate If update the existing values with same column name
      */
-    public void joinTable(DataTable dataTable, String colName_this, String colName_in, boolean isUpdate){
+    public void joinTable(DataTable dataTable, String colName_this, String colName_in, boolean isUpdate) {
         DataTable thisTable = this._attributeTable.getTable();
         thisTable.join(dataTable, colName_this, colName_in, isUpdate);
         this._attributeTable.updateDataTable();
     }
-    
+
     /**
      * Remove joined data columns
      */
-    public void removeJoins(){
+    public void removeJoins() {
         DataTable thisTable = this._attributeTable.getTable();
-        for (DataColumn col : thisTable.getColumns()){
-            if (col.isJoined())
+        for (DataColumn col : thisTable.getColumns()) {
+            if (col.isJoined()) {
                 thisTable.removeColumn(col);
+            }
         }
     }
     // </editor-fold>
@@ -1039,18 +1049,19 @@ public class VectorLayer extends MapLayer {
      * @throws java.lang.Exception
      */
     public boolean editInsertShape(Shape aShape, int position) throws Exception {
-        if (position < 0)
+        if (position < 0) {
             position = 0;
-        else if (position > _shapeList.size())
+        } else if (position > _shapeList.size()) {
             position = _shapeList.size();
-        
+        }
+
         _shapeList.add(position, aShape);
         insertRecord(position);
         updateLayerExtent(aShape);
 
         return true;
     }
-    
+
     /**
      * Edit: Insert shape
      *
@@ -1061,36 +1072,39 @@ public class VectorLayer extends MapLayer {
      * @throws java.lang.Exception
      */
     public boolean editInsertShape(Shape aShape, int position, DataRow record) throws Exception {
-        if (position < 0)
+        if (position < 0) {
             position = 0;
-        else if (position > _shapeList.size())
+        } else if (position > _shapeList.size()) {
             position = _shapeList.size();
-        
+        }
+
         _shapeList.add(position, aShape);
         insertRecord(position, record);
         updateLayerExtent(aShape);
 
         return true;
     }
-    
+
     /**
      * Edit: Add a shape
+     *
      * @param aShape The shape
      * @return If success
-     * @throws Exception 
+     * @throws Exception
      */
-    public boolean editAddShape(Shape aShape) throws Exception{
+    public boolean editAddShape(Shape aShape) throws Exception {
         int pos = _shapeList.size();
         return this.editInsertShape(aShape, pos);
     }
-    
+
     /**
      * Edit: Remove a shape
+     *
      * @param shape The shape
      */
-    public void editRemoveShape(Shape shape){
+    public void editRemoveShape(Shape shape) {
         int idx = this._shapeList.indexOf(shape);
-        if (idx >= 0){
+        if (idx >= 0) {
             this._shapeList.remove(shape);
             this._attributeTable.getTable().removeRow(idx);
         }
@@ -1230,6 +1244,48 @@ public class VectorLayer extends MapLayer {
      */
     public void addLabel(Graphic aLP) {
         _labelPoints.add(aLP);
+    }
+
+    /**
+     * Get a label by text
+     *
+     * @param text Text
+     * @return Label
+     */
+    public Graphic getLabel(String text) {
+        for (Graphic lb : _labelPoints) {
+            if (((LabelBreak) lb.getLegend()).getText().equals(text)) {
+                return lb;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Move label
+     *
+     * @param text Label text
+     * @param x X
+     * @param y Y
+     */
+    public void moveLabel(String text, float x, float y) {
+        Graphic lb = this.getLabel(text);
+        if (lb != null) {
+            this.moveLabel(lb, x, y);
+        }
+    }
+
+    /**
+     * Move label
+     *
+     * @param lb Label
+     * @param x X
+     * @param y Y
+     */
+    public void moveLabel(Graphic lb, float x, float y) {
+        LabelBreak lbb = (LabelBreak)lb.getLegend();
+        lbb.setXShift(lbb.getXShift() + x);
+        lbb.setYShift(lbb.getYShift() + y);
     }
 
     /**
@@ -1492,12 +1548,13 @@ public class VectorLayer extends MapLayer {
      * @param fileName KML file name
      */
     public void saveAsKMLFile(String fileName) {
-        if (this.getShapeType().isPoint())
+        if (this.getShapeType().isPoint()) {
             saveAsKMLFile_Point(fileName);
-        else if (this.getShapeType().isLine())
+        } else if (this.getShapeType().isLine()) {
             saveAsKMLFile_Polyline(fileName);
-        else if (this.getShapeType().isPolygon())
-            saveAsKMLFile_Polygon(fileName);        
+        } else if (this.getShapeType().isPolygon()) {
+            saveAsKMLFile_Polygon(fileName);
+        }
     }
 
     /**
@@ -2315,23 +2372,24 @@ public class VectorLayer extends MapLayer {
 
         return aLayer;
     }
-    
+
     /**
      * To string
+     *
      * @return String
      */
     @Override
-    public String getLayerInfo(){
+    public String getLayerInfo() {
         String str = "Layer name: " + this.getLayerName();
         str += System.getProperty("line.separator") + "Layer file: " + this.getFileName();
         str += System.getProperty("line.separator") + "Layer type: " + this.getLayerType();
         str += System.getProperty("line.separator") + "Shape type: " + this.getShapeType();
         str += System.getProperty("line.separator") + "Shape count: " + String.valueOf(this.getShapeNum());
         str += System.getProperty("line.separator") + "Fields:";
-        for (Field field : this.getFields()){
+        for (Field field : this.getFields()) {
             str += System.getProperty("line.separator") + "\t" + field.getColumnName() + ": " + field.getDataTypeName();
         }
-        
+
         return str;
     }
     // </editor-fold>

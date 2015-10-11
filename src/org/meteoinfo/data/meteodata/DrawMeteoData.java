@@ -358,14 +358,22 @@ public class DrawMeteoData {
             } else {
                 aPolygonShape.highValue = cValues[valueIdx + 1];
             }
-            if (!aPolygon.IsBorder) {
-                if (!aPolygon.IsHighCenter) {
-                    aPolygonShape.highValue = aValue;
-                    if (valueIdx == 0) {
-                        aPolygonShape.lowValue = minData;
-                    } else {
-                        aPolygonShape.lowValue = cValues[valueIdx - 1];
-                    }
+//            if (!aPolygon.IsBorder) {
+//                if (!aPolygon.IsHighCenter) {
+//                    aPolygonShape.highValue = aValue;
+//                    if (valueIdx == 0) {
+//                        aPolygonShape.lowValue = minData;
+//                    } else {
+//                        aPolygonShape.lowValue = cValues[valueIdx - 1];
+//                    }
+//                }
+//            }
+            if (!aPolygon.IsHighCenter && aPolygon.HighValue == aPolygon.LowValue) {
+                aPolygonShape.highValue = aValue;
+                if (valueIdx == 0) {
+                    aPolygonShape.lowValue = minData;
+                } else {
+                    aPolygonShape.lowValue = cValues[valueIdx - 1];
                 }
             }
             int shapeNum = aLayer.getShapeNum();
@@ -1818,6 +1826,7 @@ public class DrawMeteoData {
 
     /**
      * Create weather legend scheme
+     *
      * @param wList Weather inex list
      * @param size Size
      * @param color Color

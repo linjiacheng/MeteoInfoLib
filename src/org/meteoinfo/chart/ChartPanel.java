@@ -83,6 +83,7 @@ public class ChartPanel extends JPanel {
     private final EventListenerList listeners = new EventListenerList();
     private BufferedImage mapBitmap = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
     private Chart chart;
+    private Dimension chartSize;
     private Point mouseDownPoint = new Point(0, 0);
     private Point mouseLastPos = new Point(0, 0);
     private boolean dragMode = false;
@@ -98,7 +99,8 @@ public class ChartPanel extends JPanel {
      */
     public ChartPanel() {
         super();
-        this.setBackground(Color.white);
+        //this.setBackground(Color.white);
+        this.setBackground(Color.lightGray);
         this.setSize(200, 200);
         this.addComponentListener(new ComponentAdapter() {
             @Override
@@ -171,6 +173,17 @@ public class ChartPanel extends JPanel {
     public ChartPanel(Chart chart) {
         this();
         this.chart = chart;
+    }
+    
+    /**
+     * Constructor
+     * @param chart Chart
+     * @param width Chart width
+     * @param height Chart height
+     */
+    public ChartPanel(Chart chart, int width, int height){
+        this(chart);
+        this.chartSize = new Dimension(width, height);
     }
 
     // </editor-fold>
@@ -304,7 +317,11 @@ public class ChartPanel extends JPanel {
 
         if (this.chart != null) {
             Graphics2D g = this.mapBitmap.createGraphics();
-            Rectangle2D chartArea = new Rectangle2D.Double(0.0, 0.0, this.mapBitmap.getWidth(), this.mapBitmap.getHeight());
+            Rectangle2D chartArea;
+            if (this.chartSize == null)
+                chartArea = new Rectangle2D.Double(0.0, 0.0, this.mapBitmap.getWidth(), this.mapBitmap.getHeight());
+            else
+                chartArea = new Rectangle2D.Double(0.0, 0.0, this.chartSize.width, this.chartSize.height);
             this.chart.draw(g, chartArea);
         }
         this.repaint();

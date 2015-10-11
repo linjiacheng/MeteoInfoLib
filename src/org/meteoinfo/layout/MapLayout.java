@@ -155,8 +155,8 @@ public class MapLayout extends JPanel {
     private JScrollBar _vScrollBar;
     private JScrollBar _hScrollBar;
     private boolean _lockViewUpdate = false;
-    private List<MapFrame> _mapFrames = new ArrayList<MapFrame>();
-    private List<LayoutElement> _layoutElements = new ArrayList<LayoutElement>();
+    private List<MapFrame> _mapFrames = new ArrayList<>();
+    private List<LayoutElement> _layoutElements = new ArrayList<>();
     private LayoutMap _currentLayoutMap;
     private BufferedImage _layoutBitmap = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
     private BufferedImage _tempImage = null;
@@ -169,7 +169,7 @@ public class MapLayout extends JPanel {
     private Color _pageForeColor = Color.black;
     private Color _pageBackColor = Color.white;
     private PaperSize _paperSize = new PaperSize();
-    private List<PaperSize> _paperSizeList = new ArrayList<PaperSize>();
+    private List<PaperSize> _paperSizeList = new ArrayList<>();
     private boolean _isLandscape;
     private float _zoom = 1.0f;
     private PointF _pageLocation = new PointF(0, 0);
@@ -180,15 +180,15 @@ public class MapLayout extends JPanel {
     private int _xShift = 0;
     private int _yShift = 0;
     private MouseMode _mouseMode = MouseMode.Default;
-    private List<LayoutElement> _selectedElements = new ArrayList<LayoutElement>();
+    private List<LayoutElement> _selectedElements = new ArrayList<>();
     private Rectangle _selectedRectangle = new Rectangle();
     private Point _mouseDownPos = new Point(0, 0);
     private Point _mouseLastPos = new Point(0, 0);
     private Point _mouseDownPoint = new Point(0, 0);
     private Edge _resizeSelectedEdge = Edge.None;
     private boolean _startNewGraphic = true;
-    private List<PointF> _graphicPoints = new ArrayList<PointF>();
-    private List<PointD> _editingVertices = new ArrayList<PointD>();
+    private List<PointF> _graphicPoints = new ArrayList<>();
+    private List<PointD> _editingVertices = new ArrayList<>();
     private int _editingVerticeIndex;
     private boolean _dragMode = false;
     // </editor-fold>
