@@ -146,6 +146,23 @@ public class ArrayUtil {
     /**
      * Create an array
      *
+     * @param data Object
+     * @return Array
+     */
+    public static Array array(Object data) { 
+        if (data instanceof Number) {
+            DataType dt = ArrayMath.getDataType(data);
+            Array a = Array.factory(dt, new int[]{1});
+            a.setObject(0, data);
+            return a;
+        } else {
+            return null;
+        }
+    }
+    
+    /**
+     * Create an array
+     *
      * @param data Array like data
      * @return Array
      */

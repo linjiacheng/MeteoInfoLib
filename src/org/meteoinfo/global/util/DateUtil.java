@@ -72,7 +72,7 @@ public class DateUtil {
      * @return The time delta values
      */
     public static List<Integer> getTimeDeltaValues(List<Date> times, Date baseDate, String tDelta) {
-        List<Integer> values = new ArrayList<Integer>();
+        List<Integer> values = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
         cal.setTime(baseDate);
         long sl = cal.getTimeInMillis();
@@ -148,6 +148,19 @@ public class DateUtil {
         oaDate = BigDecimalUtil.div(oaDate, 1000000);
 
         return oaDate;
+    }
+    
+    /**
+     * Date equals
+     * @param a Date a
+     * @param b Date b
+     * @return If equals
+     */
+    public static boolean equals(Date a, Date b) {
+        if (a.getTime() == b.getTime())
+            return true;
+        else
+            return false;
     }
     // </editor-fold>
 }

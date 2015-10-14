@@ -1134,7 +1134,7 @@ public class Draw {
             text = String.valueOf((char) (aSM.weatherSymbol.weather + 100));
             FontMetrics metrics = g.getFontMetrics(wFont);
             Dimension textSize = new Dimension(metrics.stringWidth(text), metrics.getHeight());
-            sPoint.X = sP.X - (float) textSize.getWidth() - aSM.size / 2;
+            sPoint.X = sP.X - (float) textSize.getHeight()- aSM.size / 2;
             sPoint.Y = sP.Y - (float) textSize.getHeight() / 2;
             text = String.valueOf((char) (aSM.weatherSymbol.weather + 28));
             if (aSM.weatherSymbol.weather == 99) {

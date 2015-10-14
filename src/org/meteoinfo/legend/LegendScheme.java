@@ -90,6 +90,29 @@ public class LegendScheme {
         shapeType = aShapeType;        
         legendBreaks = new ArrayList<>();
     }
+    
+    /**
+     * Constructor
+     * @param lbs Legend breaks
+     */
+    public LegendScheme(List<ColorBreak> lbs){
+        this.legendBreaks = lbs;
+        ColorBreak lb = lbs.get(0);
+        switch (lb.getBreakType()){
+            case PointBreak:
+                this.shapeType = ShapeTypes.Point;
+                break;
+            case PolylineBreak:
+                this.shapeType = ShapeTypes.Polyline;
+                break;
+            case PolygonBreak:
+                this.shapeType = ShapeTypes.Polygon;
+                break;
+            default:
+                this.shapeType = ShapeTypes.Image;
+                break;
+        }
+    }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
 

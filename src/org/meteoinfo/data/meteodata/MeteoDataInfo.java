@@ -1029,7 +1029,7 @@ public class MeteoDataInfo {
         double ivalue = this.getDataInfo().getMissingValue();
         double v_t1, v_t2;
         for (int i = 0; i < tnum; i++) {
-            if (t.toString().equals(times.get(i).toString())) {
+            if (DateUtil.equals(t, times.get(i))) {
                 ivalue = this.toStation(varName, x, y, i);
                 break;
             }
@@ -1067,7 +1067,7 @@ public class MeteoDataInfo {
         double v_t1, v_t2;
         List<Double> v_t1s, v_t2s;
         for (int i = 0; i < tnum; i++) {
-            if (t.equals(times.get(i))) {
+            if (DateUtil.equals(t, times.get(i))) {
                 ivalues = this.toStation(varNames, x, y, z, i);
                 break;
             }
