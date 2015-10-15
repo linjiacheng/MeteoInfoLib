@@ -738,5 +738,108 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
         return dataset;
     }
     
+    /**
+     * Get XYDataset - X dimension is hours from start point
+     *
+     * @param varIndex Variable index
+     * @return XYDataset
+     */
+    public XYListDataset getXYDataset_HourX(int varIndex) {
+        XYListDataset dataset = new XYListDataset();
+        Calendar cal = Calendar.getInstance();
+        int trajNum = 1;
+        for (int t = 0; t < fileNames.size(); t++) {
+            try {
+                String aFile = fileNames.get(t);
+                BufferedReader sr = new BufferedReader(new FileReader(new File(aFile)));
+                String aLine;
+                String[] dataArray;
+                int i;
+
+                //Record #1
+                sr.readLine();
+
+                //Record #2
+                for (i = 0; i < meteoFileNums.get(t); i++) {
+                    sr.readLine();
+                }
+
+                //Record #3
+                sr.readLine();
+
+                //Record #4             
+                for (i = 0; i < trajeoryNums.get(t); i++) {
+                    sr.readLine();
+                }
+
+                //Record #5
+                sr.readLine();
+
+                //Record #6
+                int TrajIdx;
+                List<PointD> pList;
+                List<List<PointD>> PointList = new ArrayList<>();
+                for (i = 0; i < trajeoryNums.get(t); i++) {
+                    pList = new ArrayList<>();
+                    PointList.add(pList);
+                }
+                PointD aPoint;
+                while (true) {
+                    aLine = sr.readLine();
+                    if (aLine == null) {
+                        break;
+                    }
+                    if (aLine.isEmpty()) {
+                        continue;
+                    }
+                    aLine = aLine.trim();
+                    dataArray = aLine.split("\\s+");
+                    TrajIdx = Integer.parseInt(dataArray[0]) - 1;
+                    int y = Integer.parseInt(dataArray[2]);
+                    if (y < 100) {
+                        if (y > 50) {
+                            y = 1900 + y;
+                        } else {
+                            y = 2000 + y;
+                        }
+                    }
+                    cal.set(y, Integer.parseInt(dataArray[3]) - 1,
+                            Integer.parseInt(dataArray[4]), Integer.parseInt(dataArray[5]), 0, 0);
+
+                    aPoint = new PointD();
+                    aPoint.X = DateUtil.toOADate(cal.getTime());
+                    aPoint.Y = Double.parseDouble(dataArray[varIndex]);
+                    PointList.get(TrajIdx).add(aPoint);
+                }
+
+                //SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHH");
+                for (i = 0; i < trajeoryNums.get(t); i++) {
+                    int n = PointList.get(i).size();
+                    double[] xvs = new double[n];
+                    double[] yvs = new double[n];
+                    Date cdate, sdate = new Date();
+                    for (int j = 0; j < n; j++) {
+                        cdate = DateUtil.fromOADate(PointList.get(i).get(j).X);
+                        if (j == 0) {
+                            sdate = cdate;
+                            xvs[j] = 0;
+                        } else {
+                            xvs[j] = DateUtil.getHours(cdate, sdate);
+                        }
+                        yvs[j] = PointList.get(i).get(j).Y;
+                    }
+                    dataset.addSeries("Traj_" + String.valueOf(trajNum), xvs, yvs);
+                    trajNum += 1;
+                }
+
+                sr.close();
+            } catch (IOException | NumberFormatException ex) {
+                Logger.getLogger(HYSPLITTrajDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        return dataset;
+    }
+    
     // </editor-fold>
 }

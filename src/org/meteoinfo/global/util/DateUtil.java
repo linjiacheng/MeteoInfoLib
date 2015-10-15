@@ -121,6 +121,46 @@ public class DateUtil {
     }
     
     /**
+     * Get days difference between two dates
+     *
+     * @param t The time
+     * @param baseDate Base date
+     * @return The time delta value
+     */
+    public static int getDays(Date t, Date baseDate) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(baseDate);
+        long sl = cal.getTimeInMillis();
+        long el, delta;
+        cal.setTime(t);
+        el = cal.getTimeInMillis();
+        delta = el - sl;
+        int value = (int) (delta / (24 * 60 * 60 * 1000));
+
+        return value;
+    }
+    
+    /**
+     * Get hours difference between two dates
+     *
+     * @param t The time
+     * @param baseDate Base date
+     * @return The time delta value
+     */
+    public static int getHours(Date t, Date baseDate) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(baseDate);
+        long sl = cal.getTimeInMillis();
+        long el, delta;
+        cal.setTime(t);
+        el = cal.getTimeInMillis();
+        delta = el - sl;
+        int value = (int) (delta / (60 * 60 * 1000));
+
+        return value;
+    }
+    
+    /**
      * Convert OA date to date
      *
      * @param oaDate OA date
