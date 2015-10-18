@@ -329,7 +329,11 @@ public class ChartPanel extends JPanel {
 
     public void paintGraphics(Graphics2D g) {
         if (this.chart != null) {
-            Rectangle2D chartArea = new Rectangle2D.Double(0.0, 0.0, this.mapBitmap.getWidth(), this.mapBitmap.getHeight());
+            Rectangle2D chartArea;
+            if (this.chartSize == null)
+                chartArea = new Rectangle2D.Double(0.0, 0.0, this.mapBitmap.getWidth(), this.mapBitmap.getHeight());
+            else
+                chartArea = new Rectangle2D.Double(0.0, 0.0, this.chartSize.width, this.chartSize.height);
             this.chart.draw(g, chartArea);
         }
     }        
@@ -581,8 +585,26 @@ public class ChartPanel extends JPanel {
             g.endExport();
             g.dispose();
         } else {
+            //String extension = aFile.substring(aFile.lastIndexOf('.') + 1);
+            //ImageIO.write(this.mapBitmap, extension, new File(aFile));
+            
             String extension = aFile.substring(aFile.lastIndexOf('.') + 1);
-            ImageIO.write(this.mapBitmap, extension, new File(aFile));
+            BufferedImage aImage;
+            int w, h;
+            if (this.chartSize == null){
+                w = this.getWidth();
+                h = this.getHeight();
+            } else {
+                w = this.chartSize.width;
+                h = this.chartSize.height;
+            }
+            if (extension.equalsIgnoreCase("bmp"))
+                aImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+            else
+                aImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = aImage.createGraphics();
+            paintGraphics(g);            
+            ImageIO.write(aImage, extension, new File(aFile));
         }
     }
 
