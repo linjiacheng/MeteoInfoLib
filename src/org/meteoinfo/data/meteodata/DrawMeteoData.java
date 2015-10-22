@@ -41,6 +41,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.meteoinfo.data.XYListDataset;
 import org.meteoinfo.layer.RasterLayer;
 import org.meteoinfo.legend.LegendType;
 import org.meteoinfo.legend.PointBreak;
@@ -63,6 +64,53 @@ public class DrawMeteoData {
     // </editor-fold>
     // <editor-fold desc="Methods">
 
+    /**
+     * Create a polyline layer
+     *
+     * @param data XYListDataset
+     * @param ls Legend scheme
+     * @param layerName Layer name
+     * @param fieldName Field name
+     * @return Polyline layer
+     */
+    public static VectorLayer createPolylineLayer(XYListDataset data, LegendScheme ls,
+            String layerName, String fieldName) {
+        VectorLayer layer = new VectorLayer(ShapeTypes.Polyline);
+        Field aDC = new Field(fieldName, DataTypes.Double);
+        layer.editAddField(aDC);
+        for (int i = 0; i < data.getSeriesCount(); i++) {
+            double[] xd = data.getXValues(i);
+            double[] yd = data.getYValues(i);
+            PolylineShape aPolyline = new PolylineShape();
+            PointD aPoint;
+            List<PointD> pList = new ArrayList<>();
+            for (int j = 0; j < xd.length; j++) {
+                aPoint = new PointD();
+                aPoint.X = xd[j];
+                aPoint.Y = yd[j];
+                pList.add(aPoint);
+            }
+            aPolyline.setPoints(pList);
+            aPolyline.value = i;
+            aPolyline.setExtent(MIMath.getPointsExtent(pList));
+
+            int shapeNum = layer.getShapeNum();
+            try {
+                if (layer.editInsertShape(aPolyline, shapeNum)) {
+                    layer.editCellValue(fieldName, shapeNum, i);
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(DrawMeteoData.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        layer.setLayerName(layerName);
+        ls.setFieldName(fieldName);
+        layer.setLegendScheme(ls);
+
+        return layer;
+    }
+    
     /**
      * Create a polyline layer
      *
@@ -111,6 +159,77 @@ public class DrawMeteoData {
         return layer;
     }
 
+    /**
+     * Create a polyline layer
+     *
+     * @param data XYListDataset
+     * @param ls Legend scheme
+     * @param layerName Layer name
+     * @param fieldName Field name
+     * @param westLon West border longitude - split polyline if the points cross it
+     * @param eastLon East border longitude - split polyline if the points cross it
+     * @return Polyline layer
+     */
+    public static VectorLayer createPolylineLayer(XYListDataset data, LegendScheme ls,
+            String layerName, String fieldName, double westLon, double eastLon) {
+        VectorLayer layer = new VectorLayer(ShapeTypes.Polyline);
+        Field aDC = new Field(fieldName, DataTypes.Double);
+        layer.editAddField(aDC);
+        for (int i = 0; i < data.getSeriesCount(); i++) {
+            double[] xd = data.getXValues(i);
+            double[] yd = data.getYValues(i);
+            PointD aPoint;
+            List<PointD> pList = new ArrayList<>();
+            List<List<PointD>> ppList = new ArrayList<>();
+            double preLon = 0;
+            for (int j = 0; j < xd.length; j++) {
+                aPoint = new PointD();
+                aPoint.X = xd[j];
+                aPoint.Y = yd[j];
+                if (j == 0) {
+                    preLon = xd[j];
+                    pList.add(aPoint);
+                } else {
+                    if (Math.abs(aPoint.X - preLon) > 350) {
+                        if (aPoint.X > preLon)
+                            pList.add(new PointD(westLon, aPoint.Y));
+                        else
+                            pList.add(new PointD(eastLon, aPoint.Y));
+                        if (pList.size() > 1)
+                            ppList.add(new ArrayList<>(pList));
+                        pList.clear();
+                        pList.add(aPoint);
+                    } else
+                        pList.add(aPoint);
+                    preLon = xd[j];
+                }                
+            }
+            if (pList.size() > 1)
+                ppList.add(pList);
+            for (List<PointD> ps : ppList) {
+                PolylineShape aPolyline = new PolylineShape();
+                aPolyline.setPoints(ps);
+                aPolyline.value = i;
+                aPolyline.setExtent(MIMath.getPointsExtent(ps));
+
+                int shapeNum = layer.getShapeNum();
+                try {
+                    if (layer.editInsertShape(aPolyline, shapeNum)) {
+                        layer.editCellValue(fieldName, shapeNum, i);
+                    }
+                } catch (Exception ex) {
+                    Logger.getLogger(DrawMeteoData.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+
+        layer.setLayerName(layerName);
+        ls.setFieldName(fieldName);
+        layer.setLegendScheme(ls);
+
+        return layer;
+    }
+    
     /**
      * Create a polyline layer
      *
