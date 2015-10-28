@@ -195,10 +195,10 @@ public class GlobalUtil {
      * package on the local file system.
      *
      * @param packageName
-     * @return
+     * @return Class list
      */
     public static List<Class> getClassesInPackage(String packageName) {
-        List<Class> classes = new ArrayList<Class>();
+        List<Class> classes = new ArrayList<>();
         String packageNameSlashed = "/" + packageName.replace(".", "/");
         // Get a File object for the package  
         URL directoryURL = Thread.currentThread().getContextClassLoader().getResource(packageNameSlashed);
@@ -240,10 +240,10 @@ public class GlobalUtil {
      * package on the local file system.
      *
      * @param packageName
-     * @return
+     * @return File names
      */
     public static List<String> getFilesInPackage(String packageName) {
-        List<String> fns = new ArrayList<String>();
+        List<String> fns = new ArrayList<>();
         //String packageNameSlashed = "/" + packageName.replace(".", "/");
         String packageNameSlashed = packageName.replace(".", "/");
         // Get a File object for the package  

@@ -695,7 +695,7 @@ public class ChartPanel extends JPanel {
     /**
      * @param node
      * @param attributeName - name of child node to return
-     * @return
+     * @return Node
      */
     private Node getAttributeByName(Node node, String attributeName) {
         if (node == null) {

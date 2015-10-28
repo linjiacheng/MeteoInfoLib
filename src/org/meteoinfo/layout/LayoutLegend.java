@@ -387,20 +387,22 @@ public class LayoutLegend extends LayoutElement {
     public void setDrawChartBreaks(boolean value) {
         this.drawChartBreaks = value;
     }
-    
+
     /**
      * Get if draw pie label
+     *
      * @return Boolean
      */
-    public boolean isDrawPieLabel(){
+    public boolean isDrawPieLabel() {
         return this.drawPieLabel;
     }
-    
+
     /**
      * Set if draw pie label
+     *
      * @param value Boolean
      */
-    public void setDrawPieLabel(boolean value){
+    public void setDrawPieLabel(boolean value) {
         this.drawPieLabel = value;
     }
 
@@ -476,7 +478,7 @@ public class LayoutLegend extends LayoutElement {
             case PieChart:
                 if (this.drawChartBreaks) {
                     Draw.drawPieChartSymbol(aPoint, aCB, g, null);
-                } else {                    
+                } else {
                     List<String> rStrs = new ArrayList<>();
                     for (int i = 0; i < aCB.getItemNum(); i++) {
                         rStrs.add(aCB.getLegendScheme().getLegendBreaks().get(i).getCaption());
@@ -504,12 +506,17 @@ public class LayoutLegend extends LayoutElement {
         }
 
         PointF aP = new PointF(0, 0);
-        if (!drawChart) {
-            LegendScheme aLS = _legendLayer.getLegendScheme();
-            drawNormalLegend(g, zoom, aLS, aP, true);
-            float height = getBreakHeight(g) * zoom;
-            aP.Y += height + _breakSpace;
-        }
+//        if (!drawChart) {
+//            LegendScheme aLS = _legendLayer.getLegendScheme();
+//            drawNormalLegend(g, zoom, aLS, aP, true);
+//            float height = getBreakHeight(g) * zoom;
+//            aP.Y += height + _breakSpace;
+//        }
+
+        LegendScheme aLS = _legendLayer.getLegendScheme();
+        drawNormalLegend(g, zoom, aLS, aP, true);
+        float height = getBreakHeight(g) * zoom;
+        aP.Y += height + _breakSpace;
 
         //Draw chart legend
         if (drawChart) {

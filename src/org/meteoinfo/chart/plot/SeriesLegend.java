@@ -71,7 +71,7 @@ public class SeriesLegend {
     
     /**
      * Get if if mutiple legend breaks
-     * @return 
+     * @return Boolean
      */
     public boolean isMutiple(){
         return this.legendBreaks.length > 1;

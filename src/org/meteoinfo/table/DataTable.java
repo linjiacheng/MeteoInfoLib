@@ -347,6 +347,16 @@ public final class DataTable {
             row.renameColumn(oldName, fieldName);
         }
     }
+    
+    /**
+     * Rename column
+     * @param colIdx The column index
+     * @param fieldName The new column name
+     */
+    public void renameColumn(int colIdx, String fieldName){
+        DataColumn column = this.columns.get(colIdx);
+        this.renameColumn(column, fieldName);
+    }
 
     /**
      * Add a data row

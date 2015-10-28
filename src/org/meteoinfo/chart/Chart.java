@@ -647,7 +647,7 @@ public class Chart {
      * Get plot by plot index
      *
      * @param plotIdx Plot index - begin with 1
-     * @return
+     * @return Plot index
      */
     public Plot getPlot(int plotIdx) {
         for (Plot plot : this.plots) {

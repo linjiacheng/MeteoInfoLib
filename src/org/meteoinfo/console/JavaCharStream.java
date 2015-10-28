@@ -323,7 +323,7 @@ public class JavaCharStream {
     }
 
     /**
-     * @return 
+     * @return Column
      * @deprecated @see #getEndColumn
      */
     public int getColumn() {
@@ -331,7 +331,7 @@ public class JavaCharStream {
     }
 
     /**
-     * @return 
+     * @return Line
      * @deprecated @see #getEndLine
      */
     public int getLine() {

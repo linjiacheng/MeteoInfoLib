@@ -1274,7 +1274,7 @@ public class ArrayMath {
      * Get maximum value
      *
      * @param a Array a
-     * @return
+     * @return Maximum value
      */
     public static double getMaximum(Array a) {
         IndexIterator iter = a.getIndexIterator();
@@ -1316,7 +1316,7 @@ public class ArrayMath {
      *
      * @param a Array a
      * @param missingv Missing value
-     * @return
+     * @return Maximum value
      */
     public static double getMaximum(Array a, double missingv) {
         IndexIterator iter = a.getIndexIterator();

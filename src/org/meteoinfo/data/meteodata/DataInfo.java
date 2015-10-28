@@ -469,7 +469,7 @@ public abstract class DataInfo {
      * @param origin Origin array
      * @param size Size array
      * @param stride Stride array
-     * @return
+     * @return Array
      */
     public abstract Array read(String varName, int[] origin, int[] size, int[] stride);
 
