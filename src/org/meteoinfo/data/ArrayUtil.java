@@ -1441,5 +1441,153 @@ public class ArrayUtil {
 
         return new Array[]{rx, ry};
     }
+    
+    /**
+     * Interpolate data to a station point
+     *
+     * @param data Data array
+     * @param xArray X array
+     * @param yArray Y array
+     * @param x X coordinate of the station
+     * @param y Y coordinate of the station
+     * @param missingValue Missing value
+     * @return Interpolated value
+     */
+    public static double toStation(Array data, List<Number> xArray, List<Number> yArray, double x, double y, 
+            double missingValue) {
+        double iValue = missingValue;
+        int nx = xArray.size();
+        int ny = yArray.size();
+        if (x < xArray.get(0).doubleValue() || x > xArray.get(nx - 1).doubleValue() || 
+                y < yArray.get(0).doubleValue() || y > yArray.get(ny - 1).doubleValue()) {
+            return missingValue;
+        }
+
+        //Get x/y index
+        int xIdx = 0, yIdx = 0;
+        int i;
+        for (i = 1; i < nx; i++){
+            if (x < xArray.get(i).doubleValue()){
+                xIdx = i - 1;
+                break;
+            }
+        }
+        for (i = 1; i < ny; i++){
+            if (y < yArray.get(i).doubleValue()){
+                yIdx = i - 1;
+                break;
+            }
+        }
+
+        int i1 = yIdx;
+        int j1 = xIdx;
+        int i2 = i1 + 1;
+        int j2 = j1 + 1;
+        double a = data.getDouble(i1 * nx + j1);
+        double b = data.getDouble(i1 * nx + j2);
+        double c = data.getDouble(i2 * nx + j1);
+        double d = data.getDouble(i2 * nx + j2);
+        List<java.lang.Double> dList = new ArrayList<>();
+        if (!MIMath.doubleEquals(a, missingValue)) {
+            dList.add(a);
+        }
+        if (!MIMath.doubleEquals(b, missingValue)) {
+            dList.add(b);
+        }
+        if (!MIMath.doubleEquals(c, missingValue)) {
+            dList.add(c);
+        }
+        if (!MIMath.doubleEquals(d, missingValue)) {
+            dList.add(d);
+        }
+
+        if (dList.isEmpty()) {
+            return iValue;
+        } else if (dList.size() == 1) {
+            iValue = dList.get(0);
+        } else if (dList.size() <= 3) {
+            double aSum = 0;
+            for (double dd : dList) {
+                aSum += dd;
+            }
+            iValue = aSum / dList.size();
+        } else {
+            double dx = xArray.get(xIdx + 1).doubleValue() - xArray.get(xIdx).doubleValue();
+            double dy = yArray.get(yIdx + 1).doubleValue() - yArray.get(yIdx).doubleValue();
+            double x1val = a + (c - a) * (y - yArray.get(i1).doubleValue()) / dy;
+            double x2val = b + (d - b) * (y - yArray.get(i1).doubleValue()) / dy;
+            iValue = x1val + (x2val - x1val) * (x - xArray.get(j1).doubleValue()) / dx;
+        }
+
+        return iValue;
+    }
+    
+    /**
+     * Reproject
+     *
+     * @param data Data array
+     * @param x X array
+     * @param y Y array
+     * @param rx Result x array
+     * @param ry Result y array
+     * @param fromProj From projection
+     * @param toProj To projection
+     * @param fill_value Fill value
+     * @return Result arrays
+     */
+    public static Array reproject(Array data, List<Number> x, List<Number> y, Array rx, Array ry, 
+            ProjectionInfo fromProj, ProjectionInfo toProj, double fill_value){
+        int n = (int) rx.getSize();
+        Array r = Array.factory(data.getDataType(), rx.getShape());
+        
+        double[][] points = new double[n][];
+        for (int i = 0; i < n; i++) {
+            points[i] = new double[]{rx.getDouble(i), ry.getDouble(i)};
+        }
+        Reproject.reprojectPoints(points, toProj, fromProj, 0, points.length);
+        double xx, yy;
+        for (int i = 0; i < n; i++) {
+            xx = points[i][0];
+            yy = points[i][1];
+            r.setObject(i, toStation(data, x, y, xx, yy, fill_value));
+        }
+
+        return r;
+    }
+    
+    /**
+     * Reproject
+     *
+     * @param data Data array
+     * @param x X array
+     * @param y Y array
+     * @param rx Result x array
+     * @param ry Result y array
+     * @param fromProj From projection
+     * @param toProj To projection
+     * @param fill_value Fill value
+     * @return Result arrays
+     */
+    public static Array reproject(Array data, List<Number> x, List<Number> y, List<Number> rx, List<Number> ry, 
+            ProjectionInfo fromProj, ProjectionInfo toProj, double fill_value){
+        int n = rx.size() * ry.size();
+        int[] shape = new int[]{ry.size(), rx.size()};
+        Array r = Array.factory(data.getDataType(), shape);
+        
+        double[][] points = new double[n][];
+        for (int i = 0; i < ry.size(); i++) {
+            for (int j = 0; j < rx.size(); j++)
+                points[i * rx.size() + j] = new double[]{rx.get(i).doubleValue(), ry.get(i).doubleValue()};
+        }
+        Reproject.reprojectPoints(points, toProj, fromProj, 0, points.length);
+        double xx, yy;
+        for (int i = 0; i < n; i++) {
+            xx = points[i][0];
+            yy = points[i][1];
+            r.setObject(i, toStation(data, x, y, xx, yy, fill_value));
+        }
+
+        return r;
+    }
     // </editor-fold>
 }
