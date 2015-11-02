@@ -355,8 +355,11 @@ public class Chart {
             FontMetrics metrics = g.getFontMetrics(title.getFont());
             x -= metrics.stringWidth(title.getText()) / 2;
             y += metrics.getHeight();
-            g.drawString(title.getText(), x, y);
-            y += 5;
+            List<String> texts = title.getTexts();
+            for (String text : texts){
+                g.drawString(text, x, y);
+                y += 5;
+            }
         }
 
         //Draw plot
@@ -420,8 +423,7 @@ public class Chart {
         int right = edge;
         int bottom = edge;
         if (this.title != null) {
-            FontMetrics metrics = g.getFontMetrics(this.title.getFont());
-            top += metrics.getHeight() + 10;
+            top += this.title.getHeight(g) + 10;
         }
         if (this.drawLegend) {
             Dimension dim = this.legend.getLegendDimension(g, new Dimension((int) area.getWidth(), (int) area.getHeight()));

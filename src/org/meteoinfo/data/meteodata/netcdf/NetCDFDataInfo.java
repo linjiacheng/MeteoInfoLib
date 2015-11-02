@@ -3361,9 +3361,13 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
         NetcdfFileWriter ncfile = NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf3, outFile);
 
         //Define dimensions
+        List<ucar.nc2.Dimension> dims = new ArrayList<>();
         for (Dimension dim : aDataInfo._miDims) {
-            ncfile.addDimension(null, dim.getDimName(), dim.getDimLength(), dim.getNCDimension().isShared(),
-                    dim.getNCDimension().isUnlimited(), dim.getNCDimension().isVariableLength());
+            if (dim.getDimName().equals(timeDimStr)){
+                dims.add(ncfile.addUnlimitedDimension(dim.getDimName()));
+            } else {
+                dims.add(ncfile.addDimension(null, dim.getDimName(), dim.getDimLength()));
+            }
         }
 
         //Define global attributes
@@ -3373,7 +3377,16 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
         //Define variables
         for (ucar.nc2.Variable var : aDataInfo._variables) {
-            ucar.nc2.Variable nvar = ncfile.addVariable(null, var.getShortName(), var.getDataType(), var.getDimensions());
+            List<ucar.nc2.Dimension> vdims = new ArrayList<>();
+            for (ucar.nc2.Dimension dim : var.getDimensions()){
+                for (ucar.nc2.Dimension vdim : dims){
+                    if (vdim.getShortName().equals(dim.getShortName())){
+                        vdims.add(vdim);
+                        break;
+                    }
+                }
+            }
+            ucar.nc2.Variable nvar = ncfile.addVariable(null, var.getShortName(), var.getDataType(), vdims);
             if (var.getDimensions().size() == 1 && var.getDimensions().get(0).getShortName().equals(timeDimStr)) {
                 nvar.addAttribute(new ucar.nc2.Attribute("units", "hours since 1800-1-1 00:00:00"));
                 nvar.addAttribute(new ucar.nc2.Attribute("long_name", "Time"));
@@ -3445,7 +3458,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                             count[1] = 1;
 
                             Array varaData = aDataInfo.read(dvar.getShortName(), start, count);
-                            start[tDimIdx] = tDimNum;
+                            start[tDimIdx] += tDimNum;
                             ncfile.write(var, start, varaData);
                         }
                     }
@@ -3459,7 +3472,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                         count[0] = 1;
 
                         Array varaData = aDataInfo.read(dvar.getShortName(), start, count);
-                        start[tDimIdx] = tDimNum;
+                        start[tDimIdx] += tDimNum;
                         ncfile.write(var, start, varaData);
                     }
                 } else {
@@ -3468,7 +3481,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                         count[v] = dvar.getDimension(v).getLength();
                     }
                     Array varaData = aDataInfo.read(dvar.getShortName());
-                    start[tDimIdx] = tDimNum;
+                    start[tDimIdx] += tDimNum;
                     if (dimNum == 1) {
                         List<Integer> times = aDataInfo.getTimeValues(sTime, "hours");
                         varaData = Array.factory(dvar.getDataType(), dvar.getShape());

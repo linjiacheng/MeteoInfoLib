@@ -6,7 +6,13 @@
 package org.meteoinfo.chart;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
+import java.util.ArrayList;
+import java.util.List;
+import org.meteoinfo.drawing.Draw;
 
 /**
  *
@@ -15,10 +21,11 @@ import java.awt.Font;
 public class ChartText {
     // <editor-fold desc="Variables">
     private Font font;
-    private String text;
+    private List<String> text;
     private Color color;
     private float x;
     private float y;
+    private int lineSpace;
     // </editor-fold>    
     // <editor-fold desc="Constructor">
     /**
@@ -27,6 +34,7 @@ public class ChartText {
     public ChartText(){
         font = new Font("Arial", Font.BOLD, 14);
         color = Color.black;
+        lineSpace = 3;
     }
     
     /**
@@ -34,6 +42,16 @@ public class ChartText {
      * @param text Text
      */
     public ChartText(String text){
+        this();
+        this.text = new ArrayList<>();
+        this.text.add(text);
+    }
+    
+    /**
+     * Constructor
+     * @param text Text
+     */
+    public ChartText(List<String> text){
         this();
         this.text = text;
     }
@@ -44,6 +62,19 @@ public class ChartText {
      * @param font Font
      */
     public ChartText(String text, Font font){
+        this();
+        this.text = new ArrayList<>();
+        this.text.add(text);
+        this.font = font;
+    }
+    
+    /**
+     * Constructor
+     * @param text Text
+     * @param font Font
+     */
+    public ChartText(List<String> text, Font font){
+        this();
         this.text = text;
         this.font = font;
     }
@@ -54,7 +85,7 @@ public class ChartText {
      * @return Text
      */
     public String getText(){
-        return text;
+        return text.get(0);
     }
     
     /**
@@ -62,6 +93,23 @@ public class ChartText {
      * @param value Text
      */
     public void setText(String value){
+        text = new ArrayList<>();
+        text.add(value);
+    }
+    
+    /**
+     * Get texts
+     * @return Text list
+     */
+    public List<String> getTexts(){
+        return text;
+    }
+    
+    /**
+     * Set texts
+     * @param value Text list 
+     */
+    public void setTexts(List<String> value){
         text = value;
     }
     
@@ -128,7 +176,45 @@ public class ChartText {
     public void setY(float value) {
         this.y = value;
     }
+    
+    /**
+     * Get line space
+     * @return Line space
+     */
+    public int getLineSpace(){
+        return this.lineSpace;
+    }
+    
+    /**
+     * Set line space
+     * @param value Line space
+     */
+    public void setLineSpace(int value){
+        this.lineSpace = value;
+    }
     // </editor-fold>
     // <editor-fold desc="Methods">
+    /**
+     * Get text line number
+     * @return Text line number
+     */
+    public int getLineNum(){
+        return this.text.size();
+    }
+    
+    /**
+     * Get height
+     * @param g Graphics2D
+     * @return Height
+     */
+    public int getHeight(Graphics2D g) {
+        g.setFont(this.font);
+        int h = 0;
+        for (String line : this.text){
+            Dimension dim = Draw.getStringDimension(line, g);
+            h += dim.height + this.lineSpace;
+        }
+        return h - this.lineSpace;
+    }
     // </editor-fold>
 }

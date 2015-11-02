@@ -6,15 +6,21 @@
 package org.meteoinfo.data;
 
 import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.meteoinfo.data.mapdata.Field;
 import org.meteoinfo.geoprocess.GeoComputation;
 import org.meteoinfo.global.MIMath;
@@ -141,6 +147,73 @@ public class ArrayUtil {
         return dataArray.length;
     }
 
+    /**
+     * Save an array data to a binary file
+     * @param fn File path
+     * @param a Array
+     */
+    public static void saveBinFile(String fn, Array a){
+        try {
+            DataOutputStream outs = new DataOutputStream(new FileOutputStream(new File(fn)));
+            ByteBuffer bb = a.getDataAsByteBuffer();
+            outs.write(bb.array());
+            outs.close();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(ArrayUtil.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(ArrayUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    /**
+     * Read array from a binary file
+     * @param fn Binary file name
+     * @param dims Dimensions
+     * @param dataType Data type string
+     * @return Result array
+     */
+    public static Array readBinFile(String fn, List<Integer> dims, String dataType){
+        DataType dt = DataType.DOUBLE;
+        if (dataType != null) {
+            if (dataType.contains("%")) {
+                dataType = dataType.split("%")[1];
+            }
+            dt = ArrayUtil.toDataType(dataType);
+        }
+        int[] shape = new int[dims.size()];
+        for (int i = 0; i < dims.size(); i++){
+            shape[i] = dims.get(i);
+        }
+        Array r = Array.factory(dt, shape);
+        try {
+            DataInputStream ins = new DataInputStream(new FileInputStream(fn));
+            switch (dt){
+                case INT:
+                    for (int i = 0; i < r.getSize(); i++){
+                        r.setInt(i, ins.readInt());
+                    }
+                    break;
+                case FLOAT:
+                    for (int i = 0; i < r.getSize(); i++){
+                        r.setFloat(i, ins.readFloat());
+                    }
+                    break;
+                case DOUBLE:
+                    for (int i = 0; i < r.getSize(); i++){
+                        r.setDouble(i, ins.readDouble());
+                    }
+                    break;
+            }
+            ins.close();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(ArrayUtil.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(ArrayUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return r;
+    }
+    
     // </editor-fold>
     // <editor-fold desc="Create">
     /**
@@ -489,7 +562,7 @@ public class ArrayUtil {
             sbuff.append("]");
         }
         return sbuff.toString();
-    }
+    }        
 
     // </editor-fold>
     // <editor-fold desc="Convert">
@@ -1577,7 +1650,7 @@ public class ArrayUtil {
         double[][] points = new double[n][];
         for (int i = 0; i < ry.size(); i++) {
             for (int j = 0; j < rx.size(); j++)
-                points[i * rx.size() + j] = new double[]{rx.get(i).doubleValue(), ry.get(i).doubleValue()};
+                points[i * rx.size() + j] = new double[]{rx.get(j).doubleValue(), ry.get(i).doubleValue()};
         }
         Reproject.reprojectPoints(points, toProj, fromProj, 0, points.length);
         double xx, yy;

@@ -8,7 +8,9 @@ package org.meteoinfo.chart.plot;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
@@ -397,6 +399,16 @@ public abstract class XYPlot extends Plot {
     // </editor-fold>
     // <editor-fold desc="Method">
     /**
+     * Set axis label font
+     * @param font Font
+     */
+    public void setAxisLabelFont(Font font){
+        for (Axis axis: this.axises.values()){
+            axis.setTickLabelFont(font);
+        }
+    }
+    
+    /**
      * Set all axis visible or not
      * @param value Boolean
      */
@@ -445,14 +457,16 @@ public abstract class XYPlot extends Plot {
             //float x = (float) area.getWidth() / 2;
             float x = (float) (graphArea.getX() + graphArea.getWidth() / 2);
             //FontMetrics metrics = g.getFontMetrics(title.getFont());
-            Dimension dim = Draw.getStringDimension(title.getText(), g);
-            x -= dim.width / 2;
             //y += metrics.getHeight();
-            y -= 10;
+            y -= this.title.getHeight(g) - 5;
             //y -= dim.height * 2 / 3;
             //g.drawString(title.getText(), x, y);
-            Draw.drawString(g, title.getText(), x, y);
-            y += 5;
+            for (String text : title.getTexts()){
+                Dimension dim = Draw.getStringDimension(text, g);
+                Draw.drawString(g, text, x - dim.width / 2, y);
+                g.setFont(title.getFont());
+                y += dim.height + title.getLineSpace();
+            }
         }
 
 //        //Update legend scheme
@@ -465,10 +479,11 @@ public abstract class XYPlot extends Plot {
             return;
         }
 
-        this.drawGridLine(g, graphArea);
-
         //Draw graph        
         this.drawGraph(g, graphArea);
+        
+        //Draw grid line
+        this.drawGridLine(g, graphArea);
 
         //Draw neat line
         if (this.drawNeatLine){
@@ -482,6 +497,8 @@ public abstract class XYPlot extends Plot {
 
         //Draw legend
         if (this.drawLegend && this.getLegend() != null) {
+            Object rendering = g.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             switch (this.legend.getPosition()) {
                 case UPPER_CENTER_OUTSIDE:
                 case LOWER_CENTER_OUTSIDE:
@@ -507,6 +524,7 @@ public abstract class XYPlot extends Plot {
             } else {
                 this.drawLegendScheme(g, graphArea, y);
             }
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, rendering);
         }
 
 //        g.setTransform(oldMatrix);
@@ -526,9 +544,7 @@ public abstract class XYPlot extends Plot {
         int space = 2;
 
         if (this.title != null) {
-            g.setFont(this.title.getFont());
-            Dimension dim = Draw.getStringDimension(this.title.getText(), g);
-            top += dim.getHeight() + 10;
+            top += this.title.getHeight(g) + 10;
         }
 
         if (this.drawLegend && this.getLegend() != null) {
@@ -640,6 +656,7 @@ public abstract class XYPlot extends Plot {
      * @param area Whole area
      * @return Position area
      */
+    @Override
     public Rectangle2D getPositionAreaOrigin(Graphics2D g, Rectangle2D area) {
         double x = area.getWidth() * this.getPosition().getX() + area.getX();
         double y = area.getHeight() * (1 - this.getPosition().getHeight() - this.getPosition().getY()) + area.getY();
@@ -660,9 +677,7 @@ public abstract class XYPlot extends Plot {
         int space = 5;
 
         if (this.title != null) {
-            g.setFont(this.title.getFont());
-            Dimension dim = Draw.getStringDimension(this.title.getText(), g);
-            top += dim.getHeight() + 10;
+            top += this.title.getHeight(g) + 10;
         }
 
         if (this.drawLegend && this.getLegend() != null) {
