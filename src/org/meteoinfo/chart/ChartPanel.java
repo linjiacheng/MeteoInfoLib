@@ -813,5 +813,26 @@ public class ChartPanel extends JPanel {
     public BufferedImage getViewImage() {
         return this.mapBitmap;
     }
+    
+    /**
+     * Paint view image
+     * @return View image
+     */
+    public BufferedImage paintViewImage(){
+        BufferedImage aImage;
+            int w, h;
+            if (this.chartSize == null){
+                w = this.getWidth();
+                h = this.getHeight();
+            } else {
+                w = this.chartSize.width;
+                h = this.chartSize.height;
+            }
+            aImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = aImage.createGraphics();
+            paintGraphics(g); 
+            
+            return aImage;
+    }
     // </editor-fold>
 }

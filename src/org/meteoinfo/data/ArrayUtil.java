@@ -1528,28 +1528,38 @@ public class ArrayUtil {
      */
     public static double toStation(Array data, List<Number> xArray, List<Number> yArray, double x, double y, 
             double missingValue) {
-        double iValue = missingValue;
+        double iValue = Double.NaN;
         int nx = xArray.size();
         int ny = yArray.size();
         if (x < xArray.get(0).doubleValue() || x > xArray.get(nx - 1).doubleValue() || 
                 y < yArray.get(0).doubleValue() || y > yArray.get(ny - 1).doubleValue()) {
-            return missingValue;
+            return iValue;
         }
 
         //Get x/y index
         int xIdx = 0, yIdx = 0;
         int i;
+        boolean isIn = false;
         for (i = 1; i < nx; i++){
             if (x < xArray.get(i).doubleValue()){
                 xIdx = i - 1;
+                isIn = true;
                 break;
             }
         }
+        if (!isIn){
+            xIdx = nx - 2;
+        }
+        isIn = false;
         for (i = 1; i < ny; i++){
             if (y < yArray.get(i).doubleValue()){
                 yIdx = i - 1;
+                isIn = true;
                 break;
             }
+        }
+        if (!isIn){
+            yIdx = ny - 2;
         }
 
         int i1 = yIdx;
@@ -1561,16 +1571,16 @@ public class ArrayUtil {
         double c = data.getDouble(i2 * nx + j1);
         double d = data.getDouble(i2 * nx + j2);
         List<java.lang.Double> dList = new ArrayList<>();
-        if (!MIMath.doubleEquals(a, missingValue)) {
+        if (!Double.isNaN(a) && !MIMath.doubleEquals(a, missingValue)) {
             dList.add(a);
         }
-        if (!MIMath.doubleEquals(b, missingValue)) {
+        if (!Double.isNaN(b) && !MIMath.doubleEquals(b, missingValue)) {
             dList.add(b);
         }
-        if (!MIMath.doubleEquals(c, missingValue)) {
+        if (!Double.isNaN(c) && !MIMath.doubleEquals(c, missingValue)) {
             dList.add(c);
         }
-        if (!MIMath.doubleEquals(d, missingValue)) {
+        if (!Double.isNaN(d) && !MIMath.doubleEquals(d, missingValue)) {
             dList.add(d);
         }
 
@@ -1617,7 +1627,8 @@ public class ArrayUtil {
         for (int i = 0; i < n; i++) {
             points[i] = new double[]{rx.getDouble(i), ry.getDouble(i)};
         }
-        Reproject.reprojectPoints(points, toProj, fromProj, 0, points.length);
+        if (!fromProj.equals(toProj))
+            Reproject.reprojectPoints(points, toProj, fromProj, 0, points.length);
         double xx, yy;
         for (int i = 0; i < n; i++) {
             xx = points[i][0];
@@ -1652,7 +1663,8 @@ public class ArrayUtil {
             for (int j = 0; j < rx.size(); j++)
                 points[i * rx.size() + j] = new double[]{rx.get(j).doubleValue(), ry.get(i).doubleValue()};
         }
-        Reproject.reprojectPoints(points, toProj, fromProj, 0, points.length);
+        if (!fromProj.equals(toProj))
+            Reproject.reprojectPoints(points, toProj, fromProj, 0, points.length);
         double xx, yy;
         for (int i = 0; i < n; i++) {
             xx = points[i][0];

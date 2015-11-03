@@ -73,6 +73,7 @@ public class ChartLegend {
     private int rowColNum = 1;
     private Dimension symbolDimension;
     private boolean extendRect;
+    private boolean autoExtendFrac;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -103,6 +104,7 @@ public class ChartLegend {
         this.labelColor = Color.black;
         this.symbolDimension = new Dimension(16, 10);
         this.extendRect = true;
+        this.autoExtendFrac = false;
     }
 
     // </editor-fold>
@@ -449,6 +451,24 @@ public class ChartLegend {
      */
     public void setExtendRect(boolean value) {
         this.extendRect = value;
+    }
+    
+    /**
+     * Get if auto set extend fraction - extend has save width and height
+     * Only valid for colorbar
+     * @return Boolean
+     */
+    public boolean isAutoExtendFrac(){
+        return this.autoExtendFrac;
+    }
+    
+    /**
+     * Set if auto set extend fraction - extend has save width and height
+     * Only valid for colorbar
+     * @param value 
+     */
+    public void setAutoExtendFrac(boolean value){
+        this.autoExtendFrac = value;
     }
 
     // </editor-fold>
@@ -942,10 +962,13 @@ public class ChartLegend {
                                 _hBarHeight, DrawFill, DrawOutline, g);
                     }
                 } else {
+                    float extendw = _vBarWidth;
+                    if (this.autoExtendFrac)
+                        extendw = _hBarHeight;
                     if (i == 0) {
                         PointF[] Points = new PointF[4];
                         Points[0] = new PointF();
-                        Points[0].X = 0;
+                        Points[0].X = _vBarWidth - extendw;
                         Points[0].Y = aP.Y;
                         Points[1] = new PointF();
                         Points[1].X = _vBarWidth;
@@ -954,7 +977,7 @@ public class ChartLegend {
                         Points[2].X = _vBarWidth;
                         Points[2].Y = _hBarHeight;
                         Points[3] = new PointF();
-                        Points[3].X = 0;
+                        Points[3].X = _vBarWidth - extendw;
                         Points[3].Y = aP.Y;
                         if (aLS.getShapeType() == ShapeTypes.Polygon) {
                             PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(idx).clone();
@@ -972,7 +995,7 @@ public class ChartLegend {
                         Points[1].X = i * _vBarWidth - 1.0f;
                         Points[1].Y = 0;
                         Points[2] = new PointF();
-                        Points[2].X = i * _vBarWidth + _vBarWidth;
+                        Points[2].X = i * _vBarWidth + extendw;
                         Points[2].Y = aP.Y;
                         Points[3] = new PointF();
                         Points[3].X = i * _vBarWidth - 1.0f;
@@ -1002,11 +1025,14 @@ public class ChartLegend {
         if (this.extendRect)
             g.draw(new Rectangle.Float(0, 0, this._vBarWidth * bNum, this._hBarHeight));
         else {
+            float extendw = _vBarWidth;
+            if (this.autoExtendFrac)
+                extendw = _hBarHeight;
             Polygon p = new Polygon();
-            p.addPoint(0, (int)(this._hBarHeight / 2));
+            p.addPoint((int)(_vBarWidth - extendw), (int)(this._hBarHeight / 2));
             p.addPoint((int)this._vBarWidth, 0);
             p.addPoint((int)(this._vBarWidth * (bNum - 1)), 0);
-            p.addPoint((int)(this._vBarWidth * bNum), (int)(this._hBarHeight / 2));
+            p.addPoint((int)(this._vBarWidth * (bNum - 1) + extendw), (int)(this._hBarHeight / 2));
             p.addPoint((int)(this._vBarWidth * (bNum - 1)), (int)this._hBarHeight);
             p.addPoint((int)this._vBarWidth, (int)this._hBarHeight);
             g.drawPolygon(p);
