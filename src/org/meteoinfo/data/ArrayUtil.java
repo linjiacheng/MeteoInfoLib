@@ -23,6 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.meteoinfo.data.mapdata.Field;
 import org.meteoinfo.geoprocess.GeoComputation;
+import org.meteoinfo.geoprocess.analysis.ResampleMethods;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
 import org.meteoinfo.global.util.BigDecimalUtil;
@@ -149,10 +150,11 @@ public class ArrayUtil {
 
     /**
      * Save an array data to a binary file
+     *
      * @param fn File path
      * @param a Array
      */
-    public static void saveBinFile(String fn, Array a){
+    public static void saveBinFile(String fn, Array a) {
         try {
             DataOutputStream outs = new DataOutputStream(new FileOutputStream(new File(fn)));
             ByteBuffer bb = a.getDataAsByteBuffer();
@@ -164,15 +166,16 @@ public class ArrayUtil {
             Logger.getLogger(ArrayUtil.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     /**
      * Read array from a binary file
+     *
      * @param fn Binary file name
      * @param dims Dimensions
      * @param dataType Data type string
      * @return Result array
      */
-    public static Array readBinFile(String fn, List<Integer> dims, String dataType){
+    public static Array readBinFile(String fn, List<Integer> dims, String dataType) {
         DataType dt = DataType.DOUBLE;
         if (dataType != null) {
             if (dataType.contains("%")) {
@@ -181,25 +184,25 @@ public class ArrayUtil {
             dt = ArrayUtil.toDataType(dataType);
         }
         int[] shape = new int[dims.size()];
-        for (int i = 0; i < dims.size(); i++){
+        for (int i = 0; i < dims.size(); i++) {
             shape[i] = dims.get(i);
         }
         Array r = Array.factory(dt, shape);
         try {
             DataInputStream ins = new DataInputStream(new FileInputStream(fn));
-            switch (dt){
+            switch (dt) {
                 case INT:
-                    for (int i = 0; i < r.getSize(); i++){
+                    for (int i = 0; i < r.getSize(); i++) {
                         r.setInt(i, ins.readInt());
                     }
                     break;
                 case FLOAT:
-                    for (int i = 0; i < r.getSize(); i++){
+                    for (int i = 0; i < r.getSize(); i++) {
                         r.setFloat(i, ins.readFloat());
                     }
                     break;
                 case DOUBLE:
-                    for (int i = 0; i < r.getSize(); i++){
+                    for (int i = 0; i < r.getSize(); i++) {
                         r.setDouble(i, ins.readDouble());
                     }
                     break;
@@ -210,10 +213,10 @@ public class ArrayUtil {
         } catch (IOException ex) {
             Logger.getLogger(ArrayUtil.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         return r;
     }
-    
+
     // </editor-fold>
     // <editor-fold desc="Create">
     /**
@@ -222,7 +225,7 @@ public class ArrayUtil {
      * @param data Object
      * @return Array
      */
-    public static Array array(Object data) { 
+    public static Array array(Object data) {
         if (data instanceof Number) {
             DataType dt = ArrayMath.getDataType(data);
             Array a = Array.factory(dt, new int[]{1});
@@ -232,7 +235,7 @@ public class ArrayUtil {
             return null;
         }
     }
-    
+
     /**
      * Create an array
      *
@@ -562,7 +565,7 @@ public class ArrayUtil {
             sbuff.append("]");
         }
         return sbuff.toString();
-    }        
+    }
 
     // </editor-fold>
     // <editor-fold desc="Convert">
@@ -1514,7 +1517,7 @@ public class ArrayUtil {
 
         return new Array[]{rx, ry};
     }
-    
+
     /**
      * Interpolate data to a station point
      *
@@ -1526,13 +1529,13 @@ public class ArrayUtil {
      * @param missingValue Missing value
      * @return Interpolated value
      */
-    public static double toStation(Array data, List<Number> xArray, List<Number> yArray, double x, double y, 
+    public static double toStation(Array data, List<Number> xArray, List<Number> yArray, double x, double y,
             double missingValue) {
         double iValue = Double.NaN;
         int nx = xArray.size();
         int ny = yArray.size();
-        if (x < xArray.get(0).doubleValue() || x > xArray.get(nx - 1).doubleValue() || 
-                y < yArray.get(0).doubleValue() || y > yArray.get(ny - 1).doubleValue()) {
+        if (x < xArray.get(0).doubleValue() || x > xArray.get(nx - 1).doubleValue()
+                || y < yArray.get(0).doubleValue() || y > yArray.get(ny - 1).doubleValue()) {
             return iValue;
         }
 
@@ -1540,25 +1543,25 @@ public class ArrayUtil {
         int xIdx = 0, yIdx = 0;
         int i;
         boolean isIn = false;
-        for (i = 1; i < nx; i++){
-            if (x < xArray.get(i).doubleValue()){
+        for (i = 1; i < nx; i++) {
+            if (x < xArray.get(i).doubleValue()) {
                 xIdx = i - 1;
                 isIn = true;
                 break;
             }
         }
-        if (!isIn){
+        if (!isIn) {
             xIdx = nx - 2;
         }
         isIn = false;
-        for (i = 1; i < ny; i++){
-            if (y < yArray.get(i).doubleValue()){
+        for (i = 1; i < ny; i++) {
+            if (y < yArray.get(i).doubleValue()) {
                 yIdx = i - 1;
                 isIn = true;
                 break;
             }
         }
-        if (!isIn){
+        if (!isIn) {
             yIdx = ny - 2;
         }
 
@@ -1604,7 +1607,80 @@ public class ArrayUtil {
 
         return iValue;
     }
-    
+
+    /**
+     * Interpolate data to a station point
+     *
+     * @param data Data array
+     * @param xArray X array
+     * @param yArray Y array
+     * @param x X coordinate of the station
+     * @param y Y coordinate of the station
+     * @param missingValue Missing value
+     * @return Interpolated value
+     */
+    public static double toStation_Neighbor(Array data, List<Number> xArray, List<Number> yArray, double x, double y,
+            double missingValue) {
+        double iValue = Double.NaN;
+        int nx = xArray.size();
+        int ny = yArray.size();
+        if (x < xArray.get(0).doubleValue() || x > xArray.get(nx - 1).doubleValue()
+                || y < yArray.get(0).doubleValue() || y > yArray.get(ny - 1).doubleValue()) {
+            return iValue;
+        }
+
+        //Get x/y index
+        int xIdx = 0, yIdx = 0;
+        int i;
+        boolean isIn = false;
+        for (i = 1; i < nx; i++) {
+            if (x < xArray.get(i).doubleValue()) {
+                xIdx = i - 1;
+                isIn = true;
+                break;
+            }
+        }
+        if (!isIn) {
+            xIdx = nx - 2;
+        }
+        isIn = false;
+        for (i = 1; i < ny; i++) {
+            if (y < yArray.get(i).doubleValue()) {
+                yIdx = i - 1;
+                isIn = true;
+                break;
+            }
+        }
+        if (!isIn) {
+            yIdx = ny - 2;
+        }
+
+        int i1 = yIdx;
+        int j1 = xIdx;
+        int i2 = i1 + 1;
+        int j2 = j1 + 1;
+        double a = data.getDouble(i1 * nx + j1);
+        double b = data.getDouble(i1 * nx + j2);
+        double c = data.getDouble(i2 * nx + j1);
+        double d = data.getDouble(i2 * nx + j2);
+
+        if (Math.abs(x - xArray.get(j1).doubleValue()) > Math.abs(xArray.get(j2).doubleValue() - x)){
+            if (Math.abs(y - yArray.get(i1).doubleValue()) > Math.abs(yArray.get(i2).doubleValue() - y)){
+                iValue = a;
+            } else {
+                iValue = c;
+            }
+        } else {
+            if (Math.abs(y - yArray.get(i1).doubleValue()) > Math.abs(yArray.get(i2).doubleValue() - y)){
+                iValue = b;
+            } else {
+                iValue = d;
+            }
+        }        
+
+        return iValue;
+    }
+
     /**
      * Reproject
      *
@@ -1616,29 +1692,39 @@ public class ArrayUtil {
      * @param fromProj From projection
      * @param toProj To projection
      * @param fill_value Fill value
+     * @param resampleMethod Resample method
      * @return Result arrays
      */
-    public static Array reproject(Array data, List<Number> x, List<Number> y, Array rx, Array ry, 
-            ProjectionInfo fromProj, ProjectionInfo toProj, double fill_value){
+    public static Array reproject(Array data, List<Number> x, List<Number> y, Array rx, Array ry,
+            ProjectionInfo fromProj, ProjectionInfo toProj, double fill_value, ResampleMethods resampleMethod) {
         int n = (int) rx.getSize();
         Array r = Array.factory(data.getDataType(), rx.getShape());
-        
+
         double[][] points = new double[n][];
         for (int i = 0; i < n; i++) {
             points[i] = new double[]{rx.getDouble(i), ry.getDouble(i)};
         }
-        if (!fromProj.equals(toProj))
+        if (!fromProj.equals(toProj)) {
             Reproject.reprojectPoints(points, toProj, fromProj, 0, points.length);
+        }
         double xx, yy;
-        for (int i = 0; i < n; i++) {
-            xx = points[i][0];
-            yy = points[i][1];
-            r.setObject(i, toStation(data, x, y, xx, yy, fill_value));
+        if (resampleMethod == ResampleMethods.Bilinear){
+            for (int i = 0; i < n; i++) {
+                xx = points[i][0];
+                yy = points[i][1];
+                r.setObject(i, toStation(data, x, y, xx, yy, fill_value));
+            }
+        } else {
+            for (int i = 0; i < n; i++) {
+                xx = points[i][0];
+                yy = points[i][1];
+                r.setObject(i, toStation_Neighbor(data, x, y, xx, yy, fill_value));
+            }
         }
 
         return r;
     }
-    
+
     /**
      * Reproject
      *
@@ -1650,26 +1736,37 @@ public class ArrayUtil {
      * @param fromProj From projection
      * @param toProj To projection
      * @param fill_value Fill value
+     * @param resampleMethod Resample method
      * @return Result arrays
      */
-    public static Array reproject(Array data, List<Number> x, List<Number> y, List<Number> rx, List<Number> ry, 
-            ProjectionInfo fromProj, ProjectionInfo toProj, double fill_value){
+    public static Array reproject(Array data, List<Number> x, List<Number> y, List<Number> rx, List<Number> ry,
+            ProjectionInfo fromProj, ProjectionInfo toProj, double fill_value, ResampleMethods resampleMethod) {
         int n = rx.size() * ry.size();
         int[] shape = new int[]{ry.size(), rx.size()};
         Array r = Array.factory(data.getDataType(), shape);
-        
+
         double[][] points = new double[n][];
         for (int i = 0; i < ry.size(); i++) {
-            for (int j = 0; j < rx.size(); j++)
+            for (int j = 0; j < rx.size(); j++) {
                 points[i * rx.size() + j] = new double[]{rx.get(j).doubleValue(), ry.get(i).doubleValue()};
+            }
         }
-        if (!fromProj.equals(toProj))
+        if (!fromProj.equals(toProj)) {
             Reproject.reprojectPoints(points, toProj, fromProj, 0, points.length);
+        }
         double xx, yy;
-        for (int i = 0; i < n; i++) {
-            xx = points[i][0];
-            yy = points[i][1];
-            r.setObject(i, toStation(data, x, y, xx, yy, fill_value));
+        if (resampleMethod == ResampleMethods.Bilinear){
+            for (int i = 0; i < n; i++) {
+                xx = points[i][0];
+                yy = points[i][1];
+                r.setObject(i, toStation(data, x, y, xx, yy, fill_value));
+            }
+        } else {
+            for (int i = 0; i < n; i++) {
+                xx = points[i][0];
+                yy = points[i][1];
+                r.setObject(i, toStation_Neighbor(data, x, y, xx, yy, fill_value));
+            }
         }
 
         return r;
