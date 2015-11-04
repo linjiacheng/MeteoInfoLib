@@ -732,7 +732,7 @@ public abstract class XYPlot extends Plot {
         if (xAxis.isDrawLabel()){
             g.setFont(xAxis.getLabelFont());
             Dimension dim = Draw.getStringDimension(xAxis.getLabel(), g);
-            height += dim.height;
+            height += dim.height + space;
         }
 
         return height;
