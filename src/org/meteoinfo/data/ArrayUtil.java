@@ -141,7 +141,7 @@ public class ArrayUtil {
                     sr.readLine();
                 }
             }
-            String line = sr.readLine();
+            String line = sr.readLine().trim();
             dataArray = GlobalUtil.split(line, delimiter);
         }
 
