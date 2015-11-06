@@ -176,7 +176,7 @@ public class Draw {
         // insert a border 
         icon.setInsets(new Insets(5, 5, 5, 5));
         icon.setForeground(g.getColor());
-        y = y - (icon.getIconHeight() / 2);
+        y = y - (icon.getIconHeight() * 2.0f / 3.f);
         icon.paintIcon(null, g, (int) x, (int) y);
     }
 

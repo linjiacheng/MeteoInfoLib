@@ -41,6 +41,7 @@ import java.util.logging.Logger;
 import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.global.util.DateUtil;
 import ucar.ma2.Array;
+import ucar.ma2.DataType;
 
 /**
  *
@@ -116,17 +117,24 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
             values[0] = DateUtil.toOADate(time);
             tdim.setValues(values);
             this.setTimeDimension(tdim);
+            
+            _stNum = Integer.parseInt(dataArray[4]);
+            Dimension stdim = new Dimension(DimensionType.Other);
+            values = new double[_stNum];
+            stdim.setValues(values);
+            this.addDimension(stdim);
             List<Variable> variables = new ArrayList<>();
-            for (String vName : _varList) {
+            for (String vName : _fieldList) {
                 Variable var = new Variable();
                 var.setName(vName);
                 var.setStation(true);
-                var.setDimension(tdim);
+                //var.setDimension(tdim);
+                var.setDimension(stdim);
                 var.setFillValue(this.getMissingValue());
                 variables.add(var);
             }
             this.setVariables(variables);
-            _stNum = Integer.parseInt(dataArray[4]);
+            
             //Read data
             dataNum = 0;
             do {
@@ -220,12 +228,53 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
      */
     @Override
     public Array read(String varName, int[] origin, int[] size, int[] stride) {
-        return null;
+        int varIdx = this._fieldList.indexOf(varName);
+        if (varIdx < 0)
+            return null;
+        
+        DataType dt = DataType.FLOAT;
+        switch (varName){
+            case "Stid":
+            case "Grade":
+            case "CloudCover":
+            case "WeatherPast1":
+            case "WeatherPast2":
+            case "WeatherNow":
+            case "MiddleCloudShape":
+            case "HighCloudShape":
+                dt = DataType.INT;
+                break;
+        }
+        int[] shape = new int[1];
+        shape[0] = this._stNum;
+        Array r = Array.factory(dt, shape);
+        int i;
+        float v;       
+        List<String> dataList;
+
+        for (i = 0; i < _dataList.size(); i++) {
+            dataList = _dataList.get(i);
+            v = Float.parseFloat(dataList.get(varIdx));
+
+            if (varIdx == 8) //Pressure
+            {
+                if (!MIMath.doubleEquals(v, this.getMissingValue())) {
+                    if (v > 800) {
+                        v = v / 10 + 900;
+                    } else {
+                        v = v / 10 + 1000;
+                    }
+                }
+            }
+            r.setObject(i, v);
+        }
+        
+        return r;
     }
 
     @Override
     public StationData getStationData(int timeIdx, int varIdx, int levelIdx) {
-        varIdx += 3;
+        //varIdx += 3;
 
         String aStid;
         int i;
