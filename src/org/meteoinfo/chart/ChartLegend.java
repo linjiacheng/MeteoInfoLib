@@ -398,6 +398,22 @@ public class ChartLegend {
     public void setLabelFont(Font font) {
         labelFont = font;
     }
+    
+    /**
+     * Get label color
+     * @return Label color
+     */
+    public Color getLabelColor(){
+        return this.labelColor;
+    }
+    
+    /**
+     * Set label color
+     * @param value Label color
+     */
+    public void setLabelColor(Color value){
+        this.labelColor = value;
+    }
 
     /**
      * Get column number

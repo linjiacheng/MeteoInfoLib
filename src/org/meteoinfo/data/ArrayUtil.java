@@ -468,6 +468,7 @@ public class ArrayUtil {
             new_sz = ArrayMath.typeToNBytes(_type);
             if (new_sz > sz) {
                 dataType = _type;
+                sz = new_sz;
             }
         }
         return dataType;

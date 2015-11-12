@@ -246,6 +246,28 @@ public class TimeTableData extends TableData{
     }
     
     /**
+     * Get days
+     * @return Date list
+     */
+    public List<String> getDays(){
+        List<String> days = new ArrayList<>();
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+        String day;
+        Date date;
+        for (DataRow row : dataTable.getRows()){
+            date = (Date)row.getValue(this.timeColName);
+            if (date == null){
+                continue;
+            }
+            day = format.format(date);
+            if (!days.contains(day))
+                days.add(day);
+        }
+        
+        return days;
+    }
+    
+    /**
      * Get data row list by year
      * @param year The year
      * @return Data row list
@@ -335,7 +357,42 @@ public class TimeTableData extends TableData{
         }
         
         return rows;
-    }      
+    } 
+    
+    /**
+     * Get data row list by date
+     * @param date Date string
+     * @return Data row list
+     */
+    public List<DataRow> getDataByDate(String date){
+        int year = Integer.parseInt(date.substring(0, 4));
+        int month = Integer.parseInt(date.substring(4, 6));
+        int day = Integer.parseInt(date.substring(6));
+        return this.getDataByDate(year, month, day);
+    }
+    
+    /**
+     * Get data row list by date
+     * @param year The year
+     * @param month The month
+     * @param day The day
+     * @return Data row list
+     */
+    public List<DataRow> getDataByDate(int year, int month, int day){
+        List<DataRow> rows = new ArrayList<>();
+        Calendar cal = Calendar.getInstance();
+        for (DataRow row : dataTable.getRows()){
+            cal.setTime((Date)row.getValue(this.timeColName));
+            if (cal.get(Calendar.YEAR) == year) {
+                if (cal.get(Calendar.MONTH) == month - 1) {
+                    if (cal.get(Calendar.DAY_OF_MONTH) == day)
+                        rows.add(row);
+                }
+            }
+        }
+        
+        return rows;
+    }  
     
     /**
      * Get data row list by month
@@ -523,6 +580,33 @@ public class TimeTableData extends TableData{
             DataRow nRow = rTable.addRow();         
             nRow.setValue(0, ym);
             List<DataRow> rows = this.getDataByYearMonth(ym);
+            for (DataColumn col : cols){
+                List<Double> values = this.getValidColumnValues(rows, col);
+                nRow.setValue(col.getColumnName(), Statistics.mean(values));
+            }
+        }
+        
+        return rTable;
+    }
+    
+    /**
+     * Average daily
+     * @param cols The data columns
+     * @return Result data table
+     * @throws Exception 
+     */
+    public DataTable ave_Day(List<DataColumn> cols) throws Exception {
+        DataTable rTable = new DataTable();
+        rTable.addColumn("Date", DataTypes.String);
+        for (DataColumn col : cols){
+            rTable.addColumn(col.getColumnName(), DataTypes.Double);
+        }
+        
+        List<String> days = this.getDays();
+        for (String day : days){
+            DataRow nRow = rTable.addRow();         
+            nRow.setValue(0, day);
+            List<DataRow> rows = this.getDataByDate(day);
             for (DataColumn col : cols){
                 List<Double> values = this.getValidColumnValues(rows, col);
                 nRow.setValue(col.getColumnName(), Statistics.mean(values));

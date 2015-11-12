@@ -9,6 +9,7 @@ import org.meteoinfo.data.DataTypes;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import org.meteoinfo.global.util.DateUtil;
 
 /**
  *
@@ -271,6 +272,12 @@ public class ColumnData {
                         else
                             values.add(Double.parseDouble(v));
                     }
+                    break;
+                case Date:
+                    for (Date v : (List<Date>)data){
+                        values.add(DateUtil.toOADate(v));
+                    }
+                    break;
             }
             return values;
         }
