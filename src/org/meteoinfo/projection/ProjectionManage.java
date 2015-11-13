@@ -13,7 +13,35 @@
  */
 package org.meteoinfo.projection;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.meteoinfo.data.mapdata.Field;
+import org.meteoinfo.geoprocess.GeoComputation;
 import org.meteoinfo.global.Extent;
+import org.meteoinfo.global.MIMath;
+import org.meteoinfo.global.PointD;
+import org.meteoinfo.layer.VectorLayer;
+import org.meteoinfo.map.ProjectionSet;
+import org.meteoinfo.shape.CircleShape;
+import org.meteoinfo.shape.CurveLineShape;
+import org.meteoinfo.shape.CurvePolygonShape;
+import org.meteoinfo.shape.EllipseShape;
+import org.meteoinfo.shape.Graphic;
+import org.meteoinfo.shape.GraphicCollection;
+import org.meteoinfo.shape.PointShape;
+import org.meteoinfo.shape.Polygon;
+import org.meteoinfo.shape.PolygonShape;
+import org.meteoinfo.shape.Polyline;
+import org.meteoinfo.shape.PolylineShape;
+import org.meteoinfo.shape.Shape;
+import org.meteoinfo.shape.StationModelShape;
+import org.meteoinfo.shape.WindArraw;
+import org.meteoinfo.shape.WindBarb;
+import org.meteoinfo.table.DataColumn;
+import org.meteoinfo.table.DataRow;
+import org.meteoinfo.table.DataTable;
 
 /**
  *
@@ -452,4 +480,753 @@ public class ProjectionManage {
 
         return aExtent;
     }
+
+    /**
+     * Project vector layer
+     *
+     * @param oLayer The layer
+     * @param toProj To projection info
+     */
+    public static void projectLayer(VectorLayer oLayer, ProjectionInfo toProj) {
+        double refLon = toProj.getCoordinateReferenceSystem().getProjection().getProjectionLongitudeDegrees();
+        refLon += 180;
+        if (refLon > 180) {
+            refLon = refLon - 360;
+        } else if (refLon < -180) {
+            refLon = refLon + 360;
+        }
+        projectLayer(oLayer, toProj, refLon, true);
+    }
+    
+    /**
+     * Project vector layer
+     *
+     * @param oLayer The layer
+     * @param toProj To projection info
+     * @param refCutLon Reference clip longitude
+     */
+    public static void projectLayer(VectorLayer oLayer, ProjectionInfo toProj, double refCutLon) {
+        projectLayer(oLayer, toProj, refCutLon, true);
+    }
+
+    /**
+     * Project vector layer
+     *
+     * @param oLayer The layer
+     * @param toProj To projection info
+     * @param refCutLon Reference clip longitude
+     * @param projectLabels If project labels
+     */
+    public static void projectLayer(VectorLayer oLayer, ProjectionInfo toProj, double refCutLon, boolean projectLabels) {
+        ProjectionInfo fromProj = oLayer.getProjInfo();
+        if (fromProj.equals(toProj)) {
+            if (oLayer.isProjected()) {
+                oLayer.getOriginData();
+            }
+
+            return;
+        }
+
+        if (oLayer.isProjected()) {
+            oLayer.getOriginData();
+        } else {
+            oLayer.updateOriginData();
+        }
+
+        double refLon = refCutLon;
+        if (oLayer.getExtent().maxX > 180 && oLayer.getExtent().minX > refLon) {
+            refLon += 360;
+        }
+
+        //coordinate transform process
+        int i, s;
+        ArrayList newPoints = new ArrayList();
+        Extent lExtent = new Extent();
+
+        DataTable aTable = new DataTable();
+        for (DataColumn aDC : oLayer.getAttributeTable().getTable().getColumns()) {
+            Field bDC = new Field(aDC.getColumnName(), aDC.getDataType());
+            aTable.getColumns().add(bDC);
+        }
+
+        //aLayer.AttributeTable.Table.Rows.Clear();
+
+        switch (oLayer.getShapeType()) {
+            case Point:
+            case PointM:
+            case PointZ:
+            case WeatherSymbol:
+            case WindArraw:
+            case WindBarb:
+            case StationModel:
+                List<Shape> shapePoints = new ArrayList<>();
+                newPoints.clear();
+                for (s = 0; s < oLayer.getShapeNum(); s++) {
+                    PointShape aPS = (PointShape) oLayer.getShapes().get(s);
+                    if (fromProj.getProjectionName() == ProjectionNames.LongLat) {
+                        switch (toProj.getProjectionName()) {
+                            case Lambert_Conformal_Conic:
+                                if (aPS.getPoint().Y < -80) {
+                                    continue;
+                                }
+                                break;
+                            case North_Polar_Stereographic_Azimuthal:
+                                if (aPS.getPoint().Y < 0) {
+                                    continue;
+                                }
+                                break;
+                            case South_Polar_Stereographic_Azimuthal:
+                                if (aPS.getPoint().Y > 0) {
+                                    continue;
+                                }
+                                break;
+                            case Mercator:
+                                if (aPS.getPoint().Y > 85.0511 || aPS.getPoint().Y < -85.0511) {
+                                    continue;
+                                }
+                                break;
+                        }
+                    }
+                    aPS = projectPointShape(aPS, fromProj, toProj);
+                    if (aPS != null) {
+                        shapePoints.add(aPS);
+                        newPoints.add(aPS.getPoint());
+
+                        DataRow aDR = oLayer.getAttributeTable().getTable().getRows().get(s);
+                        try {
+                            aTable.addRow(aDR);
+                        } catch (Exception ex) {
+                            Logger.getLogger(ProjectionSet.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                }
+                oLayer.setShapes(new ArrayList<>(shapePoints));
+                oLayer.setExtent(MIMath.getPointsExtent(newPoints));
+
+                break;
+            case Polyline:
+            case PolylineM:
+            case PolylineZ:
+                List<Shape> newPolylines = new ArrayList<>();
+                for (s = 0; s < oLayer.getShapeNum(); s++) {
+                    PolylineShape aPLS = (PolylineShape) oLayer.getShapes().get(s);
+                    List<PolylineShape> plsList = new ArrayList<>();
+                    if (fromProj.getProjectionName() == ProjectionNames.LongLat) {
+                        switch (toProj.getProjectionName()) {
+                            case Lambert_Conformal_Conic:
+                                if (aPLS.getExtent().minY < -80) {
+                                    aPLS = GeoComputation.clipPolylineShape_Lat(aPLS, -80, true);
+                                }
+                                break;
+                            case North_Polar_Stereographic_Azimuthal:
+                                if (aPLS.getExtent().minY < 0) {
+                                    //continue;
+                                    aPLS = GeoComputation.clipPolylineShape_Lat(aPLS, 0, true);
+                                }
+                                break;
+                            case South_Polar_Stereographic_Azimuthal:
+                                if (aPLS.getExtent().maxY > 0) {
+                                    //continue;
+                                    aPLS = GeoComputation.clipPolylineShape_Lat(aPLS, 0, false);
+                                }
+                                break;
+                            case Mercator:
+                                if (aPLS.getExtent().maxY > 85.0511) {
+                                    aPLS = GeoComputation.clipPolylineShape_Lat(aPLS, 85.0511, false);
+                                }
+                                if (aPLS.getExtent().minY < -85.0511) {
+                                    aPLS = GeoComputation.clipPolylineShape_Lat(aPLS, -85.0511, true);
+                                }
+                                break;
+                        }
+                        if (aPLS == null) {
+                            continue;
+                        }
+
+//                        aPLS = GeoComputation.clipPolylineShape_Lon(aPLS, refLon);
+//                        if (aPLS == null) {
+//                            continue;
+//                        }
+
+                        if (aPLS.getExtent().minX <= refLon && aPLS.getExtent().maxX >= refLon) {
+                            plsList.add(GeoComputation.clipPolylineShape_Lon(aPLS, refLon));
+                        } else {
+                            plsList.add(aPLS);
+                        }
+                    } else {
+                        plsList.add(aPLS);
+                    }
+                    for (i = 0; i < plsList.size(); i++) {
+                        aPLS = plsList.get(i);
+                        aPLS = projectPolylineShape(aPLS, fromProj, toProj);
+                        if (aPLS != null) {
+                            newPolylines.add(aPLS);
+
+                            DataRow aDR = oLayer.getAttributeTable().getTable().getRows().get(s);
+                            try {
+                                aTable.addRow(aDR);
+                            } catch (Exception ex) {
+                                Logger.getLogger(ProjectionSet.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+
+                            if (s == 0 && i == 0) {
+                                lExtent = (Extent) aPLS.getExtent().clone();
+                            } else {
+                                lExtent = MIMath.getLagerExtent(lExtent, aPLS.getExtent());
+                            }
+                        }
+                    }
+                }
+                oLayer.setShapes(new ArrayList<>(newPolylines));
+                newPolylines.clear();
+                oLayer.setExtent(lExtent);
+                break;
+            case Polygon:
+            case PolygonM:
+                List<Shape> newPolygons = new ArrayList<>();
+                for (s = 0; s < oLayer.getShapeNum(); s++) {
+                    DataRow aDR = oLayer.getAttributeTable().getTable().getRows().get(s);
+                    PolygonShape aPGS = (PolygonShape) oLayer.getShapes().get(s);
+                    List<PolygonShape> pgsList = new ArrayList<>();
+                    if (fromProj.getProjectionName() == ProjectionNames.LongLat) {
+                        switch (toProj.getProjectionName()) {
+                            case Lambert_Conformal_Conic:
+                                if (aPGS.getExtent().minY < -80) {
+                                    aPGS = GeoComputation.clipPolygonShape_Lat(aPGS, -80, true);
+                                }
+                                break;
+                            case North_Polar_Stereographic_Azimuthal:
+                                if (aPGS.getExtent().minY < 0) {
+                                    //continue;
+                                    aPGS = GeoComputation.clipPolygonShape_Lat(aPGS, 0, true);
+                                }
+                                break;
+                            case South_Polar_Stereographic_Azimuthal:
+                                if (aPGS.getExtent().maxY > 0) {
+                                    //continue;
+                                    aPGS = GeoComputation.clipPolygonShape_Lat(aPGS, 0, false);
+                                }
+                                break;
+                            case Mercator:
+                                if (aPGS.getExtent().maxY > 85.0511) {
+                                    aPGS = GeoComputation.clipPolygonShape_Lat(aPGS, 85.0511, false);
+                                }
+                                if (aPGS.getExtent().minY < -85.0511) {
+                                    aPGS = GeoComputation.clipPolygonShape_Lat(aPGS, -85.0511, true);
+                                }
+                                break;
+                        }
+                        if (aPGS == null) {
+                            continue;
+                        }
+
+                        if (aPGS.getExtent().minX <= refLon && aPGS.getExtent().maxX >= refLon) {
+                            pgsList.add(GeoComputation.clipPolygonShape_Lon(aPGS, refLon));
+                        } else {
+                            pgsList.add(aPGS);
+                        }
+                    } else {
+                        pgsList.add(aPGS);
+                    }
+                    for (i = 0; i < pgsList.size(); i++) {
+                        aPGS = pgsList.get(i);
+                        aPGS = projectPolygonShape(aPGS, fromProj, toProj);
+                        if (aPGS != null) {
+                            newPolygons.add(aPGS);
+
+                            aTable.getRows().add(aDR);
+
+                            if (s == 0) {
+                                lExtent = (Extent) aPGS.getExtent().clone();
+                            } else {
+                                lExtent = MIMath.getLagerExtent(lExtent, aPGS.getExtent());
+                            }
+                        }
+                    }
+                }
+                oLayer.setShapes(new ArrayList<>(newPolygons));
+                newPolygons.clear();
+                oLayer.setExtent(lExtent);
+                break;
+        }
+        oLayer.getAttributeTable().setTable(aTable);
+
+        if (oLayer.getLabelPoints().size() > 0) {
+            if (projectLabels) {
+                oLayer.setLabelPoints(projectGraphics(oLayer.getLabelPoints(), fromProj, toProj));
+            } else {
+                oLayer.setLabelPoints(new ArrayList<>(oLayer.getLabelPoints()));
+            }
+        }
+    }
+    
+    private static PointShape projectPointShape(PointShape aPS, ProjectionInfo fromProj, ProjectionInfo toProj) {
+        PointShape newPS = (PointShape) aPS.clone();
+        double[][] points = new double[1][];
+        points[0] = new double[]{newPS.getPoint().X, newPS.getPoint().Y};
+        double[] fromP = new double[]{newPS.getPoint().X, newPS.getPoint().Y};
+        try {
+            Reproject.reprojectPoints(points, fromProj, toProj, 0, points.length);
+            if (!Double.isNaN(points[0][0]) && !Double.isNaN(points[0][1])) {
+                double[] toP = points[0];
+                newPS.setPoint(new PointD(points[0][0], points[0][1]));
+                switch (aPS.getShapeType()) {
+                    case WindBarb:
+                        ((WindBarb) newPS).angle = projectAngle(((WindBarb) newPS).angle, fromP, toP, fromProj, toProj);
+                        break;
+                    case WindArraw:
+                        ((WindArraw) newPS).angle = projectAngle(((WindArraw) newPS).angle, fromP, toP, fromProj, toProj);
+                        break;
+                    case StationModel:
+                        ((StationModelShape) newPS).windBarb.angle = projectAngle(((StationModelShape) newPS).windBarb.angle, fromP, toP, fromProj, toProj);
+                        break;
+                }
+                return newPS;
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static PolylineShape projectPolylineShape(PolylineShape aPLS, ProjectionInfo fromProj, ProjectionInfo toProj) {
+        List<Polyline> polyLines = new ArrayList<>();
+        for (int i = 0; i < aPLS.getPolylines().size(); i++) {
+            List<PointD> newPoints = new ArrayList<>();
+            Polyline aPL = aPLS.getPolylines().get(i);
+            Polyline bPL;
+            double x;
+            for (int j = 0; j < aPL.getPointList().size(); j++) {
+                double[][] points = new double[1][];
+                PointD wPoint = aPL.getPointList().get(j);
+                x = wPoint.X;
+                if (fromProj.isLonLat()){
+                    if (x > 180){
+                        x -= 360;
+                    } else if (x < -180){
+                        x += 360;
+                    }                    
+                }
+                points[0] = new double[]{x, wPoint.Y};
+                try {
+                    Reproject.reprojectPoints(points, fromProj, toProj, 0, points.length);
+                    if (!Double.isNaN(points[0][0]) && !Double.isNaN(points[0][1])) {
+                        //wPoint = new PointD();
+                        wPoint.X = points[0][0];
+                        wPoint.Y = points[0][1];
+                        newPoints.add(wPoint);
+                    }
+                } catch (Exception e) {
+                    break;
+                }
+            }
+
+            if (newPoints.size() > 1) {
+                bPL = new Polyline();
+                bPL.setPointList(newPoints);
+                polyLines.add(bPL);
+            }
+        }
+
+
+        if (polyLines.size() > 0) {
+            aPLS.setPolylines(polyLines);
+
+            return aPLS;
+        } else {
+            return null;
+        }
+    }
+    
+    /**
+     * Project angle
+     *
+     * @param oAngle The angle
+     * @param fromP1 From point
+     * @param toP1 To point
+     * @param fromProj From projection
+     * @param toProj To projection
+     * @return Projected angle
+     */
+    public static double projectAngle(double oAngle, double[] fromP1, double[] toP1, ProjectionInfo fromProj, ProjectionInfo toProj) {
+        double pAngle = oAngle;
+        double[] fromP2;
+        double[] toP2;
+        double[][] points = new double[1][];
+
+        if (fromP1[1] == 90) {
+            fromP2 = new double[]{fromP1[0], fromP1[1] - 10};
+            points[0] = (double[]) fromP2.clone();
+            try {
+                Reproject.reprojectPoints(points, fromProj, toProj, 0, points.length);
+                toP2 = points[0];
+                double x, y;
+                x = toP2[0] - toP1[0];
+                y = toP2[1] - toP1[1];
+                double aLen = Math.sqrt(x * x + y * y);
+                double angle = Math.asin(x / aLen) * 180 / Math.PI;
+                if (x < 0 && y < 0) {
+                    angle = 180.0 - angle;
+                } else if (x > 0 && y < 0) {
+                    angle = 180.0 - angle;
+                } else if (x < 0 && y > 0) {
+                    angle = 360.0 + angle;
+                }
+                if (aLen == 0) {
+                    System.out.print("Error");
+                }
+                pAngle = oAngle + (angle - 180);
+                if (pAngle > 360) {
+                    pAngle = pAngle - 360;
+                } else if (pAngle < 0) {
+                    pAngle = pAngle + 360;
+                }
+            } catch (Exception e) {
+            }
+        } else {
+            fromP2 = new double[]{fromP1[0] + 10, fromP1[1]};
+            points[0] = (double[]) fromP2.clone();
+            try {
+                Reproject.reprojectPoints(points, fromProj, toProj, 0, points.length);
+                toP2 = points[0];
+
+                double x, y;
+                x = toP2[0] - toP1[0];
+                y = toP2[1] - toP1[1];
+                double aLen = Math.sqrt(x * x + y * y);
+                if (aLen == 0) {
+                    return pAngle;
+                }
+
+                double angle = Math.asin(x / aLen) * 180 / Math.PI;
+                if (Double.isNaN(angle)) {
+                    return pAngle;
+                }
+
+                if (x < 0 && y < 0) {
+                    angle = 180.0 - angle;
+                } else if (x > 0 && y < 0) {
+                    angle = 180.0 - angle;
+                } else if (x < 0 && y > 0) {
+                    angle = 360.0 + angle;
+                }
+
+                pAngle = oAngle + (angle - 90);
+                if (pAngle > 360) {
+                    pAngle = pAngle - 360;
+                } else if (pAngle < 0) {
+                    pAngle = pAngle + 360;
+                }
+            } catch (Exception e) {
+            }
+        }
+
+        return pAngle;
+    }
+
+    /**
+     * Project polygon shape
+     *
+     * @param aPGS A polygon shape
+     * @param fromProj From projection
+     * @param toProj To porjection
+     * @return Projected polygon shape
+     */
+    public static PolygonShape projectPolygonShape(PolygonShape aPGS, ProjectionInfo fromProj, ProjectionInfo toProj) {
+        List<Polygon> polygons = new ArrayList<>();
+        for (int i = 0; i < aPGS.getPolygons().size(); i++) {
+            Polygon aPG = aPGS.getPolygons().get(i);
+            Polygon bPG = null;
+            for (int r = 0; r < aPG.getRingNumber(); r++) {
+                List<PointD> pList = aPG.getRings().get(r);
+                List<PointD> newPoints = new ArrayList<>();
+                for (int j = 0; j < pList.size(); j++) {
+                    double[][] points = new double[1][];
+                    PointD wPoint = pList.get(j);
+                    points[0] = new double[]{wPoint.X, wPoint.Y};
+                    try {
+                        Reproject.reprojectPoints(points, fromProj, toProj, 0, points.length);
+                        if (!Double.isNaN(points[0][0]) && !Double.isNaN(points[0][1])) {
+                            wPoint = new PointD();
+                            wPoint.X = points[0][0];
+                            wPoint.Y = points[0][1];
+                            newPoints.add(wPoint);
+                        }
+                    } catch (Exception e) {
+                        break;
+                    }
+                }
+
+                if (r == 0) {
+                    if (newPoints.size() > 2) {
+                        bPG = new Polygon();
+                        bPG.setOutLine(newPoints);
+                    } else {
+                        break;
+                    }
+                } else {
+                    if (newPoints.size() > 2) {
+                        bPG.addHole(newPoints);
+                    }
+                }
+            }
+
+            if (bPG != null) {
+                polygons.add(bPG);
+            }
+        }
+
+        if (polygons.size() > 0) {
+            aPGS.setPolygons(polygons);
+
+            return aPGS;
+        } else {
+            return null;
+        }
+    }
+    
+    private static GraphicCollection projectGraphics(GraphicCollection aGCollection, ProjectionInfo fromProj, ProjectionInfo toProj) {
+        GraphicCollection newGCollection = new GraphicCollection();
+        for (Graphic aGraphic : aGCollection) {
+            aGraphic.setShape(projectShape(aGraphic.getShape(), fromProj, toProj));
+            if (aGraphic.getShape() != null) {
+                newGCollection.add(aGraphic);
+            }
+        }
+
+        return newGCollection;
+    }
+
+    private static List<Graphic> projectGraphics(List<Graphic> graphics, ProjectionInfo fromProj, ProjectionInfo toProj) {
+        List<Graphic> newGraphics = new ArrayList<>();
+        for (Graphic aGraphic : graphics) {
+            Shape aShape = projectShape(aGraphic.getShape(), fromProj, toProj);
+            if (aShape != null) {
+                newGraphics.add(new Graphic(aShape, aGraphic.getLegend()));
+            }
+        }
+
+        return newGraphics;
+    }
+
+    private static Shape projectShape(Shape aShape, ProjectionInfo fromProj, ProjectionInfo toProj) {
+        Shape newShape;
+        switch (aShape.getShapeType()) {
+            case Point:
+            case PointM:
+                newShape = projectPointShape((PointShape) aShape, fromProj, toProj);
+                break;
+            case Polyline:
+            case PolylineM:
+                newShape = projectPolylineShape((PolylineShape) aShape, fromProj, toProj);
+                break;
+            case CurveLine:
+                newShape = projectCurvelineShape((CurveLineShape) aShape, fromProj, toProj);
+                break;
+            case Polygon:
+            case PolygonM:
+            case Rectangle:
+                newShape = projectPolygonShape((PolygonShape) aShape, fromProj, toProj);
+                break;
+            case CurvePolygon:
+                newShape = projectCurvePolygonShape((CurvePolygonShape) aShape, fromProj, toProj);
+                break;
+            case Circle:
+                newShape = projectCircleShape((CircleShape) aShape, fromProj, toProj);
+                break;
+            case Ellipse:
+                newShape = projectEllipseShape((EllipseShape) aShape, fromProj, toProj);
+                break;
+            default:
+                newShape = null;
+                break;
+        }
+
+        return newShape;
+    }
+    
+    private static CurveLineShape projectCurvelineShape(CurveLineShape aPLS, ProjectionInfo fromProj, ProjectionInfo toProj) {
+        List<Polyline> polyLines = new ArrayList<>();
+        for (int i = 0; i < aPLS.getPolylines().size(); i++) {
+            List<PointD> newPoints = new ArrayList<>();
+            Polyline aPL = aPLS.getPolylines().get(i);
+            Polyline bPL;
+            for (int j = 0; j < aPL.getPointList().size(); j++) {
+                double[][] points = new double[1][];
+                PointD wPoint = aPL.getPointList().get(j);
+                points[0] = new double[]{wPoint.X, wPoint.Y};
+                try {
+                    Reproject.reprojectPoints(points, fromProj, toProj, 0, points.length);
+                    if (!Double.isNaN(points[0][0]) && !Double.isNaN(points[0][1])) {
+                        wPoint = new PointD();
+                        wPoint.X = points[0][0];
+                        wPoint.Y = points[0][1];
+                        newPoints.add(wPoint);
+                    }
+                } catch (Exception e) {
+                    break;
+                }
+            }
+
+            if (newPoints.size() > 1) {
+                bPL = new Polyline();
+                bPL.setPointList(newPoints);
+                polyLines.add(bPL);
+            }
+        }
+
+
+        if (polyLines.size() > 0) {
+            aPLS.setPolylines(polyLines);
+
+            return aPLS;
+        } else {
+            return null;
+        }
+    }
+    
+    private static CurvePolygonShape projectCurvePolygonShape(CurvePolygonShape aPGS, ProjectionInfo fromProj, ProjectionInfo toProj) {
+        List<Polygon> polygons = new ArrayList<>();
+        for (int i = 0; i < aPGS.getPolygons().size(); i++) {
+            Polygon aPG = aPGS.getPolygons().get(i);
+            Polygon bPG = null;
+            for (int r = 0; r < aPG.getRingNumber(); r++) {
+                List<PointD> pList = aPG.getRings().get(r);
+                List<PointD> newPoints = new ArrayList<>();
+                for (int j = 0; j < pList.size(); j++) {
+                    double[][] points = new double[1][];
+                    PointD wPoint = pList.get(j);
+                    points[0] = new double[]{wPoint.X, wPoint.Y};
+                    try {
+                        Reproject.reprojectPoints(points, fromProj, toProj, 0, points.length);
+                        if (!Double.isNaN(points[0][0]) && !Double.isNaN(points[0][1])) {
+                            wPoint = new PointD();
+                            wPoint.X = points[0][0];
+                            wPoint.Y = points[0][1];
+                            newPoints.add(wPoint);
+                        }
+                    } catch (Exception e) {
+                        break;
+                    }
+                }
+
+                if (r == 0) {
+                    if (newPoints.size() > 2) {
+                        bPG = new Polygon();
+                        bPG.setOutLine(newPoints);
+                    } else {
+                        break;
+                    }
+                } else {
+                    if (newPoints.size() > 2) {
+                        bPG.addHole(newPoints);
+                    }
+                }
+            }
+
+            if (bPG != null) {
+                polygons.add(bPG);
+            }
+        }
+
+        if (polygons.size() > 0) {
+            aPGS.setPolygons(polygons);
+
+            return aPGS;
+        } else {
+            return null;
+        }
+    }
+
+    private static CircleShape projectCircleShape(CircleShape aCS, ProjectionInfo fromProj, ProjectionInfo toProj) {
+        double radius = Math.abs(aCS.getPoints().get(1).X - aCS.getPoints().get(0).X);
+        double[][] points = new double[1][];
+        PointD centerPoint = new PointD(aCS.getPoints().get(0).X + radius, aCS.getPoints().get(0).Y);
+        points[0] = new double[]{centerPoint.X, centerPoint.Y};
+        try {
+            Reproject.reprojectPoints(points, fromProj, toProj, 0, points.length);
+            if (!Double.isNaN(points[0][0]) && !Double.isNaN(points[0][1])) {
+                centerPoint.X = points[0][0];
+                centerPoint.Y = points[0][1];
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            return null;
+        }
+
+        points = new double[1][];
+        PointD leftPoint = aCS.getPoints().get(0);
+        points[0] = new double[]{leftPoint.X, leftPoint.Y};
+        try {
+            Reproject.reprojectPoints(points, fromProj, toProj, 0, points.length);
+            if (!Double.isNaN(points[0][0]) && !Double.isNaN(points[0][1])) {
+                leftPoint.X = points[0][0];
+                leftPoint.Y = points[0][1];
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            return null;
+        }
+
+        radius = Math.abs(centerPoint.X - leftPoint.X);
+        List<PointD> newPoints = new ArrayList<>();
+        newPoints.add(new PointD(centerPoint.X - radius, centerPoint.Y));
+        newPoints.add(new PointD(centerPoint.X, centerPoint.Y - radius));
+        newPoints.add(new PointD(centerPoint.X + radius, centerPoint.Y));
+        newPoints.add(new PointD(centerPoint.X, centerPoint.Y + radius));
+        CircleShape newCS = new CircleShape();
+        newCS.setPoints(newPoints);
+
+        return newCS;
+    }
+
+    private static EllipseShape projectEllipseShape(EllipseShape aES, ProjectionInfo fromProj, ProjectionInfo toProj) {
+        double xRadius = Math.abs(aES.getPoints().get(2).X - aES.getPoints().get(0).X) / 2;
+        double yRadius = Math.abs(aES.getPoints().get(2).Y - aES.getPoints().get(0).Y) / 2;
+        double[][] points = new double[1][];
+        PointD centerPoint = new PointD(aES.getExtent().minX + xRadius, aES.getExtent().minY + yRadius);
+        points[0] = new double[]{centerPoint.X, centerPoint.Y};
+        try {
+            Reproject.reprojectPoints(points, fromProj, toProj, 0, points.length);
+            if (!Double.isNaN(points[0][0]) && !Double.isNaN(points[0][1])) {
+                centerPoint.X = points[0][0];
+                centerPoint.Y = points[0][1];
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            return null;
+        }
+
+        points = new double[1][];
+        PointD lbPoint = new PointD(aES.getExtent().minX, aES.getExtent().minY);
+        points[0] = new double[]{lbPoint.X, lbPoint.Y};
+        try {
+            Reproject.reprojectPoints(points, fromProj, toProj, 0, points.length);
+            if (!Double.isNaN(points[0][0]) && !Double.isNaN(points[0][1])) {
+                lbPoint.X = points[0][0];
+                lbPoint.Y = points[0][1];
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            return null;
+        }
+
+        xRadius = Math.abs(centerPoint.X - lbPoint.X);
+        yRadius = Math.abs(centerPoint.Y - lbPoint.Y);
+        List<PointD> newPoints = new ArrayList<>();
+        newPoints.add(new PointD(centerPoint.X - xRadius, centerPoint.Y - yRadius));
+        newPoints.add(new PointD(centerPoint.X - xRadius, centerPoint.Y + yRadius));
+        newPoints.add(new PointD(centerPoint.X + xRadius, centerPoint.Y + yRadius));
+        newPoints.add(new PointD(centerPoint.X + xRadius, centerPoint.Y - yRadius));
+        EllipseShape newES = new EllipseShape();
+        newES.setPoints(newPoints);
+
+        return newES;
+    }
+    
 }
