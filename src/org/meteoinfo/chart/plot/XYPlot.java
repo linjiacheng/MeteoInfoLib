@@ -13,7 +13,9 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.meteoinfo.chart.ChartLegend;
 import org.meteoinfo.chart.ChartText;
@@ -52,6 +54,7 @@ public abstract class XYPlot extends Plot {
     private ChartText subTitle;
     private ChartLegend legend;
     private boolean drawLegend;
+    private List<ChartText> texts;
 
     // </editor-fold>
     // <editor-fold desc="Constructor">
@@ -76,6 +79,7 @@ public abstract class XYPlot extends Plot {
         this.drawTopAxis = true;
         this.drawRightAxis = true;
         this.drawNeatLine = false;
+        this.texts = new ArrayList<>();
     }
     // </editor-fold>
 
@@ -394,6 +398,22 @@ public abstract class XYPlot extends Plot {
      */
     public void setDrawNeatLine(boolean value){
         this.drawNeatLine = value;
+    }
+    
+    /**
+     * Get texts
+     * @return Texts
+     */
+    public List<ChartText> getTexts(){
+        return this.texts;
+    }
+    
+    /**
+     * Set texts
+     * @param value texts
+     */
+    public void setTexts(List<ChartText> value){
+        this.texts = value;
     }
 
     // </editor-fold>
@@ -903,6 +923,12 @@ public abstract class XYPlot extends Plot {
 
     abstract void updateLegendScheme();
 
-    abstract void addText(ChartText text);
+    /**
+     * Add text
+     * @param text Chart text 
+     */
+    public void addText(ChartText text){
+        this.getTexts().add(text);
+    }
     // </editor-fold>
 }

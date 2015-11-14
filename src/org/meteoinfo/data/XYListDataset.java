@@ -262,6 +262,31 @@ public class XYListDataset extends XYDataset {
     }
     
     /**
+     * Add a series data 
+     * @param seriesKey Series key
+     * @param xvs X value array
+     * @param yvs Y value array
+     */
+    public void addSeries(String seriesKey, Array xvs, List<Number> yvs){
+        int xn = (int)xvs.getSize();
+        int yn = yvs.size();
+        double[] nxvs = new double[xn];
+        double[] nyvs = new double[yn];
+        double v;
+        for (int i = 0; i < xn; i++)
+            nxvs[i] = xvs.getDouble(i);
+        for (int i = 0; i < yn; i++){
+            v = yvs.get(i).doubleValue();
+            if (Double.isNaN(v))
+                nyvs[i] = this.getMissingValue();
+            else
+                nyvs[i] = v;
+        }
+        
+        this.addSeries(seriesKey, nxvs, nyvs);
+    }
+    
+    /**
      * Remove a series data
      * @param seriesIdx Series data
      */

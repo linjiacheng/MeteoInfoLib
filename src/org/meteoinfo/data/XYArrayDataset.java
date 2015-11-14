@@ -50,7 +50,7 @@ public class XYArrayDataset extends XYDataset {
      * @param seriesKey Series key
      */
     public XYArrayDataset(StationData xdata, StationData ydata, String seriesKey) {
-        List<double[]> vdata = new ArrayList<double[]>();
+        List<double[]> vdata = new ArrayList<>();
         double v1, v2;
         for (int i = 0; i < xdata.getStNum(); i++) {
             v1 = xdata.getValue(i);
@@ -85,14 +85,14 @@ public class XYArrayDataset extends XYDataset {
      * @param seriesKey Series key
      */
     public XYArrayDataset(List<Number> xdata, List<Number> ydata, String seriesKey) {
-        List<Double> nxdata = new ArrayList<Double>();
-        List<Double> nydata = new ArrayList<Double>();
+        List<Double> nxdata = new ArrayList<>();
+        List<Double> nydata = new ArrayList<>();
         for (int i = 0; i < xdata.size(); i++) {
             nxdata.add(Double.parseDouble(xdata.get(i).toString()));
             nydata.add(Double.parseDouble(ydata.get(i).toString()));
         }
         
-        List<double[]> vdata = new ArrayList<double[]>();
+        List<double[]> vdata = new ArrayList<>();
         double v1, v2;
         for (int i = 0; i < xdata.size(); i++) {
             v1 = nxdata.get(i);            

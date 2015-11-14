@@ -40,7 +40,6 @@ public final class XY1DPlot extends XYPlot {
     private ChartPlotMethod chartPlotMethod;
     private List<SeriesLegend> seriesLegends;
     private boolean useBreak2D;
-    private List<ChartText> texts;
 
     // </editor-fold>
     // <editor-fold desc="Constructor">
@@ -54,7 +53,6 @@ public final class XY1DPlot extends XYPlot {
         this.chartPlotMethod = ChartPlotMethod.LINE;
         this.useBreak2D = false;
         this.seriesLegends = new ArrayList<>();
-        this.texts = new ArrayList<>();
     }
 
     /**
@@ -234,22 +232,6 @@ public final class XY1DPlot extends XYPlot {
     public void setUseBeak2D(boolean value) {
         this.useBreak2D = value;
     }
-    
-    /**
-     * Get texts
-     * @return Texts
-     */
-    public List<ChartText> getTexts(){
-        return this.texts;
-    }
-    
-    /**
-     * Set texts
-     * @param value texts
-     */
-    public void setTexts(List<ChartText> value){
-        this.texts = value;
-    }
 
     // </editor-fold>
     // <editor-fold desc="Methods">    
@@ -385,7 +367,7 @@ public final class XY1DPlot extends XYPlot {
         }
         
         //Draw texts
-        for (ChartText text : this.texts){
+        for (ChartText text : this.getTexts()){
             xy = this.projToScreen(text.getX(), text.getY(), area);
             float x = (float)xy[0];
             float y = (float)xy[1];
@@ -566,10 +548,5 @@ public final class XY1DPlot extends XYPlot {
         }
     }
     
-    @Override
-    public void addText(ChartText text){
-        this.texts.add(text);
-    }
-
     // </editor-fold>   
 }

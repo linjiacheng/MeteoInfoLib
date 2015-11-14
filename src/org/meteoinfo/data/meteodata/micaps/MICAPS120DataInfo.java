@@ -165,11 +165,13 @@ public class MICAPS120DataInfo extends DataInfo implements IStationDataInfo {
                 }
                 line = line.trim();
                 dataArray = line.split("\\s+");
-                stid = dataArray[0];
-                lat = Double.parseDouble(dataArray[1]);
-                lon = Double.parseDouble(dataArray[2]);
-                value = Double.parseDouble(dataArray[varIdx]);
-                stData.addData(stid, lon, lat, value);
+                if (dataArray.length > varIdx){
+                    stid = dataArray[0];
+                    lat = Double.parseDouble(dataArray[1]);
+                    lon = Double.parseDouble(dataArray[2]);
+                    value = Double.parseDouble(dataArray[varIdx]);
+                    stData.addData(stid, lon, lat, value);
+                }
 
                 line = sr.readLine();
             }

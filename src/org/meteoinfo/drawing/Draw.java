@@ -2584,6 +2584,45 @@ public class Draw {
         }
         drawRectangle(aPoint, width, height, aPGB, g);
     }
+    
+    /**
+     * Draw bar chart symbol
+     *
+     * @param aPoint Start point
+     * @param width Width
+     * @param height Height
+     * @param g Graphics2D
+     * @param aPGB Polygon beak
+     * @param isView3D Is view as 3D
+     * @param thickness 3D thickness
+     */
+    public static void drawBar(PointF aPoint, float width, float height, PolygonBreak aPGB, Graphics2D g, boolean isView3D,
+            int thickness) {
+        float y = aPoint.Y;
+        aPoint.Y = y - height;
+        if (isView3D) {
+            Color aColor = ColorUtil.modifyBrightness(aPGB.getColor(), 0.5f);
+            PointF[] points = new PointF[4];
+            points[0] = new PointF(aPoint.X, aPoint.Y);
+            points[1] = new PointF(aPoint.X + width, aPoint.Y);
+            points[2] = new PointF(points[1].X + thickness, points[1].Y - thickness);
+            points[3] = new PointF(points[0].X + thickness, points[0].Y - thickness);
+            g.setColor(aColor);
+            Draw.fillPolygon(points, g);
+            g.setColor(aPGB.getOutlineColor());
+            Draw.drawPolyline(points, g);
+
+            points[0] = new PointF(aPoint.X + width, aPoint.Y);
+            points[1] = new PointF(aPoint.X + width, aPoint.Y + height);
+            points[2] = new PointF(points[1].X + thickness, points[1].Y - thickness);
+            points[3] = new PointF(points[0].X + thickness, points[0].Y - thickness);
+            g.setColor(aColor);
+            Draw.fillPolygon(points, g);
+            g.setColor(aPGB.getOutlineColor());
+            Draw.drawPolyline(points, g);
+        }
+        drawRectangle(aPoint, width, height, aPGB, g);
+    }
 
     /**
      * Draw pie chart symbol
