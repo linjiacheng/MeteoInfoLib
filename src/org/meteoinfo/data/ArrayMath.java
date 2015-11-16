@@ -988,6 +988,21 @@ public class ArrayMath {
 
         return r;
     }
+    
+    /**
+     * Bit and & operation
+     * @param a Array a
+     * @param b Number b
+     * @return Result array
+     */
+    public static Array bitAnd(Array a, Number b) {
+        Array r = Array.factory(a.getDataType(), a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            r.setObject(i, a.getInt(i) & b.intValue());
+        }
+
+        return r;
+    }
 
     // </editor-fold>
     // <editor-fold desc="Circular function">

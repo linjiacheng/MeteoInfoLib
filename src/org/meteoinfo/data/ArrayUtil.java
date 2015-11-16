@@ -598,6 +598,34 @@ public class ArrayUtil {
                 return DataType.OBJECT;
         }
     }
+    
+    /**
+     * Convert array to integer type
+     * @param a Array a
+     * @return Result array
+     */
+    public static Array toInteger(Array a){
+        Array r = Array.factory(DataType.INT, a.getShape());
+        for (int i = 0; i < r.getSize(); i++){
+            r.setInt(i, a.getInt(i));
+        }
+        
+        return r;
+    }
+    
+    /**
+     * Convert array to integer type
+     * @param a Array a
+     * @return Result array
+     */
+    public static Array toFloat(Array a){
+        Array r = Array.factory(DataType.FLOAT, a.getShape());
+        for (int i = 0; i < r.getSize(); i++){
+            r.setFloat(i, a.getFloat(i));
+        }
+        
+        return r;
+    }
 
     // </editor-fold>
     // <editor-fold desc="Resample/Interpolate">

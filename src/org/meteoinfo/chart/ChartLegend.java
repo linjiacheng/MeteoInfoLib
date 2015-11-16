@@ -486,6 +486,20 @@ public class ChartLegend {
     public void setAutoExtendFrac(boolean value){
         this.autoExtendFrac = value;
     }
+    
+    /**
+     * Set tick labels
+     * @param value Tick labels
+     */
+    public void setTickLabels(List<String> value){
+        for (int i = 0; i < this.legendScheme.getBreakNum(); i++){
+            if (i < value.size()){
+                this.legendScheme.getLegendBreaks().get(i).setCaption(value.get(i));
+            } else {
+                break;
+            }
+        }
+    }
 
     // </editor-fold>
     // <editor-fold desc="Methods">
