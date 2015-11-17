@@ -159,6 +159,29 @@ public class ArrayUtil {
             DataOutputStream outs = new DataOutputStream(new FileOutputStream(new File(fn)));
             ByteBuffer bb = a.getDataAsByteBuffer();
             outs.write(bb.array());
+//            switch (a.getDataType()) {
+//                case BYTE:
+//                    for (int i = 0; i < a.getSize(); i++) {
+//                        outs.write(a.getByte(i));
+//                    }
+//                    break;
+//                case INT:
+//                    for (int i = 0; i < a.getSize(); i++) {
+//                        outs.write(a.getInt(i));
+//                    }
+//                    break;
+//                case FLOAT:
+//                    for (int i = 0; i < a.getSize(); i++) {
+//                        outs.writeFloat(a.getFloat(i));
+//                    }
+//                    break;
+//                case DOUBLE:
+//                    for (int i = 0; i < a.getSize(); i++) {
+//                        outs.writeDouble(a.getDouble(i));
+//                    }
+//                    break;
+//            }
+
             outs.close();
         } catch (FileNotFoundException ex) {
             Logger.getLogger(ArrayUtil.class.getName()).log(Level.SEVERE, null, ex);
@@ -197,8 +220,12 @@ public class ArrayUtil {
                     }
                     break;
                 case FLOAT:
-                    for (int i = 0; i < r.getSize(); i++) {
-                        r.setFloat(i, ins.readFloat());
+                    //for (int i = 0; i < r.getSize(); i++) {
+                    //    r.setFloat(i, ins.readFloat());
+                    //}
+                    IndexIterator iter = r.getIndexIterator();
+                    while (iter.hasNext()){
+                        iter.setFloatNext(ins.readFloat());
                     }
                     break;
                 case DOUBLE:
@@ -598,32 +625,34 @@ public class ArrayUtil {
                 return DataType.OBJECT;
         }
     }
-    
+
     /**
      * Convert array to integer type
+     *
      * @param a Array a
      * @return Result array
      */
-    public static Array toInteger(Array a){
+    public static Array toInteger(Array a) {
         Array r = Array.factory(DataType.INT, a.getShape());
-        for (int i = 0; i < r.getSize(); i++){
+        for (int i = 0; i < r.getSize(); i++) {
             r.setInt(i, a.getInt(i));
         }
-        
+
         return r;
     }
-    
+
     /**
      * Convert array to integer type
+     *
      * @param a Array a
      * @return Result array
      */
-    public static Array toFloat(Array a){
+    public static Array toFloat(Array a) {
         Array r = Array.factory(DataType.FLOAT, a.getShape());
-        for (int i = 0; i < r.getSize(); i++){
+        for (int i = 0; i < r.getSize(); i++) {
             r.setFloat(i, a.getFloat(i));
         }
-        
+
         return r;
     }
 
@@ -1693,19 +1722,19 @@ public class ArrayUtil {
         double c = data.getDouble(i2 * nx + j1);
         double d = data.getDouble(i2 * nx + j2);
 
-        if (Math.abs(x - xArray.get(j1).doubleValue()) > Math.abs(xArray.get(j2).doubleValue() - x)){
-            if (Math.abs(y - yArray.get(i1).doubleValue()) > Math.abs(yArray.get(i2).doubleValue() - y)){
+        if (Math.abs(x - xArray.get(j1).doubleValue()) > Math.abs(xArray.get(j2).doubleValue() - x)) {
+            if (Math.abs(y - yArray.get(i1).doubleValue()) > Math.abs(yArray.get(i2).doubleValue() - y)) {
                 iValue = a;
             } else {
                 iValue = c;
             }
         } else {
-            if (Math.abs(y - yArray.get(i1).doubleValue()) > Math.abs(yArray.get(i2).doubleValue() - y)){
+            if (Math.abs(y - yArray.get(i1).doubleValue()) > Math.abs(yArray.get(i2).doubleValue() - y)) {
                 iValue = b;
             } else {
                 iValue = d;
             }
-        }        
+        }
 
         return iValue;
     }
@@ -1737,7 +1766,7 @@ public class ArrayUtil {
             Reproject.reprojectPoints(points, toProj, fromProj, 0, points.length);
         }
         double xx, yy;
-        if (resampleMethod == ResampleMethods.Bilinear){
+        if (resampleMethod == ResampleMethods.Bilinear) {
             for (int i = 0; i < n; i++) {
                 xx = points[i][0];
                 yy = points[i][1];
@@ -1784,7 +1813,7 @@ public class ArrayUtil {
             Reproject.reprojectPoints(points, toProj, fromProj, 0, points.length);
         }
         double xx, yy;
-        if (resampleMethod == ResampleMethods.Bilinear){
+        if (resampleMethod == ResampleMethods.Bilinear) {
             for (int i = 0; i < n; i++) {
                 xx = points[i][0];
                 yy = points[i][1];
