@@ -998,6 +998,8 @@ public class Axis implements Cloneable {
      * @param plot XYPlot
      */
     public void draw(Graphics2D g, Rectangle2D area, XYPlot plot) {
+        if (plot.getDrawExtent() == null)
+            return;
         if (this.xAxis) {
             this.drawXAxis(g, area, plot);
         } else {

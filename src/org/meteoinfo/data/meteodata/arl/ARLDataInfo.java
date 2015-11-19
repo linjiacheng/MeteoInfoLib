@@ -1537,6 +1537,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
      *
      * @param time The time
      * @param aDH The data header
+     * @throws java.io.IOException
      */
     public void writeIndexRecord(Date time, DataHead aDH) throws IOException {
         //write the standard label (50) plus the 
