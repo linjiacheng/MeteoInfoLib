@@ -23,6 +23,7 @@ import org.meteoinfo.chart.LegendPosition;
 import org.meteoinfo.chart.Location;
 import org.meteoinfo.chart.Margin;
 import org.meteoinfo.chart.axis.Axis;
+import org.meteoinfo.chart.axis.TimeAxis;
 import static org.meteoinfo.chart.plot.Plot.MINIMUM_HEIGHT_TO_DRAW;
 import static org.meteoinfo.chart.plot.Plot.MINIMUM_WIDTH_TO_DRAW;
 import org.meteoinfo.drawing.Draw;
@@ -746,6 +747,9 @@ public abstract class XYPlot extends Plot {
             g.setFont(xAxis.getTickLabelFont());
             Dimension dim = Draw.getStringDimension("label", g);
             height += dim.height + space;
+            if (xAxis instanceof TimeAxis){
+                height += dim.height + space;
+            }
         }
         if (!xAxis.isInsideTick())
             height += xAxis.getTickLength();
