@@ -29,10 +29,10 @@ import org.meteoinfo.data.DataTypes;
 public class StationInfoData {
     // <editor-fold desc="Variables">
 
-    private List<String> _fields = new ArrayList<String>();
-    private List<String> _variables = new ArrayList<String>();
-    private List<List<String>> _dataList = new ArrayList<List<String>>();
-    private List<String> _stations = new ArrayList<String>();
+    private List<String> _fields = new ArrayList<>();
+    private List<String> _variables = new ArrayList<>();
+    private List<List<String>> _dataList = new ArrayList<>();
+    private List<String> _stations = new ArrayList<>();
     // </editor-fold>
     // <editor-fold desc="Constructor">
     // </editor-fold>

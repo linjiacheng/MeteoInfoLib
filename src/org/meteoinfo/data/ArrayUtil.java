@@ -594,6 +594,35 @@ public class ArrayUtil {
         }
         return sbuff.toString();
     }
+    
+    /**
+     * Get array list from StationData
+     * @param stdata StationData
+     * @return Array list
+     */
+    public static List<Array> getArraysFromStationData(StationData stdata){
+        int n = stdata.getStNum();
+        int[] shape = new int[1];
+        shape[0] = n;
+        Array lon = Array.factory(DataType.FLOAT, shape);
+        Array lat = Array.factory(DataType.FLOAT, shape);
+        Array value = Array.factory(DataType.FLOAT, shape);
+        double v;
+        for (int i = 0; i < n; i++){
+            lon.setFloat(i, (float)stdata.getX(i));
+            lat.setFloat(i, (float)stdata.getY(i));
+            v = stdata.getValue(i);
+            if (v == stdata.missingValue)
+                v = Double.NaN;
+            value.setFloat(i, (float)v);
+        }
+        
+        List<Array> r = new ArrayList<>();
+        r.add(lon);
+        r.add(lat);
+        r.add(value);
+        return r;
+    }
 
     // </editor-fold>
     // <editor-fold desc="Convert">

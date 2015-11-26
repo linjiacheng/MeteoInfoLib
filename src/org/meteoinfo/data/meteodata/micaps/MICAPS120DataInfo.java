@@ -36,8 +36,10 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.meteoinfo.data.meteodata.MeteoDataType;
+import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.util.DateUtil;
 import ucar.ma2.Array;
+import ucar.ma2.DataType;
 
 /**
  *
@@ -49,6 +51,8 @@ public class MICAPS120DataInfo extends DataInfo implements IStationDataInfo {
     private String _description;
     private List<String> _varList = new ArrayList<>();
     private List<String> _fieldList = new ArrayList<>();
+    private final List<List<String>> _dataList = new ArrayList<>();
+    private int stNum;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -60,7 +64,7 @@ public class MICAPS120DataInfo extends DataInfo implements IStationDataInfo {
         this.setDataType(MeteoDataType.MICAPS_120);
         String[] items = new String[]{"AQI", "Grade", "PM2.5", "PM10", "CO", "NO2", "O3", "O3_8h", "SO2"};
         _varList = Arrays.asList(items);
-        _fieldList.addAll(Arrays.asList(new String[]{"Stid", "Latitude", "Longitude"}));
+        _fieldList.addAll(Arrays.asList(new String[]{"Stid", "Longitude", "Latitude"}));
         _fieldList.addAll(_varList);
     }
     // </editor-fold>
@@ -90,12 +94,35 @@ public class MICAPS120DataInfo extends DataInfo implements IStationDataInfo {
             values[0] = DateUtil.toOADate(time);
             tdim.setValues(values);
             this.setTimeDimension(tdim);
+            
+            String[] dataArray;
+            String line;
+            List<String> aList;
+            stNum = 0;
+            while((line = sr.readLine()) != null){
+                line = line.trim();
+                dataArray = line.split("\\s+");
+                aList = new ArrayList<>();
+                aList.add(dataArray[0]);
+                aList.add(dataArray[2]);
+                aList.add(dataArray[1]);
+                for (int i = 3; i < dataArray.length; i++){
+                    aList.add(dataArray[i]);
+                }               
+                _dataList.add(aList);
+                stNum += 1;
+            }
+            
+            Dimension stdim = new Dimension(DimensionType.Other);
+            values = new double[stNum];
+            stdim.setValues(values);
+            this.addDimension(stdim);
             List<Variable> variables = new ArrayList<>();
-            for (String vName : _varList) {
+            for (String vName : this._fieldList) {
                 Variable var = new Variable();
                 var.setName(vName);
                 var.setStation(true);
-                var.setDimension(tdim);
+                var.setDimension(stdim);
                 var.setFillValue(this.getMissingValue());
                 variables.add(var);
             }
@@ -143,108 +170,106 @@ public class MICAPS120DataInfo extends DataInfo implements IStationDataInfo {
      */
     @Override
     public Array read(String varName, int[] origin, int[] size, int[] stride) {
-        return null;
+        int varIdx = this._fieldList.indexOf(varName);
+        if (varIdx < 0)
+            return null;
+        
+        DataType dt = DataType.FLOAT;
+        switch (varName){
+            case "Stid":
+            case "Grade":
+                dt = DataType.INT;
+                break;
+        }
+        int[] shape = new int[1];
+        shape[0] = this.stNum;
+        Array r = Array.factory(dt, shape);
+        int i;
+        float v;       
+        List<String> dataList;
+
+        for (i = 0; i < _dataList.size(); i++) {
+            dataList = _dataList.get(i);
+            v = Float.parseFloat(dataList.get(varIdx));
+            r.setObject(i, v);
+        }
+        
+        return r;
     }
 
     @Override
     public StationData getStationData(int timeIdx, int varIdx, int levelIdx) {
-        try {
-            StationData stData = new StationData();
-            BufferedReader sr = new BufferedReader(new InputStreamReader(new FileInputStream(this.getFileName()), "gbk"));
+        String aStid;
+        int i;
+        float lon, lat, t;
+        List<String> dataList;
+        double[][] discreteData = new double[_dataList.size()][3];
+        float minX, maxX, minY, maxY;
+        minX = 0;
+        maxX = 0;
+        minY = 0;
+        maxY = 0;
+        List<String> stations = new ArrayList<>();
 
-            //Get real variable index
-            varIdx = _fieldList.indexOf(_varList.get(varIdx));
-            String[] dataArray;
-            String stid;
-            double lon, lat, value;
-            sr.readLine();
-            String line = sr.readLine();
-            while (line != null) {
-                if (line.isEmpty()) {
-                    continue;
-                }
-                line = line.trim();
-                dataArray = line.split("\\s+");
-                if (dataArray.length > varIdx){
-                    stid = dataArray[0];
-                    lat = Double.parseDouble(dataArray[1]);
-                    lon = Double.parseDouble(dataArray[2]);
-                    value = Double.parseDouble(dataArray[varIdx]);
-                    stData.addData(stid, lon, lat, value);
-                }
+        for (i = 0; i < _dataList.size(); i++) {
+            dataList = _dataList.get(i);
+            aStid = dataList.get(0);
+            lon = Float.parseFloat(dataList.get(1));
+            lat = Float.parseFloat(dataList.get(2));
+            t = Float.parseFloat(dataList.get(varIdx));
+            stations.add(aStid);
+            discreteData[i][0] = lon;
+            discreteData[i][1] = lat;
+            discreteData[i][2] = t;
 
-                line = sr.readLine();
+            if (i == 0) {
+                minX = lon;
+                maxX = minX;
+                minY = lat;
+                maxY = minY;
+            } else {
+                if (minX > lon) {
+                    minX = lon;
+                } else if (maxX < lon) {
+                    maxX = lon;
+                }
+                if (minY > lat) {
+                    minY = lat;
+                } else if (maxY < lat) {
+                    maxY = lat;
+                }
             }
-            sr.close();
-
-            stData.missingValue = this.getMissingValue();
-
-            return stData;
-        } catch (IOException ex) {
-            Logger.getLogger(MICAPS120DataInfo.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
         }
+        Extent dataExtent = new Extent();
+        dataExtent.minX = minX;
+        dataExtent.maxX = maxX;
+        dataExtent.minY = minY;
+        dataExtent.maxY = maxY;
+
+        StationData stData = new StationData();
+        stData.data = discreteData;
+        stData.stations = stations;
+        stData.dataExtent = dataExtent;
+        stData.missingValue = this.getMissingValue();
+
+        return stData;
     }
 
     @Override
     public StationInfoData getStationInfoData(int timeIdx, int levelIdx) {
-        BufferedReader sr = null;
-        try {
-            StationInfoData stInfoData = new StationInfoData();
-            sr = new BufferedReader(new InputStreamReader(new FileInputStream(this.getFileName()), "gbk"));
-            List<List<String>> dataList = new ArrayList<List<String>>();
-            String[] dataArray;
-            List<String> dList;
-            sr.readLine();
-            String line = sr.readLine();
-            int i;
-            while (line != null) {
-                if (line.isEmpty()) {
-                    continue;
-                }
-                line = line.trim();
-                dataArray = line.split("\\s+");
-                dList = new ArrayList<String>();
-                i = 0;
-                for (String d : dataArray) {
-                    if (i == 2)
-                        dList.add(1, d);
-                    else
-                        dList.add(d);
-                    i++;
-                }
-                dataList.add(dList);
+        StationInfoData stInfoData = new StationInfoData();
+        stInfoData.setDataList(_dataList);
+        stInfoData.setFields(_fieldList);
+        stInfoData.setVariables(_varList);
 
-                line = sr.readLine();
-            }
-
-            stInfoData.setDataList(dataList);
-            stInfoData.setFields(_fieldList);
-            stInfoData.setVariables(_varList);
-            List<String> stations = new ArrayList<String>();
-            int stNum = dataList.size();
-            for (i = 0; i < stNum; i++) {
-                stations.add(dataList.get(i).get(0));
-            }
-            stInfoData.setStations(stations);
-
-            return stInfoData;
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(MICAPS120DataInfo.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        } catch (UnsupportedEncodingException ex) {
-            Logger.getLogger(MICAPS120DataInfo.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        } catch (IOException ex) {
-            Logger.getLogger(MICAPS120DataInfo.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        } finally {
-            try {
-                sr.close();
-            } catch (IOException ex) {
-                Logger.getLogger(MICAPS120DataInfo.class.getName()).log(Level.SEVERE, null, ex);
-            }
+        List<String> stations = new ArrayList<>();
+        stNum = _dataList.size();
+        for (int i = 0; i < stNum; i++) {
+            stations.add(_dataList.get(i).get(0));
         }
+        stInfoData.setStations(stations);
+
+        return stInfoData;
     }
 
     @Override
