@@ -280,7 +280,13 @@ public class BarPlot extends XYPlot {
 
     private double getXInterval() {
         double[] xvalues = this.dataset.getXValues(0);
-        return xvalues[1] - xvalues[0];
+        if (xvalues.length == 1)
+            if (xvalues[0] == 0)
+                return 1;
+            else
+                return xvalues[0] / 10;
+        else
+            return xvalues[1] - xvalues[0];
     }
 
     @Override
