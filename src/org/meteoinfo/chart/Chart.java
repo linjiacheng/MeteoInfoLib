@@ -90,45 +90,48 @@ public class Chart {
     public List<Plot> getPlots() {
         return plots;
     }
-    
+
     /**
      * Get current plot
+     *
      * @return Current plot
      */
-    public Plot getCurrentPlot(){
-        if (this.currentPlot < 0 || this.currentPlot >= this.plots.size())
+    public Plot getCurrentPlot() {
+        if (this.currentPlot < 0 || this.currentPlot >= this.plots.size()) {
             this.currentPlot = this.plots.size() - 1;
+        }
         return this.plots.get(this.currentPlot);
     }
-    
+
     /**
      * Set current plot
+     *
      * @param value Current plot
      */
-    public void setCurrentPlot(Plot value){
-        if (this.plots.isEmpty()){
+    public void setCurrentPlot(Plot value) {
+        if (this.plots.isEmpty()) {
             this.addPlot(value);
             //this.currentPlot = 0;
+        } else if (this.currentPlot == -1) {
+            this.plots.add(value);
         } else {
-            if (this.currentPlot == -1){
-                this.plots.add(value);
-            } else {
-                if (this.currentPlot >= this.plots.size())
-                    this.currentPlot = this.plots.size() - 1;
-                Plot plot = this.plots.get(this.currentPlot);
-                value.isSubPlot = plot.isSubPlot;
-                value.columnIndex = plot.columnIndex;
-                value.rowIndex = plot.rowIndex;
-                this.plots.set(this.currentPlot, value);
+            if (this.currentPlot >= this.plots.size()) {
+                this.currentPlot = this.plots.size() - 1;
             }
+            Plot plot = this.plots.get(this.currentPlot);
+            value.isSubPlot = plot.isSubPlot;
+            value.columnIndex = plot.columnIndex;
+            value.rowIndex = plot.rowIndex;
+            this.plots.set(this.currentPlot, value);
         }
     }
-    
+
     /**
      * Set current plot index
+     *
      * @param value Current plot index
      */
-    public void setCurrentPlot(int value){
+    public void setCurrentPlot(int value) {
         this.currentPlot = value;
     }
 
@@ -356,7 +359,7 @@ public class Chart {
             x -= metrics.stringWidth(title.getText()) / 2;
             y += metrics.getHeight();
             List<String> texts = title.getTexts();
-            for (String text : texts){
+            for (String text : texts) {
                 g.drawString(text, x, y);
                 y += 5;
             }
@@ -378,9 +381,13 @@ public class Chart {
                 //plot.setPositionAreaZoom(zoom);
                 //plot.setTightInset(tightInset);
                 //plot.updatePositionArea();
-                plot.setPlotShrink(shrink);
-                if (plot instanceof XY2DPlot){
-                    ((XY2DPlot)plot).setAntialias(this.antiAlias);
+                if (plot.isSubPlot) {
+                    plot.setPlotShrink(shrink);
+                } else {
+                    plot.setPlotShrink(this.getPlotShrink(g, area, plot));
+                }
+                if (plot instanceof XY2DPlot) {
+                    ((XY2DPlot) plot).setAntialias(this.antiAlias);
                 }
                 plot.draw(g, plotArea);
             }
@@ -447,6 +454,33 @@ public class Chart {
         return pArea;
     }
 
+    private Margin getPlotShrink(Graphics2D g, Rectangle2D area, Plot plot) {
+        Margin shrink;
+        if (plot.isSubPlot) {
+            double rowHeight = area.getHeight() / this.rowNum;
+            double colWidth = area.getWidth() / this.columnNum;
+            double x = area.getX() + plot.columnIndex * colWidth;
+            double y = area.getY() + plot.rowIndex * rowHeight;
+            Rectangle2D subPlotArea = new Rectangle2D.Double(x, y, colWidth, rowHeight);
+            plot.setOuterPositionArea(subPlotArea);
+            plot.updatePosition(area, subPlotArea);
+            Rectangle2D positionArea = plot.getPositionAreaOrigin(g, area);
+            plot.setPositionArea(positionArea);
+            Margin tightInset = plot.getTightInset(g, positionArea);
+            plot.setTightInset(tightInset);
+            shrink = plot.getPlotShrink();
+        } else {
+            plot.setOuterPositionArea(area);
+            Rectangle2D positionArea = plot.getPositionAreaOrigin(g, area);
+            plot.setPositionArea(positionArea);
+            Margin tightInset = plot.getTightInset(g, positionArea);
+            plot.setTightInset(tightInset);
+            shrink = plot.getPlotShrink();
+        }
+
+        return shrink;
+    }
+
     private Margin getPlotsShrink(Graphics2D g, Rectangle2D area) {
         int i = 0;
         Margin pshrink = null, shrink;
@@ -472,18 +506,17 @@ public class Chart {
                 plot.setTightInset(tightInset);
                 shrink = plot.getPlotShrink();
             }
-            if (i == 0){
+            if (i == 0) {
                 pshrink = shrink;
-            } else {
-                if (pshrink != null)
-                    pshrink = pshrink.extend(shrink);
+            } else if (pshrink != null) {
+                pshrink = pshrink.extend(shrink);
             }
             i += 1;
         }
 
         return pshrink;
     }
-    
+
     private Margin getPlotsTightInset(Graphics2D g, Rectangle2D area) {
         int i = 0;
         Margin pti = null, tightInset;
@@ -505,18 +538,17 @@ public class Chart {
                 plot.setPositionArea(positionArea);
                 tightInset = plot.getTightInset(g, positionArea);
             }
-            if (i == 0){
+            if (i == 0) {
                 pti = tightInset;
-            } else {
-                if (pti != null)
-                    pti = pti.extend(tightInset);
+            } else if (pti != null) {
+                pti = pti.extend(tightInset);
             }
             i += 1;
         }
 
         return pti;
     }
-    
+
     private double getPositionAreaZoom(Graphics2D g, Rectangle2D area) {
         double zoom = 1.0;
         for (Plot plot : this.plots) {
@@ -592,21 +624,22 @@ public class Chart {
         double top = rect.getY() + this.plotArea.getY();
         return new Rectangle2D.Double(left, top, rect.getWidth(), rect.getHeight());
     }
-    
+
     /**
      * Find a plot by point
+     *
      * @param x X
-     * @param y Y 
+     * @param y Y
      * @return Plot
      */
-    public Plot findPlot(int x, int y){
-        for (Plot plot : this.plots){
+    public Plot findPlot(int x, int y) {
+        for (Plot plot : this.plots) {
             Rectangle2D area = plot.getPositionArea();
-            if (area.contains(x, y)){
+            if (area.contains(x, y)) {
                 return plot;
             }
         }
-        
+
         return null;
     }
 
