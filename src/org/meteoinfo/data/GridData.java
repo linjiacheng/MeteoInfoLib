@@ -47,7 +47,6 @@ import org.meteoinfo.table.DataTable;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
 import ucar.ma2.IndexIterator;
-import ucar.nc2.stream.NcStreamProto;
 
 /**
  *

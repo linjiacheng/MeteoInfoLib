@@ -1,4 +1,4 @@
- /* Copyright 2012 Yaqiang Wang,
+/* Copyright 2012 Yaqiang Wang,
  * yaqiang.wang@gmail.com
  * 
  * This library is free software; you can redistribute it and/or modify it
@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.meteoinfo.data.meteodata.MeteoDataType;
+import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.util.DateUtil;
 import org.meteoinfo.projection.proj4j.proj.Projection;
 import org.meteoinfo.projection.KnownCoordinateSystems;
@@ -142,6 +143,28 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
+    
+    /**
+     * Set X
+     * @param value X value
+     */
+    public void setX(List<Number> value){
+        this.X = new double[value.size()];
+        for (int i = 0; i < value.size(); i++){
+            this.X[i] = value.get(i).doubleValue();
+        }
+    }
+    
+    /**
+     * Set X
+     * @param value X value
+     */
+    public void setY(List<Number> value){
+        this.Y = new double[value.size()];
+        for (int i = 0; i < value.size(); i++){
+            this.Y[i] = value.get(i).doubleValue();
+        }
+    }
 
 //    /**
 //     * Get variable name list
@@ -365,18 +388,22 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                         ProjStr = "+proj=lcc"
                                 + "+lat_0=" + String.valueOf(aDH.TANG_LAT)
                                 + "+lat_1=" + String.valueOf(aDH.REF_LAT)
+                                + "+lat_2=" + String.valueOf(aDH.REF_LAT)
                                 + "+lon_0=" + String.valueOf(aDH.REF_LON + aDH.ORIENT);
                     }
+                } else if (aDH.TANG_LAT == 0) {
+                    ProjStr = "+proj=tmerc"
+                            + "+lat_0=" + String.valueOf(aDH.POLE_LAT)
+                            + "+lon_0=" + String.valueOf(aDH.REF_LON + aDH.ORIENT);
                 } else {
-                    if (aDH.TANG_LAT == 0) {
-                        ProjStr = "+proj=tmerc"
-                                + "+lat_0=" + String.valueOf(aDH.POLE_LAT)
-                                + "+lon_0=" + String.valueOf(aDH.REF_LON + aDH.ORIENT);
-                    } else {
-                        ProjStr = "+proj=stere"
-                                + "+lat_0=" + String.valueOf(aDH.POLE_LAT)
-                                + "+lon_0=" + String.valueOf(aDH.REF_LON + aDH.ORIENT);
-                    }
+//                    ProjStr = "+proj=stere"
+//                            + "+lat_0=" + String.valueOf(aDH.POLE_LAT)
+//                            + "+lon_0=" + String.valueOf(aDH.REF_LON + aDH.ORIENT);
+                    ProjStr = "+proj=lcc"
+                            + "+lat_0=" + String.valueOf(aDH.TANG_LAT)
+                            + "+lat_1=" + String.valueOf(aDH.REF_LAT)
+                            + "+lat_2=" + String.valueOf(aDH.REF_LAT)
+                            + "+lon_0=" + String.valueOf(aDH.REF_LON + aDH.ORIENT);
                 }
 
                 theProj = new ProjectionInfo(ProjStr);
@@ -477,7 +504,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                 }
             }
 
-            for (Variable var : variables) {                                
+            for (Variable var : variables) {
                 var.setDimension(this.getTimeDimension());
                 Dimension zDim = new Dimension(DimensionType.Z);
                 zDim.setValues(var.getLevels());
@@ -644,9 +671,9 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                 data[INDX] = v;
                 if (i == 0) {
                     init = v;
-                }                
+                }
                 INDX += 1;
-                VOLD = v;                
+                VOLD = v;
             }
             VOLD = init;
         }
@@ -1376,27 +1403,38 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             aDH.NY = Y.length;
             aDH.NZ = levels.size();
         } else {
-            ProjectionInfo toProj = KnownCoordinateSystems.geographic.world.WGS1984;
+            float sync_x, sync_y;
+            sync_x = 0.5f * (X.length + 1);
+            sync_y = 0.5f * (Y.length + 1);
             double sync_lon, sync_lat;
-            double[][] points = new double[1][];
-            points[0] = new double[]{X[0], Y[0]};
-            Reproject.reprojectPoints(points, projInfo, toProj, 0, 1);
-            sync_lon = points[0][0];
-            sync_lat = points[0][1];
+            if (Double.isNaN(projInfo.getCenterLon())) {
+                double x = MIMath.getValue(X, sync_x);
+                double y = MIMath.getValue(Y, sync_y);
+                double[][] points = new double[1][];
+                points[0] = new double[]{x, y};
+                ProjectionInfo toProj = KnownCoordinateSystems.geographic.world.WGS1984;
+                Reproject.reprojectPoints(points, projInfo, toProj, 0, 1);
+                sync_lon = points[0][0];
+                sync_lat = points[0][1];
+            } else {
+                sync_lon = projInfo.getCenterLon();
+                sync_lat = projInfo.getCenterLat();
+            }
             Projection aProj = projInfo.getCoordinateReferenceSystem().getProjection();
+            double tanLat = this.eqvlat(aProj.getProjectionLatitude1Degrees(),
+                    aProj.getProjectionLatitude2Degrees());
+            tanLat = Double.parseDouble(String.format("%.2f", tanLat));
             switch (projInfo.getProjectionName()) {
                 case Lambert_Conformal_Conic:
-                    double tanLat = this.eqvlat(aProj.getProjectionLatitude1Degrees(),
-                            aProj.getProjectionLatitude2Degrees());
-                    aDH.POLE_LAT = 90;
-                    aDH.POLE_LON = 0;
+                    aDH.POLE_LAT = (float) tanLat;
+                    aDH.POLE_LON = (float) aProj.getProjectionLongitudeDegrees();
                     aDH.REF_LAT = (float) tanLat;
                     aDH.REF_LON = (float) aProj.getProjectionLongitudeDegrees();
                     aDH.SIZE = (float) (X[1] - X[0]) / 1000;
                     aDH.ORIENT = 0;
                     aDH.TANG_LAT = (float) tanLat;
-                    aDH.SYNC_XP = 1;
-                    aDH.SYNC_YP = 1;
+                    aDH.SYNC_XP = sync_x;
+                    aDH.SYNC_YP = sync_y;
                     aDH.SYNC_LAT = (float) sync_lat;
                     aDH.SYNC_LON = (float) sync_lon;
                     aDH.DUMMY = 0;
@@ -1405,15 +1443,15 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                     aDH.NZ = levels.size();
                     break;
                 case Mercator:
-                    aDH.POLE_LAT = 90;
-                    aDH.POLE_LON = 0;
-                    aDH.REF_LAT = 0;
+                    aDH.POLE_LAT = 0;
+                    aDH.POLE_LON = (float) aProj.getProjectionLongitudeDegrees();
+                    aDH.REF_LAT = (float) tanLat;
                     aDH.REF_LON = (float) aProj.getProjectionLongitudeDegrees();
                     aDH.SIZE = (float) (X[1] - X[0]) / 1000;
                     aDH.ORIENT = 0;
-                    aDH.TANG_LAT = aDH.REF_LAT;
-                    aDH.SYNC_XP = 1;
-                    aDH.SYNC_YP = 1;
+                    aDH.TANG_LAT = (float) tanLat;
+                    aDH.SYNC_XP = sync_x;
+                    aDH.SYNC_YP = sync_y;
                     aDH.SYNC_LAT = (float) sync_lat;
                     aDH.SYNC_LON = (float) sync_lon;
                     aDH.DUMMY = 0;
@@ -1423,14 +1461,14 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                     break;
                 case North_Polar_Stereographic_Azimuthal:
                     aDH.POLE_LAT = 90;
-                    aDH.POLE_LON = 0;
-                    aDH.REF_LAT = 90;
+                    aDH.POLE_LON = (float) aProj.getProjectionLongitudeDegrees();
+                    aDH.REF_LAT = (float) tanLat;
                     aDH.REF_LON = (float) aProj.getProjectionLongitudeDegrees();
                     aDH.SIZE = (float) (X[1] - X[0]) / 1000;
                     aDH.ORIENT = 0;
-                    aDH.TANG_LAT = aDH.REF_LAT;
-                    aDH.SYNC_XP = 1;
-                    aDH.SYNC_YP = 1;
+                    aDH.TANG_LAT = (float) aProj.getProjectionLatitude2Degrees();
+                    aDH.SYNC_XP = sync_x;
+                    aDH.SYNC_YP = sync_y;
                     aDH.SYNC_LAT = (float) sync_lat;
                     aDH.SYNC_LON = (float) sync_lon;
                     aDH.DUMMY = 0;
@@ -1440,12 +1478,12 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                     break;
                 case South_Polar_Stereographic_Azimuthal:
                     aDH.POLE_LAT = -90;
-                    aDH.POLE_LON = 0;
-                    aDH.REF_LAT = -90;
+                    aDH.POLE_LON = (float) aProj.getProjectionLongitudeDegrees();
+                    aDH.REF_LAT = (float) tanLat;
                     aDH.REF_LON = (float) aProj.getProjectionLongitudeDegrees();
                     aDH.SIZE = (float) (X[1] - X[0]) / 1000;
                     aDH.ORIENT = 0;
-                    aDH.TANG_LAT = aDH.REF_LAT;
+                    aDH.TANG_LAT = (float) aProj.getProjectionLatitude2Degrees();
                     aDH.SYNC_XP = 1;
                     aDH.SYNC_YP = 1;
                     aDH.SYNC_LAT = (float) sync_lat;
@@ -1518,7 +1556,36 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                         * (1.0 / 7.0 + tau))));
             }
         }
-        return Math.asin((al1 + al2) / (al1 - al2)) * DEGPRAD;
+        double eqvlat = Math.asin((al1 + al2) / (al1 - al2)) * DEGPRAD;
+        return eqvlat;
+    }
+
+    private double eqvlat_bak(double lat1, double lat2) {
+        //  WRITTEN ON 3/31/94 BY Dr. Albion Taylor  NOAA / OAR / ARL
+        double RADPDG = Math.PI / 180.;
+        double SINL1 = Math.sin(lat1 * RADPDG);
+        double SINL2 = Math.sin(lat2 * RADPDG);
+        double AL1, AL2;
+        if (Math.abs(SINL1 - SINL2) > .001) {
+            AL1 = Math.log((1. - SINL1) / (1. - SINL2));
+            AL2 = Math.log((1. + SINL1) / (1. + SINL2));
+        } else {
+            //  CASE LAT1 NEAR OR EQUAL TO LAT2
+            double TAU = -(SINL1 - SINL2) / (2. - SINL1 - SINL2);
+            TAU = TAU * TAU;
+            AL1 = 2. / (2. - SINL1 - SINL2) * (1. + TAU
+                    * (1. / 3. + TAU
+                    * (1. / 5. + TAU
+                    * (1. / 7.))));
+            TAU = (SINL1 - SINL2) / (2. + SINL1 + SINL2);
+            TAU = TAU * TAU;
+            AL2 = -2. / (2. + SINL1 + SINL2) * (1. + TAU
+                    * (1. / 3. + TAU
+                    * (1. / 5. + TAU
+                    * (1. / 7.))));
+        }
+        double EQVLAT = Math.asin((AL1 + AL2) / (AL1 - AL2)) / RADPDG;
+        return EQVLAT;
     }
 
     private String padNumStr(String str, int n) {
@@ -1622,6 +1689,41 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         //Write data
         _bw.write(dataBytes);
     }
+    
+    /**
+     * Write grid data
+     *
+     * @param aDL The data label
+     * @param a The data array
+     * @throws java.io.IOException
+     */
+    public void writeGridData(DataLabel aDL, Array a) throws IOException {
+        byte[] dataBytes = packARLGridData(a, aDL);
+
+        //write data label
+        SimpleDateFormat format = new SimpleDateFormat("yyMMddHH");
+        String dateStr = format.format(aDL.getTime());
+        _bw.writeBytes(dateStr);
+        _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDL.getForecast()), 2, ' '));
+        _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDL.getLevel()), 2, ' '));
+        _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDL.getGrid()), 2, ' '));
+        _bw.writeBytes(GlobalUtil.padRight(aDL.getVarName(), 4, '1'));
+        _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDL.getExponent()), 4, ' '));
+        DecimalFormat dformat = new DecimalFormat("0.0000000E00");
+        String preStr = dformat.format(aDL.getPrecision());
+        if (!preStr.contains("E-")) {
+            preStr = preStr.replace("E", "E+");
+        }
+        _bw.writeBytes(GlobalUtil.padLeft(preStr, 14, ' '));
+        preStr = dformat.format(aDL.getValue());
+        if (!preStr.contains("E-")) {
+            preStr = preStr.replace("E", "E+");
+        }
+        _bw.writeBytes(GlobalUtil.padLeft(preStr, 14, ' '));
+
+        //Write data
+        _bw.write(dataBytes);
+    }
 
     /**
      * Write grid data
@@ -1635,6 +1737,26 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
      * @throws IOException IOException
      */
     public void writeGridData(Date time, int levelIdx, String varName, int forecast, int grid, GridData gridData) throws IOException {
+        DataLabel aDL = new DataLabel(time);
+        aDL.setLevel(levelIdx);
+        aDL.setVarName(varName);
+        aDL.setGrid(grid);
+        aDL.setForecast(forecast);
+        writeGridData(aDL, gridData);
+    }
+    
+    /**
+     * Write grid data
+     *
+     * @param time The time
+     * @param levelIdx The level index
+     * @param varName Variable name
+     * @param forecast The forecast hour
+     * @param grid The grid id
+     * @param gridData The grid data
+     * @throws IOException IOException
+     */
+    public void writeGridData(Date time, int levelIdx, String varName, int forecast, int grid, Array gridData) throws IOException {
         DataLabel aDL = new DataLabel(time);
         aDL.setLevel(levelIdx);
         aDL.setVarName(varName);
@@ -1684,6 +1806,71 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             VOLD = rcol;
             for (i = 0; i < nx; i++) {
                 ival = (int) ((gridData.data[j][i] - VOLD) * SCALE + 127.5);
+                dataBytes[INDX] = (byte) ival;
+                VOLD = (float) (ival - 127) / SCALE + VOLD;
+                if (i == 0) {
+                    rcol = VOLD;
+                }
+                //maintain fotatin checksum
+                ksum += ival;
+                //if sum carries over the eight bit add one
+                if (ksum >= 256) {
+                    ksum = ksum - 255;
+                }
+                INDX += 1;
+                //VOLD = gridData.Data[j, i];                                        
+            }
+            //VOLD = gridData.Data[j, 0];
+        }
+
+        aDL.setExponent(nexp);
+        aDL.setPrecision(prec);
+        aDL.setValue(var1);
+
+        return dataBytes;
+    }
+    
+    private byte[] packARLGridData(Array a, DataLabel aDL) {
+        int nx = a.getShape()[1];
+        int ny = a.getShape()[0];
+        double var1 = a.getDouble(0);
+        double rold = var1;
+        double rmax = 0.0;
+        int i, j;
+        //Find the maximum difference between adjacent elements
+        for (i = 0; i < ny; i++) {
+            for (j = 0; j < nx; j++) {
+                //Compute max difference between elements along row
+                rmax = Math.max(Math.abs(a.getDouble(i * nx + j) - rold), rmax);
+                rold = a.getDouble(i * nx + j);
+            }
+            rold = a.getDouble(i * nx);
+        }
+
+        double sexp = 0.0;
+        //Compute the required scaling exponent
+        if (rmax != 0.0) {
+            sexp = Math.log(rmax) / Math.log(2.0);
+        }
+        int nexp = (int) sexp;
+        //Positive or whole number scaling round up for lower precision
+        if (sexp >= 0.0 || sexp % 1.0 == 0.0) {
+            nexp += 1;
+        }
+        //Precision range is -127 to 127 or 254
+        double prec = Math.pow(2.0, nexp) / 254.0;
+
+        byte[] dataBytes = new byte[ny * nx];
+        double SCALE = Math.pow(2.0, (7 - nexp));
+        double VOLD = var1;
+        double rcol = var1;
+        int ksum = 0;
+        int INDX = 0;
+        int ival;
+        for (j = 0; j < ny; j++) {
+            VOLD = rcol;
+            for (i = 0; i < nx; i++) {
+                ival = (int) ((a.getDouble(j * nx + i) - VOLD) * SCALE + 127.5);
                 dataBytes[INDX] = (byte) ival;
                 VOLD = (float) (ival - 127) / SCALE + VOLD;
                 if (i == 0) {

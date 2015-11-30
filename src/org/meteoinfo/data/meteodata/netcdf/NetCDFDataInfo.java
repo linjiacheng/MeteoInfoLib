@@ -429,24 +429,22 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
     }
 
     private void getProjection() {
-        String projStr = this.getProjectionInfo().toProj4String();
+        ProjectionInfo projInfo = this.getProjectionInfo();
         switch (_convention) {
             case CF:
-                projStr = getProjection_CF();
+                projInfo = getProjection_CF();
                 break;
             case IOAPI:
-                projStr = getProjection_IOAPI();
+                projInfo = getProjection_IOAPI();
                 break;
             case WRFOUT:
-                projStr = getProjection_WRFOUT();
+                projInfo = getProjection_WRFOUT();
                 break;
         }
-        if (!projStr.equals(this.getProjectionInfo().toProj4String())) {
-            this.setProjectionInfo(new ProjectionInfo(projStr));
-        }
+        this.setProjectionInfo(projInfo);
     }
 
-    private String getProjection_CF() {
+    private ProjectionInfo getProjection_CF() {
         String projStr = this.getProjectionInfo().toProj4String();
         if (this._isHDFEOS) {
             ucar.nc2.Variable pVar = null;
@@ -714,10 +712,10 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             }
         }
 
-        return projStr;
+        return new ProjectionInfo(projStr);
     }
 
-    private String getProjection_IOAPI() {
+    private ProjectionInfo getProjection_IOAPI() {
         String projStr = this.getProjectionInfo().toProj4String();
         int gridType = Integer.parseInt(getGlobalAttStr("GDTYP"));
         switch (gridType) {
@@ -782,14 +780,14 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 break;
         }
 
-        return projStr;
+        return new ProjectionInfo(projStr);
     }
 
-    private String getProjection_WRFOUT() {
+    private ProjectionInfo getProjection_WRFOUT() {
         String projStr = this.getProjectionInfo().toProj4String();
         String pstr = this.getGlobalAttStr("MAP_PROJ");
         if (pstr.isEmpty()) {
-            return projStr;
+            return this.getProjectionInfo();
         }
 
         int mapProj = Integer.parseInt(pstr);
@@ -821,7 +819,12 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 break;
         }
 
-        return projStr;
+        ProjectionInfo projInfo = new ProjectionInfo(projStr);
+        double clon = Double.parseDouble(this.getGlobalAttStr("CEN_LON"));
+        double clat = Double.parseDouble(this.getGlobalAttStr("CEN_LAT"));
+        projInfo.setCenterLat(clat);
+        projInfo.setCenterLon(clon);
+        return projInfo;
     }
 
     private String getGlobalAttStr(String attName) {

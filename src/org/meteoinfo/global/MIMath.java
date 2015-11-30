@@ -778,6 +778,29 @@ public class MIMath {
     }
     
     /**
+     * Get value from one dimension double array by index
+     * @param data Data
+     * @param idx Index
+     * @return Value
+     */
+    public static double getValue(double[] data, float idx){
+        double v = data[0];
+        if (idx == 0)
+            return v;
+        
+        for (int i = 1; i < data.length; i++){
+            if (idx == i) {
+                v = data[i];
+                break;
+            } else if (idx < i){
+                v = data[i - 1] + (data[i] - data[i - 1]) * (idx - (i - 1));
+                break;
+            }
+        }
+        return v;
+    }
+    
+    /**
      * Create values by interval
      *
      * @param min Miminum value

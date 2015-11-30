@@ -27,6 +27,8 @@ public class ProjectionInfo {
 
     private CoordinateReferenceSystem _crs;
     private ProjectionNames _projName;
+    private double centerLon = Double.NaN;
+    private double centerLat = Double.NaN;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -115,6 +117,38 @@ public class ProjectionInfo {
      */
     public boolean isLonLat(){
         return _projName == ProjectionNames.LongLat;
+    }
+    
+    /**
+     * Get center longitude
+     * @return Center longitude
+     */
+    public double getCenterLon(){
+        return this.centerLon;
+    }
+    
+    /**
+     * Set center longitude
+     * @param value Center longitude
+     */
+    public void setCenterLon(double value){
+        this.centerLon = value;
+    }
+    
+    /**
+     * Get center latitude
+     * @return Center latitude
+     */
+    public double getCenterLat() {
+        return this.centerLat;
+    }
+    
+    /**
+     * Set center latitude
+     * @param value Center latitude
+     */
+    public void setCenterLat(double value){
+        this.centerLat = value;
     }
     // </editor-fold>
     // <editor-fold desc="Methods">
