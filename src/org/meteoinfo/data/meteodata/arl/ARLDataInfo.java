@@ -123,7 +123,9 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
     /// Is global
     /// </summary>
     public boolean isGlobal;
-    private DataOutputStream _bw = null;
+    //private DataOutputStream _bw = null;
+    private RandomAccessFile _bw = null;
+    private long indexRecPos = 0;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -1349,7 +1351,8 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
      */
     public void createDataFile(String fileName) {
         try {
-            _bw = new DataOutputStream(new FileOutputStream(new File(fileName)));
+            //_bw = new DataOutputStream(new FileOutputStream(new File(fileName)));
+            _bw = new RandomAccessFile(fileName, "rw");
         } catch (FileNotFoundException ex) {
             Logger.getLogger(ARLDataInfo.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -1372,14 +1375,18 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
      * @param projInfo Projection info
      * @param model Data source
      * @param kFlag Level flag
+     * @param icx Forecasting hour
+     * @param mn Minutes
      * @return The data header
      */
-    public DataHead getDataHead(ProjectionInfo projInfo, String model, int kFlag) {
+    public DataHead getDataHead(ProjectionInfo projInfo, String model, int kFlag, int icx, short mn) {
+        this.setIndexRecPos();
+        
         int i;
         DataHead aDH = new DataHead();
         aDH.MODEL = model;
-        aDH.ICX = 0;
-        aDH.MN = 0;
+        aDH.ICX = icx;
+        aDH.MN = mn;
         aDH.K_FLAG = (short) kFlag;
         aDH.LENH = 108;
         for (i = 0; i < levels.size(); i++) {
@@ -1598,15 +1605,30 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         }
         return GlobalUtil.padRight(nstr, n, '0');
     }
+    
+    /**
+     * Set index record position
+     */
+    public void setIndexRecPos(){
+        if (_bw != null) {
+            try {
+                this.indexRecPos = this._bw.getFilePointer();
+            } catch (IOException ex) {
+                Logger.getLogger(ARLDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
 
     /**
      * Write index record
      *
      * @param time The time
      * @param aDH The data header
+     * @param ksums Checksum list
      * @throws java.io.IOException
      */
-    public void writeIndexRecord(Date time, DataHead aDH) throws IOException {
+    public void writeIndexRecord(Date time, DataHead aDH, List<List<Integer>> ksums) throws IOException {
+        _bw.seek(this.indexRecPos);
         //write the standard label (50) plus the 
         //fixed portion (108) of the extended header   
         SimpleDateFormat format = new SimpleDateFormat("yyMMddHH");
@@ -1640,7 +1662,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDH.NZ), 3, ' '));
         _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDH.K_FLAG), 2, ' '));
         _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDH.LENH), 4, ' '));
-        String levStr;
+        String levStr, ksumStr;
         for (int i = 0; i < aDH.NZ; i++) {
             levStr = padNumStr(String.valueOf(levels.get(i)), 6);
             _bw.writeBytes(levStr);
@@ -1648,7 +1670,12 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(vNum), 2, ' '));
             for (int j = 0; j < vNum; j++) {
                 _bw.writeBytes(GlobalUtil.padRight(LevelVarList.get(i).get(j), 4, '1'));
-                _bw.writeBytes("226");
+                if (ksums == null){
+                    _bw.writeBytes("226");
+                } else {
+                    ksumStr = GlobalUtil.padLeft(ksums.get(i).get(j).toString(), 3, ' ');
+                    _bw.writeBytes(ksumStr);
+                }
                 _bw.writeBytes(" ");
             }
         }
@@ -1695,10 +1722,13 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
      *
      * @param aDL The data label
      * @param a The data array
+     * @return Check sum
      * @throws java.io.IOException
      */
-    public void writeGridData(DataLabel aDL, Array a) throws IOException {
-        byte[] dataBytes = packARLGridData(a, aDL);
+    public int writeGridData(DataLabel aDL, Array a) throws IOException {
+        Object[] r = packARLGridData(a, aDL);
+        byte[] dataBytes = (byte[])r[0];
+        int ksum = (int)r[1];       
 
         //write data label
         SimpleDateFormat format = new SimpleDateFormat("yyMMddHH");
@@ -1723,6 +1753,8 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
 
         //Write data
         _bw.write(dataBytes);
+        
+        return ksum;
     }
 
     /**
@@ -1754,15 +1786,17 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
      * @param forecast The forecast hour
      * @param grid The grid id
      * @param gridData The grid data
+     * @return Checksum
      * @throws IOException IOException
      */
-    public void writeGridData(Date time, int levelIdx, String varName, int forecast, int grid, Array gridData) throws IOException {
+    public int writeGridData(Date time, int levelIdx, String varName, int forecast, int grid, Array gridData) throws IOException {
         DataLabel aDL = new DataLabel(time);
         aDL.setLevel(levelIdx);
         aDL.setVarName(varName);
         aDL.setGrid(grid);
         aDL.setForecast(forecast);
-        writeGridData(aDL, gridData);
+        int ksum = writeGridData(aDL, gridData);
+        return ksum;
     }
 
     private byte[] packARLGridData(GridData gridData, DataLabel aDL) {
@@ -1830,7 +1864,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         return dataBytes;
     }
     
-    private byte[] packARLGridData(Array a, DataLabel aDL) {
+    private Object[] packARLGridData(Array a, DataLabel aDL) {
         int nx = a.getShape()[1];
         int ny = a.getShape()[0];
         double var1 = a.getDouble(0);
@@ -1892,7 +1926,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         aDL.setPrecision(prec);
         aDL.setValue(var1);
 
-        return dataBytes;
+        return new Object[]{dataBytes, ksum};
     }
     // </editor-fold>
     // </editor-fold>
