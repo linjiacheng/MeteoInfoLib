@@ -273,7 +273,7 @@ public class DataColumn {
                 case Double:
                     if (!(value instanceof Double)) {
                         String vStr = value.toString();
-                        if (vStr.isEmpty()) {
+                        if (vStr.isEmpty() || vStr.equalsIgnoreCase("nan")) {
                             return Double.NaN;
                         } else {
                             return Double.valueOf(vStr);
@@ -283,7 +283,7 @@ public class DataColumn {
                 case Float:
                     if (!(value instanceof Float)) {
                         String vStr = value.toString();
-                        if (vStr.isEmpty()) {
+                        if (vStr.isEmpty() || vStr.equalsIgnoreCase("nan")) {
                             return Float.NaN;
                         } else {
                             return Float.valueOf(vStr);

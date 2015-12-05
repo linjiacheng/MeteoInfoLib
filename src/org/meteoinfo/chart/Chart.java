@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.meteoinfo.chart.plot.Plot;
 import org.meteoinfo.chart.plot.XY2DPlot;
+import org.meteoinfo.drawing.Draw;
 import org.meteoinfo.global.PointF;
 
 /**
@@ -355,14 +356,21 @@ public class Chart {
             g.setColor(title.getColor());
             g.setFont(title.getFont());
             float x = (float) area.getWidth() / 2;
-            FontMetrics metrics = g.getFontMetrics(title.getFont());
-            x -= metrics.stringWidth(title.getText()) / 2;
-            y += metrics.getHeight();
-            List<String> texts = title.getTexts();
-            for (String text : texts) {
-                g.drawString(text, x, y);
-                y += 5;
+            //y -= this.title.getHeight(g) - 5;
+            //FontMetrics metrics = g.getFontMetrics(title.getFont());
+            //x -= metrics.stringWidth(title.getText()) / 2;
+            //y += metrics.getHeight();
+            int i = 0;
+            for (String text : title.getTexts()) {
+                Dimension dim = Draw.getStringDimension(text, g);
+                if (i == 0)
+                    y += dim.getHeight();
+                Draw.drawString(g, text, x - dim.width / 2, y);
+                g.setFont(title.getFont());
+                y += dim.height + title.getLineSpace();
+                i += 1;
             }
+            y += 5;
         }
 
         //Draw plot
@@ -381,7 +389,7 @@ public class Chart {
                 //plot.setPositionAreaZoom(zoom);
                 //plot.setTightInset(tightInset);
                 //plot.updatePositionArea();
-                if (plot.isSubPlot) {
+                if (plot.isSubPlot || plot.isSameShrink()) {
                     plot.setPlotShrink(shrink);
                 } else {
                     plot.setPlotShrink(this.getPlotShrink(g, area, plot));

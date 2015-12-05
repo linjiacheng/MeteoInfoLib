@@ -102,6 +102,9 @@ public class MICAPS120DataInfo extends DataInfo implements IStationDataInfo {
             while((line = sr.readLine()) != null){
                 line = line.trim();
                 dataArray = line.split("\\s+");
+                if (dataArray.length < 10){
+                    continue;
+                }
                 aList = new ArrayList<>();
                 aList.add(dataArray[0]);
                 aList.add(dataArray[2]);

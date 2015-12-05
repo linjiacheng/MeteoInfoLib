@@ -62,6 +62,7 @@ public abstract class Plot {
     public int rowIndex = 0;
     
     private boolean autoPosition = false;
+    private boolean sameShrink = false;
     
     /**
      * Get if automaticly set position
@@ -77,6 +78,22 @@ public abstract class Plot {
      */
     public void setAutoPosition(boolean value){
         this.autoPosition = value;
+    }
+  
+    /**
+     * Get if same shrink
+     * @return Boolean
+     */
+    public boolean isSameShrink(){
+        return this.sameShrink;
+    }
+    
+    /**
+     * Set if same shrink
+     * @param value Boolean
+     */
+    public void setSameShrink(boolean value){
+        this.sameShrink = value;
     }
     
     private Rectangle2D position = new Rectangle2D.Double(0.13, 0.11, 0.775, 0.815);
@@ -115,7 +132,7 @@ public abstract class Plot {
      */
     public void updatePosition(Rectangle2D figureArea, Rectangle2D outerArea){
         double x = outerArea.getX() / figureArea.getWidth();
-        double y = 1.0 - (outerArea.getY() + outerArea.getHeight()) / figureArea.getHeight();
+        double y = 1.0 - ((outerArea.getY() - figureArea.getY()) + outerArea.getHeight()) / figureArea.getHeight();
         double w = outerArea.getWidth() / figureArea.getWidth();
         double h = outerArea.getHeight() / figureArea.getHeight();
         this.setPosition(x, y, w, h);

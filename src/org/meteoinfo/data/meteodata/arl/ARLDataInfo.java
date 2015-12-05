@@ -1680,6 +1680,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             }
         }
         _bw.write(new byte[aDH.NY * aDH.NX - aDH.LENH]);
+        _bw.seek(_bw.length());
     }
 
     /**
