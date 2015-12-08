@@ -134,11 +134,19 @@ public class RasterLayer extends ImageLayer {
         BufferedImage image = getImageFromGridData(_gridData, als);
         this.setImage(image);
     }
+    
+    /**
+     * Update image by legend scheme
+     */
+    public void updateImage() {
+        BufferedImage image = getImageFromGridData(_gridData, this.getLegendScheme());
+        this.setImage(image);
+    }
 
     /**
      * Update image
      */
-    public void updateImage() {
+    public void updateImage_back() {
         int xNum = _gridData.getXNum();
         int yNum = _gridData.getYNum();
         byte[] imageBytes = new byte[xNum * yNum];
