@@ -5206,8 +5206,8 @@ public class MapView extends JPanel {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             for (int i = 0; i < drawPs.size(); i++) {
                 if (i % aPLB.getSymbolInterval() == 0) {
-                    Draw.drawPoint(aPLB.getSymbolStyle(), drawPs.get(i), aPLB.getSymbolColor(), aPLB.getSymbolColor(),
-                            aPLB.getSymbolSize(), true, false, g);
+                    Draw.drawPoint(aPLB.getSymbolStyle(), drawPs.get(i), aPLB.getSymbolFillColor(), aPLB.getSymbolColor(),
+                            aPLB.getSymbolSize(), true, aPLB.isFillSymbol(), g);
                 }
             }
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, rend);

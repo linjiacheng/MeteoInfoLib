@@ -389,6 +389,7 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
         for (ColorBreak cb : ls.getLegendBreaks()) {
             PolylineBreak plb = (PolylineBreak) cb;
             plb.setDrawSymbol(true);
+            plb.setSymbolFillColor(plb.getSymbolColor());
             plb.setSymbolInterval(6);
             plb.setSize(2);
             if (i == PointStyle.values().length) {

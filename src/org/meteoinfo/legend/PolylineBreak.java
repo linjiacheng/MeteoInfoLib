@@ -32,6 +32,8 @@ public class PolylineBreak extends ColorBreak {
     private float _symbolSize;
     private PointStyle _symbolStyle;
     private Color _symbolColor;
+    private Color symbolFillColor;
+    private boolean fillSymbol;
     private int _symbolInterval;
     // </editor-fold>
     // <editor-fold desc="Constructor">
@@ -46,6 +48,8 @@ public class PolylineBreak extends ColorBreak {
         _symbolSize = 8.0f;
         _symbolStyle = PointStyle.UpTriangle;
         _symbolColor = this.getColor();
+        symbolFillColor = _symbolColor;
+        fillSymbol = false;
         _symbolInterval = 1;
     }
     // </editor-fold>
@@ -177,6 +181,38 @@ public class PolylineBreak extends ColorBreak {
      */
     public void setSymbolColor(Color c) {
         _symbolColor = c;
+    }
+    
+    /**
+     * Get symbol fill color
+     * @return Symbol fill color
+     */
+    public Color getSymbolFillColor(){
+        return this.symbolFillColor;
+    }
+    
+    /**
+     * Set symbol fill color
+     * @param value Symbol fill color
+     */
+    public void setSymbolFillColor(Color value){
+        this.symbolFillColor = value;
+    }
+    
+    /**
+     * Get if fill symbol
+     * @return Boolean
+     */
+    public boolean isFillSymbol(){
+        return this.fillSymbol;
+    }
+    
+    /**
+     * Set if fill symbol
+     * @param value Boolean
+     */
+    public void setFillSymbol(boolean value){
+        this.fillSymbol = value;
     }
 
     /**

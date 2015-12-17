@@ -1412,7 +1412,52 @@ public class ArrayMath {
         }
         return sum / n;
     }
-
+    
+    public static Array mean(Array a, int axis, double missingValue) {
+        int[] shape = a.getShape();
+        List<Integer> sl = new ArrayList<>();
+        for (int i = 0; i < shape.length; i++){
+            if (i != axis){
+                sl.add(i);
+            }
+        }
+        int[] nshape = new int[sl.size()];
+        for (int i = 0; i < nshape.length; i++){
+            nshape[i] = sl.get(i);
+        }
+        Array r = Array.factory(DataType.DOUBLE, nshape);
+        return null;
+    }
+    
+    /**
+     * Compute the arithmetic mean arry from a list of arrays 
+     * @param alist list of arrays
+     * @return Mean array
+     */
+    public static Array mean(List<Array> alist){
+        Array r = Array.factory(DataType.DOUBLE, alist.get(0).getShape());
+        double sum, v;
+        int n;
+        for (int i = 0; i < r.getSize(); i++){
+            sum = 0.0;
+            n = 0;
+            for (Array a : alist){
+                v = a.getDouble(i);
+                if (!Double.isNaN(v)){
+                    sum += v;
+                    n += 1;
+                }
+            }
+            if (n > 0)
+                sum = sum / n;
+            else
+                sum = Double.NaN;
+            r.setDouble(i, sum);
+        }
+        
+        return r;
+    }
+        
     // </editor-fold>
     // <editor-fold desc="Convert">
     /**

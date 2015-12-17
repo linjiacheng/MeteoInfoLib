@@ -130,7 +130,7 @@ public class FrmPolygonSymbolSet extends javax.swing.JDialog {
 
         jLabel3.setText("Size:");
 
-        jSpinner_OutlineSize.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(1.0f), Float.valueOf(1.0f), Float.valueOf(10.0f), Float.valueOf(0.5f)));
+        jSpinner_OutlineSize.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(1.0f), Float.valueOf(1.0f), Float.valueOf(100.0f), Float.valueOf(0.5f)));
         jSpinner_OutlineSize.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 jSpinner_OutlineSizeStateChanged(evt);

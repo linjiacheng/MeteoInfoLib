@@ -366,6 +366,16 @@ public class VectorLayer extends MapLayer {
         List<String> fieldNames = this._attributeTable.getTable().getColumnNames();
         switch (value.getLegendType()) {
             case UniqueValue:
+                if (!fieldNames.contains(value.getFieldName())) {
+                    LegendScheme ls = this.getLegendScheme();
+                    ls.setFieldName(fieldNames.get(0));
+                    for (int i = 0; i < this.getShapeNum(); i++){
+                        ColorBreak cb = ls.getLegendBreaks().get(i);
+                        cb.setStartValue(this.getCellValue(fieldNames.get(0), i));
+                        cb.setEndValue(cb.getStartValue());
+                    }
+                }
+                break;
             case GraduatedColor:
                 if (!fieldNames.contains(value.getFieldName())) {
                     String fName = "";

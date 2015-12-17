@@ -35,6 +35,8 @@ public class FrmPolylineSymbolSet extends javax.swing.JDialog {
 
     /**
      * Creates new form FrmPolylineSymbolSet
+     * @param parent
+     * @param modal
      */
     public FrmPolylineSymbolSet(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
@@ -45,6 +47,9 @@ public class FrmPolylineSymbolSet extends javax.swing.JDialog {
 
     /**
      * Creates new form FrmPolylineSymbolSet
+     * @param parent
+     * @param modal
+     * @param tparent
      */
     public FrmPolylineSymbolSet(java.awt.Dialog parent, boolean modal, Object tparent) {
         super(parent, modal);
@@ -69,6 +74,9 @@ public class FrmPolylineSymbolSet extends javax.swing.JDialog {
     
     /**
      * Creates new form FrmPolylineSymbolSet
+     * @param parent
+     * @param modal
+     * @param tparent
      */
     public FrmPolylineSymbolSet(java.awt.Frame parent, boolean modal, Object tparent) {
         super(parent, modal);
@@ -126,6 +134,9 @@ public class FrmPolylineSymbolSet extends javax.swing.JDialog {
         jLabel5 = new javax.swing.JLabel();
         jSpinner_SymbolInterval = new javax.swing.JSpinner();
         jComboBox_SymbolStyle = new javax.swing.JComboBox();
+        jCheckBox_DrawFill = new javax.swing.JCheckBox();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel_FillColor = new javax.swing.JLabel();
         jButton_Apply = new javax.swing.JButton();
         jButton_OK = new javax.swing.JButton();
 
@@ -138,7 +149,7 @@ public class FrmPolylineSymbolSet extends javax.swing.JDialog {
 
         jLabel1.setText("Size:");
 
-        jSpinner_Size.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(1.0f), Float.valueOf(1.0f), Float.valueOf(10.0f), Float.valueOf(0.5f)));
+        jSpinner_Size.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(1.0f), Float.valueOf(1.0f), Float.valueOf(100.0f), Float.valueOf(0.5f)));
         jSpinner_Size.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 jSpinner_SizeStateChanged(evt);
@@ -175,14 +186,14 @@ public class FrmPolylineSymbolSet extends javax.swing.JDialog {
 
         jLabel3.setText("Size:");
 
-        jSpinner_SymbolSize.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(1.0f), Float.valueOf(1.0f), Float.valueOf(10.0f), Float.valueOf(0.5f)));
+        jSpinner_SymbolSize.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(1.0f), Float.valueOf(1.0f), Float.valueOf(100.0f), Float.valueOf(0.5f)));
         jSpinner_SymbolSize.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 jSpinner_SymbolSizeStateChanged(evt);
             }
         });
 
-        jLabel4.setText("Color:");
+        jLabel4.setText("Outline Color:");
 
         jLabel_SymbolColor.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         jLabel_SymbolColor.setOpaque(true);
@@ -208,6 +219,23 @@ public class FrmPolylineSymbolSet extends javax.swing.JDialog {
             }
         });
 
+        jCheckBox_DrawFill.setText("Draw Fill");
+        jCheckBox_DrawFill.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckBox_DrawFillActionPerformed(evt);
+            }
+        });
+
+        jLabel6.setText("Fill Color:");
+
+        jLabel_FillColor.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        jLabel_FillColor.setOpaque(true);
+        jLabel_FillColor.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel_FillColorMouseClicked(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -215,15 +243,18 @@ public class FrmPolylineSymbolSet extends javax.swing.JDialog {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(26, 26, 26)
-                        .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jSpinner_SymbolSize, javax.swing.GroupLayout.PREFERRED_SIZE, 62, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 38, Short.MAX_VALUE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(jComboBox_SymbolStyle, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGap(18, 18, 18)))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jComboBox_SymbolStyle, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                .addGap(0, 5, Short.MAX_VALUE)
+                                .addComponent(jLabel3)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jSpinner_SymbolSize, javax.swing.GroupLayout.PREFERRED_SIZE, 62, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jCheckBox_DrawFill)))
+                .addGap(18, 18, 18)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel5)
@@ -232,7 +263,11 @@ public class FrmPolylineSymbolSet extends javax.swing.JDialog {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel4)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel_SymbolColor, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(jLabel_SymbolColor, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel6)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel_FillColor, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -245,7 +280,15 @@ public class FrmPolylineSymbolSet extends javax.swing.JDialog {
                         .addComponent(jLabel3)
                         .addComponent(jSpinner_SymbolSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel4)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 12, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jCheckBox_DrawFill)
+                        .addComponent(jLabel6))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel_FillColor, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(2, 2, 2)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 14, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
                     .addComponent(jSpinner_SymbolInterval, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -293,17 +336,17 @@ public class FrmPolylineSymbolSet extends javax.swing.JDialog {
                                 .addComponent(jLabel_Color, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jCheckBox_DrawPointSymbol))))
                 .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addGap(72, 72, 72)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
                 .addComponent(jButton_OK, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(58, 58, 58)
                 .addComponent(jButton_Apply, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addGap(52, 52, 52))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(symbolControl1, javax.swing.GroupLayout.DEFAULT_SIZE, 104, Short.MAX_VALUE)
+                .addComponent(symbolControl1, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -318,9 +361,9 @@ public class FrmPolylineSymbolSet extends javax.swing.JDialog {
                             .addComponent(jLabel_Color, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jCheckBox_DrawPointSymbol)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton_Apply)
                     .addComponent(jButton_OK, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -427,6 +470,30 @@ public class FrmPolylineSymbolSet extends javax.swing.JDialog {
         this.dispose();
     }//GEN-LAST:event_jButton_OKActionPerformed
 
+    private void jCheckBox_DrawFillActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox_DrawFillActionPerformed
+        // TODO add your handling code here:
+        _polylineBreak.setFillSymbol(this.jCheckBox_DrawFill.isSelected());
+        if (_parent.getClass() == LegendView.class) {
+            //((LegendView) _parent).setLegendBreak_DrawFill(this.jCheckBox_DrawFill.isSelected());
+            ((LegendView) _parent).repaint();
+        }
+    }//GEN-LAST:event_jCheckBox_DrawFillActionPerformed
+
+    private void jLabel_FillColorMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel_FillColorMouseClicked
+        // TODO add your handling code here:
+        Color c = JColorChooser.showDialog(rootPane, null, this.jLabel_FillColor.getBackground());
+        if (c == null)
+            return;
+        
+        Color aColor = new Color(c.getRed(), c.getGreen(), c.getBlue());
+        this.jLabel_FillColor.setBackground(aColor);
+        _polylineBreak.setSymbolFillColor(aColor);
+        if (_parent.getClass() == LegendView.class) {
+            //((LegendView) _parent).setLegendBreak_Color(aColor);
+            ((LegendView) _parent).repaint();
+        }
+    }//GEN-LAST:event_jLabel_FillColorMouseClicked
+
     /**
      * Set polyline break
      *
@@ -452,6 +519,8 @@ public class FrmPolylineSymbolSet extends javax.swing.JDialog {
             this.jComboBox_SymbolStyle.addItem(sName);
         }
         this.jComboBox_SymbolStyle.setSelectedItem(_polylineBreak.getSymbolStyle());
+        this.jCheckBox_DrawFill.setSelected(_polylineBreak.isFillSymbol());
+        this.jLabel_FillColor.setBackground(_polylineBreak.getSymbolFillColor());
 
         //symbolControl1.setSymbolNumber(LineStyles.values().length);
         if (_parent.getClass() == LegendView.class) {
@@ -461,7 +530,7 @@ public class FrmPolylineSymbolSet extends javax.swing.JDialog {
         }
 
         symbolControl1.setSelectedCell(Arrays.asList(LineStyles.values()).indexOf(_polylineBreak.getStyle()));
-
+        
         isLoading = false;
     }
 
@@ -509,6 +578,7 @@ public class FrmPolylineSymbolSet extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton_Apply;
     private javax.swing.JButton jButton_OK;
+    private javax.swing.JCheckBox jCheckBox_DrawFill;
     private javax.swing.JCheckBox jCheckBox_DrawPointSymbol;
     private javax.swing.JCheckBox jCheckBox_DrawShape;
     private javax.swing.JComboBox jComboBox_SymbolStyle;
@@ -517,7 +587,9 @@ public class FrmPolylineSymbolSet extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel_Color;
+    private javax.swing.JLabel jLabel_FillColor;
     private javax.swing.JLabel jLabel_SymbolColor;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSpinner jSpinner_Size;

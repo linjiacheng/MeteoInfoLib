@@ -1,4 +1,4 @@
- /* Copyright 2012 Yaqiang Wang,
+/* Copyright 2012 Yaqiang Wang,
  * yaqiang.wang@gmail.com
  * 
  * This library is free software; you can redistribute it and/or modify it
@@ -47,14 +47,12 @@ public abstract class DataMath {
             } else {
                 return ((StationData) a).add(Double.parseDouble(b.toString()));
             }
+        } else if (b.getClass() == GridData.class) {
+            return ((GridData) b).add(Double.parseDouble(a.toString()));
+        } else if (b.getClass() == StationData.class) {
+            return ((StationData) b).add(Double.parseDouble(a.toString()));
         } else {
-            if (b.getClass() == GridData.class) {
-                return ((GridData) b).add(Double.parseDouble(a.toString()));
-            } else if (b.getClass() == StationData.class) {
-                return ((StationData) b).add(Double.parseDouble(a.toString()));
-            } else {
-                return Double.parseDouble(a.toString()) + Double.parseDouble(b.toString());
-            }
+            return Double.parseDouble(a.toString()) + Double.parseDouble(b.toString());
         }
     }
 
@@ -78,14 +76,12 @@ public abstract class DataMath {
             } else {
                 return ((StationData) a).sub(Double.parseDouble(b.toString()));
             }
+        } else if (b.getClass() == GridData.class) {
+            return sub(Double.parseDouble(a.toString()), (GridData) b);
+        } else if (b.getClass() == StationData.class) {
+            return sub(Double.parseDouble(a.toString()), (StationData) b);
         } else {
-            if (b.getClass() == GridData.class) {
-                return sub(Double.parseDouble(a.toString()), (GridData) b);
-            } else if (b.getClass() == StationData.class) {
-                return sub(Double.parseDouble(a.toString()), (StationData) b);
-            } else {
-                return Double.parseDouble(a.toString()) - Double.parseDouble(b.toString());
-            }
+            return Double.parseDouble(a.toString()) - Double.parseDouble(b.toString());
         }
     }
 
@@ -161,14 +157,12 @@ public abstract class DataMath {
             } else {
                 return ((StationData) a).mul(Double.parseDouble(b.toString()));
             }
+        } else if (b.getClass() == GridData.class) {
+            return ((GridData) b).mul(Double.parseDouble(a.toString()));
+        } else if (b.getClass() == StationData.class) {
+            return ((StationData) b).mul(Double.parseDouble(a.toString()));
         } else {
-            if (b.getClass() == GridData.class) {
-                return ((GridData) b).mul(Double.parseDouble(a.toString()));
-            } else if (b.getClass() == StationData.class) {
-                return ((StationData) b).mul(Double.parseDouble(a.toString()));
-            } else {
-                return Double.parseDouble(a.toString()) * Double.parseDouble(b.toString());
-            }
+            return Double.parseDouble(a.toString()) * Double.parseDouble(b.toString());
         }
     }
 
@@ -192,14 +186,12 @@ public abstract class DataMath {
             } else {
                 return ((StationData) a).div(Double.parseDouble(b.toString()));
             }
+        } else if (b.getClass() == GridData.class) {
+            return div_1(Double.parseDouble(a.toString()), (GridData) b);
+        } else if (b.getClass() == StationData.class) {
+            return div_1(Double.parseDouble(a.toString()), (StationData) b);
         } else {
-            if (b.getClass() == GridData.class) {
-                return div_1(Double.parseDouble(a.toString()), (GridData) b);
-            } else if (b.getClass() == StationData.class) {
-                return div_1(Double.parseDouble(a.toString()), (StationData) b);
-            } else {
-                return Double.parseDouble(a.toString()) / Double.parseDouble(b.toString());
-            }
+            return Double.parseDouble(a.toString()) / Double.parseDouble(b.toString());
         }
     }
 
@@ -261,6 +253,7 @@ public abstract class DataMath {
     // <editor-fold desc="Wind U/V">
     /**
      * Get wind U/V from wind direction/speed
+     *
      * @param windDir The wind direction
      * @param windSpeed The wind speed
      * @return Wind U/V
@@ -333,6 +326,7 @@ public abstract class DataMath {
 
     /**
      * Get wind direction/speed from U/V
+     *
      * @param U The U value
      * @param V The V value
      * @return Wind direction/speed array
@@ -737,6 +731,51 @@ public abstract class DataMath {
         }
     }
 
+    /**
+     * Compute the arithmetic mean station data
+     * @param datalist station data list
+     * @return Mean station data
+     */
+    public static StationData mean(List<StationData> datalist) {
+        StationData cStData = new StationData();
+        StationData stdata = datalist.get(0);
+        cStData.projInfo = stdata.projInfo;
+        String aStid;
+        int stIdx;
+        double x, y;
+        for (int i = 0; i < stdata.stations.size(); i++) {
+            aStid = stdata.stations.get(i);
+            if (aStid.equals("99999")) {
+                continue;
+            }
+
+            double aValue = stdata.getValue(i);
+            if (aValue == stdata.missingValue) {
+                continue;
+            }
+            double sum = aValue;
+            int n = 1;
+            for (int j = 1; j < datalist.size(); j++) {
+                StationData sd = datalist.get(j);
+                stIdx = sd.stations.indexOf(aStid);
+                if (stIdx >= 0) {
+                    double bValue = sd.getValue(stIdx);
+                    if (bValue == sd.missingValue) {
+                        continue;
+                    }
+                    sum += bValue;
+                    n += 1;
+                }
+            }
+            sum = sum / n;
+            x = stdata.getX(i);
+            y = stdata.getY(i);
+            cStData.addData(aStid, x, y, sum);
+        }
+
+        return cStData;
+    }
+
     // </editor-fold>
     // <editor-fold desc="Statistics">
     /**
@@ -799,59 +838,60 @@ public abstract class DataMath {
 
         return rData;
     }
-    
+
     /**
-     * Get correlation coefficient
-     * How well did the forecast values correspond to the observed values?
-     * Range: -1 to 1.  Perfect score: 1.
+     * Get correlation coefficient How well did the forecast values correspond
+     * to the observed values? Range: -1 to 1. Perfect score: 1.
+     *
      * @param xData X data array
      * @param yData Y data array
      * @return Correlation coefficent
      */
-    public static float getR(List<Double> xData, List<Double> yData){
+    public static float getR(List<Double> xData, List<Double> yData) {
         int n = xData.size();
         double x_sum = 0;
         double y_sum = 0;
-        for (int i = 0; i < n; i++){
+        for (int i = 0; i < n; i++) {
             x_sum += xData.get(i);
             y_sum += yData.get(i);
         }
         double sx_sum = 0.0;
         double sy_sum = 0.0;
         double xy_sum = 0.0;
-        for (int i = 0; i < n; i++){
+        for (int i = 0; i < n; i++) {
             sx_sum += xData.get(i) * xData.get(i);
             sy_sum += yData.get(i) * yData.get(i);
             xy_sum += xData.get(i) * yData.get(i);
         }
-        
+
         double r = (n * xy_sum - x_sum * y_sum) / (Math.sqrt(n * sx_sum - x_sum * x_sum) * Math.sqrt(n * sy_sum - y_sum * y_sum));
-        return (float)r;
+        return (float) r;
     }
-    
+
     /**
-     * Get correlation coefficient
-     * How well did the forecast values correspond to the observed values?
-     * Range: -1 to 1.  Perfect score: 1.
+     * Get correlation coefficient How well did the forecast values correspond
+     * to the observed values? Range: -1 to 1. Perfect score: 1.
+     *
      * @param xcData X data array
      * @param ycData Y data array
      * @return Correlation coefficent
      */
-    public static float getR(ColumnData xcData, ColumnData ycData){
+    public static float getR(ColumnData xcData, ColumnData ycData) {
         List<Number> xData = xcData.getDataValues();
-        List<Number> yData = ycData.getDataValues(); 
+        List<Number> yData = ycData.getDataValues();
         List<Double> xxData = new ArrayList<>();
         List<Double> yyData = new ArrayList<>();
-        for (int i = 0; i < xcData.size(); i++){
-            if (Double.isNaN(xData.get(i).doubleValue()) || Double.isNaN(yData.get(i).doubleValue()))
+        for (int i = 0; i < xcData.size(); i++) {
+            if (Double.isNaN(xData.get(i).doubleValue()) || Double.isNaN(yData.get(i).doubleValue())) {
                 continue;
+            }
             xxData.add(xData.get(i).doubleValue());
             yyData.add(yData.get(i).doubleValue());
         }
-        
+
         return getR(xxData, yyData);
     }
-    
+
     /**
      * Mann-Kendall trend statistics
      *
@@ -860,9 +900,10 @@ public abstract class DataMath {
      */
     public static double[] mann_Kendall_Trend(List<Double> ts) {
         double[] nts = new double[ts.size()];
-        for (int i = 0; i < ts.size(); i++)
+        for (int i = 0; i < ts.size(); i++) {
             nts[i] = ts.get(i);
-        
+        }
+
         return mann_Kendall_Trend(nts);
     }
 
@@ -1290,7 +1331,6 @@ public abstract class DataMath {
         //    dlat[i] = xlat[i] - ylat;
         //    ylat = xlat[i];
         //}
-
         return new Object[]{xlat, dlat};
     }
 
