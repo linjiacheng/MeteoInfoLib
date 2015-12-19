@@ -70,6 +70,9 @@ public class DataColumn {
     public DataColumn(String columnName, DataTypes dataType) {
         this.dataType = dataType;
         this.columnName = columnName;
+        if (this.dataType == DataTypes.Date){
+            this.format = "YYYYMMddHH";
+        }
     }
 
     /**
