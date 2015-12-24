@@ -63,6 +63,8 @@ public class Axis implements Cloneable {
     private List<Double> tickLocations;
     private List<String> tickLabels;
     private boolean autoTick;
+    private boolean minorTickVisible;
+    private int minorTickNum;
 
     // </editor-fold>
     // <editor-fold desc="Constructor">
@@ -98,6 +100,8 @@ public class Axis implements Cloneable {
         this.tickLocations = new ArrayList<>();
         this.tickLabels = new ArrayList<>();
         this.autoTick = true;
+        this.minorTickVisible = false;
+        this.minorTickNum = 5;
     }
 
     /**
@@ -208,8 +212,9 @@ public class Axis implements Cloneable {
      */
     public void setLabel(String value) {
         label = value;
-        if (!label.isEmpty() && (this.location == Location.BOTTOM || this.location == location.LEFT))
+        if (!label.isEmpty() && (this.location == Location.BOTTOM || this.location == location.LEFT)) {
             this.drawLabel = true;
+        }
     }
 
     /**
@@ -560,17 +565,19 @@ public class Axis implements Cloneable {
      * @return Tick values
      */
     public double[] getTickValues() {
-        if (this.autoTick)
+        if (this.autoTick) {
             return this.tickValues;
-        else {
+        } else {
             List<Double> values = new ArrayList<>();
-            for (double v : this.tickLocations){
-                if (v >= this.minValue && v <= this.maxValue)
+            for (double v : this.tickLocations) {
+                if (v >= this.minValue && v <= this.maxValue) {
                     values.add(v);
+                }
             }
             double[] vs = new double[values.size()];
-            for (int i = 0; i < values.size(); i++)
+            for (int i = 0; i < values.size(); i++) {
                 vs[i] = values.get(i);
+            }
             return vs;
         }
     }
@@ -651,7 +658,7 @@ public class Axis implements Cloneable {
      */
     public boolean isInverse() {
         return this.inverse;
-    }        
+    }
 
     /**
      * Set if is inverse
@@ -661,90 +668,135 @@ public class Axis implements Cloneable {
     public void setInverse(boolean value) {
         this.inverse = value;
     }
-    
+
     /**
      * Get shift
+     *
      * @return Shift
      */
-    public float getShift(){
+    public float getShift() {
         return this.shift;
     }
-    
+
     /**
      * Set shift
+     *
      * @param value Shift
      */
-    public void setShift(float value){
+    public void setShift(float value) {
         this.shift = value;
     }
-    
+
     /**
      * Tick locations
+     *
      * @return Tick locations
      */
-    public List<Double> getTickLocations(){
+    public List<Double> getTickLocations() {
         return this.tickLocations;
     }
-    
+
     /**
      * Set tick locations
+     *
      * @param value Tick locations
      */
-    public void setTickLocations(List<Number> value){
+    public void setTickLocations(List<Number> value) {
         this.tickLocations.clear();
         this.tickLabels.clear();
-        for (Number v : value){
+        for (Number v : value) {
             this.tickLocations.add(v.doubleValue());
             this.tickLabels.add(String.valueOf(v));
         }
         this.autoTick = false;
     }
-    
+
     /**
      * Set tick locations
+     *
      * @param value Tick locations
      */
-    public void setTickLocations(double[] value){
+    public void setTickLocations(double[] value) {
         this.tickLocations.clear();
         this.tickLabels.clear();
-        for (double v : value){
+        for (double v : value) {
             this.tickLocations.add(v);
-            this.tickLabels.add(String.valueOf((int)v));
+            this.tickLabels.add(String.valueOf((int) v));
         }
         this.autoTick = false;
     }
-    
+
     /**
      * Get tick labels
+     *
      * @return Tick labels
      */
-    public List<String> getTickLabels(){
+    public List<String> getTickLabels() {
         return this.tickLabels;
     }
-    
+
     /**
      * Set tick labels
+     *
      * @param value Tick labels
      */
-    public void setTickLabels(List<String> value){
+    public void setTickLabels(List<String> value) {
         this.tickLabels = value;
         this.autoTick = false;
     }
-    
+
     /**
      * Get if is auto tick labels
+     *
      * @return Boolean
      */
-    public boolean isAutoTick(){
+    public boolean isAutoTick() {
         return this.autoTick;
     }
-    
+
     /**
      * Set if auto tick labels
+     *
      * @param value Boolean
      */
-    public void setAutoTick(boolean value){
+    public void setAutoTick(boolean value) {
         this.autoTick = value;
+    }
+
+    /**
+     * Get if minor tick visible or not
+     *
+     * @return Boolean
+     */
+    public boolean isMinorTickVisible() {
+        return this.minorTickVisible;
+    }
+
+    /**
+     * Set if minor tick visible or not
+     *
+     * @param value Boolean
+     */
+    public void setMinorTickVisible(boolean value) {
+        this.minorTickVisible = value;
+    }
+
+    /**
+     * Get minor tick number
+     *
+     * @return Minor tick number
+     */
+    public int getMinorTickNum() {
+        return this.minorTickNum;
+    }
+
+    /**
+     * Set minor tick number
+     *
+     * @param value Minor tick number
+     */
+    public void setMinorTickNum(int value) {
+        this.minorTickNum = value;
     }
     // </editor-fold>
     // <editor-fold desc="Methods">
@@ -765,11 +817,11 @@ public class Axis implements Cloneable {
 //            tickValues = MIMath.getIntervalValues(minValue, maxValue);
 //        }
     }
-    
+
     /**
      * Update tick values
      */
-    public void updateTickValues(){
+    public void updateTickValues() {
         tickValues = MIMath.getIntervalValues(minValue, maxValue);
     }
 
@@ -910,19 +962,21 @@ public class Axis implements Cloneable {
     public List<String> updateTickLabels() {
         List<String> tls = new ArrayList<>();
         String lab;
-        if (this.autoTick){
-            if (this.getTickValues() == null)
+        if (this.autoTick) {
+            if (this.getTickValues() == null) {
                 return tls;
+            }
             for (double value : this.getTickValues()) {
                 lab = String.valueOf(value);
                 lab = DataConvert.removeTailingZeros(lab);
                 tls.add(lab);
             }
         } else {
-            for (int i = 0; i < this.tickLocations.size(); i++){
+            for (int i = 0; i < this.tickLocations.size(); i++) {
                 double v = this.tickLocations.get(i);
-                if (v >= this.minValue && v <= this.maxValue)
+                if (v >= this.minValue && v <= this.maxValue) {
                     tls.add(this.tickLabels.get(i));
+                }
             }
         }
 
@@ -957,10 +1011,10 @@ public class Axis implements Cloneable {
      * @param rect The rectangle
      */
     public void updateLabelGap(Graphics2D g, Rectangle2D rect) {
-        if (this.getTickValues() == null){
+        if (this.getTickValues() == null) {
             return;
         }
-        
+
         double len;
         int n = this.getTickValues().length;
         int nn;
@@ -978,12 +1032,13 @@ public class Axis implements Cloneable {
         }
         this.tickLabelGap = n / nn + 1;
     }
-    
+
     /**
      * Set color to all elements
+     *
      * @param c Color
      */
-    public void setColor_All(Color c){
+    public void setColor_All(Color c) {
         this.lineColor = c;
         this.tickColor = c;
         this.tickLabelColor = c;
@@ -998,8 +1053,9 @@ public class Axis implements Cloneable {
      * @param plot XYPlot
      */
     public void draw(Graphics2D g, Rectangle2D area, XYPlot plot) {
-        if (plot.getDrawExtent() == null)
+        if (plot.getDrawExtent() == null) {
             return;
+        }
         if (this.xAxis) {
             this.drawXAxis(g, area, plot);
         } else {
@@ -1052,13 +1108,12 @@ public class Axis implements Cloneable {
                 } else {
                     g.draw(new Line2D.Double(x, maxy, x, maxy + len));
                 }
+            } else if (this.insideTick) {
+                g.draw(new Line2D.Double(x, miny, x, miny + len));
             } else {
-                if (this.insideTick) {
-                    g.draw(new Line2D.Double(x, miny, x, miny + len));
-                } else {
-                    g.draw(new Line2D.Double(x, miny, x, miny - len));
-                }
+                g.draw(new Line2D.Double(x, miny, x, miny - len));
             }
+
             //Draw tick label
             if (this.drawTickLabel) {
                 drawStr = xTickLabels.get(n);
@@ -1068,39 +1123,69 @@ public class Axis implements Cloneable {
                 g.drawString(drawStr, labx, laby);
             }
             n += this.getTickLabelGap();
+
+            //Draw minor tick lines
+            if (this.isMinorTickVisible()) {
+                if (n < this.getTickValues().length) {
+                    int minorLen = len - 2;
+                    double evalue = this.getTickValues()[n];
+                    double sp = (evalue - value) / this.minorTickNum;
+                    for (int i = 0; i < this.minorTickNum - 1; i++) {
+                        value = value + sp;
+                        xy = plot.projToScreen(value, plot.getDrawExtent().minY, area);
+                        x = xy[0];
+                        if (this.inverse) {
+                            x = area.getWidth() - x;
+                        }
+                        x += minx;
+                        if (this.location == Location.BOTTOM) {
+                            if (this.insideTick) {
+                                g.draw(new Line2D.Double(x, maxy, x, maxy - minorLen));
+                            } else {
+                                g.draw(new Line2D.Double(x, maxy, x, maxy + minorLen));
+                            }
+                        } else if (this.insideTick) {
+                            g.draw(new Line2D.Double(x, miny, x, miny + minorLen));
+                        } else {
+                            g.draw(new Line2D.Double(x, miny, x, miny - minorLen));
+                        }
+                    }
+                }
+            }
         }
         //Time label - left
         SimpleDateFormat format;
         if (this instanceof TimeAxis) {
             TimeAxis tAxis = (TimeAxis) this;
-            //if (this.xAxis.isTimeAxis()) {
-            drawStr = null;
-            switch (tAxis.getTimeUnit()) {
-                case MONTH:
-                    format = new SimpleDateFormat("yyyy");
-                    Date cdate = DateUtil.fromOADate(this.getTickValues()[0]);
-                    drawStr = format.format(cdate);
-                    break;
-                case DAY:
-                    format = new SimpleDateFormat("yyyy-MM");
-                    cdate = DateUtil.fromOADate(this.getTickValues()[0]);
-                    drawStr = format.format(cdate);
-                    break;
-                case HOUR:
-                case MINITUE:
-                case SECOND:
-                    format = new SimpleDateFormat("yyyy-MM-dd");
-                    cdate = DateUtil.fromOADate(this.getTickValues()[0]);
-                    drawStr = format.format(cdate);
-                    break;
-            }
-            if (drawStr != null) {
-                labx = (float) minx;
-                laby = (float) (maxy + metrics.getHeight() * 2 + space);
-                if (!this.isInsideTick()) {
-                    laby += len;
+            if (tAxis.isVarFormat()) {
+                drawStr = null;
+                switch (tAxis.getTimeUnit()) {
+                    case MONTH:
+                        format = new SimpleDateFormat("yyyy");
+                        Date cdate = DateUtil.fromOADate(this.getTickValues()[0]);
+                        drawStr = format.format(cdate);
+                        break;
+                    case DAY:
+                        format = new SimpleDateFormat("yyyy-MM");
+                        cdate = DateUtil.fromOADate(this.getTickValues()[0]);
+                        drawStr = format.format(cdate);
+                        break;
+                    case HOUR:
+                    case MINUTE:
+                    case SECOND:
+                        format = new SimpleDateFormat("yyyy-MM-dd");
+                        cdate = DateUtil.fromOADate(this.getTickValues()[0]);
+                        drawStr = format.format(cdate);
+                        break;
                 }
-                g.drawString(drawStr, labx, laby);
+                if (drawStr != null) {
+                    labx = (float) minx;
+                    laby = (float) (maxy + metrics.getHeight() * 2 + space);
+                    if (!this.isInsideTick()) {
+                        laby += len;
+                    }
+                    g.drawString(drawStr, labx, laby);
+                }
             }
         }
         //Draw label
@@ -1121,7 +1206,7 @@ public class Axis implements Cloneable {
             Draw.drawString(g, this.getLabel(), labx, laby);
         }
     }
-    
+
     private void drawXAxis_Bar(Graphics2D g, Rectangle2D area, XYPlot plot) {
         double[] xy;
         double x, y;
@@ -1167,12 +1252,10 @@ public class Axis implements Cloneable {
                 } else {
                     g.draw(new Line2D.Double(x, maxy, x, maxy + len));
                 }
+            } else if (this.insideTick) {
+                g.draw(new Line2D.Double(x, miny, x, miny + len));
             } else {
-                if (this.insideTick) {
-                    g.draw(new Line2D.Double(x, miny, x, miny + len));
-                } else {
-                    g.draw(new Line2D.Double(x, miny, x, miny - len));
-                }
+                g.draw(new Line2D.Double(x, miny, x, miny - len));
             }
             //Draw tick label
             if (this.drawTickLabel) {
@@ -1202,7 +1285,7 @@ public class Axis implements Cloneable {
                     drawStr = format.format(cdate);
                     break;
                 case HOUR:
-                case MINITUE:
+                case MINUTE:
                 case SECOND:
                     format = new SimpleDateFormat("yyyy-MM-dd");
                     cdate = DateUtil.fromOADate(this.getTickValues()[0]);
@@ -1284,12 +1367,10 @@ public class Axis implements Cloneable {
                 } else {
                     g.draw(new Line2D.Double(sx, y, sx - len, y));
                 }
+            } else if (this.isInsideTick()) {
+                g.draw(new Line2D.Double(sx, y, sx - len, y));
             } else {
-                if (this.isInsideTick()) {
-                    g.draw(new Line2D.Double(sx, y, sx - len, y));
-                } else {
-                    g.draw(new Line2D.Double(sx, y, sx + len, y));
-                }
+                g.draw(new Line2D.Double(sx, y, sx + len, y));
             }
             //Draw tick label
             if (this.drawTickLabel) {
@@ -1312,6 +1393,35 @@ public class Axis implements Cloneable {
                 }
             }
             n += this.getTickLabelGap();
+
+            //Draw minor tick lines
+            if (this.isMinorTickVisible()) {
+                if (n < this.getTickValues().length) {
+                    int minorLen = len - 2;
+                    double evalue = this.getTickValues()[n];
+                    double sp = (evalue - value) / this.minorTickNum;
+                    for (int i = 0; i < this.minorTickNum - 1; i++) {
+                        value = value + sp;
+                        xy = plot.projToScreen(plot.getDrawExtent().minX, value, area);
+                        y = xy[1];
+                        if (this.isInverse()) {
+                            y = area.getHeight() - y;
+                        }
+                        y += area.getY();
+                        if (this.location == Location.LEFT) {
+                            if (this.isInsideTick()) {
+                                g.draw(new Line2D.Double(sx, y, sx + minorLen, y));
+                            } else {
+                                g.draw(new Line2D.Double(sx, y, sx - minorLen, y));
+                            }
+                        } else if (this.isInsideTick()) {
+                            g.draw(new Line2D.Double(sx, y, sx - minorLen, y));
+                        } else {
+                            g.draw(new Line2D.Double(sx, y, sx + minorLen, y));
+                        }
+                    }
+                }
+            }
         }
         //Draw label
         if (this.isDrawLabel()) {
@@ -1350,7 +1460,7 @@ public class Axis implements Cloneable {
     public Object clone() {
         Axis o = null;
         try {
-        o = (Axis) super.clone();
+            o = (Axis) super.clone();
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }

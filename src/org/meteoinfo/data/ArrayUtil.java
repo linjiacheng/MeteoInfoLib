@@ -88,6 +88,7 @@ public class ArrayUtil {
         while (line != null) {
             line = line.trim();
             if (line.isEmpty()) {
+                line = sr.readLine();
                 continue;
             }
             dataArray = GlobalUtil.split(line, delimiter);

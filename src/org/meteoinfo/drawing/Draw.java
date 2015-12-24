@@ -1442,10 +1442,10 @@ public class Draw {
                 if (clip != null) {
                     g.setClip(null);
                     for (int i = 0; i < points.length; i++) {
-                        p = points[i];
+                        p = new PointF(points[i].X, points[i].Y);
                         if (p.X >= clip.x && p.X <= clip.x + clip.width && p.Y >= clip.y && p.Y <= clip.y + clip.height) {
                             if (i % aPLB.getSymbolInterval() == 0) {
-                                drawPoint(aPLB.getSymbolStyle(), points[i], aPLB.getSymbolFillColor(), aPLB.getSymbolColor(),
+                                drawPoint(aPLB.getSymbolStyle(), p, aPLB.getSymbolFillColor(), aPLB.getSymbolColor(),
                                         aPLB.getSymbolSize(), true, aPLB.isFillSymbol(), g);
                             }
                         }
@@ -1454,7 +1454,8 @@ public class Draw {
                 } else {
                     for (int i = 0; i < points.length; i++) {
                         if (i % aPLB.getSymbolInterval() == 0) {
-                            drawPoint(aPLB.getSymbolStyle(), points[i], aPLB.getSymbolFillColor(), aPLB.getSymbolColor(),
+                            p = new PointF(points[i].X, points[i].Y);
+                            drawPoint(aPLB.getSymbolStyle(), p, aPLB.getSymbolFillColor(), aPLB.getSymbolColor(),
                                     aPLB.getSymbolSize(), true, aPLB.isFillSymbol(), g);
                         }
                     }
@@ -1602,13 +1603,13 @@ public class Draw {
                 if (clip != null) {
                     g.setClip(null);
                     for (int i = 0; i < points.length; i++) {
-                        p = points[i];
+                        p = new PointF(points[i].X, points[i].Y);
                         if (p.X >= clip.x && p.X <= clip.x + clip.width && p.Y >= clip.y && p.Y <= clip.y + clip.height) {
                             if (mvIdx.contains(i)) {
                                 continue;
                             }
                             if (i % aPLB.getSymbolInterval() == 0) {
-                                drawPoint(aPLB.getSymbolStyle(), points[i], aPLB.getSymbolFillColor(), aPLB.getSymbolColor(),
+                                drawPoint(aPLB.getSymbolStyle(), p, aPLB.getSymbolFillColor(), aPLB.getSymbolColor(),
                                         aPLB.getSymbolSize(), true, aPLB.isFillSymbol(), g);
                             }
                         }
@@ -1621,7 +1622,8 @@ public class Draw {
                         }
 
                         if (i % aPLB.getSymbolInterval() == 0) {
-                            drawPoint(aPLB.getSymbolStyle(), points[i], aPLB.getSymbolFillColor(), aPLB.getSymbolColor(),
+                            p = new PointF(points[i].X, points[i].Y);
+                            drawPoint(aPLB.getSymbolStyle(), p, aPLB.getSymbolFillColor(), aPLB.getSymbolColor(),
                                     aPLB.getSymbolSize(), true, aPLB.isFillSymbol(), g);
                         }
                     }

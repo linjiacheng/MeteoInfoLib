@@ -17,18 +17,20 @@ import ucar.ma2.Array;
  */
 public class XYListDataset extends XYDataset {
     // <editor-fold desc="Variables">
-    private List<double[]> xValues;
-    private List<double[]> yValues;
-    private List<String> seriesKeys;
+    //private List<double[]> xValues;
+    //private List<double[]> yValues;
+    //private List<String> seriesKeys;
+    private List<XYSeriesData> dataset;
     // </editor-fold>
     // <editor-fold desc="Constructor">
     /**
      * Constructor
      */
     public XYListDataset(){
-        xValues = new ArrayList<>();
-        yValues = new ArrayList<>();
-        seriesKeys = new ArrayList<>();
+        //xValues = new ArrayList<>();
+        //yValues = new ArrayList<>();
+        //seriesKeys = new ArrayList<>();
+        dataset = new ArrayList<>();
     }
     
     /**
@@ -41,9 +43,10 @@ public class XYListDataset extends XYDataset {
         this();
         
         for (int i = 0; i < seriesNum; i++){
-            xValues.add(new double[itemNum]);
-            yValues.add(new double[itemNum]);
-            seriesKeys.add("");
+            //xValues.add(new double[itemNum]);
+            //yValues.add(new double[itemNum]);
+            //seriesKeys.add("");
+            dataset.add(new XYSeriesData());
         }
     }
     
@@ -76,21 +79,34 @@ public class XYListDataset extends XYDataset {
             xvs[i] = vdata.get(i)[0];
             yvs[i] = vdata.get(i)[1];
         }
-        this.xValues.add(xvs);
-        this.yValues.add(yvs);
-        this.seriesKeys.add(seriesKey);
+        //this.xValues.add(xvs);
+        //this.yValues.add(yvs);
+        //this.seriesKeys.add(seriesKey);
+        XYSeriesData sdata = new XYSeriesData(seriesKey, xvs, yvs);
+        this.dataset.add(sdata);
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
+    
+    /**
+     * Get series data
+     * @param seriesIdx Series index
+     * @return Series data
+     */
+    public XYSeriesData getSeriesData(int seriesIdx){
+        return this.dataset.get(seriesIdx);
+    }
    
     @Override
     public int getSeriesCount() {
-        return this.xValues.size();
+        //return this.xValues.size();
+        return this.dataset.size();
     }
     
     @Override
     public String getSeriesKey(int seriesIdx) {
-        return this.seriesKeys.get(seriesIdx);
+        //return this.seriesKeys.get(seriesIdx);
+        return this.dataset.get(seriesIdx).getKey();
     }
     
     /**
@@ -100,7 +116,8 @@ public class XYListDataset extends XYDataset {
      */
     @Override
     public void setSeriesKey(int seriesIdx, String seriesKey){
-        this.seriesKeys.set(seriesIdx, seriesKey);
+        //this.seriesKeys.set(seriesIdx, seriesKey);
+        this.dataset.get(seriesIdx).setKey(seriesKey);
     }
     
     /**
@@ -109,7 +126,12 @@ public class XYListDataset extends XYDataset {
      */
     @Override
     public List<String> getSeriesKeys(){
-        return this.seriesKeys;
+        //return this.seriesKeys;
+        List<String> keys = new ArrayList<>();
+        for (XYSeriesData d :this.dataset){
+            keys.add(d.getKey());
+        }
+        return keys;
     }
     
     /**
@@ -118,7 +140,12 @@ public class XYListDataset extends XYDataset {
      */
     @Override
     public void setSeriesKeys(List<String> value){
-        this.seriesKeys = value;
+        //this.seriesKeys = value;
+        int i = 0;
+        for (XYSeriesData d :this.dataset){
+            d.setKey(value.get(i));
+            i++;
+        }
     }
     
     @Override
@@ -137,40 +164,55 @@ public class XYListDataset extends XYDataset {
 
     @Override
     public int getItemCount(int seriesIdx) {        
-        return this.xValues.get(seriesIdx).length;
+        //return this.xValues.get(seriesIdx).length;
+        return this.dataset.get(seriesIdx).dataLength();
     }
     
     @Override
     public double[] getXValues(int seriesIdx){
-        return this.xValues.get(seriesIdx);
+        //return this.xValues.get(seriesIdx);
+        return this.dataset.get(seriesIdx).getXdata();
     }
     
     @Override
     public double[] getYValues(int seriesIdx){
-        return this.yValues.get(seriesIdx);
+        //return this.yValues.get(seriesIdx);
+        return this.dataset.get(seriesIdx).getYdata();
     }
 
     @Override
     public double getX(int seriesIdx, int itemIdx) {
-        return this.xValues.get(seriesIdx)[itemIdx];
+        //return this.xValues.get(seriesIdx)[itemIdx];
+        return this.dataset.get(seriesIdx).getXdata()[itemIdx];
     }
 
     @Override
     public double getY(int seriesIdx, int itemIdx) {
-        return this.yValues.get(seriesIdx)[itemIdx];
+        //return this.yValues.get(seriesIdx)[itemIdx];
+        return this.dataset.get(seriesIdx).getYdata()[itemIdx];
     }
     
     @Override
     public void setX(int seriesIdx, int itemIdx, double value){
-        this.xValues.get(seriesIdx)[itemIdx] = value;
+        //this.xValues.get(seriesIdx)[itemIdx] = value;
+        this.dataset.get(seriesIdx).getXdata()[itemIdx] = value;
     }
     
     @Override
     public void setY(int seriesIdx, int itemIdx, double value){
-        this.yValues.get(seriesIdx)[itemIdx] = value;
+        //this.yValues.get(seriesIdx)[itemIdx] = value;
+        this.dataset.get(seriesIdx).getYdata()[itemIdx] = value;
     }
     // </editor-fold>
     // <editor-fold desc="Methods">
+    /**
+     * Add a series data
+     * @param sdata Series data
+     */
+    public void addSeries(XYSeriesData sdata){
+        this.dataset.add(sdata);
+    }
+    
     /**
      * Add a series data 
      * @param seriesKey Series key
@@ -178,9 +220,11 @@ public class XYListDataset extends XYDataset {
      * @param yvs Y value array
      */
     public void addSeries(String seriesKey, double[] xvs, double[] yvs){
-        this.seriesKeys.add(seriesKey);
-        this.xValues.add(xvs);
-        this.yValues.add(yvs);
+        //this.seriesKeys.add(seriesKey);
+        //this.xValues.add(xvs);
+        //this.yValues.add(yvs);
+        XYSeriesData sdata = new XYSeriesData(seriesKey, xvs, yvs);
+        this.dataset.add(sdata);
     }
     
     /**
@@ -291,9 +335,10 @@ public class XYListDataset extends XYDataset {
      * @param seriesIdx Series data
      */
     public void removeSeries(int seriesIdx){
-        this.seriesKeys.remove(seriesIdx);
-        this.xValues.remove(seriesIdx);
-        this.yValues.remove(seriesIdx);
+        //this.seriesKeys.remove(seriesIdx);
+        //this.xValues.remove(seriesIdx);
+        //this.yValues.remove(seriesIdx);
+        this.dataset.remove(seriesIdx);
     }
     
     /**
@@ -301,7 +346,8 @@ public class XYListDataset extends XYDataset {
      * @param seriesKey Series key
      */
     public void removeSeries(String seriesKey){
-        int idx = this.seriesKeys.indexOf(seriesKey);
+        List<String> keys = this.getSeriesKeys();
+        int idx = keys.indexOf(seriesKey);
         if (idx >= 0){
             this.removeSeries(idx);
         }
@@ -314,30 +360,33 @@ public class XYListDataset extends XYDataset {
     @Override
     public Extent getDataExtent() {
         Extent cET = new Extent();
-        double x, y;
+        double xmin, xmax, ymin, ymax;
         int n = 0;
         for (int i = 0; i < this.getSeriesCount(); i++) {
+            XYSeriesData sdata = this.dataset.get(i);
             for (int j = 0; j < this.getItemCount(i); j++) {                
-                x = xValues.get(i)[j];
-                y = yValues.get(i)[j];
-                if (MIMath.doubleEquals(y, this.getMissingValue()) || MIMath.doubleEquals(x, this.getMissingValue()))
+                xmin = sdata.getX_min(j);
+                xmax = sdata.getX_max(j);
+                ymin = sdata.getY_min(j);
+                ymax = sdata.getY_max(j);
+                if (MIMath.doubleEquals(sdata.getX(j), this.getMissingValue()) || MIMath.doubleEquals(sdata.getY(j), this.getMissingValue()))
                     continue;
                 if (n == 0) {
-                    cET.minX = x;
-                    cET.maxX = x;
-                    cET.minY = y;
-                    cET.maxY = y;
+                    cET.minX = xmin;
+                    cET.maxX = xmax;
+                    cET.minY = ymin;
+                    cET.maxY = ymax;
                 } else {
-                    if (cET.minX > x) {
-                        cET.minX = x;
-                    } else if (cET.maxX < x) {
-                        cET.maxX = x;
+                    if (cET.minX > xmin) {
+                        cET.minX = xmin;
+                    } else if (cET.maxX < xmax) {
+                        cET.maxX = xmax;
                     }
 
-                    if (cET.minY > y) {
-                        cET.minY = y;
-                    } else if (cET.maxY < y) {
-                        cET.maxY = y;
+                    if (cET.minY > ymin) {
+                        cET.minY = ymin;
+                    } else if (cET.maxY < ymax) {
+                        cET.maxY = ymax;
                     }
                 }
                 n ++;
@@ -354,7 +403,7 @@ public class XYListDataset extends XYDataset {
      */
     @Override
     public List<Integer> getMissingValueIndex(int seriesIdx){
-        List<Integer> mvidx = new ArrayList<Integer>();
+        List<Integer> mvidx = new ArrayList<>();
         double[] xvs = this.getXValues(seriesIdx);
         double[] yvs = this.getYValues(seriesIdx);
         for (int i = 0; i < yvs.length; i++){
@@ -372,7 +421,7 @@ public class XYListDataset extends XYDataset {
      */
     @Override
     public List<int[]> selectPoints(Extent extent){
-        List<int[]> selIdxs = new ArrayList<int[]>();
+        List<int[]> selIdxs = new ArrayList<>();
         double x, y;
         for (int i = 0; i < this.getSeriesCount(); i++){
             for (int j = 0; j < this.getItemCount(i); j++){

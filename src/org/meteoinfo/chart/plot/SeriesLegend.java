@@ -5,6 +5,7 @@
  */
 package org.meteoinfo.chart.plot;
 
+import java.awt.Color;
 import org.meteoinfo.legend.ColorBreak;
 import org.meteoinfo.legend.PointBreak;
 import org.meteoinfo.legend.PolygonBreak;
@@ -16,15 +17,19 @@ import org.meteoinfo.legend.PolylineBreak;
  */
 public class SeriesLegend {
     // <editor-fold desc="Variables">
+    private ChartPlotMethod plotMethod;
     private ColorBreak[] legendBreaks;
+    private Color errorColor;
     // </editor-fold>
     // <editor-fold desc="Constructor">
     /**
      * Constructor
      */
     public SeriesLegend(){
+        this.plotMethod = ChartPlotMethod.LINE;
         this.legendBreaks = new ColorBreak[1];
         this.legendBreaks[0] = new PolylineBreak();
+        this.errorColor = Color.black;
     }
     
     /**
@@ -32,6 +37,7 @@ public class SeriesLegend {
      * @param cb ColorBreak
      */
     public SeriesLegend(ColorBreak cb){
+        this();
         this.legendBreaks = new ColorBreak[1];
         this.legendBreaks[0] = cb;
     }
@@ -41,10 +47,27 @@ public class SeriesLegend {
      * @param n Break number
      */
     public SeriesLegend(int n){
+        this();
         this.legendBreaks = new ColorBreak[n];        
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
+    /**
+     * Get plot method
+     * @return Plot method
+     */
+    public ChartPlotMethod getPlotMethod(){
+        return this.plotMethod;
+    }
+    
+    /**
+     * Set plot method
+     * @param value Plot method
+     */
+    public void setPlotMethod(ChartPlotMethod value){
+        this.plotMethod = value;
+    }
+    
     /**
      * Get if the legend is PointBreak
      * @return Boolean
@@ -110,6 +133,22 @@ public class SeriesLegend {
      */
     public void setLegendBreak(int idx, ColorBreak cb){
         this.legendBreaks[idx] = cb;
+    }
+    
+    /**
+     * Get error color
+     * @return Error color
+     */
+    public Color getErrorColor(){
+        return this.errorColor;
+    }
+    
+    /**
+     * Set error color
+     * @param value Error color
+     */
+    public void setErrorColor(Color value){
+        this.errorColor = value;
     }
     // </editor-fold>
     // <editor-fold desc="Methods">

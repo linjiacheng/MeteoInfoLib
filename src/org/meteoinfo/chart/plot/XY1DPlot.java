@@ -5,9 +5,11 @@
  */
 package org.meteoinfo.chart.plot;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +18,9 @@ import org.meteoinfo.chart.ChartText;
 import org.meteoinfo.chart.axis.TimeAxis;
 import org.meteoinfo.data.Dataset;
 import org.meteoinfo.data.XYDataset;
+import org.meteoinfo.data.XYErrorSeriesData;
 import org.meteoinfo.data.XYListDataset;
+import org.meteoinfo.data.XYSeriesData;
 import org.meteoinfo.drawing.Draw;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
@@ -36,10 +40,12 @@ import org.meteoinfo.shape.ShapeTypes;
 public final class XY1DPlot extends XYPlot {
 
     // <editor-fold desc="Variables">
-    private XYDataset dataset;
+    private XYListDataset dataset;
     private ChartPlotMethod chartPlotMethod;
     private List<SeriesLegend> seriesLegends;
     private boolean useBreak2D;
+    private float barWidth;
+    private boolean autoBarWidth;
 
     // </editor-fold>
     // <editor-fold desc="Constructor">
@@ -53,6 +59,8 @@ public final class XY1DPlot extends XYPlot {
         this.chartPlotMethod = ChartPlotMethod.LINE;
         this.useBreak2D = false;
         this.seriesLegends = new ArrayList<>();
+        this.barWidth = 0.8f;
+        this.autoBarWidth = true;
     }
 
     /**
@@ -85,8 +93,9 @@ public final class XY1DPlot extends XYPlot {
      */
     public XY1DPlot(boolean isTime, XYDataset dateset) {
         this();
-        if (isTime)
+        if (isTime) {
             this.setXAxis(new TimeAxis("X", true));
+        }
         //this.getXAxis().setTimeAxis(isTime);
         this.setDataset(dateset);
     }
@@ -100,8 +109,9 @@ public final class XY1DPlot extends XYPlot {
      */
     public XY1DPlot(boolean isTime, ChartPlotMethod cpMethod, XYDataset dateset) {
         this();
-        if (isTime)
+        if (isTime) {
             this.setXAxis(new TimeAxis("X", true));
+        }
         //this.getXAxis().setTimeAxis(isTime);
         this.setChartPlotMethod(cpMethod);
         this.setDataset(dateset);
@@ -116,8 +126,9 @@ public final class XY1DPlot extends XYPlot {
      */
     public XY1DPlot(boolean isTime, PlotOrientation orientation, XYDataset dateset) {
         this();
-        if (isTime)
+        if (isTime) {
             this.setXAxis(new TimeAxis("X", true));
+        }
         //this.getXAxis().setTimeAxis(isTime);
         this.setPlotOrientation(orientation);
         this.setDataset(dateset);
@@ -132,26 +143,28 @@ public final class XY1DPlot extends XYPlot {
 
     @Override
     public void setDataset(Dataset value) {
-        dataset = (XYDataset) value;
+        dataset = (XYListDataset) value;
         Extent extent = this.getAutoExtent();
         this.setDrawExtent(extent);
         this.updateSeriesLegend();
     }
 
-    private void updateSeriesLegend(){
+    private void updateSeriesLegend() {
         //this.seriesLegends.clear();
         int si = this.seriesLegends.size();
-        if (si > dataset.getSeriesCount())
+        if (si > dataset.getSeriesCount()) {
             si = 0;
+        }
         for (int i = si; i < dataset.getSeriesCount(); i++) {
             switch (this.chartPlotMethod) {
                 case LINE:
                 case LINE_POINT:
                     PolylineBreak plb = new PolylineBreak();
-                    if (this.chartPlotMethod == ChartPlotMethod.LINE)
+                    if (this.chartPlotMethod == ChartPlotMethod.LINE) {
                         plb.setDrawSymbol(false);
-                    else
+                    } else {
                         plb.setDrawSymbol(true);
+                    }
                     plb.setColor(ColorUtil.getCommonColor(i));
                     plb.setCaption(dataset.getSeriesKey(i));
                     seriesLegends.add(new SeriesLegend(plb));
@@ -171,7 +184,7 @@ public final class XY1DPlot extends XYPlot {
             }
         }
     }
-    
+
     /**
      * Get chart plot method
      *
@@ -188,7 +201,7 @@ public final class XY1DPlot extends XYPlot {
      */
     public void setChartPlotMethod(ChartPlotMethod value) {
         this.chartPlotMethod = value;
-        if (this.dataset != null){
+        if (this.dataset != null) {
             this.updateSeriesLegend();
         }
     }
@@ -233,6 +246,42 @@ public final class XY1DPlot extends XYPlot {
         this.useBreak2D = value;
     }
 
+    /**
+     * Get bar width ratio
+     *
+     * @return Bar width ratio
+     */
+    public float getBarWidth() {
+        return this.barWidth;
+    }
+
+    /**
+     * Set bar width ratio
+     *
+     * @param value Bar width ratio
+     */
+    public void setBarWidth(float value) {
+        this.barWidth = value;
+    }
+
+    /**
+     * Get if automatically decide bar width
+     *
+     * @return Boolean
+     */
+    public boolean isAutoBarWidth() {
+        return this.autoBarWidth;
+    }
+
+    /**
+     * Set if automatically decide bar height
+     *
+     * @param value Boolean
+     */
+    public void setAutoBarWidth(boolean value) {
+        this.autoBarWidth = value;
+    }
+
     // </editor-fold>
     // <editor-fold desc="Methods">    
     /**
@@ -252,15 +301,15 @@ public final class XY1DPlot extends XYPlot {
         Extent extent = this.getAutoExtent();
         this.setDrawExtent(extent);
     }
-    
+
     /**
      * Remove last series
      */
-    public void removeLastSeries(){
-        XYListDataset ds = (XYListDataset)this.dataset;
+    public void removeLastSeries() {
+        XYListDataset ds = (XYListDataset) this.dataset;
         ds.removeSeries(dataset.getSeriesCount() - 1);
         this.seriesLegends.remove(this.seriesLegends.size() - 1);
-        
+
         Extent extent = this.getAutoExtent();
         this.setDrawExtent(extent);
     }
@@ -280,17 +329,18 @@ public final class XY1DPlot extends XYPlot {
 
         double[] xy;
         for (int i = 0; i < this.dataset.getSeriesCount(); i++) {
-            int len = this.dataset.getItemCount(i);
+            XYSeriesData sdata = this.dataset.getSeriesData(i);
+            int len = sdata.dataLength();
             PointF[] points = new PointF[len];
-            List<Integer> mvIdx = this.dataset.getMissingValueIndex(i);
+            List<Integer> mvIdx = sdata.getMissingValueIndex();
             if (this.getPlotOrientation() == PlotOrientation.VERTICAL) {
                 for (int j = 0; j < len; j++) {
-                    xy = this.projToScreen(this.dataset.getX(i, j), this.dataset.getY(i, j), area);
+                    xy = this.projToScreen(sdata.getX(j), sdata.getY(j), area);
                     points[j] = new PointF((float) xy[0], (float) xy[1]);
                 }
             } else {
                 for (int j = 0; j < len; j++) {
-                    xy = this.projToScreen(this.dataset.getY(i, j), this.dataset.getX(i, j), area);
+                    xy = this.projToScreen(sdata.getY(j), sdata.getX(j), area);
                     points[j] = new PointF((float) xy[0], (float) xy[1]);
                 }
             }
@@ -349,28 +399,113 @@ public final class XY1DPlot extends XYPlot {
                     }
                 }
             } else if (slegend.isPolygon()) {
-                int width;
-                if (points.length > 1) {
-                    width = (int) ((points[1].X - points[0].X) * 0.5) / this.dataset.getSeriesCount();
-                } else {
-                    width = (int) (area.getWidth() / 10) / this.dataset.getSeriesCount();
+                if (slegend.getPlotMethod() == ChartPlotMethod.BAR) {
+                    float width = this.barWidth;
+                    if (this.autoBarWidth) {
+                        if (points.length > 1) {
+                            width = (float) ((points[1].X - points[0].X) * 0.5) / this.dataset.getSeriesCount();
+                        } else {
+                            width = (float) (area.getWidth() / 10) / this.dataset.getSeriesCount();
+                        }
+                        float height;
+                        for (int j = 0; j < len; j++) {
+                            if (!mvIdx.contains(j)) {
+                                height = (float) (area.getHeight() - points[j].Y);
+                                Draw.drawBar(new PointF(points[j].X - width * this.dataset.getSeriesCount() / 2
+                                        + i * width, (float) area.getHeight()), width, height, (PolygonBreak) slegend.getLegendBreak(), g, false, 5);
+                            }
+                        }
+                    } else {
+                        width = (float) this.projXLength(width, area);
+                        float height;
+                        for (int j = 0; j < len; j++) {
+                            if (!mvIdx.contains(j)) {
+                                height = (float) (area.getHeight() - points[j].Y);
+                                Draw.drawBar(new PointF(points[j].X, (float) area.getHeight()), width, height, (PolygonBreak) slegend.getLegendBreak(), g, false, 5);
+                            }
+                        }
+                    }
                 }
-                int height;
-                for (int j = 0; j < len; j++) {
-                    if (!mvIdx.contains(j)) {
-                        height = (int) (area.getHeight() - points[j].Y);
-                        Draw.drawBar(new PointF(points[j].X - width * this.dataset.getSeriesCount() / 2
-                                + i * width, (int) area.getHeight()), width, height, (PolygonBreak) slegend.getLegendBreak(), g, false, 5);
+            }
+
+            //Draw error bar
+            if (sdata instanceof XYErrorSeriesData) {
+                XYErrorSeriesData esdata = (XYErrorSeriesData) sdata;
+                g.setColor(slegend.getLegendBreak().getColor());
+                PointF p;
+                double error;
+                double elen = 6;
+                if (esdata.getYerror() != null) {
+                    if (slegend.getPlotMethod() == ChartPlotMethod.BAR) {
+                        g.setColor(slegend.getErrorColor());
+                        float width = this.barWidth;
+                        if (this.autoBarWidth) {
+                            if (points.length > 1) {
+                                width = (float) ((points[1].X - points[0].X) * 0.5) / this.dataset.getSeriesCount();
+                            } else {
+                                width = (float) (area.getWidth() / 10) / this.dataset.getSeriesCount();
+                            }
+                            float x;
+                            for (int j = 0; j < len; j++) {
+                                if (!mvIdx.contains(j)) {
+                                    p = points[j];
+                                    error = esdata.getYerror(j);
+                                    error = this.projYLength(error, area);
+                                    x = p.X - width * this.dataset.getSeriesCount() / 2
+                                            + i * width + width / 2;
+                                    g.draw(new Line2D.Double(x, p.Y - error, x, p.Y + error));
+                                    g.draw(new Line2D.Double(x - (elen * 0.5), p.Y - error, x + (elen * 0.5), p.Y - error));
+                                    g.draw(new Line2D.Double(x - (elen * 0.5), p.Y + error, x + (elen * 0.5), p.Y + error));
+                                }
+                            }
+                        } else {
+                            width = (float) this.projXLength(width, area);
+                            float x;
+                            for (int j = 0; j < len; j++) {
+                                if (!mvIdx.contains(j)) {
+                                    p = points[j];
+                                    error = esdata.getYerror(j);
+                                    error = this.projYLength(error, area);
+                                    x = p.X + width / 2;
+                                    g.draw(new Line2D.Double(x, p.Y - error, x, p.Y + error));
+                                    g.draw(new Line2D.Double(x - (elen * 0.5), p.Y - error, x + (elen * 0.5), p.Y - error));
+                                    g.draw(new Line2D.Double(x - (elen * 0.5), p.Y + error, x + (elen * 0.5), p.Y + error));
+                                }
+                            }
+                        }
+                    } else {
+                        for (int j = 0; j < len; j++) {
+                            if (!mvIdx.contains(j)) {
+                                p = points[j];
+                                error = esdata.getYerror(j);
+                                error = this.projYLength(error, area);
+                                g.draw(new Line2D.Double(p.X, p.Y - error, p.X, p.Y + error));
+                                g.draw(new Line2D.Double(p.X - (elen * 0.5), p.Y - error, p.X + (elen * 0.5), p.Y - error));
+                                g.draw(new Line2D.Double(p.X - (elen * 0.5), p.Y + error, p.X + (elen * 0.5), p.Y + error));
+                            }
+                        }
+                    }
+                }
+                if (esdata.getXerror() != null) {
+                    for (int j = 0; j < len; j++) {
+                        if (!mvIdx.contains(j)) {
+                            p = points[j];
+                            error = esdata.getXerror(j);
+                            error = this.projXLength(error, area);
+                            g.draw(new Line2D.Double(p.X - error, p.Y, p.X + error, p.Y));
+                            g.draw(new Line2D.Double(p.X - error, p.Y - (elen * 0.5), p.X - error, p.Y + (elen * 0.5)));
+                            g.draw(new Line2D.Double(p.X + error, p.Y - (elen * 0.5), p.X + error, p.Y + (elen * 0.5)));
+                        }
                     }
                 }
             }
         }
-        
+
         //Draw texts
-        for (ChartText text : this.getTexts()){
+        for (ChartText text : this.getTexts()) {
             xy = this.projToScreen(text.getX(), text.getY(), area);
-            float x = (float)xy[0];
-            float y = (float)xy[1];
+            float x = (float) xy[0];
+            float y = (float) xy[1];
             g.setFont(text.getFont());
             g.setColor(text.getColor());
             //Dimension dim = Draw.getStringDimension(text.getText(), g);
@@ -473,6 +608,30 @@ public final class XY1DPlot extends XYPlot {
 //    public void setPolygonBreak(int seriesIdx, PolygonBreak pgb) {
 //        this.polygonBreaks[seriesIdx] = pgb;
 //    }
+    private double getBarXInterval(int idx) {
+        double[] xvalues = this.dataset.getXValues(idx);
+        if (xvalues.length == 1) {
+            if (xvalues[0] == 0) {
+                return 1;
+            } else {
+                return xvalues[0] / 10;
+            }
+        } else {
+            return xvalues[1] - xvalues[0];
+        }
+    }
+
+    private int getBarIndex() {
+        int idx = -1;
+        for (int i = 0; i < this.seriesLegends.size(); i++) {
+            if (this.seriesLegends.get(i).getPlotMethod() == ChartPlotMethod.BAR) {
+                idx = i;
+                break;
+            }
+        }
+        return idx;
+    }
+
     /**
      * Get auto extent
      *
@@ -481,9 +640,12 @@ public final class XY1DPlot extends XYPlot {
     @Override
     public Extent getAutoExtent() {
         Extent extent = dataset.getDataExtent();
-        //double xgap = extent.getWidth() / Math.min(dataset.getItemCount(), 50);
-        //double ygap = extent.getHeight() / Math.min(dataset.getItemCount(), 50);
-        //extent = extent.extend(xgap, ygap);
+        int barIdx = this.getBarIndex();
+        if (barIdx >= 0) {
+            double dx = getBarXInterval(barIdx);
+            extent.minX -= dx;
+            extent.maxX += dx;
+        }
         double[] xValues;
         if (this.getXAxis() instanceof TimeAxis) {
             //if (this.getXAxis().isTimeAxis()) {
@@ -547,6 +709,6 @@ public final class XY1DPlot extends XYPlot {
             this.getLegend().setLegendScheme(this.getLegendScheme());
         }
     }
-    
+
     // </editor-fold>   
 }

@@ -905,6 +905,28 @@ public abstract class XYPlot extends Plot {
 
         return new double[]{screenX, screenY};
     }
+    
+    /**
+     * Convert data length to screen length in x direction
+     * @param len data length
+     * @param area Drawing area
+     * @return Screen length
+     */
+    public double projXLength(double len, Rectangle2D area) {
+        double scaleX = area.getWidth() / drawExtent.getWidth();
+        return len * scaleX;
+    }
+    
+    /**
+     * Convert data length to screen length in y direction
+     * @param len data length
+     * @param area Drawing area
+     * @return Screen length
+     */
+    public double projYLength(double len, Rectangle2D area) {
+        double scaleY = area.getHeight() / drawExtent.getHeight();
+        return len * scaleY;
+    }
 
     /**
      * Convert coordinate from screen to map

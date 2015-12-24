@@ -14,6 +14,6 @@ public enum TimeUnit {
     MONTH,
     DAY,
     HOUR,
-    MINITUE,
+    MINUTE,
     SECOND
 }
