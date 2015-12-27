@@ -295,7 +295,7 @@ public class BarPlot extends XYPlot {
         double dx = getXInterval();
         double xmin = extent.minX - dx;
         double xmax = extent.maxX + dx;
-        double[] yValues = MIMath.getIntervalValues(extent.minY, extent.maxY, true);
+        double[] yValues = (double[])MIMath.getIntervalValues(extent.minY, extent.maxY, true).get(0);
         if (this.getPlotOrientation() == PlotOrientation.VERTICAL) {
             return new Extent(xmin, xmax, 0, yValues[yValues.length - 1]);
         } else {

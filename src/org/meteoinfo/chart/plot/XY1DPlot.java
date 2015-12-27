@@ -5,7 +5,6 @@
  */
 package org.meteoinfo.chart.plot;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
@@ -649,13 +648,13 @@ public final class XY1DPlot extends XYPlot {
         double[] xValues;
         if (this.getXAxis() instanceof TimeAxis) {
             //if (this.getXAxis().isTimeAxis()) {
-            xValues = MIMath.getIntervalValues(extent.minX, extent.maxX, false);
+            xValues = (double[])MIMath.getIntervalValues(extent.minX, extent.maxX, false).get(0);
             xValues[0] = extent.minX;
             xValues[xValues.length - 1] = extent.maxX;
         } else {
-            xValues = MIMath.getIntervalValues(extent.minX, extent.maxX, true);
+            xValues = (double[])MIMath.getIntervalValues(extent.minX, extent.maxX, true).get(0);
         }
-        double[] yValues = MIMath.getIntervalValues(extent.minY, extent.maxY, true);
+        double[] yValues = (double[])MIMath.getIntervalValues(extent.minY, extent.maxY, true).get(0);
         if (this.getPlotOrientation() == PlotOrientation.VERTICAL) {
             return new Extent(xValues[0], xValues[xValues.length - 1], yValues[0], yValues[yValues.length - 1]);
         } else {

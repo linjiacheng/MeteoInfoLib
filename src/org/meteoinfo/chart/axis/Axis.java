@@ -23,6 +23,7 @@ import org.meteoinfo.chart.plot.XYPlot;
 import org.meteoinfo.drawing.Draw;
 import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.MIMath;
+import org.meteoinfo.global.util.BigDecimalUtil;
 import org.meteoinfo.global.util.DateUtil;
 
 /**
@@ -589,6 +590,11 @@ public class Axis implements Cloneable {
      */
     public void setTickValues(double[] value) {
         this.tickValues = value;
+        if (value.length > 1) {
+            this.tickDeltaValue = BigDecimalUtil.sub(value[1], value[0]);
+        } else {
+            this.tickDeltaValue = 0;
+        }
     }
 
     /**
@@ -600,6 +606,11 @@ public class Axis implements Cloneable {
         this.tickValues = new double[value.size()];
         for (int i = 0; i < value.size(); i++) {
             this.tickValues[i] = value.get(i);
+        }
+        if (value.size() > 1) {
+            this.tickDeltaValue = BigDecimalUtil.sub(value.get(1), value.get(0));
+        } else {
+            this.tickDeltaValue = 0;
         }
     }
 
@@ -822,7 +833,9 @@ public class Axis implements Cloneable {
      * Update tick values
      */
     public void updateTickValues() {
-        tickValues = MIMath.getIntervalValues(minValue, maxValue);
+        List<Object> r = MIMath.getIntervalValues1(minValue, maxValue);
+        this.tickValues = (double[]) r.get(0);
+        this.tickDeltaValue = (double) r.get(1);
     }
 
 //    /**
@@ -1126,29 +1139,52 @@ public class Axis implements Cloneable {
 
             //Draw minor tick lines
             if (this.isMinorTickVisible()) {
-                if (n < this.getTickValues().length) {
-                    int minorLen = len - 2;
-                    double evalue = this.getTickValues()[n];
-                    double sp = (evalue - value) / this.minorTickNum;
-                    for (int i = 0; i < this.minorTickNum - 1; i++) {
-                        value = value + sp;
-                        xy = plot.projToScreen(value, plot.getDrawExtent().minY, area);
-                        x = xy[0];
-                        if (this.inverse) {
-                            x = area.getWidth() - x;
-                        }
-                        x += minx;
-                        if (this.location == Location.BOTTOM) {
-                            if (this.insideTick) {
-                                g.draw(new Line2D.Double(x, maxy, x, maxy - minorLen));
-                            } else {
-                                g.draw(new Line2D.Double(x, maxy, x, maxy + minorLen));
+                int minorLen = len - 2;
+                double sp = this.tickDeltaValue * this.getTickLabelGap() / this.minorTickNum;
+                List<Double> xx = new ArrayList<>();
+                if (n == 1) {
+                    if (value > this.minValue + sp) {
+                        double value1 = value;
+                        for (int i = 0; i < this.minorTickNum - 1; i++) {
+                            value1 = value1 - sp;
+                            if (value1 <= this.minValue) {
+                                break;
                             }
-                        } else if (this.insideTick) {
-                            g.draw(new Line2D.Double(x, miny, x, miny + minorLen));
-                        } else {
-                            g.draw(new Line2D.Double(x, miny, x, miny - minorLen));
+                            xy = plot.projToScreen(value1, plot.getDrawExtent().minY, area);
+                            x = xy[0];
+                            if (this.inverse) {
+                                x = area.getWidth() - x;
+                            }
+                            x += minx;
+                            xx.add(x);
                         }
+                    }
+                }
+                for (int i = 0; i < this.minorTickNum - 1; i++) {
+                    value = value + sp;
+                    if (value >= this.maxValue) {
+                        break;
+                    }
+                    xy = plot.projToScreen(value, plot.getDrawExtent().minY, area);
+                    x = xy[0];
+                    if (this.inverse) {
+                        x = area.getWidth() - x;
+                    }
+                    x += minx;
+                    xx.add(x);
+                }
+                for (int i = 0; i < xx.size(); i++) {
+                    x = xx.get(i);
+                    if (this.location == Location.BOTTOM) {
+                        if (this.insideTick) {
+                            g.draw(new Line2D.Double(x, maxy, x, maxy - minorLen));
+                        } else {
+                            g.draw(new Line2D.Double(x, maxy, x, maxy + minorLen));
+                        }
+                    } else if (this.insideTick) {
+                        g.draw(new Line2D.Double(x, miny, x, miny + minorLen));
+                    } else {
+                        g.draw(new Line2D.Double(x, miny, x, miny - minorLen));
                     }
                 }
             }
@@ -1396,29 +1432,52 @@ public class Axis implements Cloneable {
 
             //Draw minor tick lines
             if (this.isMinorTickVisible()) {
-                if (n < this.getTickValues().length) {
-                    int minorLen = len - 2;
-                    double evalue = this.getTickValues()[n];
-                    double sp = (evalue - value) / this.minorTickNum;
-                    for (int i = 0; i < this.minorTickNum - 1; i++) {
-                        value = value + sp;
-                        xy = plot.projToScreen(plot.getDrawExtent().minX, value, area);
-                        y = xy[1];
-                        if (this.isInverse()) {
-                            y = area.getHeight() - y;
-                        }
-                        y += area.getY();
-                        if (this.location == Location.LEFT) {
-                            if (this.isInsideTick()) {
-                                g.draw(new Line2D.Double(sx, y, sx + minorLen, y));
-                            } else {
-                                g.draw(new Line2D.Double(sx, y, sx - minorLen, y));
+                int minorLen = len - 2;
+                double sp = this.tickDeltaValue * this.getTickLabelGap() / this.minorTickNum;
+                List<Double> yy = new ArrayList<>();
+                if (n == 1) {
+                    if (value > this.minValue + sp) {
+                        double value1 = value;
+                        for (int i = 0; i < this.minorTickNum - 1; i++) {
+                            value1 = value1 - sp;
+                            if (value1 <= this.minValue) {
+                                break;
                             }
-                        } else if (this.isInsideTick()) {
-                            g.draw(new Line2D.Double(sx, y, sx - minorLen, y));
-                        } else {
-                            g.draw(new Line2D.Double(sx, y, sx + minorLen, y));
+                            xy = plot.projToScreen(plot.getDrawExtent().minX, value1, area);
+                            y = xy[1];
+                            if (this.inverse) {
+                                y = area.getHeight() - y;
+                            }
+                            y += miny;
+                            yy.add(y);
                         }
+                    }
+                }
+                for (int i = 0; i < this.minorTickNum - 1; i++) {
+                    value = value + sp;
+                    if (value >= this.maxValue) {
+                        break;
+                    }
+                    xy = plot.projToScreen(plot.getDrawExtent().minX, value, area);
+                    y = xy[1];
+                    if (this.inverse) {
+                        y = area.getHeight() - y;
+                    }
+                    y += miny;
+                    yy.add(y);
+                }
+                for (int i = 0; i < yy.size(); i++) {
+                    y = yy.get(i);
+                    if (this.location == Location.LEFT) {
+                        if (this.isInsideTick()) {
+                            g.draw(new Line2D.Double(sx, y, sx + minorLen, y));
+                        } else {
+                            g.draw(new Line2D.Double(sx, y, sx - minorLen, y));
+                        }
+                    } else if (this.isInsideTick()) {
+                        g.draw(new Line2D.Double(sx, y, sx - minorLen, y));
+                    } else {
+                        g.draw(new Line2D.Double(sx, y, sx + minorLen, y));
                     }
                 }
             }

@@ -860,6 +860,17 @@ public class MIMath {
      * @return Contour values
      */
     public static double[] getIntervalValues(double min, double max) {
+        return (double[])getIntervalValues(min, max, false).get(0);
+    }
+    
+    /**
+     * Create contour values by minimum and maximum values
+     *
+     * @param min Minimum value
+     * @param max Maximum value
+     * @return Contour values
+     */
+    public static List<Object> getIntervalValues1(double min, double max) {
         return getIntervalValues(min, max, false);
     }
     
@@ -871,14 +882,17 @@ public class MIMath {
      * @param isExtend If extend values
      * @return Contour values
      */
-    public static double[] getIntervalValues(double min, double max, boolean isExtend) {
+    public static List<Object> getIntervalValues(double min, double max, boolean isExtend) {
         int i, cNum, aD, aE;
         double cDelt, range, newMin;
         String eStr;
+        List<Object> r = new ArrayList<>();
 
         range = BigDecimalUtil.sub(max, min);
         if (range == 0.0) {
-            return new double[]{min};
+            r.add(new double[]{min});
+            r.add(0);
+            return r;
         } else if (range < 0) {
             range = -range;
             double temp = min;
@@ -940,7 +954,7 @@ public class MIMath {
         }
         
         //Get values
-        List <Double> values = new ArrayList<Double>();     
+        List <Double> values = new ArrayList<>();     
         for (i = 0; i < cNum; i++){
             values.add(BigDecimalUtil.add(newMin, BigDecimalUtil.mul(i, cDelt)));
         }
@@ -959,6 +973,8 @@ public class MIMath {
         for (i = 0; i < values.size(); i++)
             cValues[i] = values.get(i);
         
-        return cValues;
+        r.add(cValues);
+        r.add(cDelt);
+        return r;
     }
 }
