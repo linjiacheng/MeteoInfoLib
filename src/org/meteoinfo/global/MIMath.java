@@ -891,7 +891,7 @@ public class MIMath {
         range = BigDecimalUtil.sub(max, min);
         if (range == 0.0) {
             r.add(new double[]{min});
-            r.add(0);
+            r.add(0.0);
             return r;
         } else if (range < 0) {
             range = -range;

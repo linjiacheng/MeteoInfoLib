@@ -835,7 +835,7 @@ public class Axis implements Cloneable {
     public void updateTickValues() {
         List<Object> r = MIMath.getIntervalValues1(minValue, maxValue);
         this.tickValues = (double[]) r.get(0);
-        this.tickDeltaValue = (double) r.get(1);
+        this.tickDeltaValue = (Double) r.get(1);
     }
 
 //    /**
