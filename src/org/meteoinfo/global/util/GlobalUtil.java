@@ -138,7 +138,7 @@ public class GlobalUtil {
      * @throws IOException
      */
     public static List<String> getClassNames(String jarFileName) throws FileNotFoundException, IOException {
-        List<String> classNames = new ArrayList<String>();
+        List<String> classNames = new ArrayList<>();
         ZipInputStream zip = new ZipInputStream(new FileInputStream(jarFileName));
         for (ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry()) {
             if (entry.getName().endsWith(".class") && !entry.isDirectory()) {

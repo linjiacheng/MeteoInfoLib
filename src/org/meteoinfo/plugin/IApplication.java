@@ -15,6 +15,7 @@ package org.meteoinfo.plugin;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
@@ -43,6 +44,12 @@ public interface IApplication {
      * @return Main menu bar object
      */
     public JMenuBar getMainMenuBar();
+    
+    /**
+     * Get plugin menu
+     * @return Plugin menu
+     */
+    public JMenu getPluginMenu();
     
     /**
      * Get tool bar panel

@@ -52,7 +52,11 @@ public class ColorListCellRender extends JPanel implements ListCellRenderer {
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
         //Get the selected index. (The index param isn't
         //always valid, so just use the value.)
-        this.colorTable = (ColorMap) value;
+        if (value instanceof Object[]){
+            this.colorTable = (ColorMap)((Object[])value)[0];
+        } else {
+            this.colorTable = (ColorMap) value;
+        }
         this.isSelected = isSelected;
 
         if (isSelected) {
