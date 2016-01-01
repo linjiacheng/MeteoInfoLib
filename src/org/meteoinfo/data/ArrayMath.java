@@ -988,9 +988,10 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     /**
      * Bit and & operation
+     *
      * @param a Array a
      * @param b Number b
      * @return Result array
@@ -1004,6 +1005,37 @@ public class ArrayMath {
         return r;
     }
 
+    // </editor-fold>
+    // <editor-fold desc="Matrix">
+    /**
+     * Matrix multiplication
+     * @param a Array a
+     * @param b Array b
+     * @return Result array
+     */
+    public static Array dot(Array a, Array b){
+        int[] shape = new int[2];
+        shape[0] = a.getShape()[0];
+        shape[1] = b.getShape()[1];
+        DataType type = ArrayMath.commonType(a.getDataType(), b.getDataType());
+        Array r = Array.factory(type, shape);
+        Index aIndex = a.getIndex();
+        Index bIndex = b.getIndex();
+        Index rIndex = r.getIndex();
+        int n = a.getShape()[1];
+        double v;
+        for (int i = 0; i < shape[0]; i++){
+            for (int j = 0; j < shape[1]; j++){
+                v = 0;
+                for (int m = 0; m < n; m++){
+                    v = v + a.getDouble(aIndex.set(i, m)) * b.getDouble(bIndex.set(m, j));
+                }
+                r.setDouble(rIndex.set(i, j), v);
+            }
+        }
+        
+        return r;
+    }
     // </editor-fold>
     // <editor-fold desc="Circular function">
     /**
@@ -1174,8 +1206,11 @@ public class ArrayMath {
      */
     public static void setSection(Array a, List<Range> ranges, Array v) throws InvalidRangeException {
         Array r = a.section(ranges);
-        for (int i = 0; i < r.getSize(); i++) {
-            r.setObject(i, v.getObject(i));
+        IndexIterator iter = r.getIndexIterator();
+        int i = 0;
+        while (iter.hasNext()) {
+            iter.setObjectNext(v.getObject(i));
+            i += 1;
         }
         a = Array.factory(a.getDataType(), a.getShape(), r.getStorage());
         r = null;
@@ -1412,52 +1447,135 @@ public class ArrayMath {
         }
         return sum / n;
     }
-    
-    public static Array mean(Array a, int axis, double missingValue) {
-        int[] shape = a.getShape();
-        List<Integer> sl = new ArrayList<>();
-        for (int i = 0; i < shape.length; i++){
-            if (i != axis){
-                sl.add(i);
-            }
-        }
-        int[] nshape = new int[sl.size()];
-        for (int i = 0; i < nshape.length; i++){
-            nshape[i] = sl.get(i);
-        }
-        Array r = Array.factory(DataType.DOUBLE, nshape);
-        return null;
-    }
-    
+
     /**
-     * Compute the arithmetic mean arry from a list of arrays 
-     * @param alist list of arrays
-     * @return Mean array
+     * Compute mean value of an array along an axis (dimension)
+     *
+     * @param a Array a
+     * @param axis Axis
+     * @return Mean value array
+     * @throws ucar.ma2.InvalidRangeException
      */
-    public static Array mean(List<Array> alist){
-        Array r = Array.factory(DataType.DOUBLE, alist.get(0).getShape());
-        double sum, v;
-        int n;
-        for (int i = 0; i < r.getSize(); i++){
-            sum = 0.0;
-            n = 0;
-            for (Array a : alist){
-                v = a.getDouble(i);
-                if (!Double.isNaN(v)){
-                    sum += v;
-                    n += 1;
+    public static Array mean(Array a, int axis) throws InvalidRangeException {
+        int[] dataShape = a.getShape();
+        int[] shape = new int[dataShape.length - 1];
+        int idx;
+        for (int i = 0; i < dataShape.length; i++){
+            idx = i;
+            if (idx == axis){
+                continue;
+            } else if (idx > axis){
+                idx -= 1;
+            }
+            shape[idx] = dataShape[i];
+        }
+        Array r = Array.factory(DataType.DOUBLE, shape);        
+        double mean;
+        Index indexr = r.getIndex();
+        int[] current;
+        for (int i = 0; i < r.getSize(); i++) {
+            current = indexr.getCurrentCounter();
+            List<Range> ranges = new ArrayList<>();
+            for (int j = 0; j < dataShape.length; j++) {
+                if (j == axis) {                    
+                    ranges.add(new Range(0, dataShape[j] - 1, 1));
+                } else {
+                    idx = j;
+                    if (idx > axis)
+                        idx -= 1;
+                    ranges.add(new Range(current[idx], current[idx], 1));
                 }
             }
-            if (n > 0)
-                sum = sum / n;
-            else
-                sum = Double.NaN;
-            r.setDouble(i, sum);
+            mean = mean(a, ranges);
+            r.setDouble(i, mean);
+            indexr.incr();
         }
         
         return r;
     }
-        
+
+    /**
+     * Compute mean value of an array
+     *
+     * @param a Array a
+     * @return Mean value
+     */
+    public static double mean(Array a) {
+        double mean = 0.0, v;
+        int n = 0;
+        for (int i = 0; i < a.getSize(); i++) {
+            v = a.getDouble(i);
+            if (!Double.isNaN(v)) {
+                mean += v;
+                n += 1;
+            }
+        }
+        if (n > 0) {
+            mean = mean / n;
+        } else {
+            mean = Double.NaN;
+        }
+        return mean;
+    }
+
+    /**
+     * Compute mean value of an array
+     *
+     * @param a Array a
+     * @param ranges Range list
+     * @return Mean value
+     * @throws ucar.ma2.InvalidRangeException
+     */
+    public static double mean(Array a, List<Range> ranges) throws InvalidRangeException {
+        double mean = 0.0, v;
+        int n = 0;
+        IndexIterator ii = a.getRangeIterator(ranges);
+        while (ii.hasNext()) {
+            v = ii.getDoubleNext();
+            if (!Double.isNaN(v)) {
+                mean += v;
+                n += 1;
+            }
+        }
+        if (n > 0) {
+            mean = mean / n;
+        } else {
+            mean = Double.NaN;
+        }
+        return mean;
+    }
+
+    /**
+     * Compute the arithmetic mean arry from a list of arrays
+     *
+     * @param alist list of arrays
+     * @return Mean array
+     */
+    public static Array mean(List<Array> alist) {
+        Array r = Array.factory(DataType.DOUBLE, alist.get(0).getShape());
+        double sum, v;
+        int n;
+        for (int i = 0; i < r.getSize(); i++) {
+            sum = 0.0;
+            n = 0;
+            for (Array a : alist) {
+                v = a.getDouble(i);
+                if (!Double.isNaN(v)) {
+                    sum += v;
+                    n += 1;
+                }
+            }
+            if (n > 0) {
+                sum = sum / n;
+            } else {
+                sum = Double.NaN;
+            }
+            r.setDouble(i, sum);
+        }
+
+        return r;
+    }
+
     // </editor-fold>
     // <editor-fold desc="Convert">
     /**
@@ -1681,7 +1799,7 @@ public class ArrayMath {
         }
         return r;
     }
-    
+
     /**
      * Maskout function
      *
@@ -1702,19 +1820,19 @@ public class ArrayMath {
                 rydata.add(y.getDouble(i));
             }
         }
-        
+
         int n = rdata.size();
         int[] shape = new int[1];
         shape[0] = n;
         Array r = Array.factory(a.getDataType(), shape);
         Array rx = Array.factory(x.getDataType(), shape);
         Array ry = Array.factory(y.getDataType(), shape);
-        for (int i = 0; i < n; i++){
+        for (int i = 0; i < n; i++) {
             r.setDouble(i, rdata.get(i));
             rx.setDouble(i, rxdata.get(i));
             ry.setDouble(i, rydata.get(i));
         }
-        
+
         return new Array[]{r, rx, ry};
     }
 

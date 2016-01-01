@@ -23,6 +23,9 @@ import org.meteoinfo.global.PointD;
 import org.meteoinfo.global.PointF;
 import org.meteoinfo.legend.LabelBreak;
 import org.meteoinfo.legend.MapFrame;
+import org.meteoinfo.legend.PointBreak;
+import org.meteoinfo.legend.PolygonBreak;
+import org.meteoinfo.legend.PolylineBreak;
 import org.meteoinfo.map.GridLabel;
 import org.meteoinfo.map.MapView;
 import org.meteoinfo.projection.KnownCoordinateSystems;
@@ -30,6 +33,8 @@ import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.projection.Reproject;
 import org.meteoinfo.shape.Graphic;
 import org.meteoinfo.shape.PointShape;
+import org.meteoinfo.shape.PolygonShape;
+import org.meteoinfo.shape.PolylineShape;
 
 /**
  *
@@ -80,64 +85,68 @@ public class MapPlot extends XY2DPlot {
     // <editor-fold desc="Get Set Methods">
     /**
      * Get map frame
+     *
      * @return Map frame
      */
-    public MapFrame getMapFrame(){
+    public MapFrame getMapFrame() {
         return this.mapFrame;
     }
-    
+
     /**
      * Set map frame
+     *
      * @param value Map frame
      */
-    public void setMapFrame(MapFrame value){
+    public void setMapFrame(MapFrame value) {
         this.mapFrame = value;
         this.setMapView(mapFrame.getMapView(), true);
     }
-    
+
     /**
      * Get projection info
+     *
      * @return Projection info
      */
-    public ProjectionInfo getProjInfo(){
+    public ProjectionInfo getProjInfo() {
         return this.getMapView().getProjection().getProjInfo();
     }
-    
+
     // </editor-fold>
     // <editor-fold desc="Methods">
     /**
      * Set all axis visible or not
+     *
      * @param value Boolean
      */
     @Override
-    public void setAxisOn(boolean value){
+    public void setAxisOn(boolean value) {
         super.setAxisOn(value);
         this.mapFrame.setDrawGridTickLine(value);
         this.mapFrame.setDrawGridLabel(value);
     }
-    
+
     /**
      * Set longitude/latitude extent
      *
      * @param extent Extent
      */
     public void setLonLatExtent(Extent extent) {
-        if (this.getMapView().getProjection().isLonLatMap()){
+        if (this.getMapView().getProjection().isLonLatMap()) {
             super.setDrawExtent(extent);
         } else {
             this.getMapView().zoomToExtentLonLatEx(extent);
             super.setDrawExtent(this.getMapView().getViewExtent());
         }
     }
-    
-     @Override
+
+    @Override
     public void addText(ChartText text) {
-        if (this.getMapView().getProjection().isLonLatMap()){
+        if (this.getMapView().getProjection().isLonLatMap()) {
             super.addText(text);
         } else {
             PointShape ps = new PointShape();
             PointD lonlatp = new PointD(text.getX(), text.getY());
-            PointD xyp = Reproject.reprojectPoint(lonlatp, KnownCoordinateSystems.geographic.world.WGS1984, 
+            PointD xyp = Reproject.reprojectPoint(lonlatp, KnownCoordinateSystems.geographic.world.WGS1984,
                     this.getMapView().getProjection().getProjInfo());
             ps.setPoint(xyp);
             LabelBreak lb = new LabelBreak();
@@ -148,7 +157,136 @@ public class MapPlot extends XY2DPlot {
             this.getMapView().addGraphic(aGraphic);
         }
     }
+
+    /**
+     * Add point graphic
+     *
+     * @param lat Latitude
+     * @param lon Lontitude
+     * @param pb Point break
+     */
+    public void addPoint(double lat, double lon, PointBreak pb) {
+        PointShape ps = new PointShape();
+        PointD lonlatp = new PointD(lon, lat);
+        if (this.getMapView().getProjection().isLonLatMap()) {
+            ps.setPoint(lonlatp);
+        } else {
+            PointD xyp = Reproject.reprojectPoint(lonlatp, KnownCoordinateSystems.geographic.world.WGS1984,
+                    this.getMapView().getProjection().getProjInfo());
+            ps.setPoint(xyp);
+        }
+        Graphic aGraphic = new Graphic(ps, pb);
+        this.getMapView().addGraphic(aGraphic);
+    }
+
+    /**
+     * Add point graphic
+     *
+     * @param lat Latitude
+     * @param lon Lontitude
+     * @param pb Point break
+     */
+    public void addPoint(List<Number> lat, List<Number> lon, PointBreak pb) {
+        double x, y;
+        PointShape ps;
+        PointD lonlatp, xyp;
+        for (int i = 0; i < lat.size(); i++) {
+            ps = new PointShape();
+            x = lon.get(i).doubleValue();
+            y = lat.get(i).doubleValue();
+            lonlatp = new PointD(x, y);
+            if (this.getMapView().getProjection().isLonLatMap()) {
+                ps.setPoint(lonlatp);
+            } else {
+                xyp = Reproject.reprojectPoint(lonlatp, KnownCoordinateSystems.geographic.world.WGS1984,
+                        this.getMapView().getProjection().getProjInfo());
+                ps.setPoint(xyp);
+            }
+            Graphic aGraphic = new Graphic(ps, pb);
+            this.getMapView().addGraphic(aGraphic);
+        }
+    }
+
+    /**
+     * Add polyline
+     *
+     * @param lat Latitude
+     * @param lon Longitude
+     * @param plb PolylineBreak
+     */
+    public void addPolyline(List<Number> lat, List<Number> lon, PolylineBreak plb) {
+        double x, y;
+        PolylineShape pls;
+        PointD lonlatp;
+        List<PointD> points = new ArrayList<>();
+        for (int i = 0; i < lat.size(); i++) {
+            x = lon.get(i).doubleValue();
+            y = lat.get(i).doubleValue();
+            if (Double.isNaN(x)) {
+                if (points.size() >= 2) {
+                    pls = new PolylineShape();
+                    pls.setPoints(points);
+                    Graphic aGraphic = new Graphic(pls, plb);
+                    this.getMapView().addGraphic(aGraphic);
+                }
+                points = new ArrayList<>();
+            } else {
+                lonlatp = new PointD(x, y);
+                if (!this.getMapView().getProjection().isLonLatMap()) {
+                    lonlatp = Reproject.reprojectPoint(lonlatp, KnownCoordinateSystems.geographic.world.WGS1984,
+                            this.getMapView().getProjection().getProjInfo());
+                }
+                points.add(lonlatp);
+            }
+        }
+        if (points.size() >= 2) {
+            pls = new PolylineShape();
+            pls.setPoints(points);
+            Graphic aGraphic = new Graphic(pls, plb);
+            this.getMapView().addGraphic(aGraphic);
+        }
+    }
     
+    /**
+     * Add polygon
+     *
+     * @param lat Latitude
+     * @param lon Longitude
+     * @param pgb PolygonBreak
+     */
+    public void addPolygon(List<Number> lat, List<Number> lon, PolygonBreak pgb) {
+        double x, y;
+        PolygonShape pgs;
+        PointD lonlatp;
+        List<PointD> points = new ArrayList<>();
+        for (int i = 0; i < lat.size(); i++) {
+            x = lon.get(i).doubleValue();
+            y = lat.get(i).doubleValue();
+            if (Double.isNaN(x)) {
+                if (points.size() >= 2) {
+                    pgs = new PolygonShape();
+                    pgs.setPoints(points);
+                    Graphic aGraphic = new Graphic(pgs, pgb);
+                    this.getMapView().addGraphic(aGraphic);
+                }
+                points = new ArrayList<>();
+            } else {
+                lonlatp = new PointD(x, y);
+                if (!this.getMapView().getProjection().isLonLatMap()) {
+                    lonlatp = Reproject.reprojectPoint(lonlatp, KnownCoordinateSystems.geographic.world.WGS1984,
+                            this.getMapView().getProjection().getProjInfo());
+                }
+                points.add(lonlatp);
+            }
+        }
+        if (points.size() >= 2) {
+            pgs = new PolygonShape();
+            pgs.setPoints(points);
+            Graphic aGraphic = new Graphic(pgs, pgb);
+            this.getMapView().addGraphic(aGraphic);
+        }
+    }
+
 //    /**
 //     * Add a layer
 //     * @param idx Index
@@ -174,9 +312,9 @@ public class MapPlot extends XY2DPlot {
 //    public void setExtent(Extent extent) {
 //        this.mapFrame.getMapView().setViewExtent(extent);
 //    }
-    
     /**
      * Get position area
+     *
      * @param g Graphic2D
      * @param area Whole area
      * @return Graphic area
@@ -185,12 +323,12 @@ public class MapPlot extends XY2DPlot {
     public Rectangle2D getPositionArea(Graphics2D g, Rectangle2D area) {
         Rectangle2D plotArea = super.getPositionArea(g, area);
         MapView mapView = this.mapFrame.getMapView();
-        mapView.setViewExtent((Extent)this.getDrawExtent().clone());
+        mapView.setViewExtent((Extent) this.getDrawExtent().clone());
         Extent extent = mapView.getViewExtent();
         double width = extent.getWidth();
         double height = extent.getHeight();
         double scaleFactor = mapView.getXYScaleFactor();
-        if (width / height / scaleFactor > plotArea.getWidth() / plotArea.getHeight()){
+        if (width / height / scaleFactor > plotArea.getWidth() / plotArea.getHeight()) {
             double h = plotArea.getWidth() * height * scaleFactor / width;
             double delta = plotArea.getHeight() - h;
             plotArea.setRect(plotArea.getX(), plotArea.getY() + delta / 2, plotArea.getWidth(), h);
@@ -199,10 +337,10 @@ public class MapPlot extends XY2DPlot {
             double delta = plotArea.getWidth() - w;
             plotArea.setRect(plotArea.getX() + delta / 2, plotArea.getY(), w, plotArea.getHeight());
         }
-        
+
         return plotArea;
     }
-    
+
 //    @Override
 //    public void drawGraph(Graphics2D g, Rectangle2D area) {
 //        MapView mapView = this.mapFrame.getMapView();
@@ -222,14 +360,13 @@ public class MapPlot extends XY2DPlot {
 //        }
 //        mapView.paintGraphics(g, area);
 //    }
-
     @Override
     void drawAxis(Graphics2D g, Rectangle2D area) {
-        if (this.mapFrame.getMapView().getProjection().isLonLatMap()){
+        if (this.mapFrame.getMapView().getProjection().isLonLatMap()) {
             super.drawAxis(g, area);
             return;
         }
-        
+
         //Draw lon/lat grid labels
         if (this.mapFrame.isDrawGridLabel()) {
             List<Extent> extentList = new ArrayList<>();
@@ -292,11 +429,11 @@ public class MapPlot extends XY2DPlot {
 
                 drawStr = aGL.getLabString();
                 //if (this.drawDegreeSymbol) {
-                    if (drawStr.endsWith("E") || drawStr.endsWith("W") || drawStr.endsWith("N") || drawStr.endsWith("S")) {
-                        drawStr = drawStr.substring(0, drawStr.length() - 1) + String.valueOf((char) 186) + drawStr.substring(drawStr.length() - 1);
-                    } else {
-                        drawStr = drawStr + String.valueOf((char) 186);
-                    }
+                if (drawStr.endsWith("E") || drawStr.endsWith("W") || drawStr.endsWith("N") || drawStr.endsWith("S")) {
+                    drawStr = drawStr.substring(0, drawStr.length() - 1) + String.valueOf((char) 186) + drawStr.substring(drawStr.length() - 1);
+                } else {
+                    drawStr = drawStr + String.valueOf((char) 186);
+                }
                 //}
                 FontMetrics metrics = g.getFontMetrics(font);
                 aSF = new Dimension(metrics.stringWidth(drawStr), metrics.getHeight());
@@ -355,21 +492,19 @@ public class MapPlot extends XY2DPlot {
                 if (extentList.isEmpty()) {
                     maxExtent = (Extent) aExtent.clone();
                     extentList.add((Extent) aExtent.clone());
+                } else if (!MIMath.isExtentCross(aExtent, maxExtent)) {
+                    extentList.add((Extent) aExtent.clone());
+                    maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
                 } else {
-                    if (!MIMath.isExtentCross(aExtent, maxExtent)) {
-                        extentList.add((Extent) aExtent.clone());
+                    for (int j = 0; j < extentList.size(); j++) {
+                        if (MIMath.isExtentCross(aExtent, extentList.get(j))) {
+                            ifDraw = false;
+                            break;
+                        }
+                    }
+                    if (ifDraw) {
+                        extentList.add(aExtent);
                         maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
-                    } else {
-                        for (int j = 0; j < extentList.size(); j++) {
-                            if (MIMath.isExtentCross(aExtent, extentList.get(j))) {
-                                ifDraw = false;
-                                break;
-                            }
-                        }
-                        if (ifDraw) {
-                            extentList.add(aExtent);
-                            maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
-                        }
                     }
                 }
 

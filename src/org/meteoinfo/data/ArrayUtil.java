@@ -17,6 +17,7 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -37,7 +38,10 @@ import org.meteoinfo.shape.PolygonShape;
 import org.meteoinfo.shape.ShapeTypes;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
+import ucar.ma2.Index;
 import ucar.ma2.IndexIterator;
+import ucar.ma2.InvalidRangeException;
+import ucar.ma2.Range;
 
 /**
  *
@@ -282,7 +286,7 @@ public class ArrayUtil {
         } else if (d0 instanceof List) {
             int ndim = data.size();
             int len = ((List) d0).size();
-            DataType dt = DataType.FLOAT;
+            DataType dt = ArrayUtil.objectsToType((List<Object>)d0);
             Array a = Array.factory(dt, new int[]{ndim, len});
             for (int i = 0; i < ndim; i++) {
                 List<Object> d = (List) data.get(i);
@@ -1695,6 +1699,95 @@ public class ArrayUtil {
 
         return iValue;
     }
+    
+    /**
+     * Interpolate data to a station point
+     *
+     * @param data Data array
+     * @param xArray X array
+     * @param yArray Y array
+     * @param x X coordinate of the station
+     * @param y Y coordinate of the station
+     * @return Interpolated value
+     */
+    public static double toStation(Array data, List<Number> xArray, List<Number> yArray, double x, double y) {
+        double iValue = Double.NaN;
+        int nx = xArray.size();
+        int ny = yArray.size();
+        if (x < xArray.get(0).doubleValue() || x > xArray.get(nx - 1).doubleValue()
+                || y < yArray.get(0).doubleValue() || y > yArray.get(ny - 1).doubleValue()) {
+            return iValue;
+        }
+
+        //Get x/y index
+        int xIdx = 0, yIdx = 0;
+        int i;
+        boolean isIn = false;
+        for (i = 1; i < nx; i++) {
+            if (x < xArray.get(i).doubleValue()) {
+                xIdx = i - 1;
+                isIn = true;
+                break;
+            }
+        }
+        if (!isIn) {
+            xIdx = nx - 2;
+        }
+        isIn = false;
+        for (i = 1; i < ny; i++) {
+            if (y < yArray.get(i).doubleValue()) {
+                yIdx = i - 1;
+                isIn = true;
+                break;
+            }
+        }
+        if (!isIn) {
+            yIdx = ny - 2;
+        }
+
+        int i1 = yIdx;
+        int j1 = xIdx;
+        int i2 = i1 + 1;
+        int j2 = j1 + 1;
+        Index index = data.getIndex();
+        double a = data.getDouble(index.set(i1, j1));
+        double b = data.getDouble(index.set(i1, j2));
+        double c = data.getDouble(index.set(i2, j1));
+        double d = data.getDouble(index.set(i2, j2));
+        List<java.lang.Double> dList = new ArrayList<>();
+        if (!Double.isNaN(a)) {
+            dList.add(a);
+        }
+        if (!Double.isNaN(b)) {
+            dList.add(b);
+        }
+        if (!Double.isNaN(c)) {
+            dList.add(c);
+        }
+        if (!Double.isNaN(d)) {
+            dList.add(d);
+        }
+
+        if (dList.isEmpty()) {
+            return iValue;
+        } else if (dList.size() == 1) {
+            iValue = dList.get(0);
+        } else if (dList.size() <= 3) {
+            double aSum = 0;
+            for (double dd : dList) {
+                aSum += dd;
+            }
+            iValue = aSum / dList.size();
+        } else {
+            double dx = xArray.get(xIdx + 1).doubleValue() - xArray.get(xIdx).doubleValue();
+            double dy = yArray.get(yIdx + 1).doubleValue() - yArray.get(yIdx).doubleValue();
+            double x1val = a + (c - a) * (y - yArray.get(i1).doubleValue()) / dy;
+            double x2val = b + (d - b) * (y - yArray.get(i1).doubleValue()) / dy;
+            iValue = x1val + (x2val - x1val) * (x - xArray.get(j1).doubleValue()) / dx;
+        }
+
+        return iValue;
+    }
 
     /**
      * Interpolate data to a station point
@@ -1768,6 +1861,78 @@ public class ArrayUtil {
 
         return iValue;
     }
+    
+    /**
+     * Interpolate data to a station point
+     *
+     * @param data Data array
+     * @param xArray X array
+     * @param yArray Y array
+     * @param x X coordinate of the station
+     * @param y Y coordinate of the station
+     * @return Interpolated value
+     */
+    public static double toStation_Neighbor(Array data, List<Number> xArray, List<Number> yArray, double x, double y) {
+        double iValue = Double.NaN;
+        int nx = xArray.size();
+        int ny = yArray.size();
+        if (x < xArray.get(0).doubleValue() || x > xArray.get(nx - 1).doubleValue()
+                || y < yArray.get(0).doubleValue() || y > yArray.get(ny - 1).doubleValue()) {
+            return iValue;
+        }
+
+        //Get x/y index
+        int xIdx = 0, yIdx = 0;
+        int i;
+        boolean isIn = false;
+        for (i = 1; i < nx; i++) {
+            if (x < xArray.get(i).doubleValue()) {
+                xIdx = i - 1;
+                isIn = true;
+                break;
+            }
+        }
+        if (!isIn) {
+            xIdx = nx - 2;
+        }
+        isIn = false;
+        for (i = 1; i < ny; i++) {
+            if (y < yArray.get(i).doubleValue()) {
+                yIdx = i - 1;
+                isIn = true;
+                break;
+            }
+        }
+        if (!isIn) {
+            yIdx = ny - 2;
+        }
+
+        int i1 = yIdx;
+        int j1 = xIdx;
+        int i2 = i1 + 1;
+        int j2 = j1 + 1;
+        Index index = data.getIndex();
+        double a = data.getDouble(index.set(i1, j1));
+        double b = data.getDouble(index.set(i1, j2));
+        double c = data.getDouble(index.set(i2, j1));
+        double d = data.getDouble(index.set(i2, j2));
+
+        if (Math.abs(x - xArray.get(j1).doubleValue()) > Math.abs(xArray.get(j2).doubleValue() - x)) {
+            if (Math.abs(y - yArray.get(i1).doubleValue()) > Math.abs(yArray.get(i2).doubleValue() - y)) {
+                iValue = a;
+            } else {
+                iValue = c;
+            }
+        } else {
+            if (Math.abs(y - yArray.get(i1).doubleValue()) > Math.abs(yArray.get(i2).doubleValue() - y)) {
+                iValue = b;
+            } else {
+                iValue = d;
+            }
+        }
+
+        return iValue;
+    }
 
     /**
      * Reproject
@@ -1807,6 +1972,195 @@ public class ArrayUtil {
                 xx = points[i][0];
                 yy = points[i][1];
                 r.setObject(i, toStation_Neighbor(data, x, y, xx, yy, fill_value));
+            }
+        }
+
+        return r;
+    }
+    
+    /**
+     * Reproject
+     *
+     * @param data Data array
+     * @param x X array
+     * @param y Y array
+     * @param rx Result x array
+     * @param ry Result y array
+     * @param fromProj From projection
+     * @param toProj To projection
+     * @param resampleMethod Resample method
+     * @return Result arrays
+     * @throws ucar.ma2.InvalidRangeException
+     */
+    public static Array reproject(Array data, List<Number> x, List<Number> y, Array rx, Array ry,
+            ProjectionInfo fromProj, ProjectionInfo toProj, ResampleMethods resampleMethod) throws InvalidRangeException {
+        int n = (int) rx.getSize();
+        int[] dshape = data.getShape();
+        int[] shape = new int[data.getRank()];
+        for (int i = 0; i < shape.length; i++){
+            if (i == shape.length - 2)
+                shape[i] = rx.getShape()[0];
+            else if (i == shape.length - 1)
+                shape[i] = rx.getShape()[1];
+            else
+                shape[i] = data.getShape()[i];
+        }
+        Array r = Array.factory(data.getDataType(), shape);
+
+        double[][] points = new double[n][];
+        for (int i = 0; i < n; i++) {
+            points[i] = new double[]{rx.getDouble(i), ry.getDouble(i)};
+        }
+        if (!fromProj.equals(toProj)) {
+            Reproject.reprojectPoints(points, toProj, fromProj, 0, points.length);
+        }
+        double xx, yy;        
+        if (resampleMethod == ResampleMethods.Bilinear) {
+            if (shape.length == 2){
+                for (int i = 0; i < n; i++) {
+                        xx = points[i][0];
+                        yy = points[i][1];
+                        r.setObject(i, toStation(data, x, y, xx, yy));
+                    }
+            } else {
+                Index indexr = r.getIndex();
+                int[] current, cc = null;
+                boolean isNew;
+                Array ndata = null;
+                int k;
+                for (int i = 0; i < r.getSize(); i++){
+                    current = indexr.getCurrentCounter();
+                    isNew = true;
+                    if (i > 0) {
+                        for (int j = 0; j < shape.length - 2; j++){
+                            if (cc[j] != current[j]){
+                                isNew = false;
+                                break;
+                            }
+                        }
+                    }
+                    cc = Arrays.copyOf(current, current.length);
+                    if (isNew){
+                        List<Range> ranges = new ArrayList<>();
+                        for (int j = 0; j < shape.length - 2; j++) {
+                            ranges.add(new Range(current[j], current[j], 1));
+                        }
+                        ranges.add(new Range(0, dshape[dshape.length - 2] - 1, 1));
+                        ranges.add(new Range(0, dshape[dshape.length - 1] - 1, 1));
+                        ndata = data.section(ranges).reduce();
+                    }
+                    k = current[shape.length - 2] * shape[shape.length - 1] + current[shape.length - 1]; 
+                    xx = points[k][0];
+                    yy = points[k][1];
+                    r.setObject(i, toStation(ndata, x, y, xx, yy));
+                    indexr.incr();
+                }
+            }            
+        } else {
+            if (shape.length == 2){
+                for (int i = 0; i < n; i++) {
+                        xx = points[i][0];
+                        yy = points[i][1];
+                        r.setObject(i, toStation_Neighbor(data, x, y, xx, yy));
+                    }
+            } else {
+                Index indexr = r.getIndex();
+                int[] current, cc = null;
+                boolean isNew;
+                Array ndata = null;
+                int k;
+                for (int i = 0; i < r.getSize(); i++){
+                    current = indexr.getCurrentCounter();
+                    isNew = true;
+                    if (i > 0) {
+                        for (int j = 0; j < shape.length - 2; j++){
+                            if (cc[j] != current[j]){
+                                isNew = false;
+                                break;
+                            }
+                        }
+                    }
+                    cc = Arrays.copyOf(current, current.length);
+                    if (isNew){
+                        List<Range> ranges = new ArrayList<>();
+                        for (int j = 0; j < shape.length - 2; j++) {
+                            ranges.add(new Range(current[j], current[j], 1));
+                        }
+                        ranges.add(new Range(0, dshape[dshape.length - 2] - 1, 1));
+                        ranges.add(new Range(0, dshape[dshape.length - 1] - 1, 1));
+                        ndata = data.section(ranges).reduce();
+                    }
+                    k = current[shape.length - 2] * shape[shape.length - 1] + current[shape.length - 1]; 
+                    xx = points[k][0];
+                    yy = points[k][1];
+                    r.setObject(i, toStation_Neighbor(ndata, x, y, xx, yy));
+                    indexr.incr();
+                }
+            }            
+        }
+
+        return r;
+    }
+    
+    /**
+     * Reproject
+     *
+     * @param data Data array
+     * @param x X array
+     * @param y Y array
+     * @param rx Result x array
+     * @param ry Result y array
+     * @param fromProj From projection
+     * @param toProj To projection
+     * @param resampleMethod Resample method
+     * @return Result arrays
+     */
+    public static Array reproject_back(Array data, List<Number> x, List<Number> y, Array rx, Array ry,
+            ProjectionInfo fromProj, ProjectionInfo toProj, ResampleMethods resampleMethod) {
+        int n = (int) rx.getSize();
+        int[] shape = new int[data.getRank()];
+        for (int i = 0; i < shape.length; i++){
+            if (i == shape.length - 2)
+                shape[i] = rx.getShape()[0];
+            else if (i == shape.length - 1)
+                shape[i] = rx.getShape()[1];
+            else
+                shape[i] = data.getShape()[i];
+        }
+        Array r = Array.factory(data.getDataType(), shape);
+
+        double[][] points = new double[n][];
+        for (int i = 0; i < n; i++) {
+            points[i] = new double[]{rx.getDouble(i), ry.getDouble(i)};
+        }
+        if (!fromProj.equals(toProj)) {
+            Reproject.reprojectPoints(points, toProj, fromProj, 0, points.length);
+        }
+        double xx, yy;
+        int[] origin = new int[shape.length];
+        int[] nshape = new int[shape.length];
+        if (resampleMethod == ResampleMethods.Bilinear) {
+            int idx = 0;
+            for (int j = 0; j < shape.length - 2; j++){                      
+                for (int k = 0; k < shape[j]; k++){
+                    origin[j] = k;
+                    for (int i = 0; i < n; i++) {
+                        xx = points[i][0];
+                        yy = points[i][1];
+                        r.setObject(idx, toStation(data, x, y, xx, yy));
+                        idx += 1;
+                    }
+                }
+            }
+        } else {
+            int idx = 0;
+            for (int j = 0; j < shape.length - 2; j++){
+                for (int i = 0; i < n; i++) {
+                    xx = points[i][0];
+                    yy = points[i][1];
+                    r.setObject(idx, toStation_Neighbor(data, x, y, xx, yy));
+                    idx += 1;
+                }
             }
         }
 
