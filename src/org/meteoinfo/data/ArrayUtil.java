@@ -18,6 +18,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -229,7 +230,7 @@ public class ArrayUtil {
                     //    r.setFloat(i, ins.readFloat());
                     //}
                     IndexIterator iter = r.getIndexIterator();
-                    while (iter.hasNext()){
+                    while (iter.hasNext()) {
                         iter.setFloatNext(ins.readFloat());
                     }
                     break;
@@ -286,7 +287,7 @@ public class ArrayUtil {
         } else if (d0 instanceof List) {
             int ndim = data.size();
             int len = ((List) d0).size();
-            DataType dt = ArrayUtil.objectsToType((List<Object>)d0);
+            DataType dt = ArrayUtil.objectsToType((List<Object>) d0);
             Array a = Array.factory(dt, new int[]{ndim, len});
             for (int i = 0; i < ndim; i++) {
                 List<Object> d = (List) data.get(i);
@@ -388,10 +389,8 @@ public class ArrayUtil {
             if (endv < stopv) {
                 nn += 1;
             }
-        } else {
-            if (endv >= stopv) {
-                nn -= 1;
-            }
+        } else if (endv >= stopv) {
+            nn -= 1;
         }
         Array a = Array.factory(DataType.FLOAT, new int[]{n});
         for (int i = 0; i < n; i++) {
@@ -599,13 +598,14 @@ public class ArrayUtil {
         }
         return sbuff.toString();
     }
-    
+
     /**
      * Get array list from StationData
+     *
      * @param stdata StationData
      * @return Array list
      */
-    public static List<Array> getArraysFromStationData(StationData stdata){
+    public static List<Array> getArraysFromStationData(StationData stdata) {
         int n = stdata.getStNum();
         int[] shape = new int[1];
         shape[0] = n;
@@ -613,15 +613,16 @@ public class ArrayUtil {
         Array lat = Array.factory(DataType.FLOAT, shape);
         Array value = Array.factory(DataType.FLOAT, shape);
         double v;
-        for (int i = 0; i < n; i++){
-            lon.setFloat(i, (float)stdata.getX(i));
-            lat.setFloat(i, (float)stdata.getY(i));
+        for (int i = 0; i < n; i++) {
+            lon.setFloat(i, (float) stdata.getX(i));
+            lat.setFloat(i, (float) stdata.getY(i));
             v = stdata.getValue(i);
-            if (v == stdata.missingValue)
+            if (v == stdata.missingValue) {
                 v = Double.NaN;
-            value.setFloat(i, (float)v);
+            }
+            value.setFloat(i, (float) v);
         }
-        
+
         List<Array> r = new ArrayList<>();
         r.add(lon);
         r.add(lat);
@@ -630,7 +631,7 @@ public class ArrayUtil {
     }
 
     // </editor-fold>
-    // <editor-fold desc="Convert">
+    // <editor-fold desc="Convert/Sort">
     /**
      * To data type - ucar.ma2
      *
@@ -688,6 +689,83 @@ public class ArrayUtil {
         }
 
         return r;
+    }
+
+    /**
+     * Sort array along an axis
+     *
+     * @param a Array a
+     * @param axis The axis
+     * @return Sorted array
+     * @throws InvalidRangeException
+     */
+    public static Array sort(Array a, Integer axis) throws InvalidRangeException {
+        int n = a.getRank();
+        int[] shape = a.getShape();
+        if (axis == null) {
+            int[] nshape = new int[1];
+            nshape[0] = (int) a.getSize();
+            Array r = Array.factory(a.getDataType(), nshape);
+            List tlist = new ArrayList();
+            IndexIterator ii = a.getIndexIterator();
+            while (ii.hasNext()) {
+                tlist.add(ii.getObjectNext());
+            }
+            Collections.sort(tlist);
+            for (int i = 0; i < r.getSize(); i++) {
+                r.setObject(i, tlist.get(i));
+            }
+
+            return r;
+        } else {
+            if (axis == -1) {
+                axis = n - 1;
+            }
+            int nn = shape[axis];
+            int[] nshape = new int[n];
+            for (int i = 0; i < n; i++) {
+                if (i == axis) {
+                    nshape[i] = shape[n - 1];
+                } else if (i == n - 1) {
+                    nshape[i] = shape[axis];
+                } else {
+                    nshape[i] = shape[i];
+                }
+            }
+            Array r = Array.factory(a.getDataType(), nshape);
+            Index indexr = r.getIndex();
+            int[] current;
+            int idx;
+            for (int i = 0; i < r.getSize(); i++) {
+                current = indexr.getCurrentCounter();
+                List<Range> ranges = new ArrayList<>();
+                for (int j = 0; j < n; j++) {
+                    if (j == axis) {
+                        ranges.add(new Range(0, shape[j] - 1, 1));
+                    } else {
+                        idx = j;
+                        if (idx > axis) {
+                            idx -= 1;
+                        }
+                        ranges.add(new Range(current[idx], current[idx], 1));
+                    }
+                }
+                List tlist = new ArrayList();
+                IndexIterator ii = a.getRangeIterator(ranges);
+                while (ii.hasNext()) {
+                    tlist.add(ii.getObjectNext());
+                }
+                Collections.sort(tlist);
+                for (int j = 0; j < nn; j++) {
+                    r.setObject(i, tlist.get(j));
+                    indexr.incr();
+                    i++;
+                }
+                i--;
+            }
+
+            return r;
+        }
     }
 
     // </editor-fold>
@@ -1661,10 +1739,11 @@ public class ArrayUtil {
         int j1 = xIdx;
         int i2 = i1 + 1;
         int j2 = j1 + 1;
-        double a = data.getDouble(i1 * nx + j1);
-        double b = data.getDouble(i1 * nx + j2);
-        double c = data.getDouble(i2 * nx + j1);
-        double d = data.getDouble(i2 * nx + j2);
+        Index index = data.getIndex();
+        double a = data.getDouble(index.set(i1, j1));
+        double b = data.getDouble(index.set(i1, j2));
+        double c = data.getDouble(index.set(i2, j1));
+        double d = data.getDouble(index.set(i2, j2));
         List<java.lang.Double> dList = new ArrayList<>();
         if (!Double.isNaN(a) && !MIMath.doubleEquals(a, missingValue)) {
             dList.add(a);
@@ -1699,7 +1778,7 @@ public class ArrayUtil {
 
         return iValue;
     }
-    
+
     /**
      * Interpolate data to a station point
      *
@@ -1840,10 +1919,11 @@ public class ArrayUtil {
         int j1 = xIdx;
         int i2 = i1 + 1;
         int j2 = j1 + 1;
-        double a = data.getDouble(i1 * nx + j1);
-        double b = data.getDouble(i1 * nx + j2);
-        double c = data.getDouble(i2 * nx + j1);
-        double d = data.getDouble(i2 * nx + j2);
+        Index index = data.getIndex();
+        double a = data.getDouble(index.set(i1, j1));
+        double b = data.getDouble(index.set(i1, j2));
+        double c = data.getDouble(index.set(i2, j1));
+        double d = data.getDouble(index.set(i2, j2));
 
         if (Math.abs(x - xArray.get(j1).doubleValue()) > Math.abs(xArray.get(j2).doubleValue() - x)) {
             if (Math.abs(y - yArray.get(i1).doubleValue()) > Math.abs(yArray.get(i2).doubleValue() - y)) {
@@ -1851,17 +1931,15 @@ public class ArrayUtil {
             } else {
                 iValue = c;
             }
+        } else if (Math.abs(y - yArray.get(i1).doubleValue()) > Math.abs(yArray.get(i2).doubleValue() - y)) {
+            iValue = b;
         } else {
-            if (Math.abs(y - yArray.get(i1).doubleValue()) > Math.abs(yArray.get(i2).doubleValue() - y)) {
-                iValue = b;
-            } else {
-                iValue = d;
-            }
+            iValue = d;
         }
 
         return iValue;
     }
-    
+
     /**
      * Interpolate data to a station point
      *
@@ -1923,12 +2001,10 @@ public class ArrayUtil {
             } else {
                 iValue = c;
             }
+        } else if (Math.abs(y - yArray.get(i1).doubleValue()) > Math.abs(yArray.get(i2).doubleValue() - y)) {
+            iValue = b;
         } else {
-            if (Math.abs(y - yArray.get(i1).doubleValue()) > Math.abs(yArray.get(i2).doubleValue() - y)) {
-                iValue = b;
-            } else {
-                iValue = d;
-            }
+            iValue = d;
         }
 
         return iValue;
@@ -1947,11 +2023,29 @@ public class ArrayUtil {
      * @param fill_value Fill value
      * @param resampleMethod Resample method
      * @return Result arrays
+     * @throws ucar.ma2.InvalidRangeException
      */
     public static Array reproject(Array data, List<Number> x, List<Number> y, Array rx, Array ry,
-            ProjectionInfo fromProj, ProjectionInfo toProj, double fill_value, ResampleMethods resampleMethod) {
+            ProjectionInfo fromProj, ProjectionInfo toProj, double fill_value, ResampleMethods resampleMethod) throws InvalidRangeException {
         int n = (int) rx.getSize();
-        Array r = Array.factory(data.getDataType(), rx.getShape());
+        int[] dshape = data.getShape();
+        int[] shape;
+        if (rx.getRank() == 1) {
+            shape = new int[1];
+            shape[0] = rx.getShape()[0];
+        } else {
+            shape = new int[data.getRank()];
+            for (int i = 0; i < shape.length; i++) {
+                if (i == shape.length - 2) {
+                    shape[i] = rx.getShape()[0];
+                } else if (i == shape.length - 1) {
+                    shape[i] = rx.getShape()[1];
+                } else {
+                    shape[i] = data.getShape()[i];
+                }
+            }
+        }
+        Array r = Array.factory(data.getDataType(), shape);
 
         double[][] points = new double[n][];
         for (int i = 0; i < n; i++) {
@@ -1962,22 +2056,92 @@ public class ArrayUtil {
         }
         double xx, yy;
         if (resampleMethod == ResampleMethods.Bilinear) {
-            for (int i = 0; i < n; i++) {
-                xx = points[i][0];
-                yy = points[i][1];
-                r.setObject(i, toStation(data, x, y, xx, yy, fill_value));
+            if (shape.length <= 2) {
+                for (int i = 0; i < n; i++) {
+                    xx = points[i][0];
+                    yy = points[i][1];
+                    r.setObject(i, toStation(data, x, y, xx, yy, fill_value));
+                }
+            } else {
+                Index indexr = r.getIndex();
+                int[] current, cc = null;
+                boolean isNew;
+                Array ndata = null;
+                int k;
+                for (int i = 0; i < r.getSize(); i++) {
+                    current = indexr.getCurrentCounter();
+                    isNew = true;
+                    if (i > 0) {
+                        for (int j = 0; j < shape.length - 2; j++) {
+                            if (cc[j] != current[j]) {
+                                isNew = false;
+                                break;
+                            }
+                        }
+                    }
+                    cc = Arrays.copyOf(current, current.length);
+                    if (isNew) {
+                        List<Range> ranges = new ArrayList<>();
+                        for (int j = 0; j < shape.length - 2; j++) {
+                            ranges.add(new Range(current[j], current[j], 1));
+                        }
+                        ranges.add(new Range(0, dshape[dshape.length - 2] - 1, 1));
+                        ranges.add(new Range(0, dshape[dshape.length - 1] - 1, 1));
+                        ndata = data.section(ranges).reduce();
+                    }
+                    k = current[shape.length - 2] * shape[shape.length - 1] + current[shape.length - 1];
+                    xx = points[k][0];
+                    yy = points[k][1];
+                    r.setObject(i, toStation(ndata, x, y, xx, yy, fill_value));
+                    indexr.incr();
+                }
             }
         } else {
-            for (int i = 0; i < n; i++) {
-                xx = points[i][0];
-                yy = points[i][1];
-                r.setObject(i, toStation_Neighbor(data, x, y, xx, yy, fill_value));
+            if (shape.length <= 2) {
+                for (int i = 0; i < n; i++) {
+                    xx = points[i][0];
+                    yy = points[i][1];
+                    r.setObject(i, toStation_Neighbor(data, x, y, xx, yy, fill_value));
+                }
+            } else {
+                Index indexr = r.getIndex();
+                int[] current, cc = null;
+                boolean isNew;
+                Array ndata = null;
+                int k;
+                for (int i = 0; i < r.getSize(); i++) {
+                    current = indexr.getCurrentCounter();
+                    isNew = true;
+                    if (i > 0) {
+                        for (int j = 0; j < shape.length - 2; j++) {
+                            if (cc[j] != current[j]) {
+                                isNew = false;
+                                break;
+                            }
+                        }
+                    }
+                    cc = Arrays.copyOf(current, current.length);
+                    if (isNew) {
+                        List<Range> ranges = new ArrayList<>();
+                        for (int j = 0; j < shape.length - 2; j++) {
+                            ranges.add(new Range(current[j], current[j], 1));
+                        }
+                        ranges.add(new Range(0, dshape[dshape.length - 2] - 1, 1));
+                        ranges.add(new Range(0, dshape[dshape.length - 1] - 1, 1));
+                        ndata = data.section(ranges).reduce();
+                    }
+                    k = current[shape.length - 2] * shape[shape.length - 1] + current[shape.length - 1];
+                    xx = points[k][0];
+                    yy = points[k][1];
+                    r.setObject(i, toStation_Neighbor(ndata, x, y, xx, yy, fill_value));
+                    indexr.incr();
+                }
             }
         }
 
         return r;
     }
-    
+
     /**
      * Reproject
      *
@@ -1996,136 +2160,21 @@ public class ArrayUtil {
             ProjectionInfo fromProj, ProjectionInfo toProj, ResampleMethods resampleMethod) throws InvalidRangeException {
         int n = (int) rx.getSize();
         int[] dshape = data.getShape();
-        int[] shape = new int[data.getRank()];
-        for (int i = 0; i < shape.length; i++){
-            if (i == shape.length - 2)
-                shape[i] = rx.getShape()[0];
-            else if (i == shape.length - 1)
-                shape[i] = rx.getShape()[1];
-            else
-                shape[i] = data.getShape()[i];
-        }
-        Array r = Array.factory(data.getDataType(), shape);
-
-        double[][] points = new double[n][];
-        for (int i = 0; i < n; i++) {
-            points[i] = new double[]{rx.getDouble(i), ry.getDouble(i)};
-        }
-        if (!fromProj.equals(toProj)) {
-            Reproject.reprojectPoints(points, toProj, fromProj, 0, points.length);
-        }
-        double xx, yy;        
-        if (resampleMethod == ResampleMethods.Bilinear) {
-            if (shape.length == 2){
-                for (int i = 0; i < n; i++) {
-                        xx = points[i][0];
-                        yy = points[i][1];
-                        r.setObject(i, toStation(data, x, y, xx, yy));
-                    }
-            } else {
-                Index indexr = r.getIndex();
-                int[] current, cc = null;
-                boolean isNew;
-                Array ndata = null;
-                int k;
-                for (int i = 0; i < r.getSize(); i++){
-                    current = indexr.getCurrentCounter();
-                    isNew = true;
-                    if (i > 0) {
-                        for (int j = 0; j < shape.length - 2; j++){
-                            if (cc[j] != current[j]){
-                                isNew = false;
-                                break;
-                            }
-                        }
-                    }
-                    cc = Arrays.copyOf(current, current.length);
-                    if (isNew){
-                        List<Range> ranges = new ArrayList<>();
-                        for (int j = 0; j < shape.length - 2; j++) {
-                            ranges.add(new Range(current[j], current[j], 1));
-                        }
-                        ranges.add(new Range(0, dshape[dshape.length - 2] - 1, 1));
-                        ranges.add(new Range(0, dshape[dshape.length - 1] - 1, 1));
-                        ndata = data.section(ranges).reduce();
-                    }
-                    k = current[shape.length - 2] * shape[shape.length - 1] + current[shape.length - 1]; 
-                    xx = points[k][0];
-                    yy = points[k][1];
-                    r.setObject(i, toStation(ndata, x, y, xx, yy));
-                    indexr.incr();
-                }
-            }            
+        int[] shape;
+        if (rx.getRank() == 1) {
+            shape = new int[1];
+            shape[0] = rx.getShape()[0];
         } else {
-            if (shape.length == 2){
-                for (int i = 0; i < n; i++) {
-                        xx = points[i][0];
-                        yy = points[i][1];
-                        r.setObject(i, toStation_Neighbor(data, x, y, xx, yy));
-                    }
-            } else {
-                Index indexr = r.getIndex();
-                int[] current, cc = null;
-                boolean isNew;
-                Array ndata = null;
-                int k;
-                for (int i = 0; i < r.getSize(); i++){
-                    current = indexr.getCurrentCounter();
-                    isNew = true;
-                    if (i > 0) {
-                        for (int j = 0; j < shape.length - 2; j++){
-                            if (cc[j] != current[j]){
-                                isNew = false;
-                                break;
-                            }
-                        }
-                    }
-                    cc = Arrays.copyOf(current, current.length);
-                    if (isNew){
-                        List<Range> ranges = new ArrayList<>();
-                        for (int j = 0; j < shape.length - 2; j++) {
-                            ranges.add(new Range(current[j], current[j], 1));
-                        }
-                        ranges.add(new Range(0, dshape[dshape.length - 2] - 1, 1));
-                        ranges.add(new Range(0, dshape[dshape.length - 1] - 1, 1));
-                        ndata = data.section(ranges).reduce();
-                    }
-                    k = current[shape.length - 2] * shape[shape.length - 1] + current[shape.length - 1]; 
-                    xx = points[k][0];
-                    yy = points[k][1];
-                    r.setObject(i, toStation_Neighbor(ndata, x, y, xx, yy));
-                    indexr.incr();
+            shape = new int[data.getRank()];
+            for (int i = 0; i < shape.length; i++) {
+                if (i == shape.length - 2) {
+                    shape[i] = rx.getShape()[0];
+                } else if (i == shape.length - 1) {
+                    shape[i] = rx.getShape()[1];
+                } else {
+                    shape[i] = data.getShape()[i];
                 }
-            }            
-        }
-
-        return r;
-    }
-    
-    /**
-     * Reproject
-     *
-     * @param data Data array
-     * @param x X array
-     * @param y Y array
-     * @param rx Result x array
-     * @param ry Result y array
-     * @param fromProj From projection
-     * @param toProj To projection
-     * @param resampleMethod Resample method
-     * @return Result arrays
-     */
-    public static Array reproject_back(Array data, List<Number> x, List<Number> y, Array rx, Array ry,
-            ProjectionInfo fromProj, ProjectionInfo toProj, ResampleMethods resampleMethod) {
-        int n = (int) rx.getSize();
-        int[] shape = new int[data.getRank()];
-        for (int i = 0; i < shape.length; i++){
-            if (i == shape.length - 2)
-                shape[i] = rx.getShape()[0];
-            else if (i == shape.length - 1)
-                shape[i] = rx.getShape()[1];
-            else
-                shape[i] = data.getShape()[i];
+            }
         }
         Array r = Array.factory(data.getDataType(), shape);
 
@@ -2137,29 +2186,86 @@ public class ArrayUtil {
             Reproject.reprojectPoints(points, toProj, fromProj, 0, points.length);
         }
         double xx, yy;
-        int[] origin = new int[shape.length];
-        int[] nshape = new int[shape.length];
         if (resampleMethod == ResampleMethods.Bilinear) {
-            int idx = 0;
-            for (int j = 0; j < shape.length - 2; j++){                      
-                for (int k = 0; k < shape[j]; k++){
-                    origin[j] = k;
-                    for (int i = 0; i < n; i++) {
-                        xx = points[i][0];
-                        yy = points[i][1];
-                        r.setObject(idx, toStation(data, x, y, xx, yy));
-                        idx += 1;
-                    }
-                }
-            }
-        } else {
-            int idx = 0;
-            for (int j = 0; j < shape.length - 2; j++){
+            if (shape.length <= 2) {
                 for (int i = 0; i < n; i++) {
                     xx = points[i][0];
                     yy = points[i][1];
-                    r.setObject(idx, toStation_Neighbor(data, x, y, xx, yy));
-                    idx += 1;
+                    r.setObject(i, toStation(data, x, y, xx, yy));
+                }
+            } else {
+                Index indexr = r.getIndex();
+                int[] current, cc = null;
+                boolean isNew;
+                Array ndata = null;
+                int k;
+                for (int i = 0; i < r.getSize(); i++) {
+                    current = indexr.getCurrentCounter();
+                    isNew = true;
+                    if (i > 0) {
+                        for (int j = 0; j < shape.length - 2; j++) {
+                            if (cc[j] != current[j]) {
+                                isNew = false;
+                                break;
+                            }
+                        }
+                    }
+                    cc = Arrays.copyOf(current, current.length);
+                    if (isNew) {
+                        List<Range> ranges = new ArrayList<>();
+                        for (int j = 0; j < shape.length - 2; j++) {
+                            ranges.add(new Range(current[j], current[j], 1));
+                        }
+                        ranges.add(new Range(0, dshape[dshape.length - 2] - 1, 1));
+                        ranges.add(new Range(0, dshape[dshape.length - 1] - 1, 1));
+                        ndata = data.section(ranges).reduce();
+                    }
+                    k = current[shape.length - 2] * shape[shape.length - 1] + current[shape.length - 1];
+                    xx = points[k][0];
+                    yy = points[k][1];
+                    r.setObject(i, toStation(ndata, x, y, xx, yy));
+                    indexr.incr();
+                }
+            }
+        } else {
+            if (shape.length == 2) {
+                for (int i = 0; i < n; i++) {
+                    xx = points[i][0];
+                    yy = points[i][1];
+                    r.setObject(i, toStation_Neighbor(data, x, y, xx, yy));
+                }
+            } else {
+                Index indexr = r.getIndex();
+                int[] current, cc = null;
+                boolean isNew;
+                Array ndata = null;
+                int k;
+                for (int i = 0; i < r.getSize(); i++) {
+                    current = indexr.getCurrentCounter();
+                    isNew = true;
+                    if (i > 0) {
+                        for (int j = 0; j < shape.length - 2; j++) {
+                            if (cc[j] != current[j]) {
+                                isNew = false;
+                                break;
+                            }
+                        }
+                    }
+                    cc = Arrays.copyOf(current, current.length);
+                    if (isNew) {
+                        List<Range> ranges = new ArrayList<>();
+                        for (int j = 0; j < shape.length - 2; j++) {
+                            ranges.add(new Range(current[j], current[j], 1));
+                        }
+                        ranges.add(new Range(0, dshape[dshape.length - 2] - 1, 1));
+                        ranges.add(new Range(0, dshape[dshape.length - 1] - 1, 1));
+                        ndata = data.section(ranges).reduce();
+                    }
+                    k = current[shape.length - 2] * shape[shape.length - 1] + current[shape.length - 1];
+                    xx = points[k][0];
+                    yy = points[k][1];
+                    r.setObject(i, toStation_Neighbor(ndata, x, y, xx, yy));
+                    indexr.incr();
                 }
             }
         }
