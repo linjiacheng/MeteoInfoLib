@@ -67,7 +67,7 @@ public class GlobalUtil {
     public static String getFileExtension(String filePath) {
         String extension = "";
         String fn = new File(filePath).getName();
-        if (fn.indexOf(".") >= 0) {
+        if (fn.contains(".")) {
             String ext = filePath.substring(filePath.lastIndexOf(".") + 1).toLowerCase().trim();
             try {
                 extension = ext;
@@ -86,7 +86,7 @@ public class GlobalUtil {
      * @return File name list
      */
     public static List<String> getFiles(String directory, String ext) {
-        List<String> fileNames = new ArrayList<String>();
+        List<String> fileNames = new ArrayList<>();
         try {
             File f = new File(directory);
             boolean flag = f.isDirectory();
@@ -117,7 +117,7 @@ public class GlobalUtil {
      * @return Sub directories
      */
     public static List<String> getSubDirectories(String directory) {
-        List<String> subDirs = new ArrayList<String>();
+        List<String> subDirs = new ArrayList<>();
         File f = new File(directory);
         File fs[] = f.listFiles();
         for (File f1 : fs) {
@@ -339,7 +339,7 @@ public class GlobalUtil {
         if (!layerPathRoot.equalsIgnoreCase(projPathRoot)) {
             RelativePath = fileName;
         } else {
-            List<String> aList = new ArrayList<String>();
+            List<String> aList = new ArrayList<>();
             aList.add(fileName);
             do {
                 aList.add("");
@@ -351,7 +351,7 @@ public class GlobalUtil {
                 }
             } while (!"".equals(aList.get(aList.size() - 1)));
 
-            List<String> bList = new ArrayList<String>();
+            List<String> bList = new ArrayList<>();
             bList.add(pFile.getCanonicalPath());
             do {
                 bList.add("");

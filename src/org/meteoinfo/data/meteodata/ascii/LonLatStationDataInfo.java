@@ -35,6 +35,8 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.global.util.GlobalUtil;
+import org.meteoinfo.io.FileCharsetDetector;
+import org.meteoinfo.io.IOUtil;
 import ucar.ma2.Array;
 
 /**
@@ -68,8 +70,9 @@ public class LonLatStationDataInfo extends DataInfo implements IStationDataInfo 
         BufferedReader sr = null;
         try {
             this.setFileName(fileName);
-
-            sr = new BufferedReader(new InputStreamReader(new FileInputStream(this.getFileName()), "UTF8"));
+            FileCharsetDetector chardet = new FileCharsetDetector();
+            String charset = chardet.guestFileEncoding(this.getFileName());
+            sr = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), charset));
             String[] dataArray, fieldArray;
             String aLine = sr.readLine().trim();    //Title
             delimiter = GlobalUtil.getDelimiter(aLine);
@@ -137,7 +140,9 @@ public class LonLatStationDataInfo extends DataInfo implements IStationDataInfo 
     public StationData getStationData(int timeIdx, int varIdx, int levelIdx) {
         try {
             List<String[]> dataList = new ArrayList<>();
-            BufferedReader sr = new BufferedReader(new InputStreamReader(new FileInputStream(this.getFileName()), "UTF8"));
+            FileCharsetDetector chardet = new FileCharsetDetector();
+            String charset = chardet.guestFileEncoding(this.getFileName());
+            BufferedReader sr = new BufferedReader(new InputStreamReader(new FileInputStream(this.getFileName()), charset));
             sr.readLine();
             String line = sr.readLine();
             while (line != null) {
@@ -228,7 +233,9 @@ public class LonLatStationDataInfo extends DataInfo implements IStationDataInfo 
     public StationInfoData getStationInfoData(int timeIdx, int levelIdx) {
         BufferedReader sr = null;
         try {
-            sr = new BufferedReader(new InputStreamReader(new FileInputStream(this.getFileName()), "UTF8"));
+            FileCharsetDetector chardet = new FileCharsetDetector();
+            String charset = chardet.guestFileEncoding(this.getFileName());
+            sr = new BufferedReader(new InputStreamReader(new FileInputStream(this.getFileName()), charset));
             List<List<String>> dataList = new ArrayList<>();
             sr.readLine();
             String line = sr.readLine();
