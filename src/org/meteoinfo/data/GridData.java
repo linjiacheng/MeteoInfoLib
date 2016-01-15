@@ -2034,7 +2034,7 @@ public class GridData {
         boolean hasUndef = false;
         for (int i = 0; i < getYNum(); i++) {
             for (int j = 0; j < getXNum(); j++) {
-                if (MIMath.doubleEquals(data[i][j], missingValue)) {
+                if (java.lang.Double.isNaN(data[i][j]) || MIMath.doubleEquals(data[i][j], missingValue)) {
                     hasUndef = true;
                     continue;
                 }
@@ -2058,6 +2058,23 @@ public class GridData {
         maxmin[1] = min;
         return hasUndef;
     }
+    
+    /**
+     * Get if has NaN value
+     * @return Boolean
+     */
+    public boolean hasNaN(){
+        boolean hasNaN = false;
+        for (int i = 0; i < getYNum(); i++) {
+            for (int j = 0; j < getXNum(); j++) {
+                if (java.lang.Double.isNaN(data[i][j]) || MIMath.doubleEquals(data[i][j], missingValue)) {
+                    hasNaN = true;
+                    break;
+                }
+            }
+        }
+        return hasNaN;
+    }
 
     /**
      * Get maximum and minimum values
@@ -2070,7 +2087,7 @@ public class GridData {
         int vdNum = 0;
         for (int i = 0; i < getYNum(); i++) {
             for (int j = 0; j < getXNum(); j++) {
-                if (MIMath.doubleEquals(data[i][j], missingValue)) {
+                if (java.lang.Double.isNaN(data[i][j]) || MIMath.doubleEquals(data[i][j], missingValue)) {
                     continue;
                 }
 

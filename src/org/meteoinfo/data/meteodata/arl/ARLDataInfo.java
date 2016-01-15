@@ -21,10 +21,7 @@ import org.meteoinfo.data.meteodata.IGridDataInfo;
 import org.meteoinfo.data.meteodata.Variable;
 import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.util.GlobalUtil;
-import java.io.DataOutputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.text.DecimalFormat;
@@ -1735,7 +1732,10 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         SimpleDateFormat format = new SimpleDateFormat("yyMMddHH");
         String dateStr = format.format(aDL.getTime());
         _bw.writeBytes(dateStr);
-        _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDL.getForecast()), 2, ' '));
+        String fcst = GlobalUtil.padLeft(String.valueOf(aDL.getForecast()), 2, ' ');
+        if (fcst.length() > 2)
+            fcst = fcst.substring(fcst.length() - 2);
+        _bw.writeBytes(fcst);
         _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDL.getLevel()), 2, ' '));
         _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDL.getGrid()), 2, ' '));
         _bw.writeBytes(GlobalUtil.padRight(aDL.getVarName(), 4, '1'));

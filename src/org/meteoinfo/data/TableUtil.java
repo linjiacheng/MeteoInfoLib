@@ -148,8 +148,11 @@ public class TableUtil {
                 dTable.addRow();
                 int cn = 0;
                 for (int i = 0; i < dataArray.length; i++) {
-                    dTable.setValue(rn, cn, dataArray[i]);
-                    cn++;
+                    if (cn < colNum) {
+                        dTable.setValue(rn, cn, dataArray[i]);
+                        cn++;
+                    } else 
+                        break;
                 }
                 if (cn < colNum){
                     for (int i = cn; i < colNum; i++)

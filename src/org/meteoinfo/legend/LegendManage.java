@@ -1,4 +1,4 @@
- /* Copyright 2012 Yaqiang Wang,
+/* Copyright 2012 Yaqiang Wang,
  * yaqiang.wang@gmail.com
  * 
  * This library is free software; you can redistribute it and/or modify it
@@ -762,15 +762,13 @@ public class LegendManage {
                     aPB.setStyle(PointStyle.Circle);
                     if (aPB.getStartValue() == aPB.getEndValue()) {
                         aPB.setCaption(DataConvert.removeTailingZeros(aPB.getStartValue().toString()));
+                    } else if (i == 0) {
+                        aPB.setCaption("< " + DataConvert.removeTailingZeros(aPB.getEndValue().toString()));
+                    } else if (i == colors.length - 1) {
+                        aPB.setCaption("> " + DataConvert.removeTailingZeros(aPB.getStartValue().toString()));
                     } else {
-                        if (i == 0) {
-                            aPB.setCaption("< " + DataConvert.removeTailingZeros(aPB.getEndValue().toString()));
-                        } else if (i == colors.length - 1) {
-                            aPB.setCaption("> " + DataConvert.removeTailingZeros(aPB.getStartValue().toString()));
-                        } else {
-                            aPB.setCaption(DataConvert.removeTailingZeros(aPB.getStartValue().toString())
-                                    + " - " + DataConvert.removeTailingZeros(aPB.getEndValue().toString()));
-                        }
+                        aPB.setCaption(DataConvert.removeTailingZeros(aPB.getStartValue().toString())
+                                + " - " + DataConvert.removeTailingZeros(aPB.getEndValue().toString()));
                     }
 
                     legendScheme.getLegendBreaks().add(aPB);
@@ -812,15 +810,13 @@ public class LegendManage {
                     }
                     if (aPLB.getStartValue() == aPLB.getEndValue()) {
                         aPLB.setCaption(DataConvert.removeTailingZeros(aPLB.getStartValue().toString()));
+                    } else if (i == 0) {
+                        aPLB.setCaption("< " + DataConvert.removeTailingZeros(aPLB.getEndValue().toString()));
+                    } else if (i == colors.length - 1) {
+                        aPLB.setCaption("> " + DataConvert.removeTailingZeros(aPLB.getStartValue().toString()));
                     } else {
-                        if (i == 0) {
-                            aPLB.setCaption("< " + DataConvert.removeTailingZeros(aPLB.getEndValue().toString()));
-                        } else if (i == colors.length - 1) {
-                            aPLB.setCaption("> " + DataConvert.removeTailingZeros(aPLB.getStartValue().toString()));
-                        } else {
-                            aPLB.setCaption(DataConvert.removeTailingZeros(aPLB.getStartValue().toString())
-                                    + " - " + DataConvert.removeTailingZeros(aPLB.getEndValue().toString()));
-                        }
+                        aPLB.setCaption(DataConvert.removeTailingZeros(aPLB.getStartValue().toString())
+                                + " - " + DataConvert.removeTailingZeros(aPLB.getEndValue().toString()));
                     }
                     aPLB.setSymbolColor(aPLB.getColor());
                     if (i < PointStyle.values().length) {
@@ -852,15 +848,13 @@ public class LegendManage {
                     }
                     if (aPGB.getStartValue() == aPGB.getEndValue()) {
                         aPGB.setCaption(DataConvert.removeTailingZeros(aPGB.getStartValue().toString()));
+                    } else if (i == 0) {
+                        aPGB.setCaption("< " + DataConvert.removeTailingZeros(aPGB.getEndValue().toString()));
+                    } else if (i == colors.length - 1) {
+                        aPGB.setCaption("> " + DataConvert.removeTailingZeros(aPGB.getStartValue().toString()));
                     } else {
-                        if (i == 0) {
-                            aPGB.setCaption("< " + DataConvert.removeTailingZeros(aPGB.getEndValue().toString()));
-                        } else if (i == colors.length - 1) {
-                            aPGB.setCaption("> " + DataConvert.removeTailingZeros(aPGB.getStartValue().toString()));
-                        } else {
-                            aPGB.setCaption(DataConvert.removeTailingZeros(aPGB.getStartValue().toString())
-                                    + " - " + DataConvert.removeTailingZeros(aPGB.getEndValue().toString()));
-                        }
+                        aPGB.setCaption(DataConvert.removeTailingZeros(aPGB.getStartValue().toString())
+                                + " - " + DataConvert.removeTailingZeros(aPGB.getEndValue().toString()));
                     }
 //                        if (Enum.IsDefined(typeof(HatchStyle), i))
 //                            aPGB.Style = (HatchStyle)i;
@@ -885,15 +879,13 @@ public class LegendManage {
                     }
                     if (aCB.getStartValue() == aCB.getEndValue()) {
                         aCB.setCaption(DataConvert.removeTailingZeros(aCB.getStartValue().toString()));
+                    } else if (i == 0) {
+                        aCB.setCaption("< " + DataConvert.removeTailingZeros(aCB.getEndValue().toString()));
+                    } else if (i == colors.length - 1) {
+                        aCB.setCaption("> " + DataConvert.removeTailingZeros(aCB.getStartValue().toString()));
                     } else {
-                        if (i == 0) {
-                            aCB.setCaption("< " + DataConvert.removeTailingZeros(aCB.getEndValue().toString()));
-                        } else if (i == colors.length - 1) {
-                            aCB.setCaption("> " + DataConvert.removeTailingZeros(aCB.getStartValue().toString()));
-                        } else {
-                            aCB.setCaption(DataConvert.removeTailingZeros(aCB.getStartValue().toString())
-                                    + " - " + DataConvert.removeTailingZeros(aCB.getEndValue().toString()));
-                        }
+                        aCB.setCaption(DataConvert.removeTailingZeros(aCB.getStartValue().toString())
+                                + " - " + DataConvert.removeTailingZeros(aCB.getEndValue().toString()));
                     }
 
                     legendScheme.getLegendBreaks().add(aCB);
@@ -901,7 +893,7 @@ public class LegendManage {
                 legendScheme.setHasNoData(false);
                 if (hasNodata) {
                     ColorBreak aCB = new ColorBreak();
-                    aCB.setColor(Color.lightGray);
+                    aCB.setColor(new Color(230, 230, 230, 0));
                     aCB.setStartValue(unDef);
                     aCB.setEndValue(aCB.getStartValue());
                     aCB.setCaption("NoData");
@@ -986,6 +978,7 @@ public class LegendManage {
 
     /**
      * Create legend scheme
+     *
      * @param shapeType Shape type
      * @param values Values
      * @param colors Colors
@@ -1039,6 +1032,21 @@ public class LegendManage {
         double[] values = createContourValues(min, max);
         Color[] colors = ct.getColors(values.length + 1);
         return createLegendScheme(min, max, values, colors, LegendType.GraduatedColor, ShapeTypes.Image, false, -9999.0);
+    }
+
+    /**
+     * Create legend scheme
+     *
+     * @param min Minimum
+     * @param max Maximum
+     * @param ct Color table
+     * @param missingValue Missing value
+     * @return LegendScheme
+     */
+    public static LegendScheme createLegendScheme(double min, double max, ColorMap ct, double missingValue) {
+        double[] values = createContourValues(min, max);
+        Color[] colors = ct.getColors(values.length + 1);
+        return createLegendScheme(min, max, values, colors, LegendType.GraduatedColor, ShapeTypes.Image, true, missingValue);
     }
 
     /**
@@ -1201,6 +1209,30 @@ public class LegendManage {
 
         return createLegendScheme(min, max, values, colors, legendType, shapeType, hasNodata, unDef);
     }
+    
+    /**
+     * Create legend scheme
+     *
+     * @param min Minimum
+     * @param max Maximum
+     * @param levs Level values
+     * @param ct Color table
+     * @param legendType Legend type
+     * @param shapeType Shape type
+     * @param hasNodata Has missing value or not
+     * @param unDef Missing value
+     * @return LegendScheme
+     */
+    public static LegendScheme createLegendScheme(double min, double max, List<Number> levs, ColorMap ct,
+            LegendType legendType, ShapeTypes shapeType, boolean hasNodata, double unDef) {
+        double[] values = new double[levs.size()];
+        for (int i = 0; i < levs.size(); i++){
+            values[i] = levs.get(i).doubleValue();
+        }
+        Color[] colors = ct.getColors(values.length + 1);
+
+        return createLegendScheme(min, max, values, colors, legendType, shapeType, hasNodata, unDef);
+    }
 
     /**
      * Create legend scheme
@@ -1210,6 +1242,7 @@ public class LegendManage {
      * @param n Level number
      * @param ctName Color table name
      * @return LegendScheme
+     * @throws java.io.IOException
      */
     public static LegendScheme createLegendScheme(double min, double max, int n, String ctName) throws IOException {
         ColorMap ct = ColorUtil.getColorMap(ctName);
@@ -1387,8 +1420,52 @@ public class LegendManage {
         if (isUnique) {
             List<Number> values = gdata.getUniqueValues();
             ls = LegendManage.createUniqValueLegendScheme(values, cmap, ShapeTypes.Polygon);
+        } else if (gdata.hasNaN()) {
+            ls = LegendManage.createLegendScheme(gdata.getMinValue(), gdata.getMaxValue(), cmap, Double.NaN);
         } else {
             ls = LegendManage.createLegendScheme(gdata.getMinValue(), gdata.getMaxValue(), cmap);
+        }
+
+        return ls;
+    }
+
+    /**
+     * Create image legend from grid data
+     *
+     * @param gdata Grid data
+     * @param n Legend break number
+     * @param cmap Color map
+     * @return Legend scheme
+     */
+    public static LegendScheme createImageLegend(GridData gdata, int n, ColorMap cmap) {
+        LegendScheme ls;
+        if (gdata.hasNaN()) {
+            ls = LegendManage.createLegendScheme(gdata.getMinValue(), gdata.getMaxValue(), n, cmap, 
+                    LegendType.GraduatedColor, ShapeTypes.Image, true, Double.NaN);
+        } else {
+            ls = LegendManage.createLegendScheme(gdata.getMinValue(), gdata.getMaxValue(), n, cmap, 
+                    LegendType.GraduatedColor, ShapeTypes.Image, false, Double.NaN);
+        }
+
+        return ls;
+    }
+    
+    /**
+     * Create image legend from grid data
+     *
+     * @param gdata Grid data
+     * @param levs Legend break values
+     * @param cmap Color map
+     * @return Legend scheme
+     */
+    public static LegendScheme createImageLegend(GridData gdata, List<Number> levs, ColorMap cmap) {
+        LegendScheme ls;
+        if (gdata.hasNaN()) {
+            ls = LegendManage.createLegendScheme(gdata.getMinValue(), gdata.getMaxValue(), levs, cmap, 
+                    LegendType.GraduatedColor, ShapeTypes.Image, true, Double.NaN);
+        } else {
+            ls = LegendManage.createLegendScheme(gdata.getMinValue(), gdata.getMaxValue(), levs, cmap, 
+                    LegendType.GraduatedColor, ShapeTypes.Image, false, Double.NaN);
         }
 
         return ls;
