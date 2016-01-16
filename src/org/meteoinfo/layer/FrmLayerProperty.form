@@ -171,7 +171,7 @@
                           </Group>
                       </Group>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="legendView1" pref="312" max="32767" attributes="0"/>
+                      <Component id="legendView1" pref="326" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

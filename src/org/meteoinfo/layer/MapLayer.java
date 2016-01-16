@@ -333,13 +333,7 @@ public class MapLayer implements Cloneable {
      * @return Boolean
      */
     public boolean hasLegendScheme(){
-        switch (this._layerType){
-            case VectorLayer:
-            case RasterLayer:
-                return true;
-            default:
-                return false;
-        }
+        return this._legendScheme != null;
     }
     
     @Override

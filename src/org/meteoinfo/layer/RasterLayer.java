@@ -1,4 +1,4 @@
- /* Copyright 2012 Yaqiang Wang,
+/* Copyright 2012 Yaqiang Wang,
  * yaqiang.wang@gmail.com
  * 
  * This library is free software; you can redistribute it and/or modify it
@@ -14,10 +14,8 @@
 package org.meteoinfo.layer;
 
 import com.l2fprod.common.beans.BaseBeanInfo;
-import org.meteoinfo.data.GridData;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
-import org.meteoinfo.legend.ColorBreak;
 import org.meteoinfo.legend.LegendScheme;
 import org.meteoinfo.shape.ShapeTypes;
 import java.awt.Color;
@@ -61,7 +59,9 @@ public class RasterLayer extends ImageLayer {
     @Override
     public void setLegendScheme(LegendScheme ls) {
         super.setLegendScheme(ls);
-        if (ls.getBreakNum() < 200) {
+        if (ls == null) {
+            updateImage(ls);
+        } else if (ls.getBreakNum() < 200) {
             updateImage(ls);
         } else {
             setPaletteByLegend();
@@ -79,6 +79,7 @@ public class RasterLayer extends ImageLayer {
 
     /**
      * Set grid data
+     *
      * @param gdata Grid data
      */
     public void setGridData(GridArray gdata) {
@@ -134,13 +135,15 @@ public class RasterLayer extends ImageLayer {
      */
     public void updateImage(LegendScheme als) {
         BufferedImage image;
-        if (_gridData.data.getRank() == 2)
+        if (_gridData.data.getRank() == 2) {
             image = getImageFromGridData(_gridData, als);
-        else
+        } else {
             image = getRGBImage(_gridData);
+            super.setLegendScheme(null);
+        }
         this.setImage(image);
     }
-    
+
     /**
      * Update image by legend scheme
      */
@@ -148,8 +151,8 @@ public class RasterLayer extends ImageLayer {
         BufferedImage image = getImageFromGridData(_gridData, this.getLegendScheme());
         this.setImage(image);
     }
-    
-    private BufferedImage getRGBImage(GridArray gdata){
+
+    private BufferedImage getRGBImage(GridArray gdata) {
         int width, height, r, g, b;
         width = gdata.getXNum();
         height = gdata.getYNum();
@@ -166,7 +169,7 @@ public class RasterLayer extends ImageLayer {
                 image.setRGB(j, height - i - 1, new Color(r, g, b).getRGB());
             }
         }
-        
+
         return image;
     }
 
@@ -197,7 +200,7 @@ public class RasterLayer extends ImageLayer {
                     oneColor = undefColor;
                 } else {
                     oneColor = defaultColor;
-                    if (als.getLegendType() == LegendType.GraduatedColor){
+                    if (als.getLegendType() == LegendType.GraduatedColor) {
                         //循环只到breakNum-1 是因为最后一个LegendBreaks的EndValue和StartValue是一样的
                         for (int k = 0; k < breakNum - 1; k++) {
                             if (oneValue < breakValue[k]) {
@@ -220,7 +223,7 @@ public class RasterLayer extends ImageLayer {
 
         return aImage;
     }
-    
+
     private BufferedImage getImageFromGridData(GridArray gdata, List<Color> colors) {
         int width, height;
         width = gdata.getXNum();
@@ -231,8 +234,8 @@ public class RasterLayer extends ImageLayer {
         int n = colors.size();
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                oneValue = (int)gdata.getValue(i, j);
-                oneColor = colors.get(oneValue);                
+                oneValue = (int) gdata.getValue(i, j);
+                oneColor = colors.get(oneValue);
                 aImage.setRGB(j, height - i - 1, oneColor.getRGB());
             }
         }
@@ -250,7 +253,7 @@ public class RasterLayer extends ImageLayer {
         List<Color> colors = this.getColorsFromPaletteFile(aFile);
         BufferedImage image = this.getImageFromGridData(_gridData, colors);
         this.setImage(image);
-        
+
         LegendScheme ls = new LegendScheme(ShapeTypes.Image);
         ls.importFromPaletteFile_Unique(aFile);
         this.setLegendScheme(ls);
@@ -314,7 +317,6 @@ public class RasterLayer extends ImageLayer {
     }
 
     // </editor-fold>
-
     // <editor-fold desc="BeanInfo">
     public class RasterLayerBean {
 

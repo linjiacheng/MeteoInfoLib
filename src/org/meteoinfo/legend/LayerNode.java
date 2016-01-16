@@ -29,7 +29,7 @@ public class LayerNode extends ItemNode {
 
     private MapLayer _mapLayer = null;
     private int _groupHandle = -1;
-    private final List<LegendNode> _legendNodes = new ArrayList<LegendNode>();
+    private final List<LegendNode> _legendNodes = new ArrayList<>();
     private MapFrame _mapFrame = null;
     private boolean editing = false;
     // </editor-fold>
@@ -175,6 +175,11 @@ public class LayerNode extends ItemNode {
      * @param aLS The legend scheme
      */
     public void updateLegendScheme(LegendScheme aLS) {
+        if (aLS == null){
+            this._legendNodes.clear();
+            return;
+        }
+        
         switch (_mapLayer.getLayerType()) {
             case VectorLayer:
             case RasterLayer:

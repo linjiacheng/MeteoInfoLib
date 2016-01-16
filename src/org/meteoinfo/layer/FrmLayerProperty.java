@@ -733,12 +733,12 @@ public class FrmLayerProperty extends javax.swing.JDialog {
                 this._ifCreateLegendScheme = true;
                 break;
             case RasterLayer:
-                switch (aLT){
+                switch (aLT) {
                     case UniqueValue:
-                        
+
                         break;
                     case GraduatedColor:
-                        this._legendScheme = LegendManage.createLegendSchemeFromGridData(((RasterLayer)_mapLayer).getGridData(), LegendType.GraduatedColor, ShapeTypes.Polygon);                        
+                        this._legendScheme = LegendManage.createLegendSchemeFromGridData(((RasterLayer) _mapLayer).getGridData(), LegendType.GraduatedColor, ShapeTypes.Polygon);
                         break;
                 }
                 this.legendView1.setLegendScheme(_legendScheme);
@@ -1217,8 +1217,12 @@ public class FrmLayerProperty extends javax.swing.JDialog {
                 this.legendView1.setLegendScheme(_mapLayer.getLegendScheme());
                 break;
             case RasterLayer:
-                _legendScheme = (LegendScheme) _mapLayer.getLegendScheme().clone();
-                this.legendView1.setLegendScheme(_mapLayer.getLegendScheme());
+                if (_mapLayer.getLegendScheme() != null) {
+                    _legendScheme = (LegendScheme) _mapLayer.getLegendScheme().clone();
+                    this.legendView1.setLegendScheme(_mapLayer.getLegendScheme());
+                } else {
+                    _legendScheme = null;
+                }
                 _object = ((RasterLayer) aLayer).new RasterLayerBean();
                 break;
             case ImageLayer:
@@ -1259,12 +1263,14 @@ public class FrmLayerProperty extends javax.swing.JDialog {
         switch (_mapLayer.getLayerType()) {
             case VectorLayer:
             case RasterLayer:
-                this.jTabbedPane1.addTab("Legend", jPanel_Legend);
+                if (this._legendScheme != null) {
+                    this.jTabbedPane1.addTab("Legend", jPanel_Legend);
+                }
                 break;
         }
-        
+
         switch (_mapLayer.getLayerType()) {
-            case VectorLayer:                
+            case VectorLayer:
                 this.jComboBox_LegendType.setEnabled(true);
                 this.jComboBox_Field.setEnabled(true);
                 //Set legend type             
@@ -1355,20 +1361,22 @@ public class FrmLayerProperty extends javax.swing.JDialog {
                 }
                 break;
             case RasterLayer:
-                this.jComboBox_LegendType.setEnabled(true);
-                this.jComboBox_Field.removeAllItems();
-                this.jComboBox_Field.setEnabled(false);
-                //Set legend type             
-                this.jComboBox_LegendType.removeAllItems();
-                this.jComboBox_LegendType.addItem(LegendType.UniqueValue);
-                this.jComboBox_LegendType.addItem(LegendType.GraduatedColor);
-                this.jComboBox_LegendType.setSelectedItem(_legendScheme.getLegendType());
-                this.jButton_AddBreak.setEnabled(true);
-                this.jButton_RemoveBreak.setEnabled(true);
-                this.jButton_RemoveAllBreaks.setEnabled(true);
-                this.jButton_MoveBreakUp.setEnabled(true);
-                this.jButton_MoveBreakDown.setEnabled(true);
-                this.jButton_MakeBreaks.setEnabled(true);
+                if (this._legendScheme != null) {
+                    this.jComboBox_LegendType.setEnabled(true);
+                    this.jComboBox_Field.removeAllItems();
+                    this.jComboBox_Field.setEnabled(false);
+                    //Set legend type             
+                    this.jComboBox_LegendType.removeAllItems();
+                    this.jComboBox_LegendType.addItem(LegendType.UniqueValue);
+                    this.jComboBox_LegendType.addItem(LegendType.GraduatedColor);
+                    this.jComboBox_LegendType.setSelectedItem(_legendScheme.getLegendType());
+                    this.jButton_AddBreak.setEnabled(true);
+                    this.jButton_RemoveBreak.setEnabled(true);
+                    this.jButton_RemoveAllBreaks.setEnabled(true);
+                    this.jButton_MoveBreakUp.setEnabled(true);
+                    this.jButton_MoveBreakDown.setEnabled(true);
+                    this.jButton_MakeBreaks.setEnabled(true);
+                }
                 break;
             default:
                 this.jComboBox_LegendType.removeAllItems();
