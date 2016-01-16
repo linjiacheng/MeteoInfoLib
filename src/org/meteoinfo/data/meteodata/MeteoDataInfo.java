@@ -719,6 +719,15 @@ public class MeteoDataInfo {
     public String getFileName() {
         return _dataInfo.getFileName();
     }
+    
+    /**
+     * Read array data of the variable
+     * @param varName Variable name
+     * @return Array data
+     */
+    public Array read(String varName){
+        return this._dataInfo.read(varName);
+    }
 
     /**
      * Read array data of the variable

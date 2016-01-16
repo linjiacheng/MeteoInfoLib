@@ -27,8 +27,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.meteoinfo.data.ArrayMath;
+import org.meteoinfo.data.GridArray;
+import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
+import ucar.ma2.Array;
+import ucar.ma2.DataType;
+import ucar.ma2.Index;
 
 /**
  *
@@ -563,7 +569,7 @@ public class GeoTiff {
 
         return xy;
     }
-    
+
     /**
      * Get grid data
      *
@@ -584,8 +590,58 @@ public class GeoTiff {
                 }
             }
             values1d = null;
-            
+
             return values;
+        } catch (IOException ex) {
+            Logger.getLogger(GeoTiff.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+    
+    /**
+     * Get grid data
+     *
+     * @return Grid data
+     */
+    public GridArray getGridArray() {
+        try {
+            //Grid data values
+            IFDEntry widthIFD = this.findTag(Tag.ImageWidth);
+            IFDEntry heightIFD = this.findTag(Tag.ImageLength);
+            int width = widthIFD.value[0];
+            int height = heightIFD.value[0];
+            GridArray gData = new GridArray();
+            gData.data = readArray();
+
+            //Grid data coordinate
+            double[] X = new double[width];
+            double[] Y = new double[height];
+            IFDEntry modelTiePointTag = findTag(Tag.ModelTiepointTag);
+            IFDEntry modelPixelScaleTag = findTag(Tag.ModelPixelScaleTag);
+            double minLon = modelTiePointTag.valueD[3];
+            double maxLat = modelTiePointTag.valueD[4];
+            double xdelt = modelPixelScaleTag.valueD[0];
+            double ydelt = modelPixelScaleTag.valueD[1];
+            for (int i = 0; i < width; i++) {
+                X[i] = minLon + xdelt * i;
+            }
+            for (int i = 0; i < height; i++) {
+                Y[height - i - 1] = maxLat - ydelt * i;
+            }
+
+            //gData.data = values;
+            gData.xArray = X;
+            gData.yArray = Y;
+
+            //Projection
+            String projStr = getProjection();
+            if (projStr != null) {
+                gData.projInfo = new ProjectionInfo(projStr);
+            } else {
+                gData.projInfo = KnownCoordinateSystems.geographic.world.WGS1984;
+            }
+
+            return gData;
         } catch (IOException ex) {
             Logger.getLogger(GeoTiff.class.getName()).log(Level.SEVERE, null, ex);
             return null;
@@ -649,7 +705,7 @@ public class GeoTiff {
             return null;
         }
     }
-    
+
     /**
      * Get grid data
      *
@@ -759,7 +815,7 @@ public class GeoTiff {
             System.out.println("tileOffset =" + tileOffset + " tileSize=" + tileSize);
             int idx;
             int tileIdx, vIdx, hIdx;
-            if (bitsPerSample == 8){
+            if (bitsPerSample == 8) {
                 for (int i = 0; i < vTileNum; i++) {
                     for (int j = 0; j < hTileNum; j++) {
                         tileIdx = i * hTileNum + j;
@@ -782,7 +838,7 @@ public class GeoTiff {
                         }
                     }
                 }
-            } else if (bitsPerSample == 16){
+            } else if (bitsPerSample == 16) {
                 for (int i = 0; i < vTileNum; i++) {
                     for (int j = 0; j < hTileNum; j++) {
                         tileIdx = i * hTileNum + j;
@@ -829,6 +885,159 @@ public class GeoTiff {
         }
 
         return values;
+    }
+    
+    /**
+     * Get band number
+     * @return Band number
+     */
+    public int getBandNum(){
+        IFDEntry samplesPerPixelTag = findTag(Tag.SamplesPerPixel);
+        int samplesPerPixel = samplesPerPixelTag.value[0];    //Number of bands
+        return samplesPerPixel;
+    }
+
+    /**
+     * Test read data
+     *
+     * @return Data
+     * @throws IOException
+     */
+    public Array readArray() throws IOException {
+        IFDEntry widthIFD = this.findTag(Tag.ImageWidth);
+        IFDEntry heightIFD = this.findTag(Tag.ImageLength);
+        int width = widthIFD.value[0];
+        int height = heightIFD.value[0];
+        IFDEntry samplesPerPixelTag = findTag(Tag.SamplesPerPixel);
+        int samplesPerPixel = samplesPerPixelTag.value[0];    //Number of bands
+        //int[] values = new int[width * height];
+        IFDEntry bitsPerSampleTag = findTag(Tag.BitsPerSample);
+        int bitsPerSample = bitsPerSampleTag.value[0];
+        int[] shape;
+        if (samplesPerPixel == 1) {
+            shape = new int[]{width, height};
+        } else {
+            shape = new int[]{width, height, samplesPerPixel};
+        }
+        Array r = Array.factory(DataType.INT, shape);
+        IFDEntry tileOffsetTag = findTag(Tag.TileOffsets);
+        ByteBuffer buffer;
+        if (tileOffsetTag != null) {
+            Index index = r.getIndex();
+            int tileOffset;
+            IFDEntry tileSizeTag = findTag(Tag.TileByteCounts);
+            IFDEntry tileLengthTag = findTag(Tag.TileLength);
+            IFDEntry tileWidthTag = findTag(Tag.TileWidth);
+            int tileWidth = tileWidthTag.value[0];
+            int tileHeight = tileLengthTag.value[0];
+            int hTileNum = (width + tileWidth - 1) / tileWidth;
+            int vTileNum = (height + tileHeight - 1) / tileHeight;
+            int tileSize;
+            //System.out.println("tileOffset =" + tileOffset + " tileSize=" + tileSize);
+            int idx;
+            int tileIdx, vIdx, hIdx;
+            if (bitsPerSample == 8) {
+                for (int i = 0; i < vTileNum; i++) {
+                    for (int j = 0; j < hTileNum; j++) {
+                        tileIdx = i * hTileNum + j;
+                        tileOffset = tileOffsetTag.value[tileIdx];
+                        tileSize = tileSizeTag.value[tileIdx];
+                        buffer = testReadData(tileOffset, tileSize);
+                        for (int h = 0; h < tileHeight; h++) {
+                            vIdx = i * tileHeight + h;
+                            if (vIdx == height) {
+                                break;
+                            }
+                            for (int w = 0; w < tileWidth; w++) {
+                                hIdx = j * tileWidth + w;
+                                if (hIdx == width) {
+                                    break;
+                                }
+                                index.set0(vIdx);
+                                index.set1(hIdx);
+                                if (samplesPerPixel == 1)
+                                    r.setInt(index, DataConvert.byte2Int(buffer.get()));
+                                else {
+                                    for (int k = 0; k < samplesPerPixel; k++) {
+                                        index.set2(k);
+                                        r.setInt(index, DataConvert.byte2Int(buffer.get()));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else if (bitsPerSample == 16) {
+                for (int i = 0; i < vTileNum; i++) {
+                    for (int j = 0; j < hTileNum; j++) {
+                        tileIdx = i * hTileNum + j;
+                        tileOffset = tileOffsetTag.value[tileIdx];
+                        tileSize = tileSizeTag.value[tileIdx];
+                        buffer = testReadData(tileOffset, tileSize);
+                        for (int h = 0; h < tileHeight; h++) {
+                            vIdx = i * tileHeight + h;
+                            if (vIdx == height) {
+                                break;
+                            }
+                            for (int w = 0; w < tileWidth; w++) {
+                                hIdx = j * tileWidth + w;
+                                if (hIdx == width) {
+                                    break;
+                                }
+                                index.set0(vIdx);
+                                index.set1(hIdx);
+                                if (samplesPerPixel == 1)
+                                    r.setInt(index, DataConvert.byte2Int(buffer.get()));
+                                else {
+                                    for (int k = 0; k < samplesPerPixel; k++) {
+                                        index.set2(k);
+                                        r.setInt(index, DataConvert.byte2Int(buffer.get()));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            IFDEntry stripOffsetTag = findTag(Tag.StripOffsets);
+            if (stripOffsetTag != null) {
+                int stripNum = stripOffsetTag.count;
+                int stripOffset;
+                IFDEntry stripSizeTag = findTag(Tag.StripByteCounts);
+                int stripSize = stripSizeTag.value[0];
+                IFDEntry rowsPerStripTag = findTag(Tag.RowsPerStrip);
+                int rowNum = rowsPerStripTag.value[0];
+                //System.out.println("stripOffset =" + stripOffset + " stripSize=" + stripSize);
+                int idx = 0;
+                if (bitsPerSample == 8) {
+                    for (int i = 0; i < stripNum; i++) {
+                        stripOffset = stripOffsetTag.value[i];
+                        buffer = testReadData(stripOffset, stripSize);
+                        for (int j = 0; j < width * rowNum; j++) {
+                            for (int k = 0; k < samplesPerPixel; k++) {
+                                r.setInt(idx, DataConvert.byte2Int(buffer.get()));
+                                idx += 1;
+                            }
+                        }
+                    }
+                } else if (bitsPerSample == 16) {
+                    for (int i = 0; i < stripNum; i++) {
+                        stripOffset = stripOffsetTag.value[i];
+                        buffer = testReadData(stripOffset, stripSize);
+                        for (int j = 0; j < width * rowNum; j++) {
+                            for (int k = 0; k < samplesPerPixel; k++) {
+                                r.setInt(idx, buffer.getShort());
+                                idx += 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        r = ArrayMath.flip(r, 0);
+        return r;
     }
 
     /**

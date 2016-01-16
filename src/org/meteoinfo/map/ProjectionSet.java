@@ -1,4 +1,4 @@
- /* Copyright 2012 Yaqiang Wang,
+/* Copyright 2012 Yaqiang Wang,
  * yaqiang.wang@gmail.com
  * 
  * This library is free software; you can redistribute it and/or modify it
@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.EventListenerList;
 import org.meteoinfo.projection.proj4j.CRSFactory;
+import ucar.ma2.InvalidRangeException;
 
 /**
  *
@@ -287,10 +288,8 @@ public class ProjectionSet {
                     if (Math.abs(aP.X) < 0.1 && Math.abs(bP.X) < 0.1 && MIMath.doubleEquals(aP.Y, bP.Y)) {
                         isJoin = true;
                     }
-                } else {
-                    if (MIMath.doubleEquals(aP.X, bP.X) && MIMath.doubleEquals(aP.Y, bP.Y)) {
-                        isJoin = true;
-                    }
+                } else if (MIMath.doubleEquals(aP.X, bP.X) && MIMath.doubleEquals(aP.Y, bP.Y)) {
+                    isJoin = true;
                 }
 
                 if (isJoin) {
@@ -323,34 +322,38 @@ public class ProjectionSet {
      * @param toProj To projection
      */
     public void projectLayer(RasterLayer oLayer, ProjectionInfo toProj) {
-//            if (toProj.getProjectionName() == ProjectionNames.Robinson) {
+        try {
+            //            if (toProj.getProjectionName() == ProjectionNames.Robinson) {
 //                return;
 //            }
 
-        if (oLayer.getProjInfo().toProj4String().equals(toProj.toProj4String())) {
-            if (oLayer.isProjected()) {
-                oLayer.getOriginData();
-                oLayer.updateGridData();
-                if (oLayer.getLegendScheme().getBreakNum() < 50) {
-                    oLayer.updateImage();
-                } else {
-                    oLayer.setPaletteByLegend();
+            if (oLayer.getProjInfo().toProj4String().equals(toProj.toProj4String())) {
+                if (oLayer.isProjected()) {
+                    oLayer.getOriginData();
+                    oLayer.updateGridData();
+                    if (oLayer.getLegendScheme().getBreakNum() < 50) {
+                        oLayer.updateImage();
+                    } else {
+                        oLayer.setPaletteByLegend();
+                    }
                 }
+                return;
             }
-            return;
-        }
 
-        if (!oLayer.isProjected()) {
-            oLayer.updateOriginData();
-        } else {
-            oLayer.getOriginData();
-        }
+            if (!oLayer.isProjected()) {
+                oLayer.updateOriginData();
+            } else {
+                oLayer.getOriginData();
+            }
 
-        oLayer.setGridData(oLayer.getGridData().project(oLayer.getProjInfo(), toProj));
-        if (oLayer.getLegendScheme().getBreakNum() < 50) {
-            oLayer.updateImage(oLayer.getLegendScheme());
-        } else {
-            oLayer.setPaletteByLegend();
+            oLayer.setGridData(oLayer.getGridData().project(oLayer.getProjInfo(), toProj));
+            if (oLayer.getLegendScheme().getBreakNum() < 50) {
+                oLayer.updateImage(oLayer.getLegendScheme());
+            } else {
+                oLayer.setPaletteByLegend();
+            }
+        } catch (InvalidRangeException ex) {
+            Logger.getLogger(ProjectionSet.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -404,7 +407,6 @@ public class ProjectionSet {
         }
 
         //aLayer.AttributeTable.Table.Rows.Clear();
-
         switch (oLayer.getShapeType()) {
             case Point:
             case PointM:
@@ -501,7 +503,6 @@ public class ProjectionSet {
 //                        if (aPLS == null) {
 //                            continue;
 //                        }
-
                         if (aPLS.getExtent().minX <= refLon && aPLS.getExtent().maxX >= refLon) {
                             plsList.add(GeoComputation.clipPolylineShape_Lon(aPLS, refLon));
                         } else {
@@ -690,7 +691,6 @@ public class ProjectionSet {
         //{
         //    aLayer.AddLabels();
         //}
-
         return aLayer;
     }
 
@@ -837,12 +837,12 @@ public class ProjectionSet {
                 double[][] points = new double[1][];
                 PointD wPoint = aPL.getPointList().get(j);
                 x = wPoint.X;
-                if (fromProj.isLonLat()){
-                    if (x > 180){
+                if (fromProj.isLonLat()) {
+                    if (x > 180) {
                         x -= 360;
-                    } else if (x < -180){
+                    } else if (x < -180) {
                         x += 360;
-                    }                    
+                    }
                 }
                 points[0] = new double[]{x, wPoint.Y};
                 try {
@@ -864,7 +864,6 @@ public class ProjectionSet {
                 polyLines.add(bPL);
             }
         }
-
 
         if (polyLines.size() > 0) {
             aPLS.setPolylines(polyLines);
@@ -904,7 +903,6 @@ public class ProjectionSet {
                 polyLines.add(bPL);
             }
         }
-
 
         if (polyLines.size() > 0) {
             aPLS.setPolylines(polyLines);
@@ -955,10 +953,8 @@ public class ProjectionSet {
                     } else {
                         break;
                     }
-                } else {
-                    if (newPoints.size() > 2) {
-                        bPG.addHole(newPoints);
-                    }
+                } else if (newPoints.size() > 2) {
+                    bPG.addHole(newPoints);
                 }
             }
 
@@ -1008,10 +1004,8 @@ public class ProjectionSet {
                     } else {
                         break;
                     }
-                } else {
-                    if (newPoints.size() > 2) {
-                        bPG.addHole(newPoints);
-                    }
+                } else if (newPoints.size() > 2) {
+                    bPG.addHole(newPoints);
                 }
             }
 

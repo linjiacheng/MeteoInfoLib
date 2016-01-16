@@ -41,6 +41,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.meteoinfo.data.GridArray;
 import org.meteoinfo.data.XYListDataset;
 import org.meteoinfo.layer.RasterLayer;
 import org.meteoinfo.legend.LegendType;
@@ -1244,6 +1245,47 @@ public class DrawMeteoData {
 
         return createRasterLayer(gridData, lName, ls);
     }
+    
+    /**
+     * Create reaster layer
+     *
+     * @param gridData Grid data
+     * @param lName Layer name
+     * @return Raster layer
+     */
+    public static RasterLayer createRasterLayer(GridArray gridData, String lName) {
+        boolean isUnique = gridData.testUniqueValues();
+        LegendScheme ls;
+        if (isUnique) {
+            List<Number> values = gridData.getUniqueValues();
+            ls = LegendManage.createUniqValueLegendScheme(values, ShapeTypes.Polygon);
+        } else {
+            ls = LegendManage.createLegendSchemeFromGridData(gridData, LegendType.GraduatedColor, ShapeTypes.Polygon);
+        }
+
+        return createRasterLayer(gridData, lName, ls);
+    }
+    
+    /**
+     * Create reaster layer
+     *
+     * @param gridData Grid data
+     * @param LName Layer name
+     * @param aLS Legend scheme
+     * @return Raster layer
+     */
+    public static RasterLayer createRasterLayer(GridArray gridData, String LName, LegendScheme aLS) {
+        RasterLayer aRLayer = new RasterLayer();
+        aRLayer.setGridData(gridData);
+        aRLayer.setShapeType(ShapeTypes.Image);
+        aRLayer.setLegendScheme(aLS.convertTo(ShapeTypes.Image));
+        aRLayer.setLayerName(LName);
+        aRLayer.setVisible(true);
+        aRLayer.setLayerDrawType(LayerDrawType.Raster);
+        aRLayer.setMaskout(true);
+
+        return aRLayer;
+    }
 
     /**
      * Create reaster layer
@@ -1255,7 +1297,7 @@ public class DrawMeteoData {
      */
     public static RasterLayer createRasterLayer(GridData gridData, String LName, LegendScheme aLS) {
         RasterLayer aRLayer = new RasterLayer();
-        aRLayer.setGridData(gridData);
+        aRLayer.setGridData(gridData.toGridArray());
         aRLayer.setShapeType(ShapeTypes.Image);
         aRLayer.setLegendScheme(aLS.convertTo(ShapeTypes.Image));
         aRLayer.setLayerName(LName);
@@ -1276,7 +1318,7 @@ public class DrawMeteoData {
      */
     public static RasterLayer createRasterLayer(GridData gridData, String LName, String paletteFile) {
         RasterLayer aRLayer = new RasterLayer();
-        aRLayer.setGridData(gridData);
+        aRLayer.setGridData(gridData.toGridArray());
         aRLayer.setPalette(paletteFile);
         aRLayer.setLayerName(LName);
         aRLayer.setVisible(true);

@@ -3346,5 +3346,28 @@ public class GridData {
             return data[i][j];
         }
     }
+    
+    /**
+     * Convert to GridArray object
+     * @return GridArray object
+     */
+    public GridArray toGridArray(){
+        Array a = Array.factory(DataType.DOUBLE, new int[]{this.getYNum(), this.getXNum()});
+        int idx = 0;
+        for (int i = 0; i < this.getYNum(); i++){
+            for (int j = 0; j < this.getXNum(); j++){
+                a.setDouble(idx, this.data[i][j]);
+                idx += 1;
+            }
+        }
+        
+        GridArray r = new GridArray();
+        r.data = a;
+        r.xArray = this.xArray;
+        r.yArray = this.yArray;
+        r.projInfo = this.projInfo;
+        r.missingValue = this.missingValue;
+        return r;
+    }
     // </editor-fold>
 }

@@ -121,6 +121,17 @@ public class LonLatStationDataInfo extends DataInfo implements IStationDataInfo 
 
         return dataInfo;
     }
+    
+    /**
+     * Read array data of a variable
+     * 
+     * @param varName Variable name
+     * @return Array data
+     */
+    @Override
+    public Array read(String varName){
+        return null;
+    }
 
     /**
      * Read array data of the variable

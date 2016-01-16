@@ -47,9 +47,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
+import org.meteoinfo.data.GridArray;
 import org.meteoinfo.data.meteodata.bandraster.BILDataInfo;
 import org.meteoinfo.global.DataConvert;
-import org.meteoinfo.table.DataColumn;
 import org.meteoinfo.layer.RasterLayer;
 import org.meteoinfo.legend.LegendScheme;
 import org.meteoinfo.legend.LegendType;
@@ -277,7 +277,7 @@ public class MapDataManage {
         try {
             GeoTiff geoTiff = new GeoTiff(fileName);
             geoTiff.read();
-            GridData gData = geoTiff.getGridData();
+            GridArray gData = geoTiff.getGridArray();
 //            LegendScheme aLS = LegendManage.createLegendSchemeFromGridData(gData, LegendType.GraduatedColor,
 //                    ShapeTypes.Image);
             RasterLayer aLayer = DrawMeteoData.createRasterLayer(gData, new File(fileName).getName());

@@ -1138,6 +1138,30 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
 
         return new Object[]{filePath, tIdx};
     }
+    
+    /**
+     * Read array data of a variable
+     * 
+     * @param varName Variable name
+     * @return Array data
+     */
+    @Override
+    public Array read(String varName){
+        Variable var = this.getVariable(varName);
+        int n = var.getDimNumber();
+        int[] origin = new int[n];
+        int[] size = new int[n];
+        int[] stride = new int[n];
+        for (int i = 0; i < n; i++){
+            origin[i] = 0;
+            size[i] = var.getDimLength(i);
+            stride[i] = 1;
+        }
+        
+        Array r = read(varName, origin, size, stride);
+        
+        return r;
+    }
 
     /**
      * Read array data of the variable

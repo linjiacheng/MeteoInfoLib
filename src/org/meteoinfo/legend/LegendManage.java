@@ -26,6 +26,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import org.meteoinfo.data.GridArray;
 import org.meteoinfo.global.util.BigDecimalUtil;
 import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.colors.ColorMap;
@@ -52,6 +53,45 @@ public class LegendManage {
      * @return Legend scheme
      */
     public static LegendScheme createLegendSchemeFromGridData(GridData aGridData,
+            LegendType aLT, ShapeTypes aST) {
+        LegendScheme aLS;
+        double[] CValues;
+        Color[] colors;
+        double[] maxmin = new double[2];
+        boolean hasUndef = aGridData.getMaxMinValue(maxmin);
+        double MinData = maxmin[1];
+        double MaxData = maxmin[0];
+
+        CValues = createContourValues(MinData, MaxData);
+        colors = createRainBowColors(CValues.length + 1);
+
+//        List<String> values = new ArrayList<String>();
+//        //String dFormat = "%1$." + String.valueOf(MIMath.getDecimalNum(CValues[0])) + "f";
+//        for (double v : CValues) {
+//            //values.add(String.format(dFormat, v));
+//            values.add(String.valueOf(v));
+//        }
+        //Generate lengendscheme  
+        if (aLT == LegendType.UniqueValue) {
+            aLS = createUniqValueLegendScheme(CValues, colors,
+                    aST, MinData, MaxData, hasUndef, aGridData.missingValue);
+        } else {
+            aLS = createGraduatedLegendScheme(CValues, colors,
+                    aST, MinData, MaxData, hasUndef, aGridData.missingValue);
+        }
+
+        return aLS;
+    }
+    
+    /**
+     * Create legend scheme from grid data
+     *
+     * @param aGridData Grid data
+     * @param aLT Legend type
+     * @param aST Shape type
+     * @return Legend scheme
+     */
+    public static LegendScheme createLegendSchemeFromGridData(GridArray aGridData,
             LegendType aLT, ShapeTypes aST) {
         LegendScheme aLS;
         double[] CValues;
@@ -1428,6 +1468,28 @@ public class LegendManage {
 
         return ls;
     }
+    
+    /**
+     * Create image legend from grid data
+     *
+     * @param gdata Grid data
+     * @param cmap Color map
+     * @return Legend scheme
+     */
+    public static LegendScheme createImageLegend(GridArray gdata, ColorMap cmap) {
+        boolean isUnique = gdata.testUniqueValues();
+        LegendScheme ls;
+        if (isUnique) {
+            List<Number> values = gdata.getUniqueValues();
+            ls = LegendManage.createUniqValueLegendScheme(values, cmap, ShapeTypes.Polygon);
+        } else if (gdata.hasNaN()) {
+            ls = LegendManage.createLegendScheme(gdata.min(), gdata.max(), cmap, Double.NaN);
+        } else {
+            ls = LegendManage.createLegendScheme(gdata.min(), gdata.max(), cmap);
+        }
+
+        return ls;
+    }
 
     /**
      * Create image legend from grid data
@@ -1454,6 +1516,27 @@ public class LegendManage {
      * Create image legend from grid data
      *
      * @param gdata Grid data
+     * @param n Legend break number
+     * @param cmap Color map
+     * @return Legend scheme
+     */
+    public static LegendScheme createImageLegend(GridArray gdata, int n, ColorMap cmap) {
+        LegendScheme ls;
+        if (gdata.hasNaN()) {
+            ls = LegendManage.createLegendScheme(gdata.min(), gdata.max(), n, cmap, 
+                    LegendType.GraduatedColor, ShapeTypes.Image, true, Double.NaN);
+        } else {
+            ls = LegendManage.createLegendScheme(gdata.min(), gdata.max(), n, cmap, 
+                    LegendType.GraduatedColor, ShapeTypes.Image, false, Double.NaN);
+        }
+
+        return ls;
+    }
+    
+    /**
+     * Create image legend from grid data
+     *
+     * @param gdata Grid data
      * @param levs Legend break values
      * @param cmap Color map
      * @return Legend scheme
@@ -1465,6 +1548,27 @@ public class LegendManage {
                     LegendType.GraduatedColor, ShapeTypes.Image, true, Double.NaN);
         } else {
             ls = LegendManage.createLegendScheme(gdata.getMinValue(), gdata.getMaxValue(), levs, cmap, 
+                    LegendType.GraduatedColor, ShapeTypes.Image, false, Double.NaN);
+        }
+
+        return ls;
+    }
+    
+    /**
+     * Create image legend from grid data
+     *
+     * @param gdata Grid data
+     * @param levs Legend break values
+     * @param cmap Color map
+     * @return Legend scheme
+     */
+    public static LegendScheme createImageLegend(GridArray gdata, List<Number> levs, ColorMap cmap) {
+        LegendScheme ls;
+        if (gdata.hasNaN()) {
+            ls = LegendManage.createLegendScheme(gdata.min(), gdata.max(), levs, cmap, 
+                    LegendType.GraduatedColor, ShapeTypes.Image, true, Double.NaN);
+        } else {
+            ls = LegendManage.createLegendScheme(gdata.min(), gdata.max(), levs, cmap, 
                     LegendType.GraduatedColor, ShapeTypes.Image, false, Double.NaN);
         }
 

@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.meteoinfo.data.ArrayMath;
 import org.meteoinfo.data.GridData;
 import org.meteoinfo.data.mapdata.geotiff.GeoTiff;
 import org.meteoinfo.data.meteodata.DataInfo;
@@ -42,9 +43,13 @@ public class GeoTiffDataInfo extends DataInfo implements IGridDataInfo {
 
     // <editor-fold desc="Variables">
     private GeoTiff geoTiff;
+    private int bandNum;
 
     // </editor-fold>
     // <editor-fold desc="Constructor">
+    /**
+     * Constructor
+     */
     public GeoTiffDataInfo() {
         this.setDataType(MeteoDataType.GEOTIFF);
     }
@@ -69,12 +74,22 @@ public class GeoTiffDataInfo extends DataInfo implements IGridDataInfo {
             Dimension yDim = new Dimension(DimensionType.Y);
             yDim.setValues(Y);
             this.setYDimension(yDim);
+            this.bandNum = this.geoTiff.getBandNum();
+            Dimension bDim = null;
+            if (this.bandNum > 1){
+                bDim = new Dimension(DimensionType.Other);
+                bDim.setValues(new double[this.bandNum]);
+                this.addDimension(bDim);
+            }
             
             List<Variable> variables = new ArrayList<>();
             Variable aVar = new Variable();
             aVar.setName("var");
             aVar.addDimension(yDim);
-            aVar.addDimension(xDim);            
+            aVar.addDimension(xDim);       
+            if (this.bandNum > 1){
+                aVar.addDimension(bDim);
+            }
             variables.add(aVar);
             this.setVariables(variables);
             
@@ -104,6 +119,24 @@ public class GeoTiffDataInfo extends DataInfo implements IGridDataInfo {
     }
     
     /**
+     * Read array data of a variable
+     * 
+     * @param varName Variable name
+     * @return Array data
+     */
+    @Override
+    public Array read(String varName){        
+        Array r = null;
+        try {
+            r = this.geoTiff.readArray();
+        } catch (IOException ex) {
+            Logger.getLogger(GeoTiffDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return r;
+    }
+    
+    /**
      * Read array data of the variable
      *
      * @param varName Variable name
@@ -115,19 +148,13 @@ public class GeoTiffDataInfo extends DataInfo implements IGridDataInfo {
     @Override
     public Array read(String varName, int[] origin, int[] size, int[] stride) {
         try {
-            Section section = new Section(origin, size, stride);
-            Array dataArray = Array.factory(DataType.FLOAT, section.getShape());
-            int rangeIdx = 0;
-            Range yRange = section.getRange(rangeIdx++);
-            Range xRange = section.getRange(rangeIdx);
-            IndexIterator ii = dataArray.getIndexIterator();
-            readXY(yRange, xRange, ii);
-
-            return dataArray;
+            Array array = read(varName);
+            array = ArrayMath.section(array, origin, size, stride);            
+            return array;
         } catch (InvalidRangeException ex) {
-            Logger.getLogger(ASCIIGridDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(GeoTiffDataInfo.class.getName()).log(Level.SEVERE, null, ex);
             return null;
-        }
+        }        
     }
     
     private void readXY(Range yRange, Range xRange, IndexIterator ii) {

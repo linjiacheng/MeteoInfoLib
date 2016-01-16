@@ -461,6 +461,13 @@ public abstract class DataInfo {
      * @return Data info text
      */
     public abstract String generateInfoText();
+    
+    /**
+     * Read array data
+     * @param varName Variable name
+     * @return Array
+     */
+    public abstract Array read(String varName);
 
     /**
      * Read array data

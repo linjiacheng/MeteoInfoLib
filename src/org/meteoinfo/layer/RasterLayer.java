@@ -23,7 +23,9 @@ import org.meteoinfo.shape.ShapeTypes;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import org.meteoinfo.data.GridArray;
 import org.meteoinfo.legend.LegendType;
+import ucar.ma2.Index;
 
 /**
  *
@@ -33,8 +35,8 @@ public class RasterLayer extends ImageLayer {
     // <editor-fold desc="Variables">
 
     //private LegendScheme _legendScheme;
-    private GridData _gridData;
-    private GridData _originGridData = null;
+    private GridArray _gridData;
+    private GridArray _originGridData = null;
     private boolean _isProjected = false;
     private List<Color> _colors;
     //private InterpolationMode _interpMode = InterpolationMode.NearestNeighbor;
@@ -71,7 +73,7 @@ public class RasterLayer extends ImageLayer {
      *
      * @return Grid data
      */
-    public GridData getGridData() {
+    public GridArray getGridData() {
         return _gridData;
     }
 
@@ -79,7 +81,7 @@ public class RasterLayer extends ImageLayer {
      * Set grid data
      * @param gdata Grid data
      */
-    public void setGridData(GridData gdata) {
+    public void setGridData(GridArray gdata) {
         _gridData = gdata;
         updateGridData();
     }
@@ -131,7 +133,11 @@ public class RasterLayer extends ImageLayer {
      * @param als The legend scheme
      */
     public void updateImage(LegendScheme als) {
-        BufferedImage image = getImageFromGridData(_gridData, als);
+        BufferedImage image;
+        if (_gridData.data.getRank() == 2)
+            image = getImageFromGridData(_gridData, als);
+        else
+            image = getRGBImage(_gridData);
         this.setImage(image);
     }
     
@@ -142,51 +148,29 @@ public class RasterLayer extends ImageLayer {
         BufferedImage image = getImageFromGridData(_gridData, this.getLegendScheme());
         this.setImage(image);
     }
-
-    /**
-     * Update image
-     */
-    public void updateImage_back() {
-        int xNum = _gridData.getXNum();
-        int yNum = _gridData.getYNum();
-        byte[] imageBytes = new byte[xNum * yNum];
-        for (int i = 0; i < yNum; i++) {
-            for (int j = 0; j < xNum; j++) {
-                int value = -1;
-                int b;
-                for (b = 0; b < this.getLegendScheme().getLegendBreaks().size() - 1; b++) {
-                    ColorBreak aCB = this.getLegendScheme().getLegendBreaks().get(b);
-                    if (aCB.getStartValue().toString().equals(aCB.getEndValue().toString())) {
-                        if (_gridData.data[i][j] == Double.parseDouble(aCB.getStartValue().toString())) {
-                            value = b;
-                            break;
-                        }
-                    } else {
-                        if (_gridData.data[i][j] >= Double.parseDouble(aCB.getStartValue().toString())
-                                && _gridData.data[i][j] < Double.parseDouble(aCB.getEndValue().toString())) {
-                            value = b;
-                            break;
-                        }
-                    }
-                }
-                if (value == -1) {
-                    value = b;
-                    if (this.getLegendScheme().getLegendBreaks().get(this.getLegendScheme().getBreakNum() - 1).isNoData()) {
-                        if (!MIMath.doubleEquals(_gridData.data[i][j], this.getLegendScheme().getUndefValue())) {
-                            value = b - 1;
-                        }
-                    }
-                }
-                imageBytes[i * xNum + j] = (byte) value;
+    
+    private BufferedImage getRGBImage(GridArray gdata){
+        int width, height, r, g, b;
+        width = gdata.getXNum();
+        height = gdata.getYNum();
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Index index = gdata.data.getIndex();
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                r = gdata.data.getInt(index);
+                index.incr();
+                g = gdata.data.getInt(index);
+                index.incr();
+                b = gdata.data.getInt(index);
+                index.incr();
+                image.setRGB(j, height - i - 1, new Color(r, g, b).getRGB());
             }
         }
-
-//            Image = DrawMeteoData.CreateBitmap(imageBytes, xNum, yNum);
-//            List<Color> colors = LegendScheme.GetColors();
-//            DrawMeteoData.SetPalette(colors, Image);
+        
+        return image;
     }
 
-    private BufferedImage getImageFromGridData(GridData gdata, LegendScheme als) {
+    private BufferedImage getImageFromGridData(GridArray gdata, LegendScheme als) {
         int width, height, breakNum;
         width = gdata.getXNum();
         height = gdata.getYNum();
@@ -237,7 +221,7 @@ public class RasterLayer extends ImageLayer {
         return aImage;
     }
     
-    private BufferedImage getImageFromGridData(GridData gdata, List<Color> colors) {
+    private BufferedImage getImageFromGridData(GridArray gdata, List<Color> colors) {
         int width, height;
         width = gdata.getXNum();
         height = gdata.getYNum();
@@ -247,39 +231,8 @@ public class RasterLayer extends ImageLayer {
         int n = colors.size();
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                oneValue = (int)gdata.data[i][j];
+                oneValue = (int)gdata.getValue(i, j);
                 oneColor = colors.get(oneValue);                
-                aImage.setRGB(j, height - i - 1, oneColor.getRGB());
-            }
-        }
-
-        return aImage;
-    }
-
-    private BufferedImage getImageFromGridData_back(GridData gdata, LegendScheme als) {
-        int width, height, breakNum;
-        width = gdata.getXNum();
-        height = gdata.getYNum();
-        breakNum = als.getBreakNum();
-        double[] breakValue = new double[breakNum];
-        Color[] breakColor = new Color[breakNum];
-        for (int i = 0; i < breakNum; i++) {
-            breakValue[i] = Double.parseDouble(als.getLegendBreaks().get(i).getEndValue().toString());
-            breakColor[i] = als.getLegendBreaks().get(i).getColor();
-        }
-        Color defaultColor = breakColor[breakNum - 1];    //默认颜色为最后一个颜色
-        BufferedImage aImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
-                double oneValue = gdata.data[i][j];
-                Color oneColor = defaultColor;
-                //循环只到breakNum-1 是因为最后一个LegendBreaks的EndValue和StartValue是一样的
-                for (int k = 0; k < breakNum - 1; k++) {
-                    if (oneValue < breakValue[k]) {
-                        oneColor = breakColor[k];
-                        break;
-                    }
-                }
                 aImage.setRGB(j, height - i - 1, oneColor.getRGB());
             }
         }
@@ -349,7 +302,7 @@ public class RasterLayer extends ImageLayer {
      * Update origin data
      */
     public void updateOriginData() {
-        _originGridData = (GridData) _gridData.clone();
+        _originGridData = (GridArray) _gridData.clone();
         _isProjected = true;
     }
 
@@ -357,7 +310,7 @@ public class RasterLayer extends ImageLayer {
      * Get origin data
      */
     public void getOriginData() {
-        _gridData = (GridData) _originGridData.clone();
+        _gridData = (GridArray) _originGridData.clone();
     }
 
     // </editor-fold>
