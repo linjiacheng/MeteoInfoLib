@@ -1039,7 +1039,7 @@ public abstract class DataMath {
         }
 
         StationData cStData = new StationData();
-        List<double[]> cData = new ArrayList<double[]>();
+        List<double[]> cData = new ArrayList<>();
         String aStid;
         int stIdx = -1;
         double minX, maxX, minY, maxY;

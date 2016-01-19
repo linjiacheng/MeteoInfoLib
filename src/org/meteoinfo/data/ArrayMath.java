@@ -1646,6 +1646,72 @@ public class ArrayMath {
         }
         return r;
     }
+    
+    /**
+     * Get wind direction and wind speed from U/V
+     * @param u U component
+     * @param v V component
+     * @return Wind direction and wind speed
+     */
+    public static Array[] uv2ds(Array u, Array v){
+        Array windSpeed = ArrayMath.sqrt(ArrayMath.add(ArrayMath.mul(u, u), ArrayMath.mul(v, v)));
+        Array windDir = Array.factory(windSpeed.getDataType(), windSpeed.getShape());
+        double ws, wd, U, V;
+        for (int i = 0; i < windSpeed.getSize(); i++){
+            U = u.getDouble(i);
+            V = u.getDouble(i);
+            if (Double.isNaN(U) || Double.isNaN(V)){
+                windDir.setDouble(i, Double.NaN);
+                continue;
+            }
+            ws = windSpeed.getDouble(i);
+            if (ws == 0) {
+                wd = 0;
+            } else {
+                wd = Math.asin(U / ws) * 180 / Math.PI;
+                if (U < 0 && V < 0) {
+                    wd = 180.0 - wd;
+                } else if (U > 0 && V < 0) {
+                    wd = 180.0 - wd;
+                } else if (U < 0 && V > 0) {
+                    wd = 360.0 + wd;
+                }
+                wd += 180;
+                if (wd >= 360) {
+                    wd -= 360;
+                }
+            }
+            windDir.setDouble(i, wd);
+        }
+        
+        return new Array[]{windDir, windSpeed};
+    }
+    
+    /**
+     * Get wind U/V components from wind direction and speed
+     * @param windDir Wind direction
+     * @param windSpeed Wind speed
+     * @return Wind U/V components
+     */
+    public static Array[] ds2uv(Array windDir, Array windSpeed){
+        Array U = Array.factory(DataType.DOUBLE, windDir.getShape());
+        Array V = Array.factory(DataType.DOUBLE, windDir.getShape());
+        double dir;
+        for (int i = 0; i < U.getSize(); i++){
+            if (Double.isNaN(windDir.getDouble(i)) || Double.isNaN(windSpeed.getDouble(i))){
+                U.setDouble(i, Double.NaN);
+                V.setDouble(i, Double.NaN);
+            }
+            dir = windDir.getDouble(i) + 180;
+            if (dir > 360)
+                dir = dir - 360;
+            dir = dir * Math.PI / 180;
+            U.setDouble(i, windSpeed.getDouble(i) * Math.sin(dir));
+            V.setDouble(i, windSpeed.getDouble(i) * Math.cos(dir));
+        }       
+        
+        return new Array[]{U, V};
+    }
 
     // </editor-fold>       
     // <editor-fold desc="Location">

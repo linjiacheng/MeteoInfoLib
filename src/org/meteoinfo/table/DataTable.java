@@ -386,6 +386,17 @@ public final class DataTable {
     }
     
     /**
+     * Add data rows
+     * @param rows Data rows
+     * @throws Exception 
+     */
+    public void addRows(List<DataRow> rows) throws Exception{
+        for (DataRow row : rows){
+            addRow(row);
+        }
+    }
+    
+    /**
      * Append a data row
      * @param row Data row
      * @return Boolean

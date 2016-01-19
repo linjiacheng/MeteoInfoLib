@@ -214,12 +214,32 @@ public class TableData {
     }
     
     /**
+     * Add data rows
+     * @param rows Data rows
+     */
+    public void addRows(List<DataRow> rows){
+        try {
+            dataTable.addRows(rows);
+        } catch (Exception ex) {
+            Logger.getLogger(TableData.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    /**
      * Get data row
      * @param idx Index
      * @return Data row
      */
     public DataRow getRow(int idx){
         return this.dataTable.getRows().get(idx);
+    }
+    
+    /**
+     * Get data rows
+     * @return Data rows
+     */
+    public List<DataRow> getRows(){
+        return this.dataTable.getRows();
     }
 
     /**

@@ -41,6 +41,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.meteoinfo.data.ArrayMath;
 import org.meteoinfo.data.GridArray;
 import org.meteoinfo.data.XYListDataset;
 import org.meteoinfo.layer.RasterLayer;
@@ -1556,6 +1557,99 @@ public class DrawMeteoData {
                             aLayer.editCellValue("WindSpeed", shapeNum, windSpeed);
                             if (ifAdd) {
                                 aLayer.editCellValue(columnName, shapeNum, stData.data[i][2]);
+                            }
+                        }
+                    } catch (Exception ex) {
+                        Logger.getLogger(DrawMeteoData.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        }
+
+        aLayer.setLayerName(layerName);
+        aLS.setFieldName(columnName);
+        aLayer.setLegendScheme(aLS.convertTo(ShapeTypes.Point));
+        aLayer.setLayerDrawType(LayerDrawType.Vector);
+
+        return aLayer;
+    }
+    
+    /**
+     * Create vector layer
+     *
+     * @param xData X array data
+     * @param yData Y array data
+     * @param uData U array data
+     * @param vData V array data
+     * @param stData Array data
+     * @param aLS Legend scheme
+     * @param layerName Layer name
+     * @param isUV If is U/V
+     * @return Vector layer
+     */
+    public static VectorLayer createVectorLayer(Array xData, Array yData, Array uData, Array vData, Array stData,
+            LegendScheme aLS, String layerName, boolean isUV) {
+        Array windDirData;
+        Array windSpeedData;
+        if (isUV) {
+            Array[] dsData = ArrayMath.uv2ds(uData, vData);
+            windDirData = dsData[0];
+            windSpeedData = dsData[1];
+        } else {
+            windDirData = uData;
+            windSpeedData = vData;
+        }
+
+        int i;
+        double windDir, windSpeed;
+        PointD aPoint;
+
+        String columnName = layerName.split("_")[0];
+        VectorLayer aLayer = new VectorLayer(ShapeTypes.WindArraw);
+        //Add data column         
+        if (isUV) {
+            aLayer.editAddField("U", DataTypes.Float);
+            aLayer.editAddField("V", DataTypes.Float);
+        }
+        aLayer.editAddField("WindDirection", DataTypes.Float);
+        aLayer.editAddField("WindSpeed", DataTypes.Float);
+        boolean ifAdd = true;
+        if (aLayer.getFieldNames().contains(columnName)) {
+            ifAdd = false;
+        }
+        if (ifAdd) {
+            aLayer.editAddField(columnName, DataTypes.Float);
+        }
+
+        for (i = 0; i < windDirData.getSize(); i++) {
+            windDir = (float) windDirData.getDouble(i);
+            windSpeed = (float) windSpeedData.getDouble(i);
+            if (!Double.isNaN(windDir)) {
+                if (!Double.isNaN(windSpeed)) {
+                    aPoint = new PointD();
+                    aPoint.X = xData.getDouble(i);
+                    aPoint.Y = yData.getDouble(i);
+
+                    WindArraw aArraw = new WindArraw();
+                    aArraw.angle = windDir;
+                    aArraw.length = (float)windSpeed;
+                    aArraw.size = 6;
+                    aArraw.setPoint(aPoint);
+                    if (stData != null)
+                        aArraw.setValue(stData.getDouble(i));
+
+                    int shapeNum = aLayer.getShapeNum();
+                    try {
+                        if (aLayer.editInsertShape(aArraw, shapeNum)) {
+                            if (isUV) {
+                                aLayer.editCellValue("U", shapeNum, uData.getDouble(i));
+                                aLayer.editCellValue("V", shapeNum, vData.getDouble(i));
+                            }
+                            aLayer.editCellValue("WindDirection", shapeNum, windDir);
+                            aLayer.editCellValue("WindSpeed", shapeNum, windSpeed);
+                            if (ifAdd) {
+                                if (stData != null)
+                                    aLayer.editCellValue(columnName, shapeNum, stData.getDouble(i));
                             }
                         }
                     } catch (Exception ex) {
