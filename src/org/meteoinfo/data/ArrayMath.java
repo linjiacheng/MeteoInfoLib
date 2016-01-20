@@ -1261,6 +1261,71 @@ public class ArrayMath {
         //MAMath.copy(rr, r);
         return r;
     }
+    
+    /**
+     * Rotate an array by 90 degrees in counter-clockwise direction.
+     * @param a The array
+     * @param k Rotate times
+     * @return Rotated array
+     */
+    public static Array rot90(Array a, int k){
+        int[] shape = new int[a.getRank()];
+        if (Math.abs(k) % 2 == 1){
+            shape[0] = a.getShape()[1];
+            shape[1] = a.getShape()[0];
+        } else {
+            shape[0] = a.getShape()[0];
+            shape[1] = a.getShape()[1];
+        }
+        if (a.getRank() > 2){
+            for (int i = 2; i < a.getRank(); i++){
+                shape[i] = a.getShape()[i];
+            }
+        }
+        Array r = Array.factory(a.getDataType(), shape);
+        Index indexa = a.getIndex();
+        Index indexr = r.getIndex();
+        int[] countera, counterr;
+        switch (k) {
+            case 1:
+            case -3:
+                for (int i = 0; i < r.getSize(); i++){
+                    countera = indexa.getCurrentCounter();
+                    counterr = indexa.getCurrentCounter();
+                    counterr[0] = shape[0] - countera[1] - 1;
+                    counterr[1] = countera[0];
+                    indexr.set(counterr);
+                    r.setObject(indexr, a.getObject(indexa));
+                    indexa.incr();
+                }   break;
+            case 2:
+            case -2:
+                for (int i = 0; i < r.getSize(); i++){
+                    countera = indexa.getCurrentCounter();
+                    counterr = indexa.getCurrentCounter();
+                    counterr[0] = shape[0] - countera[0] - 1;
+                    counterr[1] = shape[1] - countera[1] - 1;
+                    indexr.set(counterr);
+                    r.setObject(indexr, a.getObject(indexa));
+                    indexa.incr();
+                }   break;
+            case 3:
+            case -1:
+                for (int i = 0; i < r.getSize(); i++){
+                    countera = indexa.getCurrentCounter();
+                    counterr = indexa.getCurrentCounter();
+                    counterr[0] = countera[1];
+                    counterr[1] = shape[1] - countera[0] - 1;
+                    indexr.set(counterr);
+                    r.setObject(indexr, a.getObject(indexa));
+                    indexa.incr();
+                }   break;
+            default:
+                r = null;
+        }
+        
+        return r;
+    }
 
     /**
      * Join two arrays by a dimension
