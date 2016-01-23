@@ -27,11 +27,12 @@ import org.meteoinfo.global.util.GlobalUtil;
  *
  * @author wyq
  */
-public class TimeTableData extends TableData{
+public class TimeTableData extends TableData {
 
     // <editor-fold desc="Variables">
     //private int timeColIdx = 0;
     private String timeColName;
+
     // </editor-fold>
     // <editor-fold desc="Constructor">
     /**
@@ -41,12 +42,13 @@ public class TimeTableData extends TableData{
         DataColumn col = new DataColumn("Time", DataTypes.Date);
         dataTable.addColumn(col);
     }
-    
+
     /**
      * Constructor
+     *
      * @param dataTable Data table
      */
-    public TimeTableData(DataTable dataTable){
+    public TimeTableData(DataTable dataTable) {
         super(dataTable);
     }
 
@@ -54,24 +56,24 @@ public class TimeTableData extends TableData{
     // <editor-fold desc="Get Set Methods">
     /**
      * Get time column name
+     *
      * @return Time column name
      */
-    public String getTimeColName(){
+    public String getTimeColName() {
         return this.timeColName;
     }
-    
+
     /**
      * Set time column name
+     *
      * @param value Time column name
      */
-    public void setTimeColName(String value){
+    public void setTimeColName(String value) {
         this.timeColName = value;
     }
 
     // </editor-fold>
     // <editor-fold desc="Methods">
-   
-    
     /**
      * Read data table from ASCII file
      *
@@ -95,7 +97,7 @@ public class TimeTableData extends TableData{
             sr.close();
         } else {
             //Get fields
-            for (DataColumn col : dataColumns){
+            for (DataColumn col : dataColumns) {
                 dataTable.addColumn(col);
             }
             SimpleDateFormat format = new SimpleDateFormat(formatStr);
@@ -107,10 +109,11 @@ public class TimeTableData extends TableData{
                     dTable.getColumns().get(0).setColumnName(fieldName);
                     continue;
                 }
-                for (DataColumn col : dataColumns){
-                    if (col.getDataType() != DataTypes.Date){
-                        if (fieldName.equals(col.getColumnName()))
+                for (DataColumn col : dataColumns) {
+                    if (col.getDataType() != DataTypes.Date) {
+                        if (fieldName.equals(col.getColumnName())) {
                             dataIdxs.add(i);
+                        }
                     }
                 }
             }
@@ -140,7 +143,7 @@ public class TimeTableData extends TableData{
             sr.close();
         }
     }
-    
+
     /**
      * Read data table from ASCII file
      *
@@ -169,8 +172,8 @@ public class TimeTableData extends TableData{
             for (int i = 0; i < titleArray.length; i++) {
                 fieldName = titleArray[i];
                 if (i == timeColIdx) {
-                    dTable.getColumns().get(0).setColumnName(fieldName);                    
-                } else{                
+                    dTable.getColumns().get(0).setColumnName(fieldName);
+                } else {
                     dTable.addColumn(fieldName, DataTypes.String);
                     dataIdxs.add(i);
                 }
@@ -189,10 +192,11 @@ public class TimeTableData extends TableData{
                 dTable.setValue(rn, 0, format.parse(dataArray[timeColIdx]));
                 int cn = 1;
                 for (int idx : dataIdxs) {
-                    if (dataArray.length > idx)
+                    if (dataArray.length > idx) {
                         dTable.setValue(rn, cn, dataArray[idx]);
-                    else
+                    } else {
                         dTable.setValue(rn, cn, "");
+                    }
                     cn++;
                 }
 
@@ -203,547 +207,602 @@ public class TimeTableData extends TableData{
             dataTable = dTable;
             sr.close();
         }
-    }        
-    
+    }
+
     /**
      * Get years
+     *
      * @return Year list
      */
-    public List<Integer> getYears(){
+    public List<Integer> getYears() {
         List<Integer> years = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
         int year;
-        for (DataRow row : dataTable.getRows()){
-            cal.setTime((Date)row.getValue(this.timeColName));
+        for (DataRow row : dataTable.getRows()) {
+            cal.setTime((Date) row.getValue(this.timeColName));
             year = cal.get(Calendar.YEAR);
-            if (!years.contains(year))
+            if (!years.contains(year)) {
                 years.add(year);
+            }
         }
-        
+
         return years;
     }
-    
+
     /**
      * Get year months
+     *
      * @return Year month list
      */
-    public List<String> getYearMonths(){
+    public List<String> getYearMonths() {
         List<String> yms = new ArrayList<>();
         SimpleDateFormat format = new SimpleDateFormat("yyyyMM");
         String ym;
         Date date;
-        for (DataRow row : dataTable.getRows()){
-            date = (Date)row.getValue(this.timeColName);
-            if (date == null){
+        for (DataRow row : dataTable.getRows()) {
+            date = (Date) row.getValue(this.timeColName);
+            if (date == null) {
                 continue;
             }
             ym = format.format(date);
-            if (!yms.contains(ym))
+            if (!yms.contains(ym)) {
                 yms.add(ym);
+            }
         }
-        
+
         return yms;
     }
-    
+
     /**
      * Get days
+     *
      * @return Date list
      */
-    public List<String> getDays(){
+    public List<String> getDays() {
         List<String> days = new ArrayList<>();
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
         String day;
         Date date;
-        for (DataRow row : dataTable.getRows()){
-            date = (Date)row.getValue(this.timeColName);
-            if (date == null){
+        for (DataRow row : dataTable.getRows()) {
+            date = (Date) row.getValue(this.timeColName);
+            if (date == null) {
                 continue;
             }
             day = format.format(date);
-            if (!days.contains(day))
+            if (!days.contains(day)) {
                 days.add(day);
+            }
         }
-        
+
         return days;
     }
-    
+
     /**
      * Get data row list by year
+     *
      * @param year The year
      * @return Data row list
      */
-    public List<DataRow> getDataByYear(int year){
+    public List<DataRow> getDataByYear(int year) {
         List<DataRow> rows = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
-        for (DataRow row : dataTable.getRows()){
-            cal.setTime((Date)row.getValue(this.timeColName));
-            if (cal.get(Calendar.YEAR) == year)
+        for (DataRow row : dataTable.getRows()) {
+            cal.setTime((Date) row.getValue(this.timeColName));
+            if (cal.get(Calendar.YEAR) == year) {
                 rows.add(row);
+            }
         }
-        
+
         return rows;
-    }  
-    
+    }
+
     /**
      * Get data row list by year
+     *
      * @param season The season
      * @return Data row list
      */
-    public List<DataRow> getDataBySeason(String season){
+    public List<DataRow> getDataBySeason(String season) {
         List<Integer> months = this.getMonthsBySeason(season);
         List<DataRow> rows = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
         int month;
-        for (DataRow row : dataTable.getRows()){
-            cal.setTime((Date)row.getValue(this.timeColName));
+        for (DataRow row : dataTable.getRows()) {
+            cal.setTime((Date) row.getValue(this.timeColName));
             month = cal.get(Calendar.MONTH) + 1;
-            if (months.contains(month))
+            if (months.contains(month)) {
                 rows.add(row);
+            }
         }
-        
+
         return rows;
-    }  
-    
-    private List<Integer> getMonthsBySeason(String season){
+    }
+
+    private List<Integer> getMonthsBySeason(String season) {
         List<Integer> months = new ArrayList<>();
-        if (season.equalsIgnoreCase("spring")){
+        if (season.equalsIgnoreCase("spring")) {
             months.add(3);
             months.add(4);
             months.add(5);
-        } else if (season.equalsIgnoreCase("summer")){
+        } else if (season.equalsIgnoreCase("summer")) {
             months.add(6);
             months.add(7);
             months.add(8);
-        } else if (season.equalsIgnoreCase("autumn")){
+        } else if (season.equalsIgnoreCase("autumn")) {
             months.add(9);
             months.add(10);
             months.add(11);
-        } else if (season.equalsIgnoreCase("winter")){
+        } else if (season.equalsIgnoreCase("winter")) {
             months.add(12);
             months.add(1);
             months.add(2);
         }
-        
+
         return months;
     }
-    
+
     /**
      * Get data row list by year and month
+     *
      * @param yearMonth The year and month
      * @return Data row list
      */
-    public List<DataRow> getDataByYearMonth(String yearMonth){
+    public List<DataRow> getDataByYearMonth(String yearMonth) {
         int year = Integer.parseInt(yearMonth.substring(0, 4));
         int month = Integer.parseInt(yearMonth.substring(4));
         return this.getDataByYearMonth(year, month);
-    }      
-    
+    }
+
     /**
      * Get data row list by year and month
+     *
      * @param year The year
      * @param month The month
      * @return Data row list
      */
-    public List<DataRow> getDataByYearMonth(int year, int month){
+    public List<DataRow> getDataByYearMonth(int year, int month) {
         List<DataRow> rows = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
-        for (DataRow row : dataTable.getRows()){
-            cal.setTime((Date)row.getValue(this.timeColName));
+        for (DataRow row : dataTable.getRows()) {
+            cal.setTime((Date) row.getValue(this.timeColName));
             if (cal.get(Calendar.YEAR) == year) {
                 if (cal.get(Calendar.MONTH) == month - 1) {
                     rows.add(row);
                 }
             }
         }
-        
+
         return rows;
-    } 
-    
+    }
+
     /**
      * Get data row list by date
+     *
      * @param date Date string
      * @return Data row list
      */
-    public List<DataRow> getDataByDate(String date){
+    public List<DataRow> getDataByDate(String date) {
         int year = Integer.parseInt(date.substring(0, 4));
         int month = Integer.parseInt(date.substring(4, 6));
         int day = Integer.parseInt(date.substring(6));
         return this.getDataByDate(year, month, day);
     }
-    
+
     /**
      * Get data row list by date
+     *
      * @param year The year
      * @param month The month
      * @param day The day
      * @return Data row list
      */
-    public List<DataRow> getDataByDate(int year, int month, int day){
+    public List<DataRow> getDataByDate(int year, int month, int day) {
         List<DataRow> rows = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
-        for (DataRow row : dataTable.getRows()){
-            cal.setTime((Date)row.getValue(this.timeColName));
+        for (DataRow row : dataTable.getRows()) {
+            cal.setTime((Date) row.getValue(this.timeColName));
             if (cal.get(Calendar.YEAR) == year) {
                 if (cal.get(Calendar.MONTH) == month - 1) {
-                    if (cal.get(Calendar.DAY_OF_MONTH) == day)
+                    if (cal.get(Calendar.DAY_OF_MONTH) == day) {
                         rows.add(row);
+                    }
                 }
             }
         }
-        
+
         return rows;
-    }  
-    
+    }
+
     /**
      * Get data row list by month
+     *
      * @param month The month
      * @return Data row list
      */
-    public List<DataRow> getDataByMonth(int month){
+    public List<DataRow> getDataByMonth(int month) {
         List<DataRow> rows = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
-        for (DataRow row : dataTable.getRows()){
-            cal.setTime((Date)row.getValue(this.timeColName));
+        for (DataRow row : dataTable.getRows()) {
+            cal.setTime((Date) row.getValue(this.timeColName));
             if (cal.get(Calendar.MONTH) == month - 1) {
                 rows.add(row);
             }
         }
-        
+
         return rows;
-    }      
-    
+    }
+
     /**
      * Get data row list by day of week
+     *
      * @param dow Day of week
      * @return Data row list
      */
-    public List<DataRow> getDataByDayOfWeek(int dow){
+    public List<DataRow> getDataByDayOfWeek(int dow) {
         dow = dow + 1;
-        if (dow == 8)
+        if (dow == 8) {
             dow = 1;
-        
+        }
+
         List<DataRow> rows = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
-        for (DataRow row : dataTable.getRows()){
-            cal.setTime((Date)row.getValue(this.timeColName));
+        for (DataRow row : dataTable.getRows()) {
+            cal.setTime((Date) row.getValue(this.timeColName));
             if (cal.get(Calendar.DAY_OF_WEEK) == dow) {
                 rows.add(row);
             }
         }
-        
+
         return rows;
     }
-    
+
     /**
      * Get data row list by hour
+     *
      * @param hour The hour
      * @return Result data row list
      */
-    public List<DataRow> getDataByHour(int hour){
+    public List<DataRow> getDataByHour(int hour) {
         List<DataRow> rows = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
-        for (DataRow row : dataTable.getRows()){
-            cal.setTime((Date)row.getValue(this.timeColName));
+        for (DataRow row : dataTable.getRows()) {
+            cal.setTime((Date) row.getValue(this.timeColName));
             if (cal.get(Calendar.HOUR_OF_DAY) == hour) {
                 rows.add(row);
             }
         }
-        
+
         return rows;
     }
-    
+
     /**
      * Average year by year
+     *
      * @param cols The data columns
      * @return Result data table
-     * @throws Exception 
+     * @throws Exception
      */
     public DataTable ave_Year(List<DataColumn> cols) throws Exception {
         DataTable rTable = new DataTable();
         rTable.addColumn("Year", DataTypes.Integer);
-        for (DataColumn col : cols){
+        for (DataColumn col : cols) {
             rTable.addColumn(col.getColumnName(), DataTypes.Double);
         }
-        
+
         List<Integer> years = this.getYears();
-        for (int year : years){
-            DataRow nRow = rTable.addRow();         
+        for (int year : years) {
+            DataRow nRow = rTable.addRow();
             nRow.setValue(0, year);
             List<DataRow> rows = this.getDataByYear(year);
-            for (DataColumn col : cols){
+            for (DataColumn col : cols) {
                 List<Double> values = this.getValidColumnValues(rows, col);
                 nRow.setValue(col.getColumnName(), Statistics.mean(values));
             }
         }
-        
+
         return rTable;
     }
-    
+
+    /**
+     * Average year
+     *
+     * @param cols The data columns
+     * @param year The year
+     * @return Result data table
+     * @throws Exception
+     */
+    public DataTable ave_Year(List<DataColumn> cols, int year) throws Exception {
+        DataTable rTable = new DataTable();
+        rTable.addColumn("Year", DataTypes.Integer);
+        for (DataColumn col : cols) {
+            rTable.addColumn(col.getColumnName(), DataTypes.Double);
+        }
+
+        DataRow nRow = rTable.addRow();
+        nRow.setValue(0, year);
+        List<DataRow> rows = this.getDataByYear(year);
+        for (DataColumn col : cols) {
+            List<Double> values = this.getValidColumnValues(rows, col);
+            nRow.setValue(col.getColumnName(), Statistics.mean(values));
+        }
+
+        return rTable;
+    }
+
     /**
      * Average year by year
+     *
      * @param cols The data columns
      * @return Result data table
-     * @throws Exception 
+     * @throws Exception
      */
     public DataTable sum_Year(List<DataColumn> cols) throws Exception {
         DataTable rTable = new DataTable();
         rTable.addColumn("Year", DataTypes.Integer);
-        for (DataColumn col : cols){
+        for (DataColumn col : cols) {
             rTable.addColumn(col.getColumnName(), DataTypes.Double);
         }
-        
+
         List<Integer> years = this.getYears();
-        for (int year : years){
-            DataRow nRow = rTable.addRow();         
+        for (int year : years) {
+            DataRow nRow = rTable.addRow();
             nRow.setValue(0, year);
             List<DataRow> rows = this.getDataByYear(year);
-            for (DataColumn col : cols){
+            for (DataColumn col : cols) {
                 List<Double> values = this.getValidColumnValues(rows, col);
                 nRow.setValue(col.getColumnName(), Statistics.sum(values));
             }
         }
-        
+
         return rTable;
     }
-    
+
     /**
      * Average month by year
+     *
      * @param cols The data columns
      * @param month The month
      * @return Result data table
-     * @throws Exception 
+     * @throws Exception
      */
     public DataTable ave_YearMonth(List<DataColumn> cols, int month) throws Exception {
         DataTable rTable = new DataTable();
         rTable.addColumn("Year", DataTypes.Integer);
-        for (DataColumn col : cols){
+        for (DataColumn col : cols) {
             rTable.addColumn(col.getColumnName(), DataTypes.Double);
         }
-        
+
         List<Integer> years = this.getYears();
-        for (int year : years){
-            DataRow nRow = rTable.addRow();         
+        for (int year : years) {
+            DataRow nRow = rTable.addRow();
             nRow.setValue(0, year);
             List<DataRow> rows = this.getDataByYearMonth(year, month);
-            for (DataColumn col : cols){
+            for (DataColumn col : cols) {
                 List<Double> values = this.getValidColumnValues(rows, col);
                 nRow.setValue(col.getColumnName(), Statistics.mean(values));
             }
         }
-        
+
         return rTable;
     }
-    
+
     /**
      * Sum month by year
+     *
      * @param cols The data columns
      * @param month The month
      * @return Result data table
-     * @throws Exception 
+     * @throws Exception
      */
     public DataTable sum_YearMonth(List<DataColumn> cols, int month) throws Exception {
         DataTable rTable = new DataTable();
         rTable.addColumn("Year", DataTypes.Integer);
-        for (DataColumn col : cols){
+        for (DataColumn col : cols) {
             rTable.addColumn(col.getColumnName(), DataTypes.Double);
         }
-        
+
         List<Integer> years = this.getYears();
-        for (int year : years){
-            DataRow nRow = rTable.addRow();         
+        for (int year : years) {
+            DataRow nRow = rTable.addRow();
             nRow.setValue(0, year);
             List<DataRow> rows = this.getDataByYearMonth(year, month);
-            for (DataColumn col : cols){
+            for (DataColumn col : cols) {
                 List<Double> values = this.getValidColumnValues(rows, col);
                 nRow.setValue(col.getColumnName(), Statistics.sum(values));
             }
         }
-        
+
         return rTable;
     }
-    
+
     /**
      * Average month by month
+     *
      * @param cols The data columns
      * @return Result data table
-     * @throws Exception 
+     * @throws Exception
      */
     public DataTable ave_Month(List<DataColumn> cols) throws Exception {
         DataTable rTable = new DataTable();
         rTable.addColumn("YearMonth", DataTypes.String);
-        for (DataColumn col : cols){
+        for (DataColumn col : cols) {
             rTable.addColumn(col.getColumnName(), DataTypes.Double);
         }
-        
+
         List<String> yms = this.getYearMonths();
-        for (String ym : yms){
-            DataRow nRow = rTable.addRow();         
+        for (String ym : yms) {
+            DataRow nRow = rTable.addRow();
             nRow.setValue(0, ym);
             List<DataRow> rows = this.getDataByYearMonth(ym);
-            for (DataColumn col : cols){
+            for (DataColumn col : cols) {
                 List<Double> values = this.getValidColumnValues(rows, col);
                 nRow.setValue(col.getColumnName(), Statistics.mean(values));
             }
         }
-        
+
         return rTable;
     }
-    
+
     /**
      * Average daily
+     *
      * @param cols The data columns
      * @return Result data table
-     * @throws Exception 
+     * @throws Exception
      */
     public DataTable ave_Day(List<DataColumn> cols) throws Exception {
         DataTable rTable = new DataTable();
         rTable.addColumn("Date", DataTypes.String);
-        for (DataColumn col : cols){
+        for (DataColumn col : cols) {
             rTable.addColumn(col.getColumnName(), DataTypes.Double);
         }
-        
+
         List<String> days = this.getDays();
-        for (String day : days){
-            DataRow nRow = rTable.addRow();         
+        for (String day : days) {
+            DataRow nRow = rTable.addRow();
             nRow.setValue(0, day);
             List<DataRow> rows = this.getDataByDate(day);
-            for (DataColumn col : cols){
+            for (DataColumn col : cols) {
                 List<Double> values = this.getValidColumnValues(rows, col);
                 nRow.setValue(col.getColumnName(), Statistics.mean(values));
             }
         }
-        
+
         return rTable;
     }
-    
+
     /**
      * Average monthly
+     *
      * @param cols The data columns
      * @return Result data table
-     * @throws Exception 
+     * @throws Exception
      */
     public DataTable ave_MonthOfYear(List<DataColumn> cols) throws Exception {
         DataTable rTable = new DataTable();
         rTable.addColumn("Month", DataTypes.String);
-        for (DataColumn col : cols){
+        for (DataColumn col : cols) {
             rTable.addColumn(col.getColumnName(), DataTypes.Double);
         }
-        
-        List<String> monthNames = Arrays.asList(new String[]{"Jan", "Feb","Mar", "Apr", "May",
+
+        List<String> monthNames = Arrays.asList(new String[]{"Jan", "Feb", "Mar", "Apr", "May",
             "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"});
         List<Integer> months = new ArrayList<>();
         int i;
-        for (i = 1; i < 13; i++){
+        for (i = 1; i < 13; i++) {
             months.add(i);
         }
-        
+
         i = 0;
-        for (int month : months){
-            DataRow nRow = rTable.addRow();         
+        for (int month : months) {
+            DataRow nRow = rTable.addRow();
             nRow.setValue(0, monthNames.get(i));
             List<DataRow> rows = this.getDataByMonth(month);
-            for (DataColumn col : cols){
+            for (DataColumn col : cols) {
                 List<Double> values = this.getValidColumnValues(rows, col);
                 nRow.setValue(col.getColumnName(), Statistics.mean(values));
             }
             i++;
         }
-        
+
         return rTable;
     }
-    
+
     /**
      * Average seasonal
+     *
      * @param cols The data columns
      * @return Result data table
-     * @throws Exception 
+     * @throws Exception
      */
     public DataTable ave_SeasonOfYear(List<DataColumn> cols) throws Exception {
         DataTable rTable = new DataTable();
         rTable.addColumn("Season", DataTypes.String);
-        for (DataColumn col : cols){
+        for (DataColumn col : cols) {
             rTable.addColumn(col.getColumnName(), DataTypes.Double);
         }
-        
+
         List<String> seasons = Arrays.asList(new String[]{"Spring", "Summer", "Autumn", "Winter"});
-        for (String season : seasons){
-            DataRow nRow = rTable.addRow();         
+        for (String season : seasons) {
+            DataRow nRow = rTable.addRow();
             nRow.setValue(0, season);
             List<DataRow> rows = this.getDataBySeason(season);
-            for (DataColumn col : cols){
+            for (DataColumn col : cols) {
                 List<Double> values = this.getValidColumnValues(rows, col);
                 nRow.setValue(col.getColumnName(), Statistics.mean(values));
             }
         }
-        
+
         return rTable;
     }
-    
+
     /**
      * Average by day of week
+     *
      * @param cols The data columns
      * @return Result data table
-     * @throws Exception 
+     * @throws Exception
      */
     public DataTable ave_DayOfWeek(List<DataColumn> cols) throws Exception {
         DataTable rTable = new DataTable();
         rTable.addColumn("Day", DataTypes.String);
-        for (DataColumn col : cols){
+        for (DataColumn col : cols) {
             rTable.addColumn(col.getColumnName(), DataTypes.Double);
         }
-        
-        List<String> dowNames = Arrays.asList(new String[]{"Sunday", "Monday","Tuesday", "Wednesday", "Thursday", "Friday",
+
+        List<String> dowNames = Arrays.asList(new String[]{"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday",
             "Saturday"});
         List<Integer> dows = new ArrayList<>();
         dows.add(7);
         int i;
-        for (i = 1; i < 7; i++){
+        for (i = 1; i < 7; i++) {
             dows.add(i);
         }
-        
+
         i = 0;
-        for (int dow : dows){
-            DataRow nRow = rTable.addRow();         
+        for (int dow : dows) {
+            DataRow nRow = rTable.addRow();
             nRow.setValue(0, dowNames.get(i));
             List<DataRow> rows = this.getDataByDayOfWeek(dow);
-            for (DataColumn col : cols){
+            for (DataColumn col : cols) {
                 List<Double> values = this.getValidColumnValues(rows, col);
                 nRow.setValue(col.getColumnName(), Statistics.mean(values));
             }
             i++;
         }
-        
+
         return rTable;
     }
-    
+
     /**
      * Average by hour of day
+     *
      * @param cols The data columns
      * @return Result data table
-     * @throws Exception 
+     * @throws Exception
      */
     public DataTable ave_HourOfDay(List<DataColumn> cols) throws Exception {
         DataTable rTable = new DataTable();
         rTable.addColumn("Hour", DataTypes.Integer);
-        for (DataColumn col : cols){
+        for (DataColumn col : cols) {
             rTable.addColumn(col.getColumnName(), DataTypes.Double);
         }
 
         List<Integer> hours = new ArrayList<>();
-        for (int i = 0; i < 24; i++){
+        for (int i = 0; i < 24; i++) {
             hours.add(i);
         }
-        
-        for (int hour : hours){
-            DataRow nRow = rTable.addRow();         
+
+        for (int hour : hours) {
+            DataRow nRow = rTable.addRow();
             nRow.setValue(0, hour);
             List<DataRow> rows = this.getDataByHour(hour);
-            for (DataColumn col : cols){
+            for (DataColumn col : cols) {
                 List<Double> values = this.getValidColumnValues(rows, col);
                 nRow.setValue(col.getColumnName(), Statistics.mean(values));
             }
         }
-        
+
         return rTable;
     }
 

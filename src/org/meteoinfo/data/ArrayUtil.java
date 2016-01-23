@@ -866,14 +866,29 @@ public class ArrayUtil {
     public static Array smooth5(Array a, int rowNum, int colNum, double unDefData) {
         Array r = Array.factory(a.getDataType(), a.getShape());
         double s = 0.5;
-        for (int i = 1; i < rowNum - 1; i++) {
-            for (int j = 1; j < colNum - 2; j++) {
-                if (r.getDouble(i * colNum + j) == unDefData || r.getDouble((i + 1) * colNum + j) == unDefData || r.getDouble((i - 1) * colNum + j)
-                        == unDefData || r.getDouble(i * colNum + j + 1) == unDefData || r.getDouble(i * colNum + j - 1) == unDefData) {
-                    continue;
+        if (Double.isNaN(unDefData)) {
+            for (int i = 1; i < rowNum - 1; i++) {
+                for (int j = 1; j < colNum - 2; j++) {
+                    if (Double.isNaN(a.getDouble(i * colNum + j)) || Double.isNaN(a.getDouble((i + 1) * colNum + j)) || Double.isNaN(a.getDouble((i - 1) * colNum + j))
+                            || Double.isNaN(a.getDouble(i * colNum + j + 1)) || Double.isNaN(a.getDouble(i * colNum + j - 1))) {
+                        r.setDouble(i * colNum + j, a.getDouble(i * colNum + j));
+                        continue;
+                    }
+                    r.setDouble(i * colNum + j, a.getDouble(i * colNum + j) + s / 4 * (a.getDouble((i + 1) * colNum + j) + a.getDouble((i - 1) * colNum + j) + a.getDouble(i * colNum + j + 1)
+                            + a.getDouble(i * colNum + j - 1) - 4 * a.getDouble(i * colNum + j)));
                 }
-                r.setDouble(i * colNum + j, r.getDouble(i * colNum + j) + s / 4 * (r.getDouble((i + 1) * colNum + j) + r.getDouble((i - 1) * colNum + j) + r.getDouble(i * colNum + j + 1)
-                        + r.getDouble(i * colNum + j - 1) - 4 * r.getDouble(i * colNum + j)));
+            }
+        } else {
+            for (int i = 1; i < rowNum - 1; i++) {
+                for (int j = 1; j < colNum - 2; j++) {
+                    if (a.getDouble(i * colNum + j) == unDefData || a.getDouble((i + 1) * colNum + j) == unDefData || a.getDouble((i - 1) * colNum + j)
+                            == unDefData || a.getDouble(i * colNum + j + 1) == unDefData || a.getDouble(i * colNum + j - 1) == unDefData) {
+                        r.setDouble(i * colNum + j, a.getDouble(i * colNum + j));
+                        continue;
+                    }
+                    r.setDouble(i * colNum + j, a.getDouble(i * colNum + j) + s / 4 * (a.getDouble((i + 1) * colNum + j) + a.getDouble((i - 1) * colNum + j) + a.getDouble(i * colNum + j + 1)
+                            + a.getDouble(i * colNum + j - 1) - 4 * a.getDouble(i * colNum + j)));
+                }
             }
         }
 
@@ -2096,46 +2111,44 @@ public class ArrayUtil {
                     indexr.incr();
                 }
             }
+        } else if (shape.length <= 2) {
+            for (int i = 0; i < n; i++) {
+                xx = points[i][0];
+                yy = points[i][1];
+                r.setObject(i, toStation_Neighbor(data, x, y, xx, yy, fill_value));
+            }
         } else {
-            if (shape.length <= 2) {
-                for (int i = 0; i < n; i++) {
-                    xx = points[i][0];
-                    yy = points[i][1];
-                    r.setObject(i, toStation_Neighbor(data, x, y, xx, yy, fill_value));
-                }
-            } else {
-                Index indexr = r.getIndex();
-                int[] current, cc = null;
-                boolean isNew;
-                Array ndata = null;
-                int k;
-                for (int i = 0; i < r.getSize(); i++) {
-                    current = indexr.getCurrentCounter();
-                    isNew = true;
-                    if (i > 0) {
-                        for (int j = 0; j < shape.length - 2; j++) {
-                            if (cc[j] != current[j]) {
-                                isNew = false;
-                                break;
-                            }
+            Index indexr = r.getIndex();
+            int[] current, cc = null;
+            boolean isNew;
+            Array ndata = null;
+            int k;
+            for (int i = 0; i < r.getSize(); i++) {
+                current = indexr.getCurrentCounter();
+                isNew = true;
+                if (i > 0) {
+                    for (int j = 0; j < shape.length - 2; j++) {
+                        if (cc[j] != current[j]) {
+                            isNew = false;
+                            break;
                         }
                     }
-                    cc = Arrays.copyOf(current, current.length);
-                    if (isNew) {
-                        List<Range> ranges = new ArrayList<>();
-                        for (int j = 0; j < shape.length - 2; j++) {
-                            ranges.add(new Range(current[j], current[j], 1));
-                        }
-                        ranges.add(new Range(0, dshape[dshape.length - 2] - 1, 1));
-                        ranges.add(new Range(0, dshape[dshape.length - 1] - 1, 1));
-                        ndata = data.section(ranges).reduce();
-                    }
-                    k = current[shape.length - 2] * shape[shape.length - 1] + current[shape.length - 1];
-                    xx = points[k][0];
-                    yy = points[k][1];
-                    r.setObject(i, toStation_Neighbor(ndata, x, y, xx, yy, fill_value));
-                    indexr.incr();
                 }
+                cc = Arrays.copyOf(current, current.length);
+                if (isNew) {
+                    List<Range> ranges = new ArrayList<>();
+                    for (int j = 0; j < shape.length - 2; j++) {
+                        ranges.add(new Range(current[j], current[j], 1));
+                    }
+                    ranges.add(new Range(0, dshape[dshape.length - 2] - 1, 1));
+                    ranges.add(new Range(0, dshape[dshape.length - 1] - 1, 1));
+                    ndata = data.section(ranges).reduce();
+                }
+                k = current[shape.length - 2] * shape[shape.length - 1] + current[shape.length - 1];
+                xx = points[k][0];
+                yy = points[k][1];
+                r.setObject(i, toStation_Neighbor(ndata, x, y, xx, yy, fill_value));
+                indexr.incr();
             }
         }
 
@@ -2227,46 +2240,44 @@ public class ArrayUtil {
                     indexr.incr();
                 }
             }
+        } else if (shape.length == 2) {
+            for (int i = 0; i < n; i++) {
+                xx = points[i][0];
+                yy = points[i][1];
+                r.setObject(i, toStation_Neighbor(data, x, y, xx, yy));
+            }
         } else {
-            if (shape.length == 2) {
-                for (int i = 0; i < n; i++) {
-                    xx = points[i][0];
-                    yy = points[i][1];
-                    r.setObject(i, toStation_Neighbor(data, x, y, xx, yy));
-                }
-            } else {
-                Index indexr = r.getIndex();
-                int[] current, cc = null;
-                boolean isNew;
-                Array ndata = null;
-                int k;
-                for (int i = 0; i < r.getSize(); i++) {
-                    current = indexr.getCurrentCounter();
-                    isNew = true;
-                    if (i > 0) {
-                        for (int j = 0; j < shape.length - 2; j++) {
-                            if (cc[j] != current[j]) {
-                                isNew = false;
-                                break;
-                            }
+            Index indexr = r.getIndex();
+            int[] current, cc = null;
+            boolean isNew;
+            Array ndata = null;
+            int k;
+            for (int i = 0; i < r.getSize(); i++) {
+                current = indexr.getCurrentCounter();
+                isNew = true;
+                if (i > 0) {
+                    for (int j = 0; j < shape.length - 2; j++) {
+                        if (cc[j] != current[j]) {
+                            isNew = false;
+                            break;
                         }
                     }
-                    cc = Arrays.copyOf(current, current.length);
-                    if (isNew) {
-                        List<Range> ranges = new ArrayList<>();
-                        for (int j = 0; j < shape.length - 2; j++) {
-                            ranges.add(new Range(current[j], current[j], 1));
-                        }
-                        ranges.add(new Range(0, dshape[dshape.length - 2] - 1, 1));
-                        ranges.add(new Range(0, dshape[dshape.length - 1] - 1, 1));
-                        ndata = data.section(ranges).reduce();
-                    }
-                    k = current[shape.length - 2] * shape[shape.length - 1] + current[shape.length - 1];
-                    xx = points[k][0];
-                    yy = points[k][1];
-                    r.setObject(i, toStation_Neighbor(ndata, x, y, xx, yy));
-                    indexr.incr();
                 }
+                cc = Arrays.copyOf(current, current.length);
+                if (isNew) {
+                    List<Range> ranges = new ArrayList<>();
+                    for (int j = 0; j < shape.length - 2; j++) {
+                        ranges.add(new Range(current[j], current[j], 1));
+                    }
+                    ranges.add(new Range(0, dshape[dshape.length - 2] - 1, 1));
+                    ranges.add(new Range(0, dshape[dshape.length - 1] - 1, 1));
+                    ndata = data.section(ranges).reduce();
+                }
+                k = current[shape.length - 2] * shape[shape.length - 1] + current[shape.length - 1];
+                xx = points[k][0];
+                yy = points[k][1];
+                r.setObject(i, toStation_Neighbor(ndata, x, y, xx, yy));
+                indexr.incr();
             }
         }
 
