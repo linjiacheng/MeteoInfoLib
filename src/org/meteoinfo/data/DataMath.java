@@ -311,14 +311,14 @@ public abstract class DataMath {
         StationData vData = new StationData(windSpeedData);
         double[] uv;
         for (int i = 0; i < windDirData.getStNum(); i++) {
-            if (MIMath.doubleEquals(windDirData.data[2][i], windDirData.missingValue)
-                    || MIMath.doubleEquals(windSpeedData.data[2][i], windSpeedData.missingValue)) {
-                uData.data[2][i] = uData.missingValue;
-                vData.data[2][i] = vData.missingValue;
+            if (MIMath.doubleEquals(windDirData.data[i][2], windDirData.missingValue)
+                    || MIMath.doubleEquals(windSpeedData.data[i][2], windSpeedData.missingValue)) {
+                uData.data[i][2] = uData.missingValue;
+                vData.data[i][2] = vData.missingValue;
             } else {
-                uv = getUVFromDS(windDirData.data[2][i], windSpeedData.data[2][i]);
-                uData.data[2][i] = uv[0];
-                vData.data[2][i] = uv[1];
+                uv = getUVFromDS(windDirData.data[i][2], windSpeedData.data[i][2]);
+                uData.data[i][2] = uv[0];
+                vData.data[i][2] = uv[1];
             }
         }
         return new StationData[]{uData, vData};
@@ -394,14 +394,14 @@ public abstract class DataMath {
         StationData windSpeedData = new StationData(vData);
         double[] ds;
         for (int i = 0; i < windDirData.getStNum(); i++) {
-            if (MIMath.doubleEquals(uData.data[2][i], uData.missingValue)
-                    || MIMath.doubleEquals(vData.data[2][i], vData.missingValue)) {
-                windDirData.data[2][i] = windDirData.missingValue;
-                windSpeedData.data[2][i] = windSpeedData.missingValue;
+            if (MIMath.doubleEquals(uData.data[i][2], uData.missingValue)
+                    || MIMath.doubleEquals(vData.data[i][2], vData.missingValue)) {
+                windDirData.data[i][2] = windDirData.missingValue;
+                windSpeedData.data[i][2] = windSpeedData.missingValue;
             } else {
-                ds = getDSFromUV(uData.data[2][i], vData.data[2][i]);
-                windDirData.data[2][i] = ds[0];
-                windSpeedData.data[2][i] = ds[1];
+                ds = getDSFromUV(uData.data[i][2], vData.data[i][2]);
+                windDirData.data[i][2] = ds[0];
+                windSpeedData.data[i][2] = ds[1];
             }
         }
 
