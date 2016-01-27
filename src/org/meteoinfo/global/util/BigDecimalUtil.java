@@ -84,4 +84,16 @@ public class BigDecimalUtil {
         BigDecimal b1=new BigDecimal(Double.toString(d1));   
         return b1.pow(d2, new MathContext(10)).doubleValue();            
     }  
+    
+    /**
+     * Mod
+     * @param d1 Value 1
+     * @param d2 Value 2
+     * @return Mod value
+     */
+    public static double mod(double d1, double d2) {
+        BigDecimal b1=new BigDecimal(Double.toString(d1));  
+        BigDecimal b2=new BigDecimal(Double.toString(d2));  
+        return b1.divideAndRemainder(b2)[1].doubleValue();
+    }
 }

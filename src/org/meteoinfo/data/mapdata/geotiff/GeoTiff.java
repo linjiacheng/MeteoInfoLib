@@ -632,6 +632,13 @@ public class GeoTiff {
             //gData.data = values;
             gData.xArray = X;
             gData.yArray = Y;
+            
+            //Get missing value
+            IFDEntry noDataTag = findTag(Tag.GDALNoData);
+            if (noDataTag != null){
+                double missingValue = Double.parseDouble(noDataTag.valueS);
+                gData.missingValue = missingValue;
+            }
 
             //Projection
             String projStr = getProjection();
@@ -915,11 +922,25 @@ public class GeoTiff {
         int bitsPerSample = bitsPerSampleTag.value[0];
         int[] shape;
         if (samplesPerPixel == 1) {
-            shape = new int[]{width, height};
+            shape = new int[]{height, width};
         } else {
-            shape = new int[]{width, height, samplesPerPixel};
+            shape = new int[]{height, width, samplesPerPixel};
         }
-        Array r = Array.factory(DataType.INT, shape);
+//        if (samplesPerPixel == 1) {
+//            shape = new int[]{width, height};
+//        } else {
+//            shape = new int[]{width, height, samplesPerPixel};
+//        }
+        Array r;
+        switch (bitsPerSample){
+            case 8:
+            case 16:
+                r = Array.factory(DataType.INT, shape);
+                break;
+            default:
+                r = Array.factory(DataType.FLOAT, shape);
+                break;
+        }
         IFDEntry tileOffsetTag = findTag(Tag.TileOffsets);
         ByteBuffer buffer;
         if (tileOffsetTag != null) {
@@ -934,70 +955,104 @@ public class GeoTiff {
             int vTileNum = (height + tileHeight - 1) / tileHeight;
             int tileSize;
             //System.out.println("tileOffset =" + tileOffset + " tileSize=" + tileSize);
-            int idx;
             int tileIdx, vIdx, hIdx;
-            if (bitsPerSample == 8) {
-                for (int i = 0; i < vTileNum; i++) {
-                    for (int j = 0; j < hTileNum; j++) {
-                        tileIdx = i * hTileNum + j;
-                        tileOffset = tileOffsetTag.value[tileIdx];
-                        tileSize = tileSizeTag.value[tileIdx];
-                        buffer = testReadData(tileOffset, tileSize);
-                        for (int h = 0; h < tileHeight; h++) {
-                            vIdx = i * tileHeight + h;
-                            if (vIdx == height) {
-                                break;
-                            }
-                            for (int w = 0; w < tileWidth; w++) {
-                                hIdx = j * tileWidth + w;
-                                if (hIdx == width) {
+            switch (bitsPerSample) {
+                case 8:
+                    for (int i = 0; i < vTileNum; i++) {
+                        for (int j = 0; j < hTileNum; j++) {
+                            tileIdx = i * hTileNum + j;
+                            tileOffset = tileOffsetTag.value[tileIdx];
+                            tileSize = tileSizeTag.value[tileIdx];
+                            buffer = testReadData(tileOffset, tileSize);
+                            for (int h = 0; h < tileHeight; h++) {
+                                vIdx = i * tileHeight + h;
+                                if (vIdx == height) {
                                     break;
                                 }
-                                index.set0(vIdx);
-                                index.set1(hIdx);
-                                if (samplesPerPixel == 1)
-                                    r.setInt(index, DataConvert.byte2Int(buffer.get()));
-                                else {
-                                    for (int k = 0; k < samplesPerPixel; k++) {
-                                        index.set2(k);
+                                for (int w = 0; w < tileWidth; w++) {
+                                    hIdx = j * tileWidth + w;
+                                    if (hIdx == width) {
+                                        break;
+                                    }
+                                    index.set0(vIdx);
+                                    index.set1(hIdx);
+                                    if (samplesPerPixel == 1)
                                         r.setInt(index, DataConvert.byte2Int(buffer.get()));
+                                    else {
+                                        for (int k = 0; k < samplesPerPixel; k++) {
+                                            index.set2(k);
+                                            r.setInt(index, DataConvert.byte2Int(buffer.get()));
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                }
-            } else if (bitsPerSample == 16) {
-                for (int i = 0; i < vTileNum; i++) {
-                    for (int j = 0; j < hTileNum; j++) {
-                        tileIdx = i * hTileNum + j;
-                        tileOffset = tileOffsetTag.value[tileIdx];
-                        tileSize = tileSizeTag.value[tileIdx];
-                        buffer = testReadData(tileOffset, tileSize);
-                        for (int h = 0; h < tileHeight; h++) {
-                            vIdx = i * tileHeight + h;
-                            if (vIdx == height) {
-                                break;
-                            }
-                            for (int w = 0; w < tileWidth; w++) {
-                                hIdx = j * tileWidth + w;
-                                if (hIdx == width) {
+                    }   break;
+                case 16:
+                    for (int i = 0; i < vTileNum; i++) {
+                        for (int j = 0; j < hTileNum; j++) {
+                            tileIdx = i * hTileNum + j;
+                            tileOffset = tileOffsetTag.value[tileIdx];
+                            tileSize = tileSizeTag.value[tileIdx];
+                            buffer = testReadData(tileOffset, tileSize);
+                            for (int h = 0; h < tileHeight; h++) {
+                                vIdx = i * tileHeight + h;
+                                if (vIdx == height) {
                                     break;
                                 }
-                                index.set0(vIdx);
-                                index.set1(hIdx);
-                                if (samplesPerPixel == 1)
-                                    r.setInt(index, DataConvert.byte2Int(buffer.get()));
-                                else {
-                                    for (int k = 0; k < samplesPerPixel; k++) {
-                                        index.set2(k);
-                                        r.setInt(index, DataConvert.byte2Int(buffer.get()));
+                                for (int w = 0; w < tileWidth; w++) {
+                                    hIdx = j * tileWidth + w;
+                                    if (hIdx == width) {
+                                        break;
+                                    }
+                                    index.set0(vIdx);
+                                    index.set1(hIdx);
+                                    if (samplesPerPixel == 1)
+                                        r.setInt(index, buffer.getShort());
+                                    else {
+                                        for (int k = 0; k < samplesPerPixel; k++) {
+                                            index.set2(k);
+                                            r.setInt(index, buffer.getShort());
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                }
+                    }   break;
+                case 32:
+                    for (int i = 0; i < vTileNum; i++) {
+                        for (int j = 0; j < hTileNum; j++) {
+                            tileIdx = i * hTileNum + j;
+                            tileOffset = tileOffsetTag.value[tileIdx];
+                            tileSize = tileSizeTag.value[tileIdx];
+                            buffer = testReadData(tileOffset, tileSize);
+                            for (int h = 0; h < tileHeight; h++) {
+                                vIdx = i * tileHeight + h;
+                                if (vIdx == height) {
+                                    break;
+                                }
+                                index.set0(vIdx);
+                                for (int w = 0; w < tileWidth; w++) {
+                                    hIdx = j * tileWidth + w;
+                                    if (hIdx == width) {
+                                        buffer.get(new byte[(tileWidth - w) * 4]);
+                                        break;
+                                    }
+                                    index.set1(hIdx);
+                                    if (samplesPerPixel == 1)
+                                        r.setFloat(index, buffer.getFloat());
+                                    else {
+                                        for (int k = 0; k < samplesPerPixel; k++) {
+                                            index.set2(k);
+                                            r.setFloat(index, buffer.getFloat());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }   break;
+                default:
+                    break; 
             }
         } else {
             IFDEntry stripOffsetTag = findTag(Tag.StripOffsets);

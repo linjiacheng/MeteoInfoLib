@@ -27,13 +27,10 @@ import org.meteoinfo.data.meteodata.DimensionType;
 import org.meteoinfo.data.meteodata.IGridDataInfo;
 import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.data.meteodata.Variable;
-import org.meteoinfo.data.meteodata.ascii.ASCIIGridDataInfo;
 import ucar.ma2.Array;
-import ucar.ma2.DataType;
 import ucar.ma2.IndexIterator;
 import ucar.ma2.InvalidRangeException;
 import ucar.ma2.Range;
-import ucar.ma2.Section;
 
 /**
  *
@@ -73,6 +70,7 @@ public class GeoTiffDataInfo extends DataInfo implements IGridDataInfo {
             this.setXDimension(xDim);
             Dimension yDim = new Dimension(DimensionType.Y);
             yDim.setValues(Y);
+            yDim.setReverse(true);
             this.setYDimension(yDim);
             this.bandNum = this.geoTiff.getBandNum();
             Dimension bDim = null;

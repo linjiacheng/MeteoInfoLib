@@ -60,6 +60,7 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
+import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.table.DataColumnCollection;
 import org.meteoinfo.table.DataTable;
 import org.meteoinfo.legend.LegendManage;
@@ -1388,7 +1389,10 @@ public class VectorLayer extends MapLayer {
 
             LabelBreak aLP = new LabelBreak();
             if (isData) {
-                aLP.setText(String.format(dFormat, Double.parseDouble(getCellValue(_labelSet.getFieldName(), shapeIdx).toString())));
+                if (this._labelSet.isAutoDecimal())
+                    aLP.setText(DataConvert.removeTailingZeros(getCellValue(_labelSet.getFieldName(), shapeIdx).toString()));
+                else
+                    aLP.setText(String.format(dFormat, Double.parseDouble(getCellValue(_labelSet.getFieldName(), shapeIdx).toString())));
             } else {
                 aLP.setText(getCellValue(_labelSet.getFieldName(), shapeIdx).toString());
             }
@@ -1460,6 +1464,7 @@ public class VectorLayer extends MapLayer {
 
         dFormat = "%1$." + String.valueOf(_labelSet.getDecimalDigits()) + "f";
         int shapeIdx = 0;
+        String text;
         for (Shape aShape : _shapeList) {
             PolylineShape aPLS = (PolylineShape) aShape;
             Extent IExtent = aPLS.getExtent();
@@ -1467,10 +1472,14 @@ public class VectorLayer extends MapLayer {
                     || IExtent.maxY - IExtent.minY > (sExtent.maxY - sExtent.minY) / 10) {
                 LabelBreak aLP = new LabelBreak();
                 int pIdx = aPLS.getPoints().size() / 2;
-                PointF aPoint = new PointF(0, 0);
+                //PointF aPoint = new PointF(0, 0);
                 PointShape aPS = new PointShape();
                 aPS.setPoint(aPLS.getPoints().get(pIdx - 1));
-                aLP.setText(String.format(dFormat, Double.parseDouble(getCellValue(_labelSet.getFieldName(), shapeIdx).toString())));
+                if (this._labelSet.isAutoDecimal())
+                    text = DataConvert.removeTailingZeros(getCellValue(_labelSet.getFieldName(), shapeIdx).toString());
+                else
+                    text = String.format(dFormat, Double.parseDouble(getCellValue(_labelSet.getFieldName(), shapeIdx).toString()));
+                aLP.setText(text);
                 aLP.setFont(_labelSet.getLabelFont());
                 aLP.setAlignType(_labelSet.getLabelAlignType());
                 aLP.setYShift(_labelSet.getYOffset());

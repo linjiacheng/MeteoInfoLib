@@ -727,6 +727,29 @@ public class MIMath {
             return 0;
         }
 
+        double v = aData * 10;
+        int dNum = 1;
+        while (v - (int)v != 0){
+            if (dNum > 5)
+                break;
+            v = v * 10;
+            dNum += 1;
+        }
+        
+        return dNum;
+    }
+    
+    /**
+     * Get decimal number of a double data for ToString() format
+     *
+     * @param aData Data
+     * @return Decimal number
+     */
+    public static int getDecimalNum_back(double aData) {
+        if (aData - (int) aData == 0) {
+            return 0;
+        }
+
         int dNum;
         int aE = (int)Math.floor(Math.log10(aData));
 
@@ -811,7 +834,8 @@ public class MIMath {
     public static double[] getIntervalValues(double min, double max, double interval) {
         double[] cValues;
         min = BigDecimalUtil.add(min, interval);
-        min = min - (min % interval);
+        double mod = BigDecimalUtil.mod(min, interval);
+        min = min - mod;
         int cNum = (int) ((max - min) / interval) + 1;
         int i;
         

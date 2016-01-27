@@ -406,6 +406,13 @@ public class DrawMeteoData {
         aLayer.getLabelSet().setFieldName(fieldName);
         aLayer.getLabelSet().setColorByLegend(true);
         aLayer.getLabelSet().setDynamicContourLabel(true);
+        //aLayer.getLabelSet().setAutoDecimal(false);
+        int decimaln = MIMath.getDecimalNum(cValues[0]);
+        if (cValues.length > 1) {
+            int decimaln2 = MIMath.getDecimalNum(cValues[1] - cValues[0]);
+            decimaln = Math.max(decimaln, decimaln2);
+        }
+        aLayer.getLabelSet().setDecimalDigits(decimaln);
         //aLayer.addLabels();
 
         return aLayer;

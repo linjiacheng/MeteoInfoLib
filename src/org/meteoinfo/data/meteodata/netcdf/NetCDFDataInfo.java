@@ -1,4 +1,4 @@
- /* Copyright 2012 Yaqiang Wang,
+/* Copyright 2012 Yaqiang Wang,
  * yaqiang.wang@gmail.com
  * 
  * This library is free software; you can redistribute it and/or modify it
@@ -268,8 +268,8 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                         nvar.addDimension(ndim);
                     }
                 }
-                
-                for (ucar.nc2.Attribute attr : var.getAttributes()){
+
+                for (ucar.nc2.Attribute attr : var.getAttributes()) {
                     nvar.addAttribute(attr.getShortName(), attr.getValues());
                 }
                 double[] packData = this.getPackData(var);
@@ -359,6 +359,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
     /**
      * Find global attribute
+     *
      * @param attName Attribute name
      * @return Global attribute
      */
@@ -494,10 +495,8 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                     if (this._fileTypeId.equals("HDF5-EOS")) {
                         this.setYReverse(true);
                     }
-                } else {
-                    if (!this._fileTypeId.equals("HDF5-EOS")) {
-                        this.setYReverse(true);
-                    }
+                } else if (!this._fileTypeId.equals("HDF5-EOS")) {
+                    this.setYReverse(true);
                 }
 
                 Dimension xDim = this.findDimension("XDim");
@@ -1042,14 +1041,26 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                     b = new BigDecimal(Float.toString(darray.getFloat(i)));
                     values[i] = b.doubleValue();
                 }
+                if (values.length > 1) {
+                    if (values[0] > values[1]) {
+                        switch (dimType) {
+                            case X:
+                                this.setXReverse(true);
+                                dim.setReverse(true);
+                                MIMath.arrayReverse(values);
+                                break;
+                            case Y:
+                                this.setYReverse(true);
+                                dim.setReverse(true);
+                                MIMath.arrayReverse(values);
+                                break;
+                        }
+                    }
+                }
                 //aDim.setValues(values);
                 switch (dimType) {
                     case X:
                         double[] X = values;
-                        if (X[0] > X[1]) {
-                            MIMath.arrayReverse(X);
-                            this.setXReverse(true);
-                        }
                         double XDelt = X[1] - X[0];
                         if (this.getProjectionInfo().isLonLat()) {
                             if (X[X.length - 1] + XDelt
@@ -1071,10 +1082,6 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                         break;
                     case Y:
                         double[] Y = values;
-                        if (Y[0] > Y[1]) {
-                            MIMath.arrayReverse(Y);
-                            this.setYReverse(true);
-                        }
                         if (!this.getProjectionInfo().isLonLat()) {
                             ucar.nc2.Attribute unitAtt = var.findAttribute("units");
                             if (unitAtt != null) {
@@ -1725,47 +1732,45 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
         tu = dataArray[0];
         if (tu.toLowerCase().contains("second")) {
             aTU = TimeUnit.Second;
+        } else if (tu.length() == 1) {
+            String str = tu.toLowerCase();
+            switch (str) {
+                case "y":
+                    aTU = TimeUnit.Year;
+                    break;
+                case "d":
+                    aTU = TimeUnit.Day;
+                    break;
+                case "h":
+                    aTU = TimeUnit.Hour;
+                    break;
+                case "s":
+                    aTU = TimeUnit.Second;
+                    break;
+            }
         } else {
-            if (tu.length() == 1) {
-                String str = tu.toLowerCase();
-                switch (str) {
-                    case "y":
-                        aTU = TimeUnit.Year;
-                        break;
-                    case "d":
-                        aTU = TimeUnit.Day;
-                        break;
-                    case "h":
-                        aTU = TimeUnit.Hour;
-                        break;
-                    case "s":
-                        aTU = TimeUnit.Second;
-                        break;
-                }
-            } else {
-                String str = tu.toLowerCase().substring(0, 2);
-                switch (str) {
-                    case "yr":
-                    case "ye":
-                        aTU = TimeUnit.Year;
-                        break;
-                    case "mo":
-                        aTU = TimeUnit.Month;
-                        break;
-                    case "da":
-                        aTU = TimeUnit.Day;
-                        break;
-                    case "hr":
-                    case "ho":
-                        aTU = TimeUnit.Hour;
-                        break;
-                    case "mi":
-                        aTU = TimeUnit.Minute;
-                        break;
-                    case "se":
-                        aTU = TimeUnit.Second;
-                        break;
-                }
+            String str = tu.toLowerCase().substring(0, 2);
+            switch (str) {
+                case "yr":
+                case "ye":
+                    aTU = TimeUnit.Year;
+                    break;
+                case "mo":
+                    aTU = TimeUnit.Month;
+                    break;
+                case "da":
+                    aTU = TimeUnit.Day;
+                    break;
+                case "hr":
+                case "ho":
+                    aTU = TimeUnit.Hour;
+                    break;
+                case "mi":
+                    aTU = TimeUnit.Minute;
+                    break;
+                case "se":
+                    aTU = TimeUnit.Second;
+                    break;
             }
         }
 
@@ -1807,16 +1812,14 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 } catch (Exception e) {
                 }
             }
-        } else {
-            if (ST.contains(":")) {
-                String hmsStr = ST;
-                hmsStr = hmsStr.replace("0.0", "00");
-                try {
-                    hour = Integer.parseInt(hmsStr.split(":")[0]);
-                    min = Integer.parseInt(hmsStr.split(":")[1]);
-                    sec = Integer.parseInt(hmsStr.split(":")[2]);
-                } catch (Exception e) {
-                }
+        } else if (ST.contains(":")) {
+            String hmsStr = ST;
+            hmsStr = hmsStr.replace("0.0", "00");
+            try {
+                hour = Integer.parseInt(hmsStr.split(":")[0]);
+                min = Integer.parseInt(hmsStr.split(":")[1]);
+                sec = Integer.parseInt(hmsStr.split(":")[2]);
+            } catch (Exception e) {
             }
         }
 
@@ -1938,7 +1941,6 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 //        } else {
 //            missingValue = missingValue * scale_factor + add_offset;
 //        }
-
         return new double[]{add_offset, scale_factor, missingValue};
     }
 
@@ -2010,20 +2012,22 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 for (i = 0; i < yNum; i++) {
                     for (j = 0; j < xNum; j++) {
                         v = data2D.getDouble(i * xNum + j);
-                        if (v == missingValue)
+                        if (v == missingValue) {
                             gridData[i][j] = v;
-                        else
+                        } else {
                             gridData[i][j] = v * scale_factor + add_offset;
+                        }
                     }
                 }
             } else {
                 for (i = 0; i < yNum; i++) {
                     for (j = 0; j < xNum; j++) {
                         v = data2D.getDouble(j * yNum + i);
-                        if (v == missingValue)
+                        if (v == missingValue) {
                             gridData[i][j] = v;
-                        else
+                        } else {
                             gridData[i][j] = v * scale_factor + add_offset;
+                        }
                     }
                 }
             }
@@ -2125,10 +2129,11 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             for (i = 0; i < yNum; i++) {
                 for (j = 0; j < xNum; j++) {
                     v = data2D.getDouble(i * xNum + j);
-                    if (v == missingValue)
+                    if (v == missingValue) {
                         gridData[i][j] = v;
-                    else
+                    } else {
                         gridData[i][j] = v * scale_factor + add_offset;
+                    }
                 }
             }
 
@@ -2219,10 +2224,11 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             for (i = 0; i < yNum; i++) {
                 for (j = 0; j < xNum; j++) {
                     v = data2D.getDouble(i * xNum + j);
-                    if (v == missingValue)
+                    if (v == missingValue) {
                         gridData[i][j] = v;
-                    else
+                    } else {
                         gridData[i][j] = v * scale_factor + add_offset;
+                    }
                 }
             }
 
@@ -2309,10 +2315,11 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             for (i = 0; i < yNum; i++) {
                 for (j = 0; j < xNum; j++) {
                     v = data2D.getDouble(i * xNum + j);
-                    if (v == missingValue)
+                    if (v == missingValue) {
                         gridData[i][j] = v;
-                    else
+                    } else {
                         gridData[i][j] = v * scale_factor + add_offset;
+                    }
                 }
             }
 
@@ -2403,10 +2410,11 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             for (i = 0; i < yNum; i++) {
                 for (j = 0; j < xNum; j++) {
                     v = data2D.getDouble(i * xNum + j);
-                    if (v == missingValue)
+                    if (v == missingValue) {
                         gridData[i][j] = v;
-                    else
+                    } else {
                         gridData[i][j] = v * scale_factor + add_offset;
+                    }
                 }
             }
 
@@ -2493,10 +2501,11 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             for (i = 0; i < yNum; i++) {
                 for (j = 0; j < xNum; j++) {
                     v = data2D.getDouble(i * xNum + j);
-                    if (v == missingValue)
+                    if (v == missingValue) {
                         gridData[i][j] = v;
-                    else
+                    } else {
                         gridData[i][j] = v * scale_factor + add_offset;
+                    }
                 }
             }
 
@@ -2580,10 +2589,11 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             double v;
             for (i = 0; i < dNum; i++) {
                 v = data1D.getDouble(i);
-                if (v == missingValue)
+                if (v == missingValue) {
                     gridData[0][1] = v;
-                else
+                } else {
                     gridData[0][i] = v * scale_factor + add_offset;
+                }
             }
 
             GridData aGridData = new GridData();
@@ -2666,10 +2676,11 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             double v;
             for (i = 0; i < dNum; i++) {
                 v = data1D.getDouble(i);
-                if (v == missingValue)
+                if (v == missingValue) {
                     gridData[0][1] = v;
-                else
+                } else {
                     gridData[0][i] = v * scale_factor + add_offset;
+                }
             }
 
             GridData aGridData = new GridData();
@@ -2752,10 +2763,11 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             double v;
             for (i = 0; i < dNum; i++) {
                 v = data1D.getDouble(i);
-                if (v == missingValue)
+                if (v == missingValue) {
                     gridData[0][i] = v;
-                else
+                } else {
                     gridData[0][i] = v * scale_factor + add_offset;
+                }
             }
 
             GridData aGridData = new GridData();
@@ -2838,10 +2850,11 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             double v;
             for (i = 0; i < dNum; i++) {
                 v = data1D.getDouble(i);
-                if (v == missingValue)
+                if (v == missingValue) {
                     gridData[0][i] = v;
-                else
+                } else {
                     gridData[0][i] = v * scale_factor + add_offset;
+                }
             }
 
             GridData aGridData = new GridData();
@@ -2945,10 +2958,11 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 lon = lonarray.getDouble(i);
                 lat = latarray.getDouble(i);
                 v = darray.getDouble(i);
-                if (v == missingValue)
+                if (v == missingValue) {
                     value = v;
-                else
+                } else {
                     value = v * scale_factor + add_offset;
+                }
 //                if (MIMath.doubleEquals(value, missingValue)){
 //                    continue;
 //                }
@@ -3008,6 +3022,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
      * @param varName Variable name
      * @return Array data
      */
+    @Override
     public Array read(String varName) {
         NetcdfFile ncfile = null;
         try {
@@ -3366,7 +3381,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
         //Define dimensions
         List<ucar.nc2.Dimension> dims = new ArrayList<>();
         for (Dimension dim : aDataInfo._miDims) {
-            if (dim.getDimName().equals(timeDimStr)){
+            if (dim.getDimName().equals(timeDimStr)) {
                 dims.add(ncfile.addUnlimitedDimension(dim.getDimName()));
             } else {
                 dims.add(ncfile.addDimension(null, dim.getDimName(), dim.getDimLength()));
@@ -3381,9 +3396,9 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
         //Define variables
         for (ucar.nc2.Variable var : aDataInfo._variables) {
             List<ucar.nc2.Dimension> vdims = new ArrayList<>();
-            for (ucar.nc2.Dimension dim : var.getDimensions()){
-                for (ucar.nc2.Dimension vdim : dims){
-                    if (vdim.getShortName().equals(dim.getShortName())){
+            for (ucar.nc2.Dimension dim : var.getDimensions()) {
+                for (ucar.nc2.Dimension vdim : dims) {
+                    if (vdim.getShortName().equals(dim.getShortName())) {
                         vdims.add(vdim);
                         break;
                     }
@@ -3604,11 +3619,9 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                         break;
                     }
                 }
-            } else {
-                if (aDim.getDimLength() != bDim.getDimLength()) {
-                    IsSame = false;
-                    break;
-                }
+            } else if (aDim.getDimLength() != bDim.getDimLength()) {
+                IsSame = false;
+                break;
             }
         }
         if (!IsSame) {

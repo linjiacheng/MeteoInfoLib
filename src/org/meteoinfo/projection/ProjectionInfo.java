@@ -171,6 +171,15 @@ public class ProjectionInfo {
     }
     
     /**
+     * To string
+     * @return String - Proj4 string
+     */
+    @Override
+    public String toString(){
+        return _crs.getParameterString();
+    }
+    
+    /**
      * Determine if the projection is same with another projection
      * 
      * @param projInfo Projection info

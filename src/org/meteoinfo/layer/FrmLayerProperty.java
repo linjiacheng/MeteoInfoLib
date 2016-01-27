@@ -738,7 +738,8 @@ public class FrmLayerProperty extends javax.swing.JDialog {
 
                         break;
                     case GraduatedColor:
-                        this._legendScheme = LegendManage.createLegendSchemeFromGridData(((RasterLayer) _mapLayer).getGridData(), LegendType.GraduatedColor, ShapeTypes.Polygon);
+                        if (this._legendScheme == null || this._legendScheme.getLegendType() != LegendType.GraduatedColor)
+                            this._legendScheme = LegendManage.createLegendSchemeFromGridData(((RasterLayer) _mapLayer).getGridData(), LegendType.GraduatedColor, ShapeTypes.Polygon);
                         break;
                 }
                 this.legendView1.setLegendScheme(_legendScheme);

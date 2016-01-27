@@ -369,6 +369,8 @@ public class XYListDataset extends XYDataset {
                 xmax = sdata.getX_max(j);
                 ymin = sdata.getY_min(j);
                 ymax = sdata.getY_max(j);
+                if (Double.isNaN(sdata.getX(j)) || Double.isNaN(sdata.getY(j)))
+                    continue;
                 if (MIMath.doubleEquals(sdata.getX(j), this.getMissingValue()) || MIMath.doubleEquals(sdata.getY(j), this.getMissingValue()))
                     continue;
                 if (n == 0) {
