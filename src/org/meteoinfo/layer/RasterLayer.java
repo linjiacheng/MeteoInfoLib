@@ -135,7 +135,7 @@ public class RasterLayer extends ImageLayer {
      */
     public void updateImage(LegendScheme als) {
         BufferedImage image;
-        if (_gridData.data.getRank() == 2) {
+        if (_gridData.data.getRank() <= 2) {
             image = getImageFromGridData(_gridData, als);
         } else {
             image = getRGBImage(_gridData);

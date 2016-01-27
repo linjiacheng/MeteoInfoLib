@@ -79,6 +79,7 @@ public class GridArray {
         xArray = aGridData.xArray.clone();
         yArray = aGridData.yArray.clone();
         missingValue = aGridData.missingValue;
+        data = Array.factory(aGridData.data.getDataType(), aGridData.data.getShape());
         Array.arraycopy(aGridData.data, 0, data, 0, (int) aGridData.data.getSize());
     }
 
@@ -601,9 +602,12 @@ public class GridArray {
         for (int i = 0; i < ynum; i++) {
             y.add(this.yArray[i]);
             ry.setDouble(i, aExtent.minY + i * yDelt);
-        }        
+        }      
+        Array[] rxy = ArrayUtil.meshgrid(rx, ry);
+        Array rrx = rxy[0];
+        Array rry = rxy[1];
         
-        Array r = ArrayUtil.reproject(data, x, y, rx, ry, fromProj, toProj, missingValue, resampleMethod);
+        Array r = ArrayUtil.reproject(data, x, y, rrx, rry, fromProj, toProj, missingValue, resampleMethod);
         GridArray rdata = new GridArray(r, rx, ry, missingValue);
         rdata.projInfo = toProj;
         

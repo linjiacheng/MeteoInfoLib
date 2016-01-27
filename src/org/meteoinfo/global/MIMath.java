@@ -835,7 +835,7 @@ public class MIMath {
         double[] cValues;
         min = BigDecimalUtil.add(min, interval);
         double mod = BigDecimalUtil.mod(min, interval);
-        min = min - mod;
+        min = BigDecimalUtil.sub(min, mod);
         int cNum = (int) ((max - min) / interval) + 1;
         int i;
         
