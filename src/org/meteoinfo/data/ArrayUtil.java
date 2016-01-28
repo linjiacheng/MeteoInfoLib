@@ -905,11 +905,10 @@ public class ArrayUtil {
      * @param Y grid Y array
      * @param NeededPointNum needed at least point number
      * @param radius search radius
-     * @param unDefData undefine data
      * @return interpolated grid data
      */
     public static Array interpolation_IDW_Radius(List<Number> x_s, List<Number> y_s, Array a,
-            List<Number> X, List<Number> Y, int NeededPointNum, double radius, double unDefData) {
+            List<Number> X, List<Number> Y, int NeededPointNum, double radius) {
         int rowNum, colNum, pNum;
         colNum = X.size();
         rowNum = Y.size();
@@ -924,14 +923,14 @@ public class ArrayUtil {
         //---- Do interpolation
         for (i = 0; i < rowNum; i++) {
             for (j = 0; j < colNum; j++) {
-                r.setDouble(i * colNum + j, unDefData);
+                r.setDouble(i * colNum + j, Double.NaN);
                 ifPointGrid = false;
                 SV = 0;
                 SW = 0;
                 vNum = 0;
                 for (p = 0; p < pNum; p++) {
                     v = a.getDouble(p);
-                    if (MIMath.doubleEquals(v, unDefData)) {
+                    if (Double.isNaN(v)) {
                         continue;
                     }
                     x = x_s.get(p).doubleValue();
@@ -963,7 +962,7 @@ public class ArrayUtil {
         }
 
         //---- Smooth with 5 points
-        r = smooth5(r, rowNum, colNum, unDefData);
+        r = smooth5(r, rowNum, colNum, Double.NaN);
 
         return r;
     }
@@ -977,11 +976,10 @@ public class ArrayUtil {
      * @param X grid X array
      * @param Y grid Y array
      * @param NumberOfNearestNeighbors
-     * @param unDefData undefine data
      * @return interpolated grid data
      */
     public static Array interpolation_IDW_Neighbor(List<Number> x_s, List<Number> y_s, Array a,
-            List<Number> X, List<Number> Y, int NumberOfNearestNeighbors, double unDefData) {
+            List<Number> X, List<Number> Y, int NumberOfNearestNeighbors) {
         int rowNum, colNum, pNum;
         colNum = X.size();
         rowNum = Y.size();
@@ -999,13 +997,13 @@ public class ArrayUtil {
         //---- Do interpolation with IDW method 
         for (i = 0; i < rowNum; i++) {
             for (j = 0; j < colNum; j++) {
-                r.setDouble(i * colNum + j, unDefData);
+                r.setDouble(i * colNum + j, Double.NaN);
                 SV = 0;
                 SW = 0;
                 NWIdx = 0;
                 for (p = 0; p < pNum; p++) {
                     v = a.getDouble(p);
-                    if (v == unDefData) {
+                    if (Double.isNaN(v)) {
                         AllWeights[p] = -1;
                         continue;
                     }
@@ -1025,7 +1023,7 @@ public class ArrayUtil {
                     }
                 }
 
-                if (r.getDouble(i * colNum + j) == unDefData) {
+                if (Double.isNaN(r.getDouble(i * colNum + j))) {
                     for (p = 0; p < pNum; p++) {
                         w = AllWeights[p];
                         if (w == -1) {
@@ -1055,7 +1053,7 @@ public class ArrayUtil {
         }
 
         //---- Smooth with 5 points
-        r = smooth5(r, rowNum, colNum, unDefData);
+        r = smooth5(r, rowNum, colNum, Double.NaN);
 
         return r;
     }
@@ -1121,11 +1119,10 @@ public class ArrayUtil {
      * @param X x coordinate
      * @param Y y coordinate
      * @param radius Radius
-     * @param fill_value undefine value
      * @return grid data
      */
     public static Array interpolation_Nearest(List<Number> x_s, List<Number> y_s, Array a, List<Number> X, List<Number> Y,
-            double radius, double fill_value) {
+            double radius) {
         int rowNum, colNum, pNum;
         colNum = X.size();
         rowNum = Y.size();
@@ -1137,12 +1134,12 @@ public class ArrayUtil {
         for (int i = 0; i < rowNum; i++) {
             gy = Y.get(i).doubleValue();
             for (int j = 0; j < colNum; j++) {
-                rdata.setDouble(i * colNum + j, fill_value);
+                rdata.setDouble(i * colNum + j, Double.NaN);
                 gx = X.get(j).doubleValue();
                 minr = Double.MAX_VALUE;
                 for (int p = 0; p < pNum; p++) {
                     v = a.getDouble(p);
-                    if (MIMath.doubleEquals(v, fill_value)) {
+                    if (Double.isNaN(v)) {
                         continue;
                     }
 
@@ -1175,11 +1172,9 @@ public class ArrayUtil {
      * @param a scatter value array
      * @param X x coordinate
      * @param Y y coordinate
-     * @param fill_value Fill value
      * @return grid data
      */
-    public static Array interpolation_Inside(List<Number> x_s, List<Number> y_s, Array a, List<Number> X, List<Number> Y,
-            double fill_value) {
+    public static Array interpolation_Inside(List<Number> x_s, List<Number> y_s, Array a, List<Number> X, List<Number> Y) {
         int rowNum, colNum, pNum;
         colNum = X.size();
         rowNum = Y.size();
@@ -1199,7 +1194,7 @@ public class ArrayUtil {
 
         for (int p = 0; p < pNum; p++) {
             v = a.getDouble(p);
-            if (MIMath.doubleEquals(v, fill_value)) {
+            if (Double.isNaN(v)) {
                 continue;
             }
 
@@ -1221,7 +1216,7 @@ public class ArrayUtil {
         for (int i = 0; i < rowNum; i++) {
             for (int j = 0; j < colNum; j++) {
                 if (pNums[i][j] == 0) {
-                    r.setDouble(i * colNum + j, fill_value);
+                    r.setDouble(i * colNum + j, Double.NaN);
                 } else {
                     r.setDouble(i * colNum + j, r.getDouble(i * colNum + j) / pNums[i][j]);
                 }
@@ -1349,11 +1344,9 @@ public class ArrayUtil {
      * @param a scatter value array
      * @param X x coordinate
      * @param Y y coordinate
-     * @param unDefData undefine value
      * @return grid data
      */
-    public static Array interpolation_Surface(Array x_s, Array y_s, Array a, Array X, Array Y,
-            double unDefData) {
+    public static Array interpolation_Surface(Array x_s, Array y_s, Array a, Array X, Array Y) {
         int rowNum, colNum, xn, yn;
         int[] shape = x_s.getShape();
         colNum = shape[1];
@@ -1397,7 +1390,7 @@ public class ArrayUtil {
                     }
                 }
                 if (!isIn) {
-                    r.setDouble(i * xn + j, unDefData);
+                    r.setDouble(i * xn + j, Double.NaN);
                 }
             }
         }
@@ -1413,12 +1406,11 @@ public class ArrayUtil {
      * @param v_s scatter value array
      * @param X x array
      * @param Y y array
-     * @param unDefData undefine data
      * @param radList radii list
      * @return result grid data
      */
     public static Array cressman(List<Number> x_s, List<Number> y_s, Array v_s, List<Number> X, List<Number> Y,
-            double unDefData, List<Number> radList) {
+            List<Number> radList) {
         int xNum = X.size();
         int yNum = Y.size();
         int pNum = x_s.size();
@@ -1444,7 +1436,7 @@ public class ArrayUtil {
             stationData[i][0] = (x - xMin) / xDelt;
             stationData[i][1] = (y - yMin) / yDelt;
             stationData[i][2] = v_s.getDouble(i);
-            if (stationData[i][2] != unDefData) {
+            if (!Double.isNaN(stationData[i][2])) {
                 //total += stationData[i][2];
                 stNum += 1;
             }
@@ -1487,7 +1479,7 @@ public class ArrayUtil {
                         continue;
                     }
 
-                    if (val == unDefData || sx < xMin || sx > xMax || sy < yMin || sy > yMax) {
+                    if (Double.isNaN(val) || sx < xMin || sx > xMax || sy < yMin || sy > yMax) {
                         continue;
                     }
 
@@ -1506,7 +1498,7 @@ public class ArrayUtil {
                     }
                 }
                 if (stNum == 0) {
-                    r.setDouble(i * xNum + j, unDefData);
+                    r.setDouble(i * xNum + j, Double.NaN);
                 } else {
                     r.setDouble(i * xNum + j, sum / stNum);
                 }
@@ -1521,7 +1513,7 @@ public class ArrayUtil {
                 yMin = y - rad;
                 yMax = y + rad;
                 for (j = 0; j < xNum; j++) {
-                    if (r.getDouble(i * xNum + j) == unDefData) {
+                    if (Double.isNaN(r.getDouble(i * xNum + j))) {
                         continue;
                     }
 
@@ -1538,7 +1530,7 @@ public class ArrayUtil {
                             continue;
                         }
 
-                        if (val == unDefData || sx < xMin || sx > xMax || sy < yMin || sy > yMax) {
+                        if (Double.isNaN(val) || sx < xMin || sx > xMax || sy < yMin || sy > yMax) {
                             continue;
                         }
 
@@ -1556,16 +1548,16 @@ public class ArrayUtil {
                         double c = r.getDouble(i2 * xNum + j1);
                         double d = r.getDouble(i2 * xNum + j2);
                         List<Double> dList = new ArrayList<>();
-                        if (a != unDefData) {
+                        if (!Double.isNaN(a)) {
                             dList.add(a);
                         }
-                        if (b != unDefData) {
+                        if (!Double.isNaN(b)) {
                             dList.add(b);
                         }
-                        if (c != unDefData) {
+                        if (!Double.isNaN(c)) {
                             dList.add(c);
                         }
-                        if (d != unDefData) {
+                        if (Double.isNaN(d)) {
                             dList.add(d);
                         }
 
@@ -1591,7 +1583,7 @@ public class ArrayUtil {
                         wSum += w;
                     }
                     if (wSum < 0.000001) {
-                        r.setDouble(i * xNum + j, unDefData);
+                        r.setDouble(i * xNum + j, Double.NaN);
                     } else {
                         double aData = r.getDouble(i * xNum + j) + sum / wSum;
                         r.setDouble(i * xNum + j, Math.max(BOT[i][j], Math.min(TOP[i][j], aData)));
