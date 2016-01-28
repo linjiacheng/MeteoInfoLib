@@ -10,9 +10,17 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import org.meteoinfo.data.analysis.Statistics;
 import org.meteoinfo.global.util.GlobalUtil;
 import org.meteoinfo.table.DataColumn;
+import org.meteoinfo.table.DataRow;
 import org.meteoinfo.table.DataTable;
+import ucar.ma2.Array;
 
 /**
  *
@@ -44,8 +52,8 @@ public class TableUtil {
         String title = sr.readLine().trim();
         String[] titleArray = GlobalUtil.split(title, delimiter);
         int colNum = titleArray.length;
-        if (headerLines == -1){
-            for (int i = 0; i < colNum; i++){
+        if (headerLines == -1) {
+            for (int i = 0; i < colNum; i++) {
                 titleArray[i] = "Col_" + String.valueOf(i);
             }
         }
@@ -98,27 +106,26 @@ public class TableUtil {
                     } else if (colFormat.equals("B")) //Boolean
                     {
                         dTable.addColumn(titleArray[idx], DataTypes.Boolean);
-                    } else {
-                        if (colFormat.substring(0, 1).equals("{")) {    //Date
-                            int eidx = colFormat.indexOf("}");
-                            String formatStr = colFormat.substring(1, eidx);
-                            dTable.addColumn(new DataColumn(titleArray[idx], DataTypes.Date, formatStr));
-                            hasTimeCol = true;
-                            if (tcolName == null) {
-                                tcolName = titleArray[idx];
-                            }
-                        } else {
-                            dTable.addColumn(titleArray[idx], DataTypes.String);
+                    } else if (colFormat.substring(0, 1).equals("{")) {    //Date
+                        int eidx = colFormat.indexOf("}");
+                        String formatStr = colFormat.substring(1, eidx);
+                        dTable.addColumn(new DataColumn(titleArray[idx], DataTypes.Date, formatStr));
+                        hasTimeCol = true;
+                        if (tcolName == null) {
+                            tcolName = titleArray[idx];
                         }
+                    } else {
+                        dTable.addColumn(titleArray[idx], DataTypes.String);
                     }
-                    idx += 1; 
+                    idx += 1;
                     if (idx == colNum) {
                         isBreak = true;
                         break;
                     }
                 }
-                if (isBreak)
+                if (isBreak) {
                     break;
+                }
             }
 
             if (idx < colNum) {
@@ -130,10 +137,11 @@ public class TableUtil {
             String[] dataArray;
             int rn = 0;
             String line;
-            if (headerLines == -1)
+            if (headerLines == -1) {
                 line = title;
-            else
+            } else {
                 line = sr.readLine();
+            }
             while (line != null) {
                 line = line.trim();
                 if (line.isEmpty()) {
@@ -151,12 +159,14 @@ public class TableUtil {
                     if (cn < colNum) {
                         dTable.setValue(rn, cn, dataArray[i]);
                         cn++;
-                    } else 
+                    } else {
                         break;
+                    }
                 }
-                if (cn < colNum){
-                    for (int i = cn; i < colNum; i++)
+                if (cn < colNum) {
+                    for (int i = cn; i < colNum; i++) {
                         dTable.setValue(rn, i, "");
+                    }
                 }
 
                 rn += 1;
@@ -223,4 +233,69 @@ public class TableUtil {
         String formatStr = dt.substring(sidx + 1, eidx);
         return formatStr;
     }
+
+    /**
+     * Average month by month
+     * @param data Data array list
+     * @param colNames Column names
+     * @param time Time list
+     * @return Result data table
+     * @throws Exception 
+     */
+    public static DataTable ave_Month(List<Array> data, List<String> colNames, List<Date> time) throws Exception {
+        DataTable rTable = new DataTable();
+        rTable.addColumn("YearMonth", DataTypes.String);
+        for (String col : colNames) {
+            rTable.addColumn(col, DataTypes.Double);
+        }
+
+        List<String> yms = getYearMonths(time);
+        Calendar cal = Calendar.getInstance();
+        double v;
+        for (String ym : yms) {
+            int year = Integer.parseInt(ym.substring(0, 4));
+            int month = Integer.parseInt(ym.substring(4));
+            DataRow nRow = rTable.addRow();
+            nRow.setValue(0, ym);
+            int col = 0;
+            for (Array a : data) {
+                List<Double> values = new ArrayList<>();
+                for (int i = 0; i < time.size(); i++) {
+                    cal.setTime(time.get(i));
+                    if (cal.get(Calendar.YEAR) == year) {
+                        if (cal.get(Calendar.MONTH) == month - 1) {
+                            v = a.getDouble(i);
+                            if (!Double.isNaN(v)) 
+                                values.add(v);
+                        }
+                    }
+                }
+                nRow.setValue(colNames.get(col), Statistics.mean(values));
+                col += 1;
+            }
+        }
+
+        return rTable;
+    }
+
+    /**
+     * Get year months
+     *
+     * @param time Date list
+     * @return Year month list
+     */
+    public static List<String> getYearMonths(List<Date> time) {
+        List<String> yms = new ArrayList<>();
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMM");
+        String ym;
+        for (Date t : time) {
+            ym = format.format(t);
+            if (!yms.contains(ym)) {
+                yms.add(ym);
+            }
+        }
+
+        return yms;
+    }
+
 }

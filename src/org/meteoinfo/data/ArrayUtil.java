@@ -2331,4 +2331,7 @@ public class ArrayUtil {
         return r;
     }
     // </editor-fold>
+    // <editor-fold desc="Time average">
+    
+    // </editor-fold>
 }
