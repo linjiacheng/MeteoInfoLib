@@ -387,6 +387,22 @@ public class GeoComputation {
     private static double rad(double d) {
         return d * Math.PI / 180.0;
     }
+    
+    /**
+     * Get polygon area
+     * @param x X coordinates
+     * @param y Y coordinates
+     * @param isLonLat If is on earth surface (lon/lat)
+     * @return Area
+     */
+    public static double getArea(List<Number> x, List<Number> y, boolean isLonLat){
+        List<PointD> points = new ArrayList<>();
+        for (int i = 0; i < x.size(); i++){
+            points.add(new PointD(x.get(i).doubleValue(), y.get(i).doubleValue()));            
+        }
+        
+        return getArea(points, isLonLat);
+    }
 
     /**
      * Get polygon area on earth surface
@@ -402,7 +418,7 @@ public class GeoComputation {
             double mtotalArea = 0;
 
             if (isLonLat) {
-                return sphericalPolygonArea(points, EARTH_RADIUS);
+                return sphericalPolygonArea(points);
             } else {
                 int i, j;
                 double p1x, p1y;

@@ -2759,7 +2759,7 @@ public class MapView extends JPanel {
                         _mouseDoubleClicked = true;
                     }
 
-                    if (_selectedGraphics.size() == 0) {
+                    if (_selectedGraphics.isEmpty()) {
                         return;
                     }
 
