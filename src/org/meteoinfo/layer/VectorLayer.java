@@ -21,7 +21,6 @@ import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.GenericFileFilter;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
-import org.meteoinfo.global.PointF;
 import org.meteoinfo.global.colors.ColorUtil;
 import org.meteoinfo.table.DataColumn;
 import org.meteoinfo.table.DataRow;
