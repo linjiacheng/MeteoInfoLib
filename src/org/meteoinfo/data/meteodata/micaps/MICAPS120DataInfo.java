@@ -230,7 +230,7 @@ public class MICAPS120DataInfo extends DataInfo implements IStationDataInfo {
         int i;
         float lon, lat, t;
         List<String> dataList;
-        double[][] discreteData = new double[_dataList.size()][3];
+        List<double[]> disData = new ArrayList<>();
         float minX, maxX, minY, maxY;
         minX = 0;
         maxX = 0;
@@ -240,14 +240,18 @@ public class MICAPS120DataInfo extends DataInfo implements IStationDataInfo {
 
         for (i = 0; i < _dataList.size(); i++) {
             dataList = _dataList.get(i);
+            if (varIdx >= dataList.size())
+                continue;
+            
             aStid = dataList.get(0);
             lon = Float.parseFloat(dataList.get(1));
             lat = Float.parseFloat(dataList.get(2));
             t = Float.parseFloat(dataList.get(varIdx));
             stations.add(aStid);
-            discreteData[i][0] = lon;
-            discreteData[i][1] = lat;
-            discreteData[i][2] = t;
+            disData.add(new double[]{lon, lat, t});
+            //discreteData[i][0] = lon;
+            //discreteData[i][1] = lat;
+            //discreteData[i][2] = t;
 
             if (i == 0) {
                 minX = lon;
@@ -274,6 +278,12 @@ public class MICAPS120DataInfo extends DataInfo implements IStationDataInfo {
         dataExtent.maxY = maxY;
 
         StationData stData = new StationData();
+        double[][] discreteData = new double[disData.size()][3];
+        for (i = 0; i < disData.size(); i++){
+            discreteData[i][0] = disData.get(i)[0];
+            discreteData[i][1] = disData.get(i)[1];
+            discreteData[i][2] = disData.get(i)[2];
+        }
         stData.data = discreteData;
         stData.stations = stations;
         stData.dataExtent = dataExtent;
