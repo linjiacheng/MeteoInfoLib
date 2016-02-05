@@ -660,6 +660,27 @@ public class ArrayMath {
         }
         return null;
     }
+    
+    /**
+     * Array pow function
+     *
+     * @param a Number a
+     * @param b Array b
+     * @return Result array
+     */
+    public static Array pow(Number a, Array b) {
+        DataType bType = ArrayMath.getDataType(a);
+        DataType type = ArrayMath.commonType(b.getDataType(), bType);
+        switch (type) {
+            case SHORT:
+            case INT:
+                return ArrayMath.powInt(a.intValue(), b);
+            case FLOAT:
+            case DOUBLE:
+                return ArrayMath.powDouble(a.doubleValue(), b);
+        }
+        return null;
+    }
 
     private static Array powInt(Array a, int b) {
         Array r = Array.factory(DataType.INT, a.getShape());
@@ -669,11 +690,29 @@ public class ArrayMath {
 
         return r;
     }
+    
+    private static Array powInt(int a, Array b) {
+        Array r = Array.factory(DataType.INT, b.getShape());
+        for (int i = 0; i < b.getSize(); i++) {
+            r.setInt(i, (int) Math.pow(a, b.getInt(i)));
+        }
+
+        return r;
+    }
 
     private static Array powDouble(Array a, double b) {
         Array r = Array.factory(DataType.DOUBLE, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             r.setDouble(i, Math.pow(a.getDouble(i), b));
+        }
+
+        return r;
+    }
+    
+    private static Array powDouble(double a, Array b) {
+        Array r = Array.factory(DataType.DOUBLE, b.getShape());
+        for (int i = 0; i < b.getSize(); i++) {
+            r.setDouble(i, Math.pow(a, b.getDouble(i)));
         }
 
         return r;

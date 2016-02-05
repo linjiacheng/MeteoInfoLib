@@ -100,6 +100,10 @@ public class DataHead {
         public int NZ;
         /// <summary>
         /// Vertical coordinate system flag
+        //1-sigma (fraction)
+        //2-pressure (mb)
+        //3-terrain (fraction)
+        //4-hybrid (mb: offset.fraction)
         /// </summary>
         public short K_FLAG;
         /// <summary>

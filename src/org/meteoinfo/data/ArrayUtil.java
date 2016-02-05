@@ -220,6 +220,11 @@ public class ArrayUtil {
         try {
             DataInputStream ins = new DataInputStream(new FileInputStream(fn));
             switch (dt) {
+                case BYTE:
+                    for (int i = 0; i < r.getSize(); i++){
+                        r.setByte(i, ins.readByte());
+                    }
+                    break;
                 case INT:
                     for (int i = 0; i < r.getSize(); i++) {
                         r.setInt(i, ins.readInt());
@@ -647,6 +652,9 @@ public class ArrayUtil {
             case "s":
             case "string":
                 return DataType.STRING;
+            case "b":
+            case "byte":
+                return DataType.BYTE;
             case "i":
             case "int":
                 return DataType.INT;
@@ -770,6 +778,39 @@ public class ArrayUtil {
 
     // </editor-fold>
     // <editor-fold desc="Resample/Interpolate">
+    /**
+     * Broadcast array to a new shape
+     * @param a Array a
+     * @param shape Shape
+     * @return Result array
+     */
+    public static Array broadcast(Array a, int[] shape){
+        Array r = Array.factory(a.getDataType(), shape);
+        Index index = r.getIndex();
+        int last = r.getRank() - 1;
+        for (int i = 0; i < r.getSize(); i++){
+            int[] current = index.getCurrentCounter();
+            r.setObject(index, a.getObject(current[last]));
+            index.incr();
+        }
+        
+        return r;
+    }
+    
+    /**
+     * Broadcast array to a new shape
+     * @param a Array a
+     * @param shape Shape
+     * @return Result array
+     */
+    public static Array broadcast(Array a, List<Integer> shape){
+        int[] nshape = new int[shape.size()];
+        for (int i = 0; i < shape.size(); i++){
+            nshape[i] = shape.get(i);
+        }
+        return broadcast(a, nshape);
+    }
+    
     /**
      * Mesh grid
      *
