@@ -672,8 +672,9 @@ public class Variable {
      * Set a dimension
      * @param tstr Dimension type string
      * @param values Dimension values
+     * @param reverse If is reverse
      */
-    public void setDimension(String tstr, List<Number> values){
+    public void setDimension(String tstr, List<Number> values, boolean reverse){
         DimensionType dType = DimensionType.Other;
         switch(tstr){
             case "X":
@@ -691,6 +692,7 @@ public class Variable {
         }
         Dimension dim = new Dimension(dType);
         dim.setDimValues(values);
+        dim.setReverse(reverse);
         this.setDimension(dim);
     }
     
@@ -699,8 +701,9 @@ public class Variable {
      * @param tstr Dimension type string
      * @param values Dimension values
      * @param index Index
+     * @param reverse If is reverse
      */
-    public void setDimension(String tstr, List<Number> values, int index){
+    public void setDimension(String tstr, List<Number> values, boolean reverse, int index){
         DimensionType dType = DimensionType.Other;
         switch(tstr){
             case "X":
@@ -718,6 +721,7 @@ public class Variable {
         }
         Dimension dim = new Dimension(dType);
         dim.setDimValues(values);
+        dim.setReverse(reverse);
         this.setDimension(dim, index);
     }
 
