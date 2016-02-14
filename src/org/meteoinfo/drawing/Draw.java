@@ -28,7 +28,7 @@ import org.meteoinfo.legend.PolygonBreak;
 import org.meteoinfo.legend.PolylineBreak;
 import org.meteoinfo.shape.Graphic;
 import org.meteoinfo.shape.Polyline;
-import org.meteoinfo.shape.WindArraw;
+import org.meteoinfo.shape.WindArrow;
 import org.meteoinfo.shape.WindBarb;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -45,6 +45,7 @@ import java.awt.geom.Arc2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -246,6 +247,37 @@ public class Draw {
 
         return aSM;
     }
+    
+    /**
+     * Draw wind arrow
+     *
+     * @param sP Start point
+     * @param aArraw The arrow
+     * @param g Graphics2D
+     * @param zoom Zoom
+     * @return Border rectangle
+     */
+    public static Rectangle2D getArrawBorder(PointF sP, WindArrow aArraw, Graphics2D g, double zoom) {
+        PointF eP = new PointF(0, 0);
+        //PointF eP1 = new PointF(0, 0);
+        double len = aArraw.length;
+        double angle = aArraw.angle + 180;
+        if (angle >= 360) {
+            angle -= 360;
+        }
+
+        len = len * zoom;
+
+        eP.X = (int) (sP.X + len * Math.sin(angle * Math.PI / 180));
+        eP.Y = (int) (sP.Y - len * Math.cos(angle * Math.PI / 180));
+
+        if (angle == 90) {
+            eP.Y = sP.Y;
+        }
+
+        return new Rectangle2D.Double(Math.min(sP.X, eP.X), Math.min(sP.Y, eP.Y),
+            Math.abs(eP.X - sP.X), Math.abs(eP.Y - sP.Y));
+    }
 
     /**
      * Draw wind arrow
@@ -255,10 +287,11 @@ public class Draw {
      * @param aArraw The arrow
      * @param g Graphics2D
      * @param zoom Zoom
+     * @return Border rectangle
      */
-    public static void drawArraw(Color aColor, PointF sP, WindArraw aArraw, Graphics2D g, double zoom) {
+    public static Rectangle2D drawArraw(Color aColor, PointF sP, WindArrow aArraw, Graphics2D g, double zoom) {
         PointF eP = new PointF(0, 0);
-        PointF eP1 = new PointF(0, 0);
+        //PointF eP1 = new PointF(0, 0);
         double len = aArraw.length;
         double angle = aArraw.angle + 180;
         if (angle >= 360) {
@@ -277,6 +310,8 @@ public class Draw {
         g.setColor(aColor);
         g.draw(new Line2D.Float(sP.X, sP.Y, eP.X, eP.Y));
         drawArraw(g, eP, angle);
+        return new Rectangle2D.Double(Math.min(sP.X, eP.X), Math.min(sP.Y, eP.Y),
+            Math.abs(eP.X - sP.X), Math.abs(eP.Y - sP.Y));
 
 //        GeneralPath path = new GeneralPath(GeneralPath.WIND_EVEN_ODD, 5);
 //        path.moveTo(sP.X, sP.Y);

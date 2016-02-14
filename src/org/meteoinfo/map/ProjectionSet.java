@@ -42,7 +42,7 @@ import org.meteoinfo.shape.Polyline;
 import org.meteoinfo.shape.PolylineShape;
 import org.meteoinfo.shape.Shape;
 import org.meteoinfo.shape.StationModelShape;
-import org.meteoinfo.shape.WindArraw;
+import org.meteoinfo.shape.WindArrow;
 import org.meteoinfo.shape.WindBarb;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -666,7 +666,7 @@ public class ProjectionSet {
                 toP = points[0];
                 switch (aLayer.getLayerDrawType()) {
                     case Vector:
-                        ((WindArraw) aPS).angle = projectAngle(((WindArraw) aPS).angle, toP, fromP, fromProj, toProj);
+                        ((WindArrow) aPS).angle = projectAngle(((WindArrow) aPS).angle, toP, fromP, fromProj, toProj);
                         break;
                     case Barb:
                         ((WindBarb) aPS).angle = projectAngle(((WindBarb) aPS).angle, toP, fromP, fromProj, toProj);
@@ -769,7 +769,7 @@ public class ProjectionSet {
                 if (IfReprojectAngle) {
                     switch (oLayer.getLayerDrawType()) {
                         case Vector:
-                            ((WindArraw) aPS).angle = projectAngle(((WindArraw) aPS).angle, fromP, toP, fromProj, toProj);
+                            ((WindArrow) aPS).angle = projectAngle(((WindArrow) aPS).angle, fromP, toP, fromProj, toProj);
                             break;
                         case Barb:
                             ((WindBarb) aPS).angle = projectAngle(((WindBarb) aPS).angle, fromP, toP, fromProj, toProj);
@@ -811,7 +811,7 @@ public class ProjectionSet {
                         ((WindBarb) newPS).angle = projectAngle(((WindBarb) newPS).angle, fromP, toP, fromProj, toProj);
                         break;
                     case WindArraw:
-                        ((WindArraw) newPS).angle = projectAngle(((WindArraw) newPS).angle, fromP, toP, fromProj, toProj);
+                        ((WindArrow) newPS).angle = projectAngle(((WindArrow) newPS).angle, fromP, toP, fromProj, toProj);
                         break;
                     case StationModel:
                         ((StationModelShape) newPS).windBarb.angle = projectAngle(((StationModelShape) newPS).windBarb.angle, fromP, toP, fromProj, toProj);

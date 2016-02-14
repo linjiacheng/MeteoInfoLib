@@ -59,7 +59,7 @@ import org.meteoinfo.shape.PolygonShape;
 import org.meteoinfo.shape.PolylineShape;
 import org.meteoinfo.shape.RectangleShape;
 import org.meteoinfo.shape.ShapeTypes;
-import org.meteoinfo.shape.WindArraw;
+import org.meteoinfo.shape.WindArrow;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -1885,7 +1885,7 @@ public class MapLayout extends JPanel {
                 _frmPolygonSymbolSet.setVisible(true);
                 break;
             case VectorBreak:
-                WindArraw wa = (WindArraw) shape;
+                WindArrow wa = (WindArrow) shape;
                 //VectorBreak vb = (VectorBreak) aCB;
                 Object[] lens = {5, 10, 15, 20, 25, 30};
                 Object lenObj = JOptionPane.showInputDialog((JFrame) SwingUtilities.getWindowAncestor(this),
@@ -3117,7 +3117,7 @@ public class MapLayout extends JPanel {
     }
 
     public LayoutGraphic addWindArrow(int left, int top) {
-        WindArraw aWindArraw = new WindArraw();
+        WindArrow aWindArraw = new WindArrow();
         //aWindArraw.setPoint(new PointD(left, top));
         aWindArraw.angle = 270;
         aWindArraw.length = 20;
@@ -3963,7 +3963,7 @@ public class MapLayout extends JPanel {
                 case LayoutGraphic:
                     LayoutGraphic aLG = loadLayoutGraphicElement(elementNode);
                     if (aLG.getGraphic().getShape().getShapeType() == ShapeTypes.WindArraw) {
-                        ((WindArraw) aLG.getGraphic().getShape()).angle = 270;
+                        ((WindArrow) aLG.getGraphic().getShape()).angle = 270;
                     }
                     addElement(aLG);
                     break;

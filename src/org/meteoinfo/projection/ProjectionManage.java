@@ -37,7 +37,7 @@ import org.meteoinfo.shape.Polyline;
 import org.meteoinfo.shape.PolylineShape;
 import org.meteoinfo.shape.Shape;
 import org.meteoinfo.shape.StationModelShape;
-import org.meteoinfo.shape.WindArraw;
+import org.meteoinfo.shape.WindArrow;
 import org.meteoinfo.shape.WindBarb;
 import org.meteoinfo.table.DataColumn;
 import org.meteoinfo.table.DataRow;
@@ -775,7 +775,7 @@ public class ProjectionManage {
                         ((WindBarb) newPS).angle = projectAngle(((WindBarb) newPS).angle, fromP, toP, fromProj, toProj);
                         break;
                     case WindArraw:
-                        ((WindArraw) newPS).angle = projectAngle(((WindArraw) newPS).angle, fromP, toP, fromProj, toProj);
+                        ((WindArrow) newPS).angle = projectAngle(((WindArrow) newPS).angle, fromP, toP, fromProj, toProj);
                         break;
                     case StationModel:
                         ((StationModelShape) newPS).windBarb.angle = projectAngle(((StationModelShape) newPS).windBarb.angle, fromP, toP, fromProj, toProj);

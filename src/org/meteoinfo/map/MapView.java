@@ -188,7 +188,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.meteoinfo.shape.WindArraw;
+import org.meteoinfo.shape.WindArrow;
 import org.meteoinfo.shape.WindBarb;
 import org.meteoinfo.shape.PointZ;
 import org.w3c.dom.DOMException;
@@ -4454,12 +4454,12 @@ public class MapView extends JPanel {
         double zoom;
         float max;
         max = ((PointBreak) aLayer.getLegendScheme().getLegendBreaks().get(0)).getSize() * 3;
-        List<WindArraw> windArraws = new ArrayList<>();
+        List<WindArrow> windArraws = new ArrayList<>();
 
         int shapeIdx = 0;
         List<Integer> idxList = new ArrayList<>();
         for (Shape aShape : aLayer.getShapes()) {
-            WindArraw aArraw = (WindArraw) aShape;
+            WindArrow aArraw = (WindArrow) aShape;
             aPoint = aArraw.getPoint();
             if (!(aPoint.X + LonShift < _drawExtent.minX || aPoint.X + LonShift > _drawExtent.maxX
                     || aPoint.Y < _drawExtent.minY || aPoint.Y > _drawExtent.maxY)) {
@@ -4480,7 +4480,7 @@ public class MapView extends JPanel {
             case SingleSymbol:
                 PointBreak aPB = (PointBreak) aLS.getLegendBreaks().get(0);
                 aColor = aPB.getColor();
-                for (WindArraw aArraw : windArraws) {
+                for (WindArrow aArraw : windArraws) {
                     aPoint = aArraw.getPoint();
                     double[] xy = projToScreen(aPoint.X, aPoint.Y, LonShift);
                     sPoint.X = (float) xy[0];
@@ -4493,7 +4493,7 @@ public class MapView extends JPanel {
                 break;
             case GraduatedColor:
                 for (int w = 0; w < windArraws.size(); w++) {
-                    WindArraw aArraw = windArraws.get(w);
+                    WindArrow aArraw = windArraws.get(w);
                     shapeIdx = idxList.get(w);
                     //value = aArraw.Value;
                     aPoint = aArraw.getPoint();

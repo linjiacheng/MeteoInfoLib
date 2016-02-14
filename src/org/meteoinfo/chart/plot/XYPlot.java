@@ -9,6 +9,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.Line2D;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import org.meteoinfo.chart.ChartLegend;
 import org.meteoinfo.chart.ChartText;
+import org.meteoinfo.chart.ChartWindArrow;
 import org.meteoinfo.chart.LegendPosition;
 import org.meteoinfo.chart.Location;
 import org.meteoinfo.chart.Margin;
@@ -28,8 +30,10 @@ import static org.meteoinfo.chart.plot.Plot.MINIMUM_HEIGHT_TO_DRAW;
 import static org.meteoinfo.chart.plot.Plot.MINIMUM_WIDTH_TO_DRAW;
 import org.meteoinfo.drawing.Draw;
 import static org.meteoinfo.drawing.Draw.getDashPattern;
+import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.PointF;
+import org.meteoinfo.shape.WindArrow;
 
 /**
  *
@@ -56,6 +60,7 @@ public abstract class XYPlot extends Plot {
     private ChartLegend legend;
     private boolean drawLegend;
     private List<ChartText> texts;
+    private ChartWindArrow windArrow;
 
     // </editor-fold>
     // <editor-fold desc="Constructor">
@@ -242,15 +247,16 @@ public abstract class XYPlot extends Plot {
     public Axis getXAxis() {
         return this.axises.get(Location.BOTTOM);
     }
-    
+
     /**
      * Set x axis
-     * @param axis Axis 
+     *
+     * @param axis Axis
      */
     public void setXAxis(Axis axis) {
         axis.setLocation(Location.BOTTOM);
         this.axises.put(Location.BOTTOM, axis);
-        Axis topAxis = (Axis)axis.clone();
+        Axis topAxis = (Axis) axis.clone();
         topAxis.setLocation(Location.TOP);
         this.axises.put(Location.TOP, topAxis);
     }
@@ -263,15 +269,16 @@ public abstract class XYPlot extends Plot {
     public Axis getYAxis() {
         return this.axises.get(Location.LEFT);
     }
-    
+
     /**
      * Set y axis
-     * @param axis Axis 
+     *
+     * @param axis Axis
      */
     public void setYAxis(Axis axis) {
         axis.setLocation(Location.LEFT);
         this.axises.put(Location.LEFT, axis);
-        Axis rightAxis = (Axis)axis.clone();
+        Axis rightAxis = (Axis) axis.clone();
         rightAxis.setLocation(Location.RIGHT);
         this.axises.put(Location.RIGHT, rightAxis);
     }
@@ -384,61 +391,85 @@ public abstract class XYPlot extends Plot {
     public void setDrawRightAxis(boolean value) {
         this.drawRightAxis = value;
     }
-    
+
     /**
      * Get if draw neat line
+     *
      * @return Boolean
      */
-    public boolean isDrawNeatLine(){
+    public boolean isDrawNeatLine() {
         return this.drawNeatLine;
     }
-    
+
     /**
      * Set if draw neat line
+     *
      * @param value Boolean
      */
-    public void setDrawNeatLine(boolean value){
+    public void setDrawNeatLine(boolean value) {
         this.drawNeatLine = value;
     }
-    
+
     /**
      * Get texts
+     *
      * @return Texts
      */
-    public List<ChartText> getTexts(){
+    public List<ChartText> getTexts() {
         return this.texts;
     }
-    
+
     /**
      * Set texts
+     *
      * @param value texts
      */
-    public void setTexts(List<ChartText> value){
+    public void setTexts(List<ChartText> value) {
         this.texts = value;
+    }
+
+    /**
+     * Get wind arrow
+     *
+     * @return Wind arrow
+     */
+    public ChartWindArrow getWindArrow() {
+        return this.windArrow;
+    }
+
+    /**
+     * Set wind arrow
+     *
+     * @param value Wind arrow
+     */
+    public void setWindArrow(ChartWindArrow value) {
+        this.windArrow = value;
     }
 
     // </editor-fold>
     // <editor-fold desc="Method">
     /**
      * Set axis label font
+     *
      * @param font Font
      */
-    public void setAxisLabelFont(Font font){
-        for (Axis axis: this.axises.values()){
+    public void setAxisLabelFont(Font font) {
+        for (Axis axis : this.axises.values()) {
             axis.setTickLabelFont(font);
         }
     }
-    
+
     /**
      * Set all axis visible or not
+     *
      * @param value Boolean
      */
-    public void setAxisOn(boolean value){
-        for (Axis axis : this.axises.values()){
+    public void setAxisOn(boolean value) {
+        for (Axis axis : this.axises.values()) {
             axis.setVisible(value);
         }
     }
-    
+
     /**
      * Draw plot
      *
@@ -462,7 +493,7 @@ public abstract class XYPlot extends Plot {
         //graphArea = this.getGraphArea(g, area);
         //graphArea = this.getPositionArea(g, area);
         Rectangle2D graphArea;
-        if (this.isAutoPosition()){
+        if (this.isAutoPosition()) {
             graphArea = this.getGraphArea(g, area);
         } else {
             //graphArea = this.getPositionArea(this.getPositionAreaZoom());
@@ -482,7 +513,7 @@ public abstract class XYPlot extends Plot {
             y -= this.title.getHeight(g) - 5;
             //y -= dim.height * 2 / 3;
             //g.drawString(title.getText(), x, y);
-            for (String text : title.getTexts()){
+            for (String text : title.getTexts()) {
                 Dimension dim = Draw.getStringDimension(text, g);
                 Draw.drawString(g, text, x - dim.width / 2, y);
                 g.setFont(title.getFont());
@@ -492,7 +523,6 @@ public abstract class XYPlot extends Plot {
 
 //        //Update legend scheme
 //        this.updateLegendScheme();
-
         //Draw grid lines        
         if (graphArea.getWidth() < 10 || graphArea.getHeight() < 10) {
 //            g.setTransform(oldMatrix);
@@ -502,12 +532,12 @@ public abstract class XYPlot extends Plot {
 
         //Draw graph        
         this.drawGraph(g, graphArea);
-        
+
         //Draw grid line
         this.drawGridLine(g, graphArea);
 
         //Draw neat line
-        if (this.drawNeatLine){
+        if (this.drawNeatLine) {
             g.setStroke(new BasicStroke(1.0f));
             g.setColor(Color.black);
             g.draw(graphArea);
@@ -538,13 +568,49 @@ public abstract class XYPlot extends Plot {
             }
             if (this.legend.getPosition() == LegendPosition.CUSTOM) {
                 this.legend.getLegendDimension(g, new Dimension((int) area.getWidth(), (int) area.getHeight()));
-                float x = (float)(area.getWidth() * this.legend.getX());
-                y = (float)(area.getHeight() * (1 - (this.getLegend().getHeight() / area.getHeight())
+                float x = (float) (area.getWidth() * this.legend.getX());
+                y = (float) (area.getHeight() * (1 - (this.getLegend().getHeight() / area.getHeight())
                         - this.getLegend().getY()));
                 this.legend.draw(g, new PointF(x, y));
             } else {
                 this.drawLegendScheme(g, graphArea, y);
             }
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, rendering);
+        }
+
+        //Draw wind arrow
+        if (this.getWindArrow() != null) {
+            Object rendering = g.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            ChartWindArrow wa = this.getWindArrow();
+            float zoom = 1.0f;
+            if (wa.getLayer() != null) {
+                zoom = wa.getLayer().getDrawingZoom();
+            }
+            float x = (float) (area.getWidth() * wa.getX());
+            y = (float) (area.getHeight() * (1 - wa.getY()));
+            WindArrow aArraw = wa.getWindArrow();
+            Font drawFont = wa.getFont();
+            g.setFont(drawFont);
+            String drawStr = wa.getLabel();
+            Dimension dim = Draw.getStringDimension(drawStr, g);
+            if (wa.isFill() || wa.isDrawNeatline()){
+                Rectangle2D rect = Draw.getArrawBorder(new PointF(x, y), aArraw, g, zoom);
+                double gap = 5;
+                rect.setRect(rect.getX() - gap, rect.getY() - gap, rect.getWidth() + gap * 2, 
+                    rect.getHeight() + dim.height + gap * 2);
+                if (wa.isFill()){
+                    g.setColor(wa.getBackground());
+                    g.fill(rect);
+                }
+                if (wa.isDrawNeatline()){
+                    g.setColor(wa.getNeatlineColor());
+                    g.draw(rect);
+                }
+            }
+            Draw.drawArraw(wa.getColor(), new PointF(x, y), aArraw, g, zoom);                        
+            g.setColor(wa.getLabelColor());                        
+            Draw.drawString(g, drawStr, x, y + dim.height);    
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, rendering);
         }
 
@@ -594,9 +660,10 @@ public abstract class XYPlot extends Plot {
         left += this.getYAxisWidth(g, space);
 
         //Set right space
-        if (this.getXAxis().isVisible()){
-            if (this.getXAxis().isDrawTickLabel())
+        if (this.getXAxis().isVisible()) {
+            if (this.getXAxis().isDrawTickLabel()) {
                 right += this.getXAxis().getMaxLabelLength(g) / 2;
+            }
         }
 
         return new Margin(left, right, top, bottom);
@@ -645,9 +712,10 @@ public abstract class XYPlot extends Plot {
         left += this.getYAxisWidth(g, space);
 
         //Set right space
-        if (this.getXAxis().isVisible()){
-            if (this.getXAxis().isDrawTickLabel())
+        if (this.getXAxis().isVisible()) {
+            if (this.getXAxis().isDrawTickLabel()) {
                 right += this.getXAxis().getMaxLabelLength(g) / 2;
+            }
         }
 
         double x = positionArea.getX() - left;
@@ -669,7 +737,7 @@ public abstract class XYPlot extends Plot {
     public Rectangle2D getPositionArea(Graphics2D g, Rectangle2D area) {
         return this.getPositionArea();
     }
-    
+
     /**
      * Get position area
      *
@@ -726,10 +794,11 @@ public abstract class XYPlot extends Plot {
         left += this.getYAxisWidth(g, space);
 
         //Set right space
-        if (this.getXAxis().isVisible()){
-            if (this.getXAxis().isDrawTickLabel())
+        if (this.getXAxis().isVisible()) {
+            if (this.getXAxis().isDrawTickLabel()) {
                 right += this.getXAxis().getMaxLabelLength(g) / 2;
-        }        
+            }
+        }
 
         //Set area
         Rectangle2D plotArea = new Rectangle2D.Double(left, top,
@@ -737,23 +806,25 @@ public abstract class XYPlot extends Plot {
         return plotArea;
     }
 
-    int getXAxisHeight(Graphics2D g, int space) {        
+    int getXAxisHeight(Graphics2D g, int space) {
         Axis xAxis = this.getXAxis();
-        if (!xAxis.isVisible())
+        if (!xAxis.isVisible()) {
             return 0;
+        }
 
         int height = space;
-        if (xAxis.isDrawTickLabel()){
+        if (xAxis.isDrawTickLabel()) {
             g.setFont(xAxis.getTickLabelFont());
             Dimension dim = Draw.getStringDimension("label", g);
             height += dim.height + space;
-            if (xAxis instanceof TimeAxis){
+            if (xAxis instanceof TimeAxis) {
                 height += dim.height + space;
             }
         }
-        if (!xAxis.isInsideTick())
+        if (!xAxis.isInsideTick()) {
             height += xAxis.getTickLength();
-        if (xAxis.isDrawLabel()){
+        }
+        if (xAxis.isDrawLabel()) {
             g.setFont(xAxis.getLabelFont());
             Dimension dim = Draw.getStringDimension(xAxis.getLabel(), g);
             height += dim.height + space;
@@ -764,16 +835,19 @@ public abstract class XYPlot extends Plot {
 
     int getYAxisWidth(Graphics2D g, int space) {
         Axis yAxis = this.getYAxis();
-        if (!yAxis.isVisible())
+        if (!yAxis.isVisible()) {
             return 0;
-        
+        }
+
         int width = space;
-        if (yAxis.isDrawTickLabel())
+        if (yAxis.isDrawTickLabel()) {
             width += yAxis.getMaxLabelLength(g) + space + space;
-        if (!yAxis.isInsideTick())
+        }
+        if (!yAxis.isInsideTick()) {
             width += this.getYAxis().getTickLength();
-        if (yAxis.isDrawLabel()){
-             g.setFont(yAxis.getLabelFont());
+        }
+        if (yAxis.isDrawLabel()) {
+            g.setFont(yAxis.getLabelFont());
             Dimension dim = Draw.getStringDimension(yAxis.getLabel(), g);
             width += dim.height + 10 - space;
         }
@@ -835,16 +909,16 @@ public abstract class XYPlot extends Plot {
         }
     }
 
-    abstract void drawGraph(Graphics2D g, Rectangle2D area);  
-    
+    abstract void drawGraph(Graphics2D g, Rectangle2D area);
+
     void drawAxis(Graphics2D g, Rectangle2D area) {
-        for (Location loc : this.axises.keySet()){
+        for (Location loc : this.axises.keySet()) {
             Axis axis = this.axises.get(loc);
             if (axis.isVisible()) {
-                axis.updateLabelGap(g, area);                
+                axis.updateLabelGap(g, area);
                 axis.draw(g, area, this);
             }
-        }        
+        }
     }
 
     void drawLegendScheme(Graphics2D g, Rectangle2D area, float y) {
@@ -858,8 +932,8 @@ public abstract class XYPlot extends Plot {
                 y += 5;
                 break;
             case LOWER_CENTER_OUTSIDE:
-                x = (float)(area.getX() + area.getWidth() / 2 - dim.width / 2);
-                y = (float)(area.getY() + area.getHeight() + this.getXAxisHeight(g, 1) + 10);
+                x = (float) (area.getX() + area.getWidth() / 2 - dim.width / 2);
+                y = (float) (area.getY() + area.getHeight() + this.getXAxisHeight(g, 1) + 10);
                 break;
             case LEFT_OUTSIDE:
                 x = 10;
@@ -882,9 +956,9 @@ public abstract class XYPlot extends Plot {
                 y = (float) area.getY() + 10;
                 break;
             case LOWER_LEFT:
-                x = (float) area.getX() +  10;
+                x = (float) area.getX() + 10;
                 y = (float) (area.getY() + area.getHeight()) - dim.height - 10;
-                break;    
+                break;
         }
         this.legend.draw(g, new PointF(x, y));
     }
@@ -905,9 +979,10 @@ public abstract class XYPlot extends Plot {
 
         return new double[]{screenX, screenY};
     }
-    
+
     /**
      * Convert data length to screen length in x direction
+     *
      * @param len data length
      * @param area Drawing area
      * @return Screen length
@@ -916,9 +991,10 @@ public abstract class XYPlot extends Plot {
         double scaleX = area.getWidth() / drawExtent.getWidth();
         return len * scaleX;
     }
-    
+
     /**
      * Convert data length to screen length in y direction
+     *
      * @param len data length
      * @param area Drawing area
      * @return Screen length
@@ -951,9 +1027,10 @@ public abstract class XYPlot extends Plot {
 
     /**
      * Add text
-     * @param text Chart text 
+     *
+     * @param text Chart text
      */
-    public void addText(ChartText text){
+    public void addText(ChartText text) {
         this.getTexts().add(text);
     }
     // </editor-fold>

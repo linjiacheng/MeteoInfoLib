@@ -32,7 +32,7 @@ import org.meteoinfo.shape.PointShape;
 import org.meteoinfo.shape.PolygonShape;
 import org.meteoinfo.shape.PolylineShape;
 import org.meteoinfo.shape.ShapeTypes;
-import org.meteoinfo.shape.WindArraw;
+import org.meteoinfo.shape.WindArrow;
 import org.meteoinfo.shape.WindBarb;
 import java.awt.Color;
 import java.util.ArrayList;
@@ -912,7 +912,7 @@ public class DrawMeteoData {
                         aPoint = new PointD();
                         aPoint.X = uData.xArray[j];
                         aPoint.Y = uData.yArray[i];
-                        WindArraw aArraw = new WindArraw();
+                        WindArrow aArraw = new WindArrow();
                         aArraw.angle = windDir;
                         aArraw.length = (float) windSpeed;
                         aArraw.size = size;
@@ -1546,7 +1546,7 @@ public class DrawMeteoData {
                     aPoint.X = windDirData.data[i][0];
                     aPoint.Y = windDirData.data[i][1];
 
-                    WindArraw aArraw = new WindArraw();
+                    WindArrow aArraw = new WindArrow();
                     aArraw.angle = windDir;
                     aArraw.length = windSpeed;
                     aArraw.size = 6;
@@ -1637,7 +1637,7 @@ public class DrawMeteoData {
                     aPoint.X = xData.getDouble(i);
                     aPoint.Y = yData.getDouble(i);
 
-                    WindArraw aArraw = new WindArraw();
+                    WindArrow aArraw = new WindArrow();
                     aArraw.angle = windDir;
                     aArraw.length = (float)windSpeed;
                     aArraw.size = 6;
@@ -1670,6 +1670,96 @@ public class DrawMeteoData {
         aLS.setFieldName(columnName);
         aLayer.setLegendScheme(aLS.convertTo(ShapeTypes.Point));
         aLayer.setLayerDrawType(LayerDrawType.Vector);
+
+        return aLayer;
+    }
+    
+    /**
+     * Create barb layer
+     *
+     * @param xData X array data
+     * @param yData Y array data
+     * @param uData U array data
+     * @param vData V array data
+     * @param stData Array data
+     * @param aLS Legend scheme
+     * @param layerName Layer name
+     * @param isUV If is U/V
+     * @return Barb layer
+     */
+    public static VectorLayer createBarbLayer(Array xData, Array yData, Array uData, Array vData, Array stData,
+            LegendScheme aLS, String layerName, boolean isUV) {
+        Array windDirData;
+        Array windSpeedData;
+        if (isUV) {
+            Array[] dsData = ArrayMath.uv2ds(uData, vData);
+            windDirData = dsData[0];
+            windSpeedData = dsData[1];
+        } else {
+            windDirData = uData;
+            windSpeedData = vData;
+        }
+
+        int i;
+        double windDir, windSpeed;
+        PointD aPoint;
+
+        String columnName = layerName.split("_")[0];
+        VectorLayer aLayer = new VectorLayer(ShapeTypes.WindArraw);
+        //Add data column         
+        if (isUV) {
+            aLayer.editAddField("U", DataTypes.Float);
+            aLayer.editAddField("V", DataTypes.Float);
+        }
+        aLayer.editAddField("WindDirection", DataTypes.Float);
+        aLayer.editAddField("WindSpeed", DataTypes.Float);
+        boolean ifAdd = true;
+        if (aLayer.getFieldNames().contains(columnName)) {
+            ifAdd = false;
+        }
+        if (ifAdd) {
+            aLayer.editAddField(columnName, DataTypes.Float);
+        }
+
+        WindBarb aWB;
+        for (i = 0; i < windDirData.getSize(); i++) {
+            windDir = (float) windDirData.getDouble(i);
+            windSpeed = (float) windSpeedData.getDouble(i);
+            if (!Double.isNaN(windDir)) {
+                if (!Double.isNaN(windSpeed)) {
+                    aPoint = new PointD();
+                        aPoint.X = xData.getDouble(i);
+                        aPoint.Y = yData.getDouble(i);
+                        aWB = Draw.calWindBarb((float) windDir, (float) windSpeed, 0, 10, aPoint);
+                        if (stData != null) {
+                            aWB.setValue(stData.getDouble(i));
+                        }
+
+                        int shapeNum = aLayer.getShapeNum();
+                        try {
+                            if (aLayer.editInsertShape(aWB, shapeNum)) {
+                                if (isUV) {
+                                    aLayer.editCellValue("U", shapeNum, uData.getDouble(i));
+                                    aLayer.editCellValue("V", shapeNum, vData.getDouble(i));
+                                }
+                                aLayer.editCellValue("WindDirection", shapeNum, aWB.angle);
+                                aLayer.editCellValue("WindSpeed", shapeNum, aWB.windSpeed);
+                                if (ifAdd) {
+                                    if (stData != null)
+                                        aLayer.editCellValue(columnName, shapeNum, stData.getDouble(i));
+                                }
+                            }
+                        } catch (Exception ex) {
+                            Logger.getLogger(DrawMeteoData.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                }
+            }
+        }
+
+        aLayer.setLayerName(layerName);
+        aLS.setFieldName(columnName);
+        aLayer.setLegendScheme(aLS.convertTo(ShapeTypes.Point));
+        aLayer.setLayerDrawType(LayerDrawType.Barb);
 
         return aLayer;
     }
@@ -1736,7 +1826,7 @@ public class DrawMeteoData {
                     aPoint.X = windDirData.data[i][0];
                     aPoint.Y = windDirData.data[i][1];
 
-                    WindArraw aArraw = new WindArraw();
+                    WindArrow aArraw = new WindArrow();
                     aArraw.angle = windDir;
                     aArraw.length = windSpeed;
                     aArraw.size = 6;

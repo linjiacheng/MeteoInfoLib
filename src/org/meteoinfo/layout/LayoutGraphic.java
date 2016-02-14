@@ -34,7 +34,7 @@ import org.meteoinfo.legend.VectorBreak;
 import org.meteoinfo.shape.Graphic;
 import org.meteoinfo.shape.PointShape;
 import org.meteoinfo.shape.ShapeTypes;
-import org.meteoinfo.shape.WindArraw;
+import org.meteoinfo.shape.WindArrow;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -273,7 +273,7 @@ public class LayoutGraphic extends LayoutElement {
                 }
                 break;
             case WindArraw:
-                    WindArraw aWA = (WindArraw)_graphic.getShape();
+                    WindArrow aWA = (WindArrow)_graphic.getShape();
                     this.setLeft((int)aWA.getPoint().X);
                     this.setTop((int)aWA.getPoint().Y);
                     if (aWA.length == 0){
@@ -392,7 +392,7 @@ public class LayoutGraphic extends LayoutElement {
             case WindArraw:
                 dPoint = _graphic.getShape().getPoints().get(0);
                 aPoint = pageToScreen((float) dPoint.X, (float) dPoint.Y, pageLocation, zoom);
-                WindArraw aArraw = (WindArraw) _graphic.getShape();
+                WindArrow aArraw = (WindArrow) _graphic.getShape();
                 VectorBreak aVB = (VectorBreak) _graphic.getLegend();
                 Draw.drawArraw(aVB.getColor(), aPoint, aArraw, g, aVB.getZoom() * zoom);
                 Font drawFont = new Font("Arial", Font.PLAIN, (int) (12 * zoom));

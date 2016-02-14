@@ -500,6 +500,8 @@ public final class XY1DPlot extends XYPlot {
             }
         }
 
+        g.setClip(oldRegion);
+
         //Draw texts
         for (ChartText text : this.getTexts()) {
             xy = this.projToScreen(text.getX(), text.getY(), area);
@@ -510,10 +512,9 @@ public final class XY1DPlot extends XYPlot {
             //Dimension dim = Draw.getStringDimension(text.getText(), g);
             //y -= dim.height * 2 / 3;
             Draw.drawString(g, text.getText(), x, y);
-        }
+        }        
 
         g.setTransform(oldMatrix);
-        g.setClip(oldRegion);
     }
 
     /**
@@ -648,13 +649,13 @@ public final class XY1DPlot extends XYPlot {
         double[] xValues;
         if (this.getXAxis() instanceof TimeAxis) {
             //if (this.getXAxis().isTimeAxis()) {
-            xValues = (double[])MIMath.getIntervalValues(extent.minX, extent.maxX, false).get(0);
+            xValues = (double[]) MIMath.getIntervalValues(extent.minX, extent.maxX, false).get(0);
             xValues[0] = extent.minX;
             xValues[xValues.length - 1] = extent.maxX;
         } else {
-            xValues = (double[])MIMath.getIntervalValues(extent.minX, extent.maxX, true).get(0);
+            xValues = (double[]) MIMath.getIntervalValues(extent.minX, extent.maxX, true).get(0);
         }
-        double[] yValues = (double[])MIMath.getIntervalValues(extent.minY, extent.maxY, true).get(0);
+        double[] yValues = (double[]) MIMath.getIntervalValues(extent.minY, extent.maxY, true).get(0);
         if (this.getPlotOrientation() == PlotOrientation.VERTICAL) {
             return new Extent(xValues[0], xValues[xValues.length - 1], yValues[0], yValues[yValues.length - 1]);
         } else {

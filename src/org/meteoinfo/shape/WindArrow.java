@@ -18,7 +18,7 @@ package org.meteoinfo.shape;
  *
  * @author Yaqiang
  */
-public class WindArraw extends PointShape {
+public class WindArrow extends PointShape {
     // <editor-fold desc="Variables">
 
     /**
@@ -39,7 +39,7 @@ public class WindArraw extends PointShape {
     /**
      * Constructor
      */
-    public WindArraw() {
+    public WindArrow() {
         this.setShapeType(ShapeTypes.WindArraw);
     }
     // </editor-fold>
@@ -54,7 +54,7 @@ public class WindArraw extends PointShape {
      */
     @Override
     public Object clone() {
-        WindArraw aWA = new WindArraw();
+        WindArrow aWA = new WindArrow();
         aWA.size = size;
         aWA.length = length;
         aWA.angle = angle;

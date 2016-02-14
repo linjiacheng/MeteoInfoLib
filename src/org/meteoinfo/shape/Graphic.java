@@ -479,7 +479,7 @@ public class Graphic {
                     aShape = new PointShape();
                     break;
                 case WindArraw:
-                    aShape = new WindArraw();
+                    aShape = new WindArrow();
                     break;
                 case Polyline:
                     aShape = new PolylineShape();
