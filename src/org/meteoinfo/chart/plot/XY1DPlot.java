@@ -498,9 +498,7 @@ public final class XY1DPlot extends XYPlot {
                     }
                 }
             }
-        }
-
-        g.setClip(oldRegion);
+        }        
 
         //Draw texts
         for (ChartText text : this.getTexts()) {
@@ -513,8 +511,9 @@ public final class XY1DPlot extends XYPlot {
             //y -= dim.height * 2 / 3;
             Draw.drawString(g, text.getText(), x, y);
         }        
-
+                
         g.setTransform(oldMatrix);
+        g.setClip(oldRegion);
     }
 
     /**
