@@ -32,6 +32,7 @@ public class Chart {
     private int columnNum;
     private ChartText title;
     private ChartText subTitle;
+    private List<ChartText> texts;
     private ChartLegend legend;
     private Color background;
     private boolean drawBackground;
@@ -53,6 +54,7 @@ public class Chart {
         this.columnNum = 1;
         this.plots = new ArrayList<>();
         this.currentPlot = -1;
+        this.texts = new ArrayList<>();
     }
 
     /**
@@ -362,8 +364,9 @@ public class Chart {
             int i = 0;
             for (String text : title.getTexts()) {
                 Dimension dim = Draw.getStringDimension(text, g);
-                if (i == 0)
+                if (i == 0) {
                     y += dim.getHeight();
+                }
                 Draw.drawString(g, text, x - dim.width / 2, y);
                 g.setFont(title.getFont());
                 y += dim.height + title.getLineSpace();
@@ -399,6 +402,9 @@ public class Chart {
                 plot.draw(g, plotArea);
             }
         }
+        
+        //Draw text
+        drawText(g, area);
 
         //Draw legend
         if (this.drawLegend) {
@@ -427,6 +433,17 @@ public class Chart {
 
         g.setTransform(oldMatrix);
         g.setClip(oldRegion);
+    }
+
+    void drawText(Graphics2D g, Rectangle2D area) {
+        float x, y;
+        for (ChartText text : this.texts) {
+            x = (float) (area.getWidth() * text.getX());
+            y = (float) (area.getHeight() * (1 - text.getY()));
+            g.setFont(text.getFont());
+            g.setColor(text.getColor());
+            Draw.drawString(g, text.getText(), x, y);
+        }
     }
 
     private Rectangle2D getPlotArea(Graphics2D g, Rectangle2D area) {
@@ -656,6 +673,13 @@ public class Chart {
     public void clearPlots() {
         this.plots.clear();
     }
+    
+    /**
+     * Clear texts
+     */
+    public void clearTexts() {
+        this.texts.clear();
+    }
 
     /**
      * Remove a plot
@@ -700,6 +724,15 @@ public class Chart {
         }
 
         return null;
+    }
+
+    /**
+     * Add text
+     *
+     * @param text Text
+     */
+    public void addText(ChartText text) {
+        this.texts.add(text);
     }
     // </editor-fold>
 

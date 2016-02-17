@@ -18,6 +18,7 @@ public class XYErrorSeriesData extends XYSeriesData {
     private double[] xerror_upper;
     private double[] yerror;
     private double[] yerror_upper;
+    private double[] bottom;    //For stacked bar plot
     // </editor-fold>
     // <editor-fold desc="Constructor">
     /**
@@ -204,6 +205,65 @@ public class XYErrorSeriesData extends XYSeriesData {
     public void setYerror_upper(double[] value){
         this.yerror_upper = value;
     }
+    
+    /**
+     * Get Bottom data
+     * @return Bottom data
+     */
+    public double[] getBottom(){
+        return this.bottom;
+    }
+    
+    /**
+     * Set bottom
+     * @param value Fixed bottom value 
+     */
+    public void setBottom(double value){
+        this.bottom = new double[this.dataLength()];
+        for (int i = 0; i < this.bottom.length; i++){
+            this.bottom[i] = value;
+        }
+    }
+    
+    /**
+     * Set bottom value
+     * @param value Bottom value
+     */
+    public void setBottom(double[] value){
+        this.bottom = value;
+    }
+    
+    /**
+     * Set bottom data
+     * @param value Bottom data 
+     */
+    public void setBottom(List<Number> value){
+        this.bottom = new double[value.size()];
+        double v;
+        for (int i = 0; i < value.size(); i++){
+            v = value.get(i).doubleValue();
+            if (Double.isNaN(v))
+                bottom[i] = this.getMissingValue();
+            else
+                bottom[i] = v;
+        }
+    }
+    
+    /**
+     * Set bottom data
+     * @param value Bottom data 
+     */
+    public void setBottom(Array value){
+        this.bottom = new double[(int)value.getSize()];
+        double v;
+        for (int i = 0; i < bottom.length; i++){
+            v = value.getDouble(i);
+            if (Double.isNaN(v))
+                bottom[i] = this.getMissingValue();
+            else
+                bottom[i] = v;
+        }
+    }
     // </editor-fold>
     // <editor-fold desc="Methods">
     /**
@@ -278,6 +338,15 @@ public class XYErrorSeriesData extends XYSeriesData {
             v -= this.yerror[idx];
         }
         return v;
+    }
+    
+    /**
+     * Get a bottom value
+     * @param idx Index
+     * @return A bottom value
+     */
+    public double getBottom(int idx){
+        return this.bottom[idx];
     }
     // </editor-fold>
 }

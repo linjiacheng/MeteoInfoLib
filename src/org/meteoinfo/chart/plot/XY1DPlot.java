@@ -5,9 +5,11 @@
  */
 package org.meteoinfo.chart.plot;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -36,7 +38,7 @@ import org.meteoinfo.shape.ShapeTypes;
  *
  * @author yaqiang
  */
-public final class XY1DPlot extends XYPlot {
+public class XY1DPlot extends XYPlot {
 
     // <editor-fold desc="Variables">
     private XYListDataset dataset;
@@ -327,6 +329,9 @@ public final class XY1DPlot extends XYPlot {
         }
 
         double[] xy;
+        xy = this.projToScreen(0, 0, area);
+        float y0 = (float) xy[1];
+        boolean drawBaseline = false;
         for (int i = 0; i < this.dataset.getSeriesCount(); i++) {
             XYSeriesData sdata = this.dataset.getSeriesData(i);
             int len = sdata.dataLength();
@@ -399,6 +404,17 @@ public final class XY1DPlot extends XYPlot {
                 }
             } else if (slegend.isPolygon()) {
                 if (slegend.getPlotMethod() == ChartPlotMethod.BAR) {
+                    drawBaseline = true;
+                    XYErrorSeriesData esdata = (XYErrorSeriesData) sdata;
+                    double[] bottom = esdata.getBottom();
+                    float[] yBottoms = null;
+                    if (bottom != null) {
+                        yBottoms = new float[bottom.length];
+                        for (int j = 0; j < bottom.length; j++) {
+                            xy = this.projToScreen(esdata.getBottom(j), esdata.getBottom(j), area);
+                            yBottoms[j] = (float) xy[1];
+                        }
+                    }
                     float width = this.barWidth;
                     if (this.autoBarWidth) {
                         if (points.length > 1) {
@@ -407,24 +423,83 @@ public final class XY1DPlot extends XYPlot {
                             width = (float) (area.getWidth() / 10) / this.dataset.getSeriesCount();
                         }
                         float height;
+                        PolygonBreak pgb;
                         for (int j = 0; j < len; j++) {
                             if (!mvIdx.contains(j)) {
-                                height = (float) (area.getHeight() - points[j].Y);
+                                pgb = (PolygonBreak) slegend.getLegendBreak(j);
+                                height = Math.abs((float) (points[j].Y - y0));
+                                float yBottom = y0;
+                                if (yBottoms != null) {
+                                    if (j < yBottoms.length) {
+                                        yBottom = yBottoms[j];
+                                    } else {
+                                        yBottom = yBottoms[0];
+                                    }
+                                }
+                                float yb = yBottom;
+                                if (points[j].Y >= y0) {
+                                    yb += height;
+                                }
                                 Draw.drawBar(new PointF(points[j].X - width * this.dataset.getSeriesCount() / 2
-                                        + i * width, (float) area.getHeight()), width, height, (PolygonBreak) slegend.getLegendBreak(), g, false, 5);
+                                        + i * width, yb), width, height, pgb, g, false, 5);
+                                if (esdata.getYerror() != null) {
+                                    PointF p = (PointF) points[j].clone();
+                                    p.Y -= y0 - yBottom;
+                                    double elen = 6;
+                                    double error = esdata.getYerror(j);
+                                    error = this.projYLength(error, area);
+                                    double x = p.X - width * this.dataset.getSeriesCount() / 2
+                                            + i * width + width / 2;
+                                    g.setColor(slegend.getErrorColor());
+                                    g.draw(new Line2D.Double(x, p.Y - error, x, p.Y + error));
+                                    g.draw(new Line2D.Double(x - (elen * 0.5), p.Y - error, x + (elen * 0.5), p.Y - error));
+                                    g.draw(new Line2D.Double(x - (elen * 0.5), p.Y + error, x + (elen * 0.5), p.Y + error));
+                                }
                             }
                         }
                     } else {
                         width = (float) this.projXLength(width, area);
                         float height;
+                        PolygonBreak pgb;
                         for (int j = 0; j < len; j++) {
                             if (!mvIdx.contains(j)) {
-                                height = (float) (area.getHeight() - points[j].Y);
-                                Draw.drawBar(new PointF(points[j].X, (float) area.getHeight()), width, height, (PolygonBreak) slegend.getLegendBreak(), g, false, 5);
+                                pgb = (PolygonBreak) slegend.getLegendBreak(j);
+                                height = Math.abs((float) (points[j].Y - y0));
+                                float yBottom = y0;
+                                if (yBottoms != null) {
+                                    if (j < yBottoms.length) {
+                                        yBottom = yBottoms[j];
+                                    } else {
+                                        yBottom = yBottoms[0];
+                                    }
+                                }
+                                float yb = yBottom;
+                                if (points[j].Y >= y0) {
+                                    yb += height;
+                                }
+                                Draw.drawBar(new PointF(points[j].X, yb), width, height, pgb, g, false, 5);
+                                if (esdata.getYerror() != null) {
+                                    PointF p = (PointF) points[j].clone();
+                                    p.Y -= y0 - yBottom;
+                                    double elen = 6;
+                                    double error = esdata.getYerror(j);
+                                    error = this.projYLength(error, area);
+                                    double x = p.X + width / 2;
+                                    g.setColor(slegend.getErrorColor());
+                                    g.draw(new Line2D.Double(x, p.Y - error, x, p.Y + error));
+                                    g.draw(new Line2D.Double(x - (elen * 0.5), p.Y - error, x + (elen * 0.5), p.Y - error));
+                                    g.draw(new Line2D.Double(x - (elen * 0.5), p.Y + error, x + (elen * 0.5), p.Y + error));
+                                }
                             }
                         }
                     }
                 }
+            }
+
+            //Draw baseline
+            if (drawBaseline) {
+                g.setColor(Color.black);
+                g.draw(new Line2D.Double(0, y0, area.getWidth(), y0));
             }
 
             //Draw error bar
@@ -436,42 +511,7 @@ public final class XY1DPlot extends XYPlot {
                 double elen = 6;
                 if (esdata.getYerror() != null) {
                     if (slegend.getPlotMethod() == ChartPlotMethod.BAR) {
-                        g.setColor(slegend.getErrorColor());
-                        float width = this.barWidth;
-                        if (this.autoBarWidth) {
-                            if (points.length > 1) {
-                                width = (float) ((points[1].X - points[0].X) * 0.5) / this.dataset.getSeriesCount();
-                            } else {
-                                width = (float) (area.getWidth() / 10) / this.dataset.getSeriesCount();
-                            }
-                            float x;
-                            for (int j = 0; j < len; j++) {
-                                if (!mvIdx.contains(j)) {
-                                    p = points[j];
-                                    error = esdata.getYerror(j);
-                                    error = this.projYLength(error, area);
-                                    x = p.X - width * this.dataset.getSeriesCount() / 2
-                                            + i * width + width / 2;
-                                    g.draw(new Line2D.Double(x, p.Y - error, x, p.Y + error));
-                                    g.draw(new Line2D.Double(x - (elen * 0.5), p.Y - error, x + (elen * 0.5), p.Y - error));
-                                    g.draw(new Line2D.Double(x - (elen * 0.5), p.Y + error, x + (elen * 0.5), p.Y + error));
-                                }
-                            }
-                        } else {
-                            width = (float) this.projXLength(width, area);
-                            float x;
-                            for (int j = 0; j < len; j++) {
-                                if (!mvIdx.contains(j)) {
-                                    p = points[j];
-                                    error = esdata.getYerror(j);
-                                    error = this.projYLength(error, area);
-                                    x = p.X + width / 2;
-                                    g.draw(new Line2D.Double(x, p.Y - error, x, p.Y + error));
-                                    g.draw(new Line2D.Double(x - (elen * 0.5), p.Y - error, x + (elen * 0.5), p.Y - error));
-                                    g.draw(new Line2D.Double(x - (elen * 0.5), p.Y + error, x + (elen * 0.5), p.Y + error));
-                                }
-                            }
-                        }
+
                     } else {
                         for (int j = 0; j < len; j++) {
                             if (!mvIdx.contains(j)) {
@@ -498,20 +538,20 @@ public final class XY1DPlot extends XYPlot {
                     }
                 }
             }
-        }        
+        }
 
         //Draw texts
-        for (ChartText text : this.getTexts()) {
-            xy = this.projToScreen(text.getX(), text.getY(), area);
-            float x = (float) xy[0];
-            float y = (float) xy[1];
-            g.setFont(text.getFont());
-            g.setColor(text.getColor());
-            //Dimension dim = Draw.getStringDimension(text.getText(), g);
-            //y -= dim.height * 2 / 3;
-            Draw.drawString(g, text.getText(), x, y);
-        }        
-                
+//        for (ChartText text : this.getTexts()) {
+//            xy = this.projToScreen(text.getX(), text.getY(), area);
+//            float x = (float) xy[0];
+//            float y = (float) xy[1];
+//            g.setFont(text.getFont());
+//            g.setColor(text.getColor());
+//            //Dimension dim = Draw.getStringDimension(text.getText(), g);
+//            //y -= dim.height * 2 / 3;
+//            Draw.drawString(g, text.getText(), x, y);
+//        }
+
         g.setTransform(oldMatrix);
         g.setClip(oldRegion);
     }

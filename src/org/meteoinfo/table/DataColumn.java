@@ -289,7 +289,12 @@ public class DataColumn {
                         if (vStr.isEmpty() || vStr.equalsIgnoreCase("nan")) {
                             return Float.NaN;
                         } else {
-                            return Float.valueOf(vStr);
+                            try {
+                                float v = Float.valueOf(vStr);
+                                return v;
+                            } catch (Exception e){
+                                return Float.NaN;
+                            }                            
                         }
                     }
                     break;

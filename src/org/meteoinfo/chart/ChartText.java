@@ -25,6 +25,7 @@ public class ChartText {
     private float x;
     private float y;
     private int lineSpace;
+    private CoordinateType coordinates;
     // </editor-fold>    
     // <editor-fold desc="Constructor">
     /**
@@ -34,6 +35,7 @@ public class ChartText {
         font = new Font("Arial", Font.BOLD, 14);
         color = Color.black;
         lineSpace = 3;
+        coordinates = CoordinateType.DATA;
     }
     
     /**
@@ -190,6 +192,43 @@ public class ChartText {
      */
     public void setLineSpace(int value){
         this.lineSpace = value;
+    }
+    
+    /**
+     * Get coordinates
+     * @return Coordinates
+     */
+    public CoordinateType getCoordinates(){
+        return this.coordinates;
+    }
+    
+    /**
+     * Set coordinates
+     * @param value Coordinates
+     */
+    public void setCoordinates(CoordinateType value){
+        this.coordinates = value;
+    }
+    
+    /**
+     * Set coordinates
+     * @param value Coordinates
+     */
+    public void setCoordinates(String value){
+        switch (value){
+            case "axes":
+                this.coordinates = CoordinateType.AXES;
+                break;
+            case "figure":
+                this.coordinates = CoordinateType.FIGURE;
+                break;
+            case "data":
+                this.coordinates = CoordinateType.DATA;
+                break;
+            case "inches":
+                this.coordinates = CoordinateType.INCHES;
+                break;
+        }
     }
     // </editor-fold>
     // <editor-fold desc="Methods">

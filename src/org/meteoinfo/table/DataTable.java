@@ -70,20 +70,22 @@ public final class DataTable {
     public int getTotalCount() {
         return rows.size();
     }
-    
+
     /**
      * Get row count
+     *
      * @return Row count
      */
-    public int getRowCount(){
+    public int getRowCount() {
         return rows.size();
     }
-    
+
     /**
      * Get column count
+     *
      * @return Column count
      */
-    public int getColumnCount(){
+    public int getColumnCount() {
         return columns.size();
     }
 
@@ -108,7 +110,7 @@ public final class DataTable {
     /**
      * Get table name
      *
-     * @return Table name  
+     * @return Table name
      */
     public String getTableName() {
         return this.tableName;
@@ -140,12 +142,13 @@ public final class DataTable {
     public DataColumnCollection getColumns() {
         return this.columns;
     }
-    
+
     /**
      * Get column names
+     *
      * @return Column names
      */
-    public List<String> getColumnNames(){
+    public List<String> getColumnNames() {
         return this.columns.getColumnNames();
     }
 
@@ -183,8 +186,8 @@ public final class DataTable {
                 : nextRowIndex;
         tempRow.setColumns(this.columns);
         tempRow.setRowIndex(nextRowIndex++);
-        for (DataColumn col : columns){
-            switch(col.getDataType()){
+        for (DataColumn col : columns) {
+            switch (col.getDataType()) {
                 case String:
                     tempRow.setValue(col.getColumnName(), "");
                     break;
@@ -223,14 +226,15 @@ public final class DataTable {
     public void setValue(int row, String colName, Object value) {
         this.rows.get(row).setValue(colName, value);
     }
-    
+
     /**
      * Set values
+     *
      * @param colName Column name
      * @param values Values
      */
-    public void setValues(String colName, List<Object> values){
-        for (int i = 0; i < values.size(); i++){
+    public void setValues(String colName, List<Object> values) {
+        for (int i = 0; i < values.size(); i++) {
             this.rows.get(i).setValue(colName, values.get(i));
         }
     }
@@ -252,18 +256,20 @@ public final class DataTable {
     public Object getTag() {
         return tag;
     }
-    
+
     /**
      * Find column by name
+     *
      * @param colName The column name
      * @return The data column
      */
-    public DataColumn findColumn(String colName){
-        for (DataColumn col : this.columns){
-            if (col.getColumnName().equals(colName))
+    public DataColumn findColumn(String colName) {
+        for (DataColumn col : this.columns) {
+            if (col.getColumnName().equals(colName)) {
                 return col;
+            }
         }
-        
+
         return null;
     }
 
@@ -280,7 +286,7 @@ public final class DataTable {
         addColumn(col);
         return col;
     }
-    
+
     /**
      * Add a data column
      *
@@ -295,65 +301,69 @@ public final class DataTable {
         addColumn(index, col);
         return col;
     }
-    
+
     /**
      * Add a data column by index
+     *
      * @param index The index
      * @param column Data column
      */
-    public void addColumn(int index, DataColumn column){
+    public void addColumn(int index, DataColumn column) {
         this.columns.add(index, column);
-        for (DataRow row : this.rows){
+        for (DataRow row : this.rows) {
             row.setColumns(columns);
             row.addColumn(column);
         }
     }
-    
+
     /**
      * Add a data column
-     * 
+     *
      * @param column Data column
      */
-    public void addColumn(DataColumn column){
+    public void addColumn(DataColumn column) {
         this.columns.add(column);
-        for (DataRow row : this.rows){
+        for (DataRow row : this.rows) {
             row.setColumns(columns);
             row.addColumn(column);
         }
     }
-    
+
     /**
      * Remove a data column
+     *
      * @param column The data column
      */
-    public void removeColumn(DataColumn column){
+    public void removeColumn(DataColumn column) {
         this.columns.remove(column);
-        for (DataRow row : this.rows){
+        for (DataRow row : this.rows) {
             row.setColumns(columns);
             row.removeColumn(column);
         }
     }
-    
+
     /**
      * Rename column
+     *
      * @param column The column
      * @param fieldName The new column name
      */
-    public void renameColumn(DataColumn column, String fieldName){
+    public void renameColumn(DataColumn column, String fieldName) {
         String oldName = column.getColumnName();
         this.columns.renameColumn(column, fieldName);
-        for (DataRow row : this.rows){
+        for (DataRow row : this.rows) {
             row.setColumns(columns);
             row.renameColumn(oldName, fieldName);
         }
     }
-    
+
     /**
      * Rename column
+     *
      * @param colIdx The column index
      * @param fieldName The new column name
      */
-    public void renameColumn(int colIdx, String fieldName){
+    public void renameColumn(int colIdx, String fieldName) {
         DataColumn column = this.columns.get(colIdx);
         this.renameColumn(column, fieldName);
     }
@@ -373,196 +383,213 @@ public final class DataTable {
         row.setTable(this);
         return this.rows.add(row);
     }
-    
+
     /**
      * Add data row
+     *
      * @return Data row
-     * @throws Exception 
+     * @throws Exception
      */
-    public DataRow addRow() throws Exception{
+    public DataRow addRow() throws Exception {
         DataRow row = new DataRow();
         this.addRow(row);
         return row;
     }
-    
+
     /**
      * Add data rows
+     *
      * @param rows Data rows
-     * @throws Exception 
+     * @throws Exception
      */
-    public void addRows(List<DataRow> rows) throws Exception{
-        for (DataRow row : rows){
+    public void addRows(List<DataRow> rows) throws Exception {
+        for (DataRow row : rows) {
             addRow(row);
         }
     }
-    
+
     /**
      * Append a data row
+     *
      * @param row Data row
      * @return Boolean
      */
-    public boolean appendRow(DataRow row){
+    public boolean appendRow(DataRow row) {
         List<String> colNames = row.getColumns().getColumnNames();
         nextRowIndex = nextRowIndex < this.rows.size() ? this.rows.size()
                 : nextRowIndex;
         row.setColumns(this.columns);
         row.setRowIndex(nextRowIndex++);
-        row.setTable(this);        
-        for (DataColumn col : this.columns){
-            if (!colNames.contains(col.getColumnName()))
+        row.setTable(this);
+        for (DataColumn col : this.columns) {
+            if (!colNames.contains(col.getColumnName())) {
                 row.setValue(col, null);
+            }
         }
         return this.rows.add(row);
     }
-    
+
     /**
      * Remove a row
-     * @param rowIdx Row index 
+     *
+     * @param rowIdx Row index
      */
-    public void removeRow(int rowIdx){
+    public void removeRow(int rowIdx) {
         this.rows.remove(rowIdx);
     }
-    
+
     /**
      * Remove a row
+     *
      * @param row The row will be removed
      */
-    public void removeRow(DataRow row){
+    public void removeRow(DataRow row) {
         this.rows.remove(row);
     }
-    
+
     /**
      * Remove rows
+     *
      * @param rows The rows will be removed
      */
-    public void removeRows(List<DataRow> rows){
+    public void removeRows(List<DataRow> rows) {
         this.rows.removeAll(rows);
     }
-    
+
     /**
      * Set data rows
+     *
      * @param rows The data rows
      */
-    public void setRows(List<DataRow> rows){
+    public void setRows(List<DataRow> rows) {
         this.rows.clear();
-        for (DataRow row : rows){
+        for (DataRow row : rows) {
             this.rows.add(row);
         }
     }
-    
+
     /**
      * Add column data
+     *
      * @param colData The column data
-     * @throws Exception 
+     * @throws Exception
      */
-    public void addColumnData(ColumnData colData) throws Exception{
+    public void addColumnData(ColumnData colData) throws Exception {
         DataColumn col = this.addColumn(colData.getDataColumn().getColumnName(), colData.getDataType());
         int i = 0;
-        for (DataRow row : this.rows){
-            if (i < colData.size()){
+        for (DataRow row : this.rows) {
+            if (i < colData.size()) {
                 row.setValue(col, colData.getValue(i));
             }
             i++;
         }
     }
-    
+
     /**
      * Add column data
+     *
      * @param colName Column name
      * @param dataType Data type
      * @param colData The column data
-     * @throws Exception 
+     * @throws Exception
      */
-    public void addColumnData(String colName, DataTypes dataType, List<Object> colData) throws Exception{
+    public void addColumnData(String colName, DataTypes dataType, List<Object> colData) throws Exception {
         DataColumn col = this.addColumn(colName, dataType);
         int i = 0;
-        for (DataRow row : this.rows){
-            if (i < colData.size()){
+        for (DataRow row : this.rows) {
+            if (i < colData.size()) {
                 row.setValue(col, colData.get(i));
             }
             i++;
         }
     }
-    
+
     /**
      * Add column data
+     *
      * @param colName Column name
      * @param dt Data type string
      * @param colData The column data
-     * @throws Exception 
+     * @throws Exception
      */
-    public void addColumnData(String colName, String dt, List<Object> colData) throws Exception{
+    public void addColumnData(String colName, String dt, List<Object> colData) throws Exception {
         DataTypes dataType = TableUtil.toDataTypes(dt);
         this.addColumnData(colName, dataType, colData);
     }
-    
+
     /**
      * Get column data
+     *
      * @param colName The column name
      * @return Column data
      */
-    public ColumnData getColumnData(String colName){
+    public ColumnData getColumnData(String colName) {
         return this.getColumnData(this.getRows(), colName);
     }
-    
+
     /**
      * Get column data
+     *
      * @param col The data column
      * @return Column data
      */
     public ColumnData getColumnData(DataColumn col) {
         return this.getColumnData(col.getColumnName());
     }
-    
+
     /**
      * Get column data
+     *
      * @param rows The data row list
      * @param colName The data column name
      * @return Column values
      */
-    public ColumnData getColumnData(List<DataRow> rows, String colName){
+    public ColumnData getColumnData(List<DataRow> rows, String colName) {
         ColumnData colData = new ColumnData(this.findColumn(colName));
-        for (DataRow row : rows){
+        for (DataRow row : rows) {
             colData.addData(row.getValue(colName));
         }
-        
+
         return colData;
     }
-    
+
     /**
      * Select data rows
+     *
      * @param expression SQL expression
      * @return Selected data rows
      */
-    public List<DataRow> select (String expression){
+    public List<DataRow> select(String expression) {
         SQLExpression e = new SQLExpression(expression);
-        List<DataRow> dataRows = new ArrayList<DataRow>();
-        for (int i = 0; i < this.rows.size(); i++){
+        List<DataRow> dataRows = new ArrayList<>();
+        for (int i = 0; i < this.rows.size(); i++) {
             DataRow row = this.rows.get(i);
             row.setRowIndex(i);
-            if(e.eval(row.getItemMap()))
-              dataRows.add(row);
-        }        
-              
+            if (e.eval(row.getItemMap())) {
+                dataRows.add(row);
+            }
+        }
+
         return dataRows;
     }
-    
+
     /**
      * Select and form a new data table
+     *
      * @param expression SQL expression
      * @param dataColumns Data columns
      * @return Selected data table
      */
-    public DataTable select (String expression, DataColumn[] dataColumns){
+    public DataTable select(String expression, DataColumn[] dataColumns) {
         DataTable result = new DataTable();
         List<DataRow> dataRows = this.select(expression);
-        for (DataColumn dc : dataColumns) {              
-              DataColumn newDc = new DataColumn(dc.getColumnName(),
-                      dc.getDataType());
-              newDc.setCaptionName(dc.getCaptionName());
-              result.columns.add(newDc);
-          }
-        
+        for (DataColumn dc : dataColumns) {
+            DataColumn newDc = new DataColumn(dc.getColumnName(),
+                    dc.getDataType());
+            newDc.setCaptionName(dc.getCaptionName());
+            result.columns.add(newDc);
+        }
+
         for (DataRow r : dataRows) {
             try {
                 DataRow newRow = result.newRow();
@@ -571,8 +598,37 @@ public final class DataTable {
             } catch (Exception ex) {
                 Logger.getLogger(DataTable.class.getName()).log(Level.SEVERE, null, ex);
             }
-          }
-        
+        }
+
+        return result;
+    }
+    
+    /**
+     * Select and form a new data table
+     *
+     * @param expression SQL expression
+     * @return Selected data table
+     */
+    public DataTable sqlSelect(String expression) {
+        DataTable result = new DataTable();
+        List<DataRow> dataRows = this.select(expression);
+        for (DataColumn dc : this.columns) {
+            DataColumn newDc = new DataColumn(dc.getColumnName(),
+                    dc.getDataType());
+            newDc.setCaptionName(dc.getCaptionName());
+            result.columns.add(newDc);
+        }
+
+        for (DataRow r : dataRows) {
+            try {
+                DataRow newRow = result.newRow();
+                newRow.copyFrom(r);
+                result.addRow(newRow);
+            } catch (Exception ex) {
+                Logger.getLogger(DataTable.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
         return result;
     }
 
@@ -623,7 +679,6 @@ public final class DataTable {
 //          }
 //          return result;
 //      }    
-
 //      /**  
 //       * 功能描述：  根据指定表达式对符合过滤条件的数据进行计算
 //       * @param
@@ -667,25 +722,25 @@ public final class DataTable {
             String groupBy) {
         return null;
     }
-    
+
     /**
      * Clone
-     * 
-     * @return Cloned DataTable object 
+     *
+     * @return Cloned DataTable object
      */
     @Override
-    public Object clone(){
+    public Object clone() {
         DataTable table = new DataTable();
         table.tableName = this.tableName;
         table.tag = this.tag;
         table.readOnly = this.readOnly;
-        for (DataColumn col : this.columns){
-            DataColumn newcol = (DataColumn)col.clone();
+        for (DataColumn col : this.columns) {
+            DataColumn newcol = (DataColumn) col.clone();
             //newcol.setTable(table);
             table.addColumn(new Field(newcol));
         }
-        
-        for (DataRow row : this.rows){
+
+        for (DataRow row : this.rows) {
             try {
                 DataRow newrow = this.newRow();
                 newrow.copyFrom(row);
@@ -694,20 +749,21 @@ public final class DataTable {
                 Logger.getLogger(DataTable.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        
+
         return table;
     }
-    
+
     /**
      * Clone table - Vectorlayer with fields
+     *
      * @return DataTable
      */
-    public DataTable cloneTable_Field(){
+    public DataTable cloneTable_Field() {
         DataTable table = new DataTable();
         table.tableName = this.tableName;
         table.tag = this.tag;
         table.readOnly = this.readOnly;
-        for (DataColumn col : this.columns){
+        for (DataColumn col : this.columns) {
             Field newcol = new Field(col.getColumnName(), col.getDataType());
             newcol.setCaptionName(col.getCaptionName());
             newcol.setColumnIndex(col.getColumnIndex());
@@ -715,8 +771,8 @@ public final class DataTable {
             //newcol.setTable(table);
             table.addColumn(newcol);
         }
-        
-        for (DataRow row : this.rows){
+
+        for (DataRow row : this.rows) {
             try {
                 DataRow newrow = this.newRow();
                 newrow.copyFrom(row);
@@ -725,174 +781,190 @@ public final class DataTable {
                 Logger.getLogger(DataTable.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        
+
         return table;
     }
-    
+
     /**
      * Convert to string
+     *
      * @return The string
      */
     @Override
-    public String toString(){
+    public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (DataColumn col : this.columns){
-            if (sb.length() == 0)
+        for (DataColumn col : this.columns) {
+            if (sb.length() == 0) {
                 sb.append(col.getColumnName());
-            else {
+            } else {
                 sb.append("\t");
                 sb.append(col.getColumnName());
             }
         }
         sb.append("\n");
-     
+
         SimpleDateFormat format;
         int n = this.getRowCount();
-        if (n > 100)
+        if (n > 100) {
             n = 100;
-        for (int r = 0; r < n; r++){
+        }
+        for (int r = 0; r < n; r++) {
             DataRow row = this.rows.get(r);
             int i = 0;
-            for (DataColumn col : this.columns){
-                if (i > 0)
+            for (DataColumn col : this.columns) {
+                if (i > 0) {
                     sb.append("\t");
-                if (col.getDataType() == DataTypes.Date){
-                    format = new SimpleDateFormat(col.getFormat());
-                    sb.append(format.format((Date)row.getValue(col.getColumnName())));
                 }
-                else if (col.getDataType() == DataTypes.String)
-                    sb.append("'").append(row.getValue(col.getColumnName()).toString()).append("'");
-                else
-                    sb.append(row.getValue(col.getColumnName()).toString());
+                switch (col.getDataType()) {
+                    case Date:
+                        format = new SimpleDateFormat(col.getFormat());
+                        sb.append(format.format((Date) row.getValue(col.getColumnName())));
+                        break;
+                    case String:
+                        sb.append("'").append(row.getValue(col.getColumnName()).toString()).append("'");
+                        break;
+                    default:
+                        sb.append(row.getValue(col.getColumnName()).toString());
+                        break;
+                }
                 i += 1;
             }
             sb.append("\n");
         }
-        
+
         return sb.toString();
     }
-    
+
     /**
      * Convert to string
+     *
      * @param dateFormat Date format string
      * @return The string
      */
-    public String toString(String dateFormat){
+    public String toString(String dateFormat) {
         String str = "";
-        for (DataColumn col : this.columns){
+        for (DataColumn col : this.columns) {
             str += "," + col.getColumnName();
         }
-        str = str.substring(1);     
+        str = str.substring(1);
         SimpleDateFormat format = new SimpleDateFormat(dateFormat);
-        for (DataRow row : this.rows){
+        for (DataRow row : this.rows) {
             String line = "";
-            for (DataColumn col : this.columns){
-                if (col.getDataType() == DataTypes.Date)
-                    line += "," + format.format((Date)row.getValue(col.getColumnName()));
-                else
+            for (DataColumn col : this.columns) {
+                if (col.getDataType() == DataTypes.Date) {
+                    line += "," + format.format((Date) row.getValue(col.getColumnName()));
+                } else {
                     line += "," + row.getValue(col.getColumnName()).toString();
+                }
             }
             line = line.substring(1);
             str += System.getProperty("line.separator") + line;
         }
-        
+
         return str;
     }
-    
+
     /**
      * Convert to string
+     *
      * @param decimalNum Decimal number
      * @return The string
      */
-    public String toString(int decimalNum){
+    public String toString(int decimalNum) {
         return this.toString("yyyyMMddHH", decimalNum);
     }
-    
+
     /**
      * Convert to string
+     *
      * @param dateFormat Date format string
      * @param decimalNum Decimal number
      * @return The string
      */
-    public String toString(String dateFormat, int decimalNum){
+    public String toString(String dateFormat, int decimalNum) {
         SimpleDateFormat format = new SimpleDateFormat(dateFormat);
         String dFormat = "%1$." + String.valueOf(decimalNum) + "f";
         String str = "";
-        for (DataColumn col : this.columns){
+        for (DataColumn col : this.columns) {
             str += "," + col.getColumnName();
         }
-        str = str.substring(1);     
+        str = str.substring(1);
         String vstr;
-        for (DataRow row : this.rows){
+        for (DataRow row : this.rows) {
             String line = "";
-            for (DataColumn col : this.columns){
+            for (DataColumn col : this.columns) {
                 vstr = row.getValue(col.getColumnName()).toString();
-                switch(col.getDataType()){
+                switch (col.getDataType()) {
                     case Float:
                     case Double:
-                        if (MIMath.isNumeric(vstr))
+                        if (MIMath.isNumeric(vstr)) {
                             line += "," + String.format(dFormat, Double.parseDouble(vstr));
-                        else
+                        } else {
                             line += ",";
+                        }
                         break;
                     case Date:
-                        line += "," + format.format((Date)row.getValue(col.getColumnName()));
+                        line += "," + format.format((Date) row.getValue(col.getColumnName()));
                         break;
                     default:
                         line += "," + vstr;
                         break;
-                }                
+                }
             }
             line = line.substring(1);
             str += System.getProperty("line.separator") + line;
         }
-        
+
         return str;
     }
-    
+
     /**
      * Save as csv file
+     *
      * @param fileName File name
      * @throws java.io.IOException
      */
-    public void saveAsCSVFile(String fileName) throws IOException{
+    public void saveAsCSVFile(String fileName) throws IOException {
         this.saveAsCSVFile(fileName, "yyyyMMddHH");
     }
-    
+
     /**
      * Save as csv file
+     *
      * @param fileName File name
      * @param dateFormat Date format string
      * @throws java.io.IOException
      */
-    public void saveAsCSVFile(String fileName, String dateFormat) throws IOException{
-        if (!fileName.endsWith(".csv")){
+    public void saveAsCSVFile(String fileName, String dateFormat) throws IOException {
+        if (!fileName.endsWith(".csv")) {
             fileName = fileName + ".csv";
         }
-        
+
         SimpleDateFormat format = new SimpleDateFormat(dateFormat);
         BufferedWriter sw = new BufferedWriter(new FileWriter(new File(fileName)));
         String str = "";
-        for (DataColumn col : this.columns){
+        for (DataColumn col : this.columns) {
             str += "," + col.getColumnName();
         }
         str = str.substring(1);
         sw.write(str);
-        
-        for (DataRow row : this.rows){
+
+        for (DataRow row : this.rows) {
             String line = "";
-            for (DataColumn col : this.columns){
-                if (col.getDataType() == DataTypes.Date)
-                    line += "," + format.format((Date)row.getValue(col.getColumnName()));
-                else
-                    if (row.getValue(col.getColumnName()) == null)
+            for (DataColumn col : this.columns) {
+                if (col.getDataType() == DataTypes.Date) {
+                    line += "," + format.format((Date) row.getValue(col.getColumnName()));
+                } else {
+                    if (row.getValue(col.getColumnName()) == null) {
                         line += ",";
-                    else {
+                    } else {
                         str = row.getValue(col.getColumnName()).toString();
-                        if (str.equals("NaN"))
+                        if (str.equals("NaN")) {
                             str = "";
+                        }
                         line += "," + str;
                     }
+                }
             }
             line = line.substring(1);
             sw.newLine();
@@ -901,39 +973,42 @@ public final class DataTable {
         sw.flush();
         sw.close();
     }
-    
+
     /**
      * Save as ASCII file
+     *
      * @param fileName File name
      * @throws java.io.IOException
      */
-    public void saveAsASCIIFile(String fileName) throws IOException{    
-        this.saveAsASCIIFile(fileName, "yyyyMMddHH");        
+    public void saveAsASCIIFile(String fileName) throws IOException {
+        this.saveAsASCIIFile(fileName, "yyyyMMddHH");
     }
-    
+
     /**
      * Save as ASCII file
+     *
      * @param fileName File name
      * @param dateFormat Date format string
      * @throws java.io.IOException
      */
-    public void saveAsASCIIFile(String fileName, String dateFormat) throws IOException{        
+    public void saveAsASCIIFile(String fileName, String dateFormat) throws IOException {
         SimpleDateFormat format = new SimpleDateFormat(dateFormat);
         BufferedWriter sw = new BufferedWriter(new FileWriter(new File(fileName)));
         String str = "";
-        for (DataColumn col : this.columns){
+        for (DataColumn col : this.columns) {
             str += " " + col.getColumnName();
         }
         str = str.substring(1);
         sw.write(str);
-                
-        for (DataRow row : this.rows){
+
+        for (DataRow row : this.rows) {
             String line = "";
-            for (DataColumn col : this.columns){
-                if (col.getDataType() == DataTypes.Date)
-                    line += " " + format.format((Date)row.getValue(col.getColumnName()));
-                else
+            for (DataColumn col : this.columns) {
+                if (col.getDataType() == DataTypes.Date) {
+                    line += " " + format.format((Date) row.getValue(col.getColumnName()));
+                } else {
                     line += " " + row.getValue(col.getColumnName()).toString();
+                }
             }
             line = line.substring(1);
             sw.newLine();
@@ -942,54 +1017,58 @@ public final class DataTable {
         sw.flush();
         sw.close();
     }
-    
+
     /**
      * Join data table
+     *
      * @param dataTable The input data table
      * @param colName The column name for join
      */
-    public void join(DataTable dataTable, String colName){
+    public void join(DataTable dataTable, String colName) {
         this.join(dataTable, colName, colName, false);
     }
-    
+
     /**
      * Join data table
+     *
      * @param dataTable The input data table
      * @param colName The column name for join
      * @param isUpdate If update the existing values with same column name
      */
-    public void join(DataTable dataTable, String colName, boolean isUpdate){
+    public void join(DataTable dataTable, String colName, boolean isUpdate) {
         this.join(dataTable, colName, colName, isUpdate);
     }
-    
+
     /**
      * Join data table
+     *
      * @param dataTable The input data table
      * @param colName_this The column name of this data table for join
      * @param colName_in The column name of the input data table for join
      * @param isUpdate If update the existing values with same column name
      */
-    public void join(DataTable dataTable, String colName_this, String colName_in, boolean isUpdate){
+    public void join(DataTable dataTable, String colName_this, String colName_in, boolean isUpdate) {
         DataColumn col_this = this.findColumn(colName_this);
-        if (col_this == null){
+        if (col_this == null) {
             System.out.println("There is no column of " + colName_this + " in this table");
             return;
         }
         DataColumn col_in = dataTable.findColumn(colName_in);
-        if (col_in == null){
+        if (col_in == null) {
             System.out.println("There is no column of " + colName_in + " in this table");
             return;
         }
-        
+
         List<String> values_this = this.getColumnData(colName_this).getDataStrings();
         List<String> values_in = dataTable.getColumnData(colName_in).getDataStrings();
-        
-        List<String> colNames = this.getColumnNames(); 
+
+        List<String> colNames = this.getColumnNames();
         List<String> newColNames = new ArrayList<>();
-        for (DataColumn col : dataTable.columns){        
-            if (col.getColumnName().equals(colName_in))
+        for (DataColumn col : dataTable.columns) {
+            if (col.getColumnName().equals(colName_in)) {
                 continue;
-            if (!colNames.contains(col.getColumnName())){                
+            }
+            if (!colNames.contains(col.getColumnName())) {
                 Field newCol = new Field(col.getColumnName(), col.getDataType());
                 newCol.setJoined(true);
                 this.addColumn(newCol);
@@ -998,32 +1077,34 @@ public final class DataTable {
         }
         String value;
         int idx;
-        for (int i = 0; i < this.getRowCount(); i++){
+        for (int i = 0; i < this.getRowCount(); i++) {
             value = values_this.get(i);
             idx = values_in.indexOf(value);
-            if (idx >= 0){
-                if (isUpdate){
-                    for (String cn : dataTable.getColumnNames()){
-                        if (cn.equals(colName_in))
+            if (idx >= 0) {
+                if (isUpdate) {
+                    for (String cn : dataTable.getColumnNames()) {
+                        if (cn.equals(colName_in)) {
                             continue;
+                        }
                         this.setValue(i, cn, dataTable.getValue(idx, cn));
                     }
                 } else {
-                    for (String cn : newColNames){
+                    for (String cn : newColNames) {
                         this.setValue(i, cn, dataTable.getValue(idx, cn));
                     }
                 }
             }
         }
     }
-    
+
     /**
      * Remove joined data columns
      */
-    public void removeJoin(){
-        for (DataColumn col : this.columns){
-            if (col.isJoined())
+    public void removeJoin() {
+        for (DataColumn col : this.columns) {
+            if (col.isJoined()) {
                 this.removeColumn(col);
+            }
         }
     }
 }

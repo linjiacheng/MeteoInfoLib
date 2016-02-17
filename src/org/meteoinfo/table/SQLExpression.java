@@ -25,15 +25,15 @@ import java.util.Map;
 public class SQLExpression {
     // <editor-fold desc="Variables">
 
-    private String expression;
-    private int exp_len;
-    private char[] exp_array;
-    private ArrayList<String> token_list;
+    private final String expression;
+    private final int exp_len;
+    private final char[] exp_array;
+    private final ArrayList<String> token_list;
     private boolean is_flushed;
     private char c;
     private StringBuffer sb;
     private int cur_token_index;
-    private int token_count;
+    private final int token_count;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -41,7 +41,7 @@ public class SQLExpression {
         this.expression = SQLExpression;
         this.exp_len = SQLExpression.length();
         this.exp_array = SQLExpression.toCharArray();
-        this.token_list = new ArrayList<String>();
+        this.token_list = new ArrayList<>();
         this.is_flushed = true;
         this.cur_token_index = -1;
         this.sb = new StringBuffer();

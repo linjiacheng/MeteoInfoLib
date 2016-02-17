@@ -24,7 +24,7 @@ import java.util.Map;
  * @author Yaqiang Wang
  */
 public class DataColumnCollection extends ArrayList<DataColumn>{
-    Map nameMap = new HashMap<String, DataColumn>();
+    Map nameMap = new HashMap<>();
     
     /**
      * Add a data column
@@ -89,7 +89,7 @@ public class DataColumnCollection extends ArrayList<DataColumn>{
      * @return Column names
      */
     public List<String> getColumnNames(){
-        List<String> colNames = new ArrayList<String>();
+        List<String> colNames = new ArrayList<>();
         for (DataColumn col : this){
             colNames.add(col.getColumnName());
         }

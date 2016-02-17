@@ -9,9 +9,10 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -30,7 +31,6 @@ import static org.meteoinfo.chart.plot.Plot.MINIMUM_HEIGHT_TO_DRAW;
 import static org.meteoinfo.chart.plot.Plot.MINIMUM_WIDTH_TO_DRAW;
 import org.meteoinfo.drawing.Draw;
 import static org.meteoinfo.drawing.Draw.getDashPattern;
-import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.PointF;
 import org.meteoinfo.shape.WindArrow;
@@ -71,6 +71,7 @@ public abstract class XYPlot extends Plot {
         super();
         this.background = Color.white;
         this.drawBackground = false;
+        this.drawExtent = new Extent(0, 1, 0, 1);
         //this.xAxis = new Axis("X", true);
         //this.yAxis = new Axis("Y", false);
         this.axises = new HashMap<>();
@@ -546,6 +547,9 @@ public abstract class XYPlot extends Plot {
         //Draw axis
         this.drawAxis(g, graphArea);
 
+        //Draw text
+        this.drawText(g, graphArea);
+
         //Draw legend
         if (this.drawLegend && this.getLegend() != null) {
             Object rendering = g.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
@@ -594,23 +598,23 @@ public abstract class XYPlot extends Plot {
             g.setFont(drawFont);
             String drawStr = wa.getLabel();
             Dimension dim = Draw.getStringDimension(drawStr, g);
-            if (wa.isFill() || wa.isDrawNeatline()){
+            if (wa.isFill() || wa.isDrawNeatline()) {
                 Rectangle2D rect = Draw.getArrawBorder(new PointF(x, y), aArraw, g, zoom);
                 double gap = 5;
-                rect.setRect(rect.getX() - gap, rect.getY() - gap, rect.getWidth() + gap * 2, 
-                    rect.getHeight() + dim.height + gap * 2);
-                if (wa.isFill()){
+                rect.setRect(rect.getX() - gap, rect.getY() - gap, rect.getWidth() + gap * 2,
+                        rect.getHeight() + dim.height + gap * 2);
+                if (wa.isFill()) {
                     g.setColor(wa.getBackground());
                     g.fill(rect);
                 }
-                if (wa.isDrawNeatline()){
+                if (wa.isDrawNeatline()) {
                     g.setColor(wa.getNeatlineColor());
                     g.draw(rect);
                 }
             }
-            Draw.drawArraw(wa.getColor(), new PointF(x, y), aArraw, g, zoom);                        
-            g.setColor(wa.getLabelColor());                        
-            Draw.drawString(g, drawStr, x, y + dim.height);    
+            Draw.drawArraw(wa.getColor(), new PointF(x, y), aArraw, g, zoom);
+            g.setColor(wa.getLabelColor());
+            Draw.drawString(g, drawStr, x, y + dim.height);
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, rendering);
         }
 
@@ -918,6 +922,52 @@ public abstract class XYPlot extends Plot {
                 axis.updateLabelGap(g, area);
                 axis.draw(g, area, this);
             }
+        }
+    }
+
+    void drawText(Graphics2D g, Rectangle2D area) {
+        for (ChartText text : this.getTexts()) {
+            drawText(text, g, area);
+        }
+    }
+
+    void drawText(ChartText text, Graphics2D g, Rectangle2D area) {
+        float x, y;
+        switch (text.getCoordinates()) {
+            case AXES:
+                AffineTransform oldMatrix = g.getTransform();
+                Rectangle oldRegion = g.getClipBounds();
+                g.setClip(area);
+                g.translate(area.getX(), area.getY());
+                x = (float) (area.getWidth() * text.getX());
+                y = (float) (area.getHeight() * (1 - text.getY()));
+                g.setFont(text.getFont());
+                g.setColor(text.getColor());
+                Draw.drawString(g, text.getText(), x, y);
+                g.setTransform(oldMatrix);
+                g.setClip(oldRegion);
+                break;
+            case FIGURE:
+                x = (float) (area.getWidth() * text.getX());
+                y = (float) (area.getHeight() * (1 - text.getY()));
+                g.setFont(text.getFont());
+                g.setColor(text.getColor());
+                Draw.drawString(g, text.getText(), x, y);
+                break;
+            case DATA:
+                oldMatrix = g.getTransform();
+                oldRegion = g.getClipBounds();
+                g.setClip(area);
+                g.translate(area.getX(), area.getY());
+                double[] xy = this.projToScreen(text.getX(), text.getY(), area);
+                x = (float) xy[0];
+                y = (float) xy[1];
+                g.setFont(text.getFont());
+                g.setColor(text.getColor());
+                Draw.drawString(g, text.getText(), x, y);
+                g.setTransform(oldMatrix);
+                g.setClip(oldRegion);
+                break;
         }
     }
 

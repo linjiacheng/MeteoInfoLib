@@ -29,7 +29,7 @@ import org.meteoinfo.shape.ShapeTypes;
  *
  * @author yaqiang
  */
-public class BarPlot extends XYPlot {
+public class BarPlot_Old extends XYPlot {
 
     // <editor-fold desc="Variables">
     private XYListDataset dataset;
@@ -42,7 +42,7 @@ public class BarPlot extends XYPlot {
     /**
      * Constructor
      */
-    public BarPlot() {
+    public BarPlot_Old() {
         this.dataset = new XYListDataset();
         this.legendBreaks = new ArrayList<>();
         barWidth = 0.8f;
@@ -54,7 +54,7 @@ public class BarPlot extends XYPlot {
      *
      * @param dataset Dataset
      */
-    public BarPlot(XYListDataset dataset) {
+    public BarPlot_Old(XYListDataset dataset) {
         this();
         this.dataset = dataset;
     }

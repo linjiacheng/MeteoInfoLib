@@ -1347,6 +1347,16 @@ public class TableData {
 
         return rTable;
     }
+    
+    /**
+     * SQL select
+     * @param expression SQL expression
+     * @return Result TableData
+     */
+    public TableData sqlSelect(String expression){
+        DataTable r = this.dataTable.sqlSelect(expression);
+        return new TableData(r);
+    }
 
     @Override
     public String toString() {
