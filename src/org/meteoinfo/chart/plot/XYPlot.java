@@ -972,7 +972,7 @@ public abstract class XYPlot extends Plot {
     }
 
     void drawLegendScheme(Graphics2D g, Rectangle2D area, float y) {
-        g.setFont(this.legend.getLabelFont());
+        g.setFont(this.legend.getTickFont());
         Dimension dim = this.legend.getLegendDimension(g, new Dimension((int) area.getWidth(), (int) area.getHeight()));
         float x = 0;
         //Rectangle2D graphArea = this.getPositionArea();

@@ -60,8 +60,11 @@ public class ChartLegend {
     private boolean drawBackground;
     private int width;
     private int height;
+    private String label;
     private Font labelFont;
     private Color labelColor;
+    private Font tickFont;
+    private Color tickColor;
     private boolean _drawNeatLine;
     private Color _neatLineColor;
     private float _neatLineSize;
@@ -100,8 +103,10 @@ public class ChartLegend {
         _leftSpace = 5;
         _vBarWidth = 10;
         _hBarHeight = 10;
-        labelFont = new Font("Arial", Font.PLAIN, 14);
+        this.labelFont = new Font("Arial", Font.PLAIN, 14);
         this.labelColor = Color.black;
+        tickFont = new Font("Arial", Font.PLAIN, 14);
+        this.tickColor = Color.black;
         this.symbolDimension = new Dimension(16, 10);
         this.extendRect = true;
         this.autoExtendFrac = false;
@@ -380,23 +385,37 @@ public class ChartLegend {
     public void setNeatLineSize(float size) {
         _neatLineSize = size;
     }
-
+    
     /**
-     * Get font
-     *
-     * @return The font
+     * Get label
+     * @return Label
      */
-    public Font getLabelFont() {
-        return labelFont;
+    public String getLabel(){
+        return this.label;
     }
-
+    
     /**
-     * Set font
-     *
-     * @param font The font
+     * Set label
+     * @param value Label
      */
-    public void setLabelFont(Font font) {
-        labelFont = font;
+    public void setLabel(String value){
+        this.label = value;
+    }
+    
+    /**
+     * Get label font
+     * @return Label font
+     */
+    public Font getLabelFont(){
+        return this.labelFont;
+    }
+    
+    /**
+     * Set label font
+     * @param value Label font
+     */
+    public void setLabelFont(Font value){
+        this.labelFont = value;
     }
     
     /**
@@ -413,6 +432,40 @@ public class ChartLegend {
      */
     public void setLabelColor(Color value){
         this.labelColor = value;
+    }
+
+    /**
+     * Get Tick font
+     *
+     * @return The Tick font
+     */
+    public Font getTickFont() {
+        return tickFont;
+    }
+
+    /**
+     * Set Tick font
+     *
+     * @param font The Tick font
+     */
+    public void setTickFont(Font font) {
+        tickFont = font;
+    }
+    
+    /**
+     * Get tick color
+     * @return Tick color
+     */
+    public Color getTickColor(){
+        return this.tickColor;
+    }
+    
+    /**
+     * Set tick color
+     * @param value Tick color
+     */
+    public void setTickColor(Color value){
+        this.tickColor = value;
     }
 
     /**
@@ -577,7 +630,7 @@ public class ChartLegend {
         rowNums[0] = aLS.getVisibleBreakNum() - num;
 
         //Draw legend                        
-        Font lFont = new Font(this.labelFont.getFontName(), this.labelFont.getStyle(), (int) (this.labelFont.getSize()));
+        Font lFont = new Font(this.tickFont.getFontName(), this.tickFont.getStyle(), (int) (this.tickFont.getSize()));
         float x, y;
         i = 0;
         for (int col = 0; col < rowColNum; col++) {
@@ -635,7 +688,7 @@ public class ChartLegend {
                 sP.Y = y;
                 //FontMetrics metrics = g.getFontMetrics(lFont);
                 //aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());                
-                g.setColor(this.labelColor);
+                g.setColor(this.tickColor);
                 g.setFont(lFont);
                 aSF = Draw.getStringDimension(caption, g);
                 //g.drawString(caption, sP.X + 5, sP.Y + aSF.height / 3);
@@ -653,7 +706,7 @@ public class ChartLegend {
         float breakHeight = this.getBreakHeight(g);
         float symbolHeight = this.symbolDimension.height;
         float symbolWidth = this.symbolDimension.width;
-        FontMetrics metrics = g.getFontMetrics(labelFont);
+        FontMetrics metrics = g.getFontMetrics(tickFont);
 
         //Set columns
         int[] colNums = new int[rowColNum];
@@ -718,8 +771,8 @@ public class ChartLegend {
                 PointF sP = new PointF(0, 0);
                 sP.X = x + symbolWidth / 2;
                 sP.Y = y;
-                g.setColor(this.labelColor);
-                g.setFont(this.labelFont);
+                g.setColor(this.tickColor);
+                g.setFont(this.tickFont);
                 //g.drawString(caption, sP.X + 5, sP.Y + aSF.height / 3);
                 //g.drawString(caption, sP.X + 5, sP.Y + metrics.getHeight() / 4);
                 Draw.drawString(g, caption, sP.X + 5, sP.Y + metrics.getHeight() / 4);
@@ -744,16 +797,16 @@ public class ChartLegend {
             bNum -= 1;
         }
 
-        int labelGap = this.getLabelGap(g);
+        int tickGap = this.getTickGap(g);
         List<Integer> labelIdxs = new ArrayList<>();
-        int sIdx = (bNum % labelGap) / 2;
+        int sIdx = (bNum % tickGap) / 2;
         int labNum = bNum - 1;
         if (aLS.getLegendType() == LegendType.UniqueValue) {
             labNum += 1;
         }
         while (sIdx < labNum) {
             labelIdxs.add(sIdx);
-            sIdx += labelGap;
+            sIdx += tickGap;
         }
 
         this._vBarWidth = (float) this.height / this.aspect;
@@ -871,7 +924,7 @@ public class ChartLegend {
             p.addPoint((int)this._vBarWidth, (int)this._hBarHeight);
             g.drawPolygon(p);
         }
-        //Draw tick and label
+        //Draw ticks
         aP.Y = this.height + _hBarHeight / 2;
         int labLen = (int)(this._vBarWidth / 3);
         if (labLen < 5){
@@ -895,10 +948,10 @@ public class ChartLegend {
                 if (labelIdxs.contains(idx)) {
                     sP.X = aP.X + _vBarWidth / 2 + 5;
                     sP.Y = aP.Y;
-                    FontMetrics metrics = g.getFontMetrics(this.labelFont);
+                    FontMetrics metrics = g.getFontMetrics(this.tickFont);
                     aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());
                     g.setColor(Color.black);
-                    g.setFont(this.labelFont);
+                    g.setFont(this.tickFont);
                     //g.drawString(caption, sP.X, sP.Y + aSF.height / 4);
                     Draw.drawString(g, caption, sP.X, sP.Y + aSF.height / 4);
                 }
@@ -910,14 +963,23 @@ public class ChartLegend {
                     g.draw(new Line2D.Float(sP.X - labLen, sP.Y, sP.X, sP.Y));
                     sP.X = sP.X + 5;
                     if (i < bNum - 1) {
-                        FontMetrics metrics = g.getFontMetrics(this.labelFont);
+                        FontMetrics metrics = g.getFontMetrics(this.tickFont);
                         aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());
-                        g.setFont(this.labelFont);
+                        g.setFont(this.tickFont);
                         //g.drawString(caption, sP.X, sP.Y + aSF.height / 4);
                         Draw.drawString(g, caption, sP.X, sP.Y + aSF.height / 4);
                     }
                 }
             }
+        }
+        //Draw label
+        if (this.label != null){
+            g.setFont(this.labelFont);
+            Dimension dim = Draw.getStringDimension(this.getLabel(), g);
+            x = this.width - dim.height - 2;
+            y = this.height * 0.5f; 
+            Draw.drawLabelPoint_270((float) x, (float) y, this.getLabelFont(), this.label,
+                this.getLabelColor(), g, null);
         }
     }
 
@@ -934,16 +996,16 @@ public class ChartLegend {
             bNum -= 1;
         }
 
-        int labelGap = this.getLabelGap(g);
+        int tickGap = this.getTickGap(g);
         List<Integer> labelIdxs = new ArrayList<>();
-        int sIdx = (bNum % labelGap) / 2;
+        int sIdx = (bNum % tickGap) / 2;
         int labNum = bNum - 1;
         if (aLS.getLegendType() == LegendType.UniqueValue) {
             labNum += 1;
         }
         while (sIdx < labNum) {
             labelIdxs.add(sIdx);
-            sIdx += labelGap;
+            sIdx += tickGap;
         }
 
         this._hBarHeight = (float) this.width / this.aspect;
@@ -1091,10 +1153,10 @@ public class ChartLegend {
                 if (labelIdxs.contains(idx)) {
                     sP.X = aP.X;
                     sP.Y = aP.Y + _hBarHeight / 2 + 5;
-                    FontMetrics metrics = g.getFontMetrics(this.labelFont);
+                    FontMetrics metrics = g.getFontMetrics(this.tickFont);
                     aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());
                     g.setColor(Color.black);
-                    g.setFont(this.labelFont);
+                    g.setFont(this.tickFont);
                     //g.drawString(caption, sP.X, sP.Y + aSF.height / 4);
                     Draw.drawString(g, caption, sP.X - aSF.width / 2, sP.Y + aSF.height * 3 / 4);
                 }
@@ -1106,14 +1168,24 @@ public class ChartLegend {
                     g.draw(new Line2D.Float(sP.X, sP.Y, sP.X, sP.Y - labLen));
                     sP.Y = sP.Y + 5;
                     if (i < bNum - 1) {
-                        FontMetrics metrics = g.getFontMetrics(this.labelFont);
+                        FontMetrics metrics = g.getFontMetrics(this.tickFont);
                         aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());
-                        g.setFont(this.labelFont);
+                        g.setFont(this.tickFont);
                         //g.drawString(caption, sP.X, sP.Y + aSF.height / 4);
                         Draw.drawString(g, caption, sP.X - aSF.width / 2, sP.Y + aSF.height * 3 / 4);
                     }
                 }
             }
+        }
+        
+        //Draw label
+        if (this.label != null){
+            g.setFont(this.labelFont);
+            g.setColor(this.labelColor);
+            Dimension dim = Draw.getStringDimension(this.getLabel(), g);
+            x = this.width * 0.5f - dim.width * 0.5f;
+            y = this.height - dim.height * 0.25f - 2; 
+            Draw.drawString(g, label, x, y);
         }
     }
 
@@ -1121,7 +1193,7 @@ public class ChartLegend {
         String caption;
         Dimension aSF;
         int bNum = legendScheme.getBreakNum();
-        //FontMetrics metrics = g.getFontMetrics(labelFont);
+        //FontMetrics metrics = g.getFontMetrics(tickFont);
         //aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());
         int labWidth = 0;
         for (int i = 0; i < bNum; i++) {
@@ -1140,7 +1212,7 @@ public class ChartLegend {
     }
 
     private int getBreakHeight(Graphics2D g) {
-        FontMetrics metrics = g.getFontMetrics(labelFont);
+        FontMetrics metrics = g.getFontMetrics(tickFont);
         return Math.max(metrics.getHeight(), this.symbolDimension.height);
     }
 
@@ -1156,11 +1228,19 @@ public class ChartLegend {
             if (this.colorBar) {
                 switch (this.orientation) {
                     case VERTICAL:
-                        this.width = (int) (this.getLabelWidth(g) + limitDim.height * this.shrink / this.aspect + 5);
+                        this.width = (int) (this.getTickWidth(g) + limitDim.height * this.shrink / this.aspect + 5);
+                        if (this.label != null){
+                            g.setFont(this.labelFont);
+                            this.width += (int)Draw.getStringDimension(label, g).height + 5;
+                        }
                         break;
                     default:
-                        g.setFont(this.labelFont);
+                        g.setFont(this.tickFont);
                         this.height = (int) (Draw.getStringDimension("test", g).height + limitDim.width * this.shrink / this.aspect + 5);
+                        if (this.label != null){
+                            g.setFont(this.labelFont);
+                            this.height += (int)Draw.getStringDimension(label, g).height + 5;
+                        }
                 }
             } else {
                 int breakHeight = getBreakHeight(g);
@@ -1244,7 +1324,7 @@ public class ChartLegend {
                         this.height = (int) (breakHeight + this._breakSpace * 2) * this.rowColNum;
 
                         //Get width
-                        //FontMetrics metrics = g.getFontMetrics(labelFont);
+                        //FontMetrics metrics = g.getFontMetrics(tickFont);
                         ave = legendScheme.getBreakNum() / rowColNum;
                         if (ave * rowColNum < legendScheme.getBreakNum()) {
                             ave += 1;
@@ -1283,11 +1363,11 @@ public class ChartLegend {
         return new Dimension(this.width, this.height);
     }
 
-    private int getLabelWidth(Graphics2D g) {
+    private int getTickWidth(Graphics2D g) {
         float rwidth = 0;
         String caption = "";
         int bNum = this.legendScheme.getBreakNum();
-        //FontMetrics metrics = g.getFontMetrics(this.labelFont);
+        //FontMetrics metrics = g.getFontMetrics(this.tickFont);
         if (this.legendScheme.getLegendBreaks().get(bNum - 1).isNoData()) {
             bNum -= 1;
         }
@@ -1348,21 +1428,21 @@ public class ChartLegend {
     }
 
     /**
-     * Update lable gap
+     * Update tick gap
      *
      * @param g Graphics2D
      */
-    private int getLabelGap(Graphics2D g) {
+    private int getTickGap(Graphics2D g) {
         double len;
         int n = this.legendScheme.getBreakNum();
         int nn;
         if (this.orientation == PlotOrientation.HORIZONTAL) {
             len = this.width;
-            int labLen = this.getLabelWidth(g);
+            int labLen = this.getTickWidth(g);
             nn = (int) ((len * 0.8) / labLen);
         } else {
             len = this.height;
-            FontMetrics metrics = g.getFontMetrics(labelFont);
+            FontMetrics metrics = g.getFontMetrics(tickFont);
             nn = (int) (len / metrics.getHeight());
         }
         if (nn == 0) {
@@ -1434,21 +1514,21 @@ public class ChartLegend {
         }
 
         /**
-         * Get font
+         * Get tick font
          *
-         * @return The font
+         * @return The tick font
          */
-        public Font getLabelFont() {
-            return labelFont;
+        public Font getTickFont() {
+            return tickFont;
         }
 
         /**
-         * Set font
+         * Set tick font
          *
-         * @param font The font
+         * @param font The tick font
          */
-        public void setLabelFont(Font font) {
-            labelFont = font;
+        public void setTickFont(Font font) {
+            tickFont = font;
         }
 
         /**
@@ -1515,7 +1595,7 @@ public class ChartLegend {
             ExtendedPropertyDescriptor e = addProperty("plotOrientation");
             e.setCategory("General").setDisplayName("Plot orientation");
             e.setPropertyEditorClass(PlotOrientationEditor.class);
-            addProperty("labelFont").setCategory("General").setDisplayName("Label Font");
+            addProperty("tickFont").setCategory("General").setDisplayName("Tick Font");
             addProperty("drawBackground").setCategory("General").setDisplayName("Draw Background");
             addProperty("background").setCategory("General").setDisplayName("Background");
             addProperty("columnNumber").setCategory("General").setDisplayName("Column Number");

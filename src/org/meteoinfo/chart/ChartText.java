@@ -10,6 +10,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.meteoinfo.drawing.Draw;
 
@@ -45,7 +46,8 @@ public class ChartText {
     public ChartText(String text){
         this();
         this.text = new ArrayList<>();
-        this.text.add(text);
+        String[] lines = text.split("\n");
+        this.text.addAll(Arrays.asList(lines));
     }
     
     /**
@@ -65,7 +67,8 @@ public class ChartText {
     public ChartText(String text, Font font){
         this();
         this.text = new ArrayList<>();
-        this.text.add(text);
+        String[] lines = text.split("\n");
+        this.text.addAll(Arrays.asList(lines));
         this.font = font;
     }
     
@@ -95,7 +98,8 @@ public class ChartText {
      */
     public void setText(String value){
         text = new ArrayList<>();
-        text.add(value);
+        String[] lines = value.split("\n");
+        this.text.addAll(Arrays.asList(lines));
     }
     
     /**
