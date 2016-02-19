@@ -80,6 +80,7 @@ public class XY2DPlot extends XYPlot {
     public void setMapView(MapView value, boolean isGeoMap) {
         this.mapView = value;
         this.mapView.setGeoMap(isGeoMap);
+        this.mapView.setMultiGlobalDraw(false);
         Extent extent = this.getAutoExtent();
         this.setDrawExtent(extent);
     }

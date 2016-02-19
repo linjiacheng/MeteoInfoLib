@@ -976,7 +976,7 @@ public class ChartLegend {
         if (this.label != null){
             g.setFont(this.labelFont);
             Dimension dim = Draw.getStringDimension(this.getLabel(), g);
-            x = this.width - dim.height - 2;
+            x = this.width - dim.height * 0.5f - 2;
             y = this.height * 0.5f; 
             Draw.drawLabelPoint_270((float) x, (float) y, this.getLabelFont(), this.label,
                 this.getLabelColor(), g, null);

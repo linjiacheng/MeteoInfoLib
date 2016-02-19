@@ -755,6 +755,20 @@ public class Axis implements Cloneable {
         this.tickLabels = value;
         this.autoTick = false;
     }
+    
+    /**
+     * Set tick labels
+     *
+     * @param value Tick labels
+     */
+    public void setTickLabels_Number(List<Number> value) {
+        List<String> labels = new ArrayList<>();
+        for (Number v : value){
+            labels.add(v.toString());
+        }
+        this.tickLabels = labels;
+        this.autoTick = false;
+    }
 
     /**
      * Get if is auto tick labels

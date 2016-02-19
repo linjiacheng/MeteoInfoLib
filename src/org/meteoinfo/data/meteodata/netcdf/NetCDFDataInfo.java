@@ -3163,6 +3163,29 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             }
         }
     }
+    
+    public Array read(String varName, String key){
+        NetcdfFile ncfile = null;
+        try {
+            ncfile = NetcdfFile.open(this.getFileName());
+            ucar.nc2.Variable var = ncfile.findVariable(varName);
+
+            Array data = var.read(key);
+
+            return data;
+        } catch (IOException | InvalidRangeException ex) {
+            Logger.getLogger(NetCDFDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        } finally {
+            if (null != ncfile) {
+                try {
+                    ncfile.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(NetCDFDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+    }
 
     /**
      * Convert Array to GridData

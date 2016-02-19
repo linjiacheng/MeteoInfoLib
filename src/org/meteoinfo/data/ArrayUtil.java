@@ -269,6 +269,8 @@ public class ArrayUtil {
             Array a = Array.factory(dt, new int[]{1});
             a.setObject(0, data);
             return a;
+        } else if (data instanceof Array) {
+            return (Array)data;
         } else {
             return null;
         }
