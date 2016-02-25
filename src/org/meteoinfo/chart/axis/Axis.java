@@ -1000,6 +1000,8 @@ public class Axis implements Cloneable {
             }
         } else {
             for (int i = 0; i < this.tickLocations.size(); i++) {
+                if (i >= this.tickLabels.size())
+                    break;
                 double v = this.tickLocations.get(i);
                 if (v >= this.minValue && v <= this.maxValue) {
                     tls.add(this.tickLabels.get(i));

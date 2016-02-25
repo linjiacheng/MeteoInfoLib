@@ -660,7 +660,7 @@ public class ArrayMath {
         }
         return null;
     }
-    
+
     /**
      * Array pow function
      *
@@ -690,7 +690,7 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     private static Array powInt(int a, Array b) {
         Array r = Array.factory(DataType.INT, b.getShape());
         for (int i = 0; i < b.getSize(); i++) {
@@ -708,7 +708,7 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     private static Array powDouble(double a, Array b) {
         Array r = Array.factory(DataType.DOUBLE, b.getShape());
         for (int i = 0; i < b.getSize(); i++) {
@@ -1048,11 +1048,12 @@ public class ArrayMath {
     // <editor-fold desc="Matrix">
     /**
      * Matrix multiplication
+     *
      * @param a Array a
      * @param b Array b
      * @return Result array
      */
-    public static Array dot(Array a, Array b){
+    public static Array dot(Array a, Array b) {
         int[] shape = new int[2];
         shape[0] = a.getShape()[0];
         shape[1] = b.getShape()[1];
@@ -1063,18 +1064,19 @@ public class ArrayMath {
         Index rIndex = r.getIndex();
         int n = a.getShape()[1];
         double v;
-        for (int i = 0; i < shape[0]; i++){
-            for (int j = 0; j < shape[1]; j++){
+        for (int i = 0; i < shape[0]; i++) {
+            for (int j = 0; j < shape[1]; j++) {
                 v = 0;
-                for (int m = 0; m < n; m++){
+                for (int m = 0; m < n; m++) {
                     v = v + a.getDouble(aIndex.set(i, m)) * b.getDouble(bIndex.set(m, j));
                 }
                 r.setDouble(rIndex.set(i, j), v);
             }
         }
-        
+
         return r;
     }
+
     // </editor-fold>
     // <editor-fold desc="Circular function">
     /**
@@ -1300,24 +1302,25 @@ public class ArrayMath {
         //MAMath.copy(rr, r);
         return r;
     }
-    
+
     /**
      * Rotate an array by 90 degrees in counter-clockwise direction.
+     *
      * @param a The array
      * @param k Rotate times
      * @return Rotated array
      */
-    public static Array rot90(Array a, int k){
+    public static Array rot90(Array a, int k) {
         int[] shape = new int[a.getRank()];
-        if (Math.abs(k) % 2 == 1){
+        if (Math.abs(k) % 2 == 1) {
             shape[0] = a.getShape()[1];
             shape[1] = a.getShape()[0];
         } else {
             shape[0] = a.getShape()[0];
             shape[1] = a.getShape()[1];
         }
-        if (a.getRank() > 2){
-            for (int i = 2; i < a.getRank(); i++){
+        if (a.getRank() > 2) {
+            for (int i = 2; i < a.getRank(); i++) {
                 shape[i] = a.getShape()[i];
             }
         }
@@ -1328,7 +1331,7 @@ public class ArrayMath {
         switch (k) {
             case 1:
             case -3:
-                for (int i = 0; i < r.getSize(); i++){
+                for (int i = 0; i < r.getSize(); i++) {
                     countera = indexa.getCurrentCounter();
                     counterr = indexa.getCurrentCounter();
                     counterr[0] = shape[0] - countera[1] - 1;
@@ -1336,10 +1339,11 @@ public class ArrayMath {
                     indexr.set(counterr);
                     r.setObject(indexr, a.getObject(indexa));
                     indexa.incr();
-                }   break;
+                }
+                break;
             case 2:
             case -2:
-                for (int i = 0; i < r.getSize(); i++){
+                for (int i = 0; i < r.getSize(); i++) {
                     countera = indexa.getCurrentCounter();
                     counterr = indexa.getCurrentCounter();
                     counterr[0] = shape[0] - countera[0] - 1;
@@ -1347,10 +1351,11 @@ public class ArrayMath {
                     indexr.set(counterr);
                     r.setObject(indexr, a.getObject(indexa));
                     indexa.incr();
-                }   break;
+                }
+                break;
             case 3:
             case -1:
-                for (int i = 0; i < r.getSize(); i++){
+                for (int i = 0; i < r.getSize(); i++) {
                     countera = indexa.getCurrentCounter();
                     counterr = indexa.getCurrentCounter();
                     counterr[0] = countera[1];
@@ -1358,11 +1363,12 @@ public class ArrayMath {
                     indexr.set(counterr);
                     r.setObject(indexr, a.getObject(indexa));
                     indexa.incr();
-                }   break;
+                }
+                break;
             default:
                 r = null;
         }
-        
+
         return r;
     }
 
@@ -1564,16 +1570,16 @@ public class ArrayMath {
         int[] dataShape = a.getShape();
         int[] shape = new int[dataShape.length - 1];
         int idx;
-        for (int i = 0; i < dataShape.length; i++){
+        for (int i = 0; i < dataShape.length; i++) {
             idx = i;
-            if (idx == axis){
+            if (idx == axis) {
                 continue;
-            } else if (idx > axis){
+            } else if (idx > axis) {
                 idx -= 1;
             }
             shape[idx] = dataShape[i];
         }
-        Array r = Array.factory(DataType.DOUBLE, shape);        
+        Array r = Array.factory(DataType.DOUBLE, shape);
         double mean;
         Index indexr = r.getIndex();
         int[] current;
@@ -1581,12 +1587,13 @@ public class ArrayMath {
             current = indexr.getCurrentCounter();
             List<Range> ranges = new ArrayList<>();
             for (int j = 0; j < dataShape.length; j++) {
-                if (j == axis) {                    
+                if (j == axis) {
                     ranges.add(new Range(0, dataShape[j] - 1, 1));
                 } else {
                     idx = j;
-                    if (idx > axis)
+                    if (idx > axis) {
                         idx -= 1;
+                    }
                     ranges.add(new Range(current[idx], current[idx], 1));
                 }
             }
@@ -1594,7 +1601,7 @@ public class ArrayMath {
             r.setDouble(i, mean);
             indexr.incr();
         }
-        
+
         return r;
     }
 
@@ -1750,21 +1757,22 @@ public class ArrayMath {
         }
         return r;
     }
-    
+
     /**
      * Get wind direction and wind speed from U/V
+     *
      * @param u U component
      * @param v V component
      * @return Wind direction and wind speed
      */
-    public static Array[] uv2ds(Array u, Array v){
+    public static Array[] uv2ds(Array u, Array v) {
         Array windSpeed = ArrayMath.sqrt(ArrayMath.add(ArrayMath.mul(u, u), ArrayMath.mul(v, v)));
         Array windDir = Array.factory(windSpeed.getDataType(), windSpeed.getShape());
         double ws, wd, U, V;
-        for (int i = 0; i < windSpeed.getSize(); i++){
+        for (int i = 0; i < windSpeed.getSize(); i++) {
             U = u.getDouble(i);
             V = u.getDouble(i);
-            if (Double.isNaN(U) || Double.isNaN(V)){
+            if (Double.isNaN(U) || Double.isNaN(V)) {
                 windDir.setDouble(i, Double.NaN);
                 continue;
             }
@@ -1787,33 +1795,35 @@ public class ArrayMath {
             }
             windDir.setDouble(i, wd);
         }
-        
+
         return new Array[]{windDir, windSpeed};
     }
-    
+
     /**
      * Get wind U/V components from wind direction and speed
+     *
      * @param windDir Wind direction
      * @param windSpeed Wind speed
      * @return Wind U/V components
      */
-    public static Array[] ds2uv(Array windDir, Array windSpeed){
+    public static Array[] ds2uv(Array windDir, Array windSpeed) {
         Array U = Array.factory(DataType.DOUBLE, windDir.getShape());
         Array V = Array.factory(DataType.DOUBLE, windDir.getShape());
         double dir;
-        for (int i = 0; i < U.getSize(); i++){
-            if (Double.isNaN(windDir.getDouble(i)) || Double.isNaN(windSpeed.getDouble(i))){
+        for (int i = 0; i < U.getSize(); i++) {
+            if (Double.isNaN(windDir.getDouble(i)) || Double.isNaN(windSpeed.getDouble(i))) {
                 U.setDouble(i, Double.NaN);
                 V.setDouble(i, Double.NaN);
             }
             dir = windDir.getDouble(i) + 180;
-            if (dir > 360)
+            if (dir > 360) {
                 dir = dir - 360;
+            }
             dir = dir * Math.PI / 180;
             U.setDouble(i, windSpeed.getDouble(i) * Math.sin(dir));
             V.setDouble(i, windSpeed.getDouble(i) * Math.cos(dir));
-        }       
-        
+        }
+
         return new Array[]{U, V};
     }
 
@@ -2168,6 +2178,8 @@ public class ArrayMath {
         double sy_sum = 0.0;
         double xy_sum = 0.0;
         int n = 0;
+        List<Double> xi = new ArrayList<>();
+        List<Double> yi = new ArrayList<>();
         for (int i = 0; i < xData.getSize(); i++) {
             if (Double.isNaN(xData.getDouble(i))) {
                 continue;
@@ -2175,6 +2187,8 @@ public class ArrayMath {
             if (Double.isNaN(yData.getDouble(i))) {
                 continue;
             }
+            xi.add(xData.getDouble(i));
+            yi.add(yData.getDouble(i));
             x_sum += xData.getDouble(i);
             y_sum += yData.getDouble(i);
             sx_sum += xData.getDouble(i) * xData.getDouble(i);
@@ -2186,8 +2200,66 @@ public class ArrayMath {
         double r = (n * xy_sum - x_sum * y_sum) / (Math.sqrt(n * sx_sum - x_sum * x_sum) * Math.sqrt(n * sy_sum - y_sum * y_sum));
         double intercept = (sx_sum * y_sum - x_sum * xy_sum) / (n * sx_sum - x_sum * x_sum);
         double slope = (n * xy_sum - x_sum * y_sum) / (n * sx_sum - x_sum * x_sum);
+        int df = n - 2;
+        double TINY = 1.0e-20;
+        double t = r * Math.sqrt(df / ((1.0 - r + TINY) * (1.0 + r + TINY)));
+        
+        double xbar = x_sum / n;
+        double ybar = y_sum / n;
+        double bhat =0.0;
+        double ssqx = 0.0;
+        for (int i = 0; i < n; i++ ) {
+            bhat = bhat + (yi.get(i) - ybar)*(xi.get(i) - xbar);
+            ssqx = ssqx + (xi.get(i) - xbar)*(xi.get(i) - xbar);
+        }
+        bhat = bhat/ssqx;
+        double ahat = ybar - bhat*xbar;
+        double sigmahat2 = 0.0;
+        double[] ri = new double[n];
+        for (int i = 0; i < n; i++ ) {
+            ri[i] = yi.get(i) - (ahat + bhat*xi.get(i));
+            sigmahat2 = sigmahat2 + ri[i]*ri[i];
+        }
+        sigmahat2 = sigmahat2 / ( n*1.0 - 2.0 );
+        double seb = Math.sqrt(sigmahat2/ssqx);
+        double sigmahat = Math.sqrt((seb*seb)*ssqx);
+        double sea = Math.sqrt(sigmahat*sigmahat * ( 1 /(n*1.0) + xbar*xbar/ssqx));
+        double b0 = 0;
+        double Tb = (bhat - b0) / seb;
+        double a0 = 0;
+        double Ta = (ahat - a0) / sea;
+        //double p = studpval(t, df);
+        double p = studpval(Ta, n);
 
-        return new double[]{slope, intercept, r};
+        return new double[]{slope, intercept, r, p, n};
+    }
+
+    private static double statcom(double mq, int mi, int mj, double mb) {
+        double zz = 1;
+        double mz = zz;
+        int mk = mi;
+        while (mk <= mj) {
+            zz = zz * mq * mk / (mk - mb);
+            mz = mz + zz;
+            mk = mk + 2;
+        }
+        return mz;
+    }
+
+    private static double studpval(double mt, int mn) {
+        mt = Math.abs(mt);
+        double mw = mt / Math.sqrt(mn);
+        double th = Math.atan2(mw, 1);
+        if (mn == 1) {
+            return 1.0 - th / (Math.PI / 2.0);
+        }
+        double sth = Math.sin(th);
+        double cth = Math.cos(th);
+        if (mn % 2 == 1) {
+            return 1.0 - (th + sth * cth * statcom(cth * cth, 2, mn - 3, -1)) / (Math.PI / 2.0);
+        } else {
+            return 1.0 - sth * statcom(cth * cth, 1, mn - 3, -1);
+        }
     }
 
     /**
