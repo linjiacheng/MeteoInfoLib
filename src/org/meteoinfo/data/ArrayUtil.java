@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,6 +27,7 @@ import java.util.logging.Logger;
 import org.meteoinfo.data.mapdata.Field;
 import org.meteoinfo.geoprocess.GeoComputation;
 import org.meteoinfo.geoprocess.analysis.ResampleMethods;
+import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
 import org.meteoinfo.global.util.BigDecimalUtil;
@@ -202,9 +204,12 @@ public class ArrayUtil {
      * @param fn Binary file name
      * @param dims Dimensions
      * @param dataType Data type string
+     * @param skip Skip bytes
+     * @param byteOrder Byte order
      * @return Result array
      */
-    public static Array readBinFile(String fn, List<Integer> dims, String dataType) {
+    public static Array readBinFile(String fn, List<Integer> dims, String dataType, int skip,
+            String byteOrder) {
         DataType dt = DataType.DOUBLE;
         if (dataType != null) {
             if (dataType.contains("%")) {
@@ -212,36 +217,68 @@ public class ArrayUtil {
             }
             dt = ArrayUtil.toDataType(dataType);
         }
+        
+        ByteOrder bOrder = ByteOrder.LITTLE_ENDIAN;
+        if (byteOrder.equalsIgnoreCase("big_endian"))
+            bOrder = ByteOrder.BIG_ENDIAN;
+        
         int[] shape = new int[dims.size()];
         for (int i = 0; i < dims.size(); i++) {
             shape[i] = dims.get(i);
         }
         Array r = Array.factory(dt, shape);
+        IndexIterator iter = r.getIndexIterator();
         try {
             DataInputStream ins = new DataInputStream(new FileInputStream(fn));
+            ins.skip(skip);
+            byte[] bytes;
+            byte[] db;
+            int start = 0;
             switch (dt) {
                 case BYTE:
+                    bytes = new byte[(int)r.getSize()];
                     for (int i = 0; i < r.getSize(); i++){
-                        r.setByte(i, ins.readByte());
+                        r.setByte(i, bytes[i]);
+                    }
+                    break;
+                case SHORT:
+                    bytes = new byte[(int)r.getSize() * 2];
+                    db = new byte[2];
+                    ins.read(bytes);
+                    while (iter.hasNext()) {
+                        System.arraycopy(bytes, start, db, 0, 2);
+                        iter.setShortNext(DataConvert.bytes2Short(db, bOrder));
+                        start += 2;
                     }
                     break;
                 case INT:
-                    for (int i = 0; i < r.getSize(); i++) {
-                        r.setInt(i, ins.readInt());
+                    bytes = new byte[(int)r.getSize() * 4];
+                    db = new byte[4];
+                    ins.read(bytes);                    
+                    while (iter.hasNext()) {
+                        System.arraycopy(bytes, start, db, 0, 4);
+                        iter.setIntNext(DataConvert.bytes2Int(db, bOrder));
+                        start += 4;
                     }
                     break;
                 case FLOAT:
-                    //for (int i = 0; i < r.getSize(); i++) {
-                    //    r.setFloat(i, ins.readFloat());
-                    //}
-                    IndexIterator iter = r.getIndexIterator();
+                    bytes = new byte[(int)r.getSize() * 4];
+                    db = new byte[4];
+                    ins.read(bytes);
                     while (iter.hasNext()) {
-                        iter.setFloatNext(ins.readFloat());
+                        System.arraycopy(bytes, start, db, 0, 4);
+                        iter.setFloatNext(DataConvert.bytes2Float(db, bOrder));
+                        start += 4;
                     }
                     break;
                 case DOUBLE:
-                    for (int i = 0; i < r.getSize(); i++) {
-                        r.setDouble(i, ins.readDouble());
+                    bytes = new byte[(int)r.getSize() * 8];
+                    db = new byte[8];
+                    ins.read(bytes);
+                    while (iter.hasNext()) {
+                        System.arraycopy(bytes, start, db, 0, 8);
+                        iter.setDoubleNext(DataConvert.bytes2Double(db, bOrder));
+                        start += 8;
                     }
                     break;
             }
@@ -657,6 +694,8 @@ public class ArrayUtil {
             case "b":
             case "byte":
                 return DataType.BYTE;
+            case "short":
+                return DataType.SHORT;
             case "i":
             case "int":
                 return DataType.INT;

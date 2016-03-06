@@ -1134,9 +1134,12 @@ public class LayersLegend extends JPanel {
         
         if (aIN == null){
             if (y < this.getHeight()){
-                ItemNode selNode =  _mapFrames.get(_mapFrames.size() - 1).getNodes().get(0);
-                mPos.curTop = mPos.curTop - selNode.getDrawHeight() - Constants.ITEM_PAD;
-                return selNode;
+                List<ItemNode> nodes = _mapFrames.get(_mapFrames.size() - 1).getNodes();
+                if (nodes != null && nodes.size() > 0){
+                    ItemNode selNode =  _mapFrames.get(_mapFrames.size() - 1).getNodes().get(0);
+                    mPos.curTop = mPos.curTop - selNode.getDrawHeight() - Constants.ITEM_PAD;
+                    return selNode;
+                }
             }
         }
         

@@ -35,6 +35,19 @@ public class DataConvert {
         buf.order(byteOrder);
         return buf.getFloat();
     }
+    
+    /**
+     * Byte array convert to double
+     *
+     * @param b Byte array
+     * @param byteOrder Byte order
+     * @return Double value
+     */
+    public static double bytes2Double(byte[] b, ByteOrder byteOrder) {
+        ByteBuffer buf = ByteBuffer.wrap(b);
+        buf.order(byteOrder);
+        return buf.getDouble();
+    }
 
     /**
      * Byte array convert to integer
@@ -51,6 +64,19 @@ public class DataConvert {
         } else {
             return buf.getShort();
         }
+    }
+    
+    /**
+     * Byte array convert to short integer
+     *
+     * @param bytes Byte array
+     * @param byteOrder Byte order
+     * @return Short integer value
+     */
+    public static short bytes2Short(byte[] bytes, ByteOrder byteOrder) {
+        ByteBuffer buf = ByteBuffer.wrap(bytes);
+        buf.order(byteOrder);
+        return buf.getShort();
     }
 
     /**
