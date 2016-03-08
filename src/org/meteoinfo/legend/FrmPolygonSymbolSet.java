@@ -9,7 +9,8 @@ import org.meteoinfo.map.MapView;
 import java.awt.Color;
 import java.awt.Dimension;
 import javax.swing.JColorChooser;
-import org.meteoinfo.shape.EllipseShape;
+import org.meteoinfo.global.event.ISelectedCellChangedListener;
+import org.meteoinfo.global.event.SelectedCellChangedEvent;
 
 /**
  *
@@ -30,7 +31,7 @@ public class FrmPolygonSymbolSet extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
         
-        this.setTitle("Polygon Symbol Set");
+        this.setTitle("Polygon Symbol Set");                
     }
 
     /**
@@ -49,6 +50,24 @@ public class FrmPolygonSymbolSet extends javax.swing.JDialog {
             this.jButton_Apply.setVisible(false);
             this.jButton_OK.setVisible(false);
             this.setPreferredSize(new Dimension(this.getWidth(), this.getHeight() - 40));
+        }
+        
+        this.symbolControl1.addSelectedCellChangedListener(new ISelectedCellChangedListener() {
+            @Override
+            public void selectedCellChangedEvent(SelectedCellChangedEvent event) {
+                onSelectedCellChanged(event);
+            }
+        });
+    }
+    
+    private void onSelectedCellChanged(SelectedCellChangedEvent event) {
+        if (isLoading) {
+            return;
+        }
+
+        this._polygonBreak.setStyle(HatchStyle.values()[symbolControl1.getSelectedCell()]);
+        if (_parent.getClass() == LegendView.class) {
+            ((LegendView) _parent).setLegendBreak_PolygonStyle(this._polygonBreak.getStyle());
         }
     }
 
@@ -69,6 +88,13 @@ public class FrmPolygonSymbolSet extends javax.swing.JDialog {
             this.jButton_OK.setVisible(false);
             this.setPreferredSize(new Dimension(this.getWidth(), this.getHeight() - 40));
         }
+        
+        this.symbolControl1.addSelectedCellChangedListener(new ISelectedCellChangedListener() {
+            @Override
+            public void selectedCellChangedEvent(SelectedCellChangedEvent event) {
+                onSelectedCellChanged(event);
+            }
+        });
     }
 
     /**
@@ -96,6 +122,7 @@ public class FrmPolygonSymbolSet extends javax.swing.JDialog {
         jLabel_BackColor = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         jSpinner_TransParency = new javax.swing.JSpinner();
+        symbolControl1 = new org.meteoinfo.legend.SymbolControl();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -214,6 +241,10 @@ public class FrmPolygonSymbolSet extends javax.swing.JDialog {
             }
         });
 
+        symbolControl1.setCellSize(new java.awt.Dimension(50, 40));
+        symbolControl1.setPreferredSize(new java.awt.Dimension(200, 50));
+        symbolControl1.setShapeType(org.meteoinfo.shape.ShapeTypes.Polygon);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -227,53 +258,53 @@ public class FrmPolygonSymbolSet extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addContainerGap())
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jCheckBox_DrawOutline)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jLabel2))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jCheckBox_DrawFill)
-                                    .addComponent(jCheckBox_DrawShape))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel5)
-                                    .addComponent(jLabel1))))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(jCheckBox_DrawOutline)
+                            .addComponent(jCheckBox_DrawFill)
+                            .addComponent(jCheckBox_DrawShape))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel5, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jLabel_FillColor, javax.swing.GroupLayout.DEFAULT_SIZE, 59, Short.MAX_VALUE)
-                            .addComponent(jLabel_BackColor, javax.swing.GroupLayout.DEFAULT_SIZE, 59, Short.MAX_VALUE)
-                            .addComponent(jSpinner_TransParency))
-                        .addGap(29, 29, 29))))
+                            .addComponent(jLabel_FillColor, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jLabel_BackColor, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jSpinner_TransParency, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(symbolControl1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jCheckBox_DrawShape)
-                    .addComponent(jLabel5)
-                    .addComponent(jSpinner_TransParency, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(symbolControl1, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 17, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jCheckBox_DrawFill)
-                            .addComponent(jLabel1))
+                        .addComponent(jCheckBox_DrawShape)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jCheckBox_DrawOutline)
-                            .addComponent(jLabel2)))
+                        .addComponent(jCheckBox_DrawFill)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jCheckBox_DrawOutline))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel_FillColor, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel5)
+                            .addComponent(jSpinner_TransParency, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel_BackColor, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addComponent(jLabel1)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jLabel2))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel_FillColor, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel_BackColor, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                .addGap(18, 18, 18)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -327,10 +358,12 @@ public class FrmPolygonSymbolSet extends javax.swing.JDialog {
     private void jLabel_BackColorMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel_BackColorMouseClicked
         // TODO add your handling code here:
         Color aColor = JColorChooser.showDialog(rootPane, null, this.jLabel_BackColor.getBackground());
-        this.jLabel_BackColor.setBackground(aColor);
-        _polygonBreak.setBackColor(aColor);
-        if (_parent.getClass() == LegendView.class) {
-            ((LegendView) _parent).setLegendBreak_BackColor(aColor);
+        if (aColor != null){
+            this.jLabel_BackColor.setBackground(aColor);
+            _polygonBreak.setBackColor(aColor);
+            if (_parent.getClass() == LegendView.class) {
+                ((LegendView) _parent).setLegendBreak_BackColor(aColor);
+            }
         }
     }//GEN-LAST:event_jLabel_BackColorMouseClicked
 
@@ -489,5 +522,6 @@ public class FrmPolygonSymbolSet extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSpinner jSpinner_OutlineSize;
     private javax.swing.JSpinner jSpinner_TransParency;
+    private org.meteoinfo.legend.SymbolControl symbolControl1;
     // End of variables declaration//GEN-END:variables
 }

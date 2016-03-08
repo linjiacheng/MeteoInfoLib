@@ -28,8 +28,9 @@ public class PolygonBreak extends ColorBreak {
     private float _outlineSize;
     private boolean _drawOutline;
     private boolean _drawFill;
-    //private boolean _usingHatchStyle;
-    //private HatchStyle _style;
+    //private boolean usingHatchStyle;
+    private HatchStyle style;
+    private int styleSize;
     private Color _backColor;
     //private int _transparencyPerc;
     private boolean _isMaskout;
@@ -43,9 +44,10 @@ public class PolygonBreak extends ColorBreak {
         _outlineSize = 1.0f;
         _drawOutline = true;
         _drawFill = true;
-        //_usingHatchStyle = false;
-        //_style = HatchStyle.Horizontal;
-        _backColor = new Color(1.0f, 1.0f, 1.0f, 1.0f);
+        //usingHatchStyle = false;
+        style = HatchStyle.NONE;
+        styleSize = 8;
+        _backColor = new Color(1.0f, 1.0f, 1.0f, 0.0f);
         //_transparencyPerc = 0;
         _isMaskout = false;
     }
@@ -141,6 +143,46 @@ public class PolygonBreak extends ColorBreak {
     public void setBackColor(Color c) {
         _backColor = c;
     }
+    
+    /**
+     * Get if using hatch style
+     * @return Boolean
+     */
+    public boolean isUsingHatchStyle(){
+        return this.style != HatchStyle.NONE;
+    }
+    
+    /**
+     * Get hatch style
+     * @return Hatch style
+     */
+    public HatchStyle getStyle(){
+        return this.style;
+    }
+    
+    /**
+     * Set hatch style
+     * @param value Hatch style
+     */
+    public void setStyle(HatchStyle value){
+        this.style = value;
+    }
+    
+    /**
+     * Get style size
+     * @return Style size
+     */
+    public int getStyleSize(){
+        return this.styleSize;
+    }
+    
+    /**
+     * Set style size
+     * @param value Style size
+     */
+    public void setStyleSize(int value){
+        this.styleSize = value;
+    }
 
     /**
      * Get if maskout
@@ -178,6 +220,7 @@ public class PolygonBreak extends ColorBreak {
         objAttr.put("DrawPolygon", "DrawPolygon");
         objAttr.put("UsingHatchStyle", "UsingHatchStyle");
         objAttr.put("Style", "Style");
+        objAttr.put("SytleSize", "StyleSize");
         objAttr.put("BackColor", "BackColor");
         objAttr.put("TransparencyPercent", "TransparencyPercent");
         //CustomProperty cp = new CustomProperty(this, objAttr);
@@ -202,8 +245,9 @@ public class PolygonBreak extends ColorBreak {
         aCB.setOutlineSize(_outlineSize);
         aCB.setDrawOutline(_drawOutline);
         aCB.setDrawFill(_drawFill);
-            //aCB.UsingHatchStyle = _usingHatchStyle;
-        //aCB.Style = _style;
+        //aCB.setUsingHatchStyle(usingHatchStyle);
+        aCB.setStyle(style);
+        aCB.setStyleSize(styleSize);
         aCB.setBackColor(_backColor);
         //aCB.TransparencyPercent = _transparencyPerc;
         aCB.setMaskout(_isMaskout);

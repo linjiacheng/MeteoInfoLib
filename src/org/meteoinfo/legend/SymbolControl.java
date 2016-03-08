@@ -1,4 +1,4 @@
- /* Copyright 2012 Yaqiang Wang,
+/* Copyright 2012 Yaqiang Wang,
  * yaqiang.wang@gmail.com
  * 
  * This library is free software; you can redistribute it and/or modify it
@@ -86,7 +86,7 @@ public class SymbolControl extends JPanel {
         _colNumber = 10;
         _rowNumber = 26;
         _selectedCell = -1;
-        _imageList = new ArrayList<Image>();
+        _imageList = new ArrayList<>();
     }
 
     private void initComponents() {
@@ -101,7 +101,7 @@ public class SymbolControl extends JPanel {
                 onScrollValueChanged(e);
             }
         });
-        this.add(_vScrollBar, BorderLayout.EAST);        
+        this.add(_vScrollBar, BorderLayout.EAST);
         //this._vScrollBar.setSize(this._vScrollBar.getWidth(), this.getHeight());
         this._vScrollBar.setSize(20, this.getHeight());
         this._vScrollBar.setLocation(this.getWidth() - this._vScrollBar.getWidth(), 0);
@@ -189,7 +189,8 @@ public class SymbolControl extends JPanel {
                 setSymbolNumber(LineStyles.values().length);
                 break;
             case Polygon:
-                //SymbolNumber = Enum.GetNames(typeof(HatchStyle)).Length;
+                setCellSize(new Dimension(30, 30));
+                setSymbolNumber(HatchStyle.values().length);
                 break;
         }
     }
@@ -298,12 +299,12 @@ public class SymbolControl extends JPanel {
      * @param imageList The image list
      */
     public void setIamgeList(List<Image> imageList) {
-        _imageList = new ArrayList<Image>(imageList);
+        _imageList = imageList;
         setSymbolNumber(imageList.size());
     }
 
     private void updateSize() {
-        if (this._vScrollBar.isVisible()){
+        if (this._vScrollBar.isVisible()) {
             this._colNumber = (this.getWidth() - this._vScrollBar.getWidth()) / this._cellSize.width;
         } else {
             this._colNumber = this.getWidth() / this._cellSize.width;
@@ -427,8 +428,9 @@ public class SymbolControl extends JPanel {
                             }
 
                             //((Bitmap)_imageList[i]).MakeTransparent(Color.White);
-                            if (_imageList.size() > i)
+                            if (_imageList.size() > i) {
                                 g.drawImage(_imageList.get(i), col * _cellSize.width, sHeight, (int) size, (int) size, null);
+                            }
                         }
                         break;
                 }
@@ -481,13 +483,7 @@ public class SymbolControl extends JPanel {
                         g.fill(rect);
                     }
 
-//                        if (i == 0)
-//                            aPGB.UsingHatchStyle = false;
-//                        else
-//                        {
-//                            aPGB.UsingHatchStyle = true;
-//                            aPGB.Style = (HatchStyle)(Enum.GetValues(typeof(HatchStyle)).GetValue(i - 1));
-//                        }
+                    aPGB.setStyle(HatchStyle.values()[i]);
                     Draw.drawPolygonSymbol(new PointF(rect.x + rect.width / 2, rect.y + rect.height / 2),
                             rect.width * 0.8f, rect.height * 0.8f, aPGB, g);
                 }

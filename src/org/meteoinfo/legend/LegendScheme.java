@@ -54,6 +54,7 @@ import static org.meteoinfo.shape.ShapeTypes.PolygonZ;
 import static org.meteoinfo.shape.ShapeTypes.Polyline;
 import static org.meteoinfo.shape.ShapeTypes.PolylineM;
 import static org.meteoinfo.shape.ShapeTypes.PolylineZ;
+import org.w3c.dom.DOMException;
 
 /**
  * Legend scheme class
@@ -662,8 +663,8 @@ public class LegendScheme {
                     drawOutline = doc.createAttribute("DrawOutline");
                     drawFill = doc.createAttribute("DrawFill");
                     outlineSize = doc.createAttribute("OutlineSize");
-                    //Attr usingHatchStyle = doc.createAttribute("UsingHatchStyle");
-                    //style = doc.createAttribute("Style");
+                    style = doc.createAttribute("Style");
+                    Attr styleSize = doc.createAttribute("StyleSize");
                     Attr backColor = doc.createAttribute("BackColor");
                     tagAttr = doc.createAttribute("Tag");
 
@@ -676,8 +677,8 @@ public class LegendScheme {
                     drawOutline.setValue(String.valueOf(aPGB.isDrawOutline()));
                     drawFill.setValue(String.valueOf(aPGB.isDrawFill()));
                     outlineSize.setValue(String.valueOf(aPGB.getOutlineSize()));
-                    //usingHatchStyle.InnerText = aPGB.UsingHatchStyle.ToString();
-                    //style.InnerText = aPGB.Style.ToString();
+                    style.setValue(aPGB.getStyle().toString());
+                    styleSize.setValue(String.valueOf(aPGB.getStyleSize()));
                     backColor.setValue(ColorUtil.toHexEncoding(aPGB.getBackColor()));
                     tagAttr.setValue(aPGB.getTag());
 
@@ -690,8 +691,8 @@ public class LegendScheme {
                     brk.setAttributeNode(drawOutline);
                     brk.setAttributeNode(drawFill);
                     brk.setAttributeNode(outlineSize);
-                    //brk.setAttributeNode(usingHatchStyle);
-                    //brk.setAttributeNode(style);
+                    brk.setAttributeNode(style);
+                    brk.setAttributeNode(styleSize);
                     brk.setAttributeNode(backColor);
                     brk.setAttributeNode(tagAttr);
 
@@ -765,8 +766,7 @@ public class LegendScheme {
             PrintWriter pw = new PrintWriter(new FileOutputStream(aFile));
             StreamResult result = new StreamResult(pw);
             transformer.transform(source, result);
-        } catch (TransformerException mye) {
-        } catch (IOException exp) {
+        } catch (TransformerException | IOException mye) {
         }
     }
 
@@ -835,7 +835,7 @@ public class LegendScheme {
                             aPB.setImagePath(brk.getAttributes().getNamedItem("ImagePath").getNodeValue());
                             aPB.setAngle(Float.parseFloat(brk.getAttributes().getNamedItem("Angle").getNodeValue()));
                             aPB.setTag(brk.getAttributes().getNamedItem("Tag").getNodeValue());
-                        } catch (Exception e) {
+                        } catch (DOMException | NumberFormatException e) {
                         } finally {
                             legendBreaks.add(aPB);
                         }
@@ -860,7 +860,7 @@ public class LegendScheme {
                             aPLB.setSymbolColor(ColorUtil.parseToColor(brk.getAttributes().getNamedItem("SymbolColor").getNodeValue()));
                             aPLB.setSymbolInterval(Integer.parseInt(brk.getAttributes().getNamedItem("SymbolInterval").getNodeValue()));
                             aPLB.setTag(brk.getAttributes().getNamedItem("Tag").getNodeValue());
-                        } catch (Exception e) {
+                        } catch (DOMException | NumberFormatException e) {
                         } finally {
                             legendBreaks.add(aPLB);
                         }
@@ -880,10 +880,10 @@ public class LegendScheme {
                             aPGB.setDrawOutline(Boolean.parseBoolean(brk.getAttributes().getNamedItem("DrawOutline").getNodeValue()));
                             aPGB.setOutlineSize(Float.parseFloat(brk.getAttributes().getNamedItem("OutlineSize").getNodeValue()));
                             aPGB.setOutlineColor(ColorUtil.parseToColor(brk.getAttributes().getNamedItem("OutlineColor").getNodeValue()));
-                            //aPGB.UsingHatchStyle = bool.Parse(brk.Attributes["UsingHatchStyle"].InnerText);
-                            //aPGB.Style = (HatchStyle) Enum.Parse(typeof(HatchStyle), brk.Attributes["Style"].InnerText, true);
+                            aPGB.setStyle(HatchStyle.valueOf(brk.getAttributes().getNamedItem("Style").getNodeValue()));
                             aPGB.setBackColor(ColorUtil.parseToColor(brk.getAttributes().getNamedItem("BackColor").getNodeValue()));
                             aPGB.setTag(brk.getAttributes().getNamedItem("Tag").getNodeValue());
+                            aPGB.setStyleSize(Integer.parseInt(brk.getAttributes().getNamedItem("StyleSize").getNodeValue()));
                         } catch (Exception e) {
                         } finally {
                             legendBreaks.add(aPGB);
@@ -1038,7 +1038,7 @@ public class LegendScheme {
             sr = new BufferedReader(new FileReader(aFile));
             this.shapeType = ShapeTypes.Image;
             this.legendType = LegendType.UniqueValue;
-            this.legendBreaks = new ArrayList<ColorBreak>();
+            this.legendBreaks = new ArrayList<>();
             ColorBreak aCB;
             String[] dataArray;
             sr.readLine();
@@ -1065,7 +1065,8 @@ public class LegendScheme {
             Logger.getLogger(LegendScheme.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
-                sr.close();
+                if (sr != null)
+                    sr.close();
             } catch (IOException ex) {
                 Logger.getLogger(LegendScheme.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -1084,9 +1085,9 @@ public class LegendScheme {
             sr = new BufferedReader(new FileReader(aFile));
             this.shapeType = ShapeTypes.Image;
             this.legendType = LegendType.GraduatedColor;
-            this.legendBreaks = new ArrayList<ColorBreak>();
-            List<Color> colorList = new ArrayList<Color>();
-            List<Integer> values = new ArrayList<Integer>();
+            this.legendBreaks = new ArrayList<>();
+            List<Color> colorList = new ArrayList<>();
+            List<Integer> values = new ArrayList<>();
             ColorBreak aCB;
             String[] dataArray;
             sr.readLine();
@@ -1132,7 +1133,8 @@ public class LegendScheme {
             Logger.getLogger(LegendScheme.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
-                sr.close();
+                if (sr != null)
+                    sr.close();
             } catch (IOException ex) {
                 Logger.getLogger(LegendScheme.class.getName()).log(Level.SEVERE, null, ex);
             }

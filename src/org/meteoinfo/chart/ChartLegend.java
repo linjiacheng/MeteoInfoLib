@@ -654,8 +654,9 @@ public class ChartLegend {
                     PolylineBreak aPLB = (PolylineBreak) cb;
                     Draw.drawPolylineSymbol_S(new PointF(x, y), symbolWidth, symbolHeight, aPLB, g);
                 } else if (cb instanceof PolygonBreak) {
-                    Draw.drawPolygonSymbol(new PointF(x, y), cb.getColor(), Color.black, symbolWidth,
-                            symbolHeight, true, true, g);
+//                    Draw.drawPolygonSymbol(new PointF(x, y), cb.getColor(), Color.black, symbolWidth,
+//                            symbolHeight, true, true, g);
+                    Draw.drawPolygonSymbol(new PointF(x, y), symbolWidth, symbolHeight, (PolygonBreak)cb, g);
                 }
 //                switch (aLS.getShapeType()) {
 //                    case Point:

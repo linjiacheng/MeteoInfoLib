@@ -91,6 +91,7 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.TexturePaint;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -159,6 +160,7 @@ import org.meteoinfo.data.mapdata.webmap.GeoPosition;
 import org.meteoinfo.data.mapdata.webmap.Tile;
 import org.meteoinfo.data.mapdata.webmap.TileFactoryInfo;
 import org.meteoinfo.data.mapdata.webmap.WebMapProvider;
+import static org.meteoinfo.drawing.Draw.getHatchImage;
 import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.event.IShapeSelectedListener;
 import org.meteoinfo.global.event.IUndoEditListener;
@@ -5298,14 +5300,16 @@ public class MapView extends JPanel {
             if (isSelected) {
                 aColor = _selectColor;
             }
-//                Brush aBrush;
-//                if (aPGB.UsingHatchStyle)
-//                    aBrush = new HatchBrush(aPGB.Style, aColor, aPGB.BackColor);
-//                else
-//                    aBrush = new SolidBrush(aColor);
-
-            g.setColor(aColor);
-            g.fill(path);
+            if (aPGB.isUsingHatchStyle()){
+                int size = aPGB.getStyleSize();
+                BufferedImage bi = getHatchImage(aPGB.getStyle(), size, aPGB.getColor(), aPGB.getBackColor());
+                Rectangle2D rect = new Rectangle2D.Double(0, 0, size, size);
+                g.setPaint(new TexturePaint(bi, rect));
+                g.fill(path);
+            } else {
+                g.setColor(aColor);
+                g.fill(path);
+            }
         } else {
             if (isSelected) {
                 g.setColor(_selectColor);

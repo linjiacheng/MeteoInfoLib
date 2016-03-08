@@ -238,7 +238,7 @@ public class PolylineBreak extends ColorBreak {
      *
      * @return Boolean
      */
-    public boolean getUsingDashStyle() {
+    public boolean isUsingDashStyle() {
         switch (_style) {
             case Solid:
             case Dash:

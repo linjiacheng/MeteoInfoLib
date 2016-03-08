@@ -231,7 +231,7 @@ public class LayoutNorthArrow extends LayoutElement {
         points[0] = new PointF(x - w / 2, this.getHeight());
         points[1] = new PointF(x, this.getHeight() - h / 2);
         points[2] = new PointF(x, this.getHeight() - h);
-        Draw.fillPolygon(points, g);
+        Draw.fillPolygon(points, g, null);
 
         points = new PointF[4];
         points[0] = new PointF(x + w / 2, this.getHeight());

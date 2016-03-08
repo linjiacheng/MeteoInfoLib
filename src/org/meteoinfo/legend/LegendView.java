@@ -60,7 +60,7 @@ public class LegendView extends JPanel {
     private FrmPolylineSymbolSet _frmPolylineSymbolSet;
     private FrmPolygonSymbolSet _frmPolygonSymbolSet;
     private FrmColorSymbolSet _frmColorSymbolSet;
-    private List<Integer> _selectedRows = new ArrayList<Integer>();
+    private List<Integer> _selectedRows = new ArrayList<>();
     private int _startRow = -1;
     private ColorBreak _curBreak = null;
     private JScrollBar _vScrollBar;
@@ -625,6 +625,21 @@ public class LegendView extends JPanel {
                 PolylineBreak aPLB = (PolylineBreak)_legendScheme.getLegendBreaks().get(rowIdx);
                 aPLB.setStyle(style);
                 //_legendScheme.LegendBreaks[rowIdx] = aPLB;
+            }
+
+            this.repaint();
+        }
+        
+        /**
+         * Set legend break polygon style
+         * @param style The polygon style
+         */
+        public void setLegendBreak_PolygonStyle(HatchStyle style)
+        {
+            for (int rowIdx : _selectedRows)
+            {                
+                PolygonBreak aPLB = (PolygonBreak)_legendScheme.getLegendBreaks().get(rowIdx);
+                aPLB.setStyle(style);
             }
 
             this.repaint();
