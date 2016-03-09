@@ -13,7 +13,7 @@ import org.meteoinfo.geoprocess.GeoComputation;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
 import org.meteoinfo.layer.VectorLayer;
-import org.meteoinfo.shape.PolygonShape;
+import org.meteoinfo.geom.PolygonShape;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
 import ucar.ma2.Index;

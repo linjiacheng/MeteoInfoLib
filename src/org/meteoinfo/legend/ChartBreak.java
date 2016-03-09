@@ -17,7 +17,7 @@ import java.awt.Color;
 import java.awt.Font;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.PointF;
-import org.meteoinfo.shape.ShapeTypes;
+import org.meteoinfo.geom.ShapeTypes;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

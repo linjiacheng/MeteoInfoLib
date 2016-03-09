@@ -31,10 +31,10 @@ import org.meteoinfo.legend.PointBreak;
 import org.meteoinfo.legend.PolygonBreak;
 import org.meteoinfo.legend.PolylineBreak;
 import org.meteoinfo.legend.VectorBreak;
-import org.meteoinfo.shape.Graphic;
-import org.meteoinfo.shape.PointShape;
-import org.meteoinfo.shape.ShapeTypes;
-import org.meteoinfo.shape.WindArrow;
+import org.meteoinfo.geom.Graphic;
+import org.meteoinfo.geom.PointShape;
+import org.meteoinfo.geom.ShapeTypes;
+import org.meteoinfo.geom.WindArrow;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -45,7 +45,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import org.meteoinfo.global.DataConvert;
-import org.meteoinfo.shape.EllipseShape;
+import org.meteoinfo.geom.EllipseShape;
 
 /**
  *

@@ -15,8 +15,8 @@ import javax.swing.undo.AbstractUndoableEdit;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.PointD;
 import org.meteoinfo.layer.VectorLayer;
-import org.meteoinfo.shape.Graphic;
-import org.meteoinfo.shape.Shape;
+import org.meteoinfo.geom.Graphic;
+import org.meteoinfo.geom.Shape;
 import org.meteoinfo.table.DataRow;
 
 /**

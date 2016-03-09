@@ -5,7 +5,7 @@
 package org.meteoinfo.legend;
 
 import org.meteoinfo.layer.FrmLayerProperty;
-import org.meteoinfo.shape.ShapeTypes;
+import org.meteoinfo.geom.ShapeTypes;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.io.IOException;

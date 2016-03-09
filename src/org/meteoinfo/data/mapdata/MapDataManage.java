@@ -27,8 +27,8 @@ import org.meteoinfo.layer.MapLayer;
 import org.meteoinfo.layer.VectorLayer;
 import org.meteoinfo.layer.WorldFilePara;
 import org.meteoinfo.legend.LegendManage;
-import org.meteoinfo.shape.PolylineShape;
-import org.meteoinfo.shape.ShapeTypes;
+import org.meteoinfo.geom.PolylineShape;
+import org.meteoinfo.geom.ShapeTypes;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
@@ -54,12 +54,12 @@ import org.meteoinfo.layer.RasterLayer;
 import org.meteoinfo.legend.LegendScheme;
 import org.meteoinfo.legend.LegendType;
 import org.meteoinfo.projection.ProjectionInfo;
-import org.meteoinfo.shape.PointShape;
-import org.meteoinfo.shape.PolygonShape;
-import org.meteoinfo.shape.Shape;
-import static org.meteoinfo.shape.ShapeTypes.Point;
-import static org.meteoinfo.shape.ShapeTypes.Polygon;
-import static org.meteoinfo.shape.ShapeTypes.Polyline;
+import org.meteoinfo.geom.PointShape;
+import org.meteoinfo.geom.PolygonShape;
+import org.meteoinfo.geom.Shape;
+import static org.meteoinfo.geom.ShapeTypes.Point;
+import static org.meteoinfo.geom.ShapeTypes.Polygon;
+import static org.meteoinfo.geom.ShapeTypes.Polyline;
 
 /**
  *

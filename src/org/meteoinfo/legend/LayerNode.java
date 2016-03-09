@@ -16,7 +16,7 @@ package org.meteoinfo.legend;
 import org.meteoinfo.layer.LayerTypes;
 import org.meteoinfo.layer.MapLayer;
 import org.meteoinfo.layer.VectorLayer;
-import org.meteoinfo.shape.ShapeTypes;
+import org.meteoinfo.geom.ShapeTypes;
 import java.util.ArrayList;
 import java.util.List;
 

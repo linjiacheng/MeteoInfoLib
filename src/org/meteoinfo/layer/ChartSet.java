@@ -18,7 +18,7 @@ import java.awt.Font;
 import org.meteoinfo.legend.AlignType;
 import org.meteoinfo.legend.ChartTypes;
 import org.meteoinfo.legend.LegendScheme;
-import org.meteoinfo.shape.ShapeTypes;
+import org.meteoinfo.geom.ShapeTypes;
 import java.util.ArrayList;
 import java.util.List;
 

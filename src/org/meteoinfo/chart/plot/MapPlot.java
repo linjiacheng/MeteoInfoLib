@@ -31,10 +31,10 @@ import org.meteoinfo.map.MapView;
 import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.projection.Reproject;
-import org.meteoinfo.shape.Graphic;
-import org.meteoinfo.shape.PointShape;
-import org.meteoinfo.shape.PolygonShape;
-import org.meteoinfo.shape.PolylineShape;
+import org.meteoinfo.geom.Graphic;
+import org.meteoinfo.geom.PointShape;
+import org.meteoinfo.geom.PolygonShape;
+import org.meteoinfo.geom.PolylineShape;
 
 /**
  *

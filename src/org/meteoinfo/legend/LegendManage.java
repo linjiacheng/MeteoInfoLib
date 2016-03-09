@@ -18,7 +18,7 @@ import org.meteoinfo.data.StationData;
 import org.meteoinfo.drawing.ContourDraw;
 import org.meteoinfo.drawing.PointStyle;
 import org.meteoinfo.global.MIMath;
-import org.meteoinfo.shape.ShapeTypes;
+import org.meteoinfo.geom.ShapeTypes;
 import java.awt.Color;
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -32,10 +32,10 @@ import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.colors.ColorMap;
 import org.meteoinfo.global.colors.ColorUtil;
 import org.meteoinfo.layer.VectorLayer;
-import org.meteoinfo.shape.PointShape;
-import org.meteoinfo.shape.PolygonShape;
-import org.meteoinfo.shape.PolylineShape;
-import org.meteoinfo.shape.Shape;
+import org.meteoinfo.geom.PointShape;
+import org.meteoinfo.geom.PolygonShape;
+import org.meteoinfo.geom.PolylineShape;
+import org.meteoinfo.geom.Shape;
 
 /**
  * Legend manage class

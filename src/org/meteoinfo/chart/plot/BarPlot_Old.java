@@ -23,7 +23,7 @@ import org.meteoinfo.global.PointF;
 import org.meteoinfo.global.colors.ColorUtil;
 import org.meteoinfo.legend.LegendScheme;
 import org.meteoinfo.legend.PolygonBreak;
-import org.meteoinfo.shape.ShapeTypes;
+import org.meteoinfo.geom.ShapeTypes;
 
 /**
  *

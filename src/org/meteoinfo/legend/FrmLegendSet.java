@@ -5,7 +5,7 @@
 package org.meteoinfo.legend;
 
 import org.meteoinfo.global.GenericFileFilter;
-import org.meteoinfo.shape.ShapeTypes;
+import org.meteoinfo.geom.ShapeTypes;
 import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
