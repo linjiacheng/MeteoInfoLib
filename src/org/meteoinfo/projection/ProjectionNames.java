@@ -29,7 +29,7 @@ public enum ProjectionNames {
         /// <summary>
         /// Lambert azimuthal equal area
         /// </summary>
-        //Lambert_Azimuthal_Equal_Area,
+        Lambert_Azimuthal_Equal_Area,
         //Lambert_Equal_Area_Conic,
         /// <summary>
         /// Albers conic equal area
