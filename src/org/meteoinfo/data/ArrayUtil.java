@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -217,6 +218,9 @@ public class ArrayUtil {
             }
             dt = ArrayUtil.toDataType(dataType);
         }
+        DataType ndt = dt;
+        if (dt == DataType.BYTE)
+            ndt = DataType.INT;
         
         ByteOrder bOrder = ByteOrder.LITTLE_ENDIAN;
         if (byteOrder.equalsIgnoreCase("big_endian"))
@@ -226,7 +230,7 @@ public class ArrayUtil {
         for (int i = 0; i < dims.size(); i++) {
             shape[i] = dims.get(i);
         }
-        Array r = Array.factory(dt, shape);
+        Array r = Array.factory(ndt, shape);
         IndexIterator iter = r.getIndexIterator();
         try {
             DataInputStream ins = new DataInputStream(new FileInputStream(fn));
@@ -237,8 +241,9 @@ public class ArrayUtil {
             switch (dt) {
                 case BYTE:
                     bytes = new byte[(int)r.getSize()];
+                    ins.read(bytes);
                     for (int i = 0; i < r.getSize(); i++){
-                        r.setByte(i, bytes[i]);
+                        r.setInt(i, DataConvert.byte2Int(bytes[i]));
                     }
                     break;
                 case SHORT:
@@ -511,6 +516,50 @@ public class ArrayUtil {
         Array a = Array.factory(dt, ashape);
         for (int i = 0; i < a.getSize(); i++) {
             a.setObject(i, 1);
+        }
+
+        return a;
+    }
+    
+    /**
+     * Get random value
+     * @return Random value
+     */
+    public static double rand(){
+        Random r = new Random();
+        return r.nextDouble();
+    }
+    
+    /**
+     * Get random array - one dimension
+     * @param n Array length
+     * @return Result array
+     */
+    public static Array rand(int n){
+        Array r = Array.factory(DataType.DOUBLE, new int[]{n});
+        Random rd = new Random();
+        for (int i = 0; i < r.getSize(); i++){
+            r.setDouble(i, rd.nextDouble());
+        }
+        
+        return r;
+    }
+    
+    /**
+     * Get random array
+     *
+     * @param shape Shape
+     * @return Array Result array
+     */
+    public static Array rand(List<Integer> shape) {
+        int[] ashape = new int[shape.size()];
+        for (int i = 0; i < shape.size(); i++) {
+            ashape[i] = shape.get(i);
+        }
+        Array a = Array.factory(DataType.DOUBLE, ashape);
+        Random rd = new Random();
+        for (int i = 0; i < a.getSize(); i++) {
+            a.setDouble(i, rd.nextDouble());
         }
 
         return a;
