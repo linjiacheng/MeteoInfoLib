@@ -11,61 +11,59 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
  * General Public License for more details.
  */
-package org.meteoinfo.geom;
+package org.meteoinfo.shape;
 
 /**
- * Curve line shape class
+ * Ellipse shape class
  * 
- * @author Yaqiang
+ * @author Yaqiang Wang
  */
-public class CurveLineShape extends PolylineShape {
+public class EllipseShape extends PolygonShape {
     // <editor-fold desc="Variables">
+    private float angle = 0.0f;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
     /**
      * Constructor
      */
-    public CurveLineShape() {
-        this.setShapeType(ShapeTypes.CurveLine);
+    public EllipseShape() {
+        this.setShapeType(ShapeTypes.Ellipse);
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
+    /**
+     * Get angle
+     * @return Angle
+     */
+    public float getAngle(){
+        return this.angle;
+    }
+    
+    /**
+     * Set angle
+     * @param value Angle
+     */
+    public void setAngle(float value){
+        this.angle = value;
+    }
     // </editor-fold>
     // <editor-fold desc="Methods">
 
     /**
      * Clone
      * 
-     * @return CurveLineShape
+     * @return EllipseShape
      */
     @Override
     public Object clone() {
-        CurveLineShape aPLS = new CurveLineShape();
-        aPLS.value = value;
-        aPLS.setExtent(this.getExtent());
-        aPLS.setPartNum(this.getPartNum());
-        aPLS.parts = (int[]) parts.clone();
-        aPLS.setPoints(this.getPoints());
-        aPLS.setVisible(this.isVisible());
-        aPLS.setSelected(this.isSelected());
+        EllipseShape aPGS = new EllipseShape();
+        aPGS.setExtent(this.getExtent());        
+        aPGS.setPoints(this.getPoints());
+        aPGS.setVisible(this.isVisible());
+        aPGS.setSelected(this.isSelected());
         
-        return aPLS;
-    }
-
-    /**
-     * Value clone
-     * 
-     * @return CurveLineShape 
-     */
-    @Override
-    public CurveLineShape valueClone() {
-        CurveLineShape aPLS = new CurveLineShape();
-        aPLS.value = value;        
-        aPLS.setVisible(this.isVisible());
-        aPLS.setSelected(this.isSelected());
-        
-        return aPLS;
+        return aPGS;
     }
     // </editor-fold>
 }

@@ -19,13 +19,13 @@ import org.meteoinfo.io.EndianDataOutputStream;
 import org.meteoinfo.layer.LayerDrawType;
 import org.meteoinfo.layer.VectorLayer;
 import org.meteoinfo.legend.LegendManage;
-import org.meteoinfo.geom.PointShape;
-import org.meteoinfo.geom.PointZ;
-import org.meteoinfo.geom.PolygonShape;
-import org.meteoinfo.geom.PolylineShape;
-import org.meteoinfo.geom.PolylineZShape;
-import org.meteoinfo.geom.Shape;
-import org.meteoinfo.geom.ShapeTypes;
+import org.meteoinfo.shape.PointShape;
+import org.meteoinfo.shape.PointZ;
+import org.meteoinfo.shape.PolygonShape;
+import org.meteoinfo.shape.PolylineShape;
+import org.meteoinfo.shape.PolylineZShape;
+import org.meteoinfo.shape.Shape;
+import org.meteoinfo.shape.ShapeTypes;
 import java.awt.Color;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -48,8 +48,8 @@ import java.util.logging.Logger;
 import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.projection.proj4j.CRSFactory;
 import org.meteoinfo.projection.proj4j.CoordinateReferenceSystem;
-import org.meteoinfo.geom.PointM;
-import org.meteoinfo.geom.PolygonMShape;
+import org.meteoinfo.shape.PointM;
+import org.meteoinfo.shape.PolygonMShape;
 
 /**
  * Shape file read and write

@@ -16,7 +16,7 @@ package org.meteoinfo.layer;
 import com.l2fprod.common.beans.BaseBeanInfo;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.util.GlobalUtil;
-import org.meteoinfo.geom.ShapeTypes;
+import org.meteoinfo.shape.ShapeTypes;
 import java.awt.Color;
 import java.awt.Image;
 import java.awt.image.BufferedImage;

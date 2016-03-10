@@ -1,4 +1,4 @@
- /* Copyright 2012 Yaqiang Wang,
+/* Copyright 2012 Yaqiang Wang,
  * yaqiang.wang@gmail.com
  * 
  * This library is free software; you can redistribute it and/or modify it
@@ -11,36 +11,39 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
  * General Public License for more details.
  */
-package org.meteoinfo.geom;
+package org.meteoinfo.shape;
 
 /**
- * Wind arraw class
  *
- * @author Yaqiang
+ * @author Yaqiang Wang
  */
-public class WindArrow extends PointShape {
+public class WindBarb extends PointShape {
     // <editor-fold desc="Variables">
 
-    /**
-     * Size
-     */
-    public float size = 6;
-    /**
-     * Length
-     */
-    public float length = 20;
-    /**
-     * Angle
-     */
-    public double angle = 270;
+    /// <summary>
+    /// size
+    /// </summary>
+    public float size;
+    /// <summary>
+    /// angle
+    /// </summary>
+    public double angle;
+    /// <summary>
+    /// wind speed
+    /// </summary>
+    public float windSpeed;
+    /// <summary>
+    /// wind speed line
+    /// </summary>
+    public WindSpeedLine windSpeesLine = new WindSpeedLine();
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
     /**
      * Constructor
      */
-    public WindArrow() {
-        this.setShapeType(ShapeTypes.WindArraw);
+    public WindBarb() {
+        this.setShapeType(ShapeTypes.WindBarb);
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -54,14 +57,15 @@ public class WindArrow extends PointShape {
      */
     @Override
     public Object clone() {
-        WindArrow aWA = new WindArrow();
-        aWA.size = size;
-        aWA.length = length;
-        aWA.angle = angle;
-        aWA.setPoint(this.getPoint());
-        aWA.setValue(this.getValue());
-        
-        return aWA;
+        WindBarb aWB = new WindBarb();
+        aWB.size = size;
+        aWB.windSpeed = windSpeed;
+        aWB.angle = angle;
+        aWB.windSpeesLine = windSpeesLine;
+        aWB.setPoint(this.getPoint());
+        aWB.setValue(this.getValue());
+
+        return aWB;
     }
     // </editor-fold>
 }

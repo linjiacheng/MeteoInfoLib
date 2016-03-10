@@ -49,17 +49,17 @@ import org.meteoinfo.legend.PointBreak;
 import org.meteoinfo.legend.PolygonBreak;
 import org.meteoinfo.legend.PolylineBreak;
 import org.meteoinfo.map.FrmIdentifer;
-import org.meteoinfo.geom.CircleShape;
-import org.meteoinfo.geom.CurveLineShape;
-import org.meteoinfo.geom.CurvePolygonShape;
-import org.meteoinfo.geom.EllipseShape;
-import org.meteoinfo.geom.Graphic;
-import org.meteoinfo.geom.PointShape;
-import org.meteoinfo.geom.PolygonShape;
-import org.meteoinfo.geom.PolylineShape;
-import org.meteoinfo.geom.RectangleShape;
-import org.meteoinfo.geom.ShapeTypes;
-import org.meteoinfo.geom.WindArrow;
+import org.meteoinfo.shape.CircleShape;
+import org.meteoinfo.shape.CurveLineShape;
+import org.meteoinfo.shape.CurvePolygonShape;
+import org.meteoinfo.shape.EllipseShape;
+import org.meteoinfo.shape.Graphic;
+import org.meteoinfo.shape.PointShape;
+import org.meteoinfo.shape.PolygonShape;
+import org.meteoinfo.shape.PolylineShape;
+import org.meteoinfo.shape.RectangleShape;
+import org.meteoinfo.shape.ShapeTypes;
+import org.meteoinfo.shape.WindArrow;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -133,7 +133,7 @@ import org.meteoinfo.layer.RasterLayer;
 import org.meteoinfo.legend.VectorBreak;
 import org.meteoinfo.map.FrmIdentiferGrid;
 import org.meteoinfo.map.MapView;
-import org.meteoinfo.geom.Shape;
+import org.meteoinfo.shape.Shape;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -588,7 +588,7 @@ public class MapLayout extends JPanel {
                                             List<Integer> selectedShapes = _currentLayoutMap.getMapFrame().getMapView().selectShapes(aLayer, aPoint);
                                             if (selectedShapes.size() > 0) {
                                                 int shapeIdx = selectedShapes.get(0);
-                                                org.meteoinfo.geom.Shape aShape = aLayer.getShapes().get(shapeIdx);
+                                                org.meteoinfo.shape.Shape aShape = aLayer.getShapes().get(shapeIdx);
                                                 aLayer.setIdentiferShape(shapeIdx);
                                                 _currentLayoutMap.getMapFrame().getMapView().setDrawIdentiferShape(true);
                                                 this.repaint();
@@ -3360,7 +3360,7 @@ public class MapLayout extends JPanel {
         return rect;
     }
 
-    private int selectEditVertices(Point aPoint, org.meteoinfo.geom.Shape aShape, List<PointD> vertices) {
+    private int selectEditVertices(Point aPoint, org.meteoinfo.shape.Shape aShape, List<PointD> vertices) {
         List<PointD> points = (List<PointD>) aShape.getPoints();
         int buffer = 4;
         Rectangle rect = new Rectangle(aPoint.x - buffer / 2, aPoint.y - buffer / 2, buffer, buffer);

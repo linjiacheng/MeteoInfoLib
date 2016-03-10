@@ -12,7 +12,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
  * General Public License for more details.
  */
-package org.meteoinfo.geom;
+package org.meteoinfo.shape;
 
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.PointD;

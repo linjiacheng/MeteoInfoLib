@@ -8,13 +8,13 @@ import org.meteoinfo.data.mapdata.Field;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.legend.AlignType;
 import org.meteoinfo.map.MapView;
-import org.meteoinfo.geom.ShapeTypes;
+import org.meteoinfo.shape.ShapeTypes;
 import com.l2fprod.common.swing.JFontChooser;
 import java.awt.Color;
 import java.awt.Font;
 import javax.swing.JColorChooser;
 import org.meteoinfo.legend.LabelBreak;
-import org.meteoinfo.geom.Graphic;
+import org.meteoinfo.shape.Graphic;
 
 /**
  *

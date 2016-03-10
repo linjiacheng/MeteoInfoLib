@@ -1,4 +1,4 @@
-/* Copyright 2012 Yaqiang Wang,
+ /* Copyright 2012 Yaqiang Wang,
  * yaqiang.wang@gmail.com
  * 
  * This library is free software; you can redistribute it and/or modify it
@@ -11,47 +11,36 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
  * General Public License for more details.
  */
-package org.meteoinfo.geom;
-
-import org.meteoinfo.global.PointD;
+package org.meteoinfo.shape;
 
 /**
+ * Wind arraw class
  *
- * @author yaqiang
+ * @author Yaqiang
  */
-public class PointZ extends PointD implements Cloneable{
+public class WindArrow extends PointShape {
     // <editor-fold desc="Variables">
 
     /**
-     * Z coordinate
+     * Size
      */
-    public double Z;
+    public float size = 6;
     /**
-     * Measure
+     * Length
      */
-    public double M;
+    public float length = 20;
+    /**
+     * Angle
+     */
+    public double angle = 270;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
     /**
      * Constructor
      */
-    public PointZ() {
-    }
-
-    /**
-     * Constructor
-     *
-     * @param x X
-     * @param y Y
-     * @param z Z
-     * @param m M
-     */
-    public PointZ(double x, double y, double z, double m) {
-        X = x;
-        Y = y;
-        Z = z;
-        M = m;
+    public WindArrow() {
+        this.setShapeType(ShapeTypes.WindArraw);
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -59,22 +48,20 @@ public class PointZ extends PointD implements Cloneable{
     // <editor-fold desc="Methods">
 
     /**
-     * Convert to PointD
-     *
-     * @return PointD
-     */
-    public PointD toPointD() {
-        return new PointD(X, Y);
-    }
-    
-    /**
      * Clone
-     * 
-     * @return PointZ object
+     *
+     * @return WindArraw object
      */
     @Override
     public Object clone() {
-        return (PointZ)super.clone();
+        WindArrow aWA = new WindArrow();
+        aWA.size = size;
+        aWA.length = length;
+        aWA.angle = angle;
+        aWA.setPoint(this.getPoint());
+        aWA.setValue(this.getValue());
+        
+        return aWA;
     }
     // </editor-fold>
 }

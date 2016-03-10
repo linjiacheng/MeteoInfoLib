@@ -43,9 +43,9 @@ import org.meteoinfo.layer.VectorLayer;
 import org.meteoinfo.legend.LegendManage;
 import org.meteoinfo.legend.LegendScheme;
 import org.meteoinfo.legend.LegendType;
-import org.meteoinfo.geom.PointShape;
-import org.meteoinfo.geom.PolylineShape;
-import org.meteoinfo.geom.ShapeTypes;
+import org.meteoinfo.shape.PointShape;
+import org.meteoinfo.shape.PolylineShape;
+import org.meteoinfo.shape.ShapeTypes;
 import ucar.ma2.Array;
 
 /**

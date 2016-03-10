@@ -31,12 +31,12 @@ import org.meteoinfo.legend.LabelBreak;
 import org.meteoinfo.legend.LegendType;
 import org.meteoinfo.legend.PolygonBreak;
 import org.meteoinfo.legend.PolylineBreak;
-import org.meteoinfo.geom.Graphic;
-import org.meteoinfo.geom.PointShape;
-import org.meteoinfo.geom.PolygonShape;
-import org.meteoinfo.geom.PolylineShape;
-import org.meteoinfo.geom.Shape;
-import org.meteoinfo.geom.ShapeTypes;
+import org.meteoinfo.shape.Graphic;
+import org.meteoinfo.shape.PointShape;
+import org.meteoinfo.shape.PolygonShape;
+import org.meteoinfo.shape.PolylineShape;
+import org.meteoinfo.shape.Shape;
+import org.meteoinfo.shape.ShapeTypes;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -65,13 +65,13 @@ import org.meteoinfo.table.DataTable;
 import org.meteoinfo.legend.LegendManage;
 import org.meteoinfo.legend.LegendScheme;
 import org.meteoinfo.legend.PointBreak;
-import org.meteoinfo.geom.ChartGraphic;
+import org.meteoinfo.shape.ChartGraphic;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
-import org.meteoinfo.geom.PointZShape;
-import org.meteoinfo.geom.Polygon;
-import org.meteoinfo.geom.Polyline;
-import org.meteoinfo.geom.PolylineZShape;
+import org.meteoinfo.shape.PointZShape;
+import org.meteoinfo.shape.Polygon;
+import org.meteoinfo.shape.Polyline;
+import org.meteoinfo.shape.PolylineZShape;
 
 /**
  * Vector layer class

@@ -38,7 +38,7 @@ import java.util.List;
 import org.meteoinfo.chart.plot.PlotOrientation;
 import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.legend.LegendType;
-import org.meteoinfo.geom.ShapeTypes;
+import org.meteoinfo.shape.ShapeTypes;
 
 /**
  *

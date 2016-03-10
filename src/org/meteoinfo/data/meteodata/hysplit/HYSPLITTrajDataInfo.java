@@ -46,10 +46,10 @@ import org.meteoinfo.legend.LegendManage;
 import org.meteoinfo.legend.LegendScheme;
 import org.meteoinfo.legend.LegendType;
 import org.meteoinfo.legend.PolylineBreak;
-import org.meteoinfo.geom.PointShape;
-import org.meteoinfo.geom.PointZ;
-import org.meteoinfo.geom.PolylineZShape;
-import org.meteoinfo.geom.ShapeTypes;
+import org.meteoinfo.shape.PointShape;
+import org.meteoinfo.shape.PointZ;
+import org.meteoinfo.shape.PolylineZShape;
+import org.meteoinfo.shape.ShapeTypes;
 import ucar.ma2.Array;
 
 /**

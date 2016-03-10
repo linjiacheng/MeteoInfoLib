@@ -18,11 +18,11 @@ import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
 import org.meteoinfo.map.GridLabel;
-import org.meteoinfo.geom.Line;
-import org.meteoinfo.geom.Polygon;
-import org.meteoinfo.geom.PolygonShape;
-import org.meteoinfo.geom.Polyline;
-import org.meteoinfo.geom.PolylineShape;
+import org.meteoinfo.shape.Line;
+import org.meteoinfo.shape.Polygon;
+import org.meteoinfo.shape.PolygonShape;
+import org.meteoinfo.shape.Polyline;
+import org.meteoinfo.shape.PolylineShape;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,8 +34,8 @@ import org.meteoinfo.table.DataColumn;
 import org.meteoinfo.table.DataRow;
 import org.meteoinfo.table.DataTable;
 import org.meteoinfo.layer.VectorLayer;
-import org.meteoinfo.geom.PointShape;
-import org.meteoinfo.geom.Shape;
+import org.meteoinfo.shape.PointShape;
+import org.meteoinfo.shape.Shape;
 
 /**
  * GeoComputation class

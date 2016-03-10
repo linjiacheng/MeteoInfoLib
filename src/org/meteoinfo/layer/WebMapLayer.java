@@ -46,7 +46,7 @@ import org.meteoinfo.data.mapdata.webmap.YahooMapInfo;
 import org.meteoinfo.data.mapdata.webmap.YahooSatelliteMapInfo;
 import org.meteoinfo.data.mapdata.webmap.empty.EmptyTileFactory;
 import org.meteoinfo.global.Extent;
-import org.meteoinfo.geom.ShapeTypes;
+import org.meteoinfo.shape.ShapeTypes;
 
 /**
  *

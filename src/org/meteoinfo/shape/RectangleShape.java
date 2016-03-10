@@ -11,40 +11,25 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
  * General Public License for more details.
  */
-package org.meteoinfo.geom;
+package org.meteoinfo.shape;
 
 import org.meteoinfo.global.PointD;
+import java.util.ArrayList;
 
 /**
  *
  * @author yaqiang
  */
-public class PointM extends PointD {
+public class RectangleShape extends PolygonShape {
     // <editor-fold desc="Variables">
-    /**
-     * Measure
-     */
-    public double M;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
     /**
      * Constructor
      */
-    public PointM() {
-    }
-
-    /**
-     * Constructor
-     *
-     * @param x X
-     * @param y Y
-     * @param m M
-     */
-    public PointM(double x, double y, double m) {
-        X = x;
-        Y = y;
-        M = m;
+    public RectangleShape() {
+        this.setShapeType(ShapeTypes.Rectangle);
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -52,12 +37,19 @@ public class PointM extends PointD {
     // <editor-fold desc="Methods">
 
     /**
-     * Convert to PointD
+     * Clone
      *
-     * @return PointD
+     * @return RectangleShape object
      */
-    public PointD toPointD() {
-        return new PointD(X, Y);
+    @Override
+    public Object clone() {
+        RectangleShape aPGS = new RectangleShape();
+        aPGS.setExtent(this.getExtent());
+        aPGS.setPoints(new ArrayList<PointD>(this.getPoints()));
+        aPGS.setVisible(this.isVisible());
+        aPGS.setSelected(this.isSelected());
+
+        return aPGS;
     }
     // </editor-fold>
 }

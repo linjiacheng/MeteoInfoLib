@@ -11,31 +11,40 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
  * General Public License for more details.
  */
-package org.meteoinfo.geom;
+package org.meteoinfo.shape;
+
+import org.meteoinfo.global.PointD;
 
 /**
  *
- * @author Yaqiang Wang
+ * @author yaqiang
  */
-public class WeatherSymbol extends PointShape {
+public class PointM extends PointD {
     // <editor-fold desc="Variables">
-
-    /// <summary>
-    /// size
-    /// </summary>
-    public float size;
-    /// <summary>
-    /// Weather
-    /// </summary>
-    public int weather;
+    /**
+     * Measure
+     */
+    public double M;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
     /**
      * Constructor
      */
-    public WeatherSymbol() {
-        this.setShapeType(ShapeTypes.WeatherSymbol);
+    public PointM() {
+    }
+
+    /**
+     * Constructor
+     *
+     * @param x X
+     * @param y Y
+     * @param m M
+     */
+    public PointM(double x, double y, double m) {
+        X = x;
+        Y = y;
+        M = m;
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -43,19 +52,12 @@ public class WeatherSymbol extends PointShape {
     // <editor-fold desc="Methods">
 
     /**
-     * Clone
+     * Convert to PointD
      *
-     * @return WindArraw object
+     * @return PointD
      */
-    @Override
-    public Object clone() {
-        WeatherSymbol aWS = new WeatherSymbol();
-        aWS.size = size;
-        aWS.weather = weather;
-        aWS.setPoint(this.getPoint());
-        aWS.setValue(this.getValue());
-
-        return aWS;
+    public PointD toPointD() {
+        return new PointD(X, Y);
     }
     // </editor-fold>
 }

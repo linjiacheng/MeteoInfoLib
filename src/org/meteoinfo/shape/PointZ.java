@@ -11,25 +11,47 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
  * General Public License for more details.
  */
-package org.meteoinfo.geom;
+package org.meteoinfo.shape;
 
 import org.meteoinfo.global.PointD;
-import java.util.ArrayList;
 
 /**
  *
  * @author yaqiang
  */
-public class RectangleShape extends PolygonShape {
+public class PointZ extends PointD implements Cloneable{
     // <editor-fold desc="Variables">
+
+    /**
+     * Z coordinate
+     */
+    public double Z;
+    /**
+     * Measure
+     */
+    public double M;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
     /**
      * Constructor
      */
-    public RectangleShape() {
-        this.setShapeType(ShapeTypes.Rectangle);
+    public PointZ() {
+    }
+
+    /**
+     * Constructor
+     *
+     * @param x X
+     * @param y Y
+     * @param z Z
+     * @param m M
+     */
+    public PointZ(double x, double y, double z, double m) {
+        X = x;
+        Y = y;
+        Z = z;
+        M = m;
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -37,19 +59,22 @@ public class RectangleShape extends PolygonShape {
     // <editor-fold desc="Methods">
 
     /**
-     * Clone
+     * Convert to PointD
      *
-     * @return RectangleShape object
+     * @return PointD
+     */
+    public PointD toPointD() {
+        return new PointD(X, Y);
+    }
+    
+    /**
+     * Clone
+     * 
+     * @return PointZ object
      */
     @Override
     public Object clone() {
-        RectangleShape aPGS = new RectangleShape();
-        aPGS.setExtent(this.getExtent());
-        aPGS.setPoints(new ArrayList<PointD>(this.getPoints()));
-        aPGS.setVisible(this.isVisible());
-        aPGS.setSelected(this.isSelected());
-
-        return aPGS;
+        return (PointZ)super.clone();
     }
     // </editor-fold>
 }

@@ -19,7 +19,7 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 import org.meteoinfo.global.util.BigDecimalUtil;
-import org.meteoinfo.geom.Shape;
+import org.meteoinfo.shape.Shape;
 
 /**
  * MeteoInfo Math class

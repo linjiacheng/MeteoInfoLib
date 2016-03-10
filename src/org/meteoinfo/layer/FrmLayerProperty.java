@@ -16,7 +16,7 @@ import org.meteoinfo.legend.MapFrame;
 import org.meteoinfo.legend.PointBreak;
 import org.meteoinfo.legend.PolygonBreak;
 import org.meteoinfo.legend.PolylineBreak;
-import org.meteoinfo.geom.ShapeTypes;
+import org.meteoinfo.shape.ShapeTypes;
 import com.l2fprod.common.model.DefaultBeanInfoResolver;
 import com.l2fprod.common.propertysheet.PropertySheet;
 import com.l2fprod.common.propertysheet.PropertySheetPanel;

@@ -243,7 +243,7 @@ public class FrmPolygonSymbolSet extends javax.swing.JDialog {
 
         symbolControl1.setCellSize(new java.awt.Dimension(50, 40));
         symbolControl1.setPreferredSize(new java.awt.Dimension(200, 50));
-        symbolControl1.setShapeType(org.meteoinfo.geom.ShapeTypes.Polygon);
+        symbolControl1.setShapeType(org.meteoinfo.shape.ShapeTypes.Polygon);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

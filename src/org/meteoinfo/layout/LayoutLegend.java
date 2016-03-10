@@ -28,7 +28,7 @@ import org.meteoinfo.legend.LegendType;
 import org.meteoinfo.legend.PointBreak;
 import org.meteoinfo.legend.PolygonBreak;
 import org.meteoinfo.legend.PolylineBreak;
-import org.meteoinfo.geom.ShapeTypes;
+import org.meteoinfo.shape.ShapeTypes;
 import com.l2fprod.common.beans.BaseBeanInfo;
 import com.l2fprod.common.beans.ExtendedPropertyDescriptor;
 import com.l2fprod.common.beans.editor.ComboBoxPropertyEditor;

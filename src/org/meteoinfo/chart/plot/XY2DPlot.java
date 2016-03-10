@@ -15,8 +15,8 @@ import org.meteoinfo.global.PointD;
 import org.meteoinfo.layer.MapLayer;
 import org.meteoinfo.legend.LabelBreak;
 import org.meteoinfo.map.MapView;
-import org.meteoinfo.geom.Graphic;
-import org.meteoinfo.geom.PointShape;
+import org.meteoinfo.shape.Graphic;
+import org.meteoinfo.shape.PointShape;
 
 /**
  *

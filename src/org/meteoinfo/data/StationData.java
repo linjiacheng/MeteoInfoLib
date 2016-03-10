@@ -31,8 +31,8 @@ import org.meteoinfo.global.PointD;
 import org.meteoinfo.layer.VectorLayer;
 import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.projection.Reproject;
-import org.meteoinfo.geom.PolygonShape;
-import org.meteoinfo.geom.ShapeTypes;
+import org.meteoinfo.shape.PolygonShape;
+import org.meteoinfo.shape.ShapeTypes;
 import ucar.ma2.Array;
 
 /**

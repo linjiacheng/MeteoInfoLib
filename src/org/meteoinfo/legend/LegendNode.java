@@ -13,7 +13,7 @@
  */
 package org.meteoinfo.legend;
 
-import org.meteoinfo.geom.ShapeTypes;
+import org.meteoinfo.shape.ShapeTypes;
 
 /**
  *

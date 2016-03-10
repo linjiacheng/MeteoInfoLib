@@ -11,39 +11,51 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
  * General Public License for more details.
  */
-package org.meteoinfo.geom;
+package org.meteoinfo.shape;
 
 /**
  *
- * @author Yaqiang Wang
+ * @author Yaqiang
  */
-public class WindBarb extends PointShape {
+public class StationModelShape extends PointShape {
     // <editor-fold desc="Variables">
 
     /// <summary>
-    /// size
+    /// Wind barb
+    /// </summary>
+    public WindBarb windBarb = new WindBarb();
+    /// <summary>
+    /// Weather symbol
+    /// </summary>
+    public WeatherSymbol weatherSymbol = new WeatherSymbol();
+    /// <summary>
+    /// Cloud coverage
+    /// </summary>
+    public CloudCoverage cloudCoverage = new CloudCoverage();
+    /// <summary>
+    /// Temperature
+    /// </summary>
+    public int temperature;
+    /// <summary>
+    /// Dew point
+    /// </summary>
+    public int dewPoint;
+    /// <summary>
+    /// Pressure
+    /// </summary>
+    public int pressure;
+    /// <summary>
+    /// Size
     /// </summary>
     public float size;
-    /// <summary>
-    /// angle
-    /// </summary>
-    public double angle;
-    /// <summary>
-    /// wind speed
-    /// </summary>
-    public float windSpeed;
-    /// <summary>
-    /// wind speed line
-    /// </summary>
-    public WindSpeedLine windSpeesLine = new WindSpeedLine();
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
     /**
      * Constructor
      */
-    public WindBarb() {
-        this.setShapeType(ShapeTypes.WindBarb);
+    public StationModelShape() {
+        this.setShapeType(ShapeTypes.StationModel);
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -57,15 +69,18 @@ public class WindBarb extends PointShape {
      */
     @Override
     public Object clone() {
-        WindBarb aWB = new WindBarb();
-        aWB.size = size;
-        aWB.windSpeed = windSpeed;
-        aWB.angle = angle;
-        aWB.windSpeesLine = windSpeesLine;
-        aWB.setPoint(this.getPoint());
-        aWB.setValue(this.getValue());
+        StationModelShape aSM = new StationModelShape();
+        aSM.size = size;
+        aSM.pressure = pressure;
+        aSM.dewPoint = dewPoint;
+        aSM.temperature = temperature;
+        aSM.cloudCoverage = cloudCoverage;
+        aSM.weatherSymbol = (WeatherSymbol) weatherSymbol.clone();
+        aSM.windBarb = (WindBarb) windBarb.clone();
+        aSM.setPoint(this.getPoint());
+        aSM.setValue(this.getValue());
 
-        return aWB;
+        return aSM;
     }
     // </editor-fold>
 }
