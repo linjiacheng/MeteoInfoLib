@@ -1298,9 +1298,9 @@ public class ArrayMath {
      */
     public static Array transpose(Array a, int dim1, int dim2) {
         Array r = a.transpose(dim1, dim2);
-        //Array rr = Array.factory(r.getDataType(), r.getShape());
-        //MAMath.copy(rr, r);
-        return r;
+        Array rr = Array.factory(r.getDataType(), r.getShape());
+        MAMath.copy(rr, r);
+        return rr;
     }
 
     /**
