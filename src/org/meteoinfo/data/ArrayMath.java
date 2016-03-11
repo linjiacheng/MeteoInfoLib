@@ -1225,16 +1225,17 @@ public class ArrayMath {
      * @param a Array a
      * @param ranges Ranges
      * @param v Number value
+     * @return Result array
      * @throws InvalidRangeException
      */
-    public static void setSection(Array a, List<Range> ranges, Number v) throws InvalidRangeException {
+    public static Array setSection(Array a, List<Range> ranges, Number v) throws InvalidRangeException {
         Array r = a.section(ranges);
         IndexIterator iter = r.getIndexIterator();
         while (iter.hasNext()) {
             iter.setObjectNext(v);
         }
-        a = Array.factory(a.getDataType(), a.getShape(), r.getStorage());
-        r = null;
+        r = Array.factory(a.getDataType(), a.getShape(), r.getStorage());
+        return r;
     }
 
     /**
