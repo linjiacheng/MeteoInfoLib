@@ -25,14 +25,12 @@ public class RectangleShape extends PolygonShape {
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
-    /**
-     * Constructor
-     */
-    public RectangleShape() {
-        this.setShapeType(ShapeTypes.Rectangle);
-    }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
+    @Override
+    public ShapeTypes getShapeType(){
+        return ShapeTypes.Rectangle;
+    }
     // </editor-fold>
     // <editor-fold desc="Methods">
 

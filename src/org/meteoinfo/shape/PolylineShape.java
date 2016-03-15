@@ -18,6 +18,11 @@ import org.meteoinfo.global.PointD;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.meteoinfo.jts.geom.Coordinate;
+import org.meteoinfo.jts.geom.Geometry;
+import org.meteoinfo.jts.geom.GeometryFactory;
+import org.meteoinfo.jts.geom.LineString;
+import org.meteoinfo.jts.geom.MultiLineString;
 
 /**
  * Poyline shape class
@@ -48,14 +53,62 @@ public class PolylineShape extends Shape implements Cloneable {
      * Constructor
      */
     public PolylineShape() {
-        this.setShapeType(ShapeTypes.Polyline);
         _points = new ArrayList<>();
         _numParts = 1;
         parts = new int[1];
         parts[0] = 0;
     }
+    
+    /**
+     * Constructor
+     * @param geometry Geometry
+     */
+    public PolylineShape(Geometry geometry) {
+        this();
+        Coordinate[] cs = geometry.getCoordinates();
+        List<PointD> points = new ArrayList();
+        for (Coordinate c : cs)
+            points.add(new PointD(c.x, c.y));
+        this.setPoints(points);
+    }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
+    
+    @Override
+    public ShapeTypes getShapeType(){
+        return ShapeTypes.Polyline;
+    }
+    
+    /**
+     * To geometry method
+     * @param factory GeometryFactory
+     * @return Geometry
+     */
+    @Override
+    public Geometry toGeometry(GeometryFactory factory){
+        PointD p;
+        if (this.getPartNum() == 1){
+            Coordinate[] cs = new Coordinate[this.getPointNum()];
+            for (int i = 0; i < cs.length; i++){
+                p = this._points.get(i);
+                cs[i] = new Coordinate(p.X, p.Y);
+            }
+            return factory.createLineString(cs);
+        } else {
+            LineString[] lss = new LineString[this._polylines.size()];
+            for (int j = 0; j < lss.length; j++){
+                Polyline line = this._polylines.get(j);
+                Coordinate[] cs = new Coordinate[line.getPointList().size()];
+                for (int i = 0; i < cs.length; i++){
+                    p = line.getPointList().get(i);
+                    cs[i] = new Coordinate(p.X, p.Y);
+                }
+                lss[j] = factory.createLineString(cs);
+            }
+            MultiLineString mls = factory.createMultiLineString(lss);
+            return mls;
+        }
+    };
 
     /**
      * Get points

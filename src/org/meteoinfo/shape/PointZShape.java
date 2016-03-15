@@ -14,6 +14,9 @@
  */
 package org.meteoinfo.shape;
 
+import org.meteoinfo.jts.geom.Coordinate;
+import org.meteoinfo.jts.geom.Geometry;
+
 /**
  *
  * @author yaqiang
@@ -26,16 +29,28 @@ public class PointZShape extends PointShape {
     //private double m;
     // </editor-fold>
     // <editor-fold desc="Constructor">
-
     /**
      * Constructor
      */
-    public PointZShape() {
-        super();
-        this.setShapeType(ShapeTypes.PointZ);
+    public PointZShape(){
+        
+    }
+    
+    /**
+     * Constructor
+     * @param geometry Geometry
+     */
+    public PointZShape(Geometry geometry) {
+        Coordinate c = geometry.getCoordinate();
+        this.setPoint(new PointZ(c.x, c.y, c.z, c.m));
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
+    
+    @Override
+    public ShapeTypes getShapeType(){
+        return ShapeTypes.PointZ;
+    }
 
 //    /**
 //     * Get point

@@ -14,19 +14,23 @@
  */
 package org.meteoinfo.shape;
 
+import java.util.ArrayList;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.PointD;
 import java.util.List;
+import org.meteoinfo.jts.geom.Geometry;
+import org.meteoinfo.jts.geom.GeometryFactory;
+import org.meteoinfo.jts.operation.polygonize.Polygonizer;
 
 /**
  * Shape class
  *
  * @author Yaqiang Wang
  */
-public class Shape implements Cloneable{
+public abstract class Shape implements Cloneable{
     // <editor-fold desc="Variables">
 
-    private ShapeTypes _shapeType;
+    //private ShapeTypes _shapeType;
     private boolean _visible;
     private boolean _selected;
     private boolean editing;
@@ -39,11 +43,17 @@ public class Shape implements Cloneable{
      * Contructor
      */
     public Shape() {
-        _shapeType = ShapeTypes.Point;
+        //_shapeType = ShapeTypes.Point;
         _visible = true;
         editing = false;
         _selected = false;
     }
+    
+    /**
+     * Constructor
+     * @param geometry Geometry
+     */
+    public Shape(Geometry geometry) {};
 
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -52,18 +62,7 @@ public class Shape implements Cloneable{
      *
      * @return Shape type
      */
-    public ShapeTypes getShapeType() {
-        return _shapeType;
-    }
-
-    /**
-     * Set shape type
-     *
-     * @param aType shape type
-     */
-    public void setShapeType(ShapeTypes aType) {
-        _shapeType = aType;
-    }
+    public abstract ShapeTypes getShapeType();
 
     /**
      * Get if visible
@@ -198,7 +197,7 @@ public class Shape implements Cloneable{
      */
     public void moveVertice(int vIdx, double newX, double newY) {
         List<PointD> points = (List<PointD>) getPoints();
-        if (_shapeType.isPolygon()) {
+        if (this.getShapeType().isPolygon()) {
             int last = points.size() - 1;
             if (vIdx == 0) {
                 if (points.get(0).X == points.get(last).X && points.get(0).Y == points.get(last).Y) {
@@ -218,6 +217,194 @@ public class Shape implements Cloneable{
         aP.Y = newY;
         //points.set(vIdx, aP);
         setPoints(points);
+    }
+    
+    /**
+     * To geometry method
+     * @param factory GeometryFactory
+     * @return Geometry
+     */
+    public abstract Geometry toGeometry(GeometryFactory factory);
+    
+    /**
+     * To geometry method
+     * @return Geometry
+     */
+    public Geometry toGeometry(){
+        return toGeometry(new GeometryFactory());
+    };
+    
+    /**
+     * Get intersection shape
+     * @param b Other shape
+     * @return Intersection shape
+     */
+    public Shape intersection(Shape b){
+        Geometry g1 = this.toGeometry();
+        Geometry g2 = b.toGeometry();
+        Geometry g3 = g1.intersection(g2);
+        switch (this.getShapeType()){
+            case Point:
+            case PointZ:
+                return new PointShape(g3);
+            case Polyline:
+            case PolylineZ:
+                return new PolylineShape(g3);
+            case Polygon:
+            case PolygonZ:
+            case PolygonM:
+                return new PolygonShape(g3);
+            default:
+                return null;
+        }
+    }
+    
+    /**
+     * Get union shape
+     * @param b Other shape
+     * @return Union shape
+     */
+    public Shape union(Shape b){
+        Geometry g1 = this.toGeometry();
+        Geometry g2 = b.toGeometry();
+        Geometry g3 = g1.union(g2);
+        switch (this.getShapeType()){
+            case Point:
+            case PointZ:
+                return new PointShape(g3);
+            case Polyline:
+            case PolylineZ:
+                return new PolylineShape(g3);
+            case Polygon:
+            case PolygonZ:
+            case PolygonM:
+                return new PolygonShape(g3);
+            default:
+                return null;
+        }
+    }
+    
+    /**
+     * Get difference shape
+     * @param b Other shape
+     * @return Difference shape
+     */
+    public Shape difference(Shape b){
+        Geometry g1 = this.toGeometry();
+        Geometry g2 = b.toGeometry();
+        Geometry g3 = g1.difference(g2);
+        switch (this.getShapeType()){
+            case Point:
+            case PointZ:
+                return new PointShape(g3);
+            case Polyline:
+            case PolylineZ:
+                return new PolylineShape(g3);
+            case Polygon:
+            case PolygonZ:
+            case PolygonM:
+                return new PolygonShape(g3);
+            default:
+                return null;
+        }
+    }
+    
+    /**
+     * Get system difference shape
+     * @param b Other shape
+     * @return System difference shape
+     */
+    public Shape symDifference(Shape b){
+        Geometry g1 = this.toGeometry();
+        Geometry g2 = b.toGeometry();
+        Geometry g3 = g1.symDifference(g2);
+        switch (this.getShapeType()){
+            case Point:
+            case PointZ:
+                return new PointShape(g3);
+            case Polyline:
+            case PolylineZ:
+                return new PolylineShape(g3);
+            case Polygon:
+            case PolygonZ:
+            case PolygonM:
+                return new PolygonShape(g3);
+            default:
+                return null;
+        }
+    }
+    
+    /**
+     * Get buffer shape
+     * @param distance Distance
+     * @return Intersection shape
+     */
+    public Shape buffer(double distance){
+        Geometry g1 = this.toGeometry();
+        Geometry g3 = g1.buffer(distance);
+        switch (this.getShapeType()){
+            case Point:
+            case PointZ:
+                return new PointShape(g3);
+            case Polyline:
+            case PolylineZ:
+                return new PolylineShape(g3);
+            case Polygon:
+            case PolygonZ:
+            case PolygonM:
+                return new PolygonShape(g3);
+            default:
+                return null;
+        }
+    }
+    
+    /**
+     * Get buffer shape
+     * @return Intersection shape
+     */
+    public Shape convexHull(){
+        Geometry g1 = this.toGeometry();
+        Geometry g3 = g1.convexHull();
+        switch (this.getShapeType()){
+            case Point:
+            case PointZ:
+                return new PointShape(g3);
+            case Polyline:
+            case PolylineZ:
+                return new PolylineShape(g3);
+            case Polygon:
+            case PolygonZ:
+            case PolygonM:
+                return new PolygonShape(g3);
+            default:
+                return null;
+        }
+    }
+    
+    /**
+     * Split shape
+     * @param line Split line
+     * @return Splitted shapes
+     */
+    public List<PolygonShape> split(Shape line){
+        Geometry g1 = this.toGeometry();
+        Geometry g2 = line.toGeometry();
+        if (g1.getGeometryType().equals("Polygon")){
+            org.meteoinfo.jts.geom.Polygon polygon = (org.meteoinfo.jts.geom.Polygon)g1;
+            Polygonizer polygonizer = new Polygonizer();
+            Geometry polygons = polygon.getBoundary().union(g2);
+            polygonizer.add(polygons);
+            List polys = (List)polygonizer.getPolygons();   
+            List<PolygonShape> polyShapes = new ArrayList<>();
+            for (int i = 0; i < polys.size(); i++){
+                org.meteoinfo.jts.geom.Polygon poly = (org.meteoinfo.jts.geom.Polygon)polys.get(i);
+                //org.meteoinfo.jts.geom.Polygon rpoly = (org.meteoinfo.jts.geom.Polygon)g1.intersection(poly);
+                polyShapes.add(new PolygonShape(poly));
+            }
+            return polyShapes;
+        }
+        
+        return null;
     }
 
     /**

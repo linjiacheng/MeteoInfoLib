@@ -471,7 +471,7 @@ public class Graphic {
     }
 
     protected Shape loadShape(Node shapeNode) {
-        Shape aShape = new Shape();
+        Shape aShape = null;
         try {
             ShapeTypes shapeType = ShapeTypes.valueOf(shapeNode.getAttributes().getNamedItem("ShapeType").getNodeValue());
             switch (shapeType) {

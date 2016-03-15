@@ -379,6 +379,8 @@ public class MICAPS4DataInfo extends DataInfo implements IGridDataInfo {
                             break;
                         }
                         aLine = aLine.trim();
+                        if (aLine.isEmpty())
+                            continue;
                         dataArray = aLine.split("\\s+");
                         dataList.addAll(Arrays.asList(dataArray));
                     } else {
@@ -389,7 +391,7 @@ public class MICAPS4DataInfo extends DataInfo implements IGridDataInfo {
                     theData[col][i] = Double.parseDouble(dataList.get(i));
                 }
                 if (dataList.size() > xNum) {
-                    dataList = dataList.subList(xNum, dataList.size() - 1);
+                    dataList = new ArrayList(dataList.subList(xNum, dataList.size()));
                 } else {
                     dataList = new ArrayList<>();
                 }

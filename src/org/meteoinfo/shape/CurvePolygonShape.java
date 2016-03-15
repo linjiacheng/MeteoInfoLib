@@ -27,10 +27,14 @@ public class CurvePolygonShape extends PolygonShape {
      * Constructor
      */
     public CurvePolygonShape() {
-        this.setShapeType(ShapeTypes.CurvePolygon);
+
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
+    @Override
+    public ShapeTypes getShapeType(){
+        return ShapeTypes.CurvePolygon;
+    }
     // </editor-fold>
     // <editor-fold desc="Methods">
 

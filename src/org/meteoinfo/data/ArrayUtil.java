@@ -2159,7 +2159,7 @@ public class ArrayUtil {
      * @param fromProj From projection
      * @param toProj To projection
      * @param fill_value Fill value
-     * @param resampleMethod Resample method
+     * @param resampleMethod Resample method 
      * @return Result arrays
      * @throws ucar.ma2.InvalidRangeException
      */

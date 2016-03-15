@@ -50,6 +50,11 @@ public class TableUtil {
         }
 
         String title = sr.readLine().trim();
+        if (encoding.equals("UTF8")){
+            if (title.startsWith("\uFEFF")){
+                title = title.substring(1);
+            }
+        }
         String[] titleArray = GlobalUtil.split(title, delimiter);
         int colNum = titleArray.length;
         if (headerLines == -1) {
@@ -91,31 +96,32 @@ public class TableUtil {
                     colFormat = colFormat.substring(index);
                 }
                 for (int i = 0; i < num; i++) {
+                    String colName = titleArray[idx].trim();
                     if (colFormat.equals("C") || colFormat.equals("s")) //String
                     {
-                        dTable.addColumn(titleArray[idx], DataTypes.String);
+                        dTable.addColumn(colName, DataTypes.String);
                     } else if (colFormat.equals("i")) //Integer
                     {
-                        dTable.addColumn(titleArray[idx], DataTypes.Integer);
+                        dTable.addColumn(colName, DataTypes.Integer);
                     } else if (colFormat.equals("f")) //Float
                     {
-                        dTable.addColumn(titleArray[idx], DataTypes.Float);
+                        dTable.addColumn(colName, DataTypes.Float);
                     } else if (colFormat.equals("d")) //Double
                     {
-                        dTable.addColumn(titleArray[idx], DataTypes.Double);
+                        dTable.addColumn(colName, DataTypes.Double);
                     } else if (colFormat.equals("B")) //Boolean
                     {
-                        dTable.addColumn(titleArray[idx], DataTypes.Boolean);
+                        dTable.addColumn(colName, DataTypes.Boolean);
                     } else if (colFormat.substring(0, 1).equals("{")) {    //Date
                         int eidx = colFormat.indexOf("}");
                         String formatStr = colFormat.substring(1, eidx);
-                        dTable.addColumn(new DataColumn(titleArray[idx], DataTypes.Date, formatStr));
+                        dTable.addColumn(new DataColumn(colName, DataTypes.Date, formatStr));
                         hasTimeCol = true;
                         if (tcolName == null) {
                             tcolName = titleArray[idx];
                         }
                     } else {
-                        dTable.addColumn(titleArray[idx], DataTypes.String);
+                        dTable.addColumn(colName, DataTypes.String);
                     }
                     idx += 1;
                     if (idx == colNum) {

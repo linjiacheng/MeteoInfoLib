@@ -27,10 +27,15 @@ public class CircleShape extends PolygonShape {
      * Constructor
      */
     public CircleShape() {
-        this.setShapeType(ShapeTypes.Circle);
+
     }
     // </editor-fold>
     // <editor-fold desc="Methods">
+    
+    @Override
+    public ShapeTypes getShapeType(){
+        return ShapeTypes.Circle;
+    }
 
     /**
      * Clone

@@ -34,7 +34,6 @@
  */
 package org.meteoinfo.jts.geom;
 
-import org.meteoinfo.jts.geomgraph.GeometryGraph;
 import org.meteoinfo.jts.operation.BoundaryOp;
 
 /**

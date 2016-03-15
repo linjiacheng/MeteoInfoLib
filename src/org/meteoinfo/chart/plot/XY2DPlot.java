@@ -161,6 +161,14 @@ public class XY2DPlot extends XYPlot {
         Graphic aGraphic = new Graphic(ps, lb);
         this.mapView.addGraphic(aGraphic);
     }
+    
+    /**
+     * Add a graphic
+     * @param graphic The graphic
+     */
+    public void addGraphic(Graphic graphic){
+        this.getMapView().addGraphic(graphic);
+    }
 
     /**
      * Add a layer

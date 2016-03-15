@@ -1487,6 +1487,5 @@ public abstract class Geometry
     return exemplar.getFactory().createPoint(coord);
   }
 
-
 }
 

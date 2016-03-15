@@ -1,4 +1,4 @@
- /* Copyright 2012 Yaqiang Wang,
+/* Copyright 2012 Yaqiang Wang,
  * yaqiang.wang@gmail.com
  * 
  * This library is free software; you can redistribute it and/or modify it
@@ -20,10 +20,14 @@ import org.meteoinfo.global.PointD;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.meteoinfo.jts.geom.Coordinate;
+import org.meteoinfo.jts.geom.Geometry;
+import org.meteoinfo.jts.geom.GeometryFactory;
+import org.meteoinfo.jts.geom.LinearRing;
 
 /**
  * Polygon class
- * 
+ *
  * @author Yaqiang Wang
  */
 public class Polygon {
@@ -44,7 +48,7 @@ public class Polygon {
 
     /**
      * Get outLine
-     * 
+     *
      * @return outLine point list
      */
     public List<PointD> getOutLine() {
@@ -53,7 +57,7 @@ public class Polygon {
 
     /**
      * Set outLine point list
-     * 
+     *
      * @param outLine outLine point list
      */
     public void setOutLine(List<PointD> outLine) {
@@ -63,7 +67,7 @@ public class Polygon {
 
     /**
      * Get hole lines
-     * 
+     *
      * @return hole lines
      */
     public List<List<PointD>> getHoleLines() {
@@ -72,7 +76,7 @@ public class Polygon {
 
     /**
      * Set hole lines
-     * 
+     *
      * @param holeLines hole lines list
      */
     public void setHoleLines(List<List<PointD>> holeLines) {
@@ -81,7 +85,7 @@ public class Polygon {
 
     /**
      * Get extent
-     * 
+     *
      * @return extent
      */
     public Extent getExtent() {
@@ -90,7 +94,7 @@ public class Polygon {
 
     /**
      * Get rings
-     * 
+     *
      * @return Rings
      */
     public List<List<PointD>> getRings() {
@@ -105,7 +109,7 @@ public class Polygon {
 
     /**
      * Determine if the polygon has hole
-     * 
+     *
      * @return boolean
      */
     public boolean hasHole() {
@@ -114,7 +118,7 @@ public class Polygon {
 
     /**
      * Get ring number - outline number + holeline number
-     * 
+     *
      * @return ring number
      */
     public int getRingNumber() {
@@ -125,7 +129,7 @@ public class Polygon {
     // <editor-fold desc="Methods">
     /**
      * Add a hole line
-     * 
+     *
      * @param points point list
      */
     public void addHole(List<PointD> points) {
@@ -133,6 +137,33 @@ public class Polygon {
             Collections.reverse(points);
         }
         _holeLines.add(points);
+    }
+
+    /**
+     * To geometry
+     *
+     * @param factory GeometryFactory
+     * @return Geometry
+     */
+    public Geometry toGeometry(GeometryFactory factory) {
+        PointD p;
+        Coordinate[] cs = new Coordinate[_outLine.size()];
+        for (int i = 0; i < cs.length; i++) {
+            p = _outLine.get(i);
+            cs[i] = new Coordinate(p.X, p.Y);
+        }
+        LinearRing shell = factory.createLinearRing(cs);
+        LinearRing[] holes = new LinearRing[this._holeLines.size()];
+        for (int j = 0; j < holes.length; j++) {
+            List<PointD> hole = this._holeLines.get(j);
+            cs = new Coordinate[hole.size()];
+            for (int i = 0; i < cs.length; i++) {
+                p = hole.get(i);
+                cs[i] = new Coordinate(p.X, p.Y);
+            }
+            holes[j] = factory.createLinearRing(cs);
+        }
+        return factory.createPolygon(shell, holes);
     }
     // </editor-fold>
 }

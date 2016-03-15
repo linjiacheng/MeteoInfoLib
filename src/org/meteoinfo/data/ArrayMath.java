@@ -143,10 +143,9 @@ public class ArrayMath {
 
     private static Array addInt(Array a, Array b) {
         Array r = Array.factory(DataType.INT, a.getShape());
-        int fv = (int) fill_value;
         for (int i = 0; i < a.getSize(); i++) {
-            if (a.getInt(i) == fv || b.getInt(i) == fv) {
-                r.setInt(i, fv);
+            if (a.getInt(i) == Integer.MIN_VALUE || b.getInt(i) == Integer.MIN_VALUE) {
+                r.setInt(i, Integer.MIN_VALUE);
             } else {
                 r.setInt(i, a.getInt(i) + b.getInt(i));
             }
@@ -157,10 +156,9 @@ public class ArrayMath {
 
     private static Array addInt(Array a, int b) {
         Array r = Array.factory(DataType.INT, a.getShape());
-        int fv = (int) fill_value;
         for (int i = 0; i < a.getSize(); i++) {
-            if (a.getInt(i) == fv) {
-                r.setInt(i, fv);
+            if (a.getInt(i) == Integer.MIN_VALUE) {
+                r.setInt(i, Integer.MIN_VALUE);
             } else {
                 r.setInt(i, a.getInt(i) + b);
             }
@@ -171,10 +169,9 @@ public class ArrayMath {
 
     private static Array addFloat(Array a, Array b) {
         Array r = Array.factory(DataType.FLOAT, a.getShape());
-        float fv = (float) fill_value;
         for (int i = 0; i < a.getSize(); i++) {
-            if (a.getFloat(i) == fv || b.getFloat(i) == fv) {
-                r.setFloat(i, fv);
+            if (Float.isNaN(a.getFloat(i)) || Float.isNaN(b.getFloat(i))) {
+                r.setFloat(i, Float.NaN);
             } else {
                 r.setFloat(i, a.getFloat(i) + b.getFloat(i));
             }
@@ -185,10 +182,9 @@ public class ArrayMath {
 
     private static Array addFloat(Array a, float b) {
         Array r = Array.factory(DataType.FLOAT, a.getShape());
-        float fv = (float) fill_value;
         for (int i = 0; i < a.getSize(); i++) {
-            if (a.getFloat(i) == fv) {
-                r.setFloat(i, fv);
+            if (Float.isNaN(a.getFloat(i))) {
+                r.setFloat(i, Float.NaN);
             } else {
                 r.setFloat(i, a.getFloat(i) + b);
             }
@@ -200,8 +196,8 @@ public class ArrayMath {
     private static Array addDouble(Array a, Array b) {
         Array r = Array.factory(DataType.DOUBLE, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
-            if (a.getDouble(i) == fill_value || b.getDouble(i) == fill_value) {
-                r.setDouble(i, fill_value);
+            if (Double.isNaN(a.getDouble(i)) || Double.isNaN(b.getDouble(i))) {
+                r.setDouble(i, Double.NaN);
             } else {
                 r.setDouble(i, a.getDouble(i) + b.getDouble(i));
             }
@@ -213,8 +209,8 @@ public class ArrayMath {
     private static Array addDouble(Array a, double b) {
         Array r = Array.factory(DataType.DOUBLE, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
-            if (a.getDouble(i) == fill_value) {
-                r.setDouble(i, fill_value);
+            if (Double.isNaN(a.getDouble(i))) {
+                r.setDouble(i, Double.NaN);
             } else {
                 r.setDouble(i, a.getDouble(i) + b);
             }
@@ -414,10 +410,9 @@ public class ArrayMath {
 
     private static Array mulInt(Array a, Array b) {
         Array r = Array.factory(DataType.INT, a.getShape());
-        int fv = (int) fill_value;
         for (int i = 0; i < a.getSize(); i++) {
-            if (a.getInt(i) == fv || b.getInt(i) == fv) {
-                r.setInt(i, fv);
+            if (a.getInt(i) == Integer.MIN_VALUE || b.getInt(i) == Integer.MIN_VALUE) {
+                r.setInt(i, Integer.MIN_VALUE);
             } else {
                 r.setInt(i, a.getInt(i) * b.getInt(i));
             }
@@ -428,10 +423,9 @@ public class ArrayMath {
 
     private static Array mulInt(Array a, int b) {
         Array r = Array.factory(DataType.INT, a.getShape());
-        int fv = (int) fill_value;
         for (int i = 0; i < a.getSize(); i++) {
-            if (a.getInt(i) == fv) {
-                r.setInt(i, fv);
+            if (a.getInt(i) == Integer.MIN_VALUE) {
+                r.setInt(i, Integer.MIN_VALUE);
             } else {
                 r.setInt(i, a.getInt(i) * b);
             }
@@ -442,10 +436,9 @@ public class ArrayMath {
 
     private static Array mulFloat(Array a, Array b) {
         Array r = Array.factory(DataType.FLOAT, a.getShape());
-        float fv = (float) fill_value;
         for (int i = 0; i < a.getSize(); i++) {
-            if (a.getFloat(i) == fv || b.getFloat(i) == fv) {
-                r.setFloat(i, fv);
+            if (Float.isNaN(a.getFloat(i)) || Float.isNaN(b.getFloat(i))) {
+                r.setFloat(i, Float.NaN);
             } else {
                 r.setFloat(i, a.getFloat(i) * b.getFloat(i));
             }
@@ -456,10 +449,9 @@ public class ArrayMath {
 
     private static Array mulFloat(Array a, float b) {
         Array r = Array.factory(DataType.FLOAT, a.getShape());
-        float fv = (float) fill_value;
         for (int i = 0; i < a.getSize(); i++) {
-            if (a.getFloat(i) == fv) {
-                r.setFloat(i, fv);
+            if (Float.isNaN(a.getFloat(i))) {
+                r.setFloat(i, Float.NaN);
             } else {
                 r.setFloat(i, a.getFloat(i) * b);
             }
@@ -471,8 +463,8 @@ public class ArrayMath {
     private static Array mulDouble(Array a, Array b) {
         Array r = Array.factory(DataType.DOUBLE, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
-            if (a.getDouble(i) == fill_value || b.getDouble(i) == fill_value) {
-                r.setDouble(i, fill_value);
+            if (Double.isNaN(a.getDouble(i)) || Double.isNaN(b.getDouble(i))) {
+                r.setDouble(i, Double.NaN);
             } else {
                 r.setDouble(i, a.getDouble(i) * b.getDouble(i));
             }
@@ -484,8 +476,8 @@ public class ArrayMath {
     private static Array mulDouble(Array a, double b) {
         Array r = Array.factory(DataType.DOUBLE, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
-            if (a.getDouble(i) == fill_value) {
-                r.setDouble(i, fill_value);
+            if (Double.isNaN(a.getDouble(i))) {
+                r.setDouble(i, Double.NaN);
             } else {
                 r.setDouble(i, a.getDouble(i) * b);
             }
@@ -1501,9 +1493,12 @@ public class ArrayMath {
      */
     public static double sumDouble(Array a) {
         double sum = 0.0D;
+        double v;
         IndexIterator iterA = a.getIndexIterator();
         while (iterA.hasNext()) {
-            sum += iterA.getDoubleNext();
+            v = iterA.getDoubleNext();
+            if (!Double.isNaN(v))
+                sum += v;
         }
         return sum;
     }
@@ -1534,8 +1529,18 @@ public class ArrayMath {
      * @return Average value
      */
     public static double aveDouble(Array a) {
-        double sum = ArrayMath.sumDouble(a);
-        return sum / a.getSize();
+        double sum = 0.0D;
+        double v;
+        int n = 0;
+        IndexIterator iterA = a.getIndexIterator();
+        while (iterA.hasNext()) {
+            v = iterA.getDoubleNext();
+            if (!Double.isNaN(v)){
+                sum += v;
+                n += 1;
+            }
+        }
+        return sum / n;
     }
 
     /**

@@ -3113,7 +3113,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             scale_factor = packData[1];
             missingValue = packData[2];
             if (add_offset != 0 || scale_factor != 1) {
-                ArrayMath.fill_value = missingValue;
+                //ArrayMath.fill_value = missingValue;
                 data = ArrayMath.add(ArrayMath.mul(data, scale_factor), add_offset);
             }
 

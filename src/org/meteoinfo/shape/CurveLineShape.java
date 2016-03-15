@@ -27,10 +27,13 @@ public class CurveLineShape extends PolylineShape {
      * Constructor
      */
     public CurveLineShape() {
-        this.setShapeType(ShapeTypes.CurveLine);
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
+    @Override
+    public ShapeTypes getShapeType(){
+        return ShapeTypes.CurveLine;
+    }
     // </editor-fold>
     // <editor-fold desc="Methods">
 

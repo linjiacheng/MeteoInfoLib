@@ -18,6 +18,9 @@ import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.PointD;
 import java.util.ArrayList;
 import java.util.List;
+import org.meteoinfo.jts.geom.Coordinate;
+import org.meteoinfo.jts.geom.Geometry;
+import org.meteoinfo.jts.geom.GeometryFactory;
 
 /**
  * Point shape class
@@ -32,11 +35,39 @@ public class PointShape extends Shape implements Cloneable{
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
-    public PointShape() {
-        this.setShapeType(ShapeTypes.Point);
+    /**
+     * Constructor
+     */
+    public PointShape(){
+        
+    }
+    
+    /**
+     * Constructor
+     * @param geometry Geometry
+     */
+    public PointShape(Geometry geometry) {
+        Coordinate c = geometry.getCoordinate();
+        this.setPoint(new PointD(c.x, c.y));
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
+    
+    @Override
+    public ShapeTypes getShapeType(){
+        return ShapeTypes.Point;
+    }
+    
+    /**
+     * To geometry method
+     * @param factory GeometryFactory
+     * @return Geometry
+     */
+    @Override
+    public Geometry toGeometry(GeometryFactory factory){
+        Coordinate c = new Coordinate(_point.X, _point.Y);        
+        return factory.createPoint(c);
+    };
 
     /**
      * Get point

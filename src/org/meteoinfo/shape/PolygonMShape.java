@@ -4,7 +4,11 @@
  */
 package org.meteoinfo.shape;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.meteoinfo.global.MIMath;
+import org.meteoinfo.jts.geom.Coordinate;
+import org.meteoinfo.jts.geom.Geometry;
 
 /**
  *
@@ -19,10 +23,26 @@ public class PolygonMShape extends PolygonShape{
      */
     public PolygonMShape(){
         super();
-        this.setShapeType(ShapeTypes.PolygonM);
+    }
+    
+    /**
+     * Constructor
+     * @param geometry Geometry
+     */
+    public PolygonMShape(Geometry geometry) {
+        Coordinate[] cs = geometry.getCoordinates();
+        List<PointZ> points = new ArrayList();
+        for (Coordinate c : cs)
+            points.add(new PointZ(c.x, c.y, c.z, c.m));
+        this.setPoints(points);
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
+    @Override
+    public ShapeTypes getShapeType(){
+        return ShapeTypes.PolygonM;
+    }
+    
     /**
      * Get M Array
      *

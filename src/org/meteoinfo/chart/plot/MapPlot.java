@@ -185,8 +185,9 @@ public class MapPlot extends XY2DPlot {
      * @param lat Latitude
      * @param lon Lontitude
      * @param pb Point break
+     * @return Graphic
      */
-    public void addPoint(List<Number> lat, List<Number> lon, PointBreak pb) {
+    public Graphic addPoint(List<Number> lat, List<Number> lon, PointBreak pb) {
         double x, y;
         PointShape ps;
         PointD lonlatp, xyp;
@@ -204,7 +205,9 @@ public class MapPlot extends XY2DPlot {
             }
             Graphic aGraphic = new Graphic(ps, pb);
             this.getMapView().addGraphic(aGraphic);
+            return aGraphic;
         }
+        return null;
     }
 
     /**
@@ -213,8 +216,9 @@ public class MapPlot extends XY2DPlot {
      * @param lat Latitude
      * @param lon Longitude
      * @param plb PolylineBreak
+     * @return Graphic
      */
-    public void addPolyline(List<Number> lat, List<Number> lon, PolylineBreak plb) {
+    public Graphic addPolyline(List<Number> lat, List<Number> lon, PolylineBreak plb) {
         double x, y;
         PolylineShape pls;
         PointD lonlatp;
@@ -244,7 +248,9 @@ public class MapPlot extends XY2DPlot {
             pls.setPoints(points);
             Graphic aGraphic = new Graphic(pls, plb);
             this.getMapView().addGraphic(aGraphic);
+            return aGraphic;
         }
+        return null;
     }
     
     /**
@@ -253,8 +259,9 @@ public class MapPlot extends XY2DPlot {
      * @param lat Latitude
      * @param lon Longitude
      * @param pgb PolygonBreak
+     * @return Graphic
      */
-    public void addPolygon(List<Number> lat, List<Number> lon, PolygonBreak pgb) {
+    public Graphic addPolygon(List<Number> lat, List<Number> lon, PolygonBreak pgb) {
         double x, y;
         PolygonShape pgs;
         PointD lonlatp;
@@ -284,8 +291,10 @@ public class MapPlot extends XY2DPlot {
             pgs.setPoints(points);
             Graphic aGraphic = new Graphic(pgs, pgb);
             this.getMapView().addGraphic(aGraphic);
+            return aGraphic;
         }
-    }
+        return null;
+    }        
 
 //    /**
 //     * Add a layer

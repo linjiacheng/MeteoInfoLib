@@ -43,10 +43,14 @@ public class WindBarb extends PointShape {
      * Constructor
      */
     public WindBarb() {
-        this.setShapeType(ShapeTypes.WindBarb);
+
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
+    @Override
+    public ShapeTypes getShapeType(){
+        return ShapeTypes.WindBarb;
+    }
     // </editor-fold>
     // <editor-fold desc="Methods">
 

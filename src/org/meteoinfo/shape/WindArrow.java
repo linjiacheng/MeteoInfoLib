@@ -40,10 +40,14 @@ public class WindArrow extends PointShape {
      * Constructor
      */
     public WindArrow() {
-        this.setShapeType(ShapeTypes.WindArraw);
+
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
+    @Override
+    public ShapeTypes getShapeType(){
+        return ShapeTypes.WindArraw;
+    }
     // </editor-fold>
     // <editor-fold desc="Methods">
 

@@ -264,8 +264,10 @@ public final class DataTable {
      * @return The data column
      */
     public DataColumn findColumn(String colName) {
+        String name;
         for (DataColumn col : this.columns) {
-            if (col.getColumnName().equals(colName)) {
+            name = col.getColumnName();
+            if (name.equals(colName)) {
                 return col;
             }
         }

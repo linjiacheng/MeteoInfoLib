@@ -55,10 +55,14 @@ public class StationModelShape extends PointShape {
      * Constructor
      */
     public StationModelShape() {
-        this.setShapeType(ShapeTypes.StationModel);
+
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
+    @Override
+    public ShapeTypes getShapeType(){
+        return ShapeTypes.StationModel;
+    }
     // </editor-fold>
     // <editor-fold desc="Methods">
 

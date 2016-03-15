@@ -35,10 +35,14 @@ public class WeatherSymbol extends PointShape {
      * Constructor
      */
     public WeatherSymbol() {
-        this.setShapeType(ShapeTypes.WeatherSymbol);
+
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
+    @Override
+    public ShapeTypes getShapeType(){
+        return ShapeTypes.WeatherSymbol;
+    }
     // </editor-fold>
     // <editor-fold desc="Methods">
 
