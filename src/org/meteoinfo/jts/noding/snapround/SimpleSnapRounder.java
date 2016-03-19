@@ -41,13 +41,14 @@ import org.meteoinfo.jts.noding.*;
 /**
  * Uses Snap Rounding to compute a rounded,
  * fully noded arrangement from a set of {@link SegmentString}s.
- * Implements the Snap Rounding technique described in Hobby, Guibas & Marimont,
- * and Goodrich et al.
- * Snap Rounding assumes that all vertices lie on a uniform grid
- * (hence the precision model of the input must be fixed precision,
- * and all the input vertices must be rounded to that precision).
+ * Implements the Snap Rounding technique described in 
+ * the papers by Hobby, Guibas & Marimont, and Goodrich et al.
+ * Snap Rounding assumes that all vertices lie on a uniform grid;
+ * hence the precision model of the input must be fixed precision,
+ * and all the input vertices must be rounded to that precision.
  * <p>
  * This implementation uses simple iteration over the line segments.
+ * This is not the most efficient approach for large sets of segments.
  * <p>
  * This implementation appears to be fully robust using an integer precision model.
  * It will function with non-integer precision models, but the
@@ -70,11 +71,18 @@ public class SimpleSnapRounder
     scaleFactor = pm.getScale();
   }
 
+  /**
+	 * @return a Collection of NodedSegmentStrings representing the substrings
+	 * 
+	 */
   public Collection getNodedSubstrings()
   {
-    return  SegmentString.getNodedSubstrings(nodedSegStrings);
+    return  NodedSegmentString.getNodedSubstrings(nodedSegStrings);
   }
 
+  /**
+   * @param inputSegmentStrings a Collection of NodedSegmentStrings
+   */
   public void computeNodes(Collection inputSegmentStrings)
   {
     this.nodedSegStrings = inputSegmentStrings;
@@ -86,7 +94,7 @@ public class SimpleSnapRounder
 
   private void checkCorrectness(Collection inputSegmentStrings)
   {
-    Collection resultSegStrings = SegmentString.getNodedSubstrings(inputSegmentStrings);
+    Collection resultSegStrings = NodedSegmentString.getNodedSubstrings(inputSegmentStrings);
     NodingValidator nv = new NodingValidator(resultSegStrings);
     try {
       nv.checkValid();
@@ -103,7 +111,7 @@ public class SimpleSnapRounder
 
   /**
    * Computes all interior intersections in the collection of {@link SegmentString}s,
-   * and returns their @link Coordinate}s.
+   * and returns their {@link Coordinate}s.
    *
    * Does NOT node the segStrings.
    *
@@ -111,7 +119,7 @@ public class SimpleSnapRounder
    */
   private List findInteriorIntersections(Collection segStrings, LineIntersector li)
   {
-    IntersectionFinderAdder intFinderAdder = new IntersectionFinderAdder(li);
+    InteriorIntersectionFinderAdder intFinderAdder = new InteriorIntersectionFinderAdder(li);
     SinglePassNoder noder = new MCIndexNoder();
     noder.setSegmentIntersector(intFinderAdder);
     noder.computeNodes(segStrings);
@@ -126,18 +134,18 @@ public class SimpleSnapRounder
   private void computeSnaps(Collection segStrings, Collection snapPts)
   {
     for (Iterator i0 = segStrings.iterator(); i0.hasNext(); ) {
-      SegmentString ss = (SegmentString) i0.next();
+      NodedSegmentString ss = (NodedSegmentString) i0.next();
       computeSnaps(ss, snapPts);
     }
   }
 
-  private void computeSnaps(SegmentString ss, Collection snapPts)
+  private void computeSnaps(NodedSegmentString ss, Collection snapPts)
   {
     for (Iterator it = snapPts.iterator(); it.hasNext(); ) {
       Coordinate snapPt = (Coordinate) it.next();
       HotPixel hotPixel = new HotPixel(snapPt, scaleFactor, li);
       for (int i = 0; i < ss.size() - 1; i++) {
-        addSnappedNode(hotPixel, ss, i);
+      	hotPixel.addSnappedNode(ss, i);
       }
     }
   }
@@ -146,14 +154,14 @@ public class SimpleSnapRounder
    * Computes nodes introduced as a result of
    * snapping segments to vertices of other segments
    *
-   * @param segStrings the list of segment strings to snap together
+   * @param edges the list of segment strings to snap together
    */
   public void computeVertexSnaps(Collection edges)
   {
     for (Iterator i0 = edges.iterator(); i0.hasNext(); ) {
-      SegmentString edge0 = (SegmentString) i0.next();
+      NodedSegmentString edge0 = (NodedSegmentString) i0.next();
       for (Iterator i1 = edges.iterator(); i1.hasNext(); ) {
-        SegmentString edge1 = (SegmentString) i1.next();
+        NodedSegmentString edge1 = (NodedSegmentString) i1.next();
         computeVertexSnaps(edge0, edge1);
       }
     }
@@ -163,7 +171,7 @@ public class SimpleSnapRounder
    * Performs a brute-force comparison of every segment in each {@link SegmentString}.
    * This has n^2 performance.
    */
-  private void computeVertexSnaps(SegmentString e0, SegmentString e1)
+  private void computeVertexSnaps(NodedSegmentString e0, NodedSegmentString e1)
   {
     Coordinate[] pts0 = e0.getCoordinates();
     Coordinate[] pts1 = e1.getCoordinates();
@@ -175,41 +183,13 @@ public class SimpleSnapRounder
           if (i0 == i1) continue;
         }
         //System.out.println("trying " + pts0[i0] + " against " + pts1[i1] + pts1[i1 + 1]);
-        boolean isNodeAdded = addSnappedNode(hotPixel, e1, i1);
+        boolean isNodeAdded = hotPixel.addSnappedNode(e1, i1);
         // if a node is created for a vertex, that vertex must be noded too
         if (isNodeAdded) {
           e0.addIntersection(pts0[i0], i0);
         }
       }
     }
-  }
-
-  /**
-   * Adds a new node (equal to the snap pt) to the segment
-   * if the segment passes through the hot pixel
-   *
-   * @param hotPix
-   * @param segStr
-   * @param segIndex
-   * @return <code>true</code> if a node was added
-   */
-  public static boolean addSnappedNode(
-      HotPixel hotPix,
-      SegmentString segStr,
-      int segIndex
-      )
-  {
-    Coordinate p0 = segStr.getCoordinate(segIndex);
-    Coordinate p1 = segStr.getCoordinate(segIndex + 1);
-
-    if (hotPix.intersects(p0, p1)) {
-      //System.out.println("snapped: " + snapPt);
-      //System.out.println("POINT (" + snapPt.x + " " + snapPt.y + ")");
-      segStr.addIntersection(hotPix.getCoordinate(), segIndex);
-
-      return true;
-    }
-    return false;
   }
 
 }

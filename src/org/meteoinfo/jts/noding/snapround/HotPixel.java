@@ -1,7 +1,41 @@
+/*
+* The JTS Topology Suite is a collection of Java classes that
+* implement the fundamental operations required to validate a given
+* geo-spatial data set to a known topological specification.
+*
+* Copyright (C) 2001 Vivid Solutions
+*
+* This library is free software; you can redistribute it and/or
+* modify it under the terms of the GNU Lesser General Public
+* License as published by the Free Software Foundation; either
+* version 2.1 of the License, or (at your option) any later version.
+*
+* This library is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with this library; if not, write to the Free Software
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*
+* For more information, contact:
+*
+*     Vivid Solutions
+*     Suite #1A
+*     2328 Government Street
+*     Victoria BC  V8T 5G5
+*     Canada
+*
+*     (250)385-6040
+*     www.vividsolutions.com
+*/
+
 package org.meteoinfo.jts.noding.snapround;
 
 import org.meteoinfo.jts.algorithm.*;
 import org.meteoinfo.jts.geom.*;
+import org.meteoinfo.jts.io.WKTWriter;
 import org.meteoinfo.jts.noding.*;
 import org.meteoinfo.jts.util.*;
 
@@ -36,6 +70,7 @@ public class HotPixel
   private double maxx;
   private double miny;
   private double maxy;
+  
   /**
    * The corners of the hot pixel, in the order:
    *  10
@@ -45,12 +80,23 @@ public class HotPixel
 
   private Envelope safeEnv = null;
 
+  /**
+   * Creates a new hot pixel, using a given scale factor.
+   * The scale factor must be strictly positive (non-zero).
+   * 
+   * @param pt the coordinate at the centre of the pixel
+   * @param scaleFactor the scaleFactor determining the pixel size.  Must be > 0
+   * @param li the intersector to use for testing intersection with line segments
+   * 
+   */
   public HotPixel(Coordinate pt, double scaleFactor, LineIntersector li) {
     originalPt = pt;
     this.pt = pt;
     this.scaleFactor = scaleFactor;
     this.li = li;
     //tolerance = 0.5;
+    if (scaleFactor <= 0) 
+      throw new IllegalArgumentException("Scale factor must be non-zero");
     if (scaleFactor != 1.0) {
       this.pt = new Coordinate(scale(pt.x), scale(pt.y));
       p0Scaled = new Coordinate();
@@ -59,16 +105,26 @@ public class HotPixel
     initCorners(this.pt);
   }
 
+  /**
+   * Gets the coordinate this hot pixel is based at.
+   * 
+   * @return the coordinate of the pixel
+   */
   public Coordinate getCoordinate() { return originalPt; }
 
+  private static final double SAFE_ENV_EXPANSION_FACTOR = 0.75;
+  
   /**
-   * Returns a "safe" envelope that is guaranteed to contain the hot pixel
-   * @return
+   * Returns a "safe" envelope that is guaranteed to contain the hot pixel.
+   * The envelope returned will be larger than the exact envelope of the 
+   * pixel.
+   * 
+   * @return an envelope which contains the hot pixel
    */
   public Envelope getSafeEnvelope()
   {
     if (safeEnv == null) {
-      double safeTolerance = .75 / scaleFactor;
+      double safeTolerance = SAFE_ENV_EXPANSION_FACTOR / scaleFactor;
       safeEnv = new Envelope(originalPt.x - safeTolerance,
                              originalPt.x + safeTolerance,
                              originalPt.y - safeTolerance,
@@ -97,6 +153,14 @@ public class HotPixel
     return (double) Math.round(val * scaleFactor);
   }
 
+  /**
+   * Tests whether the line segment (p0-p1) 
+   * intersects this hot pixel.
+   * 
+   * @param p0 the first coordinate of the line segment to test
+   * @param p1 the second coordinate of the line segment to test
+   * @return true if the line segment intersects this hot pixel
+   */
   public boolean intersects(Coordinate p0, Coordinate p1)
   {
     if (scaleFactor == 1.0)
@@ -113,7 +177,7 @@ public class HotPixel
     pScaled.y = scale(p.y);
   }
 
-  public boolean intersectsScaled(Coordinate p0, Coordinate p1)
+  private boolean intersectsScaled(Coordinate p0, Coordinate p1)
   {
     double segMinx = Math.min(p0.x, p1.x);
     double segMaxx = Math.max(p0.x, p1.x);
@@ -159,13 +223,14 @@ public class HotPixel
    * Tests whether the segment p0-p1 intersects the hot pixel tolerance square.
    * Because the tolerance square point set is partially open (along the
    * top and right) the test needs to be more sophisticated than
-   * simply checking for any intersection.  However, it
-   * can take advantage of the fact that because the hot pixel edges
-   * do not lie on the coordinate grid.  It is sufficient to check
-   * if there is at least one of:
+   * simply checking for any intersection.  
+   * However, it can take advantage of the fact that the hot pixel edges
+   * do not lie on the coordinate grid.  
+   * It is sufficient to check if any of the following occur:
    * <ul>
-   * <li>a proper intersection with the segment and any hot pixel edge
-   * <li>an intersection between the segment and both the left and bottom edges
+   * <li>a proper intersection between the segment and any hot pixel edge
+   * <li>an intersection between the segment and <b>both</b> the left and bottom hot pixel edges
+   * (which detects the case where the segment intersects the bottom left hot pixel corner)
    * <li>an intersection between a segment endpoint and the hot pixel coordinate
    * </ul>
    *
@@ -177,7 +242,9 @@ public class HotPixel
   {
     boolean intersectsLeft = false;
     boolean intersectsBottom = false;
-
+    //System.out.println("Hot Pixel: " + WKTWriter.toLineString(corner));
+    //System.out.println("Line: " + WKTWriter.toLineString(p0, p1));
+    
     li.computeIntersection(p0, p1, corner[0], corner[1]);
     if (li.isProper()) return true;
 
@@ -224,4 +291,31 @@ public class HotPixel
 
     return false;
   }
+  
+  /**
+   * Adds a new node (equal to the snap pt) to the specified segment
+   * if the segment passes through the hot pixel
+   *
+   * @param segStr
+   * @param segIndex
+   * @return true if a node was added to the segment
+   */
+  public boolean addSnappedNode(
+      NodedSegmentString segStr,
+      int segIndex
+      )
+  {
+    Coordinate p0 = segStr.getCoordinate(segIndex);
+    Coordinate p1 = segStr.getCoordinate(segIndex + 1);
+
+    if (intersects(p0, p1)) {
+      //System.out.println("snapped: " + snapPt);
+      //System.out.println("POINT (" + snapPt.x + " " + snapPt.y + ")");
+      segStr.addIntersection(getCoordinate(), segIndex);
+
+      return true;
+    }
+    return false;
+  }
+
 }

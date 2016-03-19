@@ -38,13 +38,19 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.meteoinfo.jts.geom.Envelope;
+
 /**
  * An <code>BinTree</code> (or "Binary Interval Tree")
  * is a 1-dimensional version of a quadtree.
- * It indexes 1-dimensional intervals (which of course may
+ * It indexes 1-dimensional intervals (which may
  * be the projection of 2-D objects on an axis).
  * It supports range searching
  * (where the range may be a single point).
+ * This structure is dynamic - 
+ * new items can be added at any time,   
+ * and it will support deletion of items 
+ * (although this is not currently implemented).
  * <p>
  * This implementation does not require specifying the extent of the inserted
  * items beforehand.  It will automatically expand to accomodate any extent
@@ -140,6 +146,19 @@ if (newSize <= oldSize) {
     */
   }
 
+  /**
+   * Removes a single item from the tree.
+   *
+   * @param itemEnv the Envelope of the item to be removed
+   * @param item the item to remove
+   * @return <code>true</code> if the item was found (and thus removed)
+   */
+  public boolean remove(Interval itemInterval, Object item)
+  {
+    Interval insertInterval = ensureExtent(itemInterval, minExtent);
+    return root.remove(insertInterval, item);
+  }
+  
   public Iterator iterator()
   {
     List foundItems = new ArrayList();
@@ -153,6 +172,10 @@ if (newSize <= oldSize) {
   }
 
   /**
+   * Queries the tree to find all candidate items which 
+   * may overlap the query interval.
+   * If the query interval is <tt>null</tt>, all items in the tree are found.
+   * 
    * min and max may be the same value
    */
   public List query(Interval interval)
@@ -166,6 +189,14 @@ if (newSize <= oldSize) {
     return foundItems;
   }
 
+  /**
+   * Adds items in the tree which potentially overlap the query interval
+   * to the given collection.
+   * If the query interval is <tt>null</tt>, add all items in the tree.
+   * 
+   * @param interval a query nterval, or null
+   * @param resultItems the candidate items found
+   */
   public void query(Interval interval, Collection foundItems)
   {
     root.addAllItemsFromOverlapping(interval, foundItems);

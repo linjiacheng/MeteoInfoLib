@@ -16,6 +16,7 @@ import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.PointD;
 import org.meteoinfo.layer.VectorLayer;
 import org.meteoinfo.shape.Graphic;
+import org.meteoinfo.shape.PolygonShape;
 import org.meteoinfo.shape.Shape;
 import org.meteoinfo.table.DataRow;
 
@@ -54,7 +55,7 @@ public class MapViewUndoRedo {
         }
     }
     
-    class AddFeatureEdit extends FeatureUndoableEdit {
+    public class AddFeatureEdit extends FeatureUndoableEdit {
         MapView mapView;
         Shape shape;
         VectorLayer layer;
@@ -91,6 +92,268 @@ public class MapViewUndoRedo {
         }                
     }
     
+    public class AddFeaturesEdit extends FeatureUndoableEdit {
+        MapView mapView;
+        List<Shape> shapes;
+        VectorLayer layer;
+        
+        public AddFeaturesEdit(MapView mapView, VectorLayer layer, List<Shape> shapes){
+            this.mapView = mapView;
+            this.layer = layer;
+            this.shapes = shapes;
+        }
+        
+        @Override
+        public String getPresentationName() {
+            return "Add Features";
+        }
+        
+        @Override
+        public void undo() {
+            super.undo();
+            for (Shape shape : shapes)
+                layer.editRemoveShape(shape);
+            mapView.paintLayers();
+            System.out.println("Undo add features");
+        }
+        
+        @Override
+        public void redo(){
+            super.redo();
+            try {
+                for (Shape shape : shapes)
+                    layer.editAddShape(shape);
+                mapView.paintLayers();
+                System.out.println("Redo add features");
+            } catch (Exception ex) {
+                Logger.getLogger(MapView.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }                
+    }
+    
+    public class SplitFeatureEdit extends FeatureUndoableEdit {
+        MapView mapView;
+        Shape shape;
+        List<Shape> shapes;
+        VectorLayer layer;
+        
+        public SplitFeatureEdit(MapView mapView, VectorLayer layer, Shape shape, List<Shape> shapes){
+            this.mapView = mapView;
+            this.layer = layer;
+            this.shape = shape;
+            this.shapes = shapes;
+        }
+        
+        @Override
+        public String getPresentationName() {
+            return "Split Feature";
+        }
+        
+        @Override
+        public void undo() {
+            super.undo();
+            for (Shape s : shapes)
+                layer.editRemoveShape(s);
+            try {
+                layer.editAddShape(shape);
+            } catch (Exception ex) {
+                Logger.getLogger(MapViewUndoRedo.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            mapView.paintLayers();
+            System.out.println("Undo split feature");
+        }
+        
+        @Override
+        public void redo(){
+            super.redo();
+            try {
+                for (Shape s : shapes)
+                    layer.editAddShape(s);
+                layer.editRemoveShape(shape);
+                mapView.paintLayers();
+                System.out.println("Redo split feature");
+            } catch (Exception ex) {
+                Logger.getLogger(MapView.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }                
+    }
+    
+    public class UnionFeaturesEdit extends FeatureUndoableEdit {
+        MapView mapView;
+        Shape shape;
+        List<Shape> shapes;
+        VectorLayer layer;
+        
+        public UnionFeaturesEdit(MapView mapView, VectorLayer layer, Shape shape, List<Shape> shapes){
+            this.mapView = mapView;
+            this.layer = layer;
+            this.shape = shape;
+            this.shapes = shapes;
+        }
+        
+        @Override
+        public String getPresentationName() {
+            return "Union Features";
+        }
+        
+        @Override
+        public void undo() {
+            super.undo();
+            try {
+                layer.editRemoveShape(shape);
+                for (Shape s : shapes)
+                    layer.editAddShape(s);                
+                mapView.paintLayers();
+                System.out.println("Undo split feature");
+            } catch (Exception ex){
+                Logger.getLogger(MapView.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        @Override
+        public void redo(){
+            super.redo();
+            try {
+                for (Shape s : shapes)
+                    layer.editRemoveShape(s);
+                layer.editAddShape(shape);
+                mapView.paintLayers();
+                System.out.println("Redo split feature");
+            } catch (Exception ex) {
+                Logger.getLogger(MapView.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }                
+    }
+    
+    public class AddRingEdit extends FeatureUndoableEdit {
+        MapView mapView;
+        PolygonShape shape;
+        List<PointD> points;
+        int polyIdx;
+        int holeIdx;
+        
+        public AddRingEdit(MapView mapView, PolygonShape shape, List<PointD> points,
+                int polygonIdx, int holeIdx){
+            this.mapView = mapView;
+            this.shape = shape;
+            this.points = points;
+            this.polyIdx = polygonIdx;
+            this.holeIdx = holeIdx;
+        }
+        
+        @Override
+        public String getPresentationName() {
+            return "Add a hole";
+        }
+        
+        @Override
+        public void undo() {
+            super.undo();
+            shape.removeHole(polyIdx, holeIdx);            
+            mapView.paintLayers();
+            System.out.println("Undo add a hole");
+        }
+        
+        @Override
+        public void redo(){
+            super.redo();
+            try {
+                shape.addHole(points, polyIdx);
+                mapView.paintLayers();
+                System.out.println("Redo add a hole");
+            } catch (Exception ex) {
+                Logger.getLogger(MapView.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }                
+    }
+    
+    public class FillRingEdit extends FeatureUndoableEdit {
+        MapView mapView;
+        VectorLayer layer;
+        PolygonShape shape;
+        PolygonShape hole;
+        int polyIdx;
+        int holeIdx;
+        
+        public FillRingEdit(MapView mapView, VectorLayer layer, PolygonShape shape, PolygonShape hole,
+                int polygonIdx, int holeIdx){
+            this.mapView = mapView;
+            this.layer = layer;
+            this.shape = shape;
+            this.hole = hole;
+            this.polyIdx = polygonIdx;
+            this.holeIdx = holeIdx;
+        }
+        
+        @Override
+        public String getPresentationName() {
+            return "Fill a hole";
+        }
+        
+        @Override
+        public void undo() {
+            super.undo();
+            shape.removeHole(polyIdx, holeIdx);  
+            layer.editRemoveShape(hole);
+            mapView.paintLayers();
+            System.out.println("Undo Fill a hole");
+        }
+        
+        @Override
+        public void redo(){
+            super.redo();
+            try {
+                shape.addHole(hole.getPoints(), polyIdx);
+                layer.editAddShape(hole);
+                mapView.paintLayers();
+                System.out.println("Redo Fill a hole");
+            } catch (Exception ex) {
+                Logger.getLogger(MapView.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }                
+    }
+    
+    public class RemoveRingEdit extends FeatureUndoableEdit {
+        MapView mapView;
+        PolygonShape shape;
+        List<PointD> points;
+        int polyIdx;
+        int holeIdx;
+        
+        public RemoveRingEdit(MapView mapView, PolygonShape shape, List<PointD> hole, int polygonIdx, int holeIdx){
+            this.mapView = mapView;
+            this.shape = shape;
+            this.points = hole;
+            this.polyIdx = polygonIdx;
+            this.holeIdx = holeIdx;
+        }
+        
+        @Override
+        public String getPresentationName() {
+            return "Remove a hole";
+        }
+        
+        @Override
+        public void undo() {
+            super.undo();            
+            try {
+                shape.addHole(points, polyIdx);
+                mapView.paintLayers();
+                System.out.println("Redo remove a hole");
+            } catch (Exception ex) {
+                Logger.getLogger(MapView.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        @Override
+        public void redo(){
+            super.redo();
+            shape.removeHole(polyIdx, holeIdx);            
+            mapView.paintLayers();
+            System.out.println("Undo remove a hole");
+        }                
+    }
+    
     public class RemoveFeaturesEdit extends FeatureUndoableEdit {
         MapView mapView;
         List<Shape> shapes;
@@ -102,8 +365,8 @@ public class MapViewUndoRedo {
             this.mapView = mapView;
             this.layer = layer;
             this.shapes = shapes;
-            indices = new ArrayList<Integer>();
-            records = new ArrayList<DataRow>();
+            indices = new ArrayList<>();
+            records = new ArrayList<>();
             int idx;
             DataRow row;
             for (Shape shape : shapes){
@@ -380,7 +643,7 @@ public class MapViewUndoRedo {
         
         public RemoveGraphicsEdit(MapView mapView, List<Graphic> graphics){
             this.mapView = mapView;
-            this.graphics = new ArrayList<Graphic>(graphics);
+            this.graphics = new ArrayList<>(graphics);
         }
         
         @Override

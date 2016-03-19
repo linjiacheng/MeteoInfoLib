@@ -33,44 +33,40 @@
  */
 package org.meteoinfo.jts.index.quadtree;
 
-import java.util.*;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
-import org.meteoinfo.jts.geom.Coordinate;
 import org.meteoinfo.jts.geom.Envelope;
-import org.meteoinfo.jts.index.*;
+import org.meteoinfo.jts.index.ItemVisitor;
 
 /**
  * The base class for nodes in a {@link Quadtree}.
  *
  * @version 1.7
  */
-public abstract class NodeBase {
-
-//<<TODO:REFACTOR?>> Several classes in the various tree packages have the
-//same name and duplicate code. This suggests that there should be a generic
-//tree package containing the code that is duplicated, perhaps in abstract
-//base classes. [Jon Aquino]
-
-//<<TODO:RENAME?>> This little class hierarchy has some naming/conceptual
-//problems. A root node is conceptually a kind of node, yet a Root is not a Node.
-//NodeBase begs to be called BaseNode, but not all BaseNodes would be Nodes
-//(for example, Root). [Jon Aquino]
+public abstract class NodeBase implements Serializable {
 
 //DEBUG private static int itemCount = 0;  // debugging
+  
   /**
-   * Returns the index of the subquad that wholly contains the given envelope.
+   * Gets the index of the subquad that wholly contains the given envelope.
    * If none does, returns -1.
+   * 
+   * @return the index of the subquad that wholly contains the given envelope
+   * or -1 if no subquad wholly contains the envelope
    */
-  public static int getSubnodeIndex(Envelope env, Coordinate centre)
+  public static int getSubnodeIndex(Envelope env, double centrex, double centrey)
   {
     int subnodeIndex = -1;
-    if (env.getMinX() >= centre.x) {
-      if (env.getMinY() >= centre.y) subnodeIndex = 3;
-      if (env.getMaxY() <= centre.y) subnodeIndex = 1;
+    if (env.getMinX() >= centrex) {
+      if (env.getMinY() >= centrey) subnodeIndex = 3;
+      if (env.getMaxY() <= centrey) subnodeIndex = 1;
     }
-    if (env.getMaxX() <= centre.x) {
-      if (env.getMinY() >= centre.y) subnodeIndex = 2;
-      if (env.getMaxY() <= centre.y) subnodeIndex = 0;
+    if (env.getMaxX() <= centrex) {
+      if (env.getMinY() >= centrey) subnodeIndex = 2;
+      if (env.getMaxY() <= centrey) subnodeIndex = 0;
     }
     return subnodeIndex;
   }
@@ -104,7 +100,7 @@ public abstract class NodeBase {
   /**
    * Removes a single item from this subtree.
    *
-   * @param searchEnv the envelope containing the item
+   * @param itemEnv the envelope containing the item
    * @param item the item to remove
    * @return <code>true</code> if the item was found and removed
    */

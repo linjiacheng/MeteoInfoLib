@@ -34,6 +34,7 @@
 package org.meteoinfo.jts.noding;
 
 import java.util.*;
+
 import org.meteoinfo.jts.algorithm.*;
 import org.meteoinfo.jts.geom.*;
 import org.meteoinfo.jts.util.*;
@@ -42,29 +43,64 @@ import org.meteoinfo.jts.io.*;
 /**
  * Validates that a collection of {@link SegmentString}s is correctly noded.
  * Indexing is used to improve performance.
- * This class assumes that at least one round of noding has already been performed
- * (which may still leave intersections, due to rounding issues).
- * Does NOT check a-b-a collapse situations. 
- * Also does not check for endpt-interior vertex intersections.
- * This should not be a problem, since the noders should be
+ * In the most common use case, validation stops after a single 
+ * non-noded intersection is detected, 
+ * but the class can be requested to detect all intersections
+ * by using the {@link #setFindAllIntersections(boolean)} method.
+ * <p>
+ * The validator does not check for a-b-a topology collapse situations.
+ * <p> 
+ * The validator does not check for endpoint-interior vertex intersections.
+ * This should not be a problem, since the JTS noders should be
  * able to compute intersections between vertices correctly.
- * User may either test the valid condition, or request that a 
- * {@link TopologyException} 
- * be thrown.
+ * <p>
+ * The client may either test the {@link #isValid()} condition, 
+ * or request that a suitable {@link TopologyException} be thrown.
  *
  * @version 1.7
  */
 public class FastNodingValidator 
 {
+  public static List computeIntersections(Collection segStrings)
+  {
+    FastNodingValidator nv = new FastNodingValidator(segStrings);
+    nv.setFindAllIntersections(true);
+    nv.isValid();
+    return nv.getIntersections();
+  }
+  
   private LineIntersector li = new RobustLineIntersector();
 
   private Collection segStrings;
+  private boolean findAllIntersections = false;
   private InteriorIntersectionFinder segInt = null;
   private boolean isValid = true;
   
+  /**
+   * Creates a new noding validator for a given set of linework.
+   * 
+   * @param segStrings a collection of {@link SegmentString}s
+   */
   public FastNodingValidator(Collection segStrings)
   {
     this.segStrings = segStrings;
+  }
+
+  public void setFindAllIntersections(boolean findAllIntersections)
+  {
+    this.findAllIntersections = findAllIntersections;
+  }
+  
+  /**
+   * Gets a list of all intersections found.
+   * Intersections are represented as {@link Coordinate}s.
+   * List is empty if none were found.
+   * 
+   * @return a list of Coordinate
+   */
+  public List getIntersections()
+  {
+    return segInt.getIntersections();
   }
 
   /**
@@ -125,6 +161,7 @@ public class FastNodingValidator
   	 */
   	isValid = true;
   	segInt = new InteriorIntersectionFinder(li);
+    segInt.setFindAllIntersections(findAllIntersections);
   	MCIndexNoder noder = new MCIndexNoder();
   	noder.setSegmentIntersector(segInt);
   	noder.computeNodes(segStrings);

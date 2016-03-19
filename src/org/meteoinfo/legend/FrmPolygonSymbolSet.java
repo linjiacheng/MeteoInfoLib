@@ -319,6 +319,9 @@ public class FrmPolygonSymbolSet extends javax.swing.JDialog {
     private void jLabel_FillColorMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel_FillColorMouseClicked
         // TODO add your handling code here:
         Color c = JColorChooser.showDialog(rootPane, null, this.jLabel_FillColor.getBackground());
+        if (c == null)
+            return;
+        
         int trans = Integer.parseInt(this.jSpinner_TransParency.getValue().toString());
         trans = (int)((1 - trans / 100.0) * 255);
         Color aColor = new Color(c.getRed(), c.getGreen(), c.getBlue(), trans);

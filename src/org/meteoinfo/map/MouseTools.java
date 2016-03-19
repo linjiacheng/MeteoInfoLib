@@ -49,5 +49,9 @@ public enum MouseTools {
     Edit_NewFeature,
     Edit_FeatureVertices,
     Edit_InEditingVertices,
+    Edit_AddRing,
+    Edit_FillRing,
+    Edit_DeleteRing,
+    Edit_SplitFeature,
     None
 }

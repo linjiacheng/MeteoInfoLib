@@ -42,7 +42,7 @@ import org.meteoinfo.jts.geom.*;
 import org.meteoinfo.jts.util.Assert;
 
 /**
- * A robust version of {@LineIntersector}.
+ * A robust version of {@link LineIntersector}.
  *
  * @version 1.7
  * @see RobustDeterminant
@@ -64,11 +64,11 @@ public class RobustLineIntersector
         if (p.equals(p1) || p.equals(p2)) {
           isProper = false;
         }
-        result = DO_INTERSECT;
+        result = POINT_INTERSECTION;
         return;
       }
     }
-    result = DONT_INTERSECT;
+    result = NO_INTERSECTION;
   }
 
   protected int computeIntersect(
@@ -78,7 +78,7 @@ public class RobustLineIntersector
 
     // first try a fast test to see if the envelopes of the lines intersect
     if (! Envelope.intersects(p1, p2, q1, q2))
-      return DONT_INTERSECT;
+      return NO_INTERSECTION;
 
     // for each endpoint, compute which side of the other segment it lies
     // if both endpoints lie on the same side of the other segment,
@@ -87,14 +87,14 @@ public class RobustLineIntersector
     int Pq2 = CGAlgorithms.orientationIndex(p1, p2, q2);
 
     if ((Pq1>0 && Pq2>0) || (Pq1<0 && Pq2<0)) {
-      return DONT_INTERSECT;
+      return NO_INTERSECTION;
     }
 
     int Qp1 = CGAlgorithms.orientationIndex(q1, q2, p1);
     int Qp2 = CGAlgorithms.orientationIndex(q1, q2, p2);
 
     if ((Qp1>0 && Qp2>0) || (Qp1<0 && Qp2<0)) {
-        return DONT_INTERSECT;
+        return NO_INTERSECTION;
     }
 
     boolean collinear = Pq1 == 0
@@ -166,7 +166,7 @@ public class RobustLineIntersector
       isProper = true;
       intPt[0] = intersection(p1, p2, q1, q2);
     }
-    return DO_INTERSECT;
+    return POINT_INTERSECTION;
   }
 
   private int computeCollinearIntersection(Coordinate p1, Coordinate p2,
@@ -179,34 +179,34 @@ public class RobustLineIntersector
     if (p1q1p2 && p1q2p2) {
       intPt[0] = q1;
       intPt[1] = q2;
-      return COLLINEAR;
+      return COLLINEAR_INTERSECTION;
     }
     if (q1p1q2 && q1p2q2) {
       intPt[0] = p1;
       intPt[1] = p2;
-      return COLLINEAR;
+      return COLLINEAR_INTERSECTION;
     }
     if (p1q1p2 && q1p1q2) {
       intPt[0] = q1;
       intPt[1] = p1;
-      return q1.equals(p1) && !p1q2p2 && !q1p2q2 ? DO_INTERSECT : COLLINEAR;
+      return q1.equals(p1) && !p1q2p2 && !q1p2q2 ? POINT_INTERSECTION : COLLINEAR_INTERSECTION;
     }
     if (p1q1p2 && q1p2q2) {
       intPt[0] = q1;
       intPt[1] = p2;
-      return q1.equals(p2) && !p1q2p2 && !q1p1q2 ? DO_INTERSECT : COLLINEAR;
+      return q1.equals(p2) && !p1q2p2 && !q1p1q2 ? POINT_INTERSECTION : COLLINEAR_INTERSECTION;
     }
     if (p1q2p2 && q1p1q2) {
       intPt[0] = q2;
       intPt[1] = p1;
-      return q2.equals(p1) && !p1q1p2 && !q1p2q2 ? DO_INTERSECT : COLLINEAR;
+      return q2.equals(p1) && !p1q1p2 && !q1p2q2 ? POINT_INTERSECTION : COLLINEAR_INTERSECTION;
     }
     if (p1q2p2 && q1p2q2) {
       intPt[0] = q2;
       intPt[1] = p2;
-      return q2.equals(p2) && !p1q1p2 && !q1p1q2 ? DO_INTERSECT : COLLINEAR;
+      return q2.equals(p2) && !p1q1p2 && !q1p1q2 ? POINT_INTERSECTION : COLLINEAR_INTERSECTION;
     }
-    return DONT_INTERSECT;
+    return NO_INTERSECTION;
   }
 
   /**
@@ -221,9 +221,15 @@ public class RobustLineIntersector
     Coordinate p1, Coordinate p2, Coordinate q1, Coordinate q2)
   {
     Coordinate intPt = intersectionWithNormalization(p1, p2, q1, q2);
-  	// testing only
-//    Coordinate intPt = safeHCoordinateIntersection(p1, p2, q1, q2);
-
+    
+    /*
+    // TESTING ONLY
+    Coordinate intPtDD = CGAlgorithmsDD.intersection(p1, p2, q1, q2);
+    double dist = intPt.distance(intPtDD);
+    System.out.println(intPt + " - " + intPtDD + " dist = " + dist);
+    //intPt = intPtDD;
+    */
+    
     /**
      * Due to rounding it can happen that the computed intersection is
      * outside the envelopes of the input segments.  Clearly this
@@ -240,17 +246,31 @@ public class RobustLineIntersector
      */
     if (! isInSegmentEnvelopes(intPt)) {
 //      System.out.println("Intersection outside segment envelopes: " + intPt);
-//      System.out.println("Segments: " + this);
+      
       // compute a safer result
-      intPt = CentralEndpointIntersector.getIntersection(p1, p2, q1, q2);
+      // copy the coordinate, since it may be rounded later
+      intPt = new Coordinate(nearestEndpoint(p1, p2, q1, q2));
+//    intPt = CentralEndpointIntersector.getIntersection(p1, p2, q1, q2);
+      
+//      System.out.println("Segments: " + this);
 //      System.out.println("Snapped to " + intPt);
+//      checkDD(p1, p2, q1, q2, intPt);
     }
-
     if (precisionModel != null) {
       precisionModel.makePrecise(intPt);
     }
-
     return intPt;
+  }
+
+  private void checkDD(Coordinate p1, Coordinate p2, Coordinate q1,
+      Coordinate q2, Coordinate intPt)
+  {
+    Coordinate intPtDD = CGAlgorithmsDD.intersection(p1, p2, q1, q2);
+    boolean isIn = isInSegmentEnvelopes(intPtDD);
+    System.out.println(   "DD in env = " + isIn + "  --------------------- " + intPtDD);
+    if (intPt.distance(intPtDD) > 0.0001) {
+      System.out.println("Distance = " + intPt.distance(intPtDD));
+    }
   }
 
   private Coordinate intersectionWithNormalization(
@@ -292,7 +312,8 @@ public class RobustLineIntersector
     catch (NotRepresentableException e) {
 //    	System.out.println("Not calculable: " + this);
       // compute an approximate result
-      intPt = CentralEndpointIntersector.getIntersection(p1, p2, q1, q2);
+//      intPt = CentralEndpointIntersector.getIntersection(p1, p2, q1, q2);
+      intPt = nearestEndpoint(p1, p2, q1, q2);
  //     System.out.println("Snapped to " + intPt);
     }
     return intPt;
@@ -399,7 +420,7 @@ public class RobustLineIntersector
   }
 
   /**
-   * Test whether a point lies in the envelopes of both input segments.
+   * Tests whether a point lies in the envelopes of both input segments.
    * A correctly computed intersection point should return <code>true</code>
    * for this test.
    * Since this test is for debugging purposes only, no attempt is
@@ -413,5 +434,49 @@ public class RobustLineIntersector
     Envelope env1 = new Envelope(inputLines[1][0], inputLines[1][1]);
     return env0.contains(intPt) && env1.contains(intPt);
   }
+
+  /**
+   * Finds the endpoint of the segments P and Q which 
+   * is closest to the other segment.
+   * This is a reasonable surrogate for the true 
+   * intersection points in ill-conditioned cases
+   * (e.g. where two segments are nearly coincident,
+   * or where the endpoint of one segment lies almost on the other segment).
+   * <p>
+   * This replaces the older CentralEndpoint heuristic,
+   * which chose the wrong endpoint in some cases
+   * where the segments had very distinct slopes 
+   * and one endpoint lay almost on the other segment.
+   * 
+   * @param p1 an endpoint of segment P
+   * @param p2 an endpoint of segment P
+   * @param q1 an endpoint of segment Q
+   * @param q2 an endpoint of segment Q
+   * @return the nearest endpoint to the other segment
+   */
+  private static Coordinate nearestEndpoint(Coordinate p1, Coordinate p2,
+      Coordinate q1, Coordinate q2)
+  {
+    Coordinate nearestPt = p1;
+    double minDist = CGAlgorithms.distancePointLine(p1, q1, q2);
+    
+    double dist = CGAlgorithms.distancePointLine(p2, q1, q2);
+    if (dist < minDist) {
+      minDist = dist;
+      nearestPt = p2;
+    }
+    dist = CGAlgorithms.distancePointLine(q1, p1, p2);
+    if (dist < minDist) {
+      minDist = dist;
+      nearestPt = q1;
+    }
+    dist = CGAlgorithms.distancePointLine(q2, p1, p2);
+    if (dist < minDist) {
+      minDist = dist;
+      nearestPt = q2;
+    }
+    return nearestPt;
+  }
+
 
 }

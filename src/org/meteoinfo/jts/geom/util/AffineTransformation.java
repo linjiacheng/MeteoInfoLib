@@ -1,9 +1,42 @@
+/*
+* The JTS Topology Suite is a collection of Java classes that
+* implement the fundamental operations required to validate a given
+* geo-spatial data set to a known topological specification.
+*
+* Copyright (C) 2001 Vivid Solutions
+*
+* This library is free software; you can redistribute it and/or
+* modify it under the terms of the GNU Lesser General Public
+* License as published by the Free Software Foundation; either
+* version 2.1 of the License, or (at your option) any later version.
+*
+* This library is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with this library; if not, write to the Free Software
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*
+* For more information, contact:
+*
+*     Vivid Solutions
+*     Suite #1A
+*     2328 Government Street
+*     Victoria BC  V8T 5G5
+*     Canada
+*
+*     (250)385-6040
+*     www.vividsolutions.com
+*/
+
 package org.meteoinfo.jts.geom.util;
 
 import org.meteoinfo.jts.geom.*;
-
+import org.meteoinfo.jts.util.*;
 /**
- * Represents a affine transformation on the 2D Cartesian plane. 
+ * Represents an affine transformation on the 2D Cartesian plane. 
  * It can be used to transform a {@link Coordinate} or {@link Geometry}.
  * An affine transformation is a mapping of the 2D plane into itself
  * via a series of transformations of the following basic types:
@@ -31,18 +64,22 @@ import org.meteoinfo.jts.geom.*;
  * | y' |        | y |
  * | 1  |        | 1 |
  * </pre></blockquote>
+ * <h3>Transformation Composition</h3>
  * Affine transformations can be composed using the {@link #compose} method.
- * The composition of transformations is in general not commutative.
- * transformation matrices as follows:
+ * Composition is computed via multiplication of the 
+ * transformation matrices, and is defined as:
  * <blockquote><pre>
  * A.compose(B) = T<sub>B</sub> x T<sub>A</sub>
  * </pre></blockquote>
  * This produces a transformation whose effect is that of A followed by B.
- * Composition is computed via multiplication of the 
- * The methods {@link #reflect}, {@link #rotate}, {@link #scale}, {@link #shear}, and {@link #translate} 
+ * The methods {@link #reflect}, {@link #rotate}, 
+ * {@link #scale}, {@link #shear}, and {@link #translate} 
  * have the effect of composing a transformation of that type with
  * the transformation they are invoked on.  
  * <p>
+ * The composition of transformations is in general <i>not</i> commutative.
+ * 
+ * <h3>Transformation Inversion</h3>
  * Affine transformations may be invertible or non-invertible.  
  * If a transformation is invertible, then there exists 
  * an inverse transformation which when composed produces 
@@ -122,6 +159,49 @@ public class AffineTransformation
     return trans;
   }
   
+  /**
+   * Creates a transformation for a rotation
+   * about the point (x,y) by an angle <i>theta</i>.
+   * Positive angles correspond to a rotation 
+   * in the counter-clockwise direction.
+   * 
+   * @param theta the rotation angle, in radians
+   * @param x the x-ordinate of the rotation point
+   * @param y the y-ordinate of the rotation point
+   * @return a transformation for the rotation
+   */
+  public static AffineTransformation rotationInstance(double theta, double x, double y)
+  {
+    return rotationInstance(Math.sin(theta), Math.cos(theta), x, y);
+  }
+  
+  /**
+   * Creates a transformation for a rotation 
+   * about the point (x,y) by an angle <i>theta</i>,
+   * specified by the sine and cosine of the angle.
+   * This allows providing exact values for sin(theta) and cos(theta)
+   * for the common case of rotations of multiples of quarter-circles. 
+   * 
+   * @param sinTheta the sine of the rotation angle
+   * @param cosTheta the cosine of the rotation angle
+   * @param x the x-ordinate of the rotation point
+   * @param y the y-ordinate of the rotation point
+   * @return a transformation for the rotation
+   */
+  public static AffineTransformation rotationInstance(double sinTheta, double cosTheta, double x, double y)
+  {
+    AffineTransformation trans = new AffineTransformation();
+    trans.setToRotation(sinTheta, cosTheta, x, y);
+    return trans;
+  }
+  
+  /**
+   * Creates a transformation for a scaling relative to the origin.
+   * 
+   * @param xScale the value to scale by in the x direction
+   * @param yScale the value to scale by in the y direction
+   * @return a transformation for the scaling
+   */
   public static AffineTransformation scaleInstance(double xScale, double yScale)
   {
     AffineTransformation trans = new AffineTransformation();
@@ -129,6 +209,32 @@ public class AffineTransformation
     return trans;
   }
   
+  /**
+   * Creates a transformation for a scaling relative to the point (x,y).
+   * 
+   * @param xScale the value to scale by in the x direction
+   * @param yScale the value to scale by in the y direction
+   * @param x the x-ordinate of the point to scale around
+   * @param y the y-ordinate of the point to scale around
+   * @return a transformation for the scaling
+   */
+  public static AffineTransformation scaleInstance(double xScale, double yScale, double x, double y)
+  {
+    AffineTransformation trans = new AffineTransformation();
+    trans.translate(-x, -y);
+    trans.scale(xScale, yScale);
+    trans.translate(x, y);
+    return trans;
+  }
+  
+
+  /**
+   * Creates a transformation for a shear.
+   * 
+   * @param xShear the value to shear by in the x direction
+   * @param yShear the value to shear by in the y direction
+   * @return a tranformation for the shear
+   */
   public static AffineTransformation shearInstance(double xShear, double yShear)
   {
     AffineTransformation trans = new AffineTransformation();
@@ -136,6 +242,13 @@ public class AffineTransformation
     return trans;
   }
   
+  /**
+   * Creates a transformation for a translation.
+   * 
+   * @param x the value to translate by in the x direction
+   * @param y the value to translate by in the y direction
+   * @return a tranformation for the translation
+   */  
   public static AffineTransformation translationInstance(double x, double y)
   {
     AffineTransformation trans = new AffineTransformation();
@@ -154,7 +267,6 @@ public class AffineTransformation
   
   /**
    * Constructs a new identity transformation
-   *
    */
   public AffineTransformation()
   {
@@ -385,11 +497,11 @@ public class AffineTransformation
   
   /**
    * Explicitly computes the math for a reflection.  May not work.
-   * @param x0
-   * @param y0
-   * @param x1
-   * @param y1
-   * @return
+   * @param x0 the X ordinate of one point on the reflection line
+   * @param y0 the Y ordinate of one point on the reflection line
+   * @param x1 the X ordinate of another point on the reflection line
+   * @param y1 the Y ordinate of another point on the reflection line
+   * @return this transformation, with an updated matrix
    */
   public AffineTransformation setToReflectionBasic(double x0, double y0, double x1, double y1)
   {
@@ -408,6 +520,16 @@ public class AffineTransformation
     return this;
   }
   
+  /**
+   * Sets this transformation to be a reflection 
+   * about the line defined by a line <tt>(x0,y0) - (x1,y1)</tt>.
+   * 
+   * @param x0 the X ordinate of one point on the reflection line
+   * @param y0 the Y ordinate of one point on the reflection line
+   * @param x1 the X ordinate of another point on the reflection line
+   * @param y1 the Y ordinate of another point on the reflection line
+   * @return this transformation, with an updated matrix
+   */
   public AffineTransformation setToReflection(double x0, double y0, double x1, double y1)
   {
     if (x0 == x1 && y0 == y1) {
@@ -439,7 +561,7 @@ public class AffineTransformation
    * is computed by:
    * <blockquote><pre>
    * d = sqrt(x<sup>2</sup> + y<sup>2</sup>)  
-   * sin = x / d;
+   * sin = y / d;
    * cos = x / d;
    * 
    * T<sub>ref</sub> = T<sub>rot(sin, cos)</sub> x T<sub>scale(1, -1)</sub> x T<sub>rot(-sin, cos)</sub  
@@ -454,6 +576,21 @@ public class AffineTransformation
     if (x == 0.0 && y == 0.0) {
       throw new IllegalArgumentException("Reflection vector must be non-zero");
     }
+    
+    /**
+     * Handle special case - x = y.
+     * This case is specified explicitly to avoid roundoff error.
+     */
+    if (x == y) {
+      m00 = 0.0;
+      m01 = 1.0;
+      m02 = 0.0;
+      m10 = 1.0;
+      m11 = 0.0;
+      m12 = 0.0;
+      return this;
+    }
+    
     // rotate vector to positive x axis direction
     double d = Math.sqrt(x * x + y * y);
     double sin = y / d;
@@ -467,7 +604,7 @@ public class AffineTransformation
   }
   
   /**
-   * Sets this transformation to be a rotation.
+   * Sets this transformation to be a rotation around the origin.
    * A positive rotation angle corresponds 
    * to a counter-clockwise rotation.
    * The transformation matrix for a rotation
@@ -482,14 +619,14 @@ public class AffineTransformation
    * @param theta the rotation angle, in radians
    * @return this transformation, with an updated matrix
    */
-  private AffineTransformation setToRotation(double theta)
+  public AffineTransformation setToRotation(double theta)
   {
     setToRotation(Math.sin(theta), Math.cos(theta));
     return this;
   }
   
   /**
-   * Sets this transformation to be a rotation 
+   * Sets this transformation to be a rotation around the origin
    * by specifying the sin and cos of the rotation angle directly.
    * The transformation matrix for the rotation
    * has the value:
@@ -507,6 +644,57 @@ public class AffineTransformation
   {
     m00 = cosTheta;    m01 = -sinTheta;  m02 = 0.0;
     m10 = sinTheta;    m11 = cosTheta;   m12 = 0.0;
+    return this;
+  }
+  
+  /**
+   * Sets this transformation to be a rotation
+   * around a given point (x,y).
+   * A positive rotation angle corresponds 
+   * to a counter-clockwise rotation.
+   * The transformation matrix for a rotation
+   * by an angle <tt>theta</tt>
+   * has the value:
+   * <blockquote><pre>  
+   * |  cosTheta  -sinTheta   x-x*cos+y*sin |
+   * |  sinTheta   cosTheta   y-x*sin-y*cos |
+   * |           0            0   1 |
+   * </pre></blockquote> 
+   * 
+   * @param theta the rotation angle, in radians
+   * @param x the x-ordinate of the rotation point
+   * @param y the y-ordinate of the rotation point
+   * @return this transformation, with an updated matrix
+   */
+  public AffineTransformation setToRotation(double theta, double x, double y)
+  {
+    setToRotation(Math.sin(theta), Math.cos(theta), x, y);
+    return this;
+  }
+  
+
+  /**
+   * Sets this transformation to be a rotation
+   * around a given point (x,y)
+   * by specifying the sin and cos of the rotation angle directly.
+   * The transformation matrix for the rotation
+   * has the value:
+   * <blockquote><pre>  
+   * |  cosTheta  -sinTheta   x-x*cos+y*sin |
+   * |  sinTheta   cosTheta   y-x*sin-y*cos |
+   * |         0          0         1       |
+   * </pre></blockquote> 
+   * 
+   * @param sinTheta the sine of the rotation angle
+   * @param cosTheta the cosine of the rotation angle
+   * @param x the x-ordinate of the rotation point
+   * @param y the y-ordinate of the rotation point
+   * @return this transformation, with an updated matrix
+   */
+  public AffineTransformation setToRotation(double sinTheta, double cosTheta, double x, double y)
+  {
+    m00 = cosTheta;    m01 = -sinTheta;  m02 = x - x * cosTheta + y * sinTheta;
+    m10 = sinTheta;    m11 = cosTheta;   m12 = y - x * sinTheta - y * cosTheta;
     return this;
   }
   
@@ -612,8 +800,10 @@ public class AffineTransformation
    * Updates the value of this transformation
    * to that of a rotation transformation composed 
    * with the current value.
+   * Positive angles correspond to a rotation 
+   * in the counter-clockwise direction.
    * 
-   * @param theta the angle to rotate by
+   * @param theta the angle to rotate by, in radians
    * @return this transformation, with an updated matrix
    */
   public AffineTransformation rotate(double theta)
@@ -624,14 +814,51 @@ public class AffineTransformation
   
   /**
    * Updates the value of this transformation
-   * to that of a rotation transformation composed 
-   * with the current value.
+   * to that of a rotation around the origin composed 
+   * with the current value,
+   * with the sin and cos of the rotation angle specified directly.
    * 
    * @param sinTheta the sine of the angle to rotate by
    * @param cosTheta the cosine of the angle to rotate by
    * @return this transformation, with an updated matrix
    */
   public AffineTransformation rotate(double sinTheta, double cosTheta)
+  {
+    compose(rotationInstance(sinTheta, cosTheta));
+    return this;
+  }
+  
+  /**
+   * Updates the value of this transformation
+   * to that of a rotation around a given point composed 
+   * with the current value.
+   * Positive angles correspond to a rotation 
+   * in the counter-clockwise direction.
+   * 
+   * @param theta the angle to rotate by, in radians
+   * @param x the x-ordinate of the rotation point
+   * @param y the y-ordinate of the rotation point
+   * @return this transformation, with an updated matrix
+   */
+  public AffineTransformation rotate(double theta, double x, double y)
+  {
+    compose(rotationInstance(theta, x, y));
+    return this;
+  }
+  
+  /**
+   * Updates the value of this transformation
+   * to that of a rotation around a given point composed 
+   * with the current value,
+   * with the sin and cos of the rotation angle specified directly.
+   * 
+   * @param sinTheta the sine of the angle to rotate by
+   * @param cosTheta the cosine of the angle to rotate by
+   * @param x the x-ordinate of the rotation point
+   * @param y the y-ordinate of the rotation point
+   * @return this transformation, with an updated matrix
+   */
+  public AffineTransformation rotate(double sinTheta, double cosTheta, double x, double y)
   {
     compose(rotationInstance(sinTheta, cosTheta));
     return this;
@@ -684,8 +911,8 @@ public class AffineTransformation
   
 
   /**
-   * Composes the given {@link AffineTransformation} 
-   * with this transformation.
+   * Updates this transformation to be
+   * the composition of this transformation with the given {@link AffineTransformation}. 
    * This produces a transformation whose effect 
    * is equal to applying this transformation 
    * followed by the argument transformation.
@@ -715,8 +942,8 @@ public class AffineTransformation
   }
   
   /**
-   * Composes this transformation 
-   * with the given {@link AffineTransformation}.
+   * Updates this transformation to be the composition 
+   * of a given {@link AffineTransformation} with this transformation.
    * This produces a transformation whose effect 
    * is equal to applying the argument transformation 
    * followed by this transformation.
@@ -764,6 +991,20 @@ public class AffineTransformation
   }
   
   /**
+   * Cretaes a new @link Geometry which is the result
+   * of this transformation applied to the input Geometry.
+   * 
+   *@param seq  a <code>Geometry</code>
+   *@return a transformed Geometry
+   */
+  public Geometry transform(Geometry g)
+  {
+    Geometry g2 = (Geometry) g.clone();
+    g2.apply(this);
+    return g2;    
+  }
+  
+  /**
    * Applies this transformation to the i'th coordinate
    * in the given CoordinateSequence.
    * 
@@ -775,7 +1016,7 @@ public class AffineTransformation
     double xp = m00 * seq.getOrdinate(i, 0) + m01 * seq.getOrdinate(i, 1) + m02;
     double yp = m10 * seq.getOrdinate(i, 0) + m11 * seq.getOrdinate(i, 1) + m12;
     seq.setOrdinate(i, 0, xp);
-    seq.setOrdinate(i, 1, yp);	
+    seq.setOrdinate(i, 1, yp);  
   }
   
   /**
@@ -827,8 +1068,10 @@ public class AffineTransformation
   */
   public boolean equals(Object obj)
   {
-    if (obj instanceof AffineTransformation)
+    if (obj == null) return false;
+    if (! (obj instanceof AffineTransformation))
       return false;
+    
     AffineTransformation trans = (AffineTransformation) obj;
     return m00 == trans.m00
     && m01 == trans.m01
@@ -862,6 +1105,11 @@ public class AffineTransformation
    */
   public Object clone()
   {
-    return new AffineTransformation(this);
+  	try {
+  		return super.clone();
+  	} catch(Exception ex) {
+  		Assert.shouldNeverReachHere();
+  	}
+  	return null;
   }
 }

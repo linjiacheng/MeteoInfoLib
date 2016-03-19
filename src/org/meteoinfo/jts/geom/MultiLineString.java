@@ -1,5 +1,3 @@
-
-
 /*
  * The JTS Topology Suite is a collection of Java classes that
  * implement the fundamental operations required to validate a given
@@ -37,11 +35,16 @@ package org.meteoinfo.jts.geom;
 import org.meteoinfo.jts.operation.BoundaryOp;
 
 /**
- *  Basic implementation of <code>MultiLineString</code>.
+ * Models a collection of (@link LineString}s.
+ * <p>
+ * Any collection of LineStrings is a valid MultiLineString.
  *
  *@version 1.7
  */
-public class MultiLineString extends GeometryCollection {
+public class MultiLineString 
+	extends GeometryCollection
+	implements Lineal
+	{
   private static final long serialVersionUID = 8166665132445433741L;
   /**
    *  Constructs a <code>MultiLineString</code>.
@@ -121,12 +124,12 @@ public class MultiLineString extends GeometryCollection {
    *
    * @return a {@link MultiLineString} in the reverse order
    */
-  public MultiLineString reverse()
+  public Geometry reverse()
   {
     int nLines = geometries.length;
     LineString[] revLines = new LineString[nLines];
     for (int i = 0; i < geometries.length; i++) {
-      revLines[nLines - 1 - i] = ((LineString) geometries[i]).reverse();
+      revLines[nLines - 1 - i] = (LineString)geometries[i].reverse();
     }
     return getFactory().createMultiLineString(revLines);
   }

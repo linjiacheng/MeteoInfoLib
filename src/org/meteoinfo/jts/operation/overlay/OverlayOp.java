@@ -43,7 +43,7 @@ import org.meteoinfo.jts.operation.GeometryGraphOperation;
 import org.meteoinfo.jts.noding.*;
 
 /**
- * Computes the overlay of two {@link Geometry}s.  The overlay
+ * Computes the geometric overlay of two {@link Geometry}s.  The overlay
  * can be used to determine any boolean combination of the geometries.
  *
  * @version 1.7
@@ -55,11 +55,37 @@ public class OverlayOp
  * The spatial functions supported by this class.
  * These operations implement various boolean combinations of the resultants of the overlay.
  */
+	
+  /**
+   * The code for the Intersection overlay operation.
+   */
   public static final int INTERSECTION  = 1;
+  
+  /**
+   * The code for the Union overlay operation.
+   */
   public static final int UNION         = 2;
+  
+  /**
+   *  The code for the Difference overlay operation.
+   */
   public static final int DIFFERENCE    = 3;
+  
+  /**
+   *  The code for the Symmetric Difference overlay operation.
+   */
   public static final int SYMDIFFERENCE = 4;
 
+  /**
+   * Computes an overlay operation for 
+   * the given geometry arguments.
+   * 
+   * @param geom0 the first geometry argument
+   * @param geom1 the second geometry argument
+   * @param opCode the code for the desired overlay operation
+   * @return the result of the overlay operation
+   * @throws TopologyException if a robustness problem is encountered
+   */
   public static Geometry overlayOp(Geometry geom0, Geometry geom1, int opCode)
   {
     OverlayOp gov = new OverlayOp(geom0, geom1);
@@ -67,6 +93,18 @@ public class OverlayOp
     return geomOv;
   }
 
+  /**
+   * Tests whether a point with a given topological {@link Label}
+   * relative to two geometries is contained in 
+   * the result of overlaying the geometries using
+   * a given overlay operation.
+   * <p>
+   * The method handles arguments of {@link Location#NONE} correctly
+   * 
+   * @param label the topological label of the point
+   * @param opCode the code for the overlay operation to test
+   * @return true if the label locations correspond to the overlayOpCode
+   */
   public static boolean isResultOfOp(Label label, int opCode)
   {
     int loc0 = label.getLocation(0);
@@ -75,15 +113,23 @@ public class OverlayOp
   }
 
   /**
-   * This method will handle arguments of Location.NONE correctly
+   * Tests whether a point with given {@link Location}s
+   * relative to two geometries is contained in 
+   * the result of overlaying the geometries using
+   * a given overlay operation.
+   * <p>
+   * The method handles arguments of {@link Location#NONE} correctly
    *
-   * @return true if the locations correspond to the opCode
+   * @param loc0 the code for the location in the first geometry 
+   * @param loc1 the code for the location in the second geometry 
+   * @param overlayOpCode the code for the overlay operation to test
+   * @return true if the locations correspond to the overlayOpCode
    */
-  public static boolean isResultOfOp(int loc0, int loc1, int opCode)
+  public static boolean isResultOfOp(int loc0, int loc1, int overlayOpCode)
   {
     if (loc0 == Location.BOUNDARY) loc0 = Location.INTERIOR;
     if (loc1 == Location.BOUNDARY) loc1 = Location.INTERIOR;
-    switch (opCode) {
+    switch (overlayOpCode) {
     case INTERSECTION:
       return loc0 == Location.INTERIOR
           && loc1 == Location.INTERIOR;
@@ -111,6 +157,13 @@ public class OverlayOp
   private List resultLineList   = new ArrayList();
   private List resultPointList  = new ArrayList();
 
+  /**
+   * Constructs an instance to compute a single overlay operation
+   * for the given geometries.
+   * 
+   * @param g0 the first geometry argument
+   * @param g1 the second geometry argument
+   */
   public OverlayOp(Geometry g0, Geometry g1) {
     super(g0, g1);
     graph = new PlanarGraph(new OverlayNodeFactory());
@@ -122,12 +175,26 @@ public class OverlayOp
     geomFact = g0.getFactory();
   }
 
-  public Geometry getResultGeometry(int funcCode)
+  /**
+   * Gets the result of the overlay for a given overlay operation.
+   * <p>
+   * Note: this method can be called once only.
+   * 
+   * @param overlayOpCode the overlay operation to perform
+   * @return the compute result geometry
+   * @throws TopologyException if a robustness problem is encountered
+   */
+  public Geometry getResultGeometry(int overlayOpCode)
   {
-    computeOverlay(funcCode);
+    computeOverlay(overlayOpCode);
     return resultGeom;
   }
 
+  /**
+   * Gets the graph constructed to compute the overlay.
+   * 
+   * @return the overlay graph
+   */
   public PlanarGraph getGraph() { return graph; }
 
   private void computeOverlay(int opCode)
@@ -157,9 +224,17 @@ public class OverlayOp
 
 //Debug.println(edgeList);
 
-    // debugging only
-    EdgeNodingValidator nv = new EdgeNodingValidator(edgeList.getEdges());
-    nv.checkValid();
+    /**
+     * Check that the noding completed correctly.
+     * 
+     * This test is slow, but necessary in order to catch robustness failure 
+     * situations.
+     * If an exception is thrown because of a noding failure, 
+     * then snapping will be performed, which will hopefully avoid the problem.
+     * In the future hopefully a faster check can be developed.  
+     * 
+     */
+    EdgeNodingValidator.checkValid(edgeList.getEdges());
 
     graph.addEdges(edgeList.getEdges());
     computeLabelling();
@@ -177,7 +252,7 @@ public class OverlayOp
     findResultAreaEdges(opCode);
     cancelDuplicateResultEdges();
 
-    PolygonBuilder polyBuilder = new PolygonBuilder(geomFact, cga);
+    PolygonBuilder polyBuilder = new PolygonBuilder(geomFact);
     polyBuilder.add(graph);
     resultPolyList = polyBuilder.getPolygons();
 
@@ -188,7 +263,7 @@ public class OverlayOp
     resultPointList = pointBuilder.build(opCode);
 
     // gather the results from all calculations into a single Geometry for the result set
-    resultGeom = computeGeometry(resultPointList, resultLineList, resultPolyList);
+    resultGeom = computeGeometry(resultPointList, resultLineList, resultPolyList, opCode);
   }
 
   private void insertUniqueEdges(List edges)
@@ -411,10 +486,12 @@ public class OverlayOp
    */
   private void labelIncompleteNodes()
   {
+  	int nodeCount = 0;
     for (Iterator ni = graph.getNodes().iterator(); ni.hasNext(); ) {
       Node n = (Node) ni.next();
       Label label = n.getLabel();
       if (n.isIsolated()) {
+      	nodeCount++;
         if (label.isNull(0))
           labelIncompleteNode(n, 0);
         else
@@ -424,6 +501,13 @@ public class OverlayOp
       ((DirectedEdgeStar) n.getEdges()).updateLabelling(label);
 //n.print(System.out);
     }
+    /*
+    int nPoly0 = arg[0].getGeometry().getNumGeometries();
+    int nPoly1 = arg[1].getGeometry().getNumGeometries();
+    System.out.println("# isolated nodes= " + nodeCount 
+    		+ "   # poly[0] = " + nPoly0
+    		+ "   # poly[1] = " + nPoly1);
+    */
   }
 
   /**
@@ -432,6 +516,9 @@ public class OverlayOp
   private void labelIncompleteNode(Node n, int targetIndex)
   {
     int loc = ptLocator.locate(n.getCoordinate(), arg[targetIndex].getGeometry());
+  	
+  	// MD - 2008-10-24 - experimental for now
+//    int loc = arg[targetIndex].locate(n.getCoordinate());
     n.getLabel().setLocation(targetIndex, loc);
   }
 
@@ -479,9 +566,10 @@ public class OverlayOp
     }
   }
   /**
-   * This method is used to decide if a point node should be included in the result or not.
+   * Tests if a point node should be included in the result or not.
    *
-   * @return true if the coord point is covered by a result Line or Area geometry
+   * @param coord the point coordinate
+   * @return true if the coordinate point is covered by a result Line or Area geometry
    */
   public boolean isCoveredByLA(Coordinate coord)
   {
@@ -490,9 +578,10 @@ public class OverlayOp
     return false;
   }
   /**
-   * This method is used to decide if an L edge should be included in the result or not.
+   * Tests if an L edge should be included in the result or not.
    *
-   * @return true if the coord point is covered by a result Area geometry
+   * @param coord the point coordinate
+   * @return true if the coordinate point is covered by a result Area geometry
    */
   public boolean isCoveredByA(Coordinate coord)
   {
@@ -515,15 +604,92 @@ public class OverlayOp
 
   private Geometry computeGeometry( List resultPointList,
                                         List resultLineList,
-                                        List resultPolyList)
+                                        List resultPolyList,
+                                        int opcode)
   {
     List geomList = new ArrayList();
     // element geometries of the result are always in the order P,L,A
     geomList.addAll(resultPointList);
     geomList.addAll(resultLineList);
     geomList.addAll(resultPolyList);
+    
+    //*
+    if (geomList.isEmpty())
+    	return createEmptyResult(opcode, arg[0].getGeometry(), arg[1].getGeometry(), geomFact);
+    //*/
+    
     // build the most specific geometry possible
     return geomFact.buildGeometry(geomList);
   }
 
+  /**
+   * Creates an empty result geometry of the appropriate dimension,
+   * based on the given overlay operation and the dimensions of the inputs.
+   * The created geometry is always an atomic geometry, 
+   * not a collection.
+   * <p>
+   * The empty result is constructed using the following rules:
+   * <ul>
+   * <li>{@link #INTERSECTION} - result has the dimension of the lowest input dimension
+   * <li>{@link #UNION} - result has the dimension of the highest input dimension
+   * <li>{@link #DIFFERENCE} - result has the dimension of the left-hand input
+   * <li>{@link #SYMDIFFERENCE} - result has the dimension of the highest input dimension
+   * (since the symmetric Difference is the union of the differences).
+   * <li>
+   * 
+   * @param overlayOpCode the code for the overlay operation being performed
+   * @param a an input geometry
+   * @param b an input geometry
+   * @param geomFact the geometry factory being used for the operation
+   * @return an empty atomic geometry of the appropriate dimension
+   */
+  public static Geometry createEmptyResult(int overlayOpCode, Geometry a, Geometry b, GeometryFactory geomFact)
+  {
+  	Geometry result = null;
+  	switch (resultDimension(overlayOpCode, a, b)) {
+  	case -1:
+  		result = geomFact.createGeometryCollection(new Geometry[0]);
+  		break;
+  	case 0:
+  		result =  geomFact.createPoint((Coordinate) null);
+  		break;
+  	case 1:
+  		result =  geomFact.createLineString((Coordinate[]) null);
+  		break;
+  	case 2:
+  		result =  geomFact.createPolygon(null, null);
+  		break;
+  	}
+		return result;
+  }
+  
+  private static int resultDimension(int opCode, Geometry g0, Geometry g1)
+  {
+  	int dim0 = g0.getDimension();
+  	int dim1 = g1.getDimension();
+  	
+  	int resultDimension = -1;
+  	switch (opCode) {
+  	case INTERSECTION: 
+  		resultDimension = Math.min(dim0, dim1);
+  		break;
+  	case UNION: 
+  		resultDimension = Math.max(dim0, dim1);
+  		break;
+  	case DIFFERENCE: 
+  		resultDimension = dim0;
+  		break;
+  	case SYMDIFFERENCE: 
+  	  /**
+  	   * This result is chosen because
+  	   * <pre>
+  	   * SymDiff = Union(Diff(A, B), Diff(B, A)
+  	   * </pre>
+  	   * and Union has the dimension of the highest-dimension argument.
+  	   */
+  		resultDimension = Math.max(dim0, dim1);
+  		break;
+  	}
+  	return resultDimension;
+  }
 }

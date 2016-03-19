@@ -36,9 +36,13 @@
 package org.meteoinfo.jts.operation.polygonize;
 
 import java.util.*;
+
 import org.meteoinfo.jts.algorithm.*;
 import org.meteoinfo.jts.geom.*;
+import org.meteoinfo.jts.geom.impl.CoordinateArraySequence;
+import org.meteoinfo.jts.io.WKTWriter;
 import org.meteoinfo.jts.planargraph.*;
+import org.meteoinfo.jts.util.Assert;
 
 /**
  * Represents a ring of {@link PolygonizeDirectedEdge}s which form
@@ -46,7 +50,7 @@ import org.meteoinfo.jts.planargraph.*;
  *
  * @version 1.7
  */
-public class EdgeRing {
+class EdgeRing {
 
   /**
    * Find the innermost enclosing shell EdgeRing containing the argument EdgeRing, if any.
@@ -60,7 +64,7 @@ public class EdgeRing {
    * (which is guaranteed to be the case if the hole does not touch its shell)
    *
    * @return containing EdgeRing, if there is one
-   * @return null if no containing EdgeRing is found
+   * or null if no containing EdgeRing is found
    */
   public static EdgeRing findEdgeRingContaining(EdgeRing testEr, List shellList)
   {
@@ -69,27 +73,28 @@ public class EdgeRing {
     Coordinate testPt = testRing.getCoordinateN(0);
 
     EdgeRing minShell = null;
-    Envelope minEnv = null;
+    Envelope minShellEnv = null;
     for (Iterator it = shellList.iterator(); it.hasNext(); ) {
       EdgeRing tryShell = (EdgeRing) it.next();
-      LinearRing tryRing = tryShell.getRing();
-      Envelope tryEnv = tryRing.getEnvelopeInternal();
-      if (minShell != null) minEnv = minShell.getRing().getEnvelopeInternal();
-      boolean isContained = false;
+      LinearRing tryShellRing = tryShell.getRing();
+      Envelope tryShellEnv = tryShellRing.getEnvelopeInternal();
       // the hole envelope cannot equal the shell envelope
-      if (tryEnv.equals(testEnv))
-        continue;
-
-//      testPt = ptNotInList(testRing.getCoordinates(), tryRing.getCoordinates());
-      testPt = CoordinateArrays.ptNotInList(testRing.getCoordinates(), tryRing.getCoordinates());
-      if (tryEnv.contains(testEnv)
-          && cga.isPointInRing(testPt, tryRing.getCoordinates()) )
+      // (also guards against testing rings against themselves)
+      if (tryShellEnv.equals(testEnv)) continue;
+      // hole must be contained in shell
+      if (! tryShellEnv.contains(testEnv)) continue;
+      
+      testPt = CoordinateArrays.ptNotInList(testRing.getCoordinates(), tryShellRing.getCoordinates());
+      boolean isContained = false;
+      if (CGAlgorithms.isPointInRing(testPt, tryShellRing.getCoordinates()) )
         isContained = true;
+
       // check if this new containing ring is smaller than the current minimum ring
       if (isContained) {
         if (minShell == null
-            || minEnv.contains(tryEnv)) {
+            || minShellEnv.contains(tryShellEnv)) {
           minShell = tryShell;
+          minShellEnv = minShell.getRing().getEnvelopeInternal();
         }
       }
     }
@@ -101,7 +106,9 @@ public class EdgeRing {
    * @param testPts the {@link Coordinate}s to test
    * @param pts an array of {@link Coordinate}s to test the input points against
    * @return a {@link Coordinate} from <code>testPts</code> which is not in <code>pts</code>,
-   * @return null if there is no coordinate not in the list
+   * or null if there is no coordinate not in the list
+   * 
+   * @deprecated Use CoordinateArrays.ptNotInList instead
    */
   public static Coordinate ptNotInList(Coordinate[] testPts, Coordinate[] pts)
   {
@@ -120,6 +127,8 @@ public class EdgeRing {
    * @param pt a {@link Coordinate} for the test point
    * @param pts an array of {@link Coordinate}s to test
    * @return <code>true</code> if the point is in the array
+   * 
+   * @deprecated
    */
   public static boolean isInList(Coordinate pt, Coordinate[] pts)
   {
@@ -129,42 +138,87 @@ public class EdgeRing {
     }
     return false;
   }
+  
+  /**
+   * Traverses a ring of DirectedEdges, accumulating them into a list.
+   * This assumes that all dangling directed edges have been removed
+   * from the graph, so that there is always a next dirEdge.
+   *
+   * @param startDE the DirectedEdge to start traversing at
+   * @return a List of DirectedEdges that form a ring
+   */
+  public static List findDirEdgesInRing(PolygonizeDirectedEdge startDE)
+  {
+    PolygonizeDirectedEdge de = startDE;
+    List edges = new ArrayList();
+    do {
+      edges.add(de);
+      de = de.getNext();
+      Assert.isTrue(de != null, "found null DE in ring");
+      Assert.isTrue(de == startDE || ! de.isInRing(), "found DE already in ring");
+    } while (de != startDE);
+    return edges;
+  }
+  
   private GeometryFactory factory;
-  private static CGAlgorithms cga = new CGAlgorithms();
-
 
   private List deList = new ArrayList();
-
+  private DirectedEdge lowestEdge = null;
+  
   // cache the following data for efficiency
   private LinearRing ring = null;
 
   private Coordinate[] ringPts = null;
   private List holes;
+  private EdgeRing shell;
+  private boolean isHole;
+  private boolean isProcessed = false;
+  private boolean isIncludedSet = false;
+  private boolean isIncluded = false;
 
   public EdgeRing(GeometryFactory factory)
   {
     this.factory = factory;
   }
 
+  public void build(PolygonizeDirectedEdge startDE) {
+    PolygonizeDirectedEdge de = startDE;
+    do {
+      add(de);
+      de.setRing(this);
+      de = de.getNext();
+      Assert.isTrue(de != null, "found null DE in ring");
+      Assert.isTrue(de == startDE || ! de.isInRing(), "found DE already in ring");
+    } while (de != startDE);
+  }
+  
   /**
    * Adds a {@link DirectedEdge} which is known to form part of this ring.
    * @param de the {@link DirectedEdge} to add.
    */
-  public void add(DirectedEdge de)
+  private void add(DirectedEdge de)
   {
     deList.add(de);
   }
 
   /**
    * Tests whether this ring is a hole.
-   * Due to the way the edges in the polyongization graph are linked,
-   * a ring is a hole if it is oriented counter-clockwise.
    * @return <code>true</code> if this ring is a hole
    */
   public boolean isHole()
   {
+    return isHole;
+  }
+  
+  /**
+   * Computes whether this ring is a hole.
+   * Due to the way the edges in the polyongization graph are linked,
+   * a ring is a hole if it is oriented counter-clockwise.
+   */
+  public void computeHole()
+  {
     LinearRing ring = getRing();
-    return cga.isCCW(ring.getCoordinates());
+    isHole = CGAlgorithms.isCCW(ring.getCoordinates());
   }
 
   /**
@@ -172,6 +226,18 @@ public class EdgeRing {
    * @param hole the {@link LinearRing} forming the hole.
    */
   public void addHole(LinearRing hole) {
+    if (holes == null)
+      holes = new ArrayList();
+    holes.add(hole);
+  }
+
+  /**
+   * Adds a hole to the polygon formed by this ring.
+   * @param hole the {@link LinearRing} forming the hole.
+   */
+  public void addHole(EdgeRing holeER) {
+    holeER.setShell(this);
+    LinearRing hole = holeER.getRing();
     if (holes == null)
       holes = new ArrayList();
     holes.add(hole);
@@ -197,7 +263,8 @@ public class EdgeRing {
 
   /**
    * Tests if the {@link LinearRing} ring formed by this edge ring is topologically valid.
-   * @return
+   * 
+   * @return true if the ring is valid
    */
   public boolean isValid()
   {
@@ -205,6 +272,19 @@ public class EdgeRing {
     if (ringPts.length <= 3) return false;
     getRing();
     return ring.isValid();
+  }
+
+  public boolean isIncludedSet() {
+    return isIncludedSet;
+  }
+
+  public boolean isIncluded() {
+    return isIncluded;
+  }
+
+  public void setIncluded(boolean isIncluded) {
+    this.isIncluded = isIncluded;
+    this.isIncludedSet = true;
   }
 
   /**
@@ -272,4 +352,125 @@ public class EdgeRing {
       }
     }
   }
+
+  /**
+   * Sets the containing shell ring of a ring that has been determined to be a hole.
+   * 
+   * @param shell the shell ring
+   */
+  public void setShell(EdgeRing shell) {
+    this.shell = shell;
+  }
+  
+  /**
+   * Tests whether this ring has a shell assigned to it.
+   * 
+   * @return true if the ring has a shell
+   */
+  public boolean hasShell() {
+    return shell != null;
+  }
+  
+  /**
+   * Gets the shell for this ring.  The shell is the ring itself if it is not a hole, otherwise its parent shell.
+   * 
+   * @return the shell for this ring
+   */
+  public EdgeRing getShell() {
+    if (isHole()) return shell;
+    return this;
+  }
+  /**
+   * Tests whether this ring is an outer hole.
+   * A hole is an outer hole if it is not contained by a shell.
+   * 
+   * @return true if the ring is an outer hole.
+   */
+  public boolean isOuterHole() {
+    if (! isHole) return false;
+    return ! hasShell();
+  }
+  
+  /**
+   * Tests whether this ring is an outer shell.
+   * 
+   * @return true if the ring is an outer shell.
+   */
+  public boolean isOuterShell() {
+    return getOuterHole() != null;
+  }
+  
+  public EdgeRing getOuterHole()
+  {
+    if (isHole()) return null;
+    /*
+     * A shell is an outer shell if any edge is also in an outer hole.
+     * A hole is an outer hole if it is not contained by a shell.
+     */
+    for (int i = 0; i < deList.size(); i++) {
+      PolygonizeDirectedEdge de = (PolygonizeDirectedEdge) deList.get(i);
+      EdgeRing adjRing = ((PolygonizeDirectedEdge) de.getSym()).getRing();
+      if (adjRing.isOuterHole()) return adjRing;
+    }
+    return null;    
+  }
+
+  /**
+   * Updates the included status for currently non-included shells
+   * based on whether they are adjacent to an included shell.
+   */
+  public void updateIncluded() {
+    if (isHole()) return;
+    for (int i = 0; i < deList.size(); i++) {
+      PolygonizeDirectedEdge de = (PolygonizeDirectedEdge) deList.get(i);
+      EdgeRing adjShell = ((PolygonizeDirectedEdge) de.getSym()).getRing().getShell();
+      
+      if (adjShell != null && adjShell.isIncludedSet()) {
+        // adjacent ring has been processed, so set included to inverse of adjacent included
+        setIncluded(! adjShell.isIncluded());
+        return;
+      }
+    }
+  }
+
+  /**
+   * Gets a string representation of this object.
+   * 
+   * @return a string representing the object 
+   */
+  public String toString() {
+    return WKTWriter.toLineString(new CoordinateArraySequence(getCoordinates()));
+  }
+  
+  /**
+   * @return whether the ring has been processed
+   */
+  public boolean isProcessed() {
+    return isProcessed;
+  }
+
+  /**
+   * @param isProcessed whether the ring has been processed
+   */
+  public void setProcessed(boolean isProcessed) {
+    this.isProcessed = isProcessed;
+  }
+
+  /**
+   * Compares EdgeRings based on their envelope,
+   * using the standard lexicographic ordering.
+   * This ordering is sufficient to make edge ring sorting deterministic.
+   * 
+   * @author mbdavis
+   *
+   */
+  static class EnvelopeComparator implements Comparator {
+    public int compare(Object obj0, Object obj1) {
+      EdgeRing r0 = (EdgeRing) obj0;
+      EdgeRing r1 = (EdgeRing) obj1;
+      return r0.getRing().getEnvelope().compareTo(r1.getRing().getEnvelope());
+    }
+    
+  }
+
 }

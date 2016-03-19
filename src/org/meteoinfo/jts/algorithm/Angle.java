@@ -77,9 +77,9 @@ public class Angle
   /**
    * Returns the angle of the vector from p0 to p1,
    * relative to the positive X-axis.
-   * The angle will be in the range [ -Pi, Pi ].
+   * The angle is normalized to be in the range [ -Pi, Pi ].
    *
-   * @return the angle (in radians) that p0-p1 makes with the positive x-axis.
+   * @return the normalized angle (in radians) that p0-p1 makes with the positive x-axis.
    */
   public static double angle(Coordinate p0, Coordinate p1) {
       double dx = p1.x - p0.x;
@@ -90,9 +90,9 @@ public class Angle
   /**
    * Returns the angle that the vector from (0,0) to p,
    * relative to the positive X-axis.
-   * The angle will be in the range [ -Pi, Pi ].
+   * The angle is normalized to be in the range ( -Pi, Pi ].
    *
-   * @return the angle (in radians) that p makes with the positive x-axis.
+   * @return the normalized angle (in radians) that p makes with the positive x-axis.
    */
   public static double angle(Coordinate p) {
       return Math.atan2(p.y, p.x);
@@ -101,6 +101,9 @@ public class Angle
 
   /**
    * Tests whether the angle between p0-p1-p2 is acute.
+   * An angle is acute if it is less than 90 degrees.
+   * <p>
+   * Note: this implementation is not precise (determistic) for angles very close to 90 degrees.
    *
    * @param p0 an endpoint of the angle
    * @param p1 the base of the angle
@@ -119,6 +122,9 @@ public class Angle
 
   /**
    * Tests whether the angle between p0-p1-p2 is obtuse.
+   * An angle is obtuse if it is greater than 90 degrees.
+   * <p>
+   * Note: this implementation is not precise (determistic) for angles very close to 90 degrees.
    *
    * @param p0 an endpoint of the angle
    * @param p1 the base of the angle
@@ -136,33 +142,64 @@ public class Angle
   }
 
   /**
-   * Returns the smallest angle between two vectors.
-   * The computed angle will be in the range [0, Pi].
+   * Returns the unoriented smallest angle between two vectors.
+   * The computed angle will be in the range [0, Pi).
    *
    * @param tip1 the tip of one vector
    * @param tail the tail of each vector
    * @param tip2 the tip of the other vector
    * @return the angle between tail-tip1 and tail-tip2
    */
-  public static double angleBetween(Coordinate tip1,
-                                    Coordinate tail,
-      Coordinate tip2) {
-      double a1 = angle(tail, tip1);
-      double a2 = angle(tail, tip2);
+  public static double angleBetween(Coordinate tip1, Coordinate tail,
+			Coordinate tip2) {
+		double a1 = angle(tail, tip1);
+		double a2 = angle(tail, tip2);
 
-      return diff(a1, a2);
+		return diff(a1, a2);
   }
 
   /**
-   * Computes the interior angle between two segments of a ring.
-   * The ring is assumed to be oriented in a clockwise direction.
-   * The computed angle will be in the range [0, 2Pi]
+   * Returns the oriented smallest angle between two vectors.
+   * The computed angle will be in the range (-Pi, Pi].
+   * A positive result corresponds to a counterclockwise
+   * (CCW) rotation
+   * from v1 to v2;
+   * a negative result corresponds to a clockwise (CW) rotation;
+   * a zero result corresponds to no rotation.
    *
-   * @param p0 a point of the ring
-   * @param p1 the next point of the ring
-   * @param p2 the next point of the ring
-   * @return the interior angle based at <code>p1</code>
+   * @param tip1 the tip of v1
+   * @param tail the tail of each vector
+   * @param tip2 the tip of v2
+   * @return the angle between v1 and v2, relative to v1
    */
+  public static double angleBetweenOriented(Coordinate tip1, Coordinate tail,
+			Coordinate tip2) 
+  {
+		double a1 = angle(tail, tip1);
+		double a2 = angle(tail, tip2);
+		double angDel = a2 - a1;
+		
+		// normalize, maintaining orientation
+		if (angDel <= -Math.PI)
+			return angDel + PI_TIMES_2;
+		if (angDel > Math.PI)
+			return angDel - PI_TIMES_2;
+		return angDel;
+  }
+
+  /**
+	 * Computes the interior angle between two segments of a ring. The ring is
+	 * assumed to be oriented in a clockwise direction. The computed angle will be
+	 * in the range [0, 2Pi]
+	 * 
+	 * @param p0
+	 *          a point of the ring
+	 * @param p1
+	 *          the next point of the ring
+	 * @param p2
+	 *          the next point of the ring
+	 * @return the interior angle based at <code>p1</code>
+	 */
   public static double interiorAngle(Coordinate p0, Coordinate p1, Coordinate p2)
   {
     double anglePrev = Angle.angle(p1, p0);
@@ -185,46 +222,68 @@ public class Angle
       if (crossproduct > 0) {
           return COUNTERCLOCKWISE;
       }
-
       if (crossproduct < 0) {
           return CLOCKWISE;
       }
-
       return NONE;
   }
 
   /**
    * Computes the normalized value of an angle, which is the
-   * equivalent angle in the range [ -Pi, Pi ].
+   * equivalent angle in the range ( -Pi, Pi ].
    *
    * @param angle the angle to normalize
-   * @return an equivalent angle in the range [-Pi, Pi]
+   * @return an equivalent angle in the range (-Pi, Pi]
    */
   public static double normalize(double angle)
   {
     while (angle > Math.PI)
       angle -= PI_TIMES_2;
-    while (angle < -Math.PI)
+    while (angle <= -Math.PI)
       angle += PI_TIMES_2;
     return angle;
   }
 
   /**
    * Computes the normalized positive value of an angle, which is the
-   * equivalent angle in the range [ 0, 2*Pi ].
+   * equivalent angle in the range [ 0, 2*Pi ).
+   * E.g.:
+   * <ul>
+   * <li>normalizePositive(0.0) = 0.0
+   * <li>normalizePositive(-PI) = PI
+   * <li>normalizePositive(-2PI) = 0.0
+   * <li>normalizePositive(-3PI) = PI
+   * <li>normalizePositive(-4PI) = 0
+   * <li>normalizePositive(PI) = PI
+   * <li>normalizePositive(2PI) = 0.0
+   * <li>normalizePositive(3PI) = PI
+   * <li>normalizePositive(4PI) = 0.0
+   * </ul>
    *
    * @param angle the angle to normalize, in radians
    * @return an equivalent positive angle
    */
   public static double normalizePositive(double angle)
   {
-    while (angle < 0.0)
-      angle += PI_TIMES_2;
+  	if (angle < 0.0) {
+  		while (angle < 0.0)
+  			angle += PI_TIMES_2;
+  		// in case round-off error bumps the value over 
+  		if (angle >= PI_TIMES_2)
+  			angle = 0.0;
+  	}
+  	else {
+  		while (angle >= PI_TIMES_2)
+  			angle -= PI_TIMES_2;
+  		// in case round-off error bumps the value under 
+  		if (angle < 0.0)
+  			angle = 0.0;
+  	}
     return angle;
   }
 
   /**
-   * Computes the unoriented (smallest) difference between two angles.
+   * Computes the unoriented smallest difference between two angles.
    * The angles are assumed to be normalized to the range [-Pi, Pi].
    * The result will be in the range [0, Pi].
    *

@@ -61,8 +61,9 @@ import java.util.ArrayList;
  *
  * <h3>Notes:</h3>
  * <ul>
+ * <li>Keywords are case-insensitive.
  * <li>The reader supports non-standard "LINEARRING" tags.
- * <li>The reader uses Double.parseDouble to perform the conversion of ASCII
+ * <li>The reader uses <tt>Double.parseDouble</tt> to perform the conversion of ASCII
  * numbers to floating point.  This means it supports the Java
  * syntax for floating point literals (including scientific notation).
  * </ul>
@@ -89,7 +90,7 @@ import java.util.ArrayList;
  *
  * <i>WKTPolygon:</i> <b>POLYGON</b> <i>CoordinateSequenceList</i>
  *
- * <i>WKTMultiPoint:</i> <b>MULTIPOINT</b> <i>CoordinateSequence</i>
+ * <i>WKTMultiPoint:</i> <b>MULTIPOINT</b> <i>CoordinateSingletonList</i>
  *
  * <i>WKTMultiLineString:</i> <b>MULTILINESTRING</b> <i>CoordinateSequenceList</i>
  *
@@ -99,16 +100,26 @@ import java.util.ArrayList;
  * <i>WKTGeometryCollection: </i>
  *         <b>GEOMETRYCOLLECTION (</b> <i>WKTGeometry {</i> , <i>WKTGeometry }</i> <b>)</b>
  *
+ * <i>CoordinateSingletonList:</i>
+ *         <b>(</b> <i>CoordinateSingleton {</i> <b>,</b> <i>CoordinateSingleton }</i> <b>)</b>
+ *         | <b>EMPTY</b>
+ *         
+ * <i>CoordinateSingleton:</i>
+ *         <b>(</b> <i>Coordinate <b>)</b>
+ *         | <b>EMPTY</b>
+ *
  * <i>CoordinateSequenceList:</i>
  *         <b>(</b> <i>CoordinateSequence {</i> <b>,</b> <i>CoordinateSequence }</i> <b>)</b>
+ *         | <b>EMPTY</b>
  *
  * <i>CoordinateSequence:</i>
  *         <b>(</b> <i>Coordinate {</i> , <i>Coordinate }</i> <b>)</b>
+ *         | <b>EMPTY</b>
  *
  * <i>Coordinate:
  *         Number Number Number<sub>opt</sub></i>
  *
- * <i>Number:</i> A Java-style floating-point number
+ * <i>Number:</i> A Java-style floating-point number (including <tt>NaN</tt>, with arbitrary case)
  *
  * </pre></blockquote>
  *
@@ -122,7 +133,8 @@ public class WKTReader
   private static final String COMMA = ",";
   private static final String L_PAREN = "(";
   private static final String R_PAREN = ")";
-
+  private static final String NAN_SYMBOL = "NaN";
+  
   private GeometryFactory geometryFactory;
   private PrecisionModel precisionModel;
   private StreamTokenizer tokenizer;
@@ -209,23 +221,34 @@ public class WKTReader
    *@throws  IOException     if an I/O error occurs
    *@throws  ParseException  if an unexpected token was encountered
    */
-  private Coordinate[] getCoordinates()
-      throws IOException, ParseException
-  {
-    String nextToken = getNextEmptyOrOpener();
-    if (nextToken.equals(EMPTY)) {
-      return new Coordinate[]{};
-    }
-    ArrayList coordinates = new ArrayList();
-    coordinates.add(getPreciseCoordinate());
-    nextToken = getNextCloserOrComma();
-    while (nextToken.equals(COMMA)) {
-      coordinates.add(getPreciseCoordinate());
-      nextToken = getNextCloserOrComma();
-    }
-    Coordinate[] array = new Coordinate[coordinates.size()];
-    return (Coordinate[]) coordinates.toArray(array);
-  }
+  private Coordinate[] getCoordinates() throws IOException, ParseException {
+		String nextToken = getNextEmptyOrOpener();
+		if (nextToken.equals(EMPTY)) {
+			return new Coordinate[] {};
+		}
+		ArrayList coordinates = new ArrayList();
+		coordinates.add(getPreciseCoordinate());
+		nextToken = getNextCloserOrComma();
+		while (nextToken.equals(COMMA)) {
+			coordinates.add(getPreciseCoordinate());
+			nextToken = getNextCloserOrComma();
+		}
+		Coordinate[] array = new Coordinate[coordinates.size()];
+		return (Coordinate[]) coordinates.toArray(array);
+	}
+
+	private Coordinate[] getCoordinatesNoLeftParen() throws IOException, ParseException {
+		String nextToken = null;
+		ArrayList coordinates = new ArrayList();
+		coordinates.add(getPreciseCoordinate());
+		nextToken = getNextCloserOrComma();
+		while (nextToken.equals(COMMA)) {
+			coordinates.add(getPreciseCoordinate());
+			nextToken = getNextCloserOrComma();
+		}
+		Coordinate[] array = new Coordinate[coordinates.size()];
+		return (Coordinate[]) coordinates.toArray(array);
+	}
 
   private Coordinate getPreciseCoordinate()
       throws IOException, ParseException
@@ -249,6 +272,8 @@ public class WKTReader
   /**
    * Parses the next number in the stream.
    * Numbers with exponents are handled.
+   * <tt>NaN</tt> values are handled correctly, and
+   * the case of the "NaN" symbol is not significant. 
    *
    *@param  tokenizer        tokenizer over a stream of text in Well-known Text
    *      format. The next token must be a number.
@@ -262,15 +287,20 @@ public class WKTReader
     switch (type) {
       case StreamTokenizer.TT_WORD:
       {
-        try {
-          return Double.parseDouble(tokenizer.sval);
-        }
-        catch (NumberFormatException ex) {
-          throw new ParseException("Invalid number: " + tokenizer.sval);
-        }
+      	if (tokenizer.sval.equalsIgnoreCase(NAN_SYMBOL)) {
+      		return Double.NaN;
+      	}
+      	else {
+	        try {
+	          return Double.parseDouble(tokenizer.sval);
+	        }
+	        catch (NumberFormatException ex) {
+	          parseErrorWithLine("Invalid number: " + tokenizer.sval);
+	        }
+      	}
       }
     }
-    parseError("number");
+    parseErrorExpected("number");
     return 0.0;
   }
   /**
@@ -288,7 +318,7 @@ public class WKTReader
     if (nextWord.equals(EMPTY) || nextWord.equals(L_PAREN)) {
       return nextWord;
     }
-    parseError(EMPTY + " or " + L_PAREN);
+    parseErrorExpected(EMPTY + " or " + L_PAREN);
     return null;
   }
 
@@ -306,7 +336,7 @@ public class WKTReader
     if (nextWord.equals(COMMA) || nextWord.equals(R_PAREN)) {
       return nextWord;
     }
-    parseError(COMMA + " or " + R_PAREN);
+    parseErrorExpected(COMMA + " or " + R_PAREN);
     return null;
   }
 
@@ -324,7 +354,7 @@ public class WKTReader
     if (nextWord.equals(R_PAREN)) {
       return nextWord;
     }
-    parseError(R_PAREN);
+    parseErrorExpected(R_PAREN);
     return null;
   }
 
@@ -351,18 +381,34 @@ public class WKTReader
     case ')': return R_PAREN;
     case ',': return COMMA;
     }
-    parseError("word");
+    parseErrorExpected("word");
     return null;
   }
 
   /**
-   * Throws a formatted ParseException for the current token.
+   *  Returns the next word in the stream.
+   *
+   *@param  tokenizer        tokenizer over a stream of text in Well-known Text
+   *      format. The next token must be a word.
+   *@return                  the next word in the stream as uppercase text
+   *@throws  ParseException  if the next token is not a word
+   *@throws  IOException     if an I/O error occurs
+   */
+  private String lookaheadWord() throws IOException, ParseException {
+  	String nextWord = getNextWord();
+  	tokenizer.pushBack();
+    return nextWord;
+  }
+
+  /**
+   * Throws a formatted ParseException reporting that the current token
+   * was unexpected.
    *
    * @param expected a description of what was expected
    * @throws ParseException
    * @throws AssertionFailedException if an invalid token is encountered
    */
-  private void parseError(String expected)
+  private void parseErrorExpected(String expected)
       throws ParseException
   {
     // throws Asserts for tokens that should never be seen
@@ -372,9 +418,15 @@ public class WKTReader
       Assert.shouldNeverReachHere("Unexpected EOL token");
 
     String tokenStr = tokenString();
-    throw new ParseException("Expected " + expected + " but found " + tokenStr);
+    parseErrorWithLine("Expected " + expected + " but found " + tokenStr);
   }
 
+  private void parseErrorWithLine(String msg)
+  throws ParseException
+  {
+    throw new ParseException(msg + " (line " + tokenizer.lineno() + ")");
+  }
+  
   /**
    * Gets a description of the current token
    *
@@ -416,7 +468,7 @@ public class WKTReader
     	return null;
     }
     
-    if (type.equals("POINT")) {
+    if (type.equalsIgnoreCase("POINT")) {
       return readPointText();
     }
     else if (type.equalsIgnoreCase("LINESTRING")) {
@@ -440,7 +492,9 @@ public class WKTReader
     else if (type.equalsIgnoreCase("GEOMETRYCOLLECTION")) {
       return readGeometryCollectionText();
     }
-    throw new ParseException("Unknown geometry type: " + type);
+    parseErrorWithLine("Unknown geometry type: " + type);
+    // should never reach here
+    return null;
   }
 
   /**
@@ -495,8 +549,16 @@ public class WKTReader
     return geometryFactory.createLinearRing(getCoordinates());
   }
 
+  /*
+  private MultiPoint OLDreadMultiPointText() throws IOException, ParseException {
+    return geometryFactory.createMultiPoint(toPoints(getCoordinates()));
+  }
+  */
+  
+  private static final boolean ALLOW_OLD_JTS_MULTIPOINT_SYNTAX = true;
+
   /**
-   *  Creates a <code>MultiPoint</code> using the next token in the stream.
+   *  Creates a <code>MultiPoint</code> using the next tokens in the stream.
    *
    *@param  tokenizer        tokenizer over a stream of text in Well-known Text
    *      format. The next tokens must form a &lt;MultiPoint Text&gt;.
@@ -505,8 +567,33 @@ public class WKTReader
    *@throws  IOException     if an I/O error occurs
    *@throws  ParseException  if an unexpected token was encountered
    */
-  private MultiPoint readMultiPointText() throws IOException, ParseException {
-    return geometryFactory.createMultiPoint(toPoints(getCoordinates()));
+  private MultiPoint readMultiPointText() throws IOException, ParseException 
+  {
+    String nextToken = getNextEmptyOrOpener();
+    if (nextToken.equals(EMPTY)) {
+      return geometryFactory.createMultiPoint(new Point[0]);
+    }
+    
+    // check for old-style JTS syntax and parse it if present
+  	// MD 2009-02-21 - this is only provided for backwards compatibility for a few versions
+  	if (ALLOW_OLD_JTS_MULTIPOINT_SYNTAX) {
+  		String nextWord = lookaheadWord();
+  		if (nextWord != L_PAREN) {
+  			return geometryFactory.createMultiPoint(toPoints(getCoordinatesNoLeftParen()));
+  		}
+  	}
+  	
+    ArrayList points = new ArrayList();
+    Point point = readPointText();
+    points.add(point);
+    nextToken = getNextCloserOrComma();
+    while (nextToken.equals(COMMA)) {
+    	point = readPointText();
+      points.add(point);
+      nextToken = getNextCloserOrComma();
+    }
+    Point[] array = new Point[points.size()];
+    return geometryFactory.createMultiPoint((Point[]) points.toArray(array));
   }
 
   /**

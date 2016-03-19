@@ -33,7 +33,6 @@
 package org.meteoinfo.jts.algorithm;
 
 import org.meteoinfo.jts.geom.Coordinate;
-import org.meteoinfo.jts.geom.CoordinateSequence;
 
 /**
  * Non-robust versions of various fundamental Computational Geometric algorithms,
@@ -169,7 +168,36 @@ public class NonRobustCGAlgorithms
     }
   }
 
+  /**
+   * Computes the orientation of a point q to the directed line segment p1-p2.
+   * The orientation of a point relative to a directed line segment indicates
+   * which way you turn to get to q after travelling from p1 to p2.
+   * 
+   * @return 1 if q is counter-clockwise from p1-p2
+   * @return -1 if q is clockwise from p1-p2
+   * @return 0 if q is collinear with p1-p2
+   */
   public static int computeOrientation(Coordinate p1, Coordinate p2, Coordinate q) {
+    return orientationIndex(p1, p2, q);
+  }
+  
+  /**
+   * Returns the index of the direction of the point <code>q</code> relative to
+   * a vector specified by <code>p1-p2</code>.
+   * 
+   * @param p1
+   *          the origin point of the vector
+   * @param p2
+   *          the final point of the vector
+   * @param q
+   *          the point to compute the direction to
+   * 
+   * @return 1 if q is counter-clockwise (left) from p1-p2
+   * @return -1 if q is clockwise (right) from p1-p2
+   * @return 0 if q is collinear with p1-p2
+   */
+  public static int orientationIndex(Coordinate p1, Coordinate p2, Coordinate q)
+  {
         double dx1 = p2.x - p1.x;
         double dy1 = p2.y - p1.y;
         double dx2 = q.x - p2.x;
@@ -178,6 +206,77 @@ public class NonRobustCGAlgorithms
         if (det > 0.0) return 1;
         if (det < 0.0) return -1;
         return 0;
+  }
+
+  /**
+   * Computes the distance from a line segment AB to a line segment CD
+   * 
+   * Note: NON-ROBUST!
+   * 
+   * @param A
+   *          a point of one line
+   * @param B
+   *          the second point of (must be different to A)
+   * @param C
+   *          one point of the line
+   * @param D
+   *          another point of the line (must be different to A)
+   */
+  public static double distanceLineLine(Coordinate A, Coordinate B,
+      Coordinate C, Coordinate D)
+  {
+    // check for zero-length segments
+    if (A.equals(B))
+      return distancePointLine(A, C, D);
+    if (C.equals(D))
+      return distancePointLine(D, A, B);
+
+    // AB and CD are line segments
+    /*
+     * from comp.graphics.algo
+     * 
+     * Solving the above for r and s yields (Ay-Cy)(Dx-Cx)-(Ax-Cx)(Dy-Cy) r =
+     * ----------------------------- (eqn 1) (Bx-Ax)(Dy-Cy)-(By-Ay)(Dx-Cx)
+     * 
+     * (Ay-Cy)(Bx-Ax)-(Ax-Cx)(By-Ay) s = ----------------------------- (eqn 2)
+     * (Bx-Ax)(Dy-Cy)-(By-Ay)(Dx-Cx) Let P be the position vector of the
+     * intersection point, then P=A+r(B-A) or Px=Ax+r(Bx-Ax) Py=Ay+r(By-Ay) By
+     * examining the values of r & s, you can also determine some other limiting
+     * conditions: If 0<=r<=1 & 0<=s<=1, intersection exists r<0 or r>1 or s<0
+     * or s>1 line segments do not intersect If the denominator in eqn 1 is
+     * zero, AB & CD are parallel If the numerator in eqn 1 is also zero, AB &
+     * CD are collinear.
+     */
+    double r_top = (A.y - C.y) * (D.x - C.x) - (A.x - C.x) * (D.y - C.y);
+    double r_bot = (B.x - A.x) * (D.y - C.y) - (B.y - A.y) * (D.x - C.x);
+
+    double s_top = (A.y - C.y) * (B.x - A.x) - (A.x - C.x) * (B.y - A.y);
+    double s_bot = (B.x - A.x) * (D.y - C.y) - (B.y - A.y) * (D.x - C.x);
+
+    if ((r_bot == 0) || (s_bot == 0)) {
+      return Math
+          .min(
+              distancePointLine(A, C, D),
+              Math.min(
+                  distancePointLine(B, C, D),
+                  Math.min(distancePointLine(C, A, B),
+                      distancePointLine(D, A, B))));
+
+    }
+    double s = s_top / s_bot;
+    double r = r_top / r_bot;
+
+    if ((r < 0) || (r > 1) || (s < 0) || (s > 1)) {
+      // no intersection
+      return Math
+          .min(
+              distancePointLine(A, C, D),
+              Math.min(
+                  distancePointLine(B, C, D),
+                  Math.min(distancePointLine(C, A, B),
+                      distancePointLine(D, A, B))));
+    }
+    return 0.0; // intersection exists
   }
 
 }

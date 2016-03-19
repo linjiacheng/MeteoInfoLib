@@ -297,8 +297,8 @@ public class PolylineShape extends Shape implements Cloneable {
         updatePolyLines();
     }
 
-    @Override
-    public Object clone() {
+    //@Override
+    public Object clone_back() {
         PolylineShape o = (PolylineShape) super.clone();
         List<PointD> points = new ArrayList<>();
         for (PointD point : (List<PointD>)_points){
@@ -314,13 +314,18 @@ public class PolylineShape extends Shape implements Cloneable {
      *
      * @return PolylineShape
      */
-    public Object clone_old() {
+    @Override
+    public Object clone() {
         PolylineShape aPLS = new PolylineShape();
         aPLS.value = value;
         aPLS.setExtent(this.getExtent());
         aPLS._numParts = _numParts;
         aPLS.parts = (int[]) parts.clone();
-        aPLS.setPoints(_points);
+        List<PointD> points = new ArrayList<>();
+        for (PointD point : (List<PointD>)_points){
+            points.add((PointD)point.clone());
+        }
+        aPLS.setPoints(points);
         aPLS.setVisible(this.isVisible());
         aPLS.setSelected(this.isSelected());
         aPLS.setLegendIndex(this.getLegendIndex());

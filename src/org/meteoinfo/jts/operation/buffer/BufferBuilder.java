@@ -45,7 +45,9 @@ import org.meteoinfo.jts.geomgraph.*;
 import org.meteoinfo.jts.operation.overlay.*;
 import org.meteoinfo.jts.noding.*;
 
-//import debug.*;
+import org.meteoinfo.jts.io.*;
+import org.meteoinfo.jts.util.*;
+
 
 /**
  * Builds the buffer geometry for a given input geometry and precision model.
@@ -54,13 +56,13 @@ import org.meteoinfo.jts.noding.*;
  * <p>
  * When computing buffers in floating point double-precision
  * it can happen that the process of iterated noding can fail to converge (terminate).
- * In this case a TopologyException will be thrown.
+ * In this case a {@link TopologyException} will be thrown.
  * Retrying the computation in a fixed precision
  * can produce more robust results.
  *
  * @version 1.7
  */
-public class BufferBuilder
+class BufferBuilder
 {
   /**
    * Compute the change in depth as an edge is crossed from R to L
@@ -76,10 +78,7 @@ public class BufferBuilder
     return 0;
   }
 
-  private final CGAlgorithms cga = new RobustCGAlgorithms();
-
-  private int quadrantSegments = OffsetCurveBuilder.DEFAULT_QUADRANT_SEGMENTS;
-  private int endCapStyle = BufferOp.CAP_ROUND;
+  private BufferParameters bufParams;
 
   private PrecisionModel workingPrecisionModel;
   private Noder workingNoder;
@@ -90,18 +89,9 @@ public class BufferBuilder
   /**
    * Creates a new BufferBuilder
    */
-  public BufferBuilder()
+  public BufferBuilder(BufferParameters bufParams)
   {
-  }
-
-  /**
-   * Sets the number of segments used to approximate a angle fillet
-   *
-   * @param quadrantSegments the number of segments in a fillet for a quadrant
-   */
-  public void setQuadrantSegments(int quadrantSegments)
-  {
-    this.quadrantSegments = quadrantSegments;
+    this.bufParams = bufParams;
   }
 
   /**
@@ -126,10 +116,6 @@ public class BufferBuilder
    */
   public void setNoder(Noder noder) { workingNoder = noder; }
 
-  public void setEndCapStyle(int endCapStyle)
-  {
-    this.endCapStyle = endCapStyle;
-  }
 
   public Geometry buffer(Geometry g, double distance)
   {
@@ -140,16 +126,15 @@ public class BufferBuilder
     // factory must be the same as the one used by the input
     geomFact = g.getFactory();
 
-    OffsetCurveBuilder curveBuilder = new OffsetCurveBuilder(precisionModel, quadrantSegments);
-    curveBuilder.setEndCapStyle(endCapStyle);
+    OffsetCurveBuilder curveBuilder = new OffsetCurveBuilder(precisionModel, bufParams);
+    
     OffsetCurveSetBuilder curveSetBuilder = new OffsetCurveSetBuilder(g, distance, curveBuilder);
 
     List bufferSegStrList = curveSetBuilder.getCurves();
 
     // short-circuit test
     if (bufferSegStrList.size() <= 0) {
-      Geometry emptyGeom = geomFact.createGeometryCollection(new Geometry[0]);
-      return emptyGeom;
+      return createEmptyResultGeometry();
     }
 
 //BufferDebug.runCount++;
@@ -158,15 +143,23 @@ public class BufferBuilder
 //BufferDebug.saveEdges(bufferEdgeList, filename);
 // DEBUGGING ONLY
 //WKTWriter wktWriter = new WKTWriter();
-//Debug.println("Rings: " + wktWriter.write(toLineStrings(bufferEdgeList.iterator())));
+//Debug.println("Rings: " + wktWriter.write(convertSegStrings(bufferSegStrList.iterator())));
+//wktWriter.setMaxCoordinatesPerLine(10);
+//System.out.println(wktWriter.writeFormatted(convertSegStrings(bufferSegStrList.iterator())));
+
     computeNodedEdges(bufferSegStrList, precisionModel);
     graph = new PlanarGraph(new OverlayNodeFactory());
     graph.addEdges(edgeList.getEdges());
 
     List subgraphList = createSubgraphs(graph);
-    PolygonBuilder polyBuilder = new PolygonBuilder(geomFact, cga);
+    PolygonBuilder polyBuilder = new PolygonBuilder(geomFact);
     buildSubgraphs(subgraphList, polyBuilder);
     List resultPolyList = polyBuilder.getPolygons();
+
+    // just in case...
+    if (resultPolyList.size() <= 0) {
+      return createEmptyResultGeometry();
+    }
 
     Geometry resultGeom = geomFact.buildGeometry(resultPolyList);
     return resultGeom;
@@ -199,9 +192,18 @@ public class BufferBuilder
 
     for (Iterator i = nodedSegStrings.iterator(); i.hasNext(); ) {
       SegmentString segStr = (SegmentString) i.next();
+      
+      /**
+       * Discard edges which have zero length, 
+       * since they carry no information and cause problems with topology building
+       */
+      Coordinate[] pts = segStr.getCoordinates();
+      if (pts.length == 2 && pts[0].equals2D(pts[1]))
+        continue;
+
       Label oldLabel = (Label) segStr.getData();
       Edge edge = new Edge(segStr.getCoordinates(), new Label(oldLabel));
-      insertEdge(edge);
+      insertUniqueEdge(edge);
     }
     //saveEdges(edgeList.getEdges(), "run" + runCount + "_collapsedEdges");
   }
@@ -212,7 +214,7 @@ public class BufferBuilder
    * If so, the edge is not inserted, but its label is merged
    * with the existing edge.
    */
-  protected void insertEdge(Edge e)
+  protected void insertUniqueEdge(Edge e)
   {
 //<FIX> MD 8 Oct 03  speed up identical edge lookup
     // fast lookup
@@ -251,7 +253,7 @@ public class BufferBuilder
     for (Iterator i = graph.getNodes().iterator(); i.hasNext(); ) {
       Node node = (Node) i.next();
       if (! node.isVisited()) {
-        BufferSubgraph subgraph = new BufferSubgraph(cga);
+        BufferSubgraph subgraph = new BufferSubgraph();
         subgraph.create(node);
         subgraphList.add(subgraph);
       }
@@ -297,5 +299,30 @@ public class BufferBuilder
       processedGraphs.add(subgraph);
       polyBuilder.add(subgraph.getDirectedEdges(), subgraph.getNodes());
     }
+  }
+  
+  private static Geometry convertSegStrings(Iterator it)
+  {
+  	GeometryFactory fact = new GeometryFactory();
+  	List lines = new ArrayList();
+  	while (it.hasNext()) {
+  		SegmentString ss = (SegmentString) it.next();
+  		LineString line = fact.createLineString(ss.getCoordinates());
+  		lines.add(line);
+  	}
+  	return fact.buildGeometry(lines);
+  }
+  
+  /**
+   * Gets the standard result for an empty buffer.
+   * Since buffer always returns a polygonal result,
+   * this is chosen to be an empty polygon.
+   * 
+   * @return the empty result geometry
+   */
+  private Geometry createEmptyResultGeometry()
+  {
+    Geometry emptyGeom = geomFact.createPolygon(null, null);
+    return emptyGeom;
   }
 }

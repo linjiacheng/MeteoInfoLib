@@ -38,23 +38,31 @@ import org.meteoinfo.jts.geom.*;
 /**
  * Reads a {@link Geometry}from a byte stream in Well-Known Binary format.
  * Supports use of an {@link InStream}, which allows easy use
- * with arbitary byte stream sources.
+ * with arbitrary byte stream sources.
  * <p>
- * This class reads the format describe in {@link WKBWriter}.  It also partiually handles
- * the Extended WKB format used by PostGIS (by reading SRID values)
+ * This class reads the format describe in {@link WKBWriter}.  
+ * It also partially handles
+ * the <b>Extended WKB</b> format used by PostGIS, 
+ * by parsing and storing SRID values.
+ * The reader repairs structurally-invalid input
+ * (specifically, LineStrings and LinearRings which contain
+ * too few points have vertices added,
+ * and non-closed rings are closed).
  * <p>
  * This class is designed to support reuse of a single instance to read multiple
  * geometries. This class is not thread-safe; each thread should create its own
  * instance.
  *
- * @see WKBWriter
+ * @see WKBWriter for a formal format specification
  */
 public class WKBReader
 {
   /**
    * Converts a hexadecimal string to a byte array.
+   * The hexadecimal digit symbols are case-insensitive.
    *
    * @param hex a string containing hex digits
+   * @return an array of bytes with the value of the hex string
    */
   public static byte[] hexToBytes(String hex)
   {
@@ -78,7 +86,7 @@ public class WKBReader
   {
     int nib = Character.digit(hex, 16);
     if (nib < 0)
-      throw new IllegalArgumentException("Invalid hex digit");
+      throw new IllegalArgumentException("Invalid hex digit: '" + hex + "'");
     return nib;
   }
 
@@ -86,11 +94,17 @@ public class WKBReader
   = "Invalid geometry type encountered in ";
 
   private GeometryFactory factory;
+  private CoordinateSequenceFactory csFactory;
   private PrecisionModel precisionModel;
   // default dimension - will be set on read
   private int inputDimension = 2;
   private boolean hasSRID = false;
   private int SRID = 0;
+  /**
+   * true if structurally invalid input should be reported rather than repaired.
+   * At some point this could be made client-controllable.
+   */
+  private boolean isStrict = false;
   private ByteOrderDataInStream dis = new ByteOrderDataInStream();
   private double[] ordValues;
 
@@ -101,14 +115,15 @@ public class WKBReader
   public WKBReader(GeometryFactory geometryFactory) {
     this.factory = geometryFactory;
     precisionModel = factory.getPrecisionModel();
+    csFactory = factory.getCoordinateSequenceFactory();
   }
 
   /**
-   * Reads a single {@link Geometry} from a byte array.
+   * Reads a single {@link Geometry} in WKB format from a byte array.
    *
    * @param bytes the byte array to read from
    * @return the geometry read
-   * @throws ParseException if a parse exception occurs
+   * @throws ParseException if the WKB is ill-formed
    */
   public Geometry read(byte[] bytes) throws ParseException
   {
@@ -123,30 +138,46 @@ public class WKBReader
   }
 
   /**
-   * Reads a {@link Geometry} from an {@link InStream).
+   * Reads a {@link Geometry} in binary WKB format from an {@link InStream}.
    *
    * @param is the stream to read from
    * @return the Geometry read
-   * @throws IOException
-   * @throws ParseException
+   * @throws IOException if the underlying stream creates an error
+   * @throws ParseException if the WKB is ill-formed
    */
   public Geometry read(InStream is)
   throws IOException, ParseException
   {
     dis.setInStream(is);
     Geometry g = readGeometry();
-    setSRID(g);
     return g;
   }
 
   private Geometry readGeometry()
   throws IOException, ParseException
   {
-    // determine byte order
-    byte byteOrder = dis.readByte();
-    // default is big endian
-    if (byteOrder == WKBConstants.wkbNDR)
-      dis.setOrder(ByteOrderValues.LITTLE_ENDIAN);
+
+      // determine byte order
+      byte byteOrderWKB = dis.readByte();
+
+      // always set byte order, since it may change from geometry to geometry
+     if(byteOrderWKB == WKBConstants.wkbNDR)
+     {
+        dis.setOrder(ByteOrderValues.LITTLE_ENDIAN);
+     }
+     else if(byteOrderWKB == WKBConstants.wkbXDR)
+     {
+        dis.setOrder(ByteOrderValues.BIG_ENDIAN);
+     }
+     else if(isStrict)
+     {
+        throw new ParseException("Unknown geometry byte order (not NDR or XDR): " + byteOrderWKB);
+     }
+     //if not strict and not XDR or NDR, then we just use the dis default set at the
+     //start of the geometry (if a multi-geometry).  This  allows WBKReader to work
+     //with Spatialite native BLOB WKB, as well as other WKB variants that might just
+     //specify endian-ness at the start of the multigeometry.
+
 
     int typeInt = dis.readInt();
     int geometryType = typeInt & 0xff;
@@ -156,6 +187,7 @@ public class WKBReader
     // determine if SRIDs are present
     hasSRID = (typeInt & 0x20000000) != 0;
 
+    int SRID = 0;
     if (hasSRID) {
       SRID = dis.readInt();
     }
@@ -164,24 +196,34 @@ public class WKBReader
     if (ordValues == null || ordValues.length < inputDimension)
       ordValues = new double[inputDimension];
 
+    Geometry geom = null;
     switch (geometryType) {
       case WKBConstants.wkbPoint :
-        return readPoint();
+        geom = readPoint();
+        break;
       case WKBConstants.wkbLineString :
-        return readLineString();
-      case WKBConstants.wkbPolygon :
-        return readPolygon();
+        geom = readLineString();
+        break;
+     case WKBConstants.wkbPolygon :
+       geom = readPolygon();
+        break;
       case WKBConstants.wkbMultiPoint :
-        return readMultiPoint();
+        geom = readMultiPoint();
+        break;
       case WKBConstants.wkbMultiLineString :
-        return readMultiLineString();
-      case WKBConstants.wkbMultiPolygon :
-        return readMultiPolygon();
+        geom = readMultiLineString();
+        break;
+     case WKBConstants.wkbMultiPolygon :
+        geom = readMultiPolygon();
+        break;
       case WKBConstants.wkbGeometryCollection :
-        return readGeometryCollection();
+        geom = readGeometryCollection();
+        break;
+      default: 
+        throw new ParseException("Unknown WKB type " + geometryType);
     }
-    throw new ParseException("Unknown WKB type " + geometryType);
-    //return null;
+    setSRID(geom, SRID);
+    return geom;
   }
 
   /**
@@ -190,7 +232,7 @@ public class WKBReader
    * @param g the geometry to update
    * @return the geometry with an updated SRID value, if required
    */
-  private Geometry setSRID(Geometry g)
+  private Geometry setSRID(Geometry g, int SRID)
   {
     if (SRID != 0)
       g.setSRID(SRID);
@@ -206,14 +248,14 @@ public class WKBReader
   private LineString readLineString() throws IOException
   {
     int size = dis.readInt();
-    CoordinateSequence pts = readCoordinateSequence(size);
+    CoordinateSequence pts = readCoordinateSequenceLineString(size);
     return factory.createLineString(pts);
   }
 
   private LinearRing readLinearRing() throws IOException
   {
     int size = dis.readInt();
-    CoordinateSequence pts = readCoordinateSequence(size);
+    CoordinateSequence pts = readCoordinateSequenceRing(size);
     return factory.createLinearRing(pts);
   }
 
@@ -261,6 +303,7 @@ public class WKBReader
   {
     int numGeom = dis.readInt();
     Polygon[] geoms = new Polygon[numGeom];
+
     for (int i = 0; i < numGeom; i++) {
       Geometry g = readGeometry();
       if (! (g instanceof Polygon))
@@ -282,7 +325,7 @@ public class WKBReader
 
   private CoordinateSequence readCoordinateSequence(int size) throws IOException
   {
-    CoordinateSequence seq = factory.getCoordinateSequenceFactory().create(size, inputDimension);
+    CoordinateSequence seq = csFactory.create(size, inputDimension);
     int targetDim = seq.getDimension();
     if (targetDim > inputDimension)
       targetDim = inputDimension;
@@ -293,6 +336,22 @@ public class WKBReader
       }
     }
     return seq;
+  }
+
+  private CoordinateSequence readCoordinateSequenceLineString(int size) throws IOException
+  {
+    CoordinateSequence seq = readCoordinateSequence(size);
+    if (isStrict) return seq;
+    if (seq.size() == 0 || seq.size() >= 2) return seq;
+    return CoordinateSequences.extend(csFactory, seq, 2);
+  }
+  
+  private CoordinateSequence readCoordinateSequenceRing(int size) throws IOException
+  {
+    CoordinateSequence seq = readCoordinateSequence(size);
+    if (isStrict) return seq;
+    if (CoordinateSequences.isRing(seq)) return seq;
+    return CoordinateSequences.ensureValidRing(csFactory, seq);
   }
 
   /**

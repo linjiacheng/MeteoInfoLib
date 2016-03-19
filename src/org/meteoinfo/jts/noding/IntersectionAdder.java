@@ -32,18 +32,13 @@
  */
 package org.meteoinfo.jts.noding;
 
-import java.util.*;
-import org.meteoinfo.jts.geom.*;
 import org.meteoinfo.jts.algorithm.LineIntersector;
-import org.meteoinfo.jts.util.Debug;
+import org.meteoinfo.jts.geom.Coordinate;
 
 /**
- * Computes the intersections between two line segments in {@link SegmentString}s
- * and adds them to each string.
- * The {@link SegmentIntersector} is passed to a {@link Noder}.
- * The {@link addIntersections} method is called whenever the {@link Noder}
- * detects that two SegmentStrings <i>might</i> intersect.
- * This class is an example of the <i>Strategy</i> pattern.
+ * Computes the possible intersections between two line segments in {@link NodedSegmentString}s
+ * and adds them to each string 
+ * using {@link NodedSegmentString#addIntersection(LineIntersector, int, int, int)}.
  *
  * @version 1.7
  */
@@ -136,8 +131,8 @@ public class IntersectionAdder
   /**
    * This method is called by clients
    * of the {@link SegmentIntersector} class to process
-   * intersections for two segments of the {@link SegmentStrings} being intersected.
-   * Note that some clients (such as {@link MonotoneChain}s) may optimize away
+   * intersections for two segments of the {@link SegmentString}s being intersected.
+   * Note that some clients (such as <code>MonotoneChain</code>s) may optimize away
    * this call for segment pairs which they have determined do not intersect
    * (e.g. by an disjoint envelope test).
    */
@@ -168,8 +163,8 @@ numTests++;
       // only intersection.
       if (! isTrivialIntersection(e0, segIndex0, e1, segIndex1)) {
         hasIntersection = true;
-        e0.addIntersections(li, segIndex0, 0);
-        e1.addIntersections(li, segIndex1, 1);
+        ((NodedSegmentString) e0).addIntersections(li, segIndex0, 0);
+        ((NodedSegmentString) e1).addIntersections(li, segIndex1, 1);
         if (li.isProper()) {
           numProperIntersections++;
 //Debug.println(li.toString());  Debug.println(li.getIntersection(0));

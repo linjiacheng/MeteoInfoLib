@@ -35,12 +35,15 @@
 package org.meteoinfo.jts.geom;
 
 /**
- *  Models a collection of <code>Point</code>s.
+ * Models a collection of {@link Point}s.
+ * <p>
+ * Any collection of Points is a valid MultiPoint.
  *
  *@version 1.7
  */
 public class MultiPoint
   extends GeometryCollection
+  implements Puntal
 {
 
   private static final long serialVersionUID = -8048474874175355449L;

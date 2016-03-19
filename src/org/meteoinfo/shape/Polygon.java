@@ -138,6 +138,14 @@ public class Polygon {
         }
         _holeLines.add(points);
     }
+    
+    /**
+     * Remove a hole line
+     * @param holeIdx Hole index
+     */
+    public void removeHole(int holeIdx){
+        this._holeLines.remove(holeIdx);
+    }
 
     /**
      * To geometry

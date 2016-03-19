@@ -36,7 +36,6 @@ import javax.swing.JOptionPane;
 import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.global.util.GlobalUtil;
 import org.meteoinfo.io.FileCharsetDetector;
-import org.meteoinfo.io.IOUtil;
 import ucar.ma2.Array;
 
 /**
@@ -316,7 +315,7 @@ public class LonLatStationDataInfo extends DataInfo implements IStationDataInfo 
         t = 0;
 
         String[] dataArray;
-        double[][] discreteData = new double[3][dataList.size()];
+        double[][] discreteData = new double[dataList.size()][3];
         double minX, maxX, minY, maxY;
         minX = 0;
         maxX = 0;

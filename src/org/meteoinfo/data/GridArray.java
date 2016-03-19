@@ -16,6 +16,7 @@ package org.meteoinfo.data;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.meteoinfo.data.meteodata.Dimension;
 import org.meteoinfo.data.meteodata.DimensionType;
@@ -566,7 +567,20 @@ public class GridArray {
      * @throws ucar.ma2.InvalidRangeException
      */
     public GridArray project(ProjectionInfo fromProj, ProjectionInfo toProj) throws InvalidRangeException {
-        return project(fromProj, toProj, ResampleMethods.NearestNeighbor);
+        //return project(fromProj, toProj, ResampleMethods.NearestNeighbor);
+        List<Number> xx = new ArrayList<>(); 
+        List<Number> yy = new ArrayList<>();
+        for (Double x : this.xArray){
+            xx.add(x);
+        }
+        for (Double y : this.yArray){
+            yy.add(y);
+        }
+        Object[] r = ArrayUtil.reproject(data, xx, yy, fromProj, toProj);
+        GridArray rdata = new GridArray((Array)r[0], (Array)r[1], (Array)r[2], missingValue);
+        rdata.projInfo = toProj;
+        
+        return rdata;
     }
 
     /**

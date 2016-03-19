@@ -177,7 +177,15 @@ public class Label {
   public boolean isAnyNull(int geomIndex) { return elt[geomIndex].isAnyNull(); }
 
   public boolean isArea()               { return elt[0].isArea() || elt[1].isArea();   }
-  public boolean isArea(int geomIndex)  { return elt[geomIndex].isArea();   }
+  public boolean isArea(int geomIndex)  
+  {
+  	/*  Testing
+  	if (elt[0].getLocations().length != elt[1].getLocations().length) {
+  		System.out.println(this);
+  	}
+  		*/
+  	return elt[geomIndex].isArea();   
+  }
   public boolean isLine(int geomIndex)  { return elt[geomIndex].isLine();   }
 
   public boolean isEqualOnSide(Label lbl, int side)
@@ -202,11 +210,11 @@ public class Label {
   {
     StringBuffer buf = new StringBuffer();
     if (elt[0] != null) {
-      buf.append("a:");
+      buf.append("A:");
       buf.append(elt[0].toString());
     }
     if (elt[1] != null) {
-      buf.append(" b:");
+      buf.append(" B:");
       buf.append(elt[1].toString());
     }
     return buf.toString();

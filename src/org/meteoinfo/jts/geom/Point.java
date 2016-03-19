@@ -35,13 +35,23 @@
 package org.meteoinfo.jts.geom;
 
 import org.meteoinfo.jts.util.Assert;
+import org.meteoinfo.jts.operation.valid.*;
 
 /**
- *  Basic implementation of <code>Point</code>.
+ * Represents a single point.
  *
+ * A <code>Point</code> is topologically valid if and only if:
+ * <ul>
+ * <li>the coordinate which defines it (if any) is a valid coordinate 
+ * (i.e does not have an <code>NaN</code> X or Y ordinate)
+ * </ul>
+ * 
  *@version 1.7
  */
-public class Point extends Geometry {
+public class Point 
+	extends Geometry
+	implements Puntal
+{
   private static final long serialVersionUID = 4902022702746614570L;
   /**
    *  The <code>Coordinate</code> wrapped by this <code>Point</code>.
@@ -94,14 +104,10 @@ public class Point extends Geometry {
   }
 
   public boolean isEmpty() {
-    return getCoordinate() == null;
+    return coordinates.size() == 0;
   }
 
   public boolean isSimple() {
-    return true;
-  }
-
-  public boolean isValid() {
     return true;
   }
 
@@ -163,6 +169,9 @@ public class Point extends Geometry {
     if (isEmpty() && other.isEmpty()) {
       return true;
     }
+    if (isEmpty() != other.isEmpty()) {
+      return false;
+    }
     return equal(((Point) other).getCoordinate(), this.getCoordinate(), tolerance);
   }
 
@@ -200,7 +209,15 @@ public class Point extends Geometry {
     return p;// return the clone
   }
 
-  public void normalize() { }
+  public Geometry reverse()
+  {
+    return (Geometry) clone();
+  }
+  
+  public void normalize() 
+  { 
+    // a Point is always in normalized form 
+  }
 
   protected int compareToSameClass(Object other) {
     Point point = (Point) other;

@@ -118,6 +118,27 @@ public class ProjectionManage {
         aExtent.maxY = maxY;
         return aExtent;
     }
+    
+    /**
+     * Get projected extent
+     *
+     * @param fromProj From projection
+     * @param toProj To projection
+     * @param x X coordinate
+     * @param y Y coordinate
+     * @return Extent
+     */
+    public static Extent getProjectionExtent(ProjectionInfo fromProj, ProjectionInfo toProj, List<Number> x, List<Number> y){
+        double[] X = new double[x.size()];
+        double[] Y = new double[y.size()];
+        for (int i = 0; i < X.length; i++){
+            X[i] = x.get(i).doubleValue();
+        }
+        for (int i = 0; i < Y.length; i++){
+            Y[i] = y.get(i).doubleValue();
+        }
+        return getProjectionExtent(fromProj, toProj, X, Y);
+    }
 
     /**
      * Get projected extent

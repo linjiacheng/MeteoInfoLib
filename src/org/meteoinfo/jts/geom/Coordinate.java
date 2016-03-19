@@ -35,342 +35,437 @@ package org.meteoinfo.jts.geom;
 import java.io.Serializable;
 import java.util.Comparator;
 import org.meteoinfo.jts.util.Assert;
+import org.meteoinfo.jts.util.NumberUtil;
+
 
 /**
- * A lightweight class used to store coordinates on the 2-dimensional Cartesian
- * plane. It is distinct from <code>Point</code>, which is a subclass of
- * <code>Geometry</code> . Unlike objects of type <code>Point</code> (which
- * contain additional information such as an envelope, a precision model, and
- * spatial reference system information), a <code>Coordinate</code> only
- * contains ordinate values and accessor methods.
- * <P>
+ * A lightweight class used to store coordinates
+ * on the 2-dimensional Cartesian plane.
+ * It is distinct from {@link Point}, which is a subclass of {@link Geometry}. 
+ * Unlike objects of type {@link Point} (which contain additional
+ * information such as an envelope, a precision model, and spatial reference
+ * system information), a <code>Coordinate</code> only contains ordinate values
+ * and accessor methods. <P>
  *
- * <code>Coordinate</code>s are two-dimensional points, with an additional
- * z-ordinate. JTS does not support any operations on the z-ordinate except the
- * basic accessor functions. Constructed coordinates will have a z-ordinate of
- * <code>NaN</code>. The standard comparison functions will ignore the
- * z-ordinate.
+ * <code>Coordinate</code>s are two-dimensional points, with an additional Z-ordinate. 
+ * If an Z-ordinate value is not specified or not defined, 
+ * constructed coordinates have a Z-ordinate of <code>NaN</code>
+ * (which is also the value of <code>NULL_ORDINATE</code>).  
+ * The standard comparison functions ignore the Z-ordinate.
+ * Apart from the basic accessor functions, JTS supports
+ * only specific operations involving the Z-ordinate. 
  *
- * @version 1.7
+ *@version 1.7
  */
 public class Coordinate implements Comparable, Cloneable, Serializable {
+  private static final long serialVersionUID = 6683108902428366910L;
+  
+  /**
+   * The value used to indicate a null or missing ordinate value.
+   * In particular, used for the value of ordinates for dimensions 
+   * greater than the defined dimension of a coordinate.
+   */
+  public static final double NULL_ORDINATE = Double.NaN;
+  
+  /**
+   * Standard ordinate index values
+   */
+  public static final int X = 0;
+  public static final int Y = 1;
+  public static final int Z = 2;
+  public static final int M = 3;
 
-    private static final long serialVersionUID = 6683108902428366910L;
-    /**
-     * The x-coordinate.
-     */
-    public double x;
-    /**
-     * The y-coordinate.
-     */
-    public double y;
-    /**
-     * The z-coordinate.
-     */
-    public double z;
-    /**
-     * An optional place holder for a measure value if needed.
-     */
-    public double m;
+  /**
+   *  The x-coordinate.
+   */
+  public double x;
+  /**
+   *  The y-coordinate.
+   */
+  public double y;
+  /**
+   *  The z-coordinate.
+   */
+  public double z;
+  /**
+   * The m value
+   */
+  public double m;
 
+  /**
+   *  Constructs a <code>Coordinate</code> at (x,y,z,m).
+   *
+   *@param  x  the x-value
+   *@param  y  the y-value
+   *@param  z  the z-value
+   * @param m  the m-value
+   */
+  public Coordinate(double x, double y, double z, double m) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    this.m = m;
+  }
+  
+  /**
+   *  Constructs a <code>Coordinate</code> at (x,y,z).
+   *
+   *@param  x  the x-value
+   *@param  y  the y-value
+   *@param  z  the z-value
+   */
+  public Coordinate(double x, double y, double z) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    this.m = NULL_ORDINATE;
+  }
+
+  /**
+   *  Constructs a <code>Coordinate</code> at (0,0,NaN).
+   */
+  public Coordinate() {
+    this(0.0, 0.0);
+  }
+
+  /**
+   *  Constructs a <code>Coordinate</code> having the same (x,y,z,m) values as
+   *  <code>other</code>.
+   *
+   *@param  c  the <code>Coordinate</code> to copy.
+   */
+  public Coordinate(Coordinate c) {
+    this(c.x, c.y, c.z, c.m);
+  }
+
+  /**
+   *  Constructs a <code>Coordinate</code> at (x,y,NaN).
+   *
+   *@param  x  the x-value
+   *@param  y  the y-value
+   */
+  public Coordinate(double x, double y) {
+    this(x, y, NULL_ORDINATE);
+  }
+
+  /**
+   *  Sets this <code>Coordinate</code>s (x,y,z) values to that of <code>other</code>.
+   *
+   *@param  other  the <code>Coordinate</code> to copy
+   */
+  public void setCoordinate(Coordinate other) {
+    x = other.x;
+    y = other.y;
+    z = other.z;
+    m = other.m;
+  }
+
+  /**
+   * Gets the ordinate value for the given index.
+   * The supported values for the index are 
+   * {@link X}, {@link Y}, and {@link Z}.
+   * 
+   * @param ordinateIndex the ordinate index
+   * @return the value of the ordinate
+   * @throws IllegalArgumentException if the index is not valid
+   */
+  public double getOrdinate(int ordinateIndex)
+  {
+    switch (ordinateIndex) {
+    case X: return x;
+    case Y: return y;
+    case Z: return z;
+    case M: return m;
+    }
+    throw new IllegalArgumentException("Invalid ordinate index: " + ordinateIndex);
+  }
+  
+  /**
+   * Sets the ordinate for the given index
+   * to a given value.
+   * The supported values for the index are 
+   * {@link X}, {@link Y}, and {@link Z}.
+   * 
+   * @param ordinateIndex the ordinate index
+   * @param value the value to set
+   * @throws IllegalArgumentException if the index is not valid
+   */
+  public void setOrdinate(int ordinateIndex, double value)
+  {
+    switch (ordinateIndex) {
+      case X:
+        x = value;
+        break;
+      case Y:
+        y = value;
+        break;
+      case Z:
+        z = value;
+        break;
+      case M:
+          m = value;
+          break;
+      default:
+        throw new IllegalArgumentException("Invalid ordinate index: " + ordinateIndex);
+    }
+  }
+
+  /**
+   *  Returns whether the planar projections of the two <code>Coordinate</code>s
+   *  are equal.
+   *
+   *@param  other  a <code>Coordinate</code> with which to do the 2D comparison.
+   *@return        <code>true</code> if the x- and y-coordinates are equal; the
+   *      z-coordinates do not have to be equal.
+   */
+  public boolean equals2D(Coordinate other) {
+    if (x != other.x) {
+      return false;
+    }
+    if (y != other.y) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Tests if another coordinate has the same values for the X and Y ordinates.
+   * The Z ordinate is ignored.
+   *
+   *@param other a <code>Coordinate</code> with which to do the 2D comparison.
+   *@return true if <code>other</code> is a <code>Coordinate</code>
+   *      with the same values for X and Y.
+   */
+  public boolean equals2D(Coordinate c, double tolerance){
+    if (! NumberUtil.equalsWithTolerance(this.x, c.x, tolerance)) {
+      return false;
+    }
+    if (! NumberUtil.equalsWithTolerance(this.y, c.y, tolerance)) {
+      return false;
+    }
+    return true;
+  }
+  
+  /**
+   * Tests if another coordinate has the same values for the X, Y and Z ordinates.
+   *
+   *@param other a <code>Coordinate</code> with which to do the 3D comparison.
+   *@return true if <code>other</code> is a <code>Coordinate</code>
+   *      with the same values for X, Y and Z.
+   */
+  public boolean equals3D(Coordinate other) {
+    return (x == other.x) && (y == other.y) &&
+               ((z == other.z) ||
+               (Double.isNaN(z) && Double.isNaN(other.z)));
+  }
+  
+  /**
+   * Tests if another coordinate has the same value for Z, within a tolerance.
+   * 
+   * @param c a coordinate
+   * @param tolerance the tolerance value
+   * @return true if the Z ordinates are within the given tolerance
+   */
+  public boolean equalInZ(Coordinate c, double tolerance){
+    return NumberUtil.equalsWithTolerance(this.z, c.z, tolerance);
+  }
+  
+  /**
+   *  Returns <code>true</code> if <code>other</code> has the same values for
+   *  the x and y ordinates.
+   *  Since Coordinates are 2.5D, this routine ignores the z value when making the comparison.
+   *
+   *@param  other  a <code>Coordinate</code> with which to do the comparison.
+   *@return        <code>true</code> if <code>other</code> is a <code>Coordinate</code>
+   *      with the same values for the x and y ordinates.
+   */
+  public boolean equals(Object other) {
+    if (!(other instanceof Coordinate)) {
+      return false;
+    }
+    return equals2D((Coordinate) other);
+  }
+
+  /**
+   *  Compares this {@link Coordinate} with the specified {@link Coordinate} for order.
+   *  This method ignores the z value when making the comparison.
+   *  Returns:
+   *  <UL>
+   *    <LI> -1 : this.x < other.x || ((this.x == other.x) && (this.y <
+   *    other.y))
+   *    <LI> 0 : this.x == other.x && this.y = other.y
+   *    <LI> 1 : this.x > other.x || ((this.x == other.x) && (this.y > other.y))
+   *
+   *  </UL>
+   *  Note: This method assumes that ordinate values
+   * are valid numbers.  NaN values are not handled correctly.
+   *
+   *@param  o  the <code>Coordinate</code> with which this <code>Coordinate</code>
+   *      is being compared
+   *@return    -1, zero, or 1 as this <code>Coordinate</code>
+   *      is less than, equal to, or greater than the specified <code>Coordinate</code>
+   */
+  public int compareTo(Object o) {
+    Coordinate other = (Coordinate) o;
+
+    if (x < other.x) return -1;
+    if (x > other.x) return 1;
+    if (y < other.y) return -1;
+    if (y > other.y) return 1;
+    return 0;
+  }
+
+  /**
+   *  Returns a <code>String</code> of the form <I>(x,y,z)</I> .
+   *
+   *@return    a <code>String</code> of the form <I>(x,y,z)</I>
+   */
+  public String toString() {
+    return "(" + x + ", " + y + ", " + z + ")";
+  }
+
+  public Object clone() {
+    try {
+      Coordinate coord = (Coordinate) super.clone();
+
+      return coord; // return the clone
+    } catch (CloneNotSupportedException e) {
+      Assert.shouldNeverReachHere(
+          "this shouldn't happen because this class is Cloneable");
+
+      return null;
+    }
+  }
+
+  /**
+   * Computes the 2-dimensional Euclidean distance to another location.
+   * The Z-ordinate is ignored.
+   * 
+   * @param c a point
+   * @return the 2-dimensional Euclidean distance between the locations
+   */
+  public double distance(Coordinate c) {
+    double dx = x - c.x;
+    double dy = y - c.y;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  /**
+   * Computes the 3-dimensional Euclidean distance to another location.
+   * 
+   * @param c a coordinate
+   * @return the 3-dimensional Euclidean distance between the locations
+   */
+  public double distance3D(Coordinate c) {
+    double dx = x - c.x;
+    double dy = y - c.y;
+    double dz = z - c.z;
+    return Math.sqrt(dx * dx + dy * dy + dz * dz);
+  }
+
+  /**
+   * Gets a hashcode for this coordinate.
+   * 
+   * @return a hashcode for this coordinate
+   */
+  public int hashCode() {
+    //Algorithm from Effective Java by Joshua Bloch [Jon Aquino]
+    int result = 17;
+    result = 37 * result + hashCode(x);
+    result = 37 * result + hashCode(y);
+    return result;
+  }
+
+  /**
+   * Computes a hash code for a double value, using the algorithm from
+   * Joshua Bloch's book <i>Effective Java"</i>
+   * 
+   * @return a hashcode for the double value
+   */
+  public static int hashCode(double x) {
+    long f = Double.doubleToLongBits(x);
+    return (int)(f^(f>>>32));
+  }
+
+
+  /**
+   * Compares two {@link Coordinate}s, allowing for either a 2-dimensional
+   * or 3-dimensional comparison, and handling NaN values correctly.
+   */
+  public static class DimensionalComparator
+      implements Comparator
+  {
     /**
-     * Constructs a <code>Coordinate</code> at (x,y,z,m).
+     * Compare two <code>double</code>s, allowing for NaN values.
+     * NaN is treated as being less than any valid number.
      *
-     * @param x the x-value
-     * @param y the y-value
-     * @param z the z-value
-     * @param m the m-value
+     * @param a a <code>double</code>
+     * @param b a <code>double</code>
+     * @return -1, 0, or 1 depending on whether a is less than, equal to or greater than b
      */
-    public Coordinate(double x, double y, double z, double m) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.m = m;
+    public static int compare(double a, double b)
+    {
+      if (a < b) return -1;
+      if (a > b) return 1;
+
+      if (Double.isNaN(a)) {
+        if (Double.isNaN(b)) return 0;
+        return -1;
+      }
+
+      if (Double.isNaN(b)) return 1;
+      return 0;
+    }
+
+    private int dimensionsToTest = 2;
+
+    /**
+     * Creates a comparator for 2 dimensional coordinates.
+     */
+    public DimensionalComparator()
+    {
+      this(2);
     }
 
     /**
-     * Constructs a <code>Coordinate</code> at (x,y,z).
+     * Creates a comparator for 2 or 3 dimensional coordinates, depending
+     * on the value provided.
      *
-     * @param x the x-value
-     * @param y the y-value
-     * @param z the z-value
+     * @param dimensionsToTest the number of dimensions to test
      */
-    public Coordinate(double x, double y, double z) {
-        this(x, y, z, Double.NaN);
+    public DimensionalComparator(int dimensionsToTest)
+    {
+      if (dimensionsToTest != 2 && dimensionsToTest != 3)
+        throw new IllegalArgumentException("only 2 or 3 dimensions may be specified");
+      this.dimensionsToTest = dimensionsToTest;
     }
 
     /**
-     * Constructs a <code>Coordinate</code> at (0,0,NaN).
-     */
-    public Coordinate() {
-        this(0.0, 0.0);
-    }
-
-    /**
-     * Constructs a <code>Coordinate</code> having the same (x,y,z) values as
-     * <code>other</code>.
+     * Compares two {@link Coordinate}s along to the number of
+     * dimensions specified.
      *
-     * @param c the <code>Coordinate</code> to copy.
-     */
-    public Coordinate(Coordinate c) {
-        this(c.x, c.y, c.z, c.m);
-    }
-
-    /**
-     * Constructs a <code>Coordinate</code> at (x,y,NaN).
+     * @param o1 a {@link Coordinate}
+     * @param o2 a {link Coordinate}
+     * @return -1, 0, or 1 depending on whether o1 is less than,
+     * equal to, or greater than 02
      *
-     * @param x the x-value
-     * @param y the y-value
      */
-    public Coordinate(double x, double y) {
-        this(x, y, Double.NaN);
+    public int compare(Object o1, Object o2)
+    {
+      Coordinate c1 = (Coordinate) o1;
+      Coordinate c2 = (Coordinate) o2;
+
+      int compX = compare(c1.x, c2.x);
+      if (compX != 0) return compX;
+
+      int compY = compare(c1.y, c2.y);
+      if (compY != 0) return compY;
+
+      if (dimensionsToTest <= 2) return 0;
+
+      int compZ = compare(c1.z, c2.z);
+      return compZ;
     }
-
-    /**
-     * Sets this <code>Coordinate</code>s (x,y,z) values to that of
-     * <code>other</code> .
-     *
-     * @param other the <code>Coordinate</code> to copy
-     */
-    public void setCoordinate(Coordinate other) {
-        x = other.x;
-        y = other.y;
-        z = other.z;
-        m = other.m;
-    }
-
-    /**
-     * Returns whether the planar projections of the two
-     * <code>Coordinate</code>s are equal.
-     *
-     * @param other a <code>Coordinate</code> with which to do the 2D
-     * comparison.
-     * @return        <code>true</code> if the x- and y-coordinates are equal; the
-     * z-coordinates do not have to be equal.
-     */
-    public boolean equals2D(Coordinate other) {
-        if (x != other.x) {
-            return false;
-        }
-
-        if (y != other.y) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Returns <code>true</code> if <code>other</code> has the same values for
-     * the x and y ordinates. Since Coordinates are 2.5D, this routine ignores
-     * the z value when making the comparison.
-     *
-     * @param other a <code>Coordinate</code> with which to do the comparison.
-     * @return        <code>true</code> if <code>other</code> is a
-     * <code>Coordinate</code> with the same values for the x and y ordinates.
-     */
-    @Override
-    public boolean equals(Object other) {
-        if (!(other instanceof Coordinate)) {
-            return false;
-        }
-        return equals2D((Coordinate) other);
-    }
-
-    /**
-     * Compares this {@link Coordinate} with the specified {@link Coordinate}
-     * for order. This method ignores the z value when making the comparison.
-     * Returns:
-     * <UL>
-     * <LI> -1 : this.x < other.x || ((this.x == other.x) && (this.y < other.y))
-     * <LI> 0 : this.x == other.x && this.y = other.y
-     * <LI> 1 : this.x > other.x || ((this.x == other.x) && (this.y > other.y))
-     *
-     * </UL>
-     * Note: This method assumes that ordinate values are valid numbers. NaN
-     * values are not handled correctly.
-     *
-     * @param o the <code>Coordinate</code> with which this
-     * <code>Coordinate</code> is being compared
-     * @return -1, zero, or 1 as this <code>Coordinate</code> is less than,
-     * equal to, or greater than the specified <code>Coordinate</code>
-     */
-    @Override
-    public int compareTo(Object o) {
-        Coordinate other = (Coordinate) o;
-
-        if (x < other.x) {
-            return -1;
-        }
-        if (x > other.x) {
-            return 1;
-        }
-        if (y < other.y) {
-            return -1;
-        }
-        if (y > other.y) {
-            return 1;
-        }
-        return 0;
-    }
-
-    /**
-     * Returns <code>true</code> if <code>other</code> has the same values for
-     * x, y and z.
-     *
-     * @param other a <code>Coordinate</code> with which to do the 3D
-     * comparison.
-     * @return        <code>true</code> if <code>other</code> is a
-     * <code>Coordinate</code> with the same values for x, y and z.
-     */
-    public boolean equals3D(Coordinate other) {
-        return (x == other.x) && (y == other.y)
-                && ((z == other.z)
-                || (Double.isNaN(z) && Double.isNaN(other.z)));
-    }
-
-    /**
-     * Returns a <code>String</code> of the form <I>(x,y,z)</I> .
-     *
-     * @return a <code>String</code> of the form <I>(x,y,z)</I>
-     */
-    @Override
-    public String toString() {
-        return "(" + x + ", " + y + ", " + z + ")";
-    }
-
-    @Override
-    public Object clone() {
-        try {
-            Coordinate coord = (Coordinate) super.clone();
-
-            return coord; // return the clone
-        } catch (CloneNotSupportedException e) {
-            Assert.shouldNeverReachHere(
-                    "this shouldn't happen because this class is Cloneable");
-
-            return null;
-        }
-    }
-
-    public double distance(Coordinate p) {
-        double dx = x - p.x;
-        double dy = y - p.y;
-
-        return Math.sqrt(dx * dx + dy * dy);
-    }
-
-    @Override
-    public int hashCode() {
-        //Algorithm from Effective Java by Joshua Bloch [Jon Aquino]
-        int result = 17;
-        result = 37 * result + hashCode(x);
-        result = 37 * result + hashCode(y);
-        return result;
-    }
-
-    /**
-     * Returns a hash code for a double value, using the algorithm from Joshua
-     * Bloch's book <i>Effective Java"</i>
-     * @param x Double value
-     * @return Hash code
-     */
-    public static int hashCode(double x) {
-        long f = Double.doubleToLongBits(x);
-        return (int) (f ^ (f >>> 32));
-    }
-
-    /**
-     * Compares two {@link Coordinate}s, allowing for either a 2-dimensional or
-     * 3-dimensional comparison, and handling NaN values correctly.
-     */
-    public static class DimensionalComparator
-            implements Comparator {
-
-        /**
-         * Compare two <code>double</code>s, allowing for NaN values. NaN is
-         * treated as being less than any valid number.
-         *
-         * @param a a <code>double</code>
-         * @param b a <code>double</code>
-         * @return -1, 0, or 1 depending on whether a is less than, equal to or
-         * greater than b
-         */
-        public static int compare(double a, double b) {
-            if (a < b) {
-                return -1;
-            }
-            if (a > b) {
-                return 1;
-            }
-
-            if (Double.isNaN(a)) {
-                if (Double.isNaN(b)) {
-                    return 0;
-                }
-                return -1;
-            }
-
-            if (Double.isNaN(b)) {
-                return 1;
-            }
-            return 0;
-        }
-
-        private int dimensionsToTest = 2;
-
-        /**
-         * Creates a comparator for 2 dimensional coordinates.
-         */
-        public DimensionalComparator() {
-            this(2);
-        }
-
-        /**
-         * Creates a comparator for 2 or 3 dimensional coordinates, depending on
-         * the value provided.
-         *
-         * @param dimensionsToTest the number of dimensions to test.
-         */
-        public DimensionalComparator(int dimensionsToTest) {
-            if (dimensionsToTest != 2 && dimensionsToTest != 3) {
-                throw new IllegalArgumentException("only 2 or 3 dimensions may be specified");
-            }
-            this.dimensionsToTest = dimensionsToTest;
-        }
-
-        /**
-         * Compares two {@link Coordinate}s along to the number of dimensions
-         * specified.
-         *
-         * @param o1 a {@link Coordinate}
-         * @param o2 a {link Coordinate}
-         * @return -1, 0, or 1 depending on whether o1 is less than, equal to,
-         * or greater than 02
-         *
-         */
-        @Override
-        public int compare(Object o1, Object o2) {
-            Coordinate c1 = (Coordinate) o1;
-            Coordinate c2 = (Coordinate) o2;
-
-            int compX = compare(c1.x, c2.x);
-            if (compX != 0) {
-                return compX;
-            }
-
-            int compY = compare(c1.y, c2.y);
-            if (compY != 0) {
-                return compY;
-            }
-
-            if (dimensionsToTest <= 2) {
-                return 0;
-            }
-
-            int compZ = compare(c1.z, c2.z);
-            return compZ;
-        }
-    }
+  }
 
 }

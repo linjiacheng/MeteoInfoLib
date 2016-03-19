@@ -21,9 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.meteoinfo.jts.geom.Coordinate;
 import org.meteoinfo.jts.geom.Geometry;
-import org.meteoinfo.jts.geom.GeometryCollection;
 import org.meteoinfo.jts.geom.GeometryFactory;
-import org.meteoinfo.jts.geom.MultiLineString;
 import org.meteoinfo.jts.geom.MultiPolygon;
 
 /**
@@ -81,7 +79,7 @@ public class PolygonShape extends Shape implements Cloneable {
         this._points = points;
         List<PointD> pp;
         switch (geometry.getGeometryType()) {
-            case "GeometryCollection":
+            case "MultiPolygon":
                 int n = geometry.getNumGeometries();                
                 _numParts = 0;
                 List<Integer> partlist = new ArrayList<>();
@@ -136,7 +134,8 @@ public class PolygonShape extends Shape implements Cloneable {
                 }
                 this._polygons.add(polygon);
                 break;
-        }        
+        }   
+        this.setExtent(MIMath.getPointsExtent(_points));
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -154,7 +153,7 @@ public class PolygonShape extends Shape implements Cloneable {
      */
     @Override
     public Geometry toGeometry(GeometryFactory factory) {
-        if (this.getPartNum() == 1) {
+        if (this._polygons.size() == 1) {
             return this._polygons.get(0).toGeometry(factory);
         } else {
             org.meteoinfo.jts.geom.Polygon[] polygons = new org.meteoinfo.jts.geom.Polygon[this._polygons.size()];
@@ -336,10 +335,24 @@ public class PolygonShape extends Shape implements Cloneable {
      *
      * @param points point list
      * @param polygonIdx polygon index
+     * @return Hole index
      */
-    public void addHole(List<PointD> points, int polygonIdx) {
+    public int addHole(List<PointD> points, int polygonIdx) {
         Polygon aPolygon = _polygons.get(polygonIdx);
         aPolygon.addHole(points);
+        
+        updatePartsPoints();
+        return aPolygon.getHoleLines().size() - 1;
+    }
+    
+    /**
+     * Remove a hole
+     * @param polygonIdx Polygon index
+     * @param holeIdx Hole index
+     */
+    public void removeHole(int polygonIdx, int holeIdx){
+        Polygon poly = _polygons.get(polygonIdx);
+        poly.removeHole(holeIdx);
         
         updatePartsPoints();
     }
@@ -398,8 +411,8 @@ public class PolygonShape extends Shape implements Cloneable {
         this.updatePolygons();
     }
     
-    @Override
-    public Object clone() {
+    //@Override
+    public Object clone_back() {
         return (PolygonShape) super.clone();
     }
 
@@ -408,14 +421,19 @@ public class PolygonShape extends Shape implements Cloneable {
      *
      * @return PolygonShape
      */
-    public Object clone_old() {
+    @Override
+    public Object clone() {
         PolygonShape aPGS = new PolygonShape();
         aPGS.setExtent(this.getExtent());
         aPGS.highValue = highValue;
         aPGS.lowValue = lowValue;
         aPGS._numParts = _numParts;
         aPGS.parts = (int[]) parts.clone();
-        aPGS.setPoints(_points);
+        List<PointD> points = new ArrayList<>();
+        for (PointD p : _points){
+            points.add((PointD)p.clone());
+        }
+        aPGS.setPoints(points);
         aPGS.setVisible(this.isVisible());
         aPGS.setSelected(this.isSelected());
         aPGS.setLegendIndex(this.getLegendIndex());

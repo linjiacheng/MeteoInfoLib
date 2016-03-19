@@ -234,6 +234,19 @@ public abstract class Shape implements Cloneable{
         return toGeometry(new GeometryFactory());
     };
     
+    public static Shape geometry2Shape(Geometry geo){
+        switch (geo.getGeometryType()){
+            case "Point":
+                return new PointShape(geo);
+            case "LineString":
+                return new PolylineShape(geo);
+            case "Polygon":
+                return new PolygonShape(geo);
+            default:
+                return null;
+        }
+    }
+    
     /**
      * Get intersection shape
      * @param b Other shape
@@ -243,20 +256,7 @@ public abstract class Shape implements Cloneable{
         Geometry g1 = this.toGeometry();
         Geometry g2 = b.toGeometry();
         Geometry g3 = g1.intersection(g2);
-        switch (this.getShapeType()){
-            case Point:
-            case PointZ:
-                return new PointShape(g3);
-            case Polyline:
-            case PolylineZ:
-                return new PolylineShape(g3);
-            case Polygon:
-            case PolygonZ:
-            case PolygonM:
-                return new PolygonShape(g3);
-            default:
-                return null;
-        }
+        return geometry2Shape(g3);
     }
     
     /**
@@ -268,20 +268,7 @@ public abstract class Shape implements Cloneable{
         Geometry g1 = this.toGeometry();
         Geometry g2 = b.toGeometry();
         Geometry g3 = g1.union(g2);
-        switch (this.getShapeType()){
-            case Point:
-            case PointZ:
-                return new PointShape(g3);
-            case Polyline:
-            case PolylineZ:
-                return new PolylineShape(g3);
-            case Polygon:
-            case PolygonZ:
-            case PolygonM:
-                return new PolygonShape(g3);
-            default:
-                return null;
-        }
+        return geometry2Shape(g3);
     }
     
     /**
@@ -293,20 +280,7 @@ public abstract class Shape implements Cloneable{
         Geometry g1 = this.toGeometry();
         Geometry g2 = b.toGeometry();
         Geometry g3 = g1.difference(g2);
-        switch (this.getShapeType()){
-            case Point:
-            case PointZ:
-                return new PointShape(g3);
-            case Polyline:
-            case PolylineZ:
-                return new PolylineShape(g3);
-            case Polygon:
-            case PolygonZ:
-            case PolygonM:
-                return new PolygonShape(g3);
-            default:
-                return null;
-        }
+        return geometry2Shape(g3);
     }
     
     /**
@@ -318,20 +292,7 @@ public abstract class Shape implements Cloneable{
         Geometry g1 = this.toGeometry();
         Geometry g2 = b.toGeometry();
         Geometry g3 = g1.symDifference(g2);
-        switch (this.getShapeType()){
-            case Point:
-            case PointZ:
-                return new PointShape(g3);
-            case Polyline:
-            case PolylineZ:
-                return new PolylineShape(g3);
-            case Polygon:
-            case PolygonZ:
-            case PolygonM:
-                return new PolygonShape(g3);
-            default:
-                return null;
-        }
+        return geometry2Shape(g3);
     }
     
     /**
@@ -342,20 +303,7 @@ public abstract class Shape implements Cloneable{
     public Shape buffer(double distance){
         Geometry g1 = this.toGeometry();
         Geometry g3 = g1.buffer(distance);
-        switch (this.getShapeType()){
-            case Point:
-            case PointZ:
-                return new PointShape(g3);
-            case Polyline:
-            case PolylineZ:
-                return new PolylineShape(g3);
-            case Polygon:
-            case PolygonZ:
-            case PolygonM:
-                return new PolygonShape(g3);
-            default:
-                return null;
-        }
+        return geometry2Shape(g3);
     }
     
     /**
@@ -365,20 +313,7 @@ public abstract class Shape implements Cloneable{
     public Shape convexHull(){
         Geometry g1 = this.toGeometry();
         Geometry g3 = g1.convexHull();
-        switch (this.getShapeType()){
-            case Point:
-            case PointZ:
-                return new PointShape(g3);
-            case Polyline:
-            case PolylineZ:
-                return new PolylineShape(g3);
-            case Polygon:
-            case PolygonZ:
-            case PolygonM:
-                return new PolygonShape(g3);
-            default:
-                return null;
-        }
+        return geometry2Shape(g3);
     }
     
     /**
@@ -386,7 +321,7 @@ public abstract class Shape implements Cloneable{
      * @param line Split line
      * @return Splitted shapes
      */
-    public List<PolygonShape> split(Shape line){
+    public List<Shape> split(Shape line){
         Geometry g1 = this.toGeometry();
         Geometry g2 = line.toGeometry();
         if (g1.getGeometryType().equals("Polygon")){
@@ -394,17 +329,127 @@ public abstract class Shape implements Cloneable{
             Polygonizer polygonizer = new Polygonizer();
             Geometry polygons = polygon.getBoundary().union(g2);
             polygonizer.add(polygons);
-            List polys = (List)polygonizer.getPolygons();   
-            List<PolygonShape> polyShapes = new ArrayList<>();
+            List<Geometry> polys = (List)polygonizer.getPolygons();   
+            List<Shape> polyShapes = new ArrayList<>();
             for (int i = 0; i < polys.size(); i++){
                 org.meteoinfo.jts.geom.Polygon poly = (org.meteoinfo.jts.geom.Polygon)polys.get(i);
-                //org.meteoinfo.jts.geom.Polygon rpoly = (org.meteoinfo.jts.geom.Polygon)g1.intersection(poly);
-                polyShapes.add(new PolygonShape(poly));
+                if (poly.getInteriorPoint().within(g1))
+                    polyShapes.add(new PolygonShape(poly));
             }
             return polyShapes;
         }
         
         return null;
+    }
+    
+    /**
+     * If shapes cross each other
+     * @param other Other shape
+     * @return Cross or not
+     */
+    public boolean crosses(Shape other){
+        Geometry g1 = this.toGeometry();
+        Geometry g2 = other.toGeometry();
+        return g1.crosses(g2);
+    }
+    
+    /**
+     * If this shape contains aother one
+     * @param other Other shape
+     * @return Contains or not
+     */
+    public boolean contains(Shape other){
+        Geometry g1 = this.toGeometry();
+        Geometry g2 = other.toGeometry();
+        return g1.contains(g2);
+    }
+    
+    /**
+     * If this shape covered by aother one
+     * @param other Other shape
+     * @return Coverd by or not
+     */
+    public boolean coveredBy(Shape other){
+        Geometry g1 = this.toGeometry();
+        Geometry g2 = other.toGeometry();
+        return g1.coveredBy(g2);
+    }
+    
+    /**
+     * If this shape covers aother one
+     * @param other Other shape
+     * @return Covers or not
+     */
+    public boolean covers(Shape other){
+        Geometry g1 = this.toGeometry();
+        Geometry g2 = other.toGeometry();
+        return g1.covers(g2);
+    }
+    
+    /**
+     * If this shape disjoint aother one
+     * @param other Other shape
+     * @return Disjoint or not
+     */
+    public boolean disjoint(Shape other){
+        Geometry g1 = this.toGeometry();
+        Geometry g2 = other.toGeometry();
+        return g1.disjoint(g2);
+    }
+    
+    /**
+     * If this shape equals aother one
+     * @param other Other shape
+     * @return Equals or not
+     */
+    public boolean equals(Shape other){
+        Geometry g1 = this.toGeometry();
+        Geometry g2 = other.toGeometry();
+        return g1.equals(g2);
+    }
+    
+    /**
+     * If this shape intersects aother one
+     * @param other Other shape
+     * @return Intersects or not
+     */
+    public boolean intersects(Shape other){
+        Geometry g1 = this.toGeometry();
+        Geometry g2 = other.toGeometry();
+        return g1.intersects(g2);
+    }
+    
+    /**
+     * If this shape overlaps aother one
+     * @param other Other shape
+     * @return Overlaps or not
+     */
+    public boolean overlaps(Shape other){
+        Geometry g1 = this.toGeometry();
+        Geometry g2 = other.toGeometry();
+        return g1.overlaps(g2);
+    }
+    
+    /**
+     * If this shape touches aother one
+     * @param other Other shape
+     * @return Touches or not
+     */
+    public boolean touches(Shape other){
+        Geometry g1 = this.toGeometry();
+        Geometry g2 = other.toGeometry();
+        return g1.touches(g2);
+    }
+    
+    /**
+     * If this shape within aother one
+     * @param other Other shape
+     * @return Within or not
+     */
+    public boolean within(Shape other){
+        Geometry g1 = this.toGeometry();
+        Geometry g2 = other.toGeometry();
+        return g1.within(g2);
     }
 
     /**

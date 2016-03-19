@@ -32,53 +32,85 @@
  */
 package org.meteoinfo.jts.algorithm;
 
+import org.meteoinfo.jts.geom.*;
+
 /**
  * An interface for rules which determine whether node points
- * which are in boundaries of lineal geometry components
+ * which are in boundaries of {@link Lineal} geometry components
  * are in the boundary of the parent geometry collection.
  * The SFS specifies a single kind of boundary node rule,
  * the {@link Mod2BoundaryNodeRule} rule.
  * However, other kinds of Boundary Node Rules are appropriate
  * in specific situations (for instance, linear network topology
  * usually follows the {@link EndPointBoundaryNodeRule}.)
- * Some JTS operations allow the BoundaryNodeRule to be specified,
- * and respect this rule when computing the results of the operation.
+ * Some JTS operations 
+ * (such as {@link RelateOp}, {@link BoundaryOp} and {@link IsSimpleOp})
+ * allow the BoundaryNodeRule to be specified,
+ * and respect the supplied rule when computing the results of the operation.
+ * <p>
+ * An example use case for a non-SFS-standard Boundary Node Rule is
+ * that of checking that a set of {@link LineString}s have 
+ * valid linear network topology, when turn-arounds are represented
+ * as closed rings.  In this situation, the entry road to the
+ * turn-around is only valid when it touches the turn-around ring
+ * at the single (common) endpoint.  This is equivalent 
+ * to requiring the set of <tt>LineString</tt>s to be 
+ * <b>simple</b> under the {@link EndPointBoundaryNodeRule}.
+ * The SFS-standard {@link Mod2BoundaryNodeRule} is not 
+ * sufficient to perform this test, since it
+ * states that closed rings have <b>no</b> boundary points.
+ * <p>
+ * This interface and its subclasses follow the <tt>Strategy</tt> design pattern.
  *
  * @author Martin Davis
  * @version 1.7
  *
  * @see RelateOp
+ * @see BoundaryOp
  * @see IsSimpleOp
+ * @see PointLocator
  */
 public interface BoundaryNodeRule
 {
 
+	/**
+	 * Tests whether a point that lies in <tt>boundaryCount</tt>
+	 * geometry component boundaries is considered to form part of the boundary
+	 * of the parent geometry.
+	 * 
+	 * @param boundaryCount the number of component boundaries that this point occurs in
+	 * @return true if points in this number of boundaries lie in the parent boundary
+	 */
   boolean isInBoundary(int boundaryCount);
 
   /**
-   * The Mod-2 Boundary Node Rule (as used in the OGC SFS).
+   * The Mod-2 Boundary Node Rule (which is the rule specified in the OGC SFS).
+   * @see Mod2BoundaryNodeRule
    */
   public static final BoundaryNodeRule MOD2_BOUNDARY_RULE = new Mod2BoundaryNodeRule();
 
-
   /**
    * The Endpoint Boundary Node Rule.
+   * @see EndPointBoundaryNodeRule
    */
   public static final BoundaryNodeRule ENDPOINT_BOUNDARY_RULE = new EndPointBoundaryNodeRule();
 
   /**
    * The MultiValent Endpoint Boundary Node Rule.
+   * @see MultiValentEndPointBoundaryNodeRule
    */
   public static final BoundaryNodeRule MULTIVALENT_ENDPOINT_BOUNDARY_RULE = new MultiValentEndPointBoundaryNodeRule();
 
   /**
    * The Monovalent Endpoint Boundary Node Rule.
+   * @see MonoValentEndPointBoundaryNodeRule
    */
   public static final BoundaryNodeRule MONOVALENT_ENDPOINT_BOUNDARY_RULE = new MonoValentEndPointBoundaryNodeRule();
 
   /**
    * The Boundary Node Rule specified by the OGC Simple Features Specification,
-   * equal to the Mod-2 rule.
+   * which is the same as the Mod-2 rule.
+   * @see Mod2BoundaryNodeRule
    */
   public static final BoundaryNodeRule OGC_SFS_BOUNDARY_RULE = MOD2_BOUNDARY_RULE;
 

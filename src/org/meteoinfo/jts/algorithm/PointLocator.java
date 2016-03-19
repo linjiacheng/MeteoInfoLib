@@ -1,6 +1,3 @@
-
-
-
 /*
  * The JTS Topology Suite is a collection of Java classes that
  * implement the fundamental operations required to validate a given
@@ -37,13 +34,13 @@ package org.meteoinfo.jts.algorithm;
 
 import java.util.Iterator;
 import org.meteoinfo.jts.geom.*;
-import org.meteoinfo.jts.geomgraph.GeometryGraph;
 
 /**
- * Computes the topological relationship ({@link Location})
+ * Computes the topological ({@link Location})
  * of a single point to a {@link Geometry}.
- * The algorithm obeys the <i>SFS Boundary Determination Rule</i>
- * to determine whether the point lies on the boundary or not.
+ * A {@link BoundaryNodeRule} may be specified 
+ * to control the evaluation of whether the point lies on the boundary or not
+ * The default rule is to use the the <i>SFS Boundary Determination Rule</i>
  * <p>
  * Notes:
  * <ul>
@@ -56,7 +53,9 @@ import org.meteoinfo.jts.geomgraph.GeometryGraph;
 public class PointLocator
 {
   // default is to use OGC SFS rule
-  private BoundaryNodeRule boundaryRule = BoundaryNodeRule.ENDPOINT_BOUNDARY_RULE; //OGC_SFS_BOUNDARY_RULE;
+  private BoundaryNodeRule boundaryRule = 
+  	//BoundaryNodeRule.ENDPOINT_BOUNDARY_RULE; 
+  	BoundaryNodeRule.OGC_SFS_BOUNDARY_RULE;
 
   private boolean isIn;         // true if the point lies in or on any Geometry element
   private int numBoundaries;    // the number of sub-elements whose boundaries the point lies in
@@ -117,6 +116,9 @@ public class PointLocator
 
   private void computeLocation(Coordinate p, Geometry geom)
   {
+    if (geom instanceof Point) {
+      updateLocationInfo(locate(p, (Point) geom));
+    }
     if (geom instanceof LineString) {
       updateLocationInfo(locate(p, (LineString) geom));
     }
@@ -153,8 +155,21 @@ public class PointLocator
     if (loc == Location.BOUNDARY) numBoundaries++;
   }
 
+  private int locate(Coordinate p, Point pt)
+  {
+  	// no point in doing envelope test, since equality test is just as fast
+  	
+    Coordinate ptCoord = pt.getCoordinate();
+    if (ptCoord.equals2D(p))
+      return Location.INTERIOR;
+    return Location.EXTERIOR;
+  }
+
   private int locate(Coordinate p, LineString l)
   {
+  	// bounding-box check
+  	if (! l.getEnvelopeInternal().intersects(p)) return Location.EXTERIOR;
+  	
     Coordinate[] pt = l.getCoordinates();
     if (! l.isClosed()) {
       if (p.equals(pt[0])
@@ -169,18 +184,16 @@ public class PointLocator
 
   private int locateInPolygonRing(Coordinate p, LinearRing ring)
   {
-    // can this test be folded into isPointInRing ?
-    if (CGAlgorithms.isOnLine(p, ring.getCoordinates())) {
-      return Location.BOUNDARY;
-    }
-    if (CGAlgorithms.isPointInRing(p, ring.getCoordinates()))
-      return Location.INTERIOR;
-    return Location.EXTERIOR;
+  	// bounding-box check
+  	if (! ring.getEnvelopeInternal().intersects(p)) return Location.EXTERIOR;
+
+  	return CGAlgorithms.locatePointInRing(p, ring.getCoordinates());
   }
 
   private int locate(Coordinate p, Polygon poly)
   {
     if (poly.isEmpty()) return Location.EXTERIOR;
+
     LinearRing shell = (LinearRing) poly.getExteriorRing();
 
     int shellLoc = locateInPolygonRing(p, shell);

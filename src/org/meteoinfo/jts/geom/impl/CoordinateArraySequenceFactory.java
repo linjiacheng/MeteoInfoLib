@@ -1,4 +1,3 @@
-
 /*
 * The JTS Topology Suite is a collection of Java classes that
 * implement the fundamental operations required to validate a given
@@ -30,7 +29,7 @@
 *
 *     (250)385-6040
 *     www.vividsolutions.com
- */
+*/
 package org.meteoinfo.jts.geom.impl;
 
 import java.io.Serializable;
@@ -45,7 +44,7 @@ public final class CoordinateArraySequenceFactory
     implements CoordinateSequenceFactory, Serializable
 {
   private static final long serialVersionUID = -4099577099607551657L;
-  private static CoordinateArraySequenceFactory instanceObject = new CoordinateArraySequenceFactory();
+  private static final CoordinateArraySequenceFactory instanceObject = new CoordinateArraySequenceFactory();
 
   private CoordinateArraySequenceFactory() {
   }
@@ -82,13 +81,19 @@ public final class CoordinateArraySequenceFactory
   }
 
   /**
+   * The created sequence dimension is clamped to be <= 3. 
+   * 
    * @see org.meteoinfo.jts.geom.CoordinateSequenceFactory#create(int, int)
    *
-   * @throws IllegalArgumentException if the dimension is > 3
    */
   public CoordinateSequence create(int size, int dimension) {
     if (dimension > 3)
-      throw new IllegalArgumentException("dimension must be <= 3");
-    return new CoordinateArraySequence(size);
+      dimension = 3;
+      //throw new IllegalArgumentException("dimension must be <= 3");
+    // handle bogus dimension
+    if (dimension < 2)
+    	// TODO: change to dimension = 2  ???
+      return new CoordinateArraySequence(size);
+    return new CoordinateArraySequence(size, dimension);
   }
 }

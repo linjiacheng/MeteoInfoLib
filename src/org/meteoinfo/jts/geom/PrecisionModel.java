@@ -43,7 +43,7 @@ import java.util.Map;
  * In other words, specifies the grid of allowable
  *  points for all <code>Geometry</code>s.
  * <p>
- * The {@link makePrecise} method allows rounding a coordinate to
+ * The {@link #makePrecise(Coordinate)} method allows rounding a coordinate to
  * a "precise" value; that is, one whose
  *  precision is known exactly.
  *<p>
@@ -64,7 +64,7 @@ import java.util.Map;
  * <li>FLOATING_SINGLE - represents single precision floating point.
  * <li>FIXED - represents a model with a fixed number of decimal places.
  *  A Fixed Precision Model is specified by a scale factor.
- *  The scale factor specifies the grid which numbers are rounded to.
+ *  The scale factor specifies the size of the grid which numbers are rounded to.
  *  Input coordinates are mapped to fixed coordinates according to the following
  *  equations:
  *    <UL>
@@ -72,12 +72,17 @@ import java.util.Map;
  *      <LI> jtsPt.y = round( (inputPt.y * scale ) / scale
  *    </UL>
  * </ul>
- *  Coordinates are represented internally as Java double-precision values.
+ * For example, to specify 3 decimal places of precision, use a scale factor
+ * of 1000. To specify -3 decimal places of precision (i.e. rounding to
+ * the nearest 1000), use a scale factor of 0.001.
+ * <p>
+ * Coordinates are represented internally as Java double-precision values.
  * Since Java uses the IEEE-394 floating point standard, this
- *  provides 53 bits of precision. (Thus the maximum precisely representable
- *  integer is 9,007,199,254,740,992).
- *<p>
- *  JTS methods currently do not handle inputs with different precision models.
+ * provides 53 bits of precision. (Thus the maximum precisely representable
+ * <i>integer</i> is 9,007,199,254,740,992 - or almost 16 decimal digits of precision).
+ * <p>
+ * JTS binary methods currently do not handle inputs which have different precision models.
+ * The precision model of any constructed geometric value is undefined.
  *
  *@version 1.7
  */
@@ -102,16 +107,8 @@ public class PrecisionModel implements Serializable, Comparable
 
   /**
    * The types of Precision Model which JTS supports.
-   * <p>
-   * This class is only for use to support the "enums" for the types of precision model.
-   * <p>
-   * <i>
-   * Note: Type should be declared as private to this class,
-   * but JBuilder 7 throws a compiler exception
-   * when trying to compile with the "private" keyword.  Package-private is safe enough.
-   * </i>
    */
-  static class Type
+  public static class Type
       implements Serializable
   {
     private static final long serialVersionUID = -5528602631731589822L;
@@ -122,8 +119,10 @@ public class PrecisionModel implements Serializable, Comparable
     }
     private String name;
     public String toString() { return name; }
-    /**
-     * @see http://www.javaworld.com/javaworld/javatips/jw-javatip122.html
+    
+    
+    /*
+     * Ssee http://www.javaworld.com/javaworld/javatips/jw-javatip122.html
      */
     private Object readResolve() {
         return nameToTypeMap.get(name);
@@ -239,7 +238,21 @@ public class PrecisionModel implements Serializable, Comparable
   /**
    * Returns the maximum number of significant digits provided by this
    * precision model.
-   * Intended for use by routines which need to print out precise values.
+   * Intended for use by routines which need to print out 
+   * decimal representations of precise values (such as {@link WKTWriter}).
+   * <p>
+   * This method would be more correctly called
+   * <tt>getMinimumDecimalPlaces</tt>, 
+   * since it actually computes the number of decimal places
+   * that is required to correctly display the full
+   * precision of an ordinate value.
+   * <p>
+   * Since it is difficult to compute the required number of
+   * decimal places for scale factors which are not powers of 10,
+   * the algorithm uses a very rough approximation in this case.
+   * This has the side effect that for scale factors which are
+   * powers of 10 the value returned is 1 greater than the true value.
+   * 
    *
    * @return the maximum number of decimal places provided by this precision model
    */
@@ -256,20 +269,23 @@ public class PrecisionModel implements Serializable, Comparable
   }
 
   /**
-   *  Returns the multiplying factor used to obtain a precise coordinate.
-   * This method is private because PrecisionModel is intended to
-   * be an immutable (value) type.
+   * Returns the scale factor used to specify a fixed precision model.
+   * The number of decimal places of precision is 
+   * equal to the base-10 logarithm of the scale factor.
+   * Non-integral and negative scale factors are supported.
+   * Negative scale factors indicate that the places 
+   * of precision is to the left of the decimal point.  
    *
-   *@return    the amount by which to multiply a coordinate after subtracting
-   *      the offset
+   *@return the scale factor for the fixed precision model
    */
   public double getScale() {
     return scale;
   }
 
   /**
-   * Gets the type of this PrecisionModel
-   * @return the type of this PrecisionModel
+   * Gets the type of this precision model
+   * @return the type of this precision model
+   * @see Type
    */
   public Type getType()
   {
@@ -277,9 +293,7 @@ public class PrecisionModel implements Serializable, Comparable
   }
   /**
    *  Sets the multiplying factor used to obtain a precise coordinate.
-   * This method is private because PrecisionModel is intended to
-   * be an immutable (value) type.
-   *
+   * This method is private because PrecisionModel is an immutable (value) type.
    */
   private void setScale(double scale)
   {
@@ -359,8 +373,7 @@ public class PrecisionModel implements Serializable, Comparable
   }
 
   /**
-   *  Sets <code>external</code> to the external representation of <code>internal</code>
-   *  .
+   *  Sets <code>external</code> to the external representation of <code>internal</code>.
    *
    *@param  internal  the original coordinate
    *@param  external  the coordinate whose values will be changed to the
@@ -378,10 +391,16 @@ public class PrecisionModel implements Serializable, Comparable
    * uniform rounding behaviour no matter where the number is
    * on the number line.
    * <p>
+   * This method has no effect on NaN values.
+   * <p>
    * <b>Note:</b> Java's <code>Math#rint</code> uses the "Banker's Rounding" algorithm,
    * which is not suitable for precision operations elsewhere in JTS.
    */
-  public double makePrecise(double val) {
+  public double makePrecise(double val) 
+  {
+  	// don't change NaN values
+  	if (Double.isNaN(val)) return val;
+  	
   	if (modelType == FLOATING_SINGLE) {
   		float floatSingleVal = (float) val;
   		return (double) floatSingleVal;
@@ -432,7 +451,7 @@ public class PrecisionModel implements Serializable, Comparable
    *  Compares this {@link PrecisionModel} object with the specified object for order.
    * A PrecisionModel is greater than another if it provides greater precision.
    * The comparison is based on the value returned by the
-   * {@link getMaximumSignificantDigits) method.
+   * {@link #getMaximumSignificantDigits} method.
    * This comparison is not strictly accurate when comparing floating precision models
    * to fixed models; however, it is correct when both models are either floating or fixed.
    *

@@ -34,17 +34,20 @@
 package org.meteoinfo.jts.algorithm;
 
 import java.util.*;
+
+import org.meteoinfo.jts.algorithm.locate.IndexedPointInAreaLocator;
 import org.meteoinfo.jts.geom.*;
 import org.meteoinfo.jts.index.chain.*;
 import org.meteoinfo.jts.index.bintree.*;
-import org.meteoinfo.jts.index.bintree.Interval;
 
 /**
  * Implements {@link PointInRing}
- * using {@link MonotoneChain}s and a {@link BinTree} index to
+ * using {@link MonotoneChain}s and a {@link Bintree} index to
  * increase performance.
  *
  * @version 1.7
+ * 
+ * @see IndexedPointInAreaLocator for more general functionality
  */
 public class MCPointInRing   implements PointInRing {
 

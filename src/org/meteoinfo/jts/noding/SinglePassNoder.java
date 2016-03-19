@@ -53,6 +53,10 @@ public abstract class SinglePassNoder
   public SinglePassNoder() {
   }
 
+  public SinglePassNoder(SegmentIntersector segInt) {
+    setSegmentIntersector(segInt);
+  }
+
   /**
    * Sets the SegmentIntersector to use with this noder.
    * A SegmentIntersector will normally add intersection nodes
@@ -77,7 +81,7 @@ public abstract class SinglePassNoder
   public abstract void computeNodes(Collection segStrings);
 
   /**
-   * Returns a {@link Collection} of fully noded {@link SegmentStrings}.
+   * Returns a {@link Collection} of fully noded {@link SegmentString}s.
    * The SegmentStrings have the same context as their parent.
    *
    * @return a Collection of SegmentStrings

@@ -39,8 +39,10 @@ import org.meteoinfo.jts.operation.overlay.snap.GeometrySnapper;
 
 /**
  * Validates that the result of an overlay operation is
- * geometrically correct within a given tolerance.
- * Uses fuzzy point location to find points which are .
+ * geometrically correct, within a determined tolerance.
+ * Uses fuzzy point location to find points which are 
+ * definitely in either the interior or exterior of the result
+ * geometry, and compares these results with the expected ones.
  * <p>
  * This algorithm is only useful where the inputs are polygonal.
  * This is a heuristic test, and may return false positive results
@@ -114,8 +116,8 @@ public class OverlayResultValidator
 
   private void addTestPts(Geometry g)
   {
-    OffsetPointGenerator ptGen = new OffsetPointGenerator(g, 5 * boundaryDistanceTolerance);
-    testCoords.addAll(ptGen.getPoints());
+    OffsetPointGenerator ptGen = new OffsetPointGenerator(g);
+    testCoords.addAll(ptGen.getPoints(5 * boundaryDistanceTolerance));
   }
 
   private boolean checkValid(int overlayOp)
@@ -170,7 +172,7 @@ public class OverlayResultValidator
   private void reportResult(int overlayOp, int[] location, boolean expectedInterior)
   {
   	System.out.println(
-  			"A:" + Location.toLocationSymbol(location[0])
+  			"Overlay result invalid - A:" + Location.toLocationSymbol(location[0])
   			+ " B:" + Location.toLocationSymbol(location[1])
   			+ " expected:" + (expectedInterior ? 'i' : 'e')
   			+ " actual:" + Location.toLocationSymbol(location[2])

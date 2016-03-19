@@ -44,7 +44,7 @@ import org.meteoinfo.jts.planargraph.Node;
  *
  * @version 1.7
  */
-public class PolygonizeDirectedEdge
+class PolygonizeDirectedEdge
     extends DirectedEdge
 {
 
@@ -100,6 +100,15 @@ public class PolygonizeDirectedEdge
   public void setRing(EdgeRing edgeRing)
   {
       this.edgeRing = edgeRing;
+  }
+  /**
+   * Gets the {@link EdgeRing} this edge is a member of.
+   * 
+   * @return an edge ring
+   */
+  public EdgeRing getRing() 
+  {
+    return this.edgeRing;
   }
 
 }

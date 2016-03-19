@@ -34,9 +34,12 @@
 package org.meteoinfo.jts.index.strtree;
 
 import org.meteoinfo.jts.index.strtree.AbstractSTRtree;
+
+import java.io.Serializable;
 import java.util.*;
 import org.meteoinfo.jts.geom.*;
 import org.meteoinfo.jts.util.*;
+import org.meteoinfo.jts.util.PriorityQueue;
 import org.meteoinfo.jts.index.*;
 
 /**
@@ -52,12 +55,44 @@ import org.meteoinfo.jts.index.*;
  * Described in: P. Rigaux, Michel Scholl and Agnes Voisard.
  * <i>Spatial Databases With Application To GIS</i>.
  * Morgan Kaufmann, San Francisco, 2002.
+ * <p>
+ * This class is thread-safe.  Building the tree is synchronized, 
+ * and querying is stateless.
  *
  * @version 1.7
  */
-public class STRtree extends AbstractSTRtree implements SpatialIndex {
+public class STRtree extends AbstractSTRtree 
+implements SpatialIndex, Serializable 
+{
 
-  private Comparator xComparator =
+  private static final class STRtreeNode extends AbstractNode
+  {
+    private STRtreeNode(int level)
+    {
+      super(level);
+    }
+
+    protected Object computeBounds() {
+      Envelope bounds = null;
+      for (Iterator i = getChildBoundables().iterator(); i.hasNext(); ) {
+        Boundable childBoundable = (Boundable) i.next();
+        if (bounds == null) {
+          bounds = new Envelope((Envelope)childBoundable.getBounds());
+        }
+        else {
+          bounds.expandToInclude((Envelope)childBoundable.getBounds());
+        }
+      }
+      return bounds;
+    }
+  }
+
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 259274702368956900L;
+  
+  private static Comparator xComparator =
     new Comparator() {
       public int compare(Object o1, Object o2) {
         return compareDoubles(
@@ -65,7 +100,7 @@ public class STRtree extends AbstractSTRtree implements SpatialIndex {
             centreX((Envelope)((Boundable)o2).getBounds()));
       }
     };
-  private Comparator yComparator =
+  private static Comparator yComparator =
     new Comparator() {
       public int compare(Object o1, Object o2) {
         return compareDoubles(
@@ -74,17 +109,17 @@ public class STRtree extends AbstractSTRtree implements SpatialIndex {
       }
     };
 
-  private double centreX(Envelope e) {
+  private static double centreX(Envelope e) {
     return avg(e.getMinX(), e.getMaxX());
   }
 
-  private double avg(double a, double b) { return (a + b) / 2d; }
-
-  private double centreY(Envelope e) {
+  private static double centreY(Envelope e) {
     return avg(e.getMinY(), e.getMaxY());
   }
 
-  private IntersectsOp intersectsOp = new IntersectsOp() {
+  private static double avg(double a, double b) { return (a + b) / 2d; }
+
+  private static IntersectsOp intersectsOp = new IntersectsOp() {
     public boolean intersects(Object aBounds, Object bBounds) {
       return ((Envelope)aBounds).intersects((Envelope)bBounds);
     }
@@ -140,35 +175,29 @@ public class STRtree extends AbstractSTRtree implements SpatialIndex {
     return slices;
   }
 
+  private static final int DEFAULT_NODE_CAPACITY = 10;
+  
   /**
    * Constructs an STRtree with the default node capacity.
    */
-  public STRtree() { this(10); }
+  public STRtree() 
+  { 
+    this(DEFAULT_NODE_CAPACITY); 
+  }
 
   /**
    * Constructs an STRtree with the given maximum number of child nodes that
-   * a node may have
+   * a node may have.
+   * <p>
+   * The minimum recommended capacity setting is 4.
+   * 
    */
   public STRtree(int nodeCapacity) {
     super(nodeCapacity);
   }
 
   protected AbstractNode createNode(int level) {
-    return new AbstractNode(level) {
-      protected Object computeBounds() {
-        Envelope bounds = null;
-        for (Iterator i = getChildBoundables().iterator(); i.hasNext(); ) {
-          Boundable childBoundable = (Boundable) i.next();
-          if (bounds == null) {
-            bounds = new Envelope((Envelope)childBoundable.getBounds());
-          }
-          else {
-            bounds.expandToInclude((Envelope)childBoundable.getBounds());
-          }
-        }
-        return bounds;
-      }
-    };
+    return new STRtreeNode(level);
   }
 
   protected IntersectsOp getIntersectsOp() {
@@ -234,6 +263,131 @@ public class STRtree extends AbstractSTRtree implements SpatialIndex {
 
   protected Comparator getComparator() {
     return yComparator;
+  }
+
+  /**
+   * Finds the two nearest items in the tree, 
+   * using {@link ItemDistance} as the distance metric.
+   * A Branch-and-Bound tree traversal algorithm is used
+   * to provide an efficient search.
+   * 
+   * @param itemDist a distance metric applicable to the items in this tree
+   * @return the pair of the nearest items
+   */
+  public Object[] nearestNeighbour(ItemDistance itemDist)
+  {
+    BoundablePair bp = new BoundablePair(this.getRoot(), this.getRoot(), itemDist);
+    return nearestNeighbour(bp);
+  }
+  
+  /**
+   * Finds the item in this tree which is nearest to the given {@link Object}, 
+   * using {@link ItemDistance} as the distance metric.
+   * A Branch-and-Bound tree traversal algorithm is used
+   * to provide an efficient search.
+   * <p>
+   * The query <tt>object</tt> does <b>not</b> have to be 
+   * contained in the tree, but it does 
+   * have to be compatible with the <tt>itemDist</tt> 
+   * distance metric. 
+   * 
+   * @param env the envelope of the query item
+   * @param item the item to find the nearest neighbour of
+   * @param itemDist a distance metric applicable to the items in this tree and the query item
+   * @return the nearest item in this tree
+   */
+  public Object nearestNeighbour(Envelope env, Object item, ItemDistance itemDist)
+  {
+    Boundable bnd = new ItemBoundable(env, item);
+    BoundablePair bp = new BoundablePair(this.getRoot(), bnd, itemDist);
+    return nearestNeighbour(bp)[0];
+  }
+  
+  /**
+   * Finds the two nearest items from this tree 
+   * and another tree,
+   * using {@link ItemDistance} as the distance metric.
+   * A Branch-and-Bound tree traversal algorithm is used
+   * to provide an efficient search.
+   * The result value is a pair of items, 
+   * the first from this tree and the second
+   * from the argument tree.
+   * 
+   * @param tree another tree
+   * @param itemDist a distance metric applicable to the items in the trees
+   * @return the pair of the nearest items, one from each tree
+   */
+  public Object[] nearestNeighbour(STRtree tree, ItemDistance itemDist)
+  {
+    BoundablePair bp = new BoundablePair(this.getRoot(), tree.getRoot(), itemDist);
+    return nearestNeighbour(bp);
+  }
+  
+  private Object[] nearestNeighbour(BoundablePair initBndPair) 
+  {
+    return nearestNeighbour(initBndPair, Double.POSITIVE_INFINITY);
+  }
+  
+  private Object[] nearestNeighbour(BoundablePair initBndPair, double maxDistance) 
+  {
+    double distanceLowerBound = maxDistance;
+    BoundablePair minPair = null;
+    
+    // initialize internal structures
+    PriorityQueue priQ = new PriorityQueue();
+
+    // initialize queue
+    priQ.add(initBndPair);
+
+    while (! priQ.isEmpty() && distanceLowerBound > 0.0) {
+      // pop head of queue and expand one side of pair
+      BoundablePair bndPair = (BoundablePair) priQ.poll();
+      double currentDistance = bndPair.getDistance();
+      
+      /**
+       * If the distance for the first node in the queue
+       * is >= the current minimum distance, all other nodes
+       * in the queue must also have a greater distance.
+       * So the current minDistance must be the true minimum,
+       * and we are done.
+       */
+      if (currentDistance >= distanceLowerBound) 
+        break;  
+
+      /**
+       * If the pair members are leaves
+       * then their distance is the exact lower bound.
+       * Update the distanceLowerBound to reflect this
+       * (which must be smaller, due to the test 
+       * immediately prior to this). 
+       */
+      if (bndPair.isLeaves()) {
+        // assert: currentDistance < minimumDistanceFound
+        distanceLowerBound = currentDistance;
+        minPair = bndPair;
+      }
+      else {
+        // testing - does allowing a tolerance improve speed?
+        // Ans: by only about 10% - not enough to matter
+        /*
+        double maxDist = bndPair.getMaximumDistance();
+        if (maxDist * .99 < lastComputedDistance) 
+          return;
+        //*/
+
+        /**
+         * Otherwise, expand one side of the pair,
+         * (the choice of which side to expand is heuristically determined) 
+         * and insert the new expanded pairs into the queue
+         */
+        bndPair.expandToQueue(priQ, distanceLowerBound);
+      }
+    }
+    // done - return items with min distance
+    return new Object[] {    
+          ((ItemBoundable) minPair.getBoundable(0)).getItem(),
+          ((ItemBoundable) minPair.getBoundable(1)).getItem()
+      };
   }
 
 }

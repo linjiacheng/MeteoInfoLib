@@ -37,6 +37,7 @@ package org.meteoinfo.jts.geomgraph;
 
 import java.util.*;
 import org.meteoinfo.jts.algorithm.*;
+import org.meteoinfo.jts.algorithm.locate.*;
 import org.meteoinfo.jts.geom.*;
 import org.meteoinfo.jts.geomgraph.index.*;
 import org.meteoinfo.jts.util.*;
@@ -99,6 +100,10 @@ public class GeometryGraph
   private boolean hasTooFewPoints = false;
   private Coordinate invalidPoint = null;
 
+  private PointOnGeometryLocator areaPtLocator = null;
+  // for use if geometry is not Polygonal
+  private final PointLocator ptLocator = new PointLocator();
+  
   private EdgeSetIntersector createEdgeSetIntersector()
   {
   // various options for computing intersections, from slowest to fastest
@@ -221,13 +226,20 @@ public class GeometryGraph
     Coordinate coord = p.getCoordinate();
     insertPoint(argIndex, coord, Location.INTERIOR);
   }
+  
   /**
+   * Adds a polygon ring to the graph.
+   * Empty rings are ignored.
+   * 
    * The left and right topological location arguments assume that the ring is oriented CW.
    * If the ring is in the opposite orientation,
    * the left and right locations must be interchanged.
    */
   private void addPolygonRing(LinearRing lr, int cwLeft, int cwRight)
   {
+  	// don't bother adding empty holes
+  	if (lr.isEmpty()) return;
+  	
     Coordinate[] coord = CoordinateArrays.removeRepeatedPoints(lr.getCoordinates());
 
     if (coord.length < 4) {
@@ -238,7 +250,7 @@ public class GeometryGraph
 
     int left  = cwLeft;
     int right = cwRight;
-    if (cga.isCCW(coord)) {
+    if (CGAlgorithms.isCCW(coord)) {
       left = cwRight;
       right = cwLeft;
     }
@@ -259,13 +271,15 @@ public class GeometryGraph
             Location.INTERIOR);
 
     for (int i = 0; i < p.getNumInteriorRing(); i++) {
+    	LinearRing hole = (LinearRing) p.getInteriorRingN(i);
+    	
       // Holes are topologically labelled opposite to the shell, since
       // the interior of the polygon lies on their opposite side
       // (on the left, if the hole is oriented CW)
       addPolygonRing(
-            (LinearRing) p.getInteriorRingN(i),
-            Location.INTERIOR,
-            Location.EXTERIOR);
+      		hole,
+          Location.INTERIOR,
+          Location.EXTERIOR);
     }
   }
 
@@ -344,12 +358,6 @@ public class GeometryGraph
     return si;
   }
 
-/* NOT USED
-  public SegmentIntersector computeSelfNodes(LineIntersector li)
-  {
-    return computeSelfNodes(li, false);
-  }
-*/
   public SegmentIntersector computeEdgeIntersections(
     GeometryGraph g,
     LineIntersector li,
@@ -388,12 +396,13 @@ Debug.print(e.getEdgeIntersectionList());
   private void insertBoundaryPoint(int argIndex, Coordinate coord)
   {
     Node n = nodes.addNode(coord);
+    // nodes always have labels
     Label lbl = n.getLabel();
     // the new point to insert is on a boundary
     int boundaryCount = 1;
     // determine the current location for the point (if any)
     int loc = Location.NONE;
-    if (lbl != null) loc = lbl.getLocation(argIndex, Position.ON);
+    loc = lbl.getLocation(argIndex, Position.ON);
     if (loc == Location.BOUNDARY) boundaryCount++;
 
     // determine the boundary status of the point according to the Boundary Determination Rule
@@ -428,4 +437,23 @@ Debug.print(e.getEdgeIntersectionList());
       insertPoint(argIndex, coord, loc);
   }
 
+  // MD - experimental for now
+  /**
+   * Determines the {@link Location} of the given {@link Coordinate}
+   * in this geometry.
+   * 
+   * @param p the point to test
+   * @return the location of the point in the geometry
+   */
+  public int locate(Coordinate pt)
+  {
+  	if (parentGeom instanceof Polygonal && parentGeom.getNumGeometries() > 50) {
+  		// lazily init point locator
+  		if (areaPtLocator == null) {
+  			areaPtLocator = new IndexedPointInAreaLocator(parentGeom);
+  		}
+  		return areaPtLocator.locate(pt);
+  	}
+  	return ptLocator.locate(pt, parentGeom);
+  }
 }

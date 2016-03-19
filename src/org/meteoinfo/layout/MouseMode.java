@@ -133,5 +133,9 @@ public enum MouseMode {
     Map_Edit_Tool,
     Map_Edit_MoveSelection,    
     Map_Edit_NewFeature,
-    Map_Edit_FeatureVertices;
+    Map_Edit_FeatureVertices,
+    Map_Edit_AddRing,
+    Map_Edit_FillRing,
+    Map_Edit_DeleteRing,
+    Map_Edit_SplitFeature,
 }

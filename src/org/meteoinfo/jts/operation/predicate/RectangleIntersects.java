@@ -1,30 +1,69 @@
+/*
+* The JTS Topology Suite is a collection of Java classes that
+* implement the fundamental operations required to validate a given
+* geo-spatial data set to a known topological specification.
+*
+* Copyright (C) 2001 Vivid Solutions
+*
+* This library is free software; you can redistribute it and/or
+* modify it under the terms of the GNU Lesser General Public
+* License as published by the Free Software Foundation; either
+* version 2.1 of the License, or (at your option) any later version.
+*
+* This library is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with this library; if not, write to the Free Software
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*
+* For more information, contact:
+*
+*     Vivid Solutions
+*     Suite #1A
+*     2328 Government Street
+*     Victoria BC  V8T 5G5
+*     Canada
+*
+*     (250)385-6040
+*     www.vividsolutions.com
+*/
+
 package org.meteoinfo.jts.operation.predicate;
 
 import java.util.*;
+
 import org.meteoinfo.jts.geom.*;
 import org.meteoinfo.jts.algorithm.*;
+import org.meteoinfo.jts.algorithm.locate.SimplePointInAreaLocator;
 import org.meteoinfo.jts.geom.util.*;
 
 /**
- * Optimized implementation of spatial predicate "intersects"
- * for cases where the first {@link Geometry} is a rectangle.
+ * Implementation of the <tt>intersects</tt> spatial predicate
+ * optimized for the case where one {@link Geometry} is a rectangle. 
+ * This class works for all
+ * input geometries, including {@link GeometryCollection}s.
  * <p>
- * As a further optimization,
- * this class can be used directly to test many geometries against a single
- * rectangle.
- *
+ * As a further optimization, 
+ * this class can be used in batch style
+ * to test many geometries
+ * against a single rectangle.
+ * 
  * @version 1.7
  */
-public class RectangleIntersects {
-
+public class RectangleIntersects
+{
   /**
-   * Crossover size at which brute-force intersection scanning
-   * is slower than indexed intersection detection.
-   * Must be determined empirically.  Should err on the
-   * safe side by making value smaller rather than larger.
+   * Tests whether a rectangle intersects a given geometry.
+   * 
+   * @param rectangle
+   *          a rectangular Polygon
+   * @param b
+   *          a Geometry of any type
+   * @return true if the geometries intersect
    */
-  public static final int MAXIMUM_SCAN_SEGMENT_COUNT = 200;
-
   public static boolean intersects(Polygon rectangle, Geometry b)
   {
     RectangleIntersects rp = new RectangleIntersects(rectangle);
@@ -32,38 +71,56 @@ public class RectangleIntersects {
   }
 
   private Polygon rectangle;
+
   private Envelope rectEnv;
 
   /**
    * Create a new intersects computer for a rectangle.
-   *
-   * @param rectangle a rectangular geometry
+   * 
+   * @param rectangle
+   *          a rectangular Polygon
    */
-  public RectangleIntersects(Polygon rectangle) {
+  public RectangleIntersects(Polygon rectangle)
+  {
     this.rectangle = rectangle;
     rectEnv = rectangle.getEnvelopeInternal();
   }
 
+  /**
+   * Tests whether the given Geometry intersects
+   * the query rectangle.
+   * 
+   * @param geom the Geometry to test (may be of any type)
+   * @return true if the geometry intersects the query rectangle
+   */
   public boolean intersects(Geometry geom)
   {
-    if (! rectEnv.intersects(geom.getEnvelopeInternal()))
-        return false;
-    // test envelope relationships
+    if (!rectEnv.intersects(geom.getEnvelopeInternal()))
+      return false;
+
+    /**
+     * Test if rectangle envelope intersects any component envelope.
+     * This handles Point components as well
+     */
     EnvelopeIntersectsVisitor visitor = new EnvelopeIntersectsVisitor(rectEnv);
     visitor.applyTo(geom);
     if (visitor.intersects())
       return true;
 
-    // test if any rectangle corner is contained in the target
-    ContainsPointVisitor ecpVisitor = new ContainsPointVisitor(rectangle);
+    /**
+     * Test if any rectangle vertex is contained in the target geometry
+     */
+    GeometryContainsPointVisitor ecpVisitor = new GeometryContainsPointVisitor(rectangle);
     ecpVisitor.applyTo(geom);
     if (ecpVisitor.containsPoint())
       return true;
 
-    // test if any lines intersect
-    LineIntersectsVisitor liVisitor = new LineIntersectsVisitor(rectangle);
-    liVisitor.applyTo(geom);
-    if (liVisitor.intersects())
+    /**
+     * Test if any target geometry line segment intersects the rectangle
+     */
+    RectangleIntersectsSegmentVisitor riVisitor = new RectangleIntersectsSegmentVisitor(rectangle);
+    riVisitor.applyTo(geom);
+    if (riVisitor.intersects())
       return true;
 
     return false;
@@ -71,17 +128,16 @@ public class RectangleIntersects {
 }
 
 /**
- * Tests whether it can be concluded
- * that a rectangle intersects a geometry,
- * based on the locations of the envelope(s) of the geometry.
- *
+ * Tests whether it can be concluded that a rectangle intersects a geometry,
+ * based on the relationship of the envelope(s) of the geometry.
+ * 
  * @author Martin Davis
  * @version 1.7
  */
-class EnvelopeIntersectsVisitor
-    extends ShortCircuitedGeometryVisitor
+class EnvelopeIntersectsVisitor extends ShortCircuitedGeometryVisitor
 {
   private Envelope rectEnv;
+
   private boolean intersects = false;
 
   public EnvelopeIntersectsVisitor(Envelope rectEnv)
@@ -90,35 +146,37 @@ class EnvelopeIntersectsVisitor
   }
 
   /**
-   * Reports whether it can be concluded that an intersection occurs,
+   * Reports whether it can be concluded that an intersection occurs, 
    * or whether further testing is required.
-   *
-   * @return <code>true</code> if an intersection must occur
-   * <code>false</code> if no conclusion can be made
+   * 
+   * @return true if an intersection must occur 
+   * or false if no conclusion about intersection can be made
    */
-  public boolean intersects() { return intersects; }
+  public boolean intersects()
+  {
+    return intersects;
+  }
 
   protected void visit(Geometry element)
   {
     Envelope elementEnv = element.getEnvelopeInternal();
-    // disjoint
-    if (! rectEnv.intersects(elementEnv)) {
+
+    // disjoint => no intersection
+    if (!rectEnv.intersects(elementEnv)) {
       return;
     }
-    // fully contained - must intersect
+    // rectangle contains target env => must intersect
     if (rectEnv.contains(elementEnv)) {
       intersects = true;
       return;
     }
     /**
-     * Since the envelopes intersect and the test element is connected,
-     * if the test envelope is completely bisected by an edge of the rectangle
-     * the element and the rectangle must touch
-     * (This is basically an application of the Jordan Curve Theorem).
-     * The alternative situation is that
-     * the test envelope is "on a corner" of the rectangle envelope,
-     * i.e. is not completely bisected.
-     * In this case it is not possible to make a conclusion
+     * Since the envelopes intersect and the test element is connected, if the
+     * test envelope is completely bisected by an edge of the rectangle the
+     * element and the rectangle must touch (This is basically an application of
+     * the Jordan Curve Theorem). The alternative situation is that the test
+     * envelope is "on a corner" of the rectangle envelope, i.e. is not
+     * completely bisected. In this case it is not possible to make a conclusion
      * about the presence of an intersection.
      */
     if (elementEnv.getMinX() >= rectEnv.getMinX()
@@ -133,128 +191,163 @@ class EnvelopeIntersectsVisitor
     }
   }
 
-  protected boolean isDone() {
+  protected boolean isDone()
+  {
     return intersects == true;
   }
 }
 
 /**
- * Tests whether it can be concluded
- * that a geometry contains a corner point of a rectangle.
- *
+ * A visitor which tests whether it can be 
+ * concluded that a geometry contains a vertex of
+ * a query geometry.
+ * 
  * @author Martin Davis
  * @version 1.7
  */
-class ContainsPointVisitor
-    extends ShortCircuitedGeometryVisitor
+class GeometryContainsPointVisitor extends ShortCircuitedGeometryVisitor
 {
   private CoordinateSequence rectSeq;
+
   private Envelope rectEnv;
+
   private boolean containsPoint = false;
 
-  public ContainsPointVisitor(Polygon rectangle)
+  public GeometryContainsPointVisitor(Polygon rectangle)
   {
     this.rectSeq = rectangle.getExteriorRing().getCoordinateSequence();
     rectEnv = rectangle.getEnvelopeInternal();
   }
 
   /**
-   * Reports whether it can be concluded that a corner
-   * point of the rectangle is contained in the geometry,
-   * or whether further testing is required.
-   *
-   * @return <code>true</code> if a corner point is contained
-   * <code>false</code> if no conclusion can be made
+   * Reports whether it can be concluded that a corner point of the rectangle is
+   * contained in the geometry, or whether further testing is required.
+   * 
+   * @return true if a corner point is contained 
+   * or false if no conclusion about intersection can be made
    */
-  public boolean containsPoint() { return containsPoint; }
+  public boolean containsPoint()
+  {
+    return containsPoint;
+  }
 
   protected void visit(Geometry geom)
   {
-    if (! (geom instanceof Polygon))
+    // if test geometry is not polygonal this check is not needed
+    if (!(geom instanceof Polygon))
       return;
+
+    // skip if envelopes do not intersect
     Envelope elementEnv = geom.getEnvelopeInternal();
-    if (! rectEnv.intersects(elementEnv))
+    if (!rectEnv.intersects(elementEnv))
       return;
+
     // test each corner of rectangle for inclusion
     Coordinate rectPt = new Coordinate();
     for (int i = 0; i < 4; i++) {
       rectSeq.getCoordinate(i, rectPt);
-      if (! elementEnv.contains(rectPt))
+      if (!elementEnv.contains(rectPt))
         continue;
-      // check rect point in poly (rect is known not to touch polygon at this point)
-      if (SimplePointInAreaLocator.containsPointInPolygon(rectPt, (Polygon) geom)) {
+      // check rect point in poly (rect is known not to touch polygon at this
+      // point)
+      if (SimplePointInAreaLocator.containsPointInPolygon(rectPt,
+          (Polygon) geom)) {
         containsPoint = true;
         return;
       }
     }
   }
 
-  protected boolean isDone() {
+  protected boolean isDone()
+  {
     return containsPoint == true;
   }
 }
 
+
 /**
- * Tests whether any line segment of a geometry intersects a given rectangle.
- * Optimizes the algorithm used based on the number of line segments in the
- * test geometry.
- *
+ * A visitor to test for intersection between the query
+ * rectangle and the line segments of the geometry.
+ * 
  * @author Martin Davis
- * @version 1.7
+ *
  */
-class LineIntersectsVisitor
-    extends ShortCircuitedGeometryVisitor
+class RectangleIntersectsSegmentVisitor extends ShortCircuitedGeometryVisitor
 {
-  private Polygon rectangle;
-  private CoordinateSequence rectSeq;
   private Envelope rectEnv;
-  private boolean intersects = false;
+  private RectangleLineIntersector rectIntersector;
 
-  public LineIntersectsVisitor(Polygon rectangle)
+  private boolean hasIntersection = false;
+  private Coordinate p0 = new Coordinate();
+  private Coordinate p1 = new Coordinate();
+
+  /**
+   * Creates a visitor for checking rectangle intersection
+   * with segments
+   * 
+   * @param rectangle the query rectangle 
+   */
+  public RectangleIntersectsSegmentVisitor(Polygon rectangle)
   {
-    this.rectangle = rectangle;
-    this.rectSeq = rectangle.getExteriorRing().getCoordinateSequence();
     rectEnv = rectangle.getEnvelopeInternal();
+    rectIntersector = new RectangleLineIntersector(rectEnv);
   }
-
 
   /**
    * Reports whether any segment intersection exists.
-   *
-   * @return <code>true</code> if a segment intersection exists
-   * <code>false</code> if no segment intersection exists
+   * 
+   * @return true if a segment intersection exists
+   * or false if no segment intersection exists
    */
-  public boolean intersects() { return intersects; }
+  public boolean intersects()
+  {
+    return hasIntersection;
+  }
 
   protected void visit(Geometry geom)
   {
+    /**
+     * It may be the case that the rectangle and the 
+     * envelope of the geometry component are disjoint,
+     * so it is worth checking this simple condition.
+     */
     Envelope elementEnv = geom.getEnvelopeInternal();
-    if (! rectEnv.intersects(elementEnv))
+    if (!rectEnv.intersects(elementEnv))
       return;
-    // check if general relate algorithm should be used, since it's faster for large inputs
-    if (geom.getNumPoints() > RectangleIntersects.MAXIMUM_SCAN_SEGMENT_COUNT) {
-      intersects = rectangle.relate(geom).isIntersects();
-      return;
-    }
-    // if small enough, test for segment intersection directly
-    computeSegmentIntersection(geom);
-  }
-
-  private void computeSegmentIntersection(Geometry geom)
-  {
-    // check segment intersection
-    // get all lines from geom (e.g. if it's a multi-ring polygon)
+    
+    // check segment intersections
+    // get all lines from geometry component
+    // (there may be more than one if it's a multi-ring polygon)
     List lines = LinearComponentExtracter.getLines(geom);
-    SegmentIntersectionTester si = new SegmentIntersectionTester();
-    boolean hasIntersection = si.hasIntersectionWithLineStrings(rectSeq, lines);
-    if (hasIntersection) {
-      intersects = true;
-      return;
+    checkIntersectionWithLineStrings(lines);
+  }
+
+  private void checkIntersectionWithLineStrings(List lines)
+  {
+    for (Iterator i = lines.iterator(); i.hasNext(); ) {
+      LineString testLine = (LineString) i.next();
+      checkIntersectionWithSegments(testLine);
+      if (hasIntersection)
+        return;
     }
   }
 
-  protected boolean isDone() {
-    return intersects == true;
+  private void checkIntersectionWithSegments(LineString testLine)
+  {
+    CoordinateSequence seq1 = testLine.getCoordinateSequence();
+    for (int j = 1; j < seq1.size(); j++) {
+      seq1.getCoordinate(j - 1, p0);
+      seq1.getCoordinate(j,     p1);
+
+      if (rectIntersector.intersects(p0, p1)) {
+        hasIntersection = true;
+        return;
+      }
+    }
+  }
+
+  protected boolean isDone()
+  {
+    return hasIntersection == true;
   }
 }
-

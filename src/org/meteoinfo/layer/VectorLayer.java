@@ -1,4 +1,4 @@
- /* Copyright 2012 Yaqiang Wang,
+/* Copyright 2012 Yaqiang Wang,
  * yaqiang.wang@gmail.com
  * 
  * This library is free software; you can redistribute it and/or modify it
@@ -60,6 +60,10 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import org.meteoinfo.global.DataConvert;
+import org.meteoinfo.jts.geom.Coordinate;
+import org.meteoinfo.jts.geom.Geometry;
+import org.meteoinfo.jts.geom.GeometryFactory;
+import org.meteoinfo.jts.operation.union.CascadedPolygonUnion;
 import org.meteoinfo.table.DataColumnCollection;
 import org.meteoinfo.table.DataTable;
 import org.meteoinfo.legend.LegendManage;
@@ -369,7 +373,7 @@ public class VectorLayer extends MapLayer {
                 if (!fieldNames.contains(value.getFieldName())) {
                     LegendScheme ls = this.getLegendScheme();
                     ls.setFieldName(fieldNames.get(0));
-                    for (int i = 0; i < this.getShapeNum(); i++){
+                    for (int i = 0; i < this.getShapeNum(); i++) {
                         ColorBreak cb = ls.getLegendBreaks().get(i);
                         cb.setStartValue(this.getCellValue(fieldNames.get(0), i));
                         cb.setEndValue(cb.getStartValue());
@@ -583,6 +587,38 @@ public class VectorLayer extends MapLayer {
     }
 
     /**
+     * Find a shape contains anthor shape
+     *
+     * @param other Another shape
+     * @return Result shape
+     */
+    public Shape findShape_contains(Shape other) {
+        for (Shape s : this._shapeList) {
+            if (s.contains(other)) {
+                return s;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Find a shape crosses anthor shape
+     *
+     * @param other Another shape
+     * @return Result shape
+     */
+    public Shape findShape_crosses(Shape other) {
+        for (Shape s : this._shapeList) {
+            if (s.crosses(other)) {
+                return s;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Select shapes
      *
      * @param extent The extent
@@ -672,17 +708,13 @@ public class VectorLayer extends MapLayer {
                             selectedShapes.add(_shapeList.indexOf(aPGS));
                             break;
                         }
-                    } else {
-                        if (GeoComputation.pointInPolygon(aPGS, sp)) {
-                            selectedShapes.add(_shapeList.indexOf(aPGS));
-                        } else {
-                            if (MIMath.isExtentCross(aExtent, aPGS.getExtent())) {
-                                for (j = 0; j < aPGS.getPolygons().get(0).getOutLine().size(); j++) {
-                                    if (MIMath.pointInExtent(aPGS.getPolygons().get(0).getOutLine().get(j), aExtent)) {
-                                        selectedShapes.add(_shapeList.indexOf(aPGS));
-                                        break;
-                                    }
-                                }
+                    } else if (GeoComputation.pointInPolygon(aPGS, sp)) {
+                        selectedShapes.add(_shapeList.indexOf(aPGS));
+                    } else if (MIMath.isExtentCross(aExtent, aPGS.getExtent())) {
+                        for (j = 0; j < aPGS.getPolygons().get(0).getOutLine().size(); j++) {
+                            if (MIMath.pointInExtent(aPGS.getPolygons().get(0).getOutLine().get(j), aExtent)) {
+                                selectedShapes.add(_shapeList.indexOf(aPGS));
+                                break;
                             }
                         }
                     }
@@ -718,6 +750,50 @@ public class VectorLayer extends MapLayer {
         }
 
         return selIdxs;
+    }
+
+    /**
+     * Select a shape by point
+     *
+     * @param p The point
+     * @return Selected shape
+     */
+    public Shape selectShape(PointD p) {
+        Coordinate c = new Coordinate(p.X, p.Y);
+        Geometry point = new GeometryFactory().createPoint(c);
+        for (Shape shape : _shapeList) {
+            if (point.within(shape.toGeometry())) {
+                return shape;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get polygon hole index by point
+     *
+     * @param p The point
+     * @return PolygonShape and polygon hole index
+     */
+    public Object[] selectPolygonHole(PointD p) {
+        for (Shape shape : _shapeList) {
+            int i = 0;
+            for (Polygon poly : ((PolygonShape) shape).getPolygons()) {
+                if (poly.hasHole()) {
+                    if (GeoComputation.pointInPolygon(poly.getOutLine(), p)) {
+                        int j = 0;
+                        for (List<PointD> hole : poly.getHoleLines()) {
+                            if (GeoComputation.pointInPolygon(hole, p)) {
+                                return new Object[]{shape, i, j};
+                            }
+                            j += 1;
+                        }
+                    }
+                }
+                i += 1;
+            }
+        }
+        return null;
     }
 
     /**
@@ -986,10 +1062,8 @@ public class VectorLayer extends MapLayer {
 
                 if (dNum == 0) {
                     min = aValue;
-                } else {
-                    if (min > aValue) {
-                        min = aValue;
-                    }
+                } else if (min > aValue) {
+                    min = aValue;
                 }
                 dNum += 1;
             }
@@ -1193,6 +1267,55 @@ public class VectorLayer extends MapLayer {
     }
 
     /**
+     * Buffer the shapes
+     *
+     * @param distance Distance
+     * @param onlySel If only buffer selected shapes
+     * @param isMerge If merge or not
+     * @return Bufferred layer
+     */
+    public VectorLayer buffer(double distance, boolean onlySel, boolean isMerge) {
+        List<Shape> shapes = new ArrayList<>();
+        if (onlySel) {
+            for (Shape aShape : this._shapeList) {
+                if (aShape.isSelected()) {
+                    shapes.add(aShape);
+                }
+            }
+        } else {
+            shapes = (List<Shape>) this._shapeList;
+        }
+
+        VectorLayer newLayer = new VectorLayer(ShapeTypes.Polygon);
+        newLayer.setProjInfo(this.getProjInfo());
+
+        if (isMerge) {
+            List<Geometry> bgeos = new ArrayList<>();
+            for (Shape shape : shapes) {
+                bgeos.add(shape.toGeometry().buffer(distance));
+            }
+            Geometry mbgeo = CascadedPolygonUnion.union(bgeos);
+            Shape bShape = new PolygonShape(mbgeo);
+            try {
+                newLayer.editAddShape(bShape);
+            } catch (Exception ex) {
+                Logger.getLogger(VectorLayer.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            for (Shape aShape : shapes) {
+                Shape bShape = aShape.buffer(distance);
+                try {
+                    newLayer.editAddShape(bShape);
+                } catch (Exception ex) {
+                    Logger.getLogger(VectorLayer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+
+        return newLayer;
+    }
+
+    /**
      * Clip the layer by a clipping layer
      *
      * @param clipLayer Clipping layer
@@ -1293,7 +1416,7 @@ public class VectorLayer extends MapLayer {
      * @param y Y
      */
     public void moveLabel(Graphic lb, float x, float y) {
-        LabelBreak lbb = (LabelBreak)lb.getLegend();
+        LabelBreak lbb = (LabelBreak) lb.getLegend();
         lbb.setXShift(lbb.getXShift() + x);
         lbb.setYShift(lbb.getYShift() + y);
     }
@@ -1350,11 +1473,9 @@ public class VectorLayer extends MapLayer {
             ColorBreak aCB = null;
             if (this.getLegendScheme().getLegendType() == LegendType.SingleSymbol) {
                 aCB = this.getLegendScheme().getLegendBreaks().get(0);
-            } else {
-                if (this.getLegendScheme().getFieldName() != null) {
-                    String vStr = getCellValue(this.getLegendScheme().getFieldName(), shapeIdx).toString().trim();
-                    aCB = getColorBreak(vStr);
-                }
+            } else if (this.getLegendScheme().getFieldName() != null) {
+                String vStr = getCellValue(this.getLegendScheme().getFieldName(), shapeIdx).toString().trim();
+                aCB = getColorBreak(vStr);
             }
             if (aCB == null) {
                 continue;
@@ -1388,10 +1509,11 @@ public class VectorLayer extends MapLayer {
 
             LabelBreak aLP = new LabelBreak();
             if (isData) {
-                if (this._labelSet.isAutoDecimal())
+                if (this._labelSet.isAutoDecimal()) {
                     aLP.setText(DataConvert.removeTailingZeros(getCellValue(_labelSet.getFieldName(), shapeIdx).toString()));
-                else
+                } else {
                     aLP.setText(String.format(dFormat, Double.parseDouble(getCellValue(_labelSet.getFieldName(), shapeIdx).toString())));
+                }
             } else {
                 aLP.setText(getCellValue(_labelSet.getFieldName(), shapeIdx).toString());
             }
@@ -1474,10 +1596,11 @@ public class VectorLayer extends MapLayer {
                 //PointF aPoint = new PointF(0, 0);
                 PointShape aPS = new PointShape();
                 aPS.setPoint(aPLS.getPoints().get(pIdx - 1));
-                if (this._labelSet.isAutoDecimal())
+                if (this._labelSet.isAutoDecimal()) {
                     text = DataConvert.removeTailingZeros(getCellValue(_labelSet.getFieldName(), shapeIdx).toString());
-                else
+                } else {
                     text = String.format(dFormat, Double.parseDouble(getCellValue(_labelSet.getFieldName(), shapeIdx).toString()));
+                }
                 aLP.setText(text);
                 aLP.setFont(_labelSet.getLabelFont());
                 aLP.setAlignType(_labelSet.getLabelAlignType());

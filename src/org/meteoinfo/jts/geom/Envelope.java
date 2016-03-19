@@ -1,5 +1,3 @@
-
-
 /*
  * The JTS Topology Suite is a collection of Java classes that
  * implement the fundamental operations required to validate a given
@@ -41,8 +39,9 @@ import java.io.Serializable;
  *  It is often used to represent the bounding box of a {@link Geometry},
  *  e.g. the minimum and maximum x and y values of the {@link Coordinate}s.
  *  <p>
- *  Note that Envelopes support infinite or half-infinite regions, by using the values of
+ *  Envelopes support infinite or half-infinite regions, by using the values of
  *  <code>Double.POSITIVE_INFINITY</code> and <code>Double.NEGATIVE_INFINITY</code>.
+ *  Envelope objects may have a null value.
  *  <p>
  *  When Envelope objects are created or initialized,
  *  the supplies extent values are automatically sorted into the correct order.
@@ -50,7 +49,7 @@ import java.io.Serializable;
  *@version 1.7
  */
 public class Envelope
-    implements Serializable
+    implements Comparable, Serializable
 {
     private static final long serialVersionUID = 5873921885273102420L;
 
@@ -83,8 +82,10 @@ public class Envelope
   }
 
   /**
-   * Test the envelope defined by p1-p2 for intersection
-   * with the envelope defined by q1-q2
+   * Tests whether the envelope defined by p1-p2
+   * and the envelope defined by q1-q2
+   * intersect.
+   * 
    * @param p1 one extremal point of the envelope P
    * @param p2 another extremal point of the envelope P
    * @param q1 one extremal point of the envelope Q
@@ -163,17 +164,17 @@ public class Envelope
    */
   public Envelope(Coordinate p1, Coordinate p2)
   {
-    init(p1, p2);
+    init(p1.x, p2.x, p1.y, p2.y);
   }
 
   /**
    *  Creates an <code>Envelope</code> for a region defined by a single Coordinate.
    *
-   *@param  p1  the Coordinate
+   *@param  p  the Coordinate
    */
   public Envelope(Coordinate p)
   {
-    init(p);
+    init(p.x, p.x, p.y, p.y);
   }
 
   /**
@@ -236,8 +237,7 @@ public class Envelope
   /**
    *  Initialize an <code>Envelope</code> to a region defined by a single Coordinate.
    *
-   *@param  p1  the first Coordinate
-   *@param  p2  the second Coordinate
+   *@param  p  the coordinate
    */
   public void init(Coordinate p)
   {
@@ -345,11 +345,50 @@ public class Envelope
   }
 
   /**
-   *  Enlarges the boundary of the <code>Envelope</code> so that it contains
-   *  (x,y). Does nothing if (x,y) is already on or within the boundaries.
+   * Gets the area of this envelope.
+   * 
+   * @return the area of the envelope
+   * @return 0.0 if the envelope is null
+   */
+  public double getArea()
+  {
+    return getWidth() * getHeight();
+  }
+  
+  /**
+   * Gets the minimum extent of this envelope across both dimensions.
+   * 
+   * @return the minimum extent of this envelope
+   */
+	public double minExtent()
+	{
+		if (isNull()) return 0.0;
+		double w = getWidth();
+		double h = getHeight();
+		if (w < h) return w;
+		return h;
+	}
+	
+  /**
+   * Gets the maximum extent of this envelope across both dimensions.
+   * 
+   * @return the maximum extent of this envelope
+   */
+	public double maxExtent()
+	{
+		if (isNull()) return 0.0;
+		double w = getWidth();
+		double h = getHeight();
+		if (w > h) return w;
+		return h;
+	}
+  
+  /**
+   *  Enlarges this <code>Envelope</code> so that it contains
+   *  the given {@link Coordinate}. 
+   *  Has no effect if the point is already on or within the envelope.
    *
-   *@param  x  the value to lower the minimum x to or to raise the maximum x to
-   *@param  y  the value to lower the minimum y to or to raise the maximum y to
+   *@param  p  the Coordinate to expand to include
    */
   public void expandToInclude(Coordinate p)
   {
@@ -361,7 +400,6 @@ public class Envelope
    * Both positive and negative distances are supported.
    *
    * @param distance the distance to expand the envelope
-   * @return this envelope
    */
   public void expandBy(double distance)
   {
@@ -390,8 +428,9 @@ public class Envelope
   }
 
   /**
-   *  Enlarges the boundary of the <code>Envelope</code> so that it contains
-   *  (x,y). Does nothing if (x,y) is already on or within the boundaries.
+   *  Enlarges this <code>Envelope</code> so that it contains
+   *  the given point. 
+   *  Has no effect if the point is already on or within the envelope.
    *
    *@param  x  the value to lower the minimum x to or to raise the maximum x to
    *@param  y  the value to lower the minimum y to or to raise the maximum y to
@@ -420,11 +459,12 @@ public class Envelope
   }
 
   /**
-   *  Enlarges the boundary of the <code>Envelope</code> so that it contains
-   *  <code>other</code>. Does nothing if <code>other</code> is wholly on or
-   *  within the boundaries.
+   *  Enlarges this <code>Envelope</code> so that it contains
+   *  the <code>other</code> Envelope. 
+   *  Has no effect if <code>other</code> is wholly on or
+   *  within the envelope.
    *
-   *@param  other  the <code>Envelope</code> to merge with
+   *@param  other  the <code>Envelope</code> to expand to include
    */
   public void expandToInclude(Envelope other) {
     if (other.isNull()) {
@@ -480,7 +520,7 @@ public class Envelope
   }
 
   /**
-   * Computes the intersection of two {@link Envelopes}
+   * Computes the intersection of two {@link Envelope}s.
    *
    * @param env the envelope to intersect with
    * @return a new Envelope representing the intersection of the envelopes (this will be
@@ -498,34 +538,6 @@ public class Envelope
   }
 
 
-  /**
-   *  Returns <code>true</code> if the given point lies in or on the envelope.
-   *
-   *@param  p  the point which this <code>Envelope</code> is
-   *      being checked for containing
-   *@return    <code>true</code> if the point lies in the interior or
-   *      on the boundary of this <code>Envelope</code>.
-   */
-  public boolean contains(Coordinate p) {
-    return contains(p.x, p.y);
-  }
-
-  /**
-   *  Returns <code>true</code> if the given point lies in or on the envelope.
-   *
-   *@param  x  the x-coordinate of the point which this <code>Envelope</code> is
-   *      being checked for containing
-   *@param  y  the y-coordinate of the point which this <code>Envelope</code> is
-   *      being checked for containing
-   *@return    <code>true</code> if <code>(x, y)</code> lies in the interior or
-   *      on the boundary of this <code>Envelope</code>.
-   */
-  public boolean contains(double x, double y) {
-    return x >= minx &&
-        x <= maxx &&
-        y >= miny &&
-        y <= maxy;
-  }
 
   /**
    *  Check if the region defined by <code>other</code>
@@ -555,7 +567,7 @@ public class Envelope
    *  Check if the point <code>p</code>
    *  overlaps (lies inside) the region of this <code>Envelope</code>.
    *
-   *@param  other  the <code>Coordinate</code> to be tested
+   *@param  p  the <code>Coordinate</code> to be tested
    *@return        <code>true</code> if the point overlaps this <code>Envelope</code>
    */
   public boolean intersects(Coordinate p) {
@@ -576,6 +588,7 @@ public class Envelope
    *@return        <code>true</code> if the point overlaps this <code>Envelope</code>
    */
   public boolean intersects(double x, double y) {
+  	if (isNull()) return false;
     return ! (x > maxx ||
         x < minx ||
         y > maxy ||
@@ -589,15 +602,95 @@ public class Envelope
   }
 
   /**
-   *  Returns <code>true</code> if the <code>Envelope other</code>
-   *  lies wholely inside this <code>Envelope</code> (inclusive of the boundary).
+   * Tests if the <code>Envelope other</code>
+   * lies wholely inside this <code>Envelope</code> (inclusive of the boundary).
+   * <p>
+   * Note that this is <b>not</b> the same definition as the SFS <tt>contains</tt>,
+   * which would exclude the envelope boundary.
    *
-   *@param  other  the <code>Envelope</code> which this <code>Envelope</code> is
-   *        being checked for containing
-   *@return        <code>true</code> if <code>other</code>
-   *              is contained in this <code>Envelope</code>
+   *@param  other the <code>Envelope</code> to check
+   *@return true if <code>other</code> is contained in this <code>Envelope</code>
+   *
+   *@see #covers(Envelope)
    */
   public boolean contains(Envelope other) {
+  	return covers(other);
+  }
+
+  /**
+   * Tests if the given point lies in or on the envelope.
+   * <p>
+   * Note that this is <b>not</b> the same definition as the SFS <tt>contains</tt>,
+   * which would exclude the envelope boundary.
+   *
+   *@param  p  the point which this <code>Envelope</code> is
+   *      being checked for containing
+   *@return    <code>true</code> if the point lies in the interior or
+   *      on the boundary of this <code>Envelope</code>.
+   *      
+   *@see #covers(Coordinate)
+   */
+  public boolean contains(Coordinate p) {
+    return covers(p);
+  }
+
+  /**
+   * Tests if the given point lies in or on the envelope.
+   * <p>
+   * Note that this is <b>not</b> the same definition as the SFS <tt>contains</tt>,
+   * which would exclude the envelope boundary.
+   *
+   *@param  x  the x-coordinate of the point which this <code>Envelope</code> is
+   *      being checked for containing
+   *@param  y  the y-coordinate of the point which this <code>Envelope</code> is
+   *      being checked for containing
+   *@return    <code>true</code> if <code>(x, y)</code> lies in the interior or
+   *      on the boundary of this <code>Envelope</code>.
+   *      
+   *@see #covers(double, double)
+   */
+  public boolean contains(double x, double y) {
+  	return covers(x, y);
+  }
+
+  /**
+   * Tests if the given point lies in or on the envelope.
+   *
+   *@param  x  the x-coordinate of the point which this <code>Envelope</code> is
+   *      being checked for containing
+   *@param  y  the y-coordinate of the point which this <code>Envelope</code> is
+   *      being checked for containing
+   *@return    <code>true</code> if <code>(x, y)</code> lies in the interior or
+   *      on the boundary of this <code>Envelope</code>.
+   */
+  public boolean covers(double x, double y) {
+  	if (isNull()) return false;
+    return x >= minx &&
+        x <= maxx &&
+        y >= miny &&
+        y <= maxy;
+  }
+
+  /**
+   * Tests if the given point lies in or on the envelope.
+   *
+   *@param  p  the point which this <code>Envelope</code> is
+   *      being checked for containing
+   *@return    <code>true</code> if the point lies in the interior or
+   *      on the boundary of this <code>Envelope</code>.
+   */
+  public boolean covers(Coordinate p) {
+    return covers(p.x, p.y);
+  }
+
+  /**
+   * Tests if the <code>Envelope other</code>
+   * lies wholely inside this <code>Envelope</code> (inclusive of the boundary).
+   *
+   *@param  other the <code>Envelope</code> to check
+   *@return true if this <code>Envelope</code> covers the <code>other</code> 
+   */
+  public boolean covers(Envelope other) {
     if (isNull() || other.isNull()) { return false; }
     return other.getMinX() >= minx &&
         other.getMaxX() <= maxx &&
@@ -614,12 +707,17 @@ public class Envelope
   public double distance(Envelope env)
   {
     if (intersects(env)) return 0;
+    
     double dx = 0.0;
-    if (maxx < env.minx) dx = env.minx - maxx;
-    if (minx > env.maxx) dx = minx - env.maxx;
+    if (maxx < env.minx) 
+      dx = env.minx - maxx;
+    else if (minx > env.maxx) 
+      dx = minx - env.maxx;
+    
     double dy = 0.0;
-    if (maxy < env.miny) dy = env.miny - maxy;
-    if (miny > env.maxy) dy = miny - env.maxy;
+    if (maxy < env.miny) 
+      dy = env.miny - maxy;
+    else if (miny > env.maxy) dy = miny - env.maxy;
 
     // if either is zero, the envelopes overlap either vertically or horizontally
     if (dx == 0.0) return dy;
@@ -644,6 +742,38 @@ public class Envelope
   public String toString()
   {
     return "Env[" + minx + " : " + maxx + ", " + miny + " : " + maxy + "]";
+  }
+
+  /**
+   * Compares two envelopes using lexicographic ordering.
+   * The ordering comparison is based on the usual numerical
+   * comparison between the sequence of ordinates.
+   * Null envelopes are less than all non-null envelopes.
+   * 
+   * @param o an Envelope object
+   */
+  public int compareTo(Object o) {
+    Envelope env = (Envelope) o;
+    // compare nulls if present
+    if (isNull()) {
+      if (env.isNull()) return 0;
+      return -1;
+    }
+    else {
+      if (env.isNull()) return 1;
+    }
+    // compare based on numerical ordering of ordinates
+    if (minx < env.minx) return -1;
+    if (minx > env.minx) return 1;
+    if (miny < env.miny) return -1;
+    if (miny > env.miny) return 1;
+    if (maxx < env.maxx) return -1;
+    if (maxx > env.maxx) return 1;
+    if (maxy < env.maxy) return -1;
+    if (maxy > env.maxy) return 1;
+    return 0;
+    
+    
   }
 }
 

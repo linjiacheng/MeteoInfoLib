@@ -1,3 +1,36 @@
+/*
+* The JTS Topology Suite is a collection of Java classes that
+* implement the fundamental operations required to validate a given
+* geo-spatial data set to a known topological specification.
+*
+* Copyright (C) 2001 Vivid Solutions
+*
+* This library is free software; you can redistribute it and/or
+* modify it under the terms of the GNU Lesser General Public
+* License as published by the Free Software Foundation; either
+* version 2.1 of the License, or (at your option) any later version.
+*
+* This library is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with this library; if not, write to the Free Software
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*
+* For more information, contact:
+*
+*     Vivid Solutions
+*     Suite #1A
+*     2328 Government Street
+*     Victoria BC  V8T 5G5
+*     Canada
+*
+*     (250)385-6040
+*     www.vividsolutions.com
+*/
+
 package org.meteoinfo.jts.geom.util;
 
 import java.util.*;
@@ -16,22 +49,24 @@ import org.meteoinfo.jts.geom.*;
  * Subclasses will override whichever <code>transformX</code> methods
  * they need to to handle particular Geometry types.
  * <p>
- * A typically usage would be a transformation that may transform Polygons into
- * Polygons, LineStrings
- * or Points.  This class would likely need to override the {@link transformMultiPolygon}
- * method to ensure that if input Polygons change type the result is a GeometryCollection,
- * not a MultiPolygon
+ * A typically usage would be a transformation class that transforms <tt>Polygons</tt> into
+ * <tt>Polygons</tt>, <tt>LineStrings</tt> or <tt>Points</tt>, depending on the geometry of the input
+ * (For instance, a simplification operation).  
+ * This class would likely need to override the {@link #transformMultiPolygon(MultiPolygon, Geometry)transformMultiPolygon}
+ * method to ensure that if input Polygons change type the result is a <tt>GeometryCollection</tt>,
+ * not a <tt>MultiPolygon</tt>.
  * <p>
- * The default behaviour of this class is to simply recursively transform
- * each Geometry component into an identical object by copying.
+ * The default behaviour of this class is simply to recursively transform
+ * each Geometry component into an identical object by deep copying down
+ * to the level of, but not including, coordinates.
  * <p>
  * All <code>transformX</code> methods may return <code>null</code>,
  * to avoid creating empty or invalid geometry objects. This will be handled correctly
- * by the transformer.   <code>transformX</code> methods should always return valid
+ * by the transformer.   <code>transform<i>XXX</i></code> methods should always return valid
  * geometry - if they cannot do this they should return <code>null</code>
  * (for instance, it may not be possible for a transformLineString implementation
  * to return at least two points - in this case, it should return <code>null</code>).
- * The {@link transform} method itself will always
+ * The {@link #transform(Geometry)transform} method itself will always
  * return a non-null Geometry object (but this may be empty).
  *
  * @version 1.7
@@ -163,14 +198,28 @@ public class GeometryTransformer
     return factory.buildGeometry(transGeomList);
   }
 
+  /**
+   * Transforms a LinearRing.
+   * The transformation of a LinearRing may result in a coordinate sequence
+   * which does not form a structurally valid ring (i.e. a degnerate ring of 3 or fewer points).
+   * In this case a LineString is returned. 
+   * Subclasses may wish to override this method and check for this situation
+   * (e.g. a subclass may choose to eliminate degenerate linear rings)
+   * 
+   * @param geom the ring to simplify
+   * @param parent the parent geometry
+   * @return a LinearRing if the transformation resulted in a structurally valid ring
+   * @return a LineString if the transformation caused the LinearRing to collapse to 3 or fewer points
+   */
   protected Geometry transformLinearRing(LinearRing geom, Geometry parent) {
     CoordinateSequence seq = transformCoordinates(geom.getCoordinateSequence(), geom);
+    if (seq == null) 
+      return factory.createLinearRing((CoordinateSequence) null);
     int seqSize = seq.size();
     // ensure a valid LinearRing
     if (seqSize > 0 && seqSize < 4 && ! preserveType)
       return factory.createLineString(seq);
     return factory.createLinearRing(seq);
-
   }
 
   /**
@@ -188,7 +237,7 @@ public class GeometryTransformer
 
   protected Geometry transformMultiLineString(MultiLineString geom, Geometry parent) {
     List transGeomList = new ArrayList();
-    for (int i = 0; i < geom.getNumGeometries(); i++) {
+    for (int i = 0; i < geom.getNumGeometries(); i++) {  
       Geometry transformGeom = transformLineString((LineString) geom.getGeometryN(i), geom);
       if (transformGeom == null) continue;
       if (transformGeom.isEmpty()) continue;

@@ -196,7 +196,7 @@ public class RasterLayer extends ImageLayer {
             for (int j = 0; j < width; j++) {
                 //oneValue = gdata.data[i][j];
                 oneValue = gdata.getDoubleValue(i, j);
-                if (MIMath.doubleEquals(oneValue, gdata.missingValue)) {
+                if (Double.isNaN(oneValue) || MIMath.doubleEquals(oneValue, gdata.missingValue)) {
                     oneColor = undefColor;
                 } else {
                     oneColor = defaultColor;

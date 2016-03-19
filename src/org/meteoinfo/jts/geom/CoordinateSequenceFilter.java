@@ -36,19 +36,31 @@ package org.meteoinfo.jts.geom;
 
 
 /**
- *  Interface for classeswhich provide operations that
- *  can be applied to the coordinates in a {@link CoordinateSequence}. 
- *  A CoordinateSequence filter can either record information about each coordinate or
- *  change the coordinate in some way. CoordinateSequence filters can be
- *  used to implement such things as coordinate transformations, centroid and
+ *  An interface for classes which process the coordinates in a {@link CoordinateSequence}. 
+ *  A filter can either record information about each coordinate,
+ *  or change the value of the coordinate. 
+ *  Filters can be
+ *  used to implement operations such as coordinate transformations, centroid and
  *  envelope computation, and many other functions.
- *  For maximum efficiency, the execution of filters can be short-circuited.
  *  {@link Geometry} classes support the concept of applying a
  *  <code>CoordinateSequenceFilter</code> to each 
  *  {@link CoordinateSequence}s they contain. 
  *  <p>
+ *  For maximum efficiency, the execution of filters can be short-circuited by using the {@link #isDone} method.
+ *  <p>
  *  <code>CoordinateSequenceFilter</code> is
- *  an example of the Gang-of-Four Visitor pattern. 
+ *  an example of the Gang-of-Four Visitor pattern.
+ *  <p> 
+ * <b>Note</b>: In general, it is preferable to treat Geometrys as immutable. 
+ * Mutation should be performed by creating a new Geometry object (see {@link GeometryEditor} 
+ * and {@link GeometryTransformer} for convenient ways to do this).
+ * An exception to this rule is when a new Geometry has been created via {@link Geometry#clone()}.
+ * In this case mutating the Geometry will not cause aliasing issues, 
+ * and a filter is a convenient way to implement coordinate transformation.
+ *  
+ * @see Geometry#apply(CoordinateFilter)
+ * @see GeometryTransformer
+ * @see GeometryEditor
  *
  *@see Geometry#apply(CoordinateSequenceFilter)
  *@author Martin Davis
@@ -76,7 +88,8 @@ public interface CoordinateSequenceFilter
   /**
    * Reports whether the execution of this filter
    * has modified the coordinates of the geometry.
-   * If so, {@link Geometry#geometryChanged} will be executed.
+   * If so, {@link Geometry#geometryChanged} will be executed
+   * after this filter has finished being executed.
    * <p>
    * Most filters can simply return a constant value reflecting
    * whether they are able to change the coordinates.

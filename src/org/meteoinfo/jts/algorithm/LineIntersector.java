@@ -1,6 +1,3 @@
-
-
-
 /*
  * The JTS Topology Suite is a collection of Java classes that
  * implement the fundamental operations required to validate a given
@@ -43,21 +40,56 @@ import org.meteoinfo.jts.util.*;
 import org.meteoinfo.jts.io.WKTWriter;
 
 /**
- * A LineIntersector is an algorithm that can both test whether
- * two line segments intersect and compute the intersection point
+ * A <code>LineIntersector</code> is an algorithm that can both test whether
+ * two line segments intersect and compute the intersection point(s)
  * if they do.
- * The intersection point may be computed in a precise or non-precise manner.
- * Computing it precisely involves rounding it to an integer.  (This assumes
- * that the input coordinates have been made precise by scaling them to
- * an integer grid.)
+ * <p>
+ * There are three possible outcomes when determining whether two line segments intersect:
+ * <ul>
+ * <li>{@link #NO_INTERSECTION} - the segments do not intersect
+ * <li>{@link #POINT_INTERSECTION - the segments intersect in a single point
+ * <li>{@link #COLLINEAR_INTERSECTION - the segments are collinear and they intersect in a line segment
+ * </ul>
+ * For segments which intersect in a single point, the point may be either an endpoint
+ * or in the interior of each segment.  
+ * If the point lies in the interior of both segments, 
+ * this is termed a <i>proper intersection</i>.
+ * The method {@link #isProper()} test for this situation.
+ * <p>
+ * The intersection point(s) may be computed in a precise or non-precise manner.
+ * Computing an intersection point precisely involves rounding it 
+ * via a supplied {@link PrecisionModel}.  
+ * <p>
+ * LineIntersectors do not perform an initial envelope intersection test 
+ * to determine if the segments are disjoint.
+ * This is because this class is likely to be used in a context where 
+ * envelope overlap is already known to occur (or be likely).
  *
  * @version 1.7
  */
-public abstract class LineIntersector {
-
+public abstract class LineIntersector 
+{
+/**
+ * These are deprecated, due to ambiguous naming
+ */
   public final static int DONT_INTERSECT = 0;
   public final static int DO_INTERSECT = 1;
   public final static int COLLINEAR = 2;
+  
+  /**
+   * Indicates that line segments do not intersect
+   */
+  public final static int NO_INTERSECTION = 0;
+  
+  /**
+   * Indicates that line segments intersect in a single point
+   */
+  public final static int POINT_INTERSECTION = 1;
+  
+  /**
+   * Indicates that line segments intersect in a line segment
+   */
+  public final static int COLLINEAR_INTERSECTION = 2;
 
   /**
    * Computes the "edge distance" of an intersection point p along a segment.
@@ -176,6 +208,18 @@ public abstract class LineIntersector {
   }
 
   /**
+   * Gets an endpoint of an input segment.
+   * 
+   * @param segmentIndex the index of the input segment (0 or 1)
+   * @param ptIndex the index of the endpoint (0 or 1)
+   * @return the specified endpoint
+   */
+  public Coordinate getEndpoint(int segmentIndex, int ptIndex)
+  {
+    return inputLines[segmentIndex][ptIndex];
+  }
+  
+  /**
    * Compute the intersection of a point p and the line p1-p2.
    * This function computes the boolean value of the hasIntersection test.
    * The actual value of the intersection (if there is one)
@@ -186,7 +230,7 @@ public abstract class LineIntersector {
         Coordinate p1, Coordinate p2);
 
   protected boolean isCollinear() {
-    return result == COLLINEAR;
+    return result == COLLINEAR_INTERSECTION;
   }
 
   /**
@@ -245,11 +289,13 @@ public abstract class LineIntersector {
    * @return true if the input geometries intersect
    */
   public boolean hasIntersection() {
-    return result != DONT_INTERSECT;
+    return result != NO_INTERSECTION;
   }
 
   /**
    * Returns the number of intersection points found.  This will be either 0, 1 or 2.
+   * 
+   * @return the number of intersection points found (0, 1, or 2)
    */
   public int getIntersectionNum() { return result; }
 
@@ -350,13 +396,13 @@ public abstract class LineIntersector {
   }
 
   /**
-   * Computes the index of the intIndex'th intersection point in the direction of
+   * Computes the index (order) of the intIndex'th intersection point in the direction of
    * a specified input line segment
    *
    * @param segmentIndex is 0 or 1
    * @param intIndex is 0 or 1
    *
-   * @return the index of the intersection point along the segment (0 or 1)
+   * @return the index of the intersection point along the input segment (0 or 1)
    */
   public int getIndexAlongSegment(int segmentIndex, int intIndex) {
     computeIntLineIndex();

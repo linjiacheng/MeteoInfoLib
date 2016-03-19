@@ -36,7 +36,31 @@ package org.meteoinfo.jts.precision;
 import org.meteoinfo.jts.geom.*;
 
 /**
- * Allow computing and removing common mantissa bits from one or more Geometries.
+ * Removes common most-significant mantissa bits 
+ * from one or more {@link Geometry}s.
+ * <p>
+ * The CommonBitsRemover "scavenges" precision 
+ * which is "wasted" by a large displacement of the geometry 
+ * from the origin.  
+ * For example, if a small geometry is displaced from the origin 
+ * by a large distance, 
+ * the displacement increases the significant figures in the coordinates, 
+ * but does not affect the <i>relative</i> topology of the geometry.  
+ * Thus the geometry can be translated back to the origin 
+ * without affecting its topology.
+ * In order to compute the translation without affecting 
+ * the full precision of the coordinate values, 
+ * the translation is performed at the bit level by
+ * removing the common leading mantissa bits.
+ * <p>
+ * If the geometry envelope already contains the origin, 
+ * the translation procedure cannot be applied.  
+ * In this case, the common bits value is computed as zero.
+ * <p>
+ * If the geometry crosses the Y axis but not the X axis 
+ * (and <i>mutatis mutandum</i>), 
+ * the common bits for Y are zero, 
+ * but the common bits for X are non-zero.
  *
  * @version 1.7
  */
@@ -93,7 +117,6 @@ public class CommonBitsRemover
    * The coordinates of the Geometry are changed.
    *
    * @param geom the Geometry to which to add the common coordinate bits
-   * @return the shifted Geometry
    */
   public void addCommonBits(Geometry geom)
   {
@@ -123,7 +146,7 @@ public class CommonBitsRemover
   }
 
   class Translater
-      implements CoordinateFilter
+      implements CoordinateSequenceFilter
   {
     Coordinate trans = null;
 
@@ -131,10 +154,20 @@ public class CommonBitsRemover
     {
       this.trans = trans;
     }
-    public void filter(Coordinate coord)
-    {
-      coord.x += trans.x;
-      coord.y += trans.y;
+
+    public void filter(CoordinateSequence seq, int i) {
+      double xp = seq.getOrdinate(i, 0) + trans.x;
+      double yp = seq.getOrdinate(i, 1) + trans.y;
+      seq.setOrdinate(i, 0, xp);
+      seq.setOrdinate(i, 1, yp);  
+    }
+
+    public boolean isDone() {
+     return false;
+    }
+
+    public boolean isGeometryChanged() {
+      return true;
     }
 
   }

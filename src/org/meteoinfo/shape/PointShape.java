@@ -140,10 +140,27 @@ public class PointShape extends Shape implements Cloneable{
      * Clone
      * @return PointShape
      */
-    @Override
-    public Object clone() {
+    //@Override
+    public Object clone_back() {
         PointShape o = (PointShape)super.clone();
         return o;
+    }
+    
+    /**
+     * Clone
+     *
+     * @return PolygonShape
+     */
+    @Override
+    public Object clone() {
+        PointShape ps = new PointShape();
+        ps._value = _value;
+        ps.setPoint((PointD)_point.clone());
+        ps.setVisible(this.isVisible());
+        ps.setSelected(this.isSelected());
+        ps.setLegendIndex(this.getLegendIndex());
+        
+        return ps;
     }
     // </editor-fold>
 }

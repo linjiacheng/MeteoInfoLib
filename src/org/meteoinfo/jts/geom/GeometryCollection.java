@@ -40,7 +40,9 @@ import java.util.TreeSet;
 import org.meteoinfo.jts.util.Assert;
 
 /**
- *  Basic implementation of <code>GeometryCollection</code>.
+ * Models a collection of {@link Geometry}s of
+ * arbitrary type and dimension.
+ * 
  *
  *@version 1.7
  */
@@ -279,6 +281,23 @@ public class GeometryCollection extends Geometry {
     if (i < n2) return -1;
     return 0;
 
+  }
+  
+  /**
+   * Creates a {@link GeometryCollection} with
+   * every component reversed.
+   * The order of the components in the collection are not reversed.
+   *
+   * @return a {@link GeometryCollection} in the reverse order
+   */
+  public Geometry reverse()
+  {
+    int n = geometries.length;
+    Geometry[] revGeoms = new Geometry[n];
+    for (int i = 0; i < geometries.length; i++) {
+      revGeoms[i] = geometries[i].reverse();
+    }
+    return getFactory().createGeometryCollection(revGeoms);
   }
 }
 

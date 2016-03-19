@@ -36,27 +36,43 @@ import org.meteoinfo.jts.algorithm.CGAlgorithms;
 import org.meteoinfo.jts.operation.BoundaryOp;
 
 /**
- *  Basic implementation of <code>LineString</code>.
+ *  Models an OGC-style <code>LineString</code>.
+ *  A LineString consists of a sequence of two or more vertices,
+ *  along with all points along the linearly-interpolated curves
+ *  (line segments) between each 
+ *  pair of consecutive vertices.
+ *  Consecutive vertices may be equal.
+ *  The line segments in the line may intersect each other (in other words, 
+ *  the linestring may "curl back" in itself and self-intersect.
+ *  Linestrings with exactly two identical points are invalid. 
+ *  <p> 
+ * A linestring must have either 0 or 2 or more points.  
+ * If these conditions are not met, the constructors throw 
+ * an {@link IllegalArgumentException}
  *
  *@version 1.7
  */
-public class LineString extends Geometry {
+public class LineString 
+	extends Geometry 
+	implements Lineal
+{
   private static final long serialVersionUID = 3110669828065365560L;
   /**
    *  The points of this <code>LineString</code>.
    */
-  private CoordinateSequence points;
+  protected CoordinateSequence points;
 
   /**
    *  Constructs a <code>LineString</code> with the given points.
    *
-   *@param  points          the points of the linestring, or <code>null</code>
+   *@param  points the points of the linestring, or <code>null</code>
    *      to create the empty geometry. This array must not contain <code>null</code>
-   *      elements. Consecutive points may not be equal.
+   *      elements. Consecutive points may be equal.
    *@param  precisionModel  the specification of the grid of allowable points
    *      for this <code>LineString</code>
    *@param  SRID            the ID of the Spatial Reference System used by this
    *      <code>LineString</code>
+   * @throws IllegalArgumentException if too few points are provided
    */
   /** @deprecated Use GeometryFactory instead */
   public LineString(Coordinate points[], PrecisionModel precisionModel, int SRID)
@@ -66,8 +82,11 @@ public class LineString extends Geometry {
   }
 
   /**
-   *@param  points          the points of the linestring, or <code>null</code>
-   *      to create the empty geometry. Consecutive points may not be equal.
+   * Constructs a <code>LineString</code> with the given points.
+   *  
+   *@param  points the points of the linestring, or <code>null</code>
+   *      to create the empty geometry. 
+   * @throws IllegalArgumentException if too few points are provided
    */
   public LineString(CoordinateSequence points, GeometryFactory factory) {
     super(factory);
@@ -80,7 +99,8 @@ public class LineString extends Geometry {
       points = getFactory().getCoordinateSequenceFactory().create(new Coordinate[]{});
     }
     if (points.size() == 1) {
-      throw new IllegalArgumentException("point array must contain 0 or >1 elements");
+      throw new IllegalArgumentException("Invalid number of points in LineString (found " 
+      		+ points.size() + " - must be 0 or >= 2)");
     }
     this.points = points;
   }
@@ -157,7 +177,7 @@ public class LineString extends Geometry {
   /**
    *  Returns the length of this <code>LineString</code>
    *
-   *@return the area of the polygon
+   *@return the length of the linestring
    */
   public double getLength()
   {
@@ -181,7 +201,7 @@ public class LineString extends Geometry {
    *
    * @return a {@link LineString} with coordinates in the reverse order
    */
-  public LineString reverse()
+  public Geometry reverse()
   {
     CoordinateSequence seq = (CoordinateSequence) points.clone();
     CoordinateSequences.reverse(seq);
@@ -279,7 +299,7 @@ public class LineString extends Geometry {
         // skip equal points on both ends
         if (!points.getCoordinate(i).equals(points.getCoordinate(j))) {
           if (points.getCoordinate(i).compareTo(points.getCoordinate(j)) > 0) {
-            CoordinateArrays.reverse(getCoordinates());
+            CoordinateSequences.reverse(points);
           }
           return;
         }

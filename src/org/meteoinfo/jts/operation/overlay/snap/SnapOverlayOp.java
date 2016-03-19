@@ -1,7 +1,39 @@
+/*
+* The JTS Topology Suite is a collection of Java classes that
+* implement the fundamental operations required to validate a given
+* geo-spatial data set to a known topological specification.
+*
+* Copyright (C) 2001 Vivid Solutions
+*
+* This library is free software; you can redistribute it and/or
+* modify it under the terms of the GNU Lesser General Public
+* License as published by the Free Software Foundation; either
+* version 2.1 of the License, or (at your option) any later version.
+*
+* This library is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with this library; if not, write to the Free Software
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*
+* For more information, contact:
+*
+*     Vivid Solutions
+*     Suite #1A
+*     2328 Government Street
+*     Victoria BC  V8T 5G5
+*     Canada
+*
+*     (250)385-6040
+*     www.vividsolutions.com
+*/
+
 package org.meteoinfo.jts.operation.overlay.snap;
 
 import org.meteoinfo.jts.geom.*;
-import org.meteoinfo.jts.io.*;
 import org.meteoinfo.jts.operation.overlay.OverlayOp;
 import org.meteoinfo.jts.precision.CommonBitsRemover;
 
@@ -64,12 +96,22 @@ public class SnapOverlayOp
 
   public Geometry getResultGeometry(int opCode)
   {
-    Geometry[] prepGeom = snap();
+//  	Geometry[] selfSnapGeom = new Geometry[] { selfSnap(geom[0]), selfSnap(geom[1])};
+    Geometry[] prepGeom = snap(geom);
     Geometry result = OverlayOp.overlayOp(prepGeom[0], prepGeom[1], opCode);
     return prepareResult(result);	
   }
   
-  private Geometry[] snap()
+  private Geometry selfSnap(Geometry geom)
+  {
+    GeometrySnapper snapper0 = new GeometrySnapper(geom);
+    Geometry snapGeom = snapper0.snapTo(geom, snapTolerance);
+    //System.out.println("Self-snapped: " + snapGeom);
+    //System.out.println();
+    return snapGeom;
+  }
+  
+  private Geometry[] snap(Geometry[] geom)
   {
     Geometry[] remGeom = removeCommonBits(geom);
   	

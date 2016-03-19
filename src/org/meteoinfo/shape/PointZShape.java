@@ -98,10 +98,12 @@ public class PointZShape extends PointShape {
     public Object clone() {
         PointZShape aPS = new PointZShape();
         //aPS = (PointZShape)base.Clone();
-        aPS.setPoint(this.getPoint());
+        aPS.setPoint((PointZ)this.getPoint().clone());
         //aPS.Z = Z;
         //aPS.M = M;
         aPS.setValue(getValue());
+        aPS.setVisible(this.isVisible());
+        aPS.setSelected(this.isSelected());
         aPS.setLegendIndex(this.getLegendIndex());
 
         return aPS;

@@ -40,6 +40,8 @@ import org.meteoinfo.jts.geom.Coordinate;
  * a ring.
  *
  * @version 1.7
+ * 
+ * @see PointOnGeometryLocator
  */
 public interface PointInRing {
 

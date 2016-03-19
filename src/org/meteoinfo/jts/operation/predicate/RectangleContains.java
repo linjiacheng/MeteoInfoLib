@@ -1,26 +1,68 @@
+/*
+* The JTS Topology Suite is a collection of Java classes that
+* implement the fundamental operations required to validate a given
+* geo-spatial data set to a known topological specification.
+*
+* Copyright (C) 2001 Vivid Solutions
+*
+* This library is free software; you can redistribute it and/or
+* modify it under the terms of the GNU Lesser General Public
+* License as published by the Free Software Foundation; either
+* version 2.1 of the License, or (at your option) any later version.
+*
+* This library is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with this library; if not, write to the Free Software
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*
+* For more information, contact:
+*
+*     Vivid Solutions
+*     Suite #1A
+*     2328 Government Street
+*     Victoria BC  V8T 5G5
+*     Canada
+*
+*     (250)385-6040
+*     www.vividsolutions.com
+*/
+
 package org.meteoinfo.jts.operation.predicate;
 
 import org.meteoinfo.jts.geom.*;
 
 /**
- * Optimized implementation of spatial predicate "contains"
+ * Optimized implementation of the <tt>contains</tt> spatial predicate 
  * for cases where the first {@link Geometry} is a rectangle.
+ * This class works for all input geometries, including
+ * {@link GeometryCollection}s.
  * <p>
  * As a further optimization,
- * this class can be used directly to test many geometries against a single
- * rectangle.
+ * this class can be used to test 
+ * many geometries against a single
+ * rectangle in a slightly more efficient way.
  *
  * @version 1.7
  */
 public class RectangleContains {
 
+  /**
+   * Tests whether a rectangle contains a given geometry.
+   * 
+   * @param rectangle a rectangular Polygon
+   * @param b a Geometry of any type
+   * @return true if the geometries intersect
+   */
   public static boolean contains(Polygon rectangle, Geometry b)
   {
     RectangleContains rc = new RectangleContains(rectangle);
     return rc.contains(b);
   }
 
-  private Polygon rectangle;
   private Envelope rectEnv;
 
   /**
@@ -29,15 +71,20 @@ public class RectangleContains {
    * @param rectangle a rectangular geometry
    */
   public RectangleContains(Polygon rectangle) {
-    this.rectangle = rectangle;
     rectEnv = rectangle.getEnvelopeInternal();
   }
 
   public boolean contains(Geometry geom)
   {
+    // the test geometry must be wholly contained in the rectangle envelope
     if (! rectEnv.contains(geom.getEnvelopeInternal()))
       return false;
-    // check that geom is not contained entirely in the rectangle boundary
+    
+    /**
+     * Check that geom is not contained entirely in the rectangle boundary.
+     * According to the somewhat odd spec of the SFS, if this
+     * is the case the geometry is NOT contained.
+     */
     if (isContainedInBoundary(geom))
       return false;
     return true;
@@ -63,20 +110,30 @@ public class RectangleContains {
     return isPointContainedInBoundary(point.getCoordinate());
   }
 
+  /**
+   * Tests if a point is contained in the boundary of the target rectangle.
+   * 
+   * @param pt the point to test
+   * @return true if the point is contained in the boundary
+   */
   private boolean isPointContainedInBoundary(Coordinate pt)
   {
-    // we already know that the point is contained in the rectangle envelope
-
-    if (! (pt.x == rectEnv.getMinX() ||
-           pt.x == rectEnv.getMaxX()) )
-      return false;
-    if (! (pt.y == rectEnv.getMinY() ||
-           pt.y == rectEnv.getMaxY()) )
-      return false;
-
-    return true;
+    /**
+     * contains = false iff the point is properly contained in the rectangle.
+     * 
+     * This code assumes that the point lies in the rectangle envelope
+     */ 
+    return pt.x == rectEnv.getMinX() 
+    		|| pt.x == rectEnv.getMaxX()
+    		|| pt.y == rectEnv.getMinY()
+    		|| pt.y == rectEnv.getMaxY();
   }
 
+  /**
+   * Tests if a linestring is completely contained in the boundary of the target rectangle.
+   * @param line the linestring to test
+   * @return true if the linestring is contained in the boundary
+   */
   private boolean isLineStringContainedInBoundary(LineString line)
   {
     CoordinateSequence seq = line.getCoordinateSequence();
@@ -92,6 +149,12 @@ public class RectangleContains {
     return true;
   }
 
+  /**
+   * Tests if a line segment is contained in the boundary of the target rectangle.
+   * @param p0 an endpoint of the segment
+   * @param p1 an endpoint of the segment
+   * @return true if the line segment is contained in the boundary
+   */
   private boolean isLineSegmentContainedInBoundary(Coordinate p0, Coordinate p1)
   {
     if (p0.equals(p1))

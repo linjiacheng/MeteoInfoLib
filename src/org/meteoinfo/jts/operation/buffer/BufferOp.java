@@ -37,6 +37,7 @@ package org.meteoinfo.jts.operation.buffer;
  */
 import org.meteoinfo.jts.geom.*;
 import org.meteoinfo.jts.precision.SimpleGeometryPrecisionReducer;
+import org.meteoinfo.jts.math.MathUtil;
 import org.meteoinfo.jts.noding.*;
 import org.meteoinfo.jts.noding.snapround.*;
 
@@ -45,27 +46,46 @@ import org.meteoinfo.jts.noding.snapround.*;
 /**
  * Computes the buffer of a geometry, for both positive and negative buffer distances.
  * <p>
- * In GIS, the positive buffer of a geometry is defined as
- * the Minkowski sum or difference of the geometry
+ * In GIS, the positive (or negative) buffer of a geometry is defined as
+ * the Minkowski sum (or difference) of the geometry
  * with a circle of radius equal to the absolute value of the buffer distance.
  * In the CAD/CAM world buffers are known as </i>offset curves</i>.
- * In morphological analysis they are known as <i>erosion</i> and <i>dilation</i>
+ * In morphological analysis the 
+ * operation of positive and negative buffering 
+ * is referred to as <i>erosion</i> and <i>dilation</i>
  * <p>
- * The negative buffer of lines and points is always empty geometry.
+ * The buffer operation always returns a polygonal result.
+ * The negative or zero-distance buffer of lines and points is always an empty {@link Polygon}.
  * <p>
  * Since true buffer curves may contain circular arcs,
- * computed buffer polygons can only be approximations to the true geometry.
- * The user can control the accuracy of the curve approximation by specifying
- * the number of linear segments used to approximate curves.
+ * computed buffer polygons are only approximations to the true geometry.
+ * The user can control the accuracy of the approximation by specifying
+ * the number of linear segments used to approximate arcs.
+ * This is specified via {@link BufferParameters#setQuadrantSegments(int)} or {@link #setQuadrantSegments(int)}.
  * <p>
- * The <b>end cap style</b> of a linear buffer may be specified. The
+ * The <b>end cap style</b> of a linear buffer may be {@link BufferParameters#setEndCapStyle(int) specified}. The
  * following end cap styles are supported:
  * <ul
- * <li>{@link #CAP_ROUND} - the usual round end caps
- * <li>{@link #CAP_BUTT} - end caps are truncated flat at the line ends
- * <li>{@link #CAP_SQUARE} - end caps are squared off at the buffer distance beyond the line ends
+ * <li>{@link BufferParameters#CAP_ROUND} - the usual round end caps
+ * <li>{@link BufferParameters#CAP_BUTT} - end caps are truncated flat at the line ends
+ * <li>{@link BufferParameters#CAP_SQUARE} - end caps are squared off at the buffer distance beyond the line ends
  * </ul>
  * <p>
+ * The <b>join style</b> of the corners in a buffer may be {@link BufferParameters#setJoinStyle(int) specified}. The
+ * following join styles are supported:
+ * <ul
+ * <li>{@link BufferParameters#JOIN_ROUND} - the usual round join
+ * <li>{@link BufferParameters#JOIN_MITRE} - corners are "sharp" (up to a {@link BufferParameters#getMitreLimit() distance limit})
+ * <li>{@link BufferParameters#JOIN_BEVEL} - corners are beveled (clipped off).
+ * </ul>
+ * <p>
+ * The buffer algorithm can perform simplification on the input to increase performance.
+ * The simplification is performed a way that always increases the buffer area 
+ * (so that the simplified input covers the original input).
+ * The degree of simplification can be {@link BufferParameters#setSimplifyFactor(double) specified},
+ * with a {@link BufferParameters#DEFAULT_SIMPLIFY_FACTOR default} used otherwise.
+ * Note that if the buffer distance is zero then so is the computed simplify tolerance, 
+ * no matter what the simplify factor.
  *
  * @version 1.7
  */
@@ -73,25 +93,43 @@ public class BufferOp
 {
   /**
    * Specifies a round line buffer end cap style.
+   * @deprecated use BufferParameters
    */
-  public static final int CAP_ROUND = 1;
+  public static final int CAP_ROUND = BufferParameters.CAP_ROUND;
   /**
    * Specifies a butt (or flat) line buffer end cap style.
+   * @deprecated use BufferParameters
    */
-  public static final int CAP_BUTT = 2;
+  public static final int CAP_BUTT = BufferParameters.CAP_FLAT;
+  
+  /**
+   * Specifies a butt (or flat) line buffer end cap style.
+   * @deprecated use BufferParameters
+   */
+  public static final int CAP_FLAT = BufferParameters.CAP_FLAT;
   /**
    * Specifies a square line buffer end cap style.
+   * @deprecated use BufferParameters
    */
-  public static final int CAP_SQUARE = 3;
-
+  public static final int CAP_SQUARE = BufferParameters.CAP_SQUARE;
+  
+  /**
+   * A number of digits of precision which leaves some computational "headroom"
+   * for floating point operations.
+   * 
+   * This value should be less than the decimal precision of double-precision values (16).
+   */
   private static int MAX_PRECISION_DIGITS = 12;
 
   /**
    * Compute a scale factor to limit the precision of
    * a given combination of Geometry and buffer distance.
-   * The scale factor is determined by a combination of
+   * The scale factor is determined by
    * the number of digits of precision in the (geometry + buffer distance),
    * limited by the supplied <code>maxPrecisionDigits</code> value.
+   * <p>
+   * The scale factor is based on the absolute magnitude of the (geometry + buffer distance).
+   * since this determines the number of digits of precision which must be handled.
    *
    * @param g the Geometry being buffered
    * @param distance the buffer distance
@@ -101,6 +139,30 @@ public class BufferOp
    * @return a scale factor for the buffer computation
    */
   private static double precisionScaleFactor(Geometry g,
+      double distance,
+    int maxPrecisionDigits)
+  {
+    Envelope env = g.getEnvelopeInternal();
+    double envMax = MathUtil.max(
+        Math.abs(env.getMaxX()), 
+            Math.abs(env.getMaxY()), 
+                Math.abs(env.getMinX()), 
+                    Math.abs(env.getMinY())
+            );
+    
+    double expandByDistance = distance > 0.0 ? distance : 0.0;
+    double bufEnvMax = envMax + 2 * expandByDistance;
+
+    // the smallest power of 10 greater than the buffer envelope
+    int bufEnvPrecisionDigits = (int) (Math.log(bufEnvMax) / Math.log(10) + 1.0);
+    int minUnitLog10 = maxPrecisionDigits - bufEnvPrecisionDigits;
+    
+    double scaleFactor = Math.pow(10.0, minUnitLog10);
+    return scaleFactor;
+  }
+
+  /*
+  private static double OLDprecisionScaleFactor(Geometry g,
       double distance,
     int maxPrecisionDigits)
   {
@@ -116,6 +178,7 @@ public class BufferOp
     double scaleFactor = Math.pow(10.0, -minUnitLog10);
     return scaleFactor;
   }
+  */
 
   /**
    * Computes the buffer of a geometry for a given buffer distance.
@@ -133,6 +196,23 @@ public class BufferOp
     return geomBuf;
   }
 
+  /**
+   * Comutes the buffer for a geometry for a given buffer distance
+   * and accuracy of approximation.
+   *
+   * @param g the geometry to buffer
+   * @param distance the buffer distance
+   * @param params the buffer parameters to use
+   * @return the buffer of the input geometry
+   *
+   */
+  public static Geometry bufferOp(Geometry g, double distance, BufferParameters params)
+  {
+    BufferOp bufOp = new BufferOp(g, params);
+    Geometry geomBuf = bufOp.getResultGeometry(distance);
+    return geomBuf;
+  }
+  
   /**
    * Comutes the buffer for a geometry for a given buffer distance
    * and accuracy of approximation.
@@ -176,8 +256,8 @@ public class BufferOp
 
   private Geometry argGeom;
   private double distance;
-  private int quadrantSegments = OffsetCurveBuilder.DEFAULT_QUADRANT_SEGMENTS;
-  private int endCapStyle = BufferOp.CAP_ROUND;
+  
+  private BufferParameters bufParams = new BufferParameters();
 
   private Geometry resultGeometry = null;
   private RuntimeException saveException;   // debugging only
@@ -192,15 +272,27 @@ public class BufferOp
   }
 
   /**
+   * Initializes a buffer computation for the given geometry
+   * with the given set of parameters
+   *
+   * @param g the geometry to buffer
+   * @param bufParams the buffer parameters to use
+   */
+  public BufferOp(Geometry g, BufferParameters bufParams) {
+    argGeom = g;
+    this.bufParams = bufParams;
+  }
+
+  /**
    * Specifies the end cap style of the generated buffer.
-   * The styles supported are {@link #CAP_ROUND}, {@link #CAP_BUTT}, and {@link #CAP_SQUARE}.
+   * The styles supported are {@link BufferParameters#CAP_ROUND}, {@link BufferParameters##CAP_BUTT}, and {@link BufferParameters##CAP_SQUARE}.
    * The default is CAP_ROUND.
    *
    * @param endCapStyle the end cap style to specify
    */
   public void setEndCapStyle(int endCapStyle)
   {
-    this.endCapStyle = endCapStyle;
+    bufParams.setEndCapStyle(endCapStyle);
   }
 
   /**
@@ -210,7 +302,7 @@ public class BufferOp
    */
   public void setQuadrantSegments(int quadrantSegments)
   {
-    this.quadrantSegments = quadrantSegments;
+    bufParams.setQuadrantSegments(quadrantSegments);
   }
 
   /**
@@ -246,6 +338,7 @@ public class BufferOp
         bufferReducedPrecision(precDigits);
       }
       catch (TopologyException ex) {
+      	// update the saved exception to reflect the new input geometry
         saveException = ex;
         // don't propagate the exception - it will be detected by fact that resultGeometry is null
       }
@@ -260,16 +353,14 @@ public class BufferOp
   {
     try {
       // use fast noding by default
-      BufferBuilder bufBuilder = new BufferBuilder();
-      bufBuilder.setQuadrantSegments(quadrantSegments);
-      bufBuilder.setEndCapStyle(endCapStyle);
+      BufferBuilder bufBuilder = new BufferBuilder(bufParams);
       resultGeometry = bufBuilder.buffer(argGeom, distance);
     }
     catch (RuntimeException ex) {
       saveException = ex;
       // don't propagate the exception - it will be detected by fact that resultGeometry is null
 
-      // testing - propagate exception
+      // testing ONLY - propagate exception
       //throw ex;
     }
   }
@@ -288,11 +379,9 @@ public class BufferOp
     Noder noder = new ScaledNoder(new MCIndexSnapRounder(new PrecisionModel(1.0)),
                                   fixedPM.getScale());
 
-    BufferBuilder bufBuilder = new BufferBuilder();
+    BufferBuilder bufBuilder = new BufferBuilder(bufParams);
     bufBuilder.setWorkingPrecisionModel(fixedPM);
     bufBuilder.setNoder(noder);
-    bufBuilder.setQuadrantSegments(quadrantSegments);
-    bufBuilder.setEndCapStyle(endCapStyle);
     // this may throw an exception, if robustness errors are encountered
     resultGeometry = bufBuilder.buffer(argGeom, distance);
   }

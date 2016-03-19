@@ -1,13 +1,46 @@
+/*
+* The JTS Topology Suite is a collection of Java classes that
+* implement the fundamental operations required to validate a given
+* geo-spatial data set to a known topological specification.
+*
+* Copyright (C) 2001 Vivid Solutions
+*
+* This library is free software; you can redistribute it and/or
+* modify it under the terms of the GNU Lesser General Public
+* License as published by the Free Software Foundation; either
+* version 2.1 of the License, or (at your option) any later version.
+*
+* This library is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with this library; if not, write to the Free Software
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*
+* For more information, contact:
+*
+*     Vivid Solutions
+*     Suite #1A
+*     2328 Government Street
+*     Victoria BC  V8T 5G5
+*     Canada
+*
+*     (250)385-6040
+*     www.vividsolutions.com
+*/
+
 package org.meteoinfo.jts.noding.snapround;
 
-import java.util.*;
-import org.meteoinfo.jts.geom.*;
-import org.meteoinfo.jts.noding.*;
-import org.meteoinfo.jts.algorithm.LineIntersector;
-import org.meteoinfo.jts.index.chain.*;
-import org.meteoinfo.jts.index.*;
+import org.meteoinfo.jts.geom.Envelope;
+import org.meteoinfo.jts.index.ItemVisitor;
+import org.meteoinfo.jts.index.SpatialIndex;
+import org.meteoinfo.jts.index.chain.MonotoneChain;
+import org.meteoinfo.jts.index.chain.MonotoneChainSelectAction;
 import org.meteoinfo.jts.index.strtree.STRtree;
-import org.meteoinfo.jts.index.quadtree.Quadtree;
+import org.meteoinfo.jts.noding.NodedSegmentString;
+import org.meteoinfo.jts.noding.SegmentString;
 
 /**
  * "Snaps" all {@link SegmentString}s in a {@link SpatialIndex} containing
@@ -17,13 +50,11 @@ import org.meteoinfo.jts.index.quadtree.Quadtree;
  */
 public class MCIndexPointSnapper
 {
-  public static int nSnaps = 0;
+  //public static final int nSnaps = 0;
 
-  private Collection monoChains;
   private STRtree index;
 
-  public MCIndexPointSnapper(Collection monoChains, SpatialIndex index) {
-    this.monoChains = monoChains;
+  public MCIndexPointSnapper(SpatialIndex index) {
     this.index = (STRtree) index;
   }
 
@@ -35,13 +66,13 @@ public class MCIndexPointSnapper
    *
    * @param hotPixel the hot pixel to snap to
    * @param parentEdge the edge containing the vertex, if applicable, or <code>null</code>
-   * @param vertexIndex the index of the vertex, if applicable, or -1
+   * @param hotPixelVertexIndex the index of the hotPixel vertex, if applicable, or -1
    * @return <code>true</code> if a node was added for this pixel
    */
-  public boolean snap(HotPixel hotPixel, SegmentString parentEdge, int vertexIndex)
+  public boolean snap(HotPixel hotPixel, SegmentString parentEdge, int hotPixelVertexIndex)
   {
     final Envelope pixelEnv = hotPixel.getSafeEnvelope();
-    final HotPixelSnapAction hotPixelSnapAction = new HotPixelSnapAction(hotPixel, parentEdge, vertexIndex);
+    final HotPixelSnapAction hotPixelSnapAction = new HotPixelSnapAction(hotPixel, parentEdge, hotPixelVertexIndex);
 
     index.query(pixelEnv, new ItemVisitor() {
       public void visitItem(Object item) {
@@ -63,27 +94,39 @@ public class MCIndexPointSnapper
   {
     private HotPixel hotPixel;
     private SegmentString parentEdge;
-    private int vertexIndex;
+    // is -1 if hotPixel is not a vertex
+    private int hotPixelVertexIndex;
     private boolean isNodeAdded = false;
 
-    public HotPixelSnapAction(HotPixel hotPixel, SegmentString parentEdge, int vertexIndex)
+    public HotPixelSnapAction(HotPixel hotPixel, SegmentString parentEdge, int hotPixelVertexIndex)
     {
       this.hotPixel = hotPixel;
       this.parentEdge = parentEdge;
-      this.vertexIndex = vertexIndex;
+      this.hotPixelVertexIndex = hotPixelVertexIndex;
     }
 
     public boolean isNodeAdded() { return isNodeAdded; }
 
     public void select(MonotoneChain mc, int startIndex)
     {
-      SegmentString ss = (SegmentString) mc.getContext();
-      // don't snap a vertex to itself
+    	NodedSegmentString ss = (NodedSegmentString) mc.getContext();
+      /**
+       * Check to avoid snapping a hotPixel vertex to the same vertex.
+       * This method is called for segments which intersects the 
+       * hot pixel,
+       * so need to check if either end of the segment is equal to the hot pixel
+       * and if so, do not snap.
+       * 
+       * Sep 22 2012 - MD - currently do need to snap to every vertex,
+       * since otherwise the testCollapse1 test in SnapRoundingTest fails.
+       */
       if (parentEdge != null) {
-        if (ss == parentEdge && startIndex == vertexIndex)
+        if (ss == parentEdge && 
+            (startIndex == hotPixelVertexIndex
+                ))
           return;
       }
-      isNodeAdded = SimpleSnapRounder.addSnappedNode(hotPixel, ss, startIndex);
+      isNodeAdded = hotPixel.addSnappedNode(ss, startIndex);
     }
 
   }

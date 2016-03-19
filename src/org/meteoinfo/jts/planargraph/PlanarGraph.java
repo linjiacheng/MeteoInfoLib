@@ -69,7 +69,7 @@ public abstract class PlanarGraph
    *
    * @param pt the location to query
    * @return the node found
-   * @return <code>null</code> if this graph contains no node at the location
+   * or <code>null</code> if this graph contains no node at the location
    */
   public Node findNode(Coordinate pt)
   {
@@ -79,7 +79,8 @@ public abstract class PlanarGraph
   /**
    * Adds a node to the map, replacing any that is already at that location.
    * Only subclasses can add Nodes, to ensure Nodes are of the right type.
-   * @return the added node
+   * 
+   * @param node the node to add
    */
   protected void add(Node node)
   {
@@ -176,16 +177,16 @@ public abstract class PlanarGraph
   }
 
   /**
-   * Removes DirectedEdge from its from-Node and from this PlanarGraph.
-   * This method does not remove the Nodes associated with the DirectedEdge,
-   * even if the removal of the DirectedEdge reduces the degree of a Node to
-   * zero.
+   * Removes a {@link DirectedEdge} from its from-{@link Node} and from this graph.
+   * This method does not remove the {@link Node}s associated with the DirectedEdge,
+   * even if the removal of the DirectedEdge reduces the degree of a Node to zero.
    */
   public void remove(DirectedEdge de)
   {
     DirectedEdge sym = de.getSym();
     if (sym != null) sym.setSym(null);
-    de.getFromNode().getOutEdges().remove(de);
+    
+    de.getFromNode().remove(de);
     de.remove();
     dirEdges.remove(de);
   }

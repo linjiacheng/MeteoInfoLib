@@ -41,42 +41,53 @@ import org.meteoinfo.jts.geom.Geometry;
 import org.meteoinfo.jts.geom.GeometryComponentFilter;
 import org.meteoinfo.jts.geom.GeometryFactory;
 import org.meteoinfo.jts.geom.LineString;
+import org.meteoinfo.jts.planargraph.GraphComponent;
 import org.meteoinfo.jts.planargraph.Node;
 import org.meteoinfo.jts.util.Assert;
 
 /**
- * Sews together a set of fully noded LineStrings. Sewing stops at nodes of degree 1
- * or 3 or more -- the exception is an isolated loop, which only has degree-2 nodes,
- * in which case a node is simply chosen as a starting point. The direction of each
+ * Merges a collection of linear components to form maximal-length linestrings. 
+ * <p> 
+ * Merging stops at nodes of degree 1 or degree 3 or more.
+ * In other words, all nodes of degree 2 are merged together. 
+ * The exception is in the case of an isolated loop, which only has degree-2 nodes.
+ * In this case one of the nodes is chosen as a starting point.
+ * <p> 
+ * The direction of each
  * merged LineString will be that of the majority of the LineStrings from which it
  * was derived.
  * <p>
- * Any dimension of Geometry is handled -- the constituent linework is extracted to 
+ * Any dimension of Geometry is handled - the constituent linework is extracted to 
  * form the edges. The edges must be correctly noded; that is, they must only meet
- * at their endpoints.  The LineMerger will still run on incorrectly noded input
- * but will not form polygons from incorrected noded edges.
+ * at their endpoints.  The LineMerger will accept non-noded input
+ * but will not merge non-noded edges.
+ * <p>
+ * Input lines which are empty or contain only a single unique coordinate are not included
+ * in the merging.
  *
  * @version 1.7
  */
-public class LineMerger {
-  /**
-   * Adds a collection of Geometries to be processed. May be called multiple times.
-   * Any dimension of Geometry may be added; the constituent linework will be
-   * extracted.
-   */
-  public void add(Collection geometries) {
-    for (Iterator i = geometries.iterator(); i.hasNext(); ) {
-      Geometry geometry = (Geometry) i.next();
-      add(geometry);
-    }
-  }
+public class LineMerger 
+{
   private LineMergeGraph graph = new LineMergeGraph();
   private Collection mergedLineStrings = null;
   private GeometryFactory factory = null;
+  
+  /**
+   * Creates a new line merger.
+   *
+   */
+  public LineMerger()
+  {
+  	
+  }
+  
   /**
    * Adds a Geometry to be processed. May be called multiple times.
    * Any dimension of Geometry may be added; the constituent linework will be
    * extracted.
+   * 
+   * @param geometry geometry to be line-merged
    */  
   public void add(Geometry geometry) {
     geometry.apply(new GeometryComponentFilter() {
@@ -87,15 +98,38 @@ public class LineMerger {
       }      
     });
   }
+  /**
+   * Adds a collection of Geometries to be processed. May be called multiple times.
+   * Any dimension of Geometry may be added; the constituent linework will be
+   * extracted.
+   * 
+   * @param geometries the geometries to be line-merged
+   */
+  public void add(Collection geometries) 
+  {
+  	mergedLineStrings = null;
+    for (Iterator i = geometries.iterator(); i.hasNext(); ) {
+      Geometry geometry = (Geometry) i.next();
+      add(geometry);
+    }
+  }
   private void add(LineString lineString) {
     if (factory == null) {
       this.factory = lineString.getFactory();
     }
     graph.addEdge(lineString);
   }
+  
   private Collection edgeStrings = null;
-  private void merge() {
+  
+  private void merge() 
+  {
     if (mergedLineStrings != null) { return; }
+    
+    // reset marks (this allows incremental processing)
+    GraphComponent.setMarked(graph.nodeIterator(), false);
+    GraphComponent.setMarked(graph.edgeIterator(), false);
+    
     edgeStrings = new ArrayList();
     buildEdgeStringsForObviousStartNodes();
     buildEdgeStringsForIsolatedLoops();
@@ -105,12 +139,15 @@ public class LineMerger {
       mergedLineStrings.add(edgeString.toLineString());
     }    
   }
+  
   private void buildEdgeStringsForObviousStartNodes() {
     buildEdgeStringsForNonDegree2Nodes();
   }
+  
   private void buildEdgeStringsForIsolatedLoops() {
     buildEdgeStringsForUnprocessedNodes();
   }  
+  
   private void buildEdgeStringsForUnprocessedNodes() {
     for (Iterator i = graph.getNodes().iterator(); i.hasNext(); ) {
       Node node = (Node) i.next();
@@ -137,6 +174,7 @@ public class LineMerger {
       edgeStrings.add(buildEdgeStringStartingWith(directedEdge));
     }
   }
+  
   private EdgeString buildEdgeStringStartingWith(LineMergeDirectedEdge start) {    
     EdgeString edgeString = new EdgeString(factory);
     LineMergeDirectedEdge current = start;
@@ -147,8 +185,11 @@ public class LineMerger {
     } while (current != null && current != start);
     return edgeString;
   }
+  
   /**
-   * Returns the LineStrings built by the merging process.
+   * Gets the {@link LineString}s created by the merging process.
+   * 
+   * @return the collection of merged LineStrings
    */
   public Collection getMergedLineStrings() {
     merge();

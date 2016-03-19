@@ -1,3 +1,35 @@
+/*
+* The JTS Topology Suite is a collection of Java classes that
+* implement the fundamental operations required to validate a given
+* geo-spatial data set to a known topological specification.
+*
+* Copyright (C) 2001 Vivid Solutions
+*
+* This library is free software; you can redistribute it and/or
+* modify it under the terms of the GNU Lesser General Public
+* License as published by the Free Software Foundation; either
+* version 2.1 of the License, or (at your option) any later version.
+*
+* This library is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with this library; if not, write to the Free Software
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*
+* For more information, contact:
+*
+*     Vivid Solutions
+*     Suite #1A
+*     2328 Government Street
+*     Victoria BC  V8T 5G5
+*     Canada
+*
+*     (250)385-6040
+*     www.vividsolutions.com
+*/
 package org.meteoinfo.jts.geom.impl;
 
 import org.meteoinfo.jts.geom.*;
@@ -61,6 +93,7 @@ public abstract class PackedCoordinateSequence
   public void getCoordinate(int i, Coordinate coord) {
     coord.x = getOrdinate(i, 0);
     coord.y = getOrdinate(i, 1);
+    if (dimension > 2) coord.z = getOrdinate(i, 2);
   }
 
   /**
@@ -140,6 +173,11 @@ public abstract class PackedCoordinateSequence
   public void setY(int index, double value) {
     coordRef = null;
     setOrdinate(index, 1, value);
+  }
+
+  public String toString()
+  {
+    return CoordinateSequences.toString(this);
   }
 
   /**
@@ -257,10 +295,20 @@ public abstract class PackedCoordinateSequence
     public Coordinate getCoordinateInternal(int i) {
       double x = coords[i * dimension];
       double y = coords[i * dimension + 1];
-      double z = dimension == 2 ? 0.0 : coords[i * dimension + 2];
+      double z = dimension == 2 ? Coordinate.NULL_ORDINATE : coords[i * dimension + 2];
       return new Coordinate(x, y, z);
     }
 
+    /**
+     * Gets the underlying array containing the coordinate values.
+     * 
+     * @return the array of coordinate values
+     */
+    public double[] getRawCoordinates()
+    {
+      return coords;
+    }
+    
     /**
      * @see org.meteoinfo.jts.geom.CoordinateSequence#size()
      */
@@ -383,10 +431,20 @@ public abstract class PackedCoordinateSequence
     public Coordinate getCoordinateInternal(int i) {
       double x = coords[i * dimension];
       double y = coords[i * dimension + 1];
-      double z = dimension == 2 ? 0.0 : coords[i * dimension + 2];
+      double z = dimension == 2 ? Coordinate.NULL_ORDINATE : coords[i * dimension + 2];
       return new Coordinate(x, y, z);
     }
 
+    /**
+     * Gets the underlying array containing the coordinate values.
+     * 
+     * @return the array of coordinate values
+     */
+    public float[] getRawCoordinates()
+    {
+      return coords;
+    }
+    
     /**
      * @see org.meteoinfo.jts.geom.CoordinateSequence#size()
      */
@@ -405,9 +463,9 @@ public abstract class PackedCoordinateSequence
 
     /**
      * @see org.meteoinfo.jts.geom.CoordinateSequence#getOrdinate(int, int)
-     *      Beware, for performace reasons the ordinate index is not checked, if
-     *      it's over dimensions you may not get an exception but a meaningless
-     *      value.
+     *      For performance reasons the ordinate index is not checked.
+     *      If it is larger than the dimension a meaningless
+     *      value may be returned.
      */
     public double getOrdinate(int index, int ordinate) {
       return coords[index * dimension + ordinate];

@@ -36,6 +36,7 @@ package org.meteoinfo.jts.operation;
 
 import java.util.*;
 import org.meteoinfo.jts.geom.*;
+import org.meteoinfo.jts.geom.util.LinearComponentExtracter;
 import org.meteoinfo.jts.geomgraph.*;
 import org.meteoinfo.jts.algorithm.*;
 import org.meteoinfo.jts.geomgraph.index.SegmentIntersector;
@@ -48,34 +49,42 @@ import org.meteoinfo.jts.geomgraph.index.SegmentIntersector;
  *    <li> A Geometry is simple if and only if the only self-intersections are at
  *    boundary points.
  * </ul>
- * This definition relies on the definition of boundary points.
- * The SFS uses the Mod-2 rule to determine which points are on the boundary of
- * lineal geometries, but this class supports
- * using other {@link BoundaryNodeRule}s as well.
  * <p>
- * Simplicity is defined for each {@link Geometry} subclass as follows:
+ * Simplicity is defined for each {@link Geometry} type as follows:
  * <ul>
- * <li>Valid polygonal geometries are simple by definition, so
+ * <li><b>Polygonal</b> geometries are simple by definition, so
  * <code>isSimple</code> trivially returns true.
- * (Hint: in order to check if a polygonal geometry has self-intersections,
- * use {@link Geometry#isValid}).
- * <li>Linear geometries are simple iff they do not self-intersect at points
- * other than boundary points. 
- * (Using the Mod-2 rule, this means that closed linestrings
- * cannot be touched at their endpoints, since these are
- * interior points, not boundary points).
- * <li>Zero-dimensional geometries (points) are simple iff they have no
+ * (Note: this means that <tt>isSimple</tt> cannot be used to test 
+ * for (invalid) self-intersections in <tt>Polygon</tt>s.  
+ * In order to check if a <tt>Polygonal</tt> geometry has self-intersections,
+ * use {@link Geometry#isValid()}).
+ * <li><b>Linear</b> geometries are simple iff they do <i>not</i> self-intersect at interior points
+ * (i.e. points other than boundary points).
+ * This is equivalent to saying that no two linear components satisfy the SFS {@link Geometry#touches(Geometry)}
+ * predicate. 
+ * <li><b>Zero-dimensional (point)</b> geometries are simple if and only if they have no
  * repeated points.
- * <li>Empty <code>Geometry</code>s are always simple
+ * <li><b>Empty</b> geometries are <i>always</i> simple, by definition
  * </ul>
- *
+ * For {@link Lineal} geometries the evaluation of simplicity  
+ * can be customized by supplying a {@link BoundaryNodeRule} 
+ * to define how boundary points are determined.
+ * The default is the SFS-standard {@link BoundaryNodeRule#MOD2_BOUNDARY_RULE}.
+ * Note that under the <tt>Mod-2</tt> rule, closed <tt>LineString</tt>s (rings)
+ * will never satisfy the <tt>touches</tt> predicate at their endpoints, since these are
+ * interior points, not boundary points. 
+ * If it is required to test whether a set of <code>LineString</code>s touch
+ * only at their endpoints, use <code>IsSimpleOp</code> with {@link BoundaryNodeRule#ENDPOINT_BOUNDARY_RULE}.
+ * For example, this can be used to validate that a set of lines form a topologically valid
+ * linear network.
+ * 
  * @see BoundaryNodeRule
  *
  * @version 1.7
  */
 public class IsSimpleOp
 {
-  private Geometry geom;
+  private Geometry inputGeom;
   private boolean isClosedEndpointsInInterior = true;
   private Coordinate nonSimpleLocation = null;
 
@@ -93,7 +102,7 @@ public class IsSimpleOp
    * @param geom the geometry to test
    */
   public IsSimpleOp(Geometry geom) {
-    this.geom = geom;
+    this.inputGeom = geom;
   }
 
   /**
@@ -104,7 +113,7 @@ public class IsSimpleOp
    */
   public IsSimpleOp(Geometry geom, BoundaryNodeRule boundaryNodeRule)
   {
-    this.geom = geom;
+    this.inputGeom = geom;
     isClosedEndpointsInInterior = ! boundaryNodeRule.isInBoundary(2);
   }
 
@@ -116,9 +125,18 @@ public class IsSimpleOp
   public boolean isSimple()
   {
     nonSimpleLocation = null;
+    return computeSimple(inputGeom);
+  }
+  
+  private boolean computeSimple(Geometry geom)
+  {
+    nonSimpleLocation = null;
+    if (geom.isEmpty()) return true;
     if (geom instanceof LineString) return isSimpleLinearGeometry(geom);
     if (geom instanceof MultiLineString) return isSimpleLinearGeometry(geom);
     if (geom instanceof MultiPoint) return isSimpleMultiPoint((MultiPoint) geom);
+    if (geom instanceof Polygonal) return isSimplePolygonal(geom);
+    if (geom instanceof GeometryCollection) return isSimpleGeometryCollection(geom);
     // all other geometry types are simple by definition
     return true;
   }
@@ -130,7 +148,7 @@ public class IsSimpleOp
    * {@link #isSimple} must be called before this method is called.
    *
    * @return a coordinate for the location of the non-boundary self-intersection
-   * @return null if the geometry is simple
+   * or null if the geometry is simple
    */
   public Coordinate getNonSimpleLocation()
   {
@@ -186,6 +204,42 @@ public class IsSimpleOp
     return true;
   }
 
+  /**
+   * Computes simplicity for polygonal geometries.
+   * Polygonal geometries are simple if and only if
+   * all of their component rings are simple.
+   * 
+   * @param geom a Polygonal geometry
+   * @return true if the geometry is simple
+   */
+  private boolean isSimplePolygonal(Geometry geom)
+  {
+    List rings = LinearComponentExtracter.getLines(geom);
+    for (Iterator i = rings.iterator(); i.hasNext(); ) {
+      LinearRing ring = (LinearRing) i.next();
+      if (! isSimpleLinearGeometry(ring))
+        return false;
+    }
+    return true;
+  }
+  
+  /**
+   * Semantics for GeometryCollection is 
+   * simple iff all components are simple.
+   * 
+   * @param geom
+   * @return true if the geometry is simple
+   */
+  private boolean isSimpleGeometryCollection(Geometry geom)
+  {
+    for (int i = 0; i < geom.getNumGeometries(); i++ ) {
+      Geometry comp = geom.getGeometryN(i);
+      if (! computeSimple(comp))
+        return false;
+    }
+    return true;
+  }
+  
   private boolean isSimpleLinearGeometry(Geometry geom)
   {
     if (geom.isEmpty()) return true;

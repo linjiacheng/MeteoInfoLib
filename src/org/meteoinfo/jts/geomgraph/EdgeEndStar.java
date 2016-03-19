@@ -39,6 +39,7 @@ import java.io.PrintStream;
 import java.util.*;
 import org.meteoinfo.jts.geom.*;
 import org.meteoinfo.jts.algorithm.*;
+import org.meteoinfo.jts.algorithm.locate.SimplePointInAreaLocator;
 import org.meteoinfo.jts.util.*;
 
 /**
@@ -209,7 +210,8 @@ abstract public class EdgeEndStar
       ee.computeLabel(boundaryNodeRule);
     }
   }
-  int getLocation(int geomIndex, Coordinate p, GeometryGraph[] geom)
+  
+  private int getLocation(int geomIndex, Coordinate p, GeometryGraph[] geom)
   {
     // compute location only on demand
     if (ptInAreaLocation[geomIndex] == Location.NONE) {
@@ -267,6 +269,7 @@ abstract public class EdgeEndStar
     // Since edges are stored in CCW order around the node,
     // As we move around the ring we move from the right to the left side of the edge
     int startLoc = Location.NONE ;
+    
     // initialize loc to location of last L side (if any)
 //System.out.println("finding start location");
     for (Iterator it = iterator(); it.hasNext(); ) {
@@ -275,6 +278,7 @@ abstract public class EdgeEndStar
       if (label.isArea(geomIndex) && label.getLocation(geomIndex, Position.LEFT) != Location.NONE)
         startLoc = label.getLocation(geomIndex, Position.LEFT);
     }
+    
     // no labelled sides found, so no labels to propagate
     if (startLoc == Location.NONE) return;
 
@@ -286,7 +290,6 @@ abstract public class EdgeEndStar
       if (label.getLocation(geomIndex, Position.ON) == Location.NONE)
           label.setLocation(geomIndex, Position.ON, currLoc);
       // set side labels (if any)
-     // if (label.isArea()) {   //ORIGINAL
       if (label.isArea(geomIndex)) {
         int leftLoc   = label.getLocation(geomIndex, Position.LEFT);
         int rightLoc  = label.getLocation(geomIndex, Position.RIGHT);
@@ -332,5 +335,18 @@ abstract public class EdgeEndStar
       EdgeEnd e = (EdgeEnd) it.next();
       e.print(out);
     }
+  }
+  
+  public String toString()
+  {
+    StringBuffer buf = new StringBuffer();
+    buf.append("EdgeEndStar:   " + getCoordinate());
+    buf.append("\n");
+    for (Iterator it = iterator(); it.hasNext(); ) {
+      EdgeEnd e = (EdgeEnd) it.next();
+      buf.append(e);
+      buf.append("\n");
+    }
+    return buf.toString();
   }
 }

@@ -1051,10 +1051,10 @@ public class StationData {
                 nsData.addData(this.getStid(i), x, y, this.getValue(i));
             } catch (Exception e) {
                 i++;
-                continue;
             }
         }
 
+        nsData.projInfo = toProj;
         return nsData;
     }
     // </editor-fold>    

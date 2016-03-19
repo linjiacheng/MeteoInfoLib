@@ -39,11 +39,11 @@ import org.meteoinfo.jts.index.strtree.*;
 import java.util.*;
 
 /**
- * Nodes a set of {@link SegmentStrings} using a index based
+ * Nodes a set of {@link SegmentString}s using a index based
  * on {@link MonotoneChain}s and a {@link SpatialIndex}.
  * The {@link SpatialIndex} used should be something that supports
- * envelope (range) queries efficiently (such as a {@link Quadtree}
- * or {@link STRtree}.
+ * envelope (range) queries efficiently (such as a <code>Quadtree</code>}
+ * or {@link STRtree} (which is the default index provided).
  *
  * @version 1.7
  */
@@ -60,6 +60,10 @@ public class MCIndexNoder
   public MCIndexNoder()
   {
   }
+  public MCIndexNoder(SegmentIntersector si)
+  {
+    super(si);
+  }
 
   public List getMonotoneChains() { return monoChains; }
 
@@ -67,7 +71,7 @@ public class MCIndexNoder
 
   public Collection getNodedSubstrings()
   {
-    return  SegmentString.getNodedSubstrings(nodedSegStrings);
+    return  NodedSegmentString.getNodedSubstrings(nodedSegStrings);
   }
 
   public void computeNodes(Collection inputSegStrings)
@@ -97,6 +101,9 @@ public class MCIndexNoder
           queryChain.computeOverlaps(testChain, overlapAction);
           nOverlaps++;
         }
+        // short-circuit if possible
+        if (segInt.isDone())
+        	return;
       }
     }
   }

@@ -38,13 +38,14 @@ import org.meteoinfo.jts.geom.*;
 import java.util.*;
 
 /**
- * Nodes a set of SegmentStrings completely.
- * The set of segmentStrings is fully noded;
+ * Nodes a set of {@link NodedSegmentString}s completely.
+ * The set of segment strings is fully noded;
  * i.e. noding is repeated until no further
  * intersections are detected.
  * <p>
  * Iterated noding using a FLOATING precision model is not guaranteed to converge,
- * due to roundoff error.   This problem is detected and an exception is thrown.
+ * due to roundoff error.   
+ * This problem is detected and an exception is thrown.
  * Clients can choose to rerun the noding using a lower precision model.
  *
  * @version 1.7
@@ -83,13 +84,12 @@ public class IteratedNoder
   public Collection getNodedSubstrings()  {    return nodedSegStrings;  }
 
   /**
-   * Fully nodes a list of {@link SegmentStrings}, i.e. peforms noding iteratively
+   * Fully nodes a list of {@link SegmentString}s, i.e. peforms noding iteratively
    * until no intersections are found between segments.
    * Maintains labelling of edges correctly through
    * the noding.
    *
    * @param segStrings a collection of SegmentStrings to be noded
-   * @return a collection of the noded SegmentStrings
    * @throws TopologyException if the iterated noding fails to converge.
    */
   public void computeNodes(Collection segStrings)

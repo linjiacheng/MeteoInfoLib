@@ -64,10 +64,9 @@ class DefaultCoordinateSequence
   }
 
   /**
-   * Constructs a DefaultCoordinateSequence based on the given array (the
-   * array is not copied).
+   * Creates a new sequence based on a deep copy of the given {@link CoordinateSequence}.
    *
-   * @param coordinates the coordinate array that will be referenced.
+   * @param coordSeq the coordinate sequence that will be copied.
    */
   public DefaultCoordinateSequence(CoordinateSequence coordSeq) {
     coordinates = new Coordinate[coordSeq.size()];
@@ -154,9 +153,9 @@ class DefaultCoordinateSequence
   public void setOrdinate(int index, int ordinateIndex, double value)
   {
     switch (ordinateIndex) {
-      case CoordinateSequence.X:  coordinates[index].x = value;
-      case CoordinateSequence.Y:  coordinates[index].y = value;
-      case CoordinateSequence.Z:  coordinates[index].z = value;
+      case CoordinateSequence.X:  coordinates[index].x = value; break;
+      case CoordinateSequence.Y:  coordinates[index].y = value; break;
+      case CoordinateSequence.Z:  coordinates[index].z = value; break;
     }
   }
   /**

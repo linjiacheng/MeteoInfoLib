@@ -34,9 +34,6 @@
  */
 package org.meteoinfo.jts.operation;
 
-import java.io.PrintStream;
-import java.util.*;
-import org.meteoinfo.jts.util.*;
 import org.meteoinfo.jts.algorithm.*;
 import org.meteoinfo.jts.geom.*;
 import org.meteoinfo.jts.geomgraph.GeometryGraph;
@@ -48,7 +45,6 @@ import org.meteoinfo.jts.geomgraph.GeometryGraph;
  */
 public class GeometryGraphOperation
 {
-  protected final CGAlgorithms cga = new CGAlgorithms();
   protected final LineIntersector li = new RobustLineIntersector();
   protected PrecisionModel resultPrecisionModel;
 

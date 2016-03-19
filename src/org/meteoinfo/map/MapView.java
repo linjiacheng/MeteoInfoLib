@@ -1,4 +1,4 @@
- /* Copyright 2012 Yaqiang Wang,
+/* Copyright 2012 Yaqiang Wang,
  * yaqiang.wang@gmail.com
  * 
  * This library is free software; you can redistribute it and/or modify it
@@ -1397,6 +1397,9 @@ public class MapView extends JPanel {
                         }
                     }
                     break;
+                case Edit_AddRing:
+                case Edit_FillRing:
+                case Edit_SplitFeature:
                 case New_Polyline:
                 case New_Polygon:
                 case New_Curve:
@@ -1740,6 +1743,9 @@ public class MapView extends JPanel {
                 }
                 break;
             case Edit_NewFeature:
+            case Edit_AddRing:
+            case Edit_FillRing:
+            case Edit_SplitFeature:
                 VectorLayer selLayer = (VectorLayer) this.getSelectedLayer();
                 if (!selLayer.getShapeType().isPoint()) {
                     if (!_startNewGraphic) {
@@ -1768,14 +1774,12 @@ public class MapView extends JPanel {
                         if (_editingVerticeIndex >= 0) {
                             Image image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/resources/VertexEdit_32x32x32.png"));
                             this.setCursor(toolkit.createCustomCursor(image, new Point(8, 8), "Vertices edit"));
+                        } else if (this.isOnRing(new Point(e.getX(), e.getY()), eShape) >= 0) {
+                            Image image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/resources/insert_vertice.png"));
+                            this.setCursor(toolkit.createCustomCursor(image, new Point(8, 8), "Insert Vertice"));
                         } else {
-                            if (this.isOnRing(new Point(e.getX(), e.getY()), eShape) >= 0) {
-                                Image image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/resources/insert_vertice.png"));
-                                this.setCursor(toolkit.createCustomCursor(image, new Point(8, 8), "Insert Vertice"));
-                            } else {
-                                Image image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/resources/Edit_tool.png"));
-                                this.setCursor(toolkit.createCustomCursor(image, new Point(2, 2), "Edit Tool"));
-                            }
+                            Image image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/resources/Edit_tool.png"));
+                            this.setCursor(toolkit.createCustomCursor(image, new Point(2, 2), "Edit Tool"));
                         }
                     }
                 }
@@ -1789,13 +1793,11 @@ public class MapView extends JPanel {
                     if (_editingVerticeIndex >= 0) {
                         Image image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/resources/VertexEdit_32x32x32.png"));
                         this.setCursor(toolkit.createCustomCursor(image, new Point(8, 8), "Vertices edit"));
+                    } else if (this.isOnRing(new Point(e.getX(), e.getY()), eShape) >= 0) {
+                        Image image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/resources/insert_vertice.png"));
+                        this.setCursor(toolkit.createCustomCursor(image, new Point(8, 8), "Insert Vertice"));
                     } else {
-                        if (this.isOnRing(new Point(e.getX(), e.getY()), eShape) >= 0) {
-                            Image image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/resources/insert_vertice.png"));
-                            this.setCursor(toolkit.createCustomCursor(image, new Point(8, 8), "Insert Vertice"));
-                        } else {
-                            this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                        }
+                        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     }
                 }
                 break;
@@ -1956,6 +1958,7 @@ public class MapView extends JPanel {
 
                     VectorLayer aLayer = (VectorLayer) aMLayer;
                     Rectangle.Float rect;
+                    boolean isPointSel = false;
                     if (Math.abs(e.getX() - _mouseDownPoint.x) > 5 || Math.abs(e.getY() - _mouseDownPoint.y) > 5) {
                         int minx = Math.min(_mouseDownPoint.x, e.getX());
                         int miny = Math.min(_mouseDownPoint.y, e.getY());
@@ -1969,15 +1972,21 @@ public class MapView extends JPanel {
                         float width = b * 2;
                         float height = b * 2;
                         rect = new Rectangle.Float(minx, miny, width, height);
+                        isPointSel = true;
                     }
                     List<Integer> selectedShapes = selectShapes(aLayer, rect);
                     if (!(e.isControlDown() || e.isShiftDown())) {
                         aLayer.clearSelectedShapes();
                     }
                     if (selectedShapes.size() > 0) {
-                        for (int shapeIdx : selectedShapes) {
-                            Shape shape = aLayer.getShapes().get(shapeIdx);
+                        if (isPointSel) {
+                            Shape shape = aLayer.getShapes().get(selectedShapes.get(selectedShapes.size() - 1));
                             shape.setSelected(!shape.isSelected());
+                        } else {
+                            for (int shapeIdx : selectedShapes) {
+                                Shape shape = aLayer.getShapes().get(shapeIdx);
+                                shape.setSelected(!shape.isSelected());
+                            }
                         }
                     } else {
                         this.paintLayers();
@@ -2099,86 +2108,84 @@ public class MapView extends JPanel {
             case MoveSelection:
                 if (_mouseDoubleClicked) {
                     _mouseDoubleClicked = false;
-                } else {
-                    if (_selectedGraphics.size() > 0) {
-                        if (Math.abs(e.getX() - _mouseDownPoint.x) < 2 && Math.abs(e.getY() - _mouseDownPoint.y) < 2) {
-                            Graphic aGraphic = _selectedGraphics.get(0);
-                            PointF mousePoint = new PointF(_mouseDownPoint.x, _mouseDownPoint.y);
-                            double lonShift = 0;
-                            GraphicCollection tempGraphics = new GraphicCollection();
-                            selectGraphics(mousePoint, tempGraphics, lonShift);
-                            if (e.isControlDown() || e.isShiftDown()) {
-                                if (tempGraphics.size() > 0) {
-                                    aGraphic = tempGraphics.get(0);
-                                    aGraphic.getShape().setSelected(!aGraphic.getShape().isSelected());
-                                    if (aGraphic.getShape().isSelected()) {
-                                        _selectedGraphics.add(aGraphic);
-                                    } else {
-                                        _selectedGraphics.remove(aGraphic);
-                                    }
-                                }
-                            } else {
-                                if (tempGraphics.size() > 1) {
-                                    aGraphic.getShape().setSelected(false);
-                                    int idx = tempGraphics.indexOf(aGraphic);
-                                    if (idx == 0) {
-                                        idx = tempGraphics.size() - 1;
-                                    } else {
-                                        idx -= 1;
-                                    }
-                                    aGraphic = tempGraphics.get(idx);
-                                    _selectedGraphics.clear();
+                } else if (_selectedGraphics.size() > 0) {
+                    if (Math.abs(e.getX() - _mouseDownPoint.x) < 2 && Math.abs(e.getY() - _mouseDownPoint.y) < 2) {
+                        Graphic aGraphic = _selectedGraphics.get(0);
+                        PointF mousePoint = new PointF(_mouseDownPoint.x, _mouseDownPoint.y);
+                        double lonShift = 0;
+                        GraphicCollection tempGraphics = new GraphicCollection();
+                        selectGraphics(mousePoint, tempGraphics, lonShift);
+                        if (e.isControlDown() || e.isShiftDown()) {
+                            if (tempGraphics.size() > 0) {
+                                aGraphic = tempGraphics.get(0);
+                                aGraphic.getShape().setSelected(!aGraphic.getShape().isSelected());
+                                if (aGraphic.getShape().isSelected()) {
                                     _selectedGraphics.add(aGraphic);
-                                    _selectedGraphics.get(0).getShape().setSelected(true);
-
-                                    //Show symbol form
-                                    switch (aGraphic.getLegend().getBreakType()) {
-                                        case PointBreak:
-                                            if (_frmPointSymbolSet != null) {
-                                                if (_frmPointSymbolSet.isVisible()) {
-                                                    _frmPointSymbolSet.setPointBreak((PointBreak) aGraphic.getLegend());
-                                                }
-                                            }
-                                            break;
-                                        case LabelBreak:
-                                            if (_frmLabelSymbolSet != null) {
-                                                if (_frmLabelSymbolSet.isVisible()) {
-                                                    _frmLabelSymbolSet.setLabelBreak((LabelBreak) aGraphic.getLegend());
-                                                }
-                                            }
-                                            break;
-                                        case PolylineBreak:
-                                            if (_frmPolylineSymbolSet != null) {
-                                                if (_frmPolylineSymbolSet.isVisible()) {
-                                                    _frmPolylineSymbolSet.setPolylineBreak((PolylineBreak) aGraphic.getLegend());
-                                                }
-                                            }
-                                            break;
-                                        case PolygonBreak:
-                                            if (_frmPolygonSymbolSet != null) {
-                                                if (_frmPolygonSymbolSet.isVisible()) {
-                                                    _frmPolygonSymbolSet.setPolygonBreak((PolygonBreak) aGraphic.getLegend());
-                                                }
-                                            }
-                                            break;
-                                    }
+                                } else {
+                                    _selectedGraphics.remove(aGraphic);
                                 }
-                                this.fireGraphicSelectedEvent();
                             }
                         } else {
-                            Graphic aGraphic = _selectedGraphics.get(0);
-                            Shape aShape = aGraphic.getShape();
-                            moveShapeOnScreen(aShape, _mouseDownPoint, new Point(e.getX(), e.getY()));
-                            //aGraphic.setShape(aShape);
-                            UndoableEdit edit = (new MapViewUndoRedo()).new MoveGraphicEdit(this, aGraphic, _mouseDownPoint, new Point(e.getX(), e.getY()));
-                            this.fireUndoEditEvent(edit);
+                            if (tempGraphics.size() > 1) {
+                                aGraphic.getShape().setSelected(false);
+                                int idx = tempGraphics.indexOf(aGraphic);
+                                if (idx == 0) {
+                                    idx = tempGraphics.size() - 1;
+                                } else {
+                                    idx -= 1;
+                                }
+                                aGraphic = tempGraphics.get(idx);
+                                _selectedGraphics.clear();
+                                _selectedGraphics.add(aGraphic);
+                                _selectedGraphics.get(0).getShape().setSelected(true);
 
-                            _selectedGraphics.remove(aGraphic);
-                            _selectedGraphics.add(0, aGraphic);
+                                //Show symbol form
+                                switch (aGraphic.getLegend().getBreakType()) {
+                                    case PointBreak:
+                                        if (_frmPointSymbolSet != null) {
+                                            if (_frmPointSymbolSet.isVisible()) {
+                                                _frmPointSymbolSet.setPointBreak((PointBreak) aGraphic.getLegend());
+                                            }
+                                        }
+                                        break;
+                                    case LabelBreak:
+                                        if (_frmLabelSymbolSet != null) {
+                                            if (_frmLabelSymbolSet.isVisible()) {
+                                                _frmLabelSymbolSet.setLabelBreak((LabelBreak) aGraphic.getLegend());
+                                            }
+                                        }
+                                        break;
+                                    case PolylineBreak:
+                                        if (_frmPolylineSymbolSet != null) {
+                                            if (_frmPolylineSymbolSet.isVisible()) {
+                                                _frmPolylineSymbolSet.setPolylineBreak((PolylineBreak) aGraphic.getLegend());
+                                            }
+                                        }
+                                        break;
+                                    case PolygonBreak:
+                                        if (_frmPolygonSymbolSet != null) {
+                                            if (_frmPolygonSymbolSet.isVisible()) {
+                                                _frmPolygonSymbolSet.setPolygonBreak((PolygonBreak) aGraphic.getLegend());
+                                            }
+                                        }
+                                        break;
+                                }
+                            }
+                            this.fireGraphicSelectedEvent();
                         }
+                    } else {
+                        Graphic aGraphic = _selectedGraphics.get(0);
+                        Shape aShape = aGraphic.getShape();
+                        moveShapeOnScreen(aShape, _mouseDownPoint, new Point(e.getX(), e.getY()));
+                        //aGraphic.setShape(aShape);
+                        UndoableEdit edit = (new MapViewUndoRedo()).new MoveGraphicEdit(this, aGraphic, _mouseDownPoint, new Point(e.getX(), e.getY()));
+                        this.fireUndoEditEvent(edit);
 
-                        paintLayers();
+                        _selectedGraphics.remove(aGraphic);
+                        _selectedGraphics.add(0, aGraphic);
                     }
+
+                    paintLayers();
                 }
                 _mouseTool = MouseTools.SelectElements;
                 break;
@@ -2464,13 +2471,11 @@ public class MapView extends JPanel {
                                         value = aLayer.getCellValue(i, shapeIdx);
                                         if (value == null) {
                                             valueStr = "";
+                                        } else if (field.getDataType() == DataTypes.Date) {
+                                            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                                            valueStr = format.format((Date) value);
                                         } else {
-                                            if (field.getDataType() == DataTypes.Date) {
-                                                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-                                                valueStr = format.format((Date) value);
-                                            } else {
-                                                valueStr = value.toString();
-                                            }
+                                            valueStr = value.toString();
                                         }
                                         tData[i + 1][0] = fieldStr;
                                         tData[i + 1][1] = valueStr;
@@ -2514,45 +2519,32 @@ public class MapView extends JPanel {
                             }
                         }
                         break;
-//                    case SelectFeatures_Rectangle:
-//                        if (_selectedLayer < 0) {
-//                            return;
-//                        }
-//                        aMLayer = getLayerFromHandle(_selectedLayer);
-//                        if (aMLayer == null) {
-//                            return;
-//                        }
-//                        if (aMLayer.getLayerType() != LayerTypes.VectorLayer) {
-//                            return;
-//                        }
-//
-//                        VectorLayer aLayer = (VectorLayer) aMLayer;
-//                        if (!e.isControlDown() && !e.isShiftDown()) {
-//                            aLayer.clearSelectedShapes();
-//                        }
-//                        aPoint = new PointF(e.getX(), e.getY());
-//                        List<Integer> selectedShapes = this.selectShapes(aLayer, aPoint, true, false);
-//                        //this._mapBitmap = GlobalUtil.deepCopy(this._tempImage);
-//                        if (selectedShapes.size() > 0) {
-//                            int shapeIdx = selectedShapes.get(0);
-//                            Shape selShape = aLayer.getShapes().get(shapeIdx);
-//                            if (!e.isControlDown() && !e.isShiftDown()) {
-//                                selShape.setSelected(true);
-//                                //drawIdShape((Graphics2D) this._mapBitmap.getGraphics(), selShape);
-//                            } else {
-//                                selShape.setSelected(!selShape.isSelected());
-////                                for (int sIdx : aLayer.getSelectedShapeIndexes()) {
-////                                    drawIdShape((Graphics2D) this._mapBitmap.getGraphics(), aLayer.getShapes().get(sIdx));
-////                                }
-//                            }
-//
-//                            this.fireShapeSelectedEvent();
-//                        } else {
-//                            if (!e.isControlDown() && !e.isShiftDown()) {
-//                                this.paintLayers();
-//                            }
-//                        }
-//                        break;
+                    case Edit_DeleteRing:
+                        aMLayer = this.getLayerByHandle(_selectedLayer);
+                        if (aMLayer == null) {
+                            return;
+                        }
+                        if (aMLayer.getLayerType() != LayerTypes.VectorLayer) {
+                            return;
+                        }
+
+                        VectorLayer aLayer = (VectorLayer) aMLayer;
+                        if (aLayer.getShapeType().isPolygon()){
+                            Object[] selObj = this.selectPolygonHole(aLayer, new PointF(e.getX(), e.getY()));                            
+                            if (selObj != null){
+                                PolygonShape selShape = (PolygonShape)selObj[0];
+                                int polyIdx = (int)selObj[1];
+                                int holeIdx = (int)selObj[2];
+                                List<PointD> hole = selShape.getPolygons().get(polyIdx).getHoleLines().get(holeIdx);
+                                selShape.getPolygons().get(polyIdx).removeHole(holeIdx);                                
+                                UndoableEdit edit = (new MapViewUndoRedo()).new RemoveRingEdit(this, selShape, 
+                                    hole, polyIdx, holeIdx);
+                                aLayer.getUndoManager().addEdit(edit);
+                                this.fireUndoEditEvent(edit);
+                                this.paintLayers();
+                            }
+                        }
+                        break;
                 }
             } else if (e.getButton() == MouseEvent.BUTTON3) {
                 switch (_mouseTool) {
@@ -2836,6 +2828,73 @@ public class MapView extends JPanel {
                         }
                     }
                     break;
+                case Edit_AddRing:
+                case Edit_FillRing:
+                case Edit_SplitFeature:
+                    if (!_startNewGraphic) {
+                        _startNewGraphic = true;
+                        _graphicPoints.remove(_graphicPoints.size() - 1);
+                        List<PointD> points = new ArrayList<>();
+                        float[] pXY;
+                        for (PointF aPoint : _graphicPoints) {
+                            pXY = screenToProj(aPoint.X, aPoint.Y);
+                            points.add(new PointD(pXY[0], pXY[1]));
+                        }
+                        VectorLayer selLayer = (VectorLayer) this.getSelectedLayer();
+                        if (selLayer.getShapeType().isPolygon()) {
+                            if (points.size() >= 2) {
+                                switch (this._mouseTool) {
+                                    case Edit_AddRing:
+                                    case Edit_FillRing:
+                                        PolygonShape aPGS = new PolygonShape();
+                                        points.add((PointD) points.get(0).clone());
+                                        aPGS.setPoints(points);
+                                        PolygonShape tPGS = (PolygonShape) selLayer.findShape_contains(aPGS);
+                                        if (tPGS != null) {
+                                            int holeIdx = tPGS.addHole(points, 0);
+                                            if (this._mouseTool == MouseTools.Edit_FillRing) {
+                                                try {
+                                                    selLayer.editAddShape(aPGS);
+                                                    UndoableEdit edit = (new MapViewUndoRedo()).new FillRingEdit(this, selLayer,
+                                                            tPGS, aPGS, 0, holeIdx);
+                                                    selLayer.getUndoManager().addEdit(edit);
+                                                    this.fireUndoEditEvent(edit);
+                                                } catch (Exception ex) {
+                                                    Logger.getLogger(MapView.class.getName()).log(Level.SEVERE, null, ex);
+                                                }
+                                            } else {
+                                                UndoableEdit edit = (new MapViewUndoRedo()).new AddRingEdit(this, tPGS, points, 0, holeIdx);
+                                                selLayer.getUndoManager().addEdit(edit);
+                                                this.fireUndoEditEvent(edit);
+                                            }
+                                            this.paintLayers();
+                                        }
+                                        break;
+                                    case Edit_SplitFeature:
+                                        PolylineShape aPLS = new PolylineShape();
+                                        aPLS.setPoints(points);
+                                        tPGS = (PolygonShape) selLayer.findShape_crosses(aPLS);
+                                        if (tPGS != null) {
+                                            List<Shape> shapes = tPGS.split(aPLS);
+                                            selLayer.editRemoveShape(tPGS);
+                                            for (Shape s : shapes) {
+                                                try {
+                                                    selLayer.editAddShape(s);
+                                                } catch (Exception ex) {
+                                                    Logger.getLogger(MapView.class.getName()).log(Level.SEVERE, null, ex);
+                                                }
+                                            }
+                                            UndoableEdit edit = (new MapViewUndoRedo()).new SplitFeatureEdit(this, selLayer, tPGS, shapes);
+                                            selLayer.getUndoManager().addEdit(edit);
+                                            this.fireUndoEditEvent(edit);
+                                            this.paintLayers();
+                                        }
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                    break;
                 case New_Polyline:
                 case New_Polygon:
                 case New_Curve:
@@ -2902,15 +2961,13 @@ public class MapView extends JPanel {
                             }
                             aLayer.selectShapes(aPGS);
                             this.fireShapeSelectedEvent();
+                        } else if (aGraphic != null) {
+                            _graphicCollection.add(aGraphic);
+                            paintLayers();
+                            UndoableEdit edit = (new MapViewUndoRedo()).new AddGraphicEdit(this, aGraphic);
+                            this.fireUndoEditEvent(edit);
                         } else {
-                            if (aGraphic != null) {
-                                _graphicCollection.add(aGraphic);
-                                paintLayers();
-                                UndoableEdit edit = (new MapViewUndoRedo()).new AddGraphicEdit(this, aGraphic);
-                                this.fireUndoEditEvent(edit);
-                            } else {
-                                this.repaint();
-                            }
+                            this.repaint();
                         }
                     }
                     break;
@@ -3312,8 +3369,8 @@ public class MapView extends JPanel {
                 break;
         }
     }
-    
-     /**
+
+    /**
      * Project a layer
      *
      * @param aLayer The vector layer
@@ -3321,7 +3378,7 @@ public class MapView extends JPanel {
     private void projectLayer(MapLayer layer, boolean projectLabels) {
         switch (layer.getLayerType()) {
             case VectorLayer:
-                VectorLayer aLayer = (VectorLayer) layer;                
+                VectorLayer aLayer = (VectorLayer) layer;
                 if (!aLayer.getProjInfo().equals(_projection.getProjInfo())) {
                     _projection.projectLayer(aLayer, _projection.getProjInfo(), projectLabels);
                 }
@@ -3741,12 +3798,15 @@ public class MapView extends JPanel {
 
         switch (_mouseTool) {
             case Edit_NewFeature:
+            case Edit_AddRing:
+            case Edit_FillRing:
+            case Edit_SplitFeature:
                 VectorLayer selLayer = (VectorLayer) this.getSelectedLayer();
                 if (!_startNewGraphic) {
                     List<PointF> points = new ArrayList<>(_graphicPoints);
                     points.add(new PointF(_mouseLastPos.x, _mouseLastPos.y));
                     g.setColor(this.getForeground());
-                    if (selLayer.getShapeType().isLine()) {
+                    if (_mouseTool == MouseTools.Edit_SplitFeature || selLayer.getShapeType().isLine()) {
                         Draw.drawPolyline(points, g2);
                     } else if (selLayer.getShapeType().isPolygon()) {
                         points.add(points.get(0));
@@ -3948,7 +4008,7 @@ public class MapView extends JPanel {
         }
 
         refreshXYScale(rect.width, rect.height);
-        
+
         g.setColor(this.getBackground());
         g.fill(rect);
 
@@ -3961,8 +4021,8 @@ public class MapView extends JPanel {
         getMaskOutGraphicsPath(g);
 
         g.translate(rect.x, rect.y);
-        _maskOutGraphicsPath.transform(g.getTransform()); 
-        
+        _maskOutGraphicsPath.transform(g.getTransform());
+
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         if (_antiAlias) {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -4545,14 +4605,14 @@ public class MapView extends JPanel {
         double value;
         List<WindBarb> windBarbs = new ArrayList<>();
         int shapeIdx = 0;
-        List<Integer> idxList = new ArrayList<>();
+        //List<Integer> idxList = new ArrayList<>();
         for (Shape aShape : aLayer.getShapes()) {
             WindBarb wBarb = (WindBarb) aShape;
             aPoint = wBarb.getPoint();
             if (!(aPoint.X + LonShift < _drawExtent.minX || aPoint.X + LonShift > _drawExtent.maxX
                     || aPoint.Y < _drawExtent.minY || aPoint.Y > _drawExtent.maxY)) {
                 windBarbs.add(wBarb);
-                idxList.add(shapeIdx);
+                //idxList.add(shapeIdx);
             }
             shapeIdx += 1;
         }
@@ -4580,24 +4640,22 @@ public class MapView extends JPanel {
                         maxExtent = (Extent) aExtent.clone();
                         extentList.add((Extent) aExtent.clone());
                         Draw.drawWindBarb(aColor, sPoint, aWB, g, aPB.getSize());
+                    } else if (!MIMath.isExtentCross(aExtent, maxExtent)) {
+                        extentList.add((Extent) aExtent.clone());
+                        maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
+                        Draw.drawWindBarb(aColor, sPoint, aWB, g, aPB.getSize());
                     } else {
-                        if (!MIMath.isExtentCross(aExtent, maxExtent)) {
+                        boolean ifDraw = true;
+                        for (int i = 0; i < extentList.size(); i++) {
+                            if (MIMath.isExtentCross(aExtent, extentList.get(i))) {
+                                ifDraw = false;
+                                break;
+                            }
+                        }
+                        if (ifDraw) {
                             extentList.add((Extent) aExtent.clone());
                             maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
                             Draw.drawWindBarb(aColor, sPoint, aWB, g, aPB.getSize());
-                        } else {
-                            boolean ifDraw = true;
-                            for (int i = 0; i < extentList.size(); i++) {
-                                if (MIMath.isExtentCross(aExtent, extentList.get(i))) {
-                                    ifDraw = false;
-                                    break;
-                                }
-                            }
-                            if (ifDraw) {
-                                extentList.add((Extent) aExtent.clone());
-                                maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
-                                Draw.drawWindBarb(aColor, sPoint, aWB, g, aPB.getSize());
-                            }
                         }
                     }
                 } else {
@@ -4610,7 +4668,7 @@ public class MapView extends JPanel {
             for (WindBarb aWB : windBarbs) {
                 //value = aWB.Value;
                 String vStr = aLayer.getCellValue(aLS.getFieldName(), shapeIdx).toString().trim();
-                if (vStr.isEmpty() || vStr == null) {
+                if (vStr == null || vStr.isEmpty()) {
                     value = 0;
                 } else {
                     value = Double.parseDouble(vStr);
@@ -4640,8 +4698,27 @@ public class MapView extends JPanel {
                                 Draw.drawWindBarb(aColor, sPoint, aWB, g, bSize);
                             }
                         }
+                    } else if (!MIMath.isExtentCross(aExtent, maxExtent)) {
+                        extentList.add((Extent) aExtent.clone());
+                        maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
+                        float bSize = ((PointBreak) aLS.getLegendBreaks().get(0)).getSize();
+                        for (ColorBreak aCB : aLS.getLegendBreaks()) {
+                            PointBreak aPB = (PointBreak) aCB;
+                            if (value == Double.parseDouble(aPB.getStartValue().toString()) || (value > Double.parseDouble(aPB.getStartValue().toString())
+                                    && value < Double.parseDouble(aPB.getEndValue().toString()))) {
+                                aColor = aPB.getColor();
+                                Draw.drawWindBarb(aColor, sPoint, aWB, g, bSize);
+                            }
+                        }
                     } else {
-                        if (!MIMath.isExtentCross(aExtent, maxExtent)) {
+                        boolean ifDraw = true;
+                        for (int i = 0; i < extentList.size(); i++) {
+                            if (MIMath.isExtentCross(aExtent, extentList.get(i))) {
+                                ifDraw = false;
+                                break;
+                            }
+                        }
+                        if (ifDraw) {
                             extentList.add((Extent) aExtent.clone());
                             maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
                             float bSize = ((PointBreak) aLS.getLegendBreaks().get(0)).getSize();
@@ -4651,27 +4728,6 @@ public class MapView extends JPanel {
                                         && value < Double.parseDouble(aPB.getEndValue().toString()))) {
                                     aColor = aPB.getColor();
                                     Draw.drawWindBarb(aColor, sPoint, aWB, g, bSize);
-                                }
-                            }
-                        } else {
-                            boolean ifDraw = true;
-                            for (int i = 0; i < extentList.size(); i++) {
-                                if (MIMath.isExtentCross(aExtent, extentList.get(i))) {
-                                    ifDraw = false;
-                                    break;
-                                }
-                            }
-                            if (ifDraw) {
-                                extentList.add((Extent) aExtent.clone());
-                                maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
-                                float bSize = ((PointBreak) aLS.getLegendBreaks().get(0)).getSize();
-                                for (ColorBreak aCB : aLS.getLegendBreaks()) {
-                                    PointBreak aPB = (PointBreak) aCB;
-                                    if (value == Double.parseDouble(aPB.getStartValue().toString()) || (value > Double.parseDouble(aPB.getStartValue().toString())
-                                            && value < Double.parseDouble(aPB.getEndValue().toString()))) {
-                                        aColor = aPB.getColor();
-                                        Draw.drawWindBarb(aColor, sPoint, aWB, g, bSize);
-                                    }
                                 }
                             }
                         }
@@ -4831,21 +4887,19 @@ public class MapView extends JPanel {
                     if (extentList.isEmpty()) {
                         maxExtent = (Extent) aExtent.clone();
                         extentList.add(aExtent);
+                    } else if (!MIMath.isExtentCross(aExtent, maxExtent)) {
+                        extentList.add(aExtent);
+                        maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
                     } else {
-                        if (!MIMath.isExtentCross(aExtent, maxExtent)) {
+                        for (Extent extent : extentList) {
+                            if (MIMath.isExtentCross(aExtent, extent)) {
+                                ifDraw = false;
+                                break;
+                            }
+                        }
+                        if (ifDraw) {
                             extentList.add(aExtent);
                             maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
-                        } else {
-                            for (Extent extent : extentList) {
-                                if (MIMath.isExtentCross(aExtent, extent)) {
-                                    ifDraw = false;
-                                    break;
-                                }
-                            }
-                            if (ifDraw) {
-                                extentList.add(aExtent);
-                                maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
-                            }
                         }
                     }
                 }
@@ -4934,21 +4988,19 @@ public class MapView extends JPanel {
                     if (extentList.isEmpty()) {
                         maxExtent = (Extent) aExtent.clone();
                         extentList.add(aExtent);
+                    } else if (!MIMath.isExtentCross(aExtent, maxExtent)) {
+                        extentList.add(aExtent);
+                        maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
                     } else {
-                        if (!MIMath.isExtentCross(aExtent, maxExtent)) {
+                        for (Extent extent : extentList) {
+                            if (MIMath.isExtentCross(aExtent, extent)) {
+                                ifDraw = false;
+                                break;
+                            }
+                        }
+                        if (ifDraw) {
                             extentList.add(aExtent);
                             maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
-                        } else {
-                            for (Extent extent : extentList) {
-                                if (MIMath.isExtentCross(aExtent, extent)) {
-                                    ifDraw = false;
-                                    break;
-                                }
-                            }
-                            if (ifDraw) {
-                                extentList.add(aExtent);
-                                maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
-                            }
                         }
                     }
                 }
@@ -5300,7 +5352,7 @@ public class MapView extends JPanel {
             if (isSelected) {
                 aColor = _selectColor;
             }
-            if (aPGB.isUsingHatchStyle()){
+            if (aPGB.isUsingHatchStyle()) {
                 int size = aPGB.getStyleSize();
                 BufferedImage bi = getHatchImage(aPGB.getStyle(), size, aPGB.getColor(), aPGB.getBackColor());
                 Rectangle2D rect = new Rectangle2D.Double(0, 0, size, size);
@@ -5310,11 +5362,9 @@ public class MapView extends JPanel {
                 g.setColor(aColor);
                 g.fill(path);
             }
-        } else {
-            if (isSelected) {
-                g.setColor(_selectColor);
-                g.fill(path);
-            }
+        } else if (isSelected) {
+            g.setColor(_selectColor);
+            g.fill(path);
         }
 
         if (aPGB.isDrawOutline()) {
@@ -5351,21 +5401,19 @@ public class MapView extends JPanel {
                     break;
                 }
             }
-            if (nzoom != zoom){
+            if (nzoom != zoom) {
                 zoom = nzoom;
             } else {
                 boolean addOne = false;
-                if (zoom == minZoom){
+                if (zoom == minZoom) {
                     addOne = true;
 //                    if (_scaleX > getWebMapScale(layer, zoom, width, height)) {
 //                        addOne = true;
 //                    }
-                } else {
-                    if (nzoom < maxZoom){
-                        addOne = true;
-                    }
+                } else if (nzoom < maxZoom) {
+                    addOne = true;
                 }
-                if (addOne){
+                if (addOne) {
                     zoom = nzoom + 1;
                     _webMapScale = getWebMapScale(layer, zoom, width, height);
                     this.setScale(_webMapScale, width, height);
@@ -5373,7 +5421,7 @@ public class MapView extends JPanel {
                 } else {
                     zoom = nzoom;
                 }
-            }            
+            }
         }
 
         //layer.setZoom(zoom);
@@ -5790,23 +5838,21 @@ public class MapView extends JPanel {
                 if (extentList.isEmpty()) {
                     maxExtent = (Extent) aExtent.clone();
                     extentList.add(aExtent);
+                } else if (!MIMath.isExtentCross(aExtent, maxExtent)) {
+                    extentList.add(aExtent);
+                    maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
                 } else {
-                    if (!MIMath.isExtentCross(aExtent, maxExtent)) {
+                    for (j = 0; j < extentList.size(); j++) {
+                        if (MIMath.isExtentCross(aExtent, extentList.get(j))) {
+                            ifDraw = false;
+                            break;
+                        }
+                    }
+                    if (ifDraw) {
                         extentList.add(aExtent);
                         maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
                     } else {
-                        for (j = 0; j < extentList.size(); j++) {
-                            if (MIMath.isExtentCross(aExtent, extentList.get(j))) {
-                                ifDraw = false;
-                                break;
-                            }
-                        }
-                        if (ifDraw) {
-                            extentList.add(aExtent);
-                            maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
-                        } else {
-                            aPS.setVisible(false);
-                        }
+                        aPS.setVisible(false);
                     }
                 }
             }
@@ -5880,23 +5926,21 @@ public class MapView extends JPanel {
                 if (extentList.isEmpty()) {
                     maxExtent = aExtent;
                     extentList.add(aExtent);
+                } else if (!MIMath.isExtentCross(aExtent, maxExtent)) {
+                    extentList.add(aExtent);
+                    maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
                 } else {
-                    if (!MIMath.isExtentCross(aExtent, maxExtent)) {
+                    for (j = 0; j < extentList.size(); j++) {
+                        if (MIMath.isExtentCross(aExtent, extentList.get(j))) {
+                            ifDraw = false;
+                            break;
+                        }
+                    }
+                    if (ifDraw) {
                         extentList.add(aExtent);
                         maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
                     } else {
-                        for (j = 0; j < extentList.size(); j++) {
-                            if (MIMath.isExtentCross(aExtent, extentList.get(j))) {
-                                ifDraw = false;
-                                break;
-                            }
-                        }
-                        if (ifDraw) {
-                            extentList.add(aExtent);
-                            maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
-                        } else {
-                            aPS.setVisible(false);
-                        }
+                        aPS.setVisible(false);
                     }
                 }
             }
@@ -5924,7 +5968,7 @@ public class MapView extends JPanel {
     }
 
     private void drawXYGrid(Graphics2D g, List<String> XGridStrs, List<String> YGridStrs) {
-        if (this.layers.size() == 0) {
+        if (this.layers.isEmpty()) {
             return;
         }
 
@@ -6094,7 +6138,7 @@ public class MapView extends JPanel {
             g.dispose();
         } else {
             String extension = aFile.substring(aFile.lastIndexOf('.') + 1);
-            if (extension.equalsIgnoreCase("bmp")){
+            if (extension.equalsIgnoreCase("bmp")) {
                 BufferedImage bi = new BufferedImage(this.getWidth(), this.getHeight(), BufferedImage.TYPE_INT_RGB);
                 Graphics2D g = bi.createGraphics();
                 paintGraphics(g);
@@ -6155,12 +6199,10 @@ public class MapView extends JPanel {
                         lon = BigDecimalUtil.add(lon, Delt_Lon);
                         continue;
                     }
-                } else {
-                    if (MIMath.doubleEquals(lon, refLon)) {
-                        isLabelLon = true;
-                        lon = BigDecimalUtil.add(lon, Delt_Lon);
-                        continue;
-                    }
+                } else if (MIMath.doubleEquals(lon, refLon)) {
+                    isLabelLon = true;
+                    lon = BigDecimalUtil.add(lon, Delt_Lon);
+                    continue;
                 }
             }
 
@@ -6370,13 +6412,11 @@ public class MapView extends JPanel {
                                 labStr = labStr + "E";
                             }
                         }
-                    } else {
-                        if (!(value == 0)) {
-                            if (labStr.substring(0, 1).equals("-")) {
-                                labStr = labStr.substring(1) + "S";
-                            } else {
-                                labStr = labStr + "N";
-                            }
+                    } else if (!(value == 0)) {
+                        if (labStr.substring(0, 1).equals("-")) {
+                            labStr = labStr.substring(1) + "S";
+                        } else {
+                            labStr = labStr + "N";
                         }
                     }
                     List<GridLabel> gLabels = new ArrayList<>();
@@ -6538,12 +6578,10 @@ public class MapView extends JPanel {
                                             } else {
                                                 aGL.setLabDirection(Direction.South);
                                             }
+                                        } else if (aGL.getLabPoint().X < 0) {
+                                            aGL.setLabDirection(Direction.Weast);
                                         } else {
-                                            if (aGL.getLabPoint().X < 0) {
-                                                aGL.setLabDirection(Direction.Weast);
-                                            } else {
-                                                aGL.setLabDirection(Direction.East);
-                                            }
+                                            aGL.setLabDirection(Direction.East);
                                         }
                                     }
                                 } else {
@@ -6563,12 +6601,10 @@ public class MapView extends JPanel {
                                     } else {
                                         aGL.setLabDirection(Direction.North);
                                     }
+                                } else if (aGL.getLabPoint().X < 0) {
+                                    aGL.setLabDirection(Direction.Weast);
                                 } else {
-                                    if (aGL.getLabPoint().X < 0) {
-                                        aGL.setLabDirection(Direction.Weast);
-                                    } else {
-                                        aGL.setLabDirection(Direction.East);
-                                    }
+                                    aGL.setLabDirection(Direction.East);
                                 }
                             }
 
@@ -6580,12 +6616,10 @@ public class MapView extends JPanel {
                             if (!aGL.isBorder()) {
                                 if (aGL.isLongitude()) {
                                     continue;
+                                } else if (aGL.getLabPoint().X < 0) {
+                                    aGL.setLabDirection(Direction.Weast);
                                 } else {
-                                    if (aGL.getLabPoint().X < 0) {
-                                        aGL.setLabDirection(Direction.Weast);
-                                    } else {
-                                        aGL.setLabDirection(Direction.East);
-                                    }
+                                    aGL.setLabDirection(Direction.East);
                                 }
                             }
 
@@ -6598,12 +6632,10 @@ public class MapView extends JPanel {
                             if (!aGL.isBorder()) {
                                 if (aGL.isLongitude()) {
                                     continue;
+                                } else if (aGL.getLabPoint().X < 0) {
+                                    aGL.setLabDirection(Direction.Weast);
                                 } else {
-                                    if (aGL.getLabPoint().X < 0) {
-                                        aGL.setLabDirection(Direction.Weast);
-                                    } else {
-                                        aGL.setLabDirection(Direction.East);
-                                    }
+                                    aGL.setLabDirection(Direction.East);
                                 }
                             }
 
@@ -7207,7 +7239,7 @@ public class MapView extends JPanel {
      */
     public boolean selectGraphics_back(PointF aPoint, GraphicCollection baseGraphics, GraphicCollection selectedGraphics,
             double lonShift, int limit) {
-        if (baseGraphics.size() == 0) {
+        if (baseGraphics.isEmpty()) {
             return false;
         }
 
@@ -7279,7 +7311,7 @@ public class MapView extends JPanel {
      */
     public boolean selectGraphics(PointF aPoint, GraphicCollection baseGraphics, GraphicCollection selectedGraphics,
             double lonShift, int limit) {
-        if (baseGraphics.size() == 0) {
+        if (baseGraphics.isEmpty()) {
             return false;
         }
 
@@ -7388,7 +7420,7 @@ public class MapView extends JPanel {
      */
     public boolean selectGraphics_back(Rectangle aRect, GraphicCollection baseGraphics, GraphicCollection selectedGraphics,
             double lonShift) {
-        if (baseGraphics.size() == 0) {
+        if (baseGraphics.isEmpty()) {
             return false;
         }
 
@@ -7456,7 +7488,7 @@ public class MapView extends JPanel {
      */
     public boolean selectGraphics(Rectangle aRect, GraphicCollection baseGraphics, GraphicCollection selectedGraphics,
             double lonShift) {
-        if (baseGraphics.size() == 0) {
+        if (baseGraphics.isEmpty()) {
             return false;
         }
 
@@ -7652,6 +7684,86 @@ public class MapView extends JPanel {
         }
 
         return -1;
+    }
+    
+    /**
+     * Select polygon shape
+     * @param layer Polygon layer
+     * @param p The point
+     * @return Selected polygon shape
+     */
+    public PolygonShape selectShape(VectorLayer layer, PointF p){
+        float sX = p.X;
+        float sY = p.Y;
+        double[] projXY = screenToProj((double) p.X, p.Y);
+        double projX = projXY[0];
+        double projY = projXY[1];
+        double[] sXY;
+        if (_projection.isLonLatMap()) {
+            if (projX < layer.getExtent().minX) {
+                if (layer.getExtent().minX > -360 && layer.getExtent().maxX > 0) {
+                    sXY = projToScreen(projX, projY, 360);
+                    sX = (float) sXY[0];
+                    sY = (float) sXY[1];
+                }
+            }
+            if (projX > layer.getExtent().maxX) {
+                if (layer.getExtent().maxX < 360 && layer.getExtent().minX < 0) {
+                    sXY = projToScreen(projX, projY, -360);
+                    sX = (float) sXY[0];
+                    sY = (float) sXY[1];
+                }
+            }
+        }
+        
+        projXY = screenToProj((double) sX, sY);
+        projX = projXY[0];
+        projY = projXY[1];
+        
+        for (int i = 0; i < layer.getShapeNum(); i++){
+            PolygonShape shape = (PolygonShape)layer.getShapes().get(i);
+            if (GeoComputation.pointInPolygon(shape, new PointD(projX, projY))){
+                return shape;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Get polygon hole index by point
+     * @param layer The layer
+     * @param p The point
+     * @return PolygonShape and polygon hole index
+     */
+    public Object[] selectPolygonHole(VectorLayer layer, PointF p){
+        float sX = p.X;
+        float sY = p.Y;
+        double[] projXY = screenToProj((double) p.X, p.Y);
+        double projX = projXY[0];
+        double projY = projXY[1];
+        double[] sXY;
+        if (_projection.isLonLatMap()) {
+            if (projX < layer.getExtent().minX) {
+                if (layer.getExtent().minX > -360 && layer.getExtent().maxX > 0) {
+                    sXY = projToScreen(projX, projY, 360);
+                    sX = (float) sXY[0];
+                    sY = (float) sXY[1];
+                }
+            }
+            if (projX > layer.getExtent().maxX) {
+                if (layer.getExtent().maxX < 360 && layer.getExtent().minX < 0) {
+                    sXY = projToScreen(projX, projY, -360);
+                    sX = (float) sXY[0];
+                    sY = (float) sXY[1];
+                }
+            }
+        }
+        
+        projXY = screenToProj((double) sX, sY);
+        projX = projXY[0];
+        projY = projXY[1];
+        
+        return layer.selectPolygonHole(new PointD(projX, projY));
     }
 
     /**
@@ -7971,17 +8083,15 @@ public class MapView extends JPanel {
                     }
                 }
             }
+        } else if (_graphicCollection.contains(aGraphic)) {
+            _graphicCollection.remove(aGraphic);
         } else {
-            if (_graphicCollection.contains(aGraphic)) {
-                _graphicCollection.remove(aGraphic);
-            } else {
-                for (MapLayer aLayer : layers) {
-                    if (aLayer.getLayerType() == LayerTypes.VectorLayer) {
-                        VectorLayer aVLayer = (VectorLayer) aLayer;
-                        if (aVLayer.getLabelPoints().contains(aGraphic)) {
-                            aVLayer.getLabelPoints().remove(aGraphic);
-                            break;
-                        }
+            for (MapLayer aLayer : layers) {
+                if (aLayer.getLayerType() == LayerTypes.VectorLayer) {
+                    VectorLayer aVLayer = (VectorLayer) aLayer;
+                    if (aVLayer.getLabelPoints().contains(aGraphic)) {
+                        aVLayer.getLabelPoints().remove(aGraphic);
+                        break;
                     }
                 }
             }
@@ -8545,20 +8655,25 @@ public class MapView extends JPanel {
             this.setForeground(ColorUtil.parseToColor(mapProperty.getAttributes().getNamedItem("ForeColor").getNodeValue()));
             _antiAlias = Boolean.parseBoolean(mapProperty.getAttributes().getNamedItem("SmoothingMode").getNodeValue());
             Node paa = mapProperty.getAttributes().getNamedItem("PointSmoothingMode");
-            if (paa != null)
+            if (paa != null) {
                 this._pointAntiAlias = Boolean.parseBoolean(paa.getNodeValue());
+            }
             Node scaleFactor = mapProperty.getAttributes().getNamedItem("XYScaleFactor");
-            if (scaleFactor != null)
+            if (scaleFactor != null) {
                 this._XYScaleFactor = Double.parseDouble(scaleFactor.getNodeValue());
+            }
             Node mgd = mapProperty.getAttributes().getNamedItem("MultiGlobalDraw");
-            if (mgd != null)
+            if (mgd != null) {
                 this._multiGlobalDraw = Boolean.parseBoolean(mgd.getNodeValue());
+            }
             Node selColor = mapProperty.getAttributes().getNamedItem("SelectColor");
-            if (selColor != null)
+            if (selColor != null) {
                 this._selectColor = ColorUtil.parseToColor(selColor.getNodeValue());
+            }
             Node hswz = mapProperty.getAttributes().getNamedItem("HighSpeedWheelZoom");
-            if (hswz != null)
+            if (hswz != null) {
                 this._highSpeedWheelZoom = Boolean.parseBoolean(hswz.getNodeValue());
+            }
         } catch (DOMException | NumberFormatException e) {
         }
     }

@@ -29,6 +29,7 @@ import org.meteoinfo.data.mapdata.Field;
 import org.meteoinfo.geoprocess.GeoComputation;
 import org.meteoinfo.geoprocess.analysis.ResampleMethods;
 import org.meteoinfo.global.DataConvert;
+import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
 import org.meteoinfo.global.util.BigDecimalUtil;
@@ -37,6 +38,7 @@ import org.meteoinfo.layer.VectorLayer;
 import org.meteoinfo.legend.LegendScheme;
 import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
+import org.meteoinfo.projection.ProjectionManage;
 import org.meteoinfo.projection.Reproject;
 import org.meteoinfo.shape.PolygonShape;
 import org.meteoinfo.shape.ShapeTypes;
@@ -162,34 +164,46 @@ public class ArrayUtil {
      *
      * @param fn File path
      * @param a Array
+     * @param byteOrder Byte order
      */
-    public static void saveBinFile(String fn, Array a) {
+    public static void saveBinFile(String fn, Array a, String byteOrder) {
         try {
             DataOutputStream outs = new DataOutputStream(new FileOutputStream(new File(fn)));
             ByteBuffer bb = a.getDataAsByteBuffer();
-            outs.write(bb.array());
-//            switch (a.getDataType()) {
-//                case BYTE:
-//                    for (int i = 0; i < a.getSize(); i++) {
-//                        outs.write(a.getByte(i));
-//                    }
-//                    break;
-//                case INT:
-//                    for (int i = 0; i < a.getSize(); i++) {
-//                        outs.write(a.getInt(i));
-//                    }
-//                    break;
-//                case FLOAT:
-//                    for (int i = 0; i < a.getSize(); i++) {
-//                        outs.writeFloat(a.getFloat(i));
-//                    }
-//                    break;
-//                case DOUBLE:
-//                    for (int i = 0; i < a.getSize(); i++) {
-//                        outs.writeDouble(a.getDouble(i));
-//                    }
-//                    break;
-//            }
+            ByteOrder bOrder = ByteOrder.LITTLE_ENDIAN;
+            if (byteOrder.equalsIgnoreCase("big_endian")) {
+                bOrder = ByteOrder.BIG_ENDIAN;
+            }
+            if (bOrder == ByteOrder.BIG_ENDIAN) {
+                outs.write(bb.array());
+            } else {
+                if (a.getDataType() == DataType.BYTE){
+                    outs.write(bb.array());
+                } else {
+                    ByteBuffer nbb = ByteBuffer.allocate(bb.array().length);
+                    nbb.order(bOrder);
+                    switch (a.getDataType()) {
+                        case INT:
+                            for (int i = 0; i < a.getSize(); i++) {
+                                nbb.putInt(i * 4, bb.getInt());
+                            }
+                            break;
+                        case FLOAT:
+                            for (int i = 0; i < a.getSize(); i++) {
+                                nbb.putFloat(i * 4, bb.getFloat());
+                            }
+                            break;
+                        case DOUBLE:
+                            for (int i = 0; i < a.getSize(); i++) {
+                                nbb.putDouble(i * 8, bb.getDouble());
+                            }
+                            break;
+                        default:
+                            nbb.put(bb);
+                    }
+                    outs.write(nbb.array());
+                }
+            }
 
             outs.close();
         } catch (FileNotFoundException ex) {
@@ -219,13 +233,15 @@ public class ArrayUtil {
             dt = ArrayUtil.toDataType(dataType);
         }
         DataType ndt = dt;
-        if (dt == DataType.BYTE)
+        if (dt == DataType.BYTE) {
             ndt = DataType.INT;
-        
+        }
+
         ByteOrder bOrder = ByteOrder.LITTLE_ENDIAN;
-        if (byteOrder.equalsIgnoreCase("big_endian"))
+        if (byteOrder.equalsIgnoreCase("big_endian")) {
             bOrder = ByteOrder.BIG_ENDIAN;
-        
+        }
+
         int[] shape = new int[dims.size()];
         for (int i = 0; i < dims.size(); i++) {
             shape[i] = dims.get(i);
@@ -240,14 +256,14 @@ public class ArrayUtil {
             int start = 0;
             switch (dt) {
                 case BYTE:
-                    bytes = new byte[(int)r.getSize()];
+                    bytes = new byte[(int) r.getSize()];
                     ins.read(bytes);
-                    for (int i = 0; i < r.getSize(); i++){
+                    for (int i = 0; i < r.getSize(); i++) {
                         r.setInt(i, DataConvert.byte2Int(bytes[i]));
                     }
                     break;
                 case SHORT:
-                    bytes = new byte[(int)r.getSize() * 2];
+                    bytes = new byte[(int) r.getSize() * 2];
                     db = new byte[2];
                     ins.read(bytes);
                     while (iter.hasNext()) {
@@ -257,9 +273,9 @@ public class ArrayUtil {
                     }
                     break;
                 case INT:
-                    bytes = new byte[(int)r.getSize() * 4];
+                    bytes = new byte[(int) r.getSize() * 4];
                     db = new byte[4];
-                    ins.read(bytes);                    
+                    ins.read(bytes);
                     while (iter.hasNext()) {
                         System.arraycopy(bytes, start, db, 0, 4);
                         iter.setIntNext(DataConvert.bytes2Int(db, bOrder));
@@ -267,7 +283,7 @@ public class ArrayUtil {
                     }
                     break;
                 case FLOAT:
-                    bytes = new byte[(int)r.getSize() * 4];
+                    bytes = new byte[(int) r.getSize() * 4];
                     db = new byte[4];
                     ins.read(bytes);
                     while (iter.hasNext()) {
@@ -277,7 +293,7 @@ public class ArrayUtil {
                     }
                     break;
                 case DOUBLE:
-                    bytes = new byte[(int)r.getSize() * 8];
+                    bytes = new byte[(int) r.getSize() * 8];
                     db = new byte[8];
                     ins.read(bytes);
                     while (iter.hasNext()) {
@@ -312,7 +328,7 @@ public class ArrayUtil {
             a.setObject(0, data);
             return a;
         } else if (data instanceof Array) {
-            return (Array)data;
+            return (Array) data;
         } else {
             return null;
         }
@@ -520,31 +536,33 @@ public class ArrayUtil {
 
         return a;
     }
-    
+
     /**
      * Get random value
+     *
      * @return Random value
      */
-    public static double rand(){
+    public static double rand() {
         Random r = new Random();
         return r.nextDouble();
     }
-    
+
     /**
      * Get random array - one dimension
+     *
      * @param n Array length
      * @return Result array
      */
-    public static Array rand(int n){
+    public static Array rand(int n) {
         Array r = Array.factory(DataType.DOUBLE, new int[]{n});
         Random rd = new Random();
-        for (int i = 0; i < r.getSize(); i++){
+        for (int i = 0; i < r.getSize(); i++) {
             r.setDouble(i, rd.nextDouble());
         }
-        
+
         return r;
     }
-    
+
     /**
      * Get random array
      *
@@ -870,37 +888,39 @@ public class ArrayUtil {
     // <editor-fold desc="Resample/Interpolate">
     /**
      * Broadcast array to a new shape
+     *
      * @param a Array a
      * @param shape Shape
      * @return Result array
      */
-    public static Array broadcast(Array a, int[] shape){
+    public static Array broadcast(Array a, int[] shape) {
         Array r = Array.factory(a.getDataType(), shape);
         Index index = r.getIndex();
         int last = r.getRank() - 1;
-        for (int i = 0; i < r.getSize(); i++){
+        for (int i = 0; i < r.getSize(); i++) {
             int[] current = index.getCurrentCounter();
             r.setObject(index, a.getObject(current[last]));
             index.incr();
         }
-        
+
         return r;
     }
-    
+
     /**
      * Broadcast array to a new shape
+     *
      * @param a Array a
      * @param shape Shape
      * @return Result array
      */
-    public static Array broadcast(Array a, List<Integer> shape){
+    public static Array broadcast(Array a, List<Integer> shape) {
         int[] nshape = new int[shape.size()];
-        for (int i = 0; i < shape.size(); i++){
+        for (int i = 0; i < shape.size(); i++) {
             nshape[i] = shape.get(i);
         }
         return broadcast(a, nshape);
     }
-    
+
     /**
      * Mesh grid
      *
@@ -2089,12 +2109,12 @@ public class ArrayUtil {
      * @return Interpolated value
      */
     public static double toStation_Neighbor(Array data, List<Number> xArray, List<Number> yArray, double x, double y) {
-        double iValue = Double.NaN;
+        //ouble iValue = Double.NaN;
         int nx = xArray.size();
         int ny = yArray.size();
         if (x < xArray.get(0).doubleValue() || x > xArray.get(nx - 1).doubleValue()
                 || y < yArray.get(0).doubleValue() || y > yArray.get(ny - 1).doubleValue()) {
-            return iValue;
+            return Double.NaN;
         }
 
         //Get x/y index
@@ -2133,6 +2153,7 @@ public class ArrayUtil {
         double c = data.getDouble(index.set(i2, j1));
         double d = data.getDouble(index.set(i2, j2));
 
+        double iValue;
         if (Math.abs(x - xArray.get(j1).doubleValue()) > Math.abs(xArray.get(j2).doubleValue() - x)) {
             if (Math.abs(y - yArray.get(i1).doubleValue()) > Math.abs(yArray.get(i2).doubleValue() - y)) {
                 iValue = a;
@@ -2149,6 +2170,77 @@ public class ArrayUtil {
     }
 
     /**
+     * Project grid data
+     *
+     * @param data Data array
+     * @param xx X array
+     * @param yy Y array
+     * @param fromProj From projection
+     * @param toProj To projection
+     * @return Porjected grid data
+     * @throws ucar.ma2.InvalidRangeException
+     */
+    public static Object[] reproject(Array data, List<Number> xx, List<Number> yy, ProjectionInfo fromProj, ProjectionInfo toProj) throws InvalidRangeException {
+        Extent aExtent;
+        int xnum = xx.size();
+        int ynum = yy.size();
+        double xdelta = xx.get(1).doubleValue() - xx.get(0).doubleValue();
+        double ydelta = yy.get(1).doubleValue() - yy.get(0).doubleValue();
+        aExtent = ProjectionManage.getProjectionExtent(fromProj, toProj, xx, yy);
+
+        double xDelt = (aExtent.maxX - aExtent.minX) / (xnum - 1);
+        double yDelt = (aExtent.maxY - aExtent.minY) / (ynum - 1);
+        Array rx = Array.factory(DataType.DOUBLE, new int[]{xnum});
+        Array ry = Array.factory(DataType.DOUBLE, new int[]{ynum});
+        int i, j, xIdx, yIdx;
+        for (i = 0; i < xnum; i++) {
+            rx.setDouble(i, aExtent.minX + i * xDelt);
+        }
+
+        for (i = 0; i < ynum; i++) {
+            ry.setDouble(i, aExtent.minY + i * yDelt);
+        }
+
+        double x, y;
+        Array r = Array.factory(data.getDataType(), data.getShape());
+        double[][] points = new double[1][];
+        Object fill_value = Double.NaN;
+        switch (data.getDataType()) {
+            case INT:
+                fill_value = Integer.MIN_VALUE;
+                break;
+            case FLOAT:
+                fill_value = Float.NaN;
+                break;
+        }
+        for (i = 0; i < ynum; i++) {
+            for (j = 0; j < xnum; j++) {
+                points[0] = new double[]{rx.getDouble(j), ry.getDouble(i)};
+                try {
+                    Reproject.reprojectPoints(points, toProj, fromProj, 0, 1);
+                    x = points[0][0];
+                    y = points[0][1];
+
+                    if (x < xx.get(0).doubleValue() || x > xx.get(xx.size() - 1).doubleValue()) {
+                        r.setObject(i * xnum + j, fill_value);
+                    } else if (y < yy.get(0).doubleValue() || y > yy.get(yy.size() - 1).doubleValue()) {
+                        r.setObject(i * xnum + j, fill_value);
+                    } else {
+                        xIdx = (int) ((x - xx.get(0).doubleValue()) / xdelta);
+                        yIdx = (int) ((y - yy.get(0).doubleValue()) / ydelta);
+                        r.setObject(i * xnum + j, data.getObject(yIdx * xnum + xIdx));
+                    }
+                } catch (Exception e) {
+                    r.setObject(i * xnum + j, fill_value);
+                    j++;
+                }
+            }
+        }
+
+        return new Object[]{r, rx, ry};
+    }
+
+    /**
      * Reproject
      *
      * @param data Data array
@@ -2159,7 +2251,7 @@ public class ArrayUtil {
      * @param fromProj From projection
      * @param toProj To projection
      * @param fill_value Fill value
-     * @param resampleMethod Resample method 
+     * @param resampleMethod Resample method
      * @return Result arrays
      * @throws ucar.ma2.InvalidRangeException
      */
@@ -2198,7 +2290,11 @@ public class ArrayUtil {
                 for (int i = 0; i < n; i++) {
                     xx = points[i][0];
                     yy = points[i][1];
-                    r.setObject(i, toStation(data, x, y, xx, yy, fill_value));
+                    if (Double.isNaN(xx) || Double.isNaN(yy)) {
+                        r.setObject(i, Double.NaN);
+                    } else {
+                        r.setObject(i, toStation(data, x, y, xx, yy, fill_value));
+                    }
                 }
             } else {
                 Index indexr = r.getIndex();
@@ -2230,7 +2326,11 @@ public class ArrayUtil {
                     k = current[shape.length - 2] * shape[shape.length - 1] + current[shape.length - 1];
                     xx = points[k][0];
                     yy = points[k][1];
-                    r.setObject(i, toStation(ndata, x, y, xx, yy, fill_value));
+                    if (Double.isNaN(xx) || Double.isNaN(yy)) {
+                        r.setObject(i, Double.NaN);
+                    } else {
+                        r.setObject(i, toStation(ndata, x, y, xx, yy, fill_value));
+                    }
                     indexr.incr();
                 }
             }
@@ -2238,7 +2338,11 @@ public class ArrayUtil {
             for (int i = 0; i < n; i++) {
                 xx = points[i][0];
                 yy = points[i][1];
-                r.setObject(i, toStation_Neighbor(data, x, y, xx, yy, fill_value));
+                if (Double.isNaN(xx) || Double.isNaN(yy)) {
+                    r.setObject(i, Double.NaN);
+                } else {
+                    r.setObject(i, toStation_Neighbor(data, x, y, xx, yy, fill_value));
+                }
             }
         } else {
             Index indexr = r.getIndex();
@@ -2270,7 +2374,11 @@ public class ArrayUtil {
                 k = current[shape.length - 2] * shape[shape.length - 1] + current[shape.length - 1];
                 xx = points[k][0];
                 yy = points[k][1];
-                r.setObject(i, toStation_Neighbor(ndata, x, y, xx, yy, fill_value));
+                if (Double.isNaN(xx) || Double.isNaN(yy)) {
+                    r.setObject(i, Double.NaN);
+                } else {
+                    r.setObject(i, toStation_Neighbor(ndata, x, y, xx, yy, fill_value));
+                }
                 indexr.incr();
             }
         }
@@ -2455,6 +2563,6 @@ public class ArrayUtil {
     }
     // </editor-fold>
     // <editor-fold desc="Time average">
-    
+
     // </editor-fold>
 }

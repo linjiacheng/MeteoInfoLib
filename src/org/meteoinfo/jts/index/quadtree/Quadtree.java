@@ -33,37 +33,45 @@
  */
 package org.meteoinfo.jts.index.quadtree;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import org.meteoinfo.jts.geom.Envelope;
 import org.meteoinfo.jts.index.*;
 /**
- * A Quadtree is a spatial index structure for efficient querying
- * of 2D rectangles.  If other kinds of spatial objects
- * need to be indexed they can be represented by their
- * envelopes
+ * A Quadtree is a spatial index structure for efficient range querying
+ * of items bounded by 2D rectangles.  
+ * {@link Geometry}s can be indexed by using their
+ * {@link Envelope}s.
+ * Any type of Object can also be indexed as
+ * long as it has an extent that can be represented by an {@link Envelope}.
  * <p>
- * The quadtree structure is used to provide a primary filter
- * for range rectangle queries.  The query() method returns a list of
- * all objects which <i>may</i> intersect the query rectangle.  Note that
- * it may return objects which do not in fact intersect.
- * A secondary filter is required to test for exact intersection.
- * Of course, this secondary filter may consist of other tests besides
- * intersection, such as testing other kinds of spatial relationships.
- *
+ * This Quadtree index provides a <b>primary filter</b>
+ * for range rectangle queries.  The various query methods return a list of
+ * all items which <i>may</i> intersect the query rectangle.  Note that
+ * it may thus return items which do <b>not</b> in fact intersect the query rectangle.
+ * A secondary filter is required to test for actual intersection 
+ * between the query rectangle and the envelope of each candidate item. 
+ * The secondary filter may be performed explicitly, 
+ * or it may be provided implicitly by subsequent operations executed on the items 
+ * (for instance, if the index query is followed by computing a spatial predicate 
+ * between the query geometry and tree items, 
+ * the envelope intersection check is performed automatically.
  * <p>
  * This implementation does not require specifying the extent of the inserted
  * items beforehand.  It will automatically expand to accomodate any extent
  * of dataset.
  * <p>
  * This data structure is also known as an <i>MX-CIF quadtree</i>
- * following the usage of Samet and others.
+ * following the terminology of Samet and others.
  *
  * @version 1.7
  */
 public class Quadtree
-    implements SpatialIndex
+    implements SpatialIndex, Serializable
 {
+  private static final long serialVersionUID = -7461163625812743604L;
+
   /**
    * Ensure that the envelope for the inserted item has non-zero extents.
    * Use the current minExtent to pad the envelope, if necessary
@@ -126,6 +134,17 @@ public class Quadtree
   }
 
   /**
+   * Tests whether the index contains any items.
+   * 
+   * @return true if the index does not contain any items
+   */
+  public boolean isEmpty()
+  {
+    if (root == null) return true;
+    return false;
+  }
+  
+  /**
    * Returns the number of items in the tree.
    *
    * @return the number of items in the tree
@@ -146,9 +165,9 @@ public class Quadtree
   /**
    * Removes a single item from the tree.
    *
-   * @param itemEnv the Envelope of the item to remove
+   * @param itemEnv the Envelope of the item to be removed
    * @param item the item to remove
-   * @return <code>true</code> if the item was found
+   * @return <code>true</code> if the item was found (and thus removed)
    */
   public boolean remove(Envelope itemEnv, Object item)
   {
@@ -170,6 +189,19 @@ public class Quadtree
   }
 */
 
+  /**
+   * Queries the tree and returns items which may lie in the given search envelope.
+   * Precisely, the items that are returned are all items in the tree 
+   * whose envelope <b>may</b> intersect the search Envelope.
+   * Note that some items with non-intersecting envelopes may be returned as well;
+   * the client is responsible for filtering these out.
+   * In most situations there will be many items in the tree which do not
+   * intersect the search envelope and which are not returned - thus
+   * providing improved performance over a simple linear scan.    
+   * 
+   * @param searchEnv the envelope of the desired query area.
+   * @return a List of items which may intersect the search envelope
+   */
   public List query(Envelope searchEnv)
   {
     /**
@@ -181,6 +213,19 @@ public class Quadtree
     return visitor.getItems();
   }
 
+  /**
+   * Queries the tree and visits items which may lie in the given search envelope.
+   * Precisely, the items that are visited are all items in the tree 
+   * whose envelope <b>may</b> intersect the search Envelope.
+   * Note that some items with non-intersecting envelopes may be visited as well;
+   * the client is responsible for filtering these out.
+   * In most situations there will be many items in the tree which do not
+   * intersect the search envelope and which are not visited - thus
+   * providing improved performance over a simple linear scan.    
+   * 
+   * @param searchEnv the envelope of the desired query area.
+   * @param visitor a visitor object which is passed the visited items
+   */
   public void query(Envelope searchEnv, ItemVisitor visitor)
   {
     /**
@@ -206,7 +251,7 @@ public class Quadtree
     if (delX < minExtent && delX > 0.0)
       minExtent = delX;
 
-    double delY = itemEnv.getWidth();
+    double delY = itemEnv.getHeight();
     if (delY < minExtent && delY > 0.0)
       minExtent = delY;
   }

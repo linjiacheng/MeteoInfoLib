@@ -1,20 +1,59 @@
+/*
+* The JTS Topology Suite is a collection of Java classes that
+* implement the fundamental operations required to validate a given
+* geo-spatial data set to a known topological specification.
+*
+* Copyright (C) 2001 Vivid Solutions
+*
+* This library is free software; you can redistribute it and/or
+* modify it under the terms of the GNU Lesser General Public
+* License as published by the Free Software Foundation; either
+* version 2.1 of the License, or (at your option) any later version.
+*
+* This library is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with this library; if not, write to the Free Software
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*
+* For more information, contact:
+*
+*     Vivid Solutions
+*     Suite #1A
+*     2328 Government Street
+*     Victoria BC  V8T 5G5
+*     Canada
+*
+*     (250)385-6040
+*     www.vividsolutions.com
+*/
+
 package org.meteoinfo.jts.geom.util;
 
-import org.meteoinfo.jts.algorithm.*;
 import org.meteoinfo.jts.geom.*;
+import org.meteoinfo.jts.math.Matrix;
+import org.meteoinfo.jts.algorithm.*;
 
 /**
- * Builds an {@link AffineTransformation} defined by three control points 
- * and their images under the transformation.
+ * Builds an {@link AffineTransformation} defined by a set of control vectors. 
+ * A control vector consists of a source point and a destination point, 
+ * which is the image of the source point under the desired transformation.
  * <p>
- * A transformation is well-defined by a set of three control points 
- * as long as the points are not collinear 
- * (this includes the degenerate situation
- * where two or more points are identical).
- * If the control points are not well-defined, the system of equations
+ * A transformation is well-defined 
+ * by a set of three control vectors 
+ * if and only if the source points are not collinear. 
+ * (In particular, the degenerate situation
+ * where two or more source points are identical will not produce a well-defined transformation).
+ * A well-defined transformation exists and is unique.
+ * If the control vectors are not well-defined, the system of equations
  * defining the transformation matrix entries is not solvable,
  * and no transformation can be determined.
- * If the control point images are collinear or non-unique,
+ * <p>
+ * No such restriction applies to the destination points.
+ * However, if the destination points are collinear or non-unique,
  * a non-invertible transformations will be generated.
  * <p>
  * This technique of recovering a transformation
@@ -35,6 +74,7 @@ public class AffineTransformationBuilder
   // the matrix entries for the transformation
   private double m00, m01, m02, m10, m11, m12;
   
+ 
   /**
    * Constructs a new builder for
    * the transformation defined by the given 
@@ -61,23 +101,24 @@ public class AffineTransformationBuilder
     this.dest1 = dest1;
     this.dest2 = dest2;
   }
-  
+    
   /**
    * Computes the {@link AffineTransformation}
    * determined by the control point mappings,
-   * or <code>null</code> if the control points do not determine a unique transformation.
+   * or <code>null</code> if the control vectors do not determine a well-defined transformation.
    * 
    * @return an affine transformation
-   * @return null if the control points do not determine a unique transformation
+   * @return null if the control vectors do not determine a well-defined transformation
    */
   public AffineTransformation getTransformation()
   {
+  	// compute full 3-point transformation
     boolean isSolvable = compute();
     if (isSolvable)
       return new AffineTransformation(m00, m01, m02, m10, m11, m12);
     return null;
   }
-  
+    
   /**
    * Computes the transformation matrix by 
    * solving the two systems of linear equations

@@ -39,19 +39,35 @@ import java.util.Arrays;
 import org.meteoinfo.jts.algorithm.*;
 
 /**
- * Represents a linear polygon, which may include holes.
- * The shell and holes of the polygon are represented by {@link LinearRing}s.
- * In a valid polygon, holes may touch the shell or other holes at a single point.
- * However, no sequence of touching holes may split the polygon into two pieces.
- * The orientation of the rings in the polygon does not matter.
+ * Represents a polygon with linear edges, which may include holes.
+ * The outer boundary (shell) 
+ * and inner boundaries (holes) of the polygon are represented by {@link LinearRing}s.
+ * The boundary rings of the polygon may have any orientation.
+ * Polygons are closed, simple geometries by definition.
  * <p>
- *  The shell and holes must conform to the assertions specified in the <A
- *  HREF="http://www.opengis.org/techno/specs.htm">OpenGIS Simple Features
- *  Specification for SQL</A> .
+ * The polygon model conforms to the assertions specified in the 
+ * <A HREF="http://www.opengis.org/techno/specs.htm">OpenGIS Simple Features
+ * Specification for SQL</A>.
+ * <p>
+ * A <code>Polygon</code> is topologically valid if and only if:
+ * <ul>
+ * <li>the coordinates which define it are valid coordinates
+ * <li>the linear rings for the shell and holes are valid
+ * (i.e. are closed and do not self-intersect)
+ * <li>holes touch the shell or another hole at at most one point
+ * (which implies that the rings of the shell and holes must not cross)
+ * <li>the interior of the polygon is connected,  
+ * or equivalently no sequence of touching holes 
+ * makes the interior of the polygon disconnected
+ * (i.e. effectively split the polygon into two pieces).
+ * </ul>
  *
  *@version 1.7
  */
-public class Polygon extends Geometry {
+public class Polygon 
+	extends Geometry
+	implements Polygonal
+{
   private static final long serialVersionUID = -3494792200821764533L;
 
   /**
@@ -184,10 +200,12 @@ public class Polygon extends Geometry {
    *
    * @return <code>true</code>
    */
+  /*
   public boolean isSimple() {
     return true;
   }
-
+*/
+  
   public boolean isRectangle()
   {
     if (getNumInteriorRing() != 0) return false;
@@ -245,9 +263,9 @@ public class Polygon extends Geometry {
   public double getArea()
   {
     double area = 0.0;
-    area += Math.abs(CGAlgorithms.signedArea(shell.getCoordinates()));
+    area += Math.abs(CGAlgorithms.signedArea(shell.getCoordinateSequence()));
     for (int i = 0; i < holes.length; i++) {
-      area -= Math.abs(CGAlgorithms.signedArea(holes[i].getCoordinates()));
+      area -= Math.abs(CGAlgorithms.signedArea(holes[i].getCoordinateSequence()));
     }
     return area;
   }
@@ -300,9 +318,6 @@ public class Polygon extends Geometry {
     Geometry thisShell = shell;
     Geometry otherPolygonShell = otherPolygon.shell;
     if (!thisShell.equalsExact(otherPolygonShell, tolerance)) {
-      return false;
-    }
-    if (holes.length != otherPolygon.holes.length) {
       return false;
     }
     if (holes.length != otherPolygon.holes.length) {
@@ -421,5 +436,15 @@ public class Polygon extends Geometry {
     }
   }
 
+  public Geometry reverse()
+  {
+    Polygon poly = (Polygon) super.clone();
+    poly.shell = (LinearRing) ((LinearRing) shell.clone()).reverse();
+    poly.holes = new LinearRing[holes.length];
+    for (int i = 0; i < holes.length; i++) {
+      poly.holes[i] = (LinearRing) ((LinearRing) holes[i].clone()).reverse();
+    }
+    return poly;// return the clone
+  }
 }
 

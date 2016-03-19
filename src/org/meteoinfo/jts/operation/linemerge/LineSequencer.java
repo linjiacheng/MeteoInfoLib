@@ -45,11 +45,17 @@ import org.meteoinfo.jts.util.Assert;
  * A sequence is a complete non-repeating list of the linear
  * components of the input.  Each linestring is oriented
  * so that identical endpoints are adjacent in the list.
- *
+ * <p>
+ * A typical use case is to convert a set of 
+ * unoriented geometric links 
+ * from a linear network
+ * (e.g. such as block faces on a bus route)
+ * into a continuous oriented path through the network. 
+ * <p>
  * The input linestrings may form one or more connected sets.
  * The input linestrings should be correctly noded, or the results may
  * not be what is expected.
- * The output of this method is a single MultiLineString containing the ordered
+ * The computed output is a single {@link MultiLineString} containing the ordered
  * linestrings in the sequence.
  * <p>
  * The sequencing employs the classic <b>Eulerian path</b> graph algorithm.
@@ -66,18 +72,24 @@ import org.meteoinfo.jts.util.Assert;
  * <li>If the sequence has no degree-1 nodes, use any node as the start
  * </ul>
  *
- * <p>
- * Not all arrangements of lines can be sequenced.
+ * Note that not all arrangements of lines can be sequenced.
  * For a connected set of edges in a graph,
- * Euler's Theorem states that there is a sequence containing each edge once
- * if and only if there are no more than 2 nodes of odd degree.
- * If it is not possible to find a sequence, the {@link #isSequenceable} method
+ * <i>Euler's Theorem</i> states that there is a sequence containing each edge once
+ * <b>if and only if</b> there are no more than 2 nodes of odd degree.
+ * If it is not possible to find a sequence, the {@link #isSequenceable()} method
  * will return <code>false</code>.
  *
  * @version 1.7
  */
 public class LineSequencer
 {
+	public static Geometry sequence(Geometry geom)
+	{
+		LineSequencer sequencer = new LineSequencer();
+		sequencer.add(geom);
+		return sequencer.getSequencedLineStrings();
+	}
+	
   /**
    * Tests whether a {@link Geometry} is sequenced correctly.
    * {@link LineString}s are trivially sequenced.

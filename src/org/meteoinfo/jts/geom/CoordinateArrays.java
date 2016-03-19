@@ -36,6 +36,8 @@ package org.meteoinfo.jts.geom;
 
 import java.util.*;
 
+import org.meteoinfo.jts.math.MathUtil;
+
 /**
  * Useful utility functions for handling Coordinate arrays
  *
@@ -45,6 +47,21 @@ public class CoordinateArrays {
 
   private final static Coordinate[] coordArrayType = new Coordinate[0];
 
+  /**
+   * Tests whether an array of {@link Coordinate}s forms a ring,
+   * by checking length and closure. 
+   * Self-intersection is not checked.
+   * 
+   * @param pts an array of Coordinates
+   * @return true if the coordinate form a ring.
+   */
+  public static boolean isRing(Coordinate[] pts)
+  {
+    if (pts.length < 4) return false;
+    if (! pts[0].equals2D(pts[pts.length -1])) return false;
+    return true;
+  }
+    
   /**
    * Finds a point in a list of points which is not contained in another list of points
    * @param testPts the {@link Coordinate}s to test
@@ -69,7 +86,7 @@ public class CoordinateArrays {
    *
    * @param pts1
    * @param pts2
-   * @return
+   * @return an integer indicating the order
    */
   public static int compare(Coordinate[] pts1, Coordinate[] pts2) {
     int i = 0;
@@ -204,7 +221,7 @@ public class CoordinateArrays {
   }
 
   /**
-   * Creates a deep copy of the argument {@link Coordinate) array.
+   * Creates a deep copy of the argument {@link Coordinate} array.
    *
    * @param coordinates an array of Coordinates
    * @return a deep copy of the input
@@ -215,6 +232,24 @@ public class CoordinateArrays {
       copy[i] = new Coordinate(coordinates[i]);
     }
     return copy;
+  }
+
+  /**
+   * Creates a deep copy of a given section of a source {@link Coordinate} array
+   * into a destination Coordinate array.
+   * The destination array must be an appropriate size to receive
+   * the copied coordinates.
+   *
+   * @param src an array of Coordinates
+   * @param srcStart the index to start copying from
+   * @param dest the 
+   * @param destStart the destination index to start copying to
+   * @param length the number of items to copy
+   */
+  public static void copyDeep(Coordinate[] src, int srcStart, Coordinate[] dest, int destStart, int length) {
+    for (int i = 0; i < length; i++) {
+      dest[destStart + i] = new Coordinate(src[srcStart + i]);
+    }
   }
 
   /**
@@ -260,6 +295,29 @@ public class CoordinateArrays {
     return coordList.toCoordinateArray();
   }
 
+  /**
+   * Collapses a coordinate array to remove all null elements.
+   * 
+   * @param coord the coordinate array to collapse
+   * @return an array containing only non-null elements
+   */
+  public static Coordinate[] removeNull(Coordinate[] coord)
+  {
+    int nonNull = 0;
+    for (int i = 0; i < coord.length; i++) {
+      if (coord[i] != null) nonNull++;
+    }
+    Coordinate[] newCoord = new Coordinate[nonNull];
+    // empty case
+    if (nonNull == 0) return newCoord;
+    
+    int j = 0;
+    for (int i = 0; i < coord.length; i++) {
+      if (coord[i] != null) newCoord[j++] = coord[i];
+    }
+    return newCoord;
+  }
+  
   /**
    * Reverses the coordinates in an array in-place.
    */
@@ -370,6 +428,9 @@ public class CoordinateArrays {
    * Extracts a subsequence of the input {@link Coordinate} array
    * from indices <code>start</code> to
    * <code>end</code> (inclusive).
+   * The input indices are clamped to the array size;
+   * If the end index is less than the start index,
+   * the extracted array will be empty.
    *
    * @param pts the input array
    * @param start the index of the start of the subsequence to extract
@@ -378,8 +439,17 @@ public class CoordinateArrays {
    */
   public static Coordinate[] extract(Coordinate[] pts, int start, int end)
   {
-    int len = end - start + 1;
-    Coordinate[] extractPts = new Coordinate[len];
+    start = MathUtil.clamp(start, 0, pts.length);
+    end = MathUtil.clamp(end, -1, pts.length);
+    
+    int npts = end - start + 1;
+    if (end < 0) npts = 0;
+    if (start >= pts.length) npts = 0;
+    if (end < start) npts = 0;
+    
+    Coordinate[] extractPts = new Coordinate[npts];
+    if (npts == 0) return extractPts;
+    
     int iPts = 0;
     for (int i = start; i <= end; i++) {
       extractPts[iPts++] = pts[i];
@@ -387,4 +457,33 @@ public class CoordinateArrays {
     return extractPts;
   }
 
+  /**
+   * Computes the envelope of the coordinates.
+   * 
+   * @param coordinates the coordinates to scan
+   * @return the envelope of the coordinates
+   */
+  public static Envelope envelope(Coordinate[] coordinates) {
+    Envelope env = new Envelope();
+    for (int i = 0; i < coordinates.length; i++) {
+      env.expandToInclude(coordinates[i]);
+    }
+    return env;
+  }
+  
+  /**
+   * Extracts the coordinates which intersect an {@link Envelope}.
+   * 
+   * @param coordinates the coordinates to scan
+   * @param env the envelope to intersect with
+   * @return an array of the coordinates which intersect the envelope
+   */
+  public static Coordinate[] intersection(Coordinate[] coordinates, Envelope env) {
+    CoordinateList coordList = new CoordinateList();
+    for (int i = 0; i < coordinates.length; i++) {
+      if (env.intersects(coordinates[i]))
+        coordList.add(coordinates[i], true);
+    }
+    return coordList.toCoordinateArray();
+  }
 }

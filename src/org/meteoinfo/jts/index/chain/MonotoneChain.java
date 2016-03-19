@@ -38,18 +38,19 @@ import org.meteoinfo.jts.geom.*;
 
 
 /**
- * MonotoneChains are a way of partitioning the segments of a linestring to
+ * Monotone Chains are a way of partitioning the segments of a linestring to
  * allow for fast searching of intersections.
  * They have the following properties:
  * <ol>
- * <li>the segments within a monotone chain will never intersect each other
+ * <li>the segments within a monotone chain never intersect each other
  * <li>the envelope of any contiguous subset of the segments in a monotone chain
  * is equal to the envelope of the endpoints of the subset.
  * </ol>
  * Property 1 means that there is no need to test pairs of segments from within
  * the same monotone chain for intersection.
+ * <p>
  * Property 2 allows
- * binary search to be used to find the intersection points of two monotone chains.
+ * an efficient binary search to be used to find the intersection points of two monotone chains.
  * For many types of real-world data, these properties eliminate a large number of
  * segment comparisons, producing substantial speed gains.
  * <p>
@@ -69,11 +70,12 @@ import org.meteoinfo.jts.geom.*;
  * </ul>
  *
  * This implementation of MonotoneChains uses the concept of internal iterators
- * to return the resultsets for the above queries.
+ * ({@link MonotoneChainSelectAction} and {@link MonotoneChainOverlapAction})
+ * to return the results for queries.
  * This has time and space advantages, since it
  * is not necessary to build lists of instantiated objects to represent the segments
  * returned by the query.
- * However, it does mean that the queries are not thread-safe.
+ * Queries made in this manner are thread-safe.
  *
  * @version 1.7
  */
@@ -111,6 +113,12 @@ public class MonotoneChain {
   public int getStartIndex()  { return start; }
   public int getEndIndex()    { return end; }
 
+  /**
+   * Gets the line segment starting at <code>index</code>
+   * 
+   * @param index index of segment
+   * @param ls line segment to extract into
+   */
   public void getLineSegment(int index, LineSegment ls)
   {
     ls.p0 = pts[index];
@@ -132,7 +140,18 @@ public class MonotoneChain {
 
   /**
    * Determine all the line segments in the chain whose envelopes overlap
-   * the searchEnvelope, and process them
+   * the searchEnvelope, and process them.
+   * <p>
+   * The monotone chain search algorithm attempts to optimize 
+   * performance by not calling the select action on chain segments
+   * which it can determine are not in the search envelope.
+   * However, it *may* call the select action on segments
+   * which do not intersect the search envelope.
+   * This saves on the overhead of checking envelope intersection
+   * each time, since clients may be able to do this more efficiently.
+   * 
+   * @param searchEnv the search envelope
+   * @param mcs the select action to execute on selected segments
    */
   public void select(Envelope searchEnv, MonotoneChainSelectAction mcs)
   {
@@ -172,6 +191,20 @@ public class MonotoneChain {
     }
   }
 
+  /**
+   * Determine all the line segments in two chains which may overlap, and process them.
+   * <p>
+   * The monotone chain search algorithm attempts to optimize 
+   * performance by not calling the overlap action on chain segments
+   * which it can determine do not overlap.
+   * However, it *may* call the overlap action on segments
+   * which do not actually interact.
+   * This saves on the overhead of checking intersection
+   * each time, since clients may be able to do this more efficiently.
+   * 
+   * @param searchEnv the search envelope
+   * @param mco the overlap action to execute on selected segments
+   */
   public void computeOverlaps(MonotoneChain mc, MonotoneChainOverlapAction mco)
   {
     computeOverlaps(start, end, mc, mc.start, mc.end, mco);

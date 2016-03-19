@@ -168,7 +168,7 @@ public class LegendManage {
         } else if (shapeType.isLine()) {
             return createSingleSymbolLegendScheme(shapeType, Color.blue, 1.0f);
         } else {
-            return createSingleSymbolLegendScheme(shapeType, Color.lightGray, 1.0f);
+            return createSingleSymbolLegendScheme(shapeType, Color.cyan, 1.0f);
         }
     }
 

@@ -41,6 +41,7 @@ import org.meteoinfo.jts.geom.*;
  * Compute the average of all points.
  *
  * @version 1.7
+ * @deprecated use Centroid instead
  */
 public class CentroidPoint
 {

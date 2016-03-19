@@ -41,11 +41,11 @@ import org.meteoinfo.jts.noding.*;
 /**
  * Uses Snap Rounding to compute a rounded,
  * fully noded arrangement from a set of {@link SegmentString}s.
- * Implements the Snap Rounding technique described in Hobby, Guibas & Marimont,
- * and Goodrich et al.
- * Snap Rounding assumes that all vertices lie on a uniform grid
- * (hence the precision model of the input must be fixed precision,
- * and all the input vertices must be rounded to that precision).
+ * Implements the Snap Rounding technique described in 
+ * papers by Hobby, Guibas & Marimont, and Goodrich et al.
+ * Snap Rounding assumes that all vertices lie on a uniform grid;
+ * hence the precision model of the input must be fixed precision,
+ * and all the input vertices must be rounded to that precision.
  * <p>
  * This implementation uses a monotone chains and a spatial index to
  * speed up the intersection tests.
@@ -75,14 +75,14 @@ public class MCIndexSnapRounder
 
   public Collection getNodedSubstrings()
   {
-    return  SegmentString.getNodedSubstrings(nodedSegStrings);
+    return  NodedSegmentString.getNodedSubstrings(nodedSegStrings);
   }
 
   public void computeNodes(Collection inputSegmentStrings)
   {
     this.nodedSegStrings = inputSegmentStrings;
     noder = new MCIndexNoder();
-    pointSnapper = new MCIndexPointSnapper(noder.getMonotoneChains(), noder.getIndex());
+    pointSnapper = new MCIndexPointSnapper(noder.getIndex());
     snapRound(inputSegmentStrings, li);
 
     // testing purposes only - remove in final version
@@ -91,7 +91,7 @@ public class MCIndexSnapRounder
 
   private void checkCorrectness(Collection inputSegmentStrings)
   {
-    Collection resultSegStrings = SegmentString.getNodedSubstrings(inputSegmentStrings);
+    Collection resultSegStrings = NodedSegmentString.getNodedSubstrings(inputSegmentStrings);
     NodingValidator nv = new NodingValidator(resultSegStrings);
     try {
       nv.checkValid();
@@ -117,14 +117,14 @@ public class MCIndexSnapRounder
    */
   private List findInteriorIntersections(Collection segStrings, LineIntersector li)
   {
-    IntersectionFinderAdder intFinderAdder = new IntersectionFinderAdder(li);
+    InteriorIntersectionFinderAdder intFinderAdder = new InteriorIntersectionFinderAdder(li);
     noder.setSegmentIntersector(intFinderAdder);
     noder.computeNodes(segStrings);
     return intFinderAdder.getInteriorIntersections();
   }
 
   /**
-   * Computes nodes introduced as a result of snapping segments to snap points (hot pixels)
+   * Snaps segments to nodes created by segment intersections.
    */
   private void computeIntersectionSnaps(Collection snapPts)
   {
@@ -136,27 +136,25 @@ public class MCIndexSnapRounder
   }
 
   /**
-   * Computes nodes introduced as a result of
-   * snapping segments to vertices of other segments
+   * Snaps segments to all vertices.
    *
-   * @param segStrings the list of segment strings to snap together
+   * @param edges the list of segment strings to snap together
    */
   public void computeVertexSnaps(Collection edges)
   {
     for (Iterator i0 = edges.iterator(); i0.hasNext(); ) {
-      SegmentString edge0 = (SegmentString) i0.next();
+      NodedSegmentString edge0 = (NodedSegmentString) i0.next();
       computeVertexSnaps(edge0);
     }
   }
 
   /**
-   * Performs a brute-force comparison of every segment in each {@link SegmentString}.
-   * This has n^2 performance.
+   * Snaps segments to the vertices of a Segment String.  
    */
-  private void computeVertexSnaps(SegmentString e)
+  private void computeVertexSnaps(NodedSegmentString e)
   {
     Coordinate[] pts0 = e.getCoordinates();
-    for (int i = 0; i < pts0.length - 1; i++) {
+    for (int i = 0; i < pts0.length ; i++) {
       HotPixel hotPixel = new HotPixel(pts0[i], scaleFactor, li);
       boolean isNodeAdded = pointSnapper.snap(hotPixel, e, i);
       // if a node is created for a vertex, that vertex must be noded too
