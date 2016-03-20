@@ -657,6 +657,9 @@ public class MapView extends JPanel {
             case New_Ellipse:
             case New_Freehand:
             case Edit_NewFeature:
+            case Edit_AddRing:
+            case Edit_FillRing:
+            case Edit_SplitFeature:
                 customCursor = Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR);
                 break;
             case Measurement:
@@ -5067,6 +5070,13 @@ public class MapView extends JPanel {
                         PointD wPoint = aPG.getOutLine().get(i);
                         double[] sXY = projToScreen(wPoint.X, wPoint.Y, LonShift);
                         rPoints.add(new PointF((float) sXY[0], (float) sXY[1]));
+                    }
+                    for (int i = 0; i < aPG.getHoleLines().size(); i++) {
+                        for (int j = 0; j < aPG.getHoleLines().get(i).size(); j++){
+                            PointD wPoint = aPG.getHoleLines().get(i).get(j);
+                            double[] sXY = projToScreen(wPoint.X, wPoint.Y, LonShift);
+                            rPoints.add(new PointF((float) sXY[0], (float) sXY[1]));
+                        }
                     }
                     pointList.addAll(rPoints);
                 }
