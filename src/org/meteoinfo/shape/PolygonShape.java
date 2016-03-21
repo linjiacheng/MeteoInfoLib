@@ -329,6 +329,15 @@ public class PolygonShape extends Shape implements Cloneable {
         }
         this.setExtent(MIMath.getPointsExtent(_points));
     }
+    
+    /**
+     * Add a hole line
+     * @param points Hole points
+     * @return Hole index
+     */
+    public int addHole(List<PointD> points){
+        return addHole(points, 0);
+    }
 
     /**
      * Add a hole line
