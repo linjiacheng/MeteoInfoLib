@@ -47,6 +47,7 @@ import org.meteoinfo.data.mathparser.MathParser;
 import org.meteoinfo.data.mathparser.ParseException;
 import org.meteoinfo.data.meteodata.awx.AWXDataInfo;
 import org.meteoinfo.data.meteodata.bandraster.GeoTiffDataInfo;
+import org.meteoinfo.data.meteodata.micaps.MICAPS2DataInfo;
 import org.meteoinfo.data.meteodata.synop.SYNOPDataInfo;
 import ucar.ma2.Array;
 import ucar.nc2.NetcdfFile;
@@ -677,6 +678,13 @@ public class MeteoDataInfo {
         switch (mdType) {
             case MICAPS_1:
                 _dataInfo = new MICAPS1DataInfo();
+                _meteoUVSet.setUV(false);
+                _meteoUVSet.setFixUVStr(true);
+                _meteoUVSet.setUStr("WindDirection");
+                _meteoUVSet.setVStr("WindSpeed");
+                break;
+            case MICAPS_2:
+                _dataInfo = new MICAPS2DataInfo();
                 _meteoUVSet.setUV(false);
                 _meteoUVSet.setFixUVStr(true);
                 _meteoUVSet.setUStr("WindDirection");
