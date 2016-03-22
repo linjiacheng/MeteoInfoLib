@@ -27,9 +27,11 @@ import org.meteoinfo.data.meteodata.DimensionType;
 import org.meteoinfo.data.meteodata.IStationDataInfo;
 import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.data.meteodata.StationInfoData;
+import org.meteoinfo.data.meteodata.StationModel;
 import org.meteoinfo.data.meteodata.StationModelData;
 import org.meteoinfo.data.meteodata.Variable;
 import org.meteoinfo.global.Extent;
+import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.util.DateUtil;
 import ucar.ma2.Array;
 
@@ -283,7 +285,66 @@ public class MICAPS2DataInfo extends DataInfo implements IStationDataInfo{
 
     @Override
     public StationModelData getStationModelData(int timeIdx, int levelIdx) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        StationModelData smData = new StationModelData();
+        int i;
+        float lon, lat;
+        String aStid;
+        List<String> dataList;
+        List<StationModel> smList = new ArrayList<>();        
+        float minX, maxX, minY, maxY;
+        minX = 0;
+        maxX = 0;
+        minY = 0;
+        maxY = 0;
+
+        for (i = 0; i < _dataList.size(); i++) {
+            dataList = _dataList.get(i);
+            aStid = dataList.get(0);
+            lon = Float.parseFloat(dataList.get(1));
+            lat = Float.parseFloat(dataList.get(2));
+
+            StationModel sm = new StationModel();
+            sm.setStationIdentifer(aStid);
+            sm.setLongitude(lon);
+            sm.setLatitude(lat);
+            sm.setWindDirection(Double.parseDouble(dataList.get(8)));    //Wind direction
+            sm.setWindSpeed(Double.parseDouble(dataList.get(9)));    //Wind speed            
+            sm.setCloudCover(1);    //Cloud cover
+            sm.setTemperature(Double.parseDouble(dataList.get(6)));    //Temperature
+            double ddp = Double.parseDouble(dataList.get(7));
+            sm.setDewPoint(sm.getTemperature() - ddp);    //Dew point
+            sm.setPressure(Double.parseDouble(dataList.get(5)));
+            smList.add(sm);
+
+            if (i == 0) {
+                minX = lon;
+                maxX = minX;
+                minY = lat;
+                maxY = minY;
+            } else {
+                if (minX > lon) {
+                    minX = lon;
+                } else if (maxX < lon) {
+                    maxX = lon;
+                }
+                if (minY > lat) {
+                    minY = lat;
+                } else if (maxY < lat) {
+                    maxY = lat;
+                }
+            }
+        }
+        Extent dataExtent = new Extent();
+        dataExtent.minX = minX;
+        dataExtent.maxX = maxX;
+        dataExtent.minY = minY;
+        dataExtent.maxY = maxY;
+
+        smData.setData(smList);
+        smData.setDataExtent(dataExtent);
+        smData.setMissingValue(this.getMissingValue());
+
+        return smData;
     }
     // </editor-fold>
 }
