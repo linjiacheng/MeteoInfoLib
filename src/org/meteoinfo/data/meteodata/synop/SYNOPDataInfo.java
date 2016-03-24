@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,7 +51,7 @@ public class SYNOPDataInfo extends DataInfo implements IStationDataInfo {
     private String stFileName;
     private Date date;
     private int stationNum;
-    private List<String> varList;
+    private final List<String> varList;
     private List<List<String>> DataList;
     // </editor-fold>
     // <editor-fold desc="Constructor">
@@ -100,12 +99,11 @@ public class SYNOPDataInfo extends DataInfo implements IStationDataInfo {
             sr = new BufferedReader(new InputStreamReader(new FileInputStream(this.stFileName)));
             String aLine;
             String[] dataArray;
-            List<String> dataList = new ArrayList<>();
+            List<String> dataList;
             List<String> stIDList = new ArrayList<>();
             List<String[]> stPosList = new ArrayList<>();
-            int i, LastNonEmpty, dataNum;
+            int i;
             sr.readLine();
-            dataNum = 0;
             while (true) {
                 aLine = sr.readLine();
                 if (aLine == null) {
@@ -117,19 +115,16 @@ public class SYNOPDataInfo extends DataInfo implements IStationDataInfo {
                 dataArray = aLine.split(",");
                 stIDList.add(dataArray[1]);
                 stPosList.add(new String[]{dataArray[5], dataArray[4]});
-                dataNum += 1;
             }
             sr.close();
 
             //Read data
             sr = new BufferedReader(new InputStreamReader(new FileInputStream(fileName)));
             List<List<String>> disDataList = new ArrayList<>();
-            List<String> stList = new ArrayList<>();
             String reportType = "AAXX", str, stID;
             Date toDay = new Date();
             Calendar cal_now = Calendar.getInstance();
             cal_now.setTime(toDay);
-            Date aTime;
             Calendar cal = Calendar.getInstance();
             String windSpeedIndicator = "/";
             int stIdx;
@@ -164,8 +159,7 @@ public class SYNOPDataInfo extends DataInfo implements IStationDataInfo {
                         if (isSetTime) {
                             cal.set(cal_now.get(Calendar.YEAR), cal_now.get(Calendar.MONTH), Integer.parseInt(str.substring(0, 2)),
                                     Integer.parseInt(str.substring(2, 4)), 0, 0);
-                            aTime = cal.getTime();
-                            this.date = aTime;
+                            this.date = cal.getTime();
                             isSetTime = false;
                         }
                         windSpeedIndicator = str.substring(str.length() - 1, str.length());
@@ -186,13 +180,9 @@ public class SYNOPDataInfo extends DataInfo implements IStationDataInfo {
                         }
 
                         dataArray = aLine.split("\\s+");
-                        LastNonEmpty = -1;
                         dataList = new ArrayList<>();
                         for (i = 0; i < dataArray.length; i++) {
-                            if (!dataArray[i].isEmpty()) {
-                                LastNonEmpty++;
-                                dataList.add(dataArray[i]);
-                            }
+                            dataList.add(dataArray[i]);
                         }
 
                         stID = dataList.get(0);
@@ -282,7 +272,8 @@ public class SYNOPDataInfo extends DataInfo implements IStationDataInfo {
             Logger.getLogger(SYNOPDataInfo.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
-                sr.close();
+                if (sr != null)
+                    sr.close();
             } catch (IOException ex) {
                 Logger.getLogger(SYNOPDataInfo.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -349,7 +340,7 @@ public class SYNOPDataInfo extends DataInfo implements IStationDataInfo {
         String aStid;
         int i;
         float lon, lat;
-        List<String> dataList = new ArrayList<>();
+        List<String> dataList;
         //double[,] DiscreteData = new double[3, DataList.Count];
         List<double[]> discreteData = new ArrayList<>();
         float minX, maxX, minY, maxY;

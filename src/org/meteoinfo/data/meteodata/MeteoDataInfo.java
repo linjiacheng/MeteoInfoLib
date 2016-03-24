@@ -47,6 +47,7 @@ import org.meteoinfo.data.mathparser.MathParser;
 import org.meteoinfo.data.mathparser.ParseException;
 import org.meteoinfo.data.meteodata.awx.AWXDataInfo;
 import org.meteoinfo.data.meteodata.bandraster.GeoTiffDataInfo;
+import org.meteoinfo.data.meteodata.metar.METARDataInfo;
 import org.meteoinfo.data.meteodata.micaps.MICAPS2DataInfo;
 import org.meteoinfo.data.meteodata.synop.SYNOPDataInfo;
 import ucar.ma2.Array;
@@ -506,6 +507,27 @@ public class MeteoDataInfo {
      */
     public void openSYNOPData(String aFile, String stFile) {
         SYNOPDataInfo aDataInfo = new SYNOPDataInfo();
+        aDataInfo.setStationFileName(stFile);
+        aDataInfo.readDataInfo(aFile);
+        _dataInfo = aDataInfo;
+        //IsLonLat = aDataInfo.isLatLon;
+
+        //Get data info text
+        _infoText = aDataInfo.generateInfoText();
+        _meteoUVSet.setUV(false);
+        _meteoUVSet.setFixUVStr(true);
+        _meteoUVSet.setUStr("WindDirection");
+        _meteoUVSet.setVStr("WindSpeed");
+    }
+    
+    /**
+     * Open SYNOP data
+     *
+     * @param aFile File path
+     * @param stFile Station file name
+     */
+    public void openMETARData(String aFile, String stFile) {
+        METARDataInfo aDataInfo = new METARDataInfo();
         aDataInfo.setStationFileName(stFile);
         aDataInfo.readDataInfo(aFile);
         _dataInfo = aDataInfo;
