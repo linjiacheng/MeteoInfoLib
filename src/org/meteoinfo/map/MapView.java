@@ -1640,7 +1640,16 @@ public class MapView extends JPanel {
                 this.repaint();
                 break;
             case InEditingVertices:
+                this.repaint();
+                break;
             case Edit_InEditingVertices:
+                VectorLayer layer = (VectorLayer) this.getSelectedLayer();
+                PointD snapP = this.selectSnapVertice(this._mouseLastPos, layer, 10);
+                if (snapP != null) {
+                    double[] screenP = this.projToScreen(snapP.X, snapP.Y);
+                    this._mouseLastPos.x = (int) screenP[0];
+                    this._mouseLastPos.y = (int) screenP[1];
+                }
                 this.repaint();
                 break;
         }
@@ -2221,9 +2230,9 @@ public class MapView extends JPanel {
                     _graphicPoints.add(new PointF(e.getX(), e.getY()));
                     _graphicPoints.add(new PointF(e.getX(), _mouseDownPoint.y));
                     List<PointD> points = new ArrayList<>();
-                    float[] pXY;
+                    double[] pXY;
                     for (PointF aPoint : _graphicPoints) {
-                        pXY = screenToProj(aPoint.X, aPoint.Y);
+                        pXY = screenToProj((double)aPoint.X, (double)aPoint.Y);
                         points.add(new PointD(pXY[0], pXY[1]));
                     }
 
@@ -2346,7 +2355,7 @@ public class MapView extends JPanel {
                 break;
             case InEditingVertices:
                 Graphic graphic = _selectedGraphics.get(0);
-                float[] pXY = screenToProj(e.getX(), e.getY());
+                double[] pXY = screenToProj((double)e.getX(), (double)e.getY());
                 edit = (new MapViewUndoRedo()).new MoveGraphicVerticeEdit(this, graphic,
                         _editingVerticeIndex, pXY[0], pXY[1]);
                 this.fireUndoEditEvent(edit);
@@ -2360,7 +2369,12 @@ public class MapView extends JPanel {
                 Shape eShape = layer.getEditingShape();
                 if (eShape != null) {
                     if (eShape.isEditing()) {
-                        pXY = screenToProj(e.getX(), e.getY());
+                        pXY = screenToProj((double)e.getX(), (double)e.getY());
+                        PointD snapP = this.selectSnapVertice(new Point(e.getX(), e.getY()), layer, 10);
+                        if (snapP != null){
+                            pXY[0] = snapP.X;
+                            pXY[1] = snapP.Y;
+                        }
                         edit = (new MapViewUndoRedo()).new MoveFeatureVerticeEdit(this, eShape,
                                 _editingVerticeIndex, pXY[0], pXY[1]);
                         layer.getUndoManager().addEdit(edit);
@@ -2532,16 +2546,16 @@ public class MapView extends JPanel {
                         }
 
                         VectorLayer aLayer = (VectorLayer) aMLayer;
-                        if (aLayer.getShapeType().isPolygon()){
-                            Object[] selObj = this.selectPolygonHole(aLayer, new PointF(e.getX(), e.getY()));                            
-                            if (selObj != null){
-                                PolygonShape selShape = (PolygonShape)selObj[0];
-                                int polyIdx = (int)selObj[1];
-                                int holeIdx = (int)selObj[2];
+                        if (aLayer.getShapeType().isPolygon()) {
+                            Object[] selObj = this.selectPolygonHole(aLayer, new PointF(e.getX(), e.getY()));
+                            if (selObj != null) {
+                                PolygonShape selShape = (PolygonShape) selObj[0];
+                                int polyIdx = (int) selObj[1];
+                                int holeIdx = (int) selObj[2];
                                 List<PointD> hole = selShape.getPolygons().get(polyIdx).getHoleLines().get(holeIdx);
-                                selShape.getPolygons().get(polyIdx).removeHole(holeIdx);                                
-                                UndoableEdit edit = (new MapViewUndoRedo()).new RemoveRingEdit(this, selShape, 
-                                    hole, polyIdx, holeIdx);
+                                selShape.getPolygons().get(polyIdx).removeHole(holeIdx);
+                                UndoableEdit edit = (new MapViewUndoRedo()).new RemoveRingEdit(this, selShape,
+                                        hole, polyIdx, holeIdx);
                                 aLayer.getUndoManager().addEdit(edit);
                                 this.fireUndoEditEvent(edit);
                                 this.paintLayers();
@@ -5072,7 +5086,7 @@ public class MapView extends JPanel {
                         rPoints.add(new PointF((float) sXY[0], (float) sXY[1]));
                     }
                     for (int i = 0; i < aPG.getHoleLines().size(); i++) {
-                        for (int j = 0; j < aPG.getHoleLines().get(i).size(); j++){
+                        for (int j = 0; j < aPG.getHoleLines().get(i).size(); j++) {
                             PointD wPoint = aPG.getHoleLines().get(i).get(j);
                             double[] sXY = projToScreen(wPoint.X, wPoint.Y, LonShift);
                             rPoints.add(new PointF((float) sXY[0], (float) sXY[1]));
@@ -7595,6 +7609,37 @@ public class MapView extends JPanel {
         return Edge.None;
     }
 
+    private PointD selectSnapVertice(Point aPoint, VectorLayer layer, int buffer) {
+        PolygonShape poly = new PolygonShape();
+        List<PointD> points = new ArrayList<>();
+        float[] pXY;
+        pXY = screenToProj(aPoint.x - buffer, aPoint.y + buffer);
+        float minX = pXY[0];
+        float minY = pXY[1];
+        pXY = screenToProj(aPoint.x + buffer, aPoint.y - buffer);
+        float maxX = pXY[0];
+        float maxY = pXY[1];
+        points.add(new PointD(minX, minY));
+        points.add(new PointD(minX, maxY));
+        points.add(new PointD(maxX, maxY));
+        points.add(new PointD(maxX, minY));
+        points.add(new PointD(minX, minY));
+        poly.setPoints(points);
+        for (Shape shape : layer.getShapes()) {
+            if (!shape.isEditing()) {
+                if (poly.intersects(shape) && !poly.within(shape)) {
+                    for (PointD p : shape.getPoints()) {
+                        if (MIMath.pointInExtent(p, poly.getExtent())) {
+                            return p;
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
     private int selectEditVertices(Point aPoint, Shape aShape, List<PointD> vertices) {
         int vIdx = -1;
         List<PointD> points = (List<PointD>) aShape.getPoints();
@@ -7695,14 +7740,15 @@ public class MapView extends JPanel {
 
         return -1;
     }
-    
+
     /**
      * Select polygon shape
+     *
      * @param layer Polygon layer
      * @param p The point
      * @return Selected polygon shape
      */
-    public PolygonShape selectShape(VectorLayer layer, PointF p){
+    public PolygonShape selectShape(VectorLayer layer, PointF p) {
         float sX = p.X;
         float sY = p.Y;
         double[] projXY = screenToProj((double) p.X, p.Y);
@@ -7725,27 +7771,28 @@ public class MapView extends JPanel {
                 }
             }
         }
-        
+
         projXY = screenToProj((double) sX, sY);
         projX = projXY[0];
         projY = projXY[1];
-        
-        for (int i = 0; i < layer.getShapeNum(); i++){
-            PolygonShape shape = (PolygonShape)layer.getShapes().get(i);
-            if (GeoComputation.pointInPolygon(shape, new PointD(projX, projY))){
+
+        for (int i = 0; i < layer.getShapeNum(); i++) {
+            PolygonShape shape = (PolygonShape) layer.getShapes().get(i);
+            if (GeoComputation.pointInPolygon(shape, new PointD(projX, projY))) {
                 return shape;
             }
         }
         return null;
     }
-    
+
     /**
      * Get polygon hole index by point
+     *
      * @param layer The layer
      * @param p The point
      * @return PolygonShape and polygon hole index
      */
-    public Object[] selectPolygonHole(VectorLayer layer, PointF p){
+    public Object[] selectPolygonHole(VectorLayer layer, PointF p) {
         float sX = p.X;
         float sY = p.Y;
         double[] projXY = screenToProj((double) p.X, p.Y);
@@ -7768,11 +7815,11 @@ public class MapView extends JPanel {
                 }
             }
         }
-        
+
         projXY = screenToProj((double) sX, sY);
         projX = projXY[0];
         projY = projXY[1];
-        
+
         return layer.selectPolygonHole(new PointD(projX, projY));
     }
 

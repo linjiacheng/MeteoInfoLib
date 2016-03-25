@@ -15,6 +15,7 @@ package org.meteoinfo.data.meteodata.micaps;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
@@ -36,6 +37,11 @@ import org.meteoinfo.data.meteodata.Variable;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.util.DateUtil;
 import ucar.ma2.Array;
+import ucar.ma2.DataType;
+import ucar.ma2.IndexIterator;
+import ucar.ma2.InvalidRangeException;
+import ucar.ma2.Range;
+import ucar.ma2.Section;
 
 /**
  *
@@ -77,23 +83,32 @@ public class MICAPS11DataInfo extends DataInfo implements IGridDataInfo {
 
             this.setFileName(fileName);
             aLine = sr.readLine().trim();
+            _headLineNum = 1;
+            if (aLine.isEmpty()){
+                aLine = sr.readLine().trim();
+                _headLineNum++;
+            }
             _description = aLine;
             aLine = sr.readLine().trim();
+            _headLineNum++;
+            if (aLine.isEmpty()){
+                aLine = sr.readLine().trim();
+                _headLineNum++;
+            }
             dataArray = aLine.split("\\s+");
             for (i = 0; i < dataArray.length; i++) {
-                if (!dataArray[i].isEmpty()) {
+                if (!dataArray[i].isEmpty())
                     dataList.add(dataArray[i]);
-                }
             }
-            _headLineNum = 2;
             for (n = 0; n <= 10; n++) {
                 if (dataList.size() < 14) {
                     aLine = sr.readLine().trim();
+                    if (aLine.isEmpty())
+                        aLine = sr.readLine().trim();
                     dataArray = aLine.split("\\s+");
                     for (i = 0; i < dataArray.length; i++) {
-                        if (!dataArray[i].isEmpty()) {
+                        if (!dataArray[i].isEmpty())
                             dataList.add(dataArray[i]);
-                        }
                     }
                     _headLineNum += 1;
                 } else {
@@ -151,7 +166,7 @@ public class MICAPS11DataInfo extends DataInfo implements IGridDataInfo {
             tdim.setValues(values);
             this.setTimeDimension(tdim);
             Dimension zdim = new Dimension(DimensionType.Z);
-            zdim.setValues(new double[_level]);
+            zdim.setValues(new double[]{_level});
             Dimension xdim = new Dimension(DimensionType.X);
             xdim.setValues(_xArray);
             this.setXDimension(xdim);
@@ -203,7 +218,20 @@ public class MICAPS11DataInfo extends DataInfo implements IGridDataInfo {
      */
     @Override
     public Array read(String varName){
-        return null;
+        Variable var = this.getVariable(varName);
+        int n = var.getDimNumber();
+        int[] origin = new int[n];
+        int[] size = new int[n];
+        int[] stride = new int[n];
+        for (int i = 0; i < n; i++){
+            origin[i] = 0;
+            size[i] = var.getDimLength(i);
+            stride[i] = 1;
+        }
+        
+        Array r = read(varName, origin, size, stride);
+        
+        return r;
     }
     
     /**
@@ -217,11 +245,23 @@ public class MICAPS11DataInfo extends DataInfo implements IGridDataInfo {
      */
     @Override
     public Array read(String varName, int[] origin, int[] size, int[] stride) {
-        return null;
-    }
+        try {
+            Section section = new Section(origin, size, stride);
+            Array dataArray = Array.factory(DataType.FLOAT, section.getShape());
+            int rangeIdx = 2;
+            Range yRange = section.getRange(rangeIdx++);
+            Range xRange = section.getRange(rangeIdx);
+            IndexIterator ii = dataArray.getIndexIterator();
+            readXY(varName, yRange, xRange, ii);
 
-    @Override
-    public GridData getGridData_LonLat(int timeIdx, int varIdx, int levelIdx) {
+            return dataArray;
+        } catch (InvalidRangeException ex) {
+            Logger.getLogger(MICAPS4DataInfo.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+    
+    private void readXY(String varName, Range yRange, Range xRange, IndexIterator ii) {
         try {
             BufferedReader sr = new BufferedReader(new InputStreamReader(new FileInputStream(this.getFileName()), "gbk"));
             int i, j;
@@ -229,18 +269,20 @@ public class MICAPS11DataInfo extends DataInfo implements IGridDataInfo {
                 sr.readLine();
             }
 
-            List<String> dataList = new ArrayList<String>();
+            List<String> dataList = new ArrayList<>();
             String[] dataArray;
             int col = 0;
             String aLine;
             int xNum = this.getXDimension().getDimLength();
             int yNum = this.getYDimension().getDimLength();
-            double[][] theData = new double[yNum][xNum];
+            float[][] theData = new float[yNum][xNum];
             int dataNum = xNum * yNum;
             int vn = 0;
-            if (varIdx == 1) {
+            if (varName.equals("V")) {
                 while (true) {
                     aLine = sr.readLine();
+                    if (aLine.isEmpty())
+                        continue;
                     aLine = aLine.trim();
                     dataArray = aLine.split("\\s+");
                     vn += dataArray.length;
@@ -260,12 +302,16 @@ public class MICAPS11DataInfo extends DataInfo implements IGridDataInfo {
                 if (aLine == null) {
                     break;
                 }
+                if (aLine.isEmpty())
+                    continue;
                 aLine = aLine.trim();
                 dataArray = aLine.split("\\s+");
                 dataList.addAll(Arrays.asList(dataArray));
                 if (col == 0) {
                     if (!MIMath.isNumeric(dataList.get(0))) {
                         aLine = sr.readLine().trim();
+                        if (aLine.isEmpty())
+                            aLine = sr.readLine().trim();
                         dataArray = aLine.split("\\s+");
                         dataList.clear();
                         dataList.addAll(Arrays.asList(dataArray));
@@ -277,6 +323,125 @@ public class MICAPS11DataInfo extends DataInfo implements IGridDataInfo {
                         if (aLine == null) {
                             break;
                         }
+                        if (aLine.isEmpty())
+                            aLine = sr.readLine().trim();
+                        aLine = aLine.trim();
+                        dataArray = aLine.split("\\s+");
+                        dataList.addAll(Arrays.asList(dataArray));
+                    } else {
+                        break;
+                    }
+                }
+                for (i = 0; i < xNum; i++) {
+                    theData[col][i] = Float.parseFloat(dataList.get(i));
+                }
+                if (dataList.size() > xNum) {
+                    dataList = dataList.subList(xNum, dataList.size() - 1);
+                } else {
+                    dataList = new ArrayList<>();
+                }
+                col += 1;
+                if (col == yNum)
+                    break;
+            } while (aLine != null);
+
+            sr.close();
+            
+            float[] data = new float[yNum * xNum];
+            if (this._yReverse){
+                for (i = 0; i < yNum; i++) {
+                    for (j = 0; j < xNum; j++) {
+                        data[i * xNum + j] = theData[yNum - 1 - i][j];
+                    }
+                }
+            } else {
+                for (i = 0; i < yNum; i++) {
+                    for (j = 0; j < xNum; j++) {
+                        data[i * xNum + j] = theData[i][j];
+                    }
+                }
+            }
+
+            for (int y = yRange.first(); y <= yRange.last();
+                    y += yRange.stride()) {
+                for (int x = xRange.first(); x <= xRange.last();
+                        x += xRange.stride()) {
+                    int index = y * xNum + x;
+                    ii.setFloatNext(data[index]);
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(MICAPS4DataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(MICAPS4DataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Override
+    public GridData getGridData_LonLat(int timeIdx, int varIdx, int levelIdx) {
+        try {
+            BufferedReader sr = new BufferedReader(new InputStreamReader(new FileInputStream(this.getFileName()), "gbk"));
+            int i, j;
+            for (i = 0; i < _headLineNum; i++) {
+                sr.readLine();
+            }
+
+            List<String> dataList = new ArrayList<>();
+            String[] dataArray;
+            int col = 0;
+            String aLine;
+            int xNum = this.getXDimension().getDimLength();
+            int yNum = this.getYDimension().getDimLength();
+            double[][] theData = new double[yNum][xNum];
+            int dataNum = xNum * yNum;
+            int vn = 0;
+            if (varIdx == 1) {
+                while (true) {
+                    aLine = sr.readLine();
+                    if (aLine.isEmpty())
+                        aLine = sr.readLine();
+                    aLine = aLine.trim();
+                    dataArray = aLine.split("\\s+");
+                    vn += dataArray.length;
+                    if (vn == dataNum) {
+                        break;
+                    } else if (vn > dataNum) {
+                        int dn = dataArray.length;
+                        for (i = dn - (vn - dataNum); i < dn; i++) {
+                            dataList.add(dataArray[i]);
+                        }
+                        break;
+                    }
+                }
+            }
+            do {
+                aLine = sr.readLine();
+                if (aLine == null) {
+                    break;
+                }
+                if (aLine.isEmpty())
+                    aLine = sr.readLine();
+                aLine = aLine.trim();
+                dataArray = aLine.split("\\s+");
+                dataList.addAll(Arrays.asList(dataArray));
+                if (col == 0) {
+                    if (!MIMath.isNumeric(dataList.get(0))) {
+                        aLine = sr.readLine().trim();
+                        if (aLine.isEmpty())
+                            aLine = sr.readLine();
+                        dataArray = aLine.split("\\s+");
+                        dataList.clear();
+                        dataList.addAll(Arrays.asList(dataArray));
+                    }
+                }
+                for (i = 0; i < 100; i++) {
+                    if (dataList.size() < xNum) {
+                        aLine = sr.readLine();
+                        if (aLine == null) {
+                            break;
+                        }
+                        if (aLine.isEmpty())
+                            aLine = sr.readLine();
                         aLine = aLine.trim();
                         dataArray = aLine.split("\\s+");
                         dataList.addAll(Arrays.asList(dataArray));
@@ -290,7 +455,7 @@ public class MICAPS11DataInfo extends DataInfo implements IGridDataInfo {
                 if (dataList.size() > xNum) {
                     dataList = dataList.subList(xNum, dataList.size() - 1);
                 } else {
-                    dataList = new ArrayList<String>();
+                    dataList = new ArrayList<>();
                 }
                 col += 1;
                 if (col == yNum)

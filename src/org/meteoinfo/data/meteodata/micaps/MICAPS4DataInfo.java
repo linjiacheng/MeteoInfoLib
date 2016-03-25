@@ -179,8 +179,8 @@ public class MICAPS4DataInfo extends DataInfo implements IGridDataInfo {
             List<Variable> variables = new ArrayList<>();
             Variable var = new Variable();
             var.setName("var");
-            //var.setDimension(tdim);
-            //var.setDimension(zdim);
+            var.setDimension(tdim);
+            var.setDimension(zdim);
             var.setDimension(ydim);
             var.setDimension(xdim);
             var.setFillValue(this.getMissingValue());
@@ -244,7 +244,7 @@ public class MICAPS4DataInfo extends DataInfo implements IGridDataInfo {
         try {
             Section section = new Section(origin, size, stride);
             Array dataArray = Array.factory(DataType.FLOAT, section.getShape());
-            int rangeIdx = 0;
+            int rangeIdx = 2;
             Range yRange = section.getRange(rangeIdx++);
             Range xRange = section.getRange(rangeIdx);
             IndexIterator ii = dataArray.getIndexIterator();
@@ -317,9 +317,17 @@ public class MICAPS4DataInfo extends DataInfo implements IGridDataInfo {
             sr.close();
             
             float[] data = new float[yNum * xNum];
-            for (i = 0; i < yNum; i++) {
-                for (j = 0; j < xNum; j++) {
-                    data[i * xNum + j] = theData[yNum - 1 - i][j];
+            if (this._yReverse){
+                for (i = 0; i < yNum; i++) {
+                    for (j = 0; j < xNum; j++) {
+                        data[i * xNum + j] = theData[yNum - 1 - i][j];
+                    }
+                }
+            } else {
+                for (i = 0; i < yNum; i++) {
+                    for (j = 0; j < xNum; j++) {
+                        data[i * xNum + j] = theData[i][j];
+                    }
                 }
             }
 
