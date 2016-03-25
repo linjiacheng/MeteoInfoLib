@@ -635,6 +635,14 @@ public class LayoutLegend extends LayoutElement {
         float height = (this.getHeight() - 5) * zoom / bNum;
         Font lFont = new Font(this.getFont().getFontName(), this.getFont().getStyle(), (int) (this.getFont().getSize() * zoom));
 
+        boolean order = true;
+        if (aLS.getBreakNum() > 1){
+            double v1 = Double.parseDouble(aLS.getLegendBreaks().get(0).getEndValue().toString());
+            double v2 = Double.parseDouble(aLS.getLegendBreaks().get(1).getEndValue().toString());
+            if (v2 < v1){
+                order = false;
+            }
+        }
         for (int i = 0; i < bNum; i++) {
             switch (aLS.getShapeType()) {
                 case Point:
@@ -645,7 +653,10 @@ public class LayoutLegend extends LayoutElement {
                     if (aLS.getLegendType() == LegendType.UniqueValue) {
                         caption = aPB.getCaption();
                     } else {
-                        caption = DataConvert.removeTailingZeros(aPB.getEndValue().toString());
+                        if (order)
+                            caption = DataConvert.removeTailingZeros(aPB.getEndValue().toString());
+                        else
+                            caption = DataConvert.removeTailingZeros(aPB.getStartValue().toString());
                     }
                     break;
                 case Polyline:
@@ -655,7 +666,10 @@ public class LayoutLegend extends LayoutElement {
                     if (aLS.getLegendType() == LegendType.UniqueValue) {
                         caption = aPLB.getCaption();
                     } else {
-                        caption = DataConvert.removeTailingZeros(aPLB.getEndValue().toString());
+                        if (order)
+                            caption = DataConvert.removeTailingZeros(aPLB.getEndValue().toString());
+                        else
+                            caption = DataConvert.removeTailingZeros(aPLB.getStartValue().toString());
                     }
                     break;
                 case Polygon:
@@ -666,7 +680,10 @@ public class LayoutLegend extends LayoutElement {
                     if (aLS.getLegendType() == LegendType.UniqueValue) {
                         caption = aPGB.getCaption();
                     } else {
-                        caption = DataConvert.removeTailingZeros(aPGB.getEndValue().toString());
+                        if (order)
+                            caption = DataConvert.removeTailingZeros(aPGB.getEndValue().toString());
+                        else
+                            caption = DataConvert.removeTailingZeros(aPGB.getStartValue().toString());
                     }
                     break;
                 case Image:
@@ -677,7 +694,10 @@ public class LayoutLegend extends LayoutElement {
                     if (aLS.getLegendType() == LegendType.UniqueValue) {
                         caption = aCB.getCaption();
                     } else {
-                        caption = DataConvert.removeTailingZeros(aCB.getEndValue().toString());
+                        if (order)
+                            caption = DataConvert.removeTailingZeros(aCB.getEndValue().toString());
+                        else
+                            caption = DataConvert.removeTailingZeros(aCB.getStartValue().toString());
                     }
                     break;
             }
