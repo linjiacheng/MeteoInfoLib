@@ -1399,7 +1399,7 @@ public class MapView extends JPanel {
                                 PointD snapP = this.selectSnapVertice(this._mouseLastPos, layer, 10);
                                 if (snapP != null) {
                                     double[] screenP = this.projToScreen(snapP.X, snapP.Y);
-                                    _graphicPoints.add(new PointF((float)screenP[0], (float)screenP[1]));
+                                    _graphicPoints.add(new PointF((float) screenP[0], (float) screenP[1]));
                                 } else {
                                     _graphicPoints.add(new PointF(e.getX(), e.getY()));
                                 }
@@ -1769,16 +1769,23 @@ public class MapView extends JPanel {
             case Edit_SplitFeature:
                 VectorLayer selLayer = (VectorLayer) this.getSelectedLayer();
                 if (!selLayer.getShapeType().isPoint()) {
-                    PointD snapP = this.selectSnapVertice(this._mouseLastPos, selLayer, 10);
-                    if (snapP != null) {
-                        double[] screenP = this.projToScreen(snapP.X, snapP.Y);
-                        this._mouseLastPos.x = (int) screenP[0];
-                        this._mouseLastPos.y = (int) screenP[1];
-                        this.repaint();
-                    } else {
-                        if (!_startNewGraphic) {
-                            this.repaint();
-                        }
+                    switch (this._mouseTool) {
+                        case Edit_NewFeature:
+                            PointD snapP = this.selectSnapVertice(this._mouseLastPos, selLayer, 10);
+                            if (snapP != null) {
+                                double[] screenP = this.projToScreen(snapP.X, snapP.Y);
+                                this._mouseLastPos.x = (int) screenP[0];
+                                this._mouseLastPos.y = (int) screenP[1];
+                                this.repaint();
+                            } else if (!_startNewGraphic) {
+                                this.repaint();
+                            }
+                            break;
+                        default:
+                            if (!_startNewGraphic) {
+                                this.repaint();
+                            }
+                            break;
                     }
                 }
                 break;
@@ -2912,10 +2919,10 @@ public class MapView extends JPanel {
                                         aPLS.setPoints(points);
                                         Shape r = selLayer.findReformShape(aPLS);
                                         if (r != null) {
-                                            Shape shape = r.reform(aPLS);                                            
+                                            Shape shape = r.reform(aPLS);
                                             UndoableEdit edit = (new MapViewUndoRedo()).new ReplaceFeatureEdit(this, selLayer, r, shape);
                                             selLayer.getUndoManager().addEdit(edit);
-                                            this.fireUndoEditEvent(edit);   
+                                            this.fireUndoEditEvent(edit);
                                             r.cloneValue(shape);
                                         }
                                         this.paintLayers();
