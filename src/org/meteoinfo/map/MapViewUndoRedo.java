@@ -131,6 +131,43 @@ public class MapViewUndoRedo {
         }                
     }
     
+    public class ReplaceFeatureEdit extends FeatureUndoableEdit {
+        MapView mapView;
+        Shape s0;
+        Shape s1;
+        Shape s00;
+        VectorLayer layer;
+        
+        public ReplaceFeatureEdit(MapView mapView, VectorLayer layer, Shape s0, Shape s1){
+            this.mapView = mapView;
+            this.layer = layer;
+            this.s0 = s0;
+            this.s1 = s1;
+            this.s00 = (Shape)s0.clone();
+        }
+        
+        @Override
+        public String getPresentationName() {
+            return "Replace Feature";
+        }
+        
+        @Override
+        public void undo() {
+            super.undo();
+            s0.cloneValue(s00);            
+            mapView.paintLayers();
+            System.out.println("Undo replace feature");
+        }
+        
+        @Override
+        public void redo(){
+            super.redo();
+            s0.cloneValue(s1);
+            mapView.paintLayers();
+            System.out.println("Redo replace feature");
+        }                
+    }
+    
     public class SplitFeatureEdit extends FeatureUndoableEdit {
         MapView mapView;
         Shape shape;

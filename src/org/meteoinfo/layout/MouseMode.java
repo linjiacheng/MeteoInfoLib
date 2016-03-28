@@ -137,5 +137,6 @@ public enum MouseMode {
     Map_Edit_AddRing,
     Map_Edit_FillRing,
     Map_Edit_DeleteRing,
+    Map_Edit_ReformFeature,
     Map_Edit_SplitFeature,
 }

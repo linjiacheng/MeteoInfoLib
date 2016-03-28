@@ -617,6 +617,32 @@ public class VectorLayer extends MapLayer {
 
         return null;
     }
+    
+    /**
+     * Find a shape for reformation by a polyline shape
+     * @param other The polyline shape
+     * @return Result shape
+     */
+    public Shape findReformShape(PolylineShape other){
+        if (this.getShapeType().isLine()){
+            return this.findShape_crosses(other);
+        } else if (this.getShapeType().isPolygon()){
+            PointShape a = new PointShape();
+            a.setPoint(other.getPoints().get(0));
+            PolygonShape r = (PolygonShape)this.findShape_contains(a);
+            if (r == null){
+                return null;
+            } else {
+                PointShape b = new PointShape();
+                b.setPoint(other.getPoints().get(other.getPointNum() - 1));
+                if (r.contains(b))
+                    return r;
+                else
+                    return null;
+            }
+        }
+        return null;
+    }
 
     /**
      * Select shapes

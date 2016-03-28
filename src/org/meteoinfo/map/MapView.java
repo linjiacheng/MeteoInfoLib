@@ -659,6 +659,7 @@ public class MapView extends JPanel {
             case Edit_NewFeature:
             case Edit_AddRing:
             case Edit_FillRing:
+            case Edit_ReformFeature:
             case Edit_SplitFeature:
                 customCursor = Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR);
                 break;
@@ -1395,13 +1396,20 @@ public class MapView extends JPanel {
                                     _graphicPoints = new ArrayList<>();
                                     _startNewGraphic = false;
                                 }
-                                _graphicPoints.add(new PointF(e.getX(), e.getY()));
+                                PointD snapP = this.selectSnapVertice(this._mouseLastPos, layer, 10);
+                                if (snapP != null) {
+                                    double[] screenP = this.projToScreen(snapP.X, snapP.Y);
+                                    _graphicPoints.add(new PointF((float)screenP[0], (float)screenP[1]));
+                                } else {
+                                    _graphicPoints.add(new PointF(e.getX(), e.getY()));
+                                }
                             }
                         }
                     }
                     break;
                 case Edit_AddRing:
                 case Edit_FillRing:
+                case Edit_ReformFeature:
                 case Edit_SplitFeature:
                 case New_Polyline:
                 case New_Polygon:
@@ -1757,11 +1765,20 @@ public class MapView extends JPanel {
             case Edit_NewFeature:
             case Edit_AddRing:
             case Edit_FillRing:
+            case Edit_ReformFeature:
             case Edit_SplitFeature:
                 VectorLayer selLayer = (VectorLayer) this.getSelectedLayer();
                 if (!selLayer.getShapeType().isPoint()) {
-                    if (!_startNewGraphic) {
+                    PointD snapP = this.selectSnapVertice(this._mouseLastPos, selLayer, 10);
+                    if (snapP != null) {
+                        double[] screenP = this.projToScreen(snapP.X, snapP.Y);
+                        this._mouseLastPos.x = (int) screenP[0];
+                        this._mouseLastPos.y = (int) screenP[1];
                         this.repaint();
+                    } else {
+                        if (!_startNewGraphic) {
+                            this.repaint();
+                        }
                     }
                 }
                 break;
@@ -2232,7 +2249,7 @@ public class MapView extends JPanel {
                     List<PointD> points = new ArrayList<>();
                     double[] pXY;
                     for (PointF aPoint : _graphicPoints) {
-                        pXY = screenToProj((double)aPoint.X, (double)aPoint.Y);
+                        pXY = screenToProj((double) aPoint.X, (double) aPoint.Y);
                         points.add(new PointD(pXY[0], pXY[1]));
                     }
 
@@ -2355,7 +2372,7 @@ public class MapView extends JPanel {
                 break;
             case InEditingVertices:
                 Graphic graphic = _selectedGraphics.get(0);
-                double[] pXY = screenToProj((double)e.getX(), (double)e.getY());
+                double[] pXY = screenToProj((double) e.getX(), (double) e.getY());
                 edit = (new MapViewUndoRedo()).new MoveGraphicVerticeEdit(this, graphic,
                         _editingVerticeIndex, pXY[0], pXY[1]);
                 this.fireUndoEditEvent(edit);
@@ -2369,9 +2386,9 @@ public class MapView extends JPanel {
                 Shape eShape = layer.getEditingShape();
                 if (eShape != null) {
                     if (eShape.isEditing()) {
-                        pXY = screenToProj((double)e.getX(), (double)e.getY());
+                        pXY = screenToProj((double) e.getX(), (double) e.getY());
                         PointD snapP = this.selectSnapVertice(new Point(e.getX(), e.getY()), layer, 10);
-                        if (snapP != null){
+                        if (snapP != null) {
                             pXY[0] = snapP.X;
                             pXY[1] = snapP.Y;
                         }
@@ -2847,6 +2864,7 @@ public class MapView extends JPanel {
                     break;
                 case Edit_AddRing:
                 case Edit_FillRing:
+                case Edit_ReformFeature:
                 case Edit_SplitFeature:
                     if (!_startNewGraphic) {
                         _startNewGraphic = true;
@@ -2858,42 +2876,57 @@ public class MapView extends JPanel {
                             points.add(new PointD(pXY[0], pXY[1]));
                         }
                         VectorLayer selLayer = (VectorLayer) this.getSelectedLayer();
-                        if (selLayer.getShapeType().isPolygon()) {
+                        if (selLayer.getShapeType().isPolygon() || selLayer.getShapeType().isLine()) {
                             if (points.size() >= 2) {
                                 switch (this._mouseTool) {
                                     case Edit_AddRing:
                                     case Edit_FillRing:
-                                        PolygonShape aPGS = new PolygonShape();
-                                        points.add((PointD) points.get(0).clone());
-                                        aPGS.setPoints(points);
-                                        PolygonShape tPGS = (PolygonShape) selLayer.findShape_contains(aPGS);
-                                        if (tPGS != null) {
-                                            int holeIdx = tPGS.addHole(points, 0);
-                                            if (this._mouseTool == MouseTools.Edit_FillRing) {
-                                                try {
-                                                    selLayer.editAddShape(aPGS);
-                                                    UndoableEdit edit = (new MapViewUndoRedo()).new FillRingEdit(this, selLayer,
-                                                            tPGS, aPGS, 0, holeIdx);
+                                        if (selLayer.getShapeType().isPolygon()) {
+                                            PolygonShape aPGS = new PolygonShape();
+                                            points.add((PointD) points.get(0).clone());
+                                            aPGS.setPoints(points);
+                                            PolygonShape tPGS = (PolygonShape) selLayer.findShape_contains(aPGS);
+                                            if (tPGS != null) {
+                                                int holeIdx = tPGS.addHole(points, 0);
+                                                if (this._mouseTool == MouseTools.Edit_FillRing) {
+                                                    try {
+                                                        selLayer.editAddShape(aPGS);
+                                                        UndoableEdit edit = (new MapViewUndoRedo()).new FillRingEdit(this, selLayer,
+                                                                tPGS, aPGS, 0, holeIdx);
+                                                        selLayer.getUndoManager().addEdit(edit);
+                                                        this.fireUndoEditEvent(edit);
+                                                    } catch (Exception ex) {
+                                                        Logger.getLogger(MapView.class.getName()).log(Level.SEVERE, null, ex);
+                                                    }
+                                                } else {
+                                                    UndoableEdit edit = (new MapViewUndoRedo()).new AddRingEdit(this, tPGS, points, 0, holeIdx);
                                                     selLayer.getUndoManager().addEdit(edit);
                                                     this.fireUndoEditEvent(edit);
-                                                } catch (Exception ex) {
-                                                    Logger.getLogger(MapView.class.getName()).log(Level.SEVERE, null, ex);
                                                 }
-                                            } else {
-                                                UndoableEdit edit = (new MapViewUndoRedo()).new AddRingEdit(this, tPGS, points, 0, holeIdx);
-                                                selLayer.getUndoManager().addEdit(edit);
-                                                this.fireUndoEditEvent(edit);
+                                                this.paintLayers();
                                             }
-                                            this.paintLayers();
                                         }
                                         break;
-                                    case Edit_SplitFeature:
+                                    case Edit_ReformFeature:
                                         PolylineShape aPLS = new PolylineShape();
                                         aPLS.setPoints(points);
-                                        tPGS = (PolygonShape) selLayer.findShape_crosses(aPLS);
-                                        if (tPGS != null) {
-                                            List<Shape> shapes = tPGS.split(aPLS);
-                                            selLayer.editRemoveShape(tPGS);
+                                        Shape r = selLayer.findReformShape(aPLS);
+                                        if (r != null) {
+                                            Shape shape = r.reform(aPLS);                                            
+                                            UndoableEdit edit = (new MapViewUndoRedo()).new ReplaceFeatureEdit(this, selLayer, r, shape);
+                                            selLayer.getUndoManager().addEdit(edit);
+                                            this.fireUndoEditEvent(edit);   
+                                            r.cloneValue(shape);
+                                        }
+                                        this.paintLayers();
+                                        break;
+                                    case Edit_SplitFeature:
+                                        aPLS = new PolylineShape();
+                                        aPLS.setPoints(points);
+                                        r = selLayer.findShape_crosses(aPLS);
+                                        if (r != null) {
+                                            List<Shape> shapes = r.split(aPLS);
+                                            selLayer.editRemoveShape(r);
                                             for (Shape s : shapes) {
                                                 try {
                                                     selLayer.editAddShape(s);
@@ -2901,7 +2934,7 @@ public class MapView extends JPanel {
                                                     Logger.getLogger(MapView.class.getName()).log(Level.SEVERE, null, ex);
                                                 }
                                             }
-                                            UndoableEdit edit = (new MapViewUndoRedo()).new SplitFeatureEdit(this, selLayer, tPGS, shapes);
+                                            UndoableEdit edit = (new MapViewUndoRedo()).new SplitFeatureEdit(this, selLayer, r, shapes);
                                             selLayer.getUndoManager().addEdit(edit);
                                             this.fireUndoEditEvent(edit);
                                             this.paintLayers();
@@ -3817,17 +3850,26 @@ public class MapView extends JPanel {
             case Edit_NewFeature:
             case Edit_AddRing:
             case Edit_FillRing:
+            case Edit_ReformFeature:
             case Edit_SplitFeature:
                 VectorLayer selLayer = (VectorLayer) this.getSelectedLayer();
                 if (!_startNewGraphic) {
                     List<PointF> points = new ArrayList<>(_graphicPoints);
                     points.add(new PointF(_mouseLastPos.x, _mouseLastPos.y));
                     g.setColor(this.getForeground());
-                    if (_mouseTool == MouseTools.Edit_SplitFeature || selLayer.getShapeType().isLine()) {
-                        Draw.drawPolyline(points, g2);
-                    } else if (selLayer.getShapeType().isPolygon()) {
-                        points.add(points.get(0));
-                        Draw.drawPolyline(points, g2);
+                    switch (_mouseTool) {
+                        case Edit_ReformFeature:
+                        case Edit_SplitFeature:
+                            Draw.drawPolyline(points, g2);
+                            break;
+                        default:
+                            if (selLayer.getShapeType().isLine()) {
+                                Draw.drawPolyline(points, g2);
+                            } else if (selLayer.getShapeType().isPolygon()) {
+                                points.add(points.get(0));
+                                Draw.drawPolyline(points, g2);
+                            }
+                            break;
                     }
                 }
                 break;

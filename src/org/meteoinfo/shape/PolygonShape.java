@@ -63,7 +63,7 @@ public class PolygonShape extends Shape implements Cloneable {
         parts[0] = 0;
         _polygons = new ArrayList<>();
     }
-
+        
     /**
      * Constructor
      *
@@ -465,5 +465,28 @@ public class PolygonShape extends Shape implements Cloneable {
         
         return aPGS;
     }
+    
+    /**
+     * Constructor
+     * @param other Other polygon shape
+     */
+    @Override
+    public void cloneValue(Shape other){
+        PolygonShape o = (PolygonShape)other;
+        this.setExtent(o.getExtent());
+        this.highValue = o.highValue;
+        this.lowValue = o.lowValue;
+        this._numParts = o._numParts;
+        this.parts = (int[]) o.parts.clone();
+        List<PointD> points = new ArrayList<>();
+        for (PointD p : o._points){
+            points.add((PointD)p.clone());
+        }
+        this.setPoints(points);
+        this.setVisible(o.isVisible());
+        this.setSelected(o.isSelected());
+        this.setLegendIndex(o.getLegendIndex());
+    }
+
     // </editor-fold>
 }

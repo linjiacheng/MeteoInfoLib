@@ -52,6 +52,7 @@ public enum MouseTools {
     Edit_AddRing,
     Edit_FillRing,
     Edit_DeleteRing,
+    Edit_ReformFeature,
     Edit_SplitFeature,
     None
 }

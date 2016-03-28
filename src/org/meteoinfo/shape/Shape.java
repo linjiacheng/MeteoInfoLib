@@ -18,9 +18,13 @@ import java.util.ArrayList;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.PointD;
 import java.util.List;
+import org.meteoinfo.jts.geom.Coordinate;
 import org.meteoinfo.jts.geom.Geometry;
 import org.meteoinfo.jts.geom.GeometryFactory;
+import org.meteoinfo.jts.geom.LinearRing;
 import org.meteoinfo.jts.operation.polygonize.Polygonizer;
+import org.meteoinfo.jts.operation.union.CascadedPolygonUnion;
+import org.meteoinfo.jts.operation.union.UnaryUnionOp;
 
 /**
  * Shape class
@@ -324,10 +328,9 @@ public abstract class Shape implements Cloneable{
     public List<Shape> split(Shape line){
         Geometry g1 = this.toGeometry();
         Geometry g2 = line.toGeometry();
-        if (g1.getGeometryType().equals("Polygon")){
-            org.meteoinfo.jts.geom.Polygon polygon = (org.meteoinfo.jts.geom.Polygon)g1;
+        if (this.getShapeType().isPolygon()){
             Polygonizer polygonizer = new Polygonizer();
-            Geometry polygons = polygon.getBoundary().union(g2);
+            Geometry polygons = g1.getBoundary().union(g2);
             polygonizer.add(polygons);
             List<Geometry> polys = (List)polygonizer.getPolygons();   
             List<Shape> polyShapes = new ArrayList<>();
@@ -337,6 +340,79 @@ public abstract class Shape implements Cloneable{
                     polyShapes.add(new PolygonShape(poly));
             }
             return polyShapes;
+        } else if (this.getShapeType().isLine()){
+            Geometry ugeo = g1.union(g2);            
+            List<Shape> lineShapes = new ArrayList<>();
+            for (int i = 0; i < ugeo.getNumGeometries(); i++){
+                Geometry geo = ugeo.getGeometryN(i);
+                if (geo.buffer(0.001).within(g1.buffer(0.0011)))
+                    lineShapes.add(new PolylineShape(geo));
+            }
+            return lineShapes;
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Reform the shape by a line
+     * @param line The line
+     * @return Result shape
+     */
+    public Shape reform(Shape line){
+        Geometry g1 = this.toGeometry();
+        Geometry g2 = line.toGeometry();
+        if (this.getShapeType().isPolygon()){
+            Polygonizer polygonizer = new Polygonizer();
+            Geometry polygons = g1.getBoundary().union(g2);
+            polygonizer.add(polygons);
+            List<Geometry> polys = (List)polygonizer.getPolygons();
+            Geometry mbgeo;
+            org.meteoinfo.jts.geom.Polygon poly1 = (org.meteoinfo.jts.geom.Polygon)g1;
+            if (poly1.getNumInteriorRing() == 0){
+                mbgeo = CascadedPolygonUnion.union(polys);
+            } else {
+                GeometryFactory factory = new GeometryFactory();
+                org.meteoinfo.jts.geom.Polygon shell = factory.createPolygon((LinearRing)poly1.getExteriorRing());
+                List<Geometry> npolys = new ArrayList<>();
+                for (int i = 0; i < polys.size(); i++){
+                    org.meteoinfo.jts.geom.Polygon poly = (org.meteoinfo.jts.geom.Polygon)polys.get(i);
+                    if (poly.getInteriorPoint().within(g1))
+                        npolys.add(poly);
+                    else {
+                        if (!poly.getInteriorPoint().within(shell))
+                            npolys.add(poly);
+                    }
+                }
+                mbgeo = CascadedPolygonUnion.union(npolys);
+            }
+            Shape r = new PolygonShape(mbgeo);
+            return r;
+        } else if (this.getShapeType().isLine()){
+            Geometry ugeo = g1.union(g2);            
+            List<Geometry> geos = new ArrayList<>();
+            for (int i = 0; i < ugeo.getNumGeometries(); i++){
+                Geometry geo = ugeo.getGeometryN(i);
+                Coordinate c1 = geo.getCoordinates()[0];
+                Coordinate c2 = geo.getCoordinates()[geo.getNumPoints() - 1];
+                if (c1.equals2D(g1.getCoordinates()[0]) ||
+                    c1.equals2D(g1.getCoordinates()[g1.getNumPoints() - 1]) ||
+                    c2.equals2D(g1.getCoordinates()[0]) ||
+                    c2.equals2D(g1.getCoordinates()[g1.getNumPoints() - 1]))
+                    geos.add(geo);
+                else {
+                    GeometryFactory factory = new GeometryFactory();
+                    Geometry p1 = factory.createPoint(c1);
+                    Geometry p2 = factory.createPoint(c2);
+                    Geometry buffer = g1.buffer(0.001);
+                    if (p1.within(buffer) && p2.within(buffer)){
+                        if (!geo.buffer(0.001).within(g1.buffer(0.0011)))
+                            geos.add(geo);
+                    }
+                }
+            }
+            Geometry geo = UnaryUnionOp.union(geos);
+            return new PolylineShape(geo);
         }
         
         return null;
@@ -467,5 +543,11 @@ public abstract class Shape implements Cloneable{
         }
         return o;
     }
+    
+    /**
+     * Clone value
+     * @param other Other shape
+     */
+    public void cloneValue(Shape other){};
     // </editor-fold>
 }

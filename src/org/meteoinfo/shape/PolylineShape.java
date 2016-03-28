@@ -57,6 +57,7 @@ public class PolylineShape extends Shape implements Cloneable {
         _numParts = 1;
         parts = new int[1];
         parts[0] = 0;
+        _polylines = new ArrayList<>();
     }
     
     /**
@@ -68,8 +69,37 @@ public class PolylineShape extends Shape implements Cloneable {
         Coordinate[] cs = geometry.getCoordinates();
         List<PointD> points = new ArrayList();
         for (Coordinate c : cs)
-            points.add(new PointD(c.x, c.y));
-        this.setPoints(points);
+            points.add(new PointD(c.x, c.y));       
+        switch (geometry.getGeometryType()) {
+            case "MultiLineString":
+                this._points = points;
+                List<PointD> pp;
+                int n = geometry.getNumGeometries();                
+                _numParts = n;
+                List<Integer> partlist = new ArrayList<>();
+                int idx = 0;
+                for (int i = 0; i < n; i++) {
+                    LineString poly = (LineString) geometry.getGeometryN(i);                   
+                    partlist.add(idx);                    
+                    Polyline polyline = new Polyline();
+                    pp = new ArrayList<>();
+                    for (int j = idx; j < idx + poly.getNumPoints(); j++) {
+                        pp.add(points.get(j));
+                    }
+                    polyline.setPointList(pp);
+                    idx += poly.getNumPoints();                    
+                    ((List<Polyline>)this._polylines).add(polyline);
+                }
+                parts = new int[n];
+                for (int i = 0; i < parts.length; i++) {
+                    parts[i] = partlist.get(i);
+                }
+                this.setExtent(MIMath.getPointsExtent(_points));
+                break;
+            default:
+                this.setPoints(points);
+                break;
+        }           
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -347,5 +377,28 @@ public class PolylineShape extends Shape implements Cloneable {
 
         return aPLS;
     }
+    
+    
+    /**
+     * Clone value
+     * @param other Other polyline shape 
+     */
+    @Override
+    public void cloneValue(Shape other){
+        PolylineShape o = (PolylineShape)other;
+        this.value = o.value;
+        this.setExtent(o.getExtent());
+        this._numParts = o._numParts;
+        this.parts = (int[]) o.parts.clone();
+        List<PointD> points = new ArrayList<>();
+        for (PointD point : (List<PointD>)o._points){
+            points.add((PointD)point.clone());
+        }
+        this.setPoints(points);
+        this.setVisible(o.isVisible());
+        this.setSelected(o.isSelected());
+        this.setLegendIndex(o.getLegendIndex());
+    }
+    
     // </editor-fold>
 }
