@@ -114,10 +114,13 @@ public class TimeAxis extends Axis implements Cloneable {
         String lab;
         SimpleDateFormat format = new SimpleDateFormat(this.timeFormat);
         Date date;
-        for (double value : this.getTickValues()) {
-            date = DateUtil.fromOADate(value);
-            lab = format.format(date);
-            tls.add(lab);
+        double[] tvs = this.getTickValues();
+        if (tvs != null){
+            for (double value : this.getTickValues()) {
+                date = DateUtil.fromOADate(value);
+                lab = format.format(date);
+                tls.add(lab);
+            }
         }
 
         return tls;
