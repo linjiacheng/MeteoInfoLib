@@ -630,7 +630,7 @@ public class ChartLegend {
         rowNums[0] = aLS.getVisibleBreakNum() - num;
 
         //Draw legend                        
-        Font lFont = new Font(this.tickFont.getFontName(), this.tickFont.getStyle(), (int) (this.tickFont.getSize()));
+        //Font lFont = new Font(this.labelFont.getFontName(), this.labelFont.getStyle(), (int) (this.labelFont.getSize()));
         float x, y;
         i = 0;
         for (int col = 0; col < rowColNum; col++) {
@@ -689,8 +689,8 @@ public class ChartLegend {
                 sP.Y = y;
                 //FontMetrics metrics = g.getFontMetrics(lFont);
                 //aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());                
-                g.setColor(this.tickColor);
-                g.setFont(lFont);
+                g.setColor(this.labelColor);
+                g.setFont(this.labelFont);
                 aSF = Draw.getStringDimension(caption, g);
                 //g.drawString(caption, sP.X + 5, sP.Y + aSF.height / 3);
                 //g.drawString(caption, sP.X + 5, sP.Y + aSF.height / 4);
@@ -772,8 +772,8 @@ public class ChartLegend {
                 PointF sP = new PointF(0, 0);
                 sP.X = x + symbolWidth / 2;
                 sP.Y = y;
-                g.setColor(this.tickColor);
-                g.setFont(this.tickFont);
+                g.setColor(this.labelColor);
+                g.setFont(this.labelFont);
                 //g.drawString(caption, sP.X + 5, sP.Y + aSF.height / 3);
                 //g.drawString(caption, sP.X + 5, sP.Y + metrics.getHeight() / 4);
                 Draw.drawString(g, caption, sP.X + 5, sP.Y + metrics.getHeight() / 4);
