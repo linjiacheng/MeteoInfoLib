@@ -198,6 +198,16 @@ public abstract class XYPlot extends Plot {
         this.getAxis(Location.LEFT).setMinMaxValue(extent.minY, extent.maxY);
         this.getAxis(Location.RIGHT).setMinMaxValue(extent.minY, extent.maxY);
     }
+    
+    /**
+     * Update draw extent
+     */
+    public void updateDrawExtent(){
+        this.getAxis(Location.BOTTOM).setMinMaxValue(drawExtent.minX, drawExtent.maxX);
+        this.getAxis(Location.TOP).setMinMaxValue(drawExtent.minX, drawExtent.maxX);
+        this.getAxis(Location.LEFT).setMinMaxValue(drawExtent.minY, drawExtent.maxY);
+        this.getAxis(Location.RIGHT).setMinMaxValue(drawExtent.minY, drawExtent.maxY);
+    }
 
     /**
      * Get background
