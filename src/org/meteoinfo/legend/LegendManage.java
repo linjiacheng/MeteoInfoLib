@@ -1740,7 +1740,7 @@ public class LegendManage {
             return cValues;
         }
 
-        NumberFormat formatter = new DecimalFormat("0.#E0");
+        NumberFormat formatter = new DecimalFormat("#.####E0");
         eStr = formatter.format(range);
         //eStr = String.format("%1$E", range);
         aD = Integer.parseInt(eStr.substring(0, 1));

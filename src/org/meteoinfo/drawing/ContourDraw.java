@@ -45,6 +45,24 @@ public class ContourDraw {
         return wContour.Contour.tracingBorders(gridData, X, Y, S1, undef);
     }
 
+//    /**
+//     * Tracing contour lines with undefined data
+//     *
+//     * @param gridData Grid data
+//     * @param cValues Values
+//     * @param X X array
+//     * @param Y Y array
+//     * @param noData Undefine data
+//     * @param borders Contour line borders
+//     * @param S1 Flag array
+//     * @return Traced contour lines
+//     */
+//    public static List<wContour.Global.PolyLine> tracingContourLines(double[][] gridData, double[] cValues, double[] X,
+//            double[] Y, double noData, List<wContour.Global.Border> borders, int[][] S1) {
+//        int nc = cValues.length;
+//        return wContour.Contour.tracingContourLines(gridData, X, Y, nc, cValues, noData, borders, S1);
+//    }
+    
     /**
      * Tracing contour lines with undefined data
      *
@@ -53,14 +71,15 @@ public class ContourDraw {
      * @param X X array
      * @param Y Y array
      * @param noData Undefine data
-     * @param borders Contour line borders
      * @param S1 Flag array
-     * @return Traced contour lines
+     * @return Traced contour lines and borders
      */
-    public static List<wContour.Global.PolyLine> tracingContourLines(double[][] gridData, double[] cValues, double[] X,
-            double[] Y, double noData, List<wContour.Global.Border> borders, int[][] S1) {
+    public static Object[] tracingContourLines(double[][] gridData, double[] cValues, double[] X,
+            double[] Y, double noData, int[][] S1) {
         int nc = cValues.length;
-        return wContour.Contour.tracingContourLines(gridData, X, Y, nc, cValues, noData, borders, S1);
+        List<wContour.Global.Border> borders = wContour.Contour.tracingBorders(gridData, X, Y, S1, noData);
+        List<wContour.Global.PolyLine> contourLines = wContour.Contour.tracingContourLines(gridData, X, Y, nc, cValues, noData, borders, S1);
+        return new Object[]{contourLines, borders};
     }
 
     /**

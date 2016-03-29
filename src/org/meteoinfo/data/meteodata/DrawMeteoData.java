@@ -348,10 +348,10 @@ public class DrawMeteoData {
         Object[] ccs = LegendManage.getContoursAndColors(ls);
         double[] cValues = (double[]) ccs[0];
 
-        int[][] S1 = new int[gridData.data.length][gridData.data[0].length];
-        List<wContour.Global.Border> Borders = ContourDraw.tracingBorders(gridData.data, gridData.xArray, gridData.yArray, S1, gridData.missingValue);
-        List<wContour.Global.PolyLine> ContourLines = ContourDraw.tracingContourLines(gridData.data,
-                cValues, gridData.xArray, gridData.yArray, gridData.missingValue, Borders, S1);
+        int[][] S1 = new int[gridData.data.length][gridData.data[0].length];     
+        Object[] cbs = ContourDraw.tracingContourLines(gridData.data,
+                cValues, gridData.xArray, gridData.yArray, gridData.missingValue, S1);
+        List<wContour.Global.PolyLine> ContourLines = (List<wContour.Global.PolyLine>)cbs[0];
 
         if (ContourLines.isEmpty()) {
             return null;
@@ -437,10 +437,10 @@ public class DrawMeteoData {
         Object[] ccs = LegendManage.getContoursAndColors(ls);
         double[] cValues = (double[]) ccs[0];
 
-        int[][] S1 = new int[data.length][data[0].length];
-        List<wContour.Global.Border> Borders = ContourDraw.tracingBorders(data, xArray, yArray, S1, missingValue);
-        List<wContour.Global.PolyLine> ContourLines = ContourDraw.tracingContourLines(data,
-                cValues, xArray, yArray, missingValue, Borders, S1);
+        int[][] S1 = new int[data.length][data[0].length];   
+        Object[] cbs =  ContourDraw.tracingContourLines(data,
+            cValues, xArray, yArray, missingValue, S1);
+        List<wContour.Global.PolyLine> ContourLines = (List<wContour.Global.PolyLine>)cbs[0];
 
         if (ContourLines.isEmpty()) {
             return null;
@@ -550,15 +550,16 @@ public class DrawMeteoData {
         maxData = maxmin[0];
         minData = maxmin[1];
 
-        int[][] S1 = new int[gridData.data.length][gridData.data[0].length];
-        List<wContour.Global.Border> Borders = ContourDraw.tracingBorders(gridData.data, gridData.xArray, gridData.yArray, S1, gridData.missingValue);
-        ContourLines = ContourDraw.tracingContourLines(gridData.data,
-                cValues, gridData.xArray, gridData.yArray, gridData.missingValue, Borders, S1);
+        int[][] S1 = new int[gridData.data.length][gridData.data[0].length];   
+        Object[] cbs = ContourDraw.tracingContourLines(gridData.data,
+                cValues, gridData.xArray, gridData.yArray, gridData.missingValue, S1);
+        ContourLines = (List<wContour.Global.PolyLine>)cbs[0];
+        List<wContour.Global.Border> borders = (List<wContour.Global.Border>)cbs[1];
 
         if (isSmooth) {
             ContourLines = wContour.Contour.smoothLines(ContourLines);
         }
-        ContourPolygons = ContourDraw.tracingPolygons(gridData.data, ContourLines, Borders, cValues);
+        ContourPolygons = ContourDraw.tracingPolygons(gridData.data, ContourLines, borders, cValues);
 
         //wContour.Global.Polygon aPolygon;
         //Color aColor;
