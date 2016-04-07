@@ -711,7 +711,12 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             }
         }
 
-        return new ProjectionInfo(projStr);
+        try {
+            ProjectionInfo projInfo = new ProjectionInfo(projStr);
+            return projInfo;
+        } catch (Exception e){
+            return KnownCoordinateSystems.geographic.world.WGS1984;
+        }
     }
 
     private ProjectionInfo getProjection_IOAPI() {
@@ -1784,7 +1789,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
         dataArray = tStr.split("\\s+");
 
-        if (dataArray.length < 2) {
+        if (dataArray.length < 3) {
             return sTime;
         }
 
