@@ -863,6 +863,9 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
         unitsStr = unitAtt.getStringValue();
         if (unitsStr.contains("as")) {
+            if (unitsStr.contains("%")){
+                return times;
+            }
             //Get data time
             double[] DTimes = values;
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
