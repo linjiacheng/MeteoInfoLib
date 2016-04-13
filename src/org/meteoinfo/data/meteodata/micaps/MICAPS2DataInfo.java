@@ -34,6 +34,7 @@ import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.util.DateUtil;
 import ucar.ma2.Array;
+import ucar.nc2.Attribute;
 
 /**
  *
@@ -152,6 +153,15 @@ public class MICAPS2DataInfo extends DataInfo implements IStationDataInfo{
                 Logger.getLogger(MICAPS3DataInfo.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+    }
+    
+    /**
+     * Get global attributes
+     * @return Global attributes
+     */
+    @Override
+    public List<Attribute> getGlobalAttributes(){
+        return new ArrayList<>();
     }
 
     @Override

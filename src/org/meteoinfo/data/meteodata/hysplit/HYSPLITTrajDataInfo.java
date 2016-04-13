@@ -51,6 +51,7 @@ import org.meteoinfo.shape.PointZ;
 import org.meteoinfo.shape.PolylineZShape;
 import org.meteoinfo.shape.ShapeTypes;
 import ucar.ma2.Array;
+import ucar.nc2.Attribute;
 
 /**
  *
@@ -223,6 +224,15 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
 
             sr.close();
         }
+    }
+    
+    /**
+     * Get global attributes
+     * @return Global attributes
+     */
+    @Override
+    public List<Attribute> getGlobalAttributes(){
+        return new ArrayList<>();
     }
 
     @Override

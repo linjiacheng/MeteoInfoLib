@@ -21,6 +21,7 @@ import org.meteoinfo.global.util.DateUtil;
 import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
 import ucar.ma2.Array;
+import ucar.nc2.Attribute;
 
 /**
  * Template
@@ -262,7 +263,7 @@ public abstract class DataInfo {
      * @return Time number
      */
     public int getTimeNum() {
-        return _tDim.getDimLength();
+        return _tDim.getLength();
     }
 
     /**
@@ -479,6 +480,12 @@ public abstract class DataInfo {
      * @return Array
      */
     public abstract Array read(String varName, int[] origin, int[] size, int[] stride);
+    
+    /**
+     * Get global attributes
+     * @return Global attributes
+     */
+    public abstract List<Attribute> getGlobalAttributes();
 
     /**
      * Get variable by name

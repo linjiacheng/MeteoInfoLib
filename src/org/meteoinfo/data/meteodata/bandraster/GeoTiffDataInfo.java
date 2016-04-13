@@ -31,6 +31,7 @@ import ucar.ma2.Array;
 import ucar.ma2.IndexIterator;
 import ucar.ma2.InvalidRangeException;
 import ucar.ma2.Range;
+import ucar.nc2.Attribute;
 
 /**
  *
@@ -96,6 +97,15 @@ public class GeoTiffDataInfo extends DataInfo implements IGridDataInfo {
             Logger.getLogger(GeoTiffDataInfo.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    /**
+     * Get global attributes
+     * @return Global attributes
+     */
+    @Override
+    public List<Attribute> getGlobalAttributes(){
+        return new ArrayList<>();
+    }
 
     @Override
     public String generateInfoText() {
@@ -104,8 +114,8 @@ public class GeoTiffDataInfo extends DataInfo implements IGridDataInfo {
         dataInfo += System.getProperty("line.separator") + "Data Type: GeoTiff";
         Dimension xdim = this.getXDimension();
         Dimension ydim = this.getYDimension();
-        dataInfo += System.getProperty("line.separator") + "XNum = " + String.valueOf(xdim.getDimLength())
-                + "  YNum = " + String.valueOf(ydim.getDimLength());
+        dataInfo += System.getProperty("line.separator") + "XNum = " + String.valueOf(xdim.getLength())
+                + "  YNum = " + String.valueOf(ydim.getLength());
         dataInfo += System.getProperty("line.separator") + "XMin = " + String.valueOf(xdim.getValues()[0])
                 + "  YMin = " + String.valueOf(ydim.getValues()[0]);
         dataInfo += System.getProperty("line.separator") + "XSize = " + String.valueOf(xdim.getValues()[1] - xdim.getValues()[0])

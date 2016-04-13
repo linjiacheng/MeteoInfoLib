@@ -17,9 +17,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.meteoinfo.data.GridData;
@@ -36,6 +38,7 @@ import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.projection.Reproject;
 import ucar.ma2.Array;
+import ucar.nc2.Attribute;
 
 /**
  *
@@ -220,6 +223,15 @@ public class MICAPS13DataInfo extends DataInfo implements IGridDataInfo {
         }
 
         return new Object[]{X, Y};
+    }
+    
+    /**
+     * Get global attributes
+     * @return Global attributes
+     */
+    @Override
+    public List<Attribute> getGlobalAttributes(){
+        return new ArrayList<>();
     }
 
     @Override

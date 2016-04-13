@@ -37,6 +37,7 @@ import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.global.util.GlobalUtil;
 import org.meteoinfo.io.FileCharsetDetector;
 import ucar.ma2.Array;
+import ucar.nc2.Attribute;
 
 /**
  *
@@ -106,6 +107,15 @@ public class LonLatStationDataInfo extends DataInfo implements IStationDataInfo 
                 Logger.getLogger(LonLatStationDataInfo.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+    }
+    
+    /**
+     * Get global attributes
+     * @return Global attributes
+     */
+    @Override
+    public List<Attribute> getGlobalAttributes(){
+        return new ArrayList<>();
     }
 
     @Override

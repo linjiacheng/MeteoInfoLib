@@ -21,34 +21,80 @@ import java.util.List;
  *
  * @author Yaqiang Wang
  */
-public class Dimension {
+public class Dimension extends ucar.nc2.Dimension {
     // <editor-fold desc="Variables">
 
-    private ucar.nc2.Dimension _ncDimension = null;
-    private String _dimName;
+    //private ucar.nc2.Dimension _ncDimension = null;
+    //private String _dimName;
     private DimensionType _dimType;
     private List<Double> _dimValue;
     private int _dimId;
-    private int _dimLength = 1;
-    private boolean unlimited;
+    //private int _dimLength = 1;
+    //private boolean unlimited;
     private boolean reverse = false;
-
+    
     /**
      * Constructor
      */
-    public Dimension() {
-        this.unlimited = false;
+    public Dimension(){
+        this("null", 1);
+    }
+    
+    /**
+     * Constructor
+     * @param dim Other dimension
+     */
+    public Dimension(ucar.nc2.Dimension dim){
+        this(dim, DimensionType.Other);
+    }
+    
+    /**
+     * Constructor
+     * @param dim Other dimension
+     * @param dimType Dimension type
+     */
+    public Dimension(ucar.nc2.Dimension dim, DimensionType dimType){
+        this(dim.getShortName(), dim.getLength(), dimType);
+        this.setGroup(dim.getGroup());
+        this.setDODSName(dim.getDODSName());
+        this.setParentStructure(dim.getParentStructure());
+        this.setSort(dim.getSort());
+        this.setParentGroup(dim.getParentGroup());
+        this.setUnlimited(dim.isUnlimited());
+        this.setShared(dim.isShared());
+        this.setVariableLength(dim.isVariableLength());
+    }
+
+    /**
+     * Constructor
+     * @param name Name
+     * @param len Length
+     */
+    public Dimension(String name, int len) {
+        super(name, len);
+        this.setShared(true);
         _dimType = DimensionType.Other;
         _dimValue = new ArrayList<>();
+    }
+    
+    /**
+     * Constructor
+     * @param dimType Dimension type
+     */
+    public Dimension(DimensionType dimType){
+        this("null", 1, dimType);
     }
 
     /**
      * Constructor
      *
+     * @param name Name
+     * @param len Length
      * @param dimType Dimension type
      */
-    public Dimension(DimensionType dimType) {
-        this.unlimited = false;
+    public Dimension(String name, int len, DimensionType dimType) {
+        super(name, len);
+        this.setShared(true);
         _dimType = dimType;
         _dimValue = new ArrayList<>();
     }
@@ -56,13 +102,16 @@ public class Dimension {
     /**
      * Constructor
      *
+     * @param name Name
+     * @param len Length
      * @param dimType Dimension type
      * @param min Minimum value
      * @param delta Delta value
      * @param num value number
      */
-    public Dimension(DimensionType dimType, double min, double delta, int num) {
-        this.unlimited = false;
+    public Dimension(String name, int len, DimensionType dimType, double min, double delta, int num) {
+        super(name, len);
+        this.setShared(true);
         _dimType = dimType;
         _dimValue = new ArrayList<>();
         for (int i = 0; i < num; i++) {
@@ -73,61 +122,16 @@ public class Dimension {
     // <editor-fold desc="Get Set Methods">
 
     /**
-     * Get NetCDF dimension
-     *
-     * @return NetCDF dimension
-     */
-    public ucar.nc2.Dimension getNCDimension() {
-        return _ncDimension;
-    }
-
-    /**
-     * Set NetCDF dimension
-     *
-     * @param dim NetCDF dimension
-     */
-    public void setNCDimension(ucar.nc2.Dimension dim) {
-        _ncDimension = dim;
-    }
-
-    /**
-     * Get dimension length
-     *
-     * @return Dimension length
-     */
-    public int getDimLength() {
-        return _dimLength;
-    }
-
-    /**
      * Set dimension length
      *
      * @param value Dimension length
      */
     public void setDimLength(int value) {
-        _dimLength = value;
+        super.setLength(value);
         this._dimValue.clear();
-        for (int i = 0; i < _dimLength; i++) {
+        for (int i = 0; i < value; i++) {
             this._dimValue.add(Double.valueOf(i));
         }
-    }
-
-    /**
-     * Get dimension name
-     *
-     * @return Dimension name
-     */
-    public String getDimName() {
-        return _dimName;
-    }
-
-    /**
-     * Set dimension name
-     *
-     * @param value Dimension name
-     */
-    public void setDimName(String value) {
-        _dimName = value;
     }
 
     /**
@@ -171,27 +175,6 @@ public class Dimension {
     }
 
     /**
-     * Get if is unlimited
-     *
-     * @return Boolean
-     */
-    public boolean isUnlimited() {
-        return this.unlimited;
-    }
-
-    /**
-     * Set if is unlimited
-     *
-     * @param value Boolean
-     */
-    public void setUnlimited(boolean value) {
-        this.unlimited = value;
-        if (this._ncDimension != null) {
-            this._ncDimension.setUnlimited(value);
-        }
-    }
-
-    /**
      * Get if values are reverse (in descending order)
      *
      * @return Boolean
@@ -218,13 +201,13 @@ public class Dimension {
      * @return If equals
      */
     public boolean equals(Dimension aDim) {
-        if (!_dimName.equals(aDim.getDimName())) {
+        if (!this.getShortName().equals(aDim.getShortName())) {
             return false;
         }
         if (_dimType != aDim.getDimType()) {
             return false;
         }
-        return _dimLength == aDim.getDimLength();
+        return this.getLength() == aDim.getLength();
     }
 
     /**
@@ -233,8 +216,9 @@ public class Dimension {
      * @return Value array
      */
     public double[] getValues() {
-        double[] values = new double[_dimLength];
-        for (int i = 0; i < _dimLength; i++) {
+        int len = this.getLength();
+        double[] values = new double[len];
+        for (int i = 0; i < len; i++) {
             values[i] = _dimValue.get(i);
         }
 
@@ -248,7 +232,7 @@ public class Dimension {
      */
     public void setValues(List<Double> values) {
         _dimValue = values;
-        _dimLength = _dimValue.size();
+        this.setLength(_dimValue.size());
     }
 
     /**
@@ -261,7 +245,7 @@ public class Dimension {
         for (Number v : values) {
             _dimValue.add(v.doubleValue());
         }
-        _dimLength = _dimValue.size();
+        this.setLength(_dimValue.size());
     }
 
     /**
@@ -274,7 +258,7 @@ public class Dimension {
         for (double v : values) {
             _dimValue.add(v);
         }
-        _dimLength = _dimValue.size();
+        this.setLength(_dimValue.size());
     }
 
     /**
@@ -287,7 +271,7 @@ public class Dimension {
         for (double v : values) {
             _dimValue.add(v);
         }
-        _dimLength = _dimValue.size();
+        this.setLength(_dimValue.size());
     }
 
     /**
@@ -297,7 +281,7 @@ public class Dimension {
      */
     public void addValue(double value) {
         _dimValue.add(value);
-        _dimLength = _dimValue.size();
+        this.setLength(_dimValue.size());
     }
 
     /**
@@ -340,15 +324,14 @@ public class Dimension {
      * @return Extracted dimension
      */
     public Dimension extract(int first, int last, int stride) {
-        Dimension dim = new Dimension(this._dimType);
+        Dimension dim = new Dimension(this.getShortName(), this.getLength(), this._dimType);
         dim.setDimId(this._dimId);
-        dim.setDimName(this._dimName);
         dim.setReverse(this.reverse);
         List<Double> values = new ArrayList<>();
         int step = Math.abs(stride);
         if (this.reverse){
-            int ff = this.getDimLength() - last - 1;
-            int ll = this.getDimLength() - first - 1;
+            int ff = this.getLength() - last - 1;
+            int ll = this.getLength() - first - 1;
             for (int i = ff; i <= ll; i += step){
                 values.add(this._dimValue.get(i));
             }
@@ -371,9 +354,8 @@ public class Dimension {
      * @return Extracted dimension
      */
     public Dimension extract(double first, double last, double stride) {
-        Dimension dim = new Dimension(this._dimType);
+        Dimension dim = new Dimension(this.getShortName(), this.getLength(), this._dimType);
         dim.setDimId(this._dimId);
-        dim.setDimName(this._dimName);
         List<Double> values = new ArrayList<>();
         int idx;
         for (double v = first; v <= last; v += stride) {
@@ -392,16 +374,16 @@ public class Dimension {
      * @return Index
      */
     public int getValueIndex(double v) {
-        int idx = this.getDimLength() - 1;
+        int idx = this.getLength() - 1;
         if (getDeltaValue() > 0){
-            for (int i = 0; i < this.getDimLength(); i++) {
+            for (int i = 0; i < this.getLength(); i++) {
                 if (v <= this._dimValue.get(i)) {
                     idx = i;
                     break;
                 }
             }
         } else {
-            for (int i = 0; i < this.getDimLength(); i++) {
+            for (int i = 0; i < this.getLength(); i++) {
                 if (v >= this._dimValue.get(i)) {
                     idx = i;
                     break;
@@ -409,7 +391,7 @@ public class Dimension {
             }
         }
         if (this.reverse){
-            idx = this.getDimLength() - idx - 1;
+            idx = this.getLength() - idx - 1;
         }
 
         return idx;
@@ -418,13 +400,13 @@ public class Dimension {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Name: ").append(this._dimName);
+        sb.append("Name: ").append(this.getShortName());
         sb.append("\n");
         sb.append("Min value: ").append(String.valueOf(this.getMinValue()));
         sb.append("\n");
         sb.append("Max value: ").append(String.valueOf(this.getMaxValue()));
         sb.append("\n");
-        sb.append("Size: ").append(String.valueOf(this._dimLength));
+        sb.append("Size: ").append(String.valueOf(this.getLength()));
         sb.append("\n");
         sb.append("Delta: ").append(String.valueOf(this.getDeltaValue()));
 

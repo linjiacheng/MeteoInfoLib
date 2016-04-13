@@ -33,6 +33,7 @@ import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.data.meteodata.Variable;
 import org.meteoinfo.global.DataConvert;
 import ucar.ma2.Array;
+import ucar.nc2.Attribute;
 
 /**
  *
@@ -185,6 +186,15 @@ public class BILDataInfo extends DataInfo implements IGridDataInfo {
             }
         }
     }
+    
+    /**
+     * Get global attributes
+     * @return Global attributes
+     */
+    @Override
+    public List<Attribute> getGlobalAttributes(){
+        return new ArrayList<>();
+    }
 
     @Override
     public String generateInfoText() {
@@ -193,8 +203,8 @@ public class BILDataInfo extends DataInfo implements IGridDataInfo {
         dataInfo += System.getProperty("line.separator") + "Data Type: BIL Grid";
         Dimension xdim = this.getXDimension();
         Dimension ydim = this.getYDimension();
-        dataInfo += System.getProperty("line.separator") + "XNum = " + String.valueOf(xdim.getDimLength())
-                + "  YNum = " + String.valueOf(ydim.getDimLength());
+        dataInfo += System.getProperty("line.separator") + "XNum = " + String.valueOf(xdim.getLength())
+                + "  YNum = " + String.valueOf(ydim.getLength());
         dataInfo += System.getProperty("line.separator") + "XMin = " + String.valueOf(xdim.getValues()[0])
                 + "  YMin = " + String.valueOf(ydim.getValues()[0]);
         dataInfo += System.getProperty("line.separator") + "XSize = " + String.valueOf(xdim.getValues()[1] - xdim.getValues()[0])

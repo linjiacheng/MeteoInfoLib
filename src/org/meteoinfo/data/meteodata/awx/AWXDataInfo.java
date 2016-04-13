@@ -39,6 +39,7 @@ import ucar.ma2.IndexIterator;
 import ucar.ma2.InvalidRangeException;
 import ucar.ma2.Range;
 import ucar.ma2.Section;
+import ucar.nc2.Attribute;
 
 /**
  *
@@ -571,6 +572,15 @@ public class AWXDataInfo extends DataInfo implements IGridDataInfo, IStationData
         ydim.setValues(y);
         this.setYDimension(ydim);
     }
+    
+    /**
+     * Get global attributes
+     * @return Global attributes
+     */
+    @Override
+    public List<Attribute> getGlobalAttributes(){
+        return new ArrayList<>();
+    }
 
     @Override
     public String generateInfoText() {
@@ -580,8 +590,8 @@ public class AWXDataInfo extends DataInfo implements IGridDataInfo, IStationData
         if (this._productType != 4) {
             Dimension xdim = this.getXDimension();
             Dimension ydim = this.getYDimension();
-            dataInfo += System.getProperty("line.separator") + "XNum = " + String.valueOf(xdim.getDimLength())
-                    + "  YNum = " + String.valueOf(ydim.getDimLength());
+            dataInfo += System.getProperty("line.separator") + "XNum = " + String.valueOf(xdim.getLength())
+                    + "  YNum = " + String.valueOf(ydim.getLength());
             dataInfo += System.getProperty("line.separator") + "XMin = " + String.valueOf(xdim.getValues()[0])
                     + "  YMin = " + String.valueOf(ydim.getValues()[0]);
             dataInfo += System.getProperty("line.separator") + "XSize = " + String.valueOf(xdim.getValues()[1] - xdim.getValues()[0])

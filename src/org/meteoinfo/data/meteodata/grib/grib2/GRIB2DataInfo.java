@@ -20,6 +20,7 @@ import org.meteoinfo.data.meteodata.Variable;
 import org.meteoinfo.global.Bytes2Number;
 import org.meteoinfo.projection.ProjectionInfo;
 import ucar.ma2.Array;
+import ucar.nc2.Attribute;
 import ucar.nc2.grib.grib2.Grib2SectionGridDefinition;
 import ucar.nc2.grib.grib2.Grib2SectionIdentification;
 import ucar.nc2.grib.grib2.Grib2SectionIndicator;
@@ -454,6 +455,15 @@ public class GRIB2DataInfo extends DataInfo implements IGridDataInfo {
     @Override
     public Array read(String varName, int[] origin, int[] size, int[] stride) {
         return null;
+    }
+    
+    /**
+     * Get global attributes
+     * @return Global attributes
+     */
+    @Override
+    public List<Attribute> getGlobalAttributes(){
+        return new ArrayList<>();
     }
 
     @Override

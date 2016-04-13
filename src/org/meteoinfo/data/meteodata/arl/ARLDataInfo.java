@@ -48,6 +48,7 @@ import ucar.ma2.IndexIterator;
 import ucar.ma2.InvalidRangeException;
 import ucar.ma2.Range;
 import ucar.ma2.Section;
+import ucar.nc2.Attribute;
 
 /**
  * Template
@@ -597,6 +598,15 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         for (i = 0; i < ny; i++) {
             Y[i] = ylb + i * size;
         }
+    }
+    
+    /**
+     * Get global attributes
+     * @return Global attributes
+     */
+    @Override
+    public List<Attribute> getGlobalAttributes(){
+        return new ArrayList<>();
     }
 
     @Override

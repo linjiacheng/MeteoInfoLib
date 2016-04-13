@@ -41,6 +41,7 @@ import java.util.logging.Logger;
 import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.global.util.DateUtil;
 import ucar.ma2.Array;
+import ucar.nc2.Attribute;
 
 /**
  *
@@ -197,6 +198,15 @@ public class METARDataInfo extends DataInfo implements IStationDataInfo {
                 Logger.getLogger(METARDataInfo.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+    }
+    
+    /**
+     * Get global attributes
+     * @return Global attributes
+     */
+    @Override
+    public List<Attribute> getGlobalAttributes(){
+        return new ArrayList<>();
     }
 
     @Override

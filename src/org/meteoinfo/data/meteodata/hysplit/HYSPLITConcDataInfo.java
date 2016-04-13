@@ -40,6 +40,7 @@ import ucar.ma2.IndexIterator;
 import ucar.ma2.InvalidRangeException;
 import ucar.ma2.Range;
 import ucar.ma2.Section;
+import ucar.nc2.Attribute;
 
 /**
  *
@@ -260,15 +261,24 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
             Logger.getLogger(ASCIIGridDataInfo.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    /**
+     * Get global attributes
+     * @return Global attributes
+     */
+    @Override
+    public List<Attribute> getGlobalAttributes(){
+        return new ArrayList<>();
+    }
 
     @Override
     public String generateInfoText() {
         String dataInfo;
         dataInfo = "File Name: " + this.getFileName();
         dataInfo += System.getProperty("line.separator") + "Pack Flag = " + String.valueOf(_pack_flag);
-        dataInfo += System.getProperty("line.separator") + "Xsize = " + String.valueOf(this.getXDimension().getDimLength())
-                + "  Ysize = " + String.valueOf(this.getYDimension().getDimLength()) + "  Zsize = " + String.valueOf(this.getZDimension().getDimLength())
-                + "  Tsize = " + String.valueOf(this.getTimeDimension().getDimLength());
+        dataInfo += System.getProperty("line.separator") + "Xsize = " + String.valueOf(this.getXDimension().getLength())
+                + "  Ysize = " + String.valueOf(this.getYDimension().getLength()) + "  Zsize = " + String.valueOf(this.getZDimension().getLength())
+                + "  Tsize = " + String.valueOf(this.getTimeDimension().getLength());
         dataInfo += System.getProperty("line.separator") + "Number of Variables = " + String.valueOf(this.getVariableNum());
         for (String v : this.getVariableNames()) {
             dataInfo += System.getProperty("line.separator") + v;
@@ -353,8 +363,8 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
             RandomAccessFile br = new RandomAccessFile(this.getFileName(), "r");
             int i, j, nBytes;
             byte[] aBytes = new byte[4];
-            int xNum = this.getXDimension().getDimLength();
-            int yNum = this.getYDimension().getDimLength();
+            int xNum = this.getXDimension().getLength();
+            int yNum = this.getYDimension().getLength();
             double[][] dataArray = new double[xNum][yNum];
             double[] data = new double[yNum * xNum];
 
@@ -374,7 +384,7 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
             }
 
             //Record #4
-            nBytes = 12 + this.getZDimension().getDimLength() * 4;
+            nBytes = 12 + this.getZDimension().getLength() * 4;
             br.skipBytes(nBytes);
 
             //Record #5
@@ -390,7 +400,7 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
                 br.skipBytes(64);
 
                 for (i = 0; i < this.getVariableNum(); i++) {
-                    for (j = 0; j < this.getZDimension().getDimLength(); j++) {
+                    for (j = 0; j < this.getZDimension().getLength(); j++) {
                         if (t == timeIdx && i == varIdx && j == levelIdx) {
                             if (br.getFilePointer() + 28 > br.length()) {
                                 break;
@@ -491,8 +501,8 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
             RandomAccessFile br = new RandomAccessFile(this.getFileName(), "r");
             int i, j, nBytes;
             byte[] aBytes = new byte[4];
-            int xNum = this.getXDimension().getDimLength();
-            int yNum = this.getYDimension().getDimLength();
+            int xNum = this.getXDimension().getLength();
+            int yNum = this.getYDimension().getLength();
             double[][] dataArray = new double[xNum][yNum];
             double[][] newDataArray = new double[yNum][xNum];
 
@@ -512,7 +522,7 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
             }
 
             //Record #4
-            nBytes = 12 + this.getZDimension().getDimLength() * 4;
+            nBytes = 12 + this.getZDimension().getLength() * 4;
             br.skipBytes(nBytes);
 
             //Record #5
@@ -528,7 +538,7 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
                 br.skipBytes(64);
 
                 for (i = 0; i < this.getVariableNum(); i++) {
-                    for (j = 0; j < this.getZDimension().getDimLength(); j++) {
+                    for (j = 0; j < this.getZDimension().getLength(); j++) {
                         if (t == timeIdx && i == varIdx && j == levelIdx) {
                             if (br.getFilePointer() + 28 > br.length()) {
                                 break;

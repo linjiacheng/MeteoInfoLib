@@ -47,6 +47,7 @@ import org.meteoinfo.shape.PointShape;
 import org.meteoinfo.shape.PolylineShape;
 import org.meteoinfo.shape.ShapeTypes;
 import ucar.ma2.Array;
+import ucar.nc2.Attribute;
 
 /**
  *
@@ -205,6 +206,15 @@ public class MICAPS7DataInfo extends DataInfo implements TrajDataInfo {
             this.setVariables(variables);
 
         }
+    }
+    
+    /**
+     * Get global attributes
+     * @return Global attributes
+     */
+    @Override
+    public List<Attribute> getGlobalAttributes(){
+        return new ArrayList<>();
     }
 
     @Override

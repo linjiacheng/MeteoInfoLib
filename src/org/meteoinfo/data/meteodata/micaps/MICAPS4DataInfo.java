@@ -42,6 +42,7 @@ import ucar.ma2.IndexIterator;
 import ucar.ma2.InvalidRangeException;
 import ucar.ma2.Range;
 import ucar.ma2.Section;
+import ucar.nc2.Attribute;
 
 /**
  *
@@ -190,6 +191,15 @@ public class MICAPS4DataInfo extends DataInfo implements IGridDataInfo {
             Logger.getLogger(MICAPS4DataInfo.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    /**
+     * Get global attributes
+     * @return Global attributes
+     */
+    @Override
+    public List<Attribute> getGlobalAttributes(){
+        return new ArrayList<>();
+    }
 
     @Override
     public String generateInfoText() {
@@ -200,8 +210,8 @@ public class MICAPS4DataInfo extends DataInfo implements IGridDataInfo {
         dataInfo += System.getProperty("line.separator") + "Time: " + format.format(this.getTimes().get(0));
         dataInfo += System.getProperty("line.separator") + "Forecast Hours = " + String.valueOf(_preHours)
                 + "  Level = " + String.valueOf(_level);
-        dataInfo += System.getProperty("line.separator") + "Xsize = " + String.valueOf(this.getXDimension().getDimLength())
-                + "  Ysize = " + String.valueOf(this.getYDimension().getDimLength());
+        dataInfo += System.getProperty("line.separator") + "Xsize = " + String.valueOf(this.getXDimension().getLength())
+                + "  Ysize = " + String.valueOf(this.getYDimension().getLength());
 
         return dataInfo;
     }
@@ -269,8 +279,8 @@ public class MICAPS4DataInfo extends DataInfo implements IGridDataInfo {
             String[] dataArray;
             int col = 0;
             String aLine;
-            int xNum = this.getXDimension().getDimLength();
-            int yNum = this.getYDimension().getDimLength();
+            int xNum = this.getXDimension().getLength();
+            int yNum = this.getYDimension().getLength();
             float[][] theData = new float[yNum][xNum];
             do {
                 aLine = sr.readLine();
@@ -359,8 +369,8 @@ public class MICAPS4DataInfo extends DataInfo implements IGridDataInfo {
             String[] dataArray;
             int col = 0;
             String aLine;
-            int xNum = this.getXDimension().getDimLength();
-            int yNum = this.getYDimension().getDimLength();
+            int xNum = this.getXDimension().getLength();
+            int yNum = this.getYDimension().getLength();
             double[][] theData = new double[yNum][xNum];
             do {
                 aLine = sr.readLine();

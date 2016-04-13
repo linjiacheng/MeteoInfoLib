@@ -59,6 +59,7 @@ import ucar.ma2.IndexIterator;
 import ucar.ma2.InvalidRangeException;
 import ucar.ma2.Range;
 import ucar.ma2.Section;
+import ucar.nc2.Attribute;
 
 /**
  *
@@ -448,11 +449,15 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                     getProjectedXY(theProj, aPLCC.dx, aPLCC.dy, aPLCC.iref, aPLCC.jref, aPLCC.lonref,
                             aPLCC.latref, X, Y);
                     Dimension xdim = new Dimension(DimensionType.X);
+                    xdim.setShortName("X");
                     xdim.setValues(X);
                     this.setXDimension(xdim);
+                    this.addDimension(xdim);
                     Dimension ydim = new Dimension(DimensionType.Y);
+                    ydim.setShortName("Y");
                     ydim.setValues(Y);
                     this.setYDimension(ydim);
+                    this.addDimension(ydim);
                 } else if (pStr.equals("NPS") || pStr.equals("SPS")) {
                     int iSize = Integer.parseInt(dataArray[1]);
                     int jSize = Integer.parseInt(dataArray[2]);
@@ -481,11 +486,15 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                     Y = new double[jSize];
                     getProjectedXY_NPS(dx, dy, iPole, jPole, X, Y);
                     Dimension xdim = new Dimension(DimensionType.X);
+                    xdim.setShortName("X");
                     xdim.setValues(X);
                     this.setXDimension(xdim);
+                    this.addDimension(xdim);
                     Dimension ydim = new Dimension(DimensionType.Y);
+                    ydim.setShortName("Y");
                     ydim.setValues(Y);
                     this.setYDimension(ydim);
+                    this.addDimension(ydim);
                 } else {
                     errorStr = "The PDEF type is not supported at present!" + System.getProperty("line.separator")
                             + "Please send your data to the author to improve MeteoInfo!";
@@ -530,8 +539,10 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                         isGlobal = true;
                     }
                     Dimension xDim = new Dimension(DimensionType.X);
+                    xDim.setShortName("X");
                     xDim.setValues(values);
                     this.setXDimension(xDim);
+                    this.addDimension(xDim);
                 }
             } else if (hStr.equals("YDEF")) {
                 if (this.getProjectionInfo().isLonLat()) {
@@ -568,8 +579,10 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                         values.add(YDEF.Y[i]);
                     }
                     Dimension yDim = new Dimension(DimensionType.Y);
+                    yDim.setShortName("Y");
                     yDim.setValues(values);
                     this.setYDimension(yDim);
+                    this.addDimension(yDim);
                 }
             } else if (hStr.equals("ZDEF")) {
                 ZDEF.ZNum = Integer.parseInt(dataArray[1]);
@@ -628,8 +641,10 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                     }
                 }
                 Dimension zDim = new Dimension(DimensionType.Z);
+                zDim.setShortName("Z");
                 zDim.setValues(values);
                 this.setZDimension(zDim);
+                this.addDimension(zDim);
             } else if (hStr.equals("TDEF")) {
                 int tnum = Integer.parseInt(dataArray[1]);
                 TDEF.Type = dataArray[2];
@@ -723,8 +738,10 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                         values.add(DateUtil.toOADate(t));
                     }
                     Dimension tDim = new Dimension(DimensionType.T);
+                    tDim.setShortName("T");
                     tDim.setValues(values);
                     this.setTimeDimension(tDim);
+                    this.addDimension(tDim);
                 } else {
                     if (dataArray.length < tnum + 3) {
                         while (true) {
@@ -756,8 +773,10 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                         }
                     }
                     Dimension tDim = new Dimension(DimensionType.T);
+                    tDim.setShortName("T");
                     tDim.setValues(values);
                     this.setTimeDimension(tDim);
+                    this.addDimension(tDim);
                 }
             } else if (hStr.equals("VARS")) {
                 int vNum = Integer.parseInt(dataArray[1]);
@@ -766,6 +785,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                     dataArray = aLine.split("\\s+");
                     Variable aVar = new Variable();
                     aVar.setName(dataArray[0]);
+                    aVar.setDataType(DataType.FLOAT);
                     int lNum = Integer.parseInt(dataArray[1]);
                     List<Double> levs = new ArrayList<>();
                     for (int j = 0; j < lNum; j++) {
@@ -782,6 +802,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                     aVar.setDimension(this.getTimeDimension());
                     if (lNum > 1) {
                         Dimension zDim = new Dimension(DimensionType.Z);
+                        zDim.setShortName("Z");
                         zDim.setValues(levs);
                         aVar.setDimension(zDim);
                     }
@@ -1009,6 +1030,15 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
             Y[i] = ylb + i * YSize;
         }
     }
+    
+    /**
+     * Get global attributes
+     * @return Global attributes
+     */
+    @Override
+    public List<Attribute> getGlobalAttributes(){
+        return new ArrayList<>();
+    }
 
     /**
      * Generate data info text
@@ -1029,11 +1059,11 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
             Dimension xdim = this.getXDimension();
             dataInfo += System.getProperty("line.separator") + "X Dimension: Xmin = " + String.valueOf(xdim.getMinValue())
                     + "; Xmax = " + String.valueOf(xdim.getMaxValue()) + "; Xsize = "
-                    + String.valueOf(xdim.getDimLength()) + "; Xdelta = " + String.valueOf(xdim.getDeltaValue());
+                    + String.valueOf(xdim.getLength()) + "; Xdelta = " + String.valueOf(xdim.getDeltaValue());
             Dimension ydim = this.getYDimension();
             dataInfo += System.getProperty("line.separator") + "Y Dimension: Ymin = " + String.valueOf(ydim.getMinValue())
                     + "; Ymax = " + String.valueOf(ydim.getMaxValue()) + "; Ysize = "
-                    + String.valueOf(ydim.getDimLength()) + "; Ydelta = " + String.valueOf(ydim.getDeltaValue());
+                    + String.valueOf(ydim.getLength()) + "; Ydelta = " + String.valueOf(ydim.getDeltaValue());
             dataInfo += System.getProperty("line.separator") + "Zsize = " + String.valueOf(ZDEF.ZNum)
                     + "  Tsize = " + String.valueOf(TDEF.getTimeNum());
         }

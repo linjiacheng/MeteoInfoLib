@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.meteoinfo.data.GridData;
-import org.meteoinfo.data.meteodata.Attribute;
 import org.meteoinfo.data.meteodata.DataInfo;
 import org.meteoinfo.data.meteodata.Dimension;
 import org.meteoinfo.data.meteodata.DimensionType;
@@ -34,6 +33,7 @@ import ucar.ma2.IndexIterator;
 import ucar.ma2.InvalidRangeException;
 import ucar.ma2.Range;
 import ucar.ma2.Section;
+import ucar.nc2.Attribute;
 
 /**
  *
@@ -111,11 +111,11 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
             List<Variable> variables = new ArrayList<>();
             int tn = 0;
             Dimension xdim = new Dimension(DimensionType.X);
-            xdim.setDimName("x");
+            xdim.setShortName("x");
             Dimension ydim = new Dimension(DimensionType.Y);
-            ydim.setDimName("y");
+            ydim.setShortName("y");
             Dimension zdim = new Dimension(DimensionType.Z);
-            zdim.setDimName("level");
+            zdim.setShortName("level");
 
             if (ebh != null) {
                 this._bigHeader = ebh;
@@ -300,7 +300,7 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
                 values.add(DateUtil.toOADate(t));
             }
             Dimension tDim = new Dimension(DimensionType.T);
-            tDim.setDimName("time");
+            tDim.setShortName("time");
             tDim.setValues(values);
             this.setTimeDimension(tDim);
 
@@ -523,6 +523,15 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
         return this._subHeaders.get(0);
     }
     
+    /**
+     * Get global attributes
+     * @return Global attributes
+     */
+    @Override
+    public List<Attribute> getGlobalAttributes(){
+        return new ArrayList<>();
+    }
+    
     @Override
     public String generateInfoText() {
         String dataInfo;
@@ -531,35 +540,35 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
         dataInfo = "File Name: " + this.getFileName();
         dataInfo += System.getProperty("line.separator") + "Dimensions: " + this.getDimensions().size();
         for (i = 0; i < this.getDimensions().size(); i++) {
-            dataInfo += System.getProperty("line.separator") + "\t" + this.getDimensions().get(i).getDimName()+ " = "
-                    + String.valueOf(this.getDimensions().get(i).getDimLength()) + ";";
+            dataInfo += System.getProperty("line.separator") + "\t" + this.getDimensions().get(i).getShortName()+ " = "
+                    + String.valueOf(this.getDimensions().get(i).getLength()) + ";";
         }
         
         Dimension tdim = this.getTimeDimension();
         if (tdim != null) {
             dataInfo += System.getProperty("line.separator") + "T Dimension: Tmin = " + String.valueOf(tdim.getMinValue())
                     + "; Tmax = " + String.valueOf(tdim.getMaxValue()) + "; Tsize = "
-                    + String.valueOf(tdim.getDimLength()) + "; Tdelta = " + String.valueOf(tdim.getDeltaValue());
+                    + String.valueOf(tdim.getLength()) + "; Tdelta = " + String.valueOf(tdim.getDeltaValue());
         }
 
         Dimension zdim = this.getZDimension();
         if (zdim != null) {
             dataInfo += System.getProperty("line.separator") + "Z Dimension: Zmin = " + String.valueOf(zdim.getMinValue())
                     + "; Zmax = " + String.valueOf(zdim.getMaxValue()) + "; Zsize = "
-                    + String.valueOf(zdim.getDimLength()) + "; Zdelta = " + String.valueOf(zdim.getDeltaValue());
+                    + String.valueOf(zdim.getLength()) + "; Zdelta = " + String.valueOf(zdim.getDeltaValue());
         }
         
         Dimension xdim = this.getXDimension();
         if (xdim != null) {
             dataInfo += System.getProperty("line.separator") + "X Dimension: Xmin = " + String.valueOf(xdim.getMinValue())
                     + "; Xmax = " + String.valueOf(xdim.getMaxValue()) + "; Xsize = "
-                    + String.valueOf(xdim.getDimLength()) + "; Xdelta = " + String.valueOf(xdim.getDeltaValue());
+                    + String.valueOf(xdim.getLength()) + "; Xdelta = " + String.valueOf(xdim.getDeltaValue());
         }
         Dimension ydim = this.getYDimension();
         if (ydim != null) {
             dataInfo += System.getProperty("line.separator") + "Y Dimension: Ymin = " + String.valueOf(ydim.getMinValue())
                     + "; Ymax = " + String.valueOf(ydim.getMaxValue()) + "; Ysize = "
-                    + String.valueOf(ydim.getDimLength()) + "; Ydelta = " + String.valueOf(ydim.getDeltaValue());
+                    + String.valueOf(ydim.getLength()) + "; Ydelta = " + String.valueOf(ydim.getDeltaValue());
         }
 
         dataInfo += System.getProperty("line.separator") + "Global Attributes: ";
@@ -568,9 +577,9 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
         dataInfo += System.getProperty("line.separator") + "Variations: " + this.getVariables().size();
         for (i = 0; i < this.getVariables().size(); i++) {
             dataInfo += System.getProperty("line.separator") + "\t" + this.getVariables().get(i).getName()+ "(";
-            List<Dimension> dims = this.getVariables().get(i).getDimensions();
+            List<ucar.nc2.Dimension> dims = this.getVariables().get(i).getDimensions();
             for (j = 0; j < dims.size(); j++) {
-                dataInfo += dims.get(j).getDimName()+ ",";
+                dataInfo += dims.get(j).getShortName()+ ",";
             }
             dataInfo = dataInfo.substring(0, dataInfo.length() - 1);
             dataInfo += ");";
@@ -584,7 +593,7 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
 
         for (Dimension dim : this.getDimensions()) {
             if (dim.isUnlimited()) {
-                dataInfo += System.getProperty("line.separator") + "Unlimited dimension: " + dim.getDimName();
+                dataInfo += System.getProperty("line.separator") + "Unlimited dimension: " + dim.getShortName();
             }
             break;
         }
@@ -695,8 +704,8 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
             Variable var = this.getVariables().get(varIdx);
             Dimension xdim = var.getXDimension();
             Dimension ydim = var.getYDimension();
-            int xn = xdim.getDimLength();
-            int yn = ydim.getDimLength();
+            int xn = xdim.getLength();
+            int yn = ydim.getLength();
             SubHeader sh = this.findSubHeader(var.getName(), timeIdx);
             br.seek(sh.position + sh.length);
             int n = xn * yn;
@@ -741,8 +750,8 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
             Variable var = this.getVariables().get(varIdx);
             Dimension xdim = var.getXDimension();
             Dimension ydim = var.getYDimension();
-            int xn = xdim.getDimLength();
-            int yn = ydim.getDimLength();
+            int xn = xdim.getLength();
+            int yn = ydim.getLength();
             SubHeader sh = this.findSubHeader(var.getName(), timeIdx);
             br.seek(sh.position + sh.length);
             int n = xn * yn;
@@ -790,8 +799,8 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
      * @throws IOException
      */
     public GridData getGridData(RandomAccessFile raf, Dimension xdim, Dimension ydim) throws IOException {
-        int xn = xdim.getDimLength();
-        int yn = ydim.getDimLength();
+        int xn = xdim.getLength();
+        int yn = ydim.getLength();
         int n = xn * yn;
         byte[] dataBytes = new byte[n * 4];
         raf.read(dataBytes);
@@ -823,8 +832,8 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
             Variable var = this.getVariables().get(varIdx);
             Dimension xdim = var.getXDimension();
             Dimension ydim = var.getYDimension();
-            int xNum = xdim.getDimLength();
-            int yNum = ydim.getDimLength();
+            int xNum = xdim.getLength();
+            int yNum = ydim.getLength();
             int tNum = this.getTimeNum();
             double[][] theData = new double[tNum][yNum];
             RandomAccessFile br = new RandomAccessFile(this.getFileName(), "r");
@@ -875,8 +884,8 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
             Variable var = this.getVariables().get(varIdx);
             Dimension xdim = var.getXDimension();
             Dimension ydim = var.getYDimension();
-            int xNum = xdim.getDimLength();
-            int yNum = ydim.getDimLength();
+            int xNum = xdim.getLength();
+            int yNum = ydim.getLength();
             int tNum = this.getTimeNum();
             double[][] theData = new double[tNum][xNum];
             RandomAccessFile br = new RandomAccessFile(this.getFileName(), "r");

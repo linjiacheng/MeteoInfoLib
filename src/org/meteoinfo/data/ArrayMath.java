@@ -809,11 +809,22 @@ public class ArrayMath {
      */
     public static Array equal(Array a, Number b) {
         Array r = Array.factory(DataType.INT, a.getShape());
-        for (int i = 0; i < a.getSize(); i++) {
-            if (a.getDouble(i) == b.doubleValue()) {
-                r.setDouble(i, 1);
-            } else {
-                r.setDouble(i, 0);
+        double v = b.doubleValue();
+        if (Double.isNaN(v)){
+            for (int i = 0; i < a.getSize(); i++) {
+                if (Double.isNaN(a.getDouble(i))) {
+                    r.setDouble(i, 1);
+                } else {
+                    r.setDouble(i, 0);
+                }
+            }
+        } else {
+            for (int i = 0; i < a.getSize(); i++) {
+                if (a.getDouble(i) == b.doubleValue()) {
+                    r.setDouble(i, 1);
+                } else {
+                    r.setDouble(i, 0);
+                }
             }
         }
 

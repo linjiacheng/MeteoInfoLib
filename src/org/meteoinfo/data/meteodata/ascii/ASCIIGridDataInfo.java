@@ -39,6 +39,7 @@ import ucar.ma2.IndexIterator;
 import ucar.ma2.InvalidRangeException;
 import ucar.ma2.Range;
 import ucar.ma2.Section;
+import ucar.nc2.Attribute;
 
 /**
  *
@@ -119,6 +120,15 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
         }
     }
     
+    /**
+     * Get global attributes
+     * @return Global attributes
+     */
+    @Override
+    public List<Attribute> getGlobalAttributes(){
+        return new ArrayList<>();
+    }
+    
     @Override
     public String generateInfoText() {
         String dataInfo;
@@ -126,8 +136,8 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
         dataInfo += System.getProperty("line.separator") + "Data Type: Sufer ASCII Grid";
         Dimension xdim = this.getXDimension();
         Dimension ydim = this.getYDimension();
-        dataInfo += System.getProperty("line.separator") + "XNum = " + String.valueOf(xdim.getDimLength())
-                + "  YNum = " + String.valueOf(ydim.getDimLength());
+        dataInfo += System.getProperty("line.separator") + "XNum = " + String.valueOf(xdim.getLength())
+                + "  YNum = " + String.valueOf(ydim.getLength());
         dataInfo += System.getProperty("line.separator") + "XMin = " + String.valueOf(xdim.getValues()[0])
                 + "  YMin = " + String.valueOf(ydim.getValues()[0]);
         dataInfo += System.getProperty("line.separator") + "XSize = " + String.valueOf(xdim.getValues()[1] - xdim.getValues()[0])
@@ -190,8 +200,8 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
 
     private void readXY(Range yRange, Range xRange, IndexIterator ii) {
         try {
-            int xNum = this.getXDimension().getDimLength();
-            int yNum = this.getYDimension().getDimLength();
+            int xNum = this.getXDimension().getLength();
+            int yNum = this.getYDimension().getLength();
             float[][] theData = new float[yNum][xNum];
             BufferedReader sr = new BufferedReader(new FileReader(new File(this.getFileName())));
             String[] dataArray;
@@ -268,8 +278,8 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
     @Override
     public GridData getGridData_LonLat(int timeIdx, int varIdx, int levelIdx) {
         try {
-            int xNum = this.getXDimension().getDimLength();
-            int yNum = this.getYDimension().getDimLength();
+            int xNum = this.getXDimension().getLength();
+            int yNum = this.getYDimension().getLength();
             double[][] theData = new double[yNum][xNum];
             BufferedReader sr = new BufferedReader(new FileReader(new File(this.getFileName())));
             String[] dataArray;

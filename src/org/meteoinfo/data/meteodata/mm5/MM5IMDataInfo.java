@@ -27,6 +27,7 @@ import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.util.DateUtil;
 import org.meteoinfo.global.util.GlobalUtil;
 import ucar.ma2.Array;
+import ucar.nc2.Attribute;
 
 /**
  * MM5 regrid intermediate data info
@@ -197,13 +198,22 @@ public class MM5IMDataInfo extends DataInfo implements IGridDataInfo {
         
         return this._dataHeads.get(0);
     }
+    
+    /**
+     * Get global attributes
+     * @return Global attributes
+     */
+    @Override
+    public List<Attribute> getGlobalAttributes(){
+        return new ArrayList<>();
+    }
 
     @Override
     public String generateInfoText() {
         String dataInfo;
         dataInfo = "File Name: " + this.getFileName();        
-        dataInfo += System.getProperty("line.separator") + "Xsize = " + String.valueOf(this.getXDimension().getDimLength())
-                + "  Ysize = " + String.valueOf(this.getYDimension().getDimLength());               
+        dataInfo += System.getProperty("line.separator") + "Xsize = " + String.valueOf(this.getXDimension().getLength())
+                + "  Ysize = " + String.valueOf(this.getYDimension().getLength());               
         dataInfo += System.getProperty("line.separator") + "Number of Variables = " + String.valueOf(this.getVariableNum());
         for (String v : this.getVariableNames()) {
             dataInfo += System.getProperty("line.separator") + v;
