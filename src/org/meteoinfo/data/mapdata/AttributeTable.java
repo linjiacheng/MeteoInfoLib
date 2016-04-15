@@ -1,4 +1,4 @@
- /* Copyright 2012 Yaqiang Wang,
+/* Copyright 2012 Yaqiang Wang,
  * yaqiang.wang@gmail.com
  * 
  * This library is free software; you can redistribute it and/or modify it
@@ -88,6 +88,7 @@ public final class AttributeTable implements Cloneable {
      * Constructor
      *
      * @param filename The file name
+     * @throws java.io.FileNotFoundException
      */
     public AttributeTable(String filename) throws FileNotFoundException, IOException, Exception {
         //_dataRowWatch = new Stopwatch();
@@ -103,9 +104,9 @@ public final class AttributeTable implements Cloneable {
     private void configure() {
         _fileType = 0x03;
         _dataTable = new DataTable();
-        _columns = new ArrayList<Field>();
+        _columns = new ArrayList<>();
         _attributesPopulated = true; // only turn this false during an "open" method
-        _deletedRows = new ArrayList<Integer>();
+        _deletedRows = new ArrayList<>();
         _characterContent = new char[1];
     }
     // </editor-fold>
@@ -113,12 +114,13 @@ public final class AttributeTable implements Cloneable {
     // <editor-fold desc="Get Set Methods">
     /**
      * Get file
+     *
      * @return File
      */
-    public File getFile(){
+    public File getFile() {
         return this._file;
     }
-    
+
     /**
      * Get record number
      *
@@ -151,14 +153,14 @@ public final class AttributeTable implements Cloneable {
     /**
      * Update data table - convert DataColumn to Field
      */
-    public void updateDataTable(){
-        for (DataColumn col : _dataTable.getColumns()){
-            if (col.getClass().equals(DataColumn.class)){
+    public void updateDataTable() {
+        for (DataColumn col : _dataTable.getColumns()) {
+            if (col.getClass().equals(DataColumn.class)) {
                 col = new Field(col);
             }
         }
     }
-    
+
     /**
      * Reads all the information from the file, including the vector shapes and
      * the database component.
@@ -185,7 +187,6 @@ public final class AttributeTable implements Cloneable {
         readTableHeader(myReader); // based on the header, set up the fields information etc.
 
         //_hasDeletedRecords = false;
-
 //            FileInfo fi = new FileInfo(_fileName);
 //            if (fi.Length == (_headerLength + 1) + _numRecords * _recordLength)
 //            {
@@ -250,11 +251,9 @@ public final class AttributeTable implements Cloneable {
         reader.skipBytes(20);
 
         // calculate the number of Fields in the header
-
         _numFields = (_headerLength - FileDescriptorSize - 1) / FileDescriptorSize;
 
         // _numFields = (_headerLength - FileDescriptorSize) / FileDescriptorSize;
-
         _columns = new ArrayList<Field>();
 
         for (int i = 0; i < _numFields; i++) {
@@ -267,12 +266,10 @@ public final class AttributeTable implements Cloneable {
             buffer.get(bytes);
             String name = new String(bytes, "GB2312");
 
-
             int nullPoint = name.indexOf((char) 0);
             if (nullPoint != -1) {
                 name = name.substring(0, nullPoint);
             }
-
 
             // read the field type
             char Code = (char) buffer.get();
@@ -312,7 +309,6 @@ public final class AttributeTable implements Cloneable {
         MappedByteBuffer myReader = fco.map(FileChannel.MapMode.READ_ONLY, 0, fco.size());
 
         //FileInfo fi = new FileInfo(_fileName);
-
         // Encoding appears to be ASCII, not Unicode
         rafo.seek(_headerLength + 1);
         myReader.position(_headerLength + 1);
@@ -394,7 +390,7 @@ public final class AttributeTable implements Cloneable {
 
         //Debug.WriteLine("Load Time:" + sw.ElapsedMilliseconds + " Milliseconds");
         //Debug.WriteLine("Conversion:" + _dataRowWatch.ElapsedMilliseconds + " Milliseconds");
-        _attributesPopulated = true;        
+        _attributesPopulated = true;
         //onAttributesFilled();
     }
 
@@ -424,7 +420,6 @@ public final class AttributeTable implements Cloneable {
 
             Object tempObject = null;
             //if (IsNull(cBuffer)) continue;
-
 
             switch (tempFieldType) {
                 case 'L': // logical data type, one character (T,t,F,f,Y,y,N,n)
@@ -459,9 +454,10 @@ public final class AttributeTable implements Cloneable {
                 case 'B':
                 case 'N': // number - ESRI uses N for doubles and floats
                     String tempStr = new String(cBuffer);
-                    if (!tempStr.trim().equals("null")){
-                        if (tempStr.trim().isEmpty())
+                    if (!tempStr.trim().equals("null")) {
+                        if (tempStr.trim().isEmpty()) {
                             tempStr = "0";
+                        }
                         DataTypes t = CurrentField.getDataType();
                         switch (t) {
                             case Integer:
@@ -470,7 +466,7 @@ public final class AttributeTable implements Cloneable {
                             case Float:
                                 tempObject = Float.parseFloat(tempStr);
                                 break;
-                            case Double:                            
+                            case Double:
                                 tempObject = Double.parseDouble(tempStr);
                                 break;
                         }
@@ -534,17 +530,17 @@ public final class AttributeTable implements Cloneable {
     }
 
     private void updateSchema() {
-        List<Field> tempColumns = new ArrayList<Field>();
+        List<Field> tempColumns = new ArrayList<>();
         _recordLength = 1; // delete character
         _numRecords = this._dataTable.getRows().size();
         _updateDate = new Date();
         _headerLength = FileDescriptorSize + FileDescriptorSize * _dataTable.getColumns().size() + 1;
         if (_columns == null) {
-            _columns = new ArrayList<Field>();
+            _columns = new ArrayList<>();
         }
         // Delete any fields from the columns list that are no 
         // longer in the data Table.
-        List<Field> removeFields = new ArrayList<Field>();
+        List<Field> removeFields = new ArrayList<>();
         for (Field fld : _columns) {
             if (!_dataTable.getColumnNames().contains(fld.getColumnName())) {
                 removeFields.add(fld);
@@ -566,7 +562,7 @@ public final class AttributeTable implements Cloneable {
 //                if (fld == null) {
 //                    fld = new Field(dc);
 //                }
-                
+
                 Field fld = new Field(dc);
 
                 tempColumns.add(fld);
@@ -606,7 +602,7 @@ public final class AttributeTable implements Cloneable {
         writer.writeByteLE(calendar.get(Calendar.YEAR) - 1900);
         writer.writeByteLE(calendar.get(Calendar.MONTH) + 1); // month is 0-indexed
         writer.writeByteLE(calendar.get(Calendar.DAY_OF_MONTH));
-               
+
         // write the number of records in the datafile.
         writer.writeIntLE(_numRecords);
 
@@ -628,13 +624,13 @@ public final class AttributeTable implements Cloneable {
             // write the field name
             //writer.write(currentField.getColumnName().toString().getBytes(charset.name()), 0, 11);
             byte[] bytes = currentField.getColumnName().getBytes(Charset.forName("GB2312"));
-            for (int j = 0; j < 11; j++)
-                {
-                    if (bytes.length > j)
-                        writer.writeByteLE(bytes[j]);
-                    else
-                        writer.writeByteLE((byte)0);                    
+            for (int j = 0; j < 11; j++) {
+                if (bytes.length > j) {
+                    writer.writeByteLE(bytes[j]);
+                } else {
+                    writer.writeByteLE((byte) 0);
                 }
+            }
 
             // write the field type
             writer.writeByteLE(currentField.getTypeCharacter());
@@ -659,6 +655,7 @@ public final class AttributeTable implements Cloneable {
 
     /**
      * This appends the content of one datarow to a DBF file
+     *
      * @throws java.io.IOException
      */
     public void writeTable() throws IOException {
@@ -670,7 +667,7 @@ public final class AttributeTable implements Cloneable {
             _writer.writeByteLE((byte) 0x20); // the deleted flag
             //int len = _recordLength - 1;
             StringBuffer tmps;
-            String s;
+            //String s;
             for (int fld = 0; fld < _columns.size(); fld++) {
                 Field currentField = _columns.get(fld);
                 String name = currentField.getColumnName();
@@ -702,19 +699,19 @@ public final class AttributeTable implements Cloneable {
                     case 'N':
                     case 'n':
                         // int?
-                        String fs = "";
-                        if (currentField.getDataType() == DataTypes.Integer){
-                            fs = String.format("%1$" + String.valueOf(currentField.getLength()) + "d", columnValue);                            
+                        String fs;
+                        if (currentField.getDataType() == DataTypes.Integer) {
+                            fs = String.format("%1$" + String.valueOf(currentField.getLength()) + "d", columnValue);
                         } else {
-                            fs = String.format("%1$" + String.valueOf(currentField.getLength()) + "." +
-                                    String.valueOf(currentField.getDecimalCount()) + "f", columnValue);
+                            fs = String.format("%1$" + String.valueOf(currentField.getLength()) + "."
+                                    + String.valueOf(currentField.getDecimalCount()) + "f", columnValue);
                         }
-                        if (fs.length() > currentField.getLength()){
+                        if (fs.length() > currentField.getLength()) {
                             fs = fs.substring(0, currentField.getLength());
                         }
                         _writer.writeBytesLE(fs);
                         break;
-                        
+
 //                        if (currentField.getDecimalCount() == 0) {
 //                            if (columnValue instanceof Integer) {
 //                                fs = FormatedString.format(((Integer) columnValue).intValue(), currentField.getLength());
@@ -746,8 +743,8 @@ public final class AttributeTable implements Cloneable {
                         //double
                         //s = ((Double) columnValue).toString();
                         //String x = FormatedString.format(s, currentField.getDecimalCount(), currentField.getLength());
-                        String x = String.format("%1$" + String.valueOf(currentField.getLength()) + "." +
-                                    String.valueOf(currentField.getDecimalCount()) + "f", columnValue);
+                        String x = String.format("%1$" + String.valueOf(currentField.getLength()) + "."
+                                + String.valueOf(currentField.getDecimalCount()) + "f", columnValue);
                         _writer.writeBytesLE(x);
                         break;
                     // Case 'logical' added by mmichaud on 18 sept. 2004
@@ -756,7 +753,7 @@ public final class AttributeTable implements Cloneable {
                         if (columnValue == null || columnValue.equals("") || columnValue.equals(" ")) {
                             _writer.writeBytesLE(" ");
                         } else {
-                            boolean b = ((Boolean) columnValue).booleanValue();
+                            boolean b = (Boolean) columnValue;
                             _writer.writeBytesLE(b ? "T" : "F");
                         }
                         break;
@@ -773,7 +770,7 @@ public final class AttributeTable implements Cloneable {
     @Override
     public Object clone() {
         AttributeTable newAT = new AttributeTable();
-        newAT.setTable((DataTable)_dataTable.clone());
+        newAT.setTable((DataTable) _dataTable.clone());
 
         return newAT;
     }

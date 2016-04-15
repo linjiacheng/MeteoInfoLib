@@ -1324,6 +1324,7 @@ public class FrmLayerProperty extends javax.swing.JDialog {
                         this.jComboBox_ChartType.setSelectedItem(aLayer.getChartSet().getChartType().toString());
 
                         //Add fields    
+                        aLayer.getChartSet().update();
                         DefaultListModel listModel = new DefaultListModel();
                         boolean isCheck;
                         for (int i = 0; i < aLayer.getFieldNumber(); i++) {

@@ -35,6 +35,7 @@ public abstract class DataInfo {
     private String _fileName;
     private List<Variable> _variables = new ArrayList<>();
     private List<Dimension> _dimensions = new ArrayList<>();
+    private List<Attribute> attributes = new ArrayList<>();
     private Dimension _tDim = null;
     private Dimension _xDim = null;
     private Dimension _yDim = null;
@@ -461,7 +462,64 @@ public abstract class DataInfo {
      *
      * @return Data info text
      */
-    public abstract String generateInfoText();
+    public String generateInfoText() {
+        String dataInfo;
+        int i, j;
+        ucar.nc2.Attribute aAttS;
+        dataInfo = "File Name: " + this.getFileName();
+        //dataInfo += System.getProperty("line.separator") + "File type: " + _fileTypeStr + " (" + _fileTypeId + ")";
+        dataInfo += System.getProperty("line.separator") + "Dimensions: " + _dimensions.size();
+        for (i = 0; i < _dimensions.size(); i++) {
+            dataInfo += System.getProperty("line.separator") + "\t" + _dimensions.get(i).getShortName() + " = "
+                    + String.valueOf(_dimensions.get(i).getLength()) + ";";
+        }
+
+        Dimension xdim = this.getXDimension();
+        if (xdim != null) {
+            dataInfo += System.getProperty("line.separator") + "X Dimension: Xmin = " + String.valueOf(xdim.getMinValue())
+                    + "; Xmax = " + String.valueOf(xdim.getMaxValue()) + "; Xsize = "
+                    + String.valueOf(xdim.getLength()) + "; Xdelta = " + String.valueOf(xdim.getDeltaValue());
+        }
+        Dimension ydim = this.getYDimension();
+        if (ydim != null) {
+            dataInfo += System.getProperty("line.separator") + "Y Dimension: Ymin = " + String.valueOf(ydim.getMinValue())
+                    + "; Ymax = " + String.valueOf(ydim.getMaxValue()) + "; Ysize = "
+                    + String.valueOf(ydim.getLength()) + "; Ydelta = " + String.valueOf(ydim.getDeltaValue());
+        }
+
+        dataInfo += System.getProperty("line.separator") + "Global Attributes: ";
+        for (i = 0; i < this.attributes.size(); i++) {
+            aAttS = this.attributes.get(i);
+            dataInfo += System.getProperty("line.separator") + "\t: " + aAttS.toString();
+        }
+
+        dataInfo += System.getProperty("line.separator") + "Variations: " + _variables.size();
+        for (i = 0; i < _variables.size(); i++) {
+            dataInfo += System.getProperty("line.separator") + "\t" + _variables.get(i).getDataType().toString()
+                    + " " + _variables.get(i).getShortName() + "(";
+            List<ucar.nc2.Dimension> dims = _variables.get(i).getDimensions();
+            for (j = 0; j < dims.size(); j++) {
+                dataInfo += dims.get(j).getShortName() + ",";
+            }
+            dataInfo = dataInfo.substring(0, dataInfo.length() - 1);
+            dataInfo += ");";
+            List<ucar.nc2.Attribute> atts = _variables.get(i).getAttributes();
+            for (j = 0; j < atts.size(); j++) {
+                aAttS = atts.get(j);
+                dataInfo += System.getProperty("line.separator") + "\t" + "\t" + _variables.get(i).getShortName()
+                        + ": " + aAttS.toString();
+            }
+        }
+
+        for (ucar.nc2.Dimension dim : _dimensions) {
+            if (dim.isUnlimited()) {
+                dataInfo += System.getProperty("line.separator") + "Unlimited dimension: " + dim.getShortName();
+            }
+            break;
+        }
+
+        return dataInfo;
+    }
     
     /**
      * Read array data
@@ -519,6 +577,14 @@ public abstract class DataInfo {
      */
     public void addDimension(Dimension dim) {
         this._dimensions.add(dim);
+    }
+    
+    /**
+     * Add a global attribute
+     * @param attr The attribute
+     */
+    public void addAttribute(Attribute attr){
+        this.attributes.add(attr);
     }
 
     // </editor-fold>

@@ -1,4 +1,4 @@
- /* Copyright 2012 Yaqiang Wang,
+/* Copyright 2012 Yaqiang Wang,
  * yaqiang.wang@gmail.com
  * 
  * This library is free software; you can redistribute it and/or modify it
@@ -174,7 +174,8 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
      */
     public GrADSDataInfo() {
         DTYPE = "Gridded";
-        TITLE = "";
+        TITLE = "null";
+        this.DESCRIPTOR = "null";
         OPTIONS = new Options();
         FILEHEADER = 0;
         THEADER = 0;
@@ -320,6 +321,8 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
         //Set dufault value
         DESCRIPTOR = aFile;
         boolean isReadLine = true;
+        Dimension zDim;
+        this.addAttribute(new Attribute("data_format", "GrADS binary"));
         do {
             if (isReadLine) {
                 aLine = sr.readLine().trim();
@@ -330,274 +333,299 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
             isReadLine = true;
             dataArray = aLine.split("\\s+");
             String hStr = dataArray[0].toUpperCase();
-            if (hStr.equals("DSET")) {
-                DSET = dataArray[1];
-                boolean isNotPath = false;
-                if (!DSET.contains("/") && !DSET.contains("\\")) {
-                    isNotPath = true;
-                }
-
-                File theFile = new File(aFile);
-                String aDir = theFile.getParent();
-
-                if (isNotPath) {
-                    if (DSET.substring(0, 1).equals("^")) {
-                        DSET = aDir + File.separator + DSET.substring(1);
-                    } else {
-                        DSET = aDir + File.separator + DSET;
+            switch (hStr) {
+                case "DSET":
+                    DSET = dataArray[1];
+                    boolean isNotPath = false;
+                    if (!DSET.contains("/") && !DSET.contains("\\")) {
+                        isNotPath = true;
                     }
+                    File theFile = new File(aFile);
+                    String aDir = theFile.getParent();
+                    if (isNotPath) {
+                        if (DSET.substring(0, 1).equals("^")) {
+                            DSET = aDir + File.separator + DSET.substring(1);
+                        } else {
+                            DSET = aDir + File.separator + DSET;
+                        }
 
+                        if (!new File(DSET).isFile()) {
+                            DSET = dataArray[1];
+                            DSET = theFile.getParent() + "/"
+                                    + DSET.substring(1, DSET.length());
+                        }
+                    }
                     if (!new File(DSET).isFile()) {
-                        DSET = dataArray[1];
-                        DSET = theFile.getParent() + "/"
-                                + DSET.substring(1, DSET.length());
+                        if (DSET.substring(0, 2).equals("./") || DSET.substring(0, 2).equals(".\\")) {
+                            DSET = aDir + File.separator + DSET.substring(2);
+                        } else {
+                            errorStr = "The data file is not exist!" + System.getProperty("line.separator") + DSET;
+                        }
+                        //goto ERROR;
                     }
-                }
-
-                if (!new File(DSET).isFile()) {
-                    if (DSET.substring(0, 2).equals("./") || DSET.substring(0, 2).equals(".\\")) {
-                        DSET = aDir + File.separator + DSET.substring(2);
-                    } else {
-                        errorStr = "The data file is not exist!" + System.getProperty("line.separator") + DSET;
+                    break;
+                case "DTYPE":
+                    DTYPE = dataArray[1];
+                    if (!DTYPE.toUpperCase().equals("GRIDDED") && !DTYPE.toUpperCase().equals("STATION")) {
+                        errorStr = "The data type is not supported at present!" + System.getProperty("line.separator")
+                                + DTYPE;
+                        //goto ERROR;
                     }
-                    //goto ERROR;
-                }
-            } else if (hStr.equals("DTYPE")) {
-                DTYPE = dataArray[1];
-                if (!DTYPE.toUpperCase().equals("GRIDDED") && !DTYPE.toUpperCase().equals("STATION")) {
-                    errorStr = "The data type is not supported at present!" + System.getProperty("line.separator")
-                            + DTYPE;
-                    //goto ERROR;
-                }
-                if (DTYPE.toUpperCase().equals("STATION")) {
-                    this.setDataType(MeteoDataType.GrADS_Station);
-                }
-            } else if (hStr.equals("OPTIONS")) {
-                for (i = 1; i < dataArray.length; i++) {
-                    String oStr = dataArray[i].toLowerCase();
-                    if (oStr.equals("big_endian")) {
-                        OPTIONS.big_endian = true;
-                    } else if (oStr.equals("byteswapped")) {
-                        OPTIONS.byteswapped = true;
-                    } else if (oStr.equals("365_day_calendar")) {
-                        OPTIONS.calendar_365_day = true;
-                    } else if (oStr.equals("cray_32bit_ieee")) {
-                        OPTIONS.cray_32bit_ieee = true;
-                    } else if (oStr.equals("little_endian")) {
-                        OPTIONS.little_endian = true;
-                    } else if (oStr.equals("pascals")) {
-                        OPTIONS.pascals = true;
-                    } else if (oStr.equals("sequential")) {
-                        OPTIONS.sequential = true;
-                    } else if (oStr.equals("template")) {
-                        OPTIONS.template = true;
-                    } else if (oStr.equals("yrev")) {
-                        OPTIONS.yrev = true;
-                    } else if (oStr.equals("zrev")) {
-                        OPTIONS.zrev = true;
+                    if (DTYPE.toUpperCase().equals("STATION")) {
+                        this.setDataType(MeteoDataType.GrADS_Station);
                     }
-                }
-            } else if (hStr.equals("UNDEF")) {
-                this.setMissingValue(Double.parseDouble(dataArray[1]));
-            } else if (hStr.equals("TITLE")) {
-                TITLE = aLine.substring(5, aLine.length()).trim();
-            } else if (hStr.equals("FILEHEADER")) {
-                FILEHEADER = Integer.parseInt(dataArray[1]);
-            } else if (hStr.equals("THEADER")) {
-                THEADER = Integer.parseInt(dataArray[1]);
-            } else if (hStr.equals("XYHEADER")) {
-                XYHEADER = Integer.parseInt(dataArray[1]);
-            } else if (hStr.equals("PDEF")) {
-                PDEF.PDEF_Type = dataArray[3].toUpperCase();
-                String ProjStr;
-                ProjectionInfo theProj;
-                String pStr = PDEF.PDEF_Type;
-                if (pStr.equals("LCC") || pStr.equals("LCCR")) {
-                    PDEF_LCC aPLCC = new PDEF_LCC();
-                    aPLCC.isize = Integer.parseInt(dataArray[1]);
-                    aPLCC.jsize = Integer.parseInt(dataArray[2]);
-                    aPLCC.latref = Float.parseFloat(dataArray[4]);
-                    aPLCC.lonref = Float.parseFloat(dataArray[5]);
-                    aPLCC.iref = Float.parseFloat(dataArray[6]);
-                    aPLCC.jref = Float.parseFloat(dataArray[7]);
-                    aPLCC.Struelat = Float.parseFloat(dataArray[8]);
-                    aPLCC.Ntruelat = Float.parseFloat(dataArray[9]);
-                    aPLCC.slon = Float.parseFloat(dataArray[10]);
-                    aPLCC.dx = Float.parseFloat(dataArray[11]);
-                    aPLCC.dy = Float.parseFloat(dataArray[12]);
-                    PDEF.PDEF_Content = aPLCC;
-
-                    isLatLon = false;
-
-                    ProjStr = "+proj=lcc"
-                            + " +lat_1=" + String.valueOf(aPLCC.Struelat)
-                            + " +lat_2=" + String.valueOf(aPLCC.Ntruelat)
-                            + " +lat_0=" + String.valueOf(aPLCC.latref)
-                            + " +lon_0=" + String.valueOf(aPLCC.slon);
-
-                    theProj = new ProjectionInfo(ProjStr);
-                    this.setProjectionInfo(theProj);
-                    if (PDEF.PDEF_Type.equals("LCCR")) {
-                        EarthWind = false;
+                    Attribute attr = new Attribute("data_type", this.DTYPE);
+                    this.addAttribute(attr);
+                    break;
+                case "OPTIONS":
+                    for (i = 1; i < dataArray.length; i++) {
+                        String oStr = dataArray[i].toLowerCase();
+                        switch (oStr) {
+                            case "big_endian":
+                                OPTIONS.big_endian = true;
+                                break;
+                            case "byteswapped":
+                                OPTIONS.byteswapped = true;
+                                break;
+                            case "365_day_calendar":
+                                OPTIONS.calendar_365_day = true;
+                                break;
+                            case "cray_32bit_ieee":
+                                OPTIONS.cray_32bit_ieee = true;
+                                break;
+                            case "little_endian":
+                                OPTIONS.little_endian = true;
+                                break;
+                            case "pascals":
+                                OPTIONS.pascals = true;
+                                break;
+                            case "sequential":
+                                OPTIONS.sequential = true;
+                                break;
+                            case "template":
+                                OPTIONS.template = true;
+                                break;
+                            case "yrev":
+                                OPTIONS.yrev = true;
+                                break;
+                            case "zrev":
+                                OPTIONS.zrev = true;
+                                break;
+                            default:
+                                break;
+                        }
                     }
-
-                    //Set X Y
-                    XNum = aPLCC.isize;
-                    YNum = aPLCC.jsize;
-                    X = new double[aPLCC.isize];
-                    Y = new double[aPLCC.jsize];
-                    getProjectedXY(theProj, aPLCC.dx, aPLCC.dy, aPLCC.iref, aPLCC.jref, aPLCC.lonref,
-                            aPLCC.latref, X, Y);
-                    Dimension xdim = new Dimension(DimensionType.X);
-                    xdim.setShortName("X");
-                    xdim.setValues(X);
-                    this.setXDimension(xdim);
-                    this.addDimension(xdim);
-                    Dimension ydim = new Dimension(DimensionType.Y);
-                    ydim.setShortName("Y");
-                    ydim.setValues(Y);
-                    this.setYDimension(ydim);
-                    this.addDimension(ydim);
-                } else if (pStr.equals("NPS") || pStr.equals("SPS")) {
-                    int iSize = Integer.parseInt(dataArray[1]);
-                    int jSize = Integer.parseInt(dataArray[2]);
-                    float iPole = Float.parseFloat(dataArray[3]);
-                    float jPole = Float.parseFloat(dataArray[4]);
-                    float lonRef = Float.parseFloat(dataArray[5]);
-                    float dx = Float.parseFloat(dataArray[6]) * 1000;
-                    float dy = dx;
-
-                    String lat0 = "90";
-                    if (PDEF.PDEF_Type.equals("SPS")) {
-                        lat0 = "-90";
+                    break;
+                case "UNDEF":
+                    this.setMissingValue(Double.parseDouble(dataArray[1]));
+                    attr = new Attribute("fill_value", this.getMissingValue());
+                    this.addAttribute(attr);
+                    break;
+                case "TITLE":
+                    TITLE = aLine.substring(5, aLine.length()).trim();
+                    attr = new Attribute("title", this.TITLE);
+                    this.addAttribute(attr);
+                    break;
+                case "FILEHEADER":
+                    FILEHEADER = Integer.parseInt(dataArray[1]);
+                    break;
+                case "THEADER":
+                    THEADER = Integer.parseInt(dataArray[1]);
+                    break;
+                case "XYHEADER":
+                    XYHEADER = Integer.parseInt(dataArray[1]);
+                    break;
+                case "PDEF":
+                    PDEF.PDEF_Type = dataArray[3].toUpperCase();
+                    String ProjStr;
+                    ProjectionInfo theProj;
+                    String pStr = PDEF.PDEF_Type;
+                    switch (pStr) {
+                        case "LCC":
+                        case "LCCR": {
+                            PDEF_LCC aPLCC = new PDEF_LCC();
+                            aPLCC.isize = Integer.parseInt(dataArray[1]);
+                            aPLCC.jsize = Integer.parseInt(dataArray[2]);
+                            aPLCC.latref = Float.parseFloat(dataArray[4]);
+                            aPLCC.lonref = Float.parseFloat(dataArray[5]);
+                            aPLCC.iref = Float.parseFloat(dataArray[6]);
+                            aPLCC.jref = Float.parseFloat(dataArray[7]);
+                            aPLCC.Struelat = Float.parseFloat(dataArray[8]);
+                            aPLCC.Ntruelat = Float.parseFloat(dataArray[9]);
+                            aPLCC.slon = Float.parseFloat(dataArray[10]);
+                            aPLCC.dx = Float.parseFloat(dataArray[11]);
+                            aPLCC.dy = Float.parseFloat(dataArray[12]);
+                            PDEF.PDEF_Content = aPLCC;
+                            isLatLon = false;
+                            ProjStr = "+proj=lcc"
+                                    + " +lat_1=" + String.valueOf(aPLCC.Struelat)
+                                    + " +lat_2=" + String.valueOf(aPLCC.Ntruelat)
+                                    + " +lat_0=" + String.valueOf(aPLCC.latref)
+                                    + " +lon_0=" + String.valueOf(aPLCC.slon);
+                            theProj = new ProjectionInfo(ProjStr);
+                            this.setProjectionInfo(theProj);
+                            if (PDEF.PDEF_Type.equals("LCCR")) {
+                                EarthWind = false;
+                            }       //Set X Y
+                            XNum = aPLCC.isize;
+                            YNum = aPLCC.jsize;
+                            X = new double[aPLCC.isize];
+                            Y = new double[aPLCC.jsize];
+                            getProjectedXY(theProj, aPLCC.dx, aPLCC.dy, aPLCC.iref, aPLCC.jref, aPLCC.lonref,
+                                    aPLCC.latref, X, Y);
+                            Dimension xdim = new Dimension(DimensionType.X);
+                            xdim.setShortName("X");
+                            xdim.setValues(X);
+                            this.setXDimension(xdim);
+                            this.addDimension(xdim);
+                            Dimension ydim = new Dimension(DimensionType.Y);
+                            ydim.setShortName("Y");
+                            ydim.setValues(Y);
+                            this.setYDimension(ydim);
+                            this.addDimension(ydim);
+                            break;
+                        }
+                        case "NPS":
+                        case "SPS": {
+                            int iSize = Integer.parseInt(dataArray[1]);
+                            int jSize = Integer.parseInt(dataArray[2]);
+                            float iPole = Float.parseFloat(dataArray[3]);
+                            float jPole = Float.parseFloat(dataArray[4]);
+                            float lonRef = Float.parseFloat(dataArray[5]);
+                            float dx = Float.parseFloat(dataArray[6]) * 1000;
+                            float dy = dx;
+                            String lat0 = "90";
+                            if (PDEF.PDEF_Type.equals("SPS")) {
+                                lat0 = "-90";
+                            }
+                            isLatLon = false;
+                            ProjStr = "+proj=stere +lon_0=" + String.valueOf(lonRef)
+                                    + " +lat_0=" + lat0;
+                            this.setProjectionInfo(new ProjectionInfo(ProjStr));
+                            //Set X Y
+                            XNum = iSize;
+                            YNum = jSize;
+                            X = new double[iSize];
+                            Y = new double[jSize];
+                            getProjectedXY_NPS(dx, dy, iPole, jPole, X, Y);
+                            Dimension xdim = new Dimension(DimensionType.X);
+                            xdim.setShortName("X");
+                            xdim.setValues(X);
+                            this.setXDimension(xdim);
+                            this.addDimension(xdim);
+                            Dimension ydim = new Dimension(DimensionType.Y);
+                            ydim.setShortName("Y");
+                            ydim.setValues(Y);
+                            this.setYDimension(ydim);
+                            this.addDimension(ydim);
+                            break;
+                        }
+                        default:
+                            errorStr = "The PDEF type is not supported at present!" + System.getProperty("line.separator")
+                                    + "Please send your data to the author to improve MeteoInfo!";
+                            //goto ERROR;
+                            break;
                     }
-
-                    isLatLon = false;
-
-                    ProjStr = "+proj=stere +lon_0=" + String.valueOf(lonRef)
-                            + " +lat_0=" + lat0;
-
-                    this.setProjectionInfo(new ProjectionInfo(ProjStr));
-
-                    //Set X Y
-                    XNum = iSize;
-                    YNum = jSize;
-                    X = new double[iSize];
-                    Y = new double[jSize];
-                    getProjectedXY_NPS(dx, dy, iPole, jPole, X, Y);
-                    Dimension xdim = new Dimension(DimensionType.X);
-                    xdim.setShortName("X");
-                    xdim.setValues(X);
-                    this.setXDimension(xdim);
-                    this.addDimension(xdim);
-                    Dimension ydim = new Dimension(DimensionType.Y);
-                    ydim.setShortName("Y");
-                    ydim.setValues(Y);
-                    this.setYDimension(ydim);
-                    this.addDimension(ydim);
-                } else {
-                    errorStr = "The PDEF type is not supported at present!" + System.getProperty("line.separator")
-                            + "Please send your data to the author to improve MeteoInfo!";
-                    //goto ERROR;
-                }
-            } else if (hStr.equals("XDEF")) {
-                if (this.getProjectionInfo().isLonLat()) {
-                    XDEF.XNum = Integer.parseInt(dataArray[1]);
-                    XDEF.X = new double[XDEF.XNum];
-                    XDEF.Type = dataArray[2];
-                    List<Double> values = new ArrayList<>();
-                    if (XDEF.Type.toUpperCase().equals("LINEAR")) {
-                        XDEF.XMin = Float.parseFloat(dataArray[3]);
-                        XDEF.XDelt = Float.parseFloat(dataArray[4]);
-                    } else {
-                        if (dataArray.length < XDEF.XNum + 3) {
-                            while (true) {
-                                aLine = aLine + " " + sr.readLine().trim();
-                                if (aLine.isEmpty()) {
-                                    continue;
-                                }
-                                dataArray = aLine.split("\\s+");
-                                if (dataArray.length >= XDEF.XNum + 3) {
-                                    break;
+                    break;
+                case "XDEF":
+                    if (this.getProjectionInfo().isLonLat()) {
+                        XDEF.XNum = Integer.parseInt(dataArray[1]);
+                        XDEF.X = new double[XDEF.XNum];
+                        XDEF.Type = dataArray[2];
+                        List<Double> values = new ArrayList<>();
+                        if (XDEF.Type.toUpperCase().equals("LINEAR")) {
+                            XDEF.XMin = Float.parseFloat(dataArray[3]);
+                            XDEF.XDelt = Float.parseFloat(dataArray[4]);
+                        } else {
+                            if (dataArray.length < XDEF.XNum + 3) {
+                                while (true) {
+                                    aLine = aLine + " " + sr.readLine().trim();
+                                    if (aLine.isEmpty()) {
+                                        continue;
+                                    }
+                                    dataArray = aLine.split("\\s+");
+                                    if (dataArray.length >= XDEF.XNum + 3) {
+                                        break;
+                                    }
                                 }
                             }
+                            if (dataArray.length > XDEF.XNum + 3) {
+                                errorStr = "XDEF is wrong! Please check the ctl file!";
+                                //goto ERROR;
+                            }
+                            XDEF.XMin = Float.parseFloat(dataArray[3]);
+                            float xmax = Float.parseFloat(dataArray[dataArray.length - 1]);
+                            XDEF.XDelt = (xmax - XDEF.XMin) / (XDEF.XNum - 1);
                         }
-                        if (dataArray.length > XDEF.XNum + 3) {
-                            errorStr = "XDEF is wrong! Please check the ctl file!";
-                            //goto ERROR;
+                        for (i = 0; i < XDEF.XNum; i++) {
+                            XDEF.X[i] = XDEF.XMin + i * XDEF.XDelt;
+                            values.add((double) XDEF.XMin + i * XDEF.XDelt);
                         }
-                        XDEF.XMin = Float.parseFloat(dataArray[3]);
-                        float xmax = Float.parseFloat(dataArray[dataArray.length - 1]);
-                        XDEF.XDelt = (xmax - XDEF.XMin) / (XDEF.XNum - 1);
+                        if (XDEF.XMin == 0 && XDEF.X[XDEF.XNum - 1]
+                                + XDEF.XDelt == 360) {
+                            isGlobal = true;
+                        }
+                        Dimension xDim = new Dimension(DimensionType.X);
+                        xDim.setShortName("X");
+                        xDim.setValues(values);
+                        this.setXDimension(xDim);
+                        this.addDimension(xDim);
                     }
-                    for (i = 0; i < XDEF.XNum; i++) {
-                        XDEF.X[i] = XDEF.XMin + i * XDEF.XDelt;
-                        values.add((double) XDEF.XMin + i * XDEF.XDelt);
-                    }
-                    if (XDEF.XMin == 0 && XDEF.X[XDEF.XNum - 1]
-                            + XDEF.XDelt == 360) {
-                        isGlobal = true;
-                    }
-                    Dimension xDim = new Dimension(DimensionType.X);
-                    xDim.setShortName("X");
-                    xDim.setValues(values);
-                    this.setXDimension(xDim);
-                    this.addDimension(xDim);
-                }
-            } else if (hStr.equals("YDEF")) {
-                if (this.getProjectionInfo().isLonLat()) {
-                    YDEF.YNum = Integer.parseInt(dataArray[1]);
-                    YDEF.Y = new double[YDEF.YNum];
-                    YDEF.Type = dataArray[2];
-                    List<Double> values = new ArrayList<>();
-                    if (YDEF.Type.toUpperCase().equals("LINEAR")) {
-                        YDEF.YMin = Float.parseFloat(dataArray[3]);
-                        YDEF.YDelt = Float.parseFloat(dataArray[4]);
-                    } else {
-                        if (dataArray.length < YDEF.YNum + 3) {
-                            while (true) {
-                                aLine = aLine + " " + sr.readLine().trim();
-                                if (aLine.isEmpty()) {
-                                    continue;
-                                }
-                                dataArray = aLine.split("\\s+");
-                                if (dataArray.length >= YDEF.YNum + 3) {
-                                    break;
+                    break;
+                case "YDEF":
+                    if (this.getProjectionInfo().isLonLat()) {
+                        YDEF.YNum = Integer.parseInt(dataArray[1]);
+                        YDEF.Y = new double[YDEF.YNum];
+                        YDEF.Type = dataArray[2];
+                        List<Double> values = new ArrayList<>();
+                        if (YDEF.Type.toUpperCase().equals("LINEAR")) {
+                            YDEF.YMin = Float.parseFloat(dataArray[3]);
+                            YDEF.YDelt = Float.parseFloat(dataArray[4]);
+                        } else {
+                            if (dataArray.length < YDEF.YNum + 3) {
+                                while (true) {
+                                    aLine = aLine + " " + sr.readLine().trim();
+                                    if (aLine.isEmpty()) {
+                                        continue;
+                                    }
+                                    dataArray = aLine.split("\\s+");
+                                    if (dataArray.length >= YDEF.YNum + 3) {
+                                        break;
+                                    }
                                 }
                             }
+                            if (dataArray.length > YDEF.YNum + 3) {
+                                errorStr = "YDEF is wrong! Please check the ctl file!";
+                                //goto ERROR;
+                            }
+                            YDEF.YMin = Float.parseFloat(dataArray[3]);
+                            float ymax = Float.parseFloat(dataArray[dataArray.length - 1]);
+                            YDEF.YDelt = (ymax - YDEF.YMin) / (YDEF.YNum - 1);
                         }
-                        if (dataArray.length > YDEF.YNum + 3) {
-                            errorStr = "YDEF is wrong! Please check the ctl file!";
-                            //goto ERROR;
+                        for (i = 0; i < YDEF.YNum; i++) {
+                            YDEF.Y[i] = YDEF.YMin + i * YDEF.YDelt;
+                            values.add(YDEF.Y[i]);
                         }
-                        YDEF.YMin = Float.parseFloat(dataArray[3]);
-                        float ymax = Float.parseFloat(dataArray[dataArray.length - 1]);
-                        YDEF.YDelt = (ymax - YDEF.YMin) / (YDEF.YNum - 1);
+                        Dimension yDim = new Dimension(DimensionType.Y);
+                        yDim.setShortName("Y");
+                        yDim.setValues(values);
+                        this.setYDimension(yDim);
+                        this.addDimension(yDim);
                     }
-                    for (i = 0; i < YDEF.YNum; i++) {
-                        YDEF.Y[i] = YDEF.YMin + i * YDEF.YDelt;
-                        values.add(YDEF.Y[i]);
-                    }
-                    Dimension yDim = new Dimension(DimensionType.Y);
-                    yDim.setShortName("Y");
-                    yDim.setValues(values);
-                    this.setYDimension(yDim);
-                    this.addDimension(yDim);
-                }
-            } else if (hStr.equals("ZDEF")) {
-                ZDEF.ZNum = Integer.parseInt(dataArray[1]);
-                ZDEF.Type = dataArray[2];
-                ZDEF.ZLevels = new float[ZDEF.ZNum];
-                List<Double> values = new ArrayList<>();
-                if (ZDEF.Type.toUpperCase().equals("LINEAR")) {
-                    ZDEF.SLevel = Float.parseFloat(dataArray[3]);
-                    ZDEF.ZDelt = Float.parseFloat(dataArray[4]);
-                    for (i = 0; i < ZDEF.ZNum; i++) {
-                        ZDEF.ZLevels[i] = ZDEF.SLevel + i * ZDEF.ZDelt;
-                        values.add((double) ZDEF.SLevel + i * ZDEF.ZDelt);
-                    }
-                } else {
-                    if (dataArray.length < ZDEF.ZNum + 3) {
+                    break;
+                case "ZDEF":
+                    ZDEF.ZNum = Integer.parseInt(dataArray[1]);
+                    ZDEF.Type = dataArray[2];
+                    ZDEF.ZLevels = new float[ZDEF.ZNum];
+                    List<Double> values = new ArrayList<>();
+                    if (ZDEF.Type.toUpperCase().equals("LINEAR")) {
+                        ZDEF.SLevel = Float.parseFloat(dataArray[3]);
+                        ZDEF.ZDelt = Float.parseFloat(dataArray[4]);
+                        for (i = 0; i < ZDEF.ZNum; i++) {
+                            ZDEF.ZLevels[i] = ZDEF.SLevel + i * ZDEF.ZDelt;
+                            values.add((double) ZDEF.SLevel + i * ZDEF.ZDelt);
+                        }
+                    } else if (dataArray.length < ZDEF.ZNum + 3) {
                         while (true) {
                             String line = sr.readLine().trim();
                             if (line.isEmpty()) {
@@ -639,184 +667,221 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                             values.add(Double.parseDouble(dataArray[3 + i]));
                         }
                     }
-                }
-                Dimension zDim = new Dimension(DimensionType.Z);
-                zDim.setShortName("Z");
-                zDim.setValues(values);
-                this.setZDimension(zDim);
-                this.addDimension(zDim);
-            } else if (hStr.equals("TDEF")) {
-                int tnum = Integer.parseInt(dataArray[1]);
-                TDEF.Type = dataArray[2];
-                if (TDEF.Type.toUpperCase().equals("LINEAR")) {
-                    String dStr = dataArray[3];
-                    dStr = dStr.toUpperCase();
-                    i = dStr.indexOf("Z");
-                    if (i == -1) {
-                        if (Character.isDigit(dStr.charAt(0))) {
-                            dStr = "00:00Z" + dStr;
-                        } else {
-                            dStr = "00:00Z01" + dStr;
-                        }
-                    } else if (i == 1) {
-                        dStr = "0" + dStr.substring(0, 1) + ":00" + dStr.substring(1);
-                    } else if (i == 2) {
-                        dStr = dStr.substring(0, 2) + ":00" + dStr.substring(2);
-                    }
-                    if (!(Character.isDigit(dStr.charAt(dStr.length() - 3)))) {
-                        int aY = Integer.parseInt(dStr.substring(dStr.length() - 2));
-                        if (aY > 50) {
-                            aY = 1900 + aY;
-                        } else {
-                            aY = 2000 + aY;
-                        }
-                        dStr = dStr.substring(0, dStr.length() - 2) + String.valueOf(aY);
-                    }
-                    if (dStr.length() == 14) {
-                        StringBuilder strb = new StringBuilder(dStr);
-                        strb.insert(6, "0");
-                        dStr = strb.toString();
-                    }
-                    String mn = dStr.substring(8, 11);
-                    String Nmn = mn.substring(0, 1).toUpperCase() + mn.substring(1, 3).toLowerCase();
-                    dStr = dStr.replace(mn, Nmn);
-                    dStr = dStr.replace("Z", " ");
-                    SimpleDateFormat formatter = new SimpleDateFormat("HH:mm ddMMMyyyy", Locale.ENGLISH);
-                    try {
-                        TDEF.STime = formatter.parse(dStr);
-                    } catch (ParseException ex) {
-                        Logger.getLogger(GrADSDataInfo.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-
-                    //Read time interval
-                    TDEF.TDelt = dataArray[4];
-                    char[] tChar = dataArray[4].toCharArray();
-                    int aPos = 0;    //Position between number and string
-                    for (i = 0; i < tChar.length; i++) {
-                        if (!Character.isDigit(tChar[i])) {
-                            aPos = i;
-                            break;
-                        }
-                    }
-                    if (aPos == 0) {
-                        errorStr = "TDEF is wrong! Please check the ctl file!";
-                        //goto ERROR;
-                    }
-                    int iNum = Integer.parseInt(TDEF.TDelt.substring(0, aPos));
-                    Calendar cal = Calendar.getInstance();
-                    cal.setTime(TDEF.STime);
-                    String tStr = TDEF.TDelt.substring(aPos).toLowerCase();
-                    if (tStr.equals("mn")) {
-                        for (i = 0; i < tnum; i++) {
-                            TDEF.times.add(cal.getTime());
-                            cal.add(Calendar.MINUTE, iNum);
-                        }
-                    } else if (tStr.equals("hr")) {
-                        for (i = 0; i < tnum; i++) {
-                            TDEF.times.add(cal.getTime());
-                            cal.add(Calendar.HOUR, iNum);
-                        }
-                    } else if (tStr.equals("dy")) {
-                        for (i = 0; i < tnum; i++) {
-                            TDEF.times.add(cal.getTime());
-                            cal.add(Calendar.DAY_OF_YEAR, iNum);
-                        }
-                    } else if (tStr.equals("mo") || tStr.equals("mon")) {
-                        for (i = 0; i < tnum; i++) {
-                            TDEF.times.add(cal.getTime());
-                            cal.add(Calendar.MONTH, iNum);
-                        }
-                    } else if (tStr.equals("yr")) {
-                        for (i = 0; i < tnum; i++) {
-                            TDEF.times.add(cal.getTime());
-                            cal.add(Calendar.YEAR, iNum);
-
-                        }
-                    }
-                    List<Double> values = new ArrayList<>();
-                    for (Date t : TDEF.times) {
-                        values.add(DateUtil.toOADate(t));
-                    }
-                    Dimension tDim = new Dimension(DimensionType.T);
-                    tDim.setShortName("T");
-                    tDim.setValues(values);
-                    this.setTimeDimension(tDim);
-                    this.addDimension(tDim);
-                } else {
-                    if (dataArray.length < tnum + 3) {
-                        while (true) {
-                            aLine = aLine + " " + sr.readLine().trim();
-                            if (aLine.isEmpty()) {
-                                continue;
-                            }
-                            dataArray = aLine.split("\\s+");
-                            if (dataArray.length >= tnum + 3) {
+                    zDim = new Dimension(DimensionType.Z);
+                    zDim.setShortName("Z");
+                    zDim.setValues(values);
+                    this.setZDimension(zDim);
+                    this.addDimension(zDim);
+                    break;
+                case "TDEF":
+                    int tnum = Integer.parseInt(dataArray[1]);
+                    TDEF.Type = dataArray[2];
+                    if (TDEF.Type.toUpperCase().equals("LINEAR")) {
+                        String dStr = dataArray[3];
+                        dStr = dStr.toUpperCase();
+                        i = dStr.indexOf("Z");
+                        switch (i) {
+                            case -1:
+                                if (Character.isDigit(dStr.charAt(0))) {
+                                    dStr = "00:00Z" + dStr;
+                                } else {
+                                    dStr = "00:00Z01" + dStr;
+                                }
                                 break;
-                            }
+                            case 1:
+                                dStr = "0" + dStr.substring(0, 1) + ":00" + dStr.substring(1);
+                                break;
+                            case 2:
+                                dStr = dStr.substring(0, 2) + ":00" + dStr.substring(2);
+                                break;
+                            default:
+                                break;
                         }
-                    }
-                    if (dataArray.length > tnum + 3) {
-                        errorStr = "YDEF is wrong! Please check the ctl file!";
-                        //goto ERROR;
-                    }
-                    SimpleDateFormat formatter = new SimpleDateFormat("HH:mm ddMMMyyyy", Locale.ENGLISH);
-                    List<Double> values = new ArrayList<>();
-                    for (i = 0; i < tnum; i++) {
+                        if (!(Character.isDigit(dStr.charAt(dStr.length() - 3)))) {
+                            int aY = Integer.parseInt(dStr.substring(dStr.length() - 2));
+                            if (aY > 50) {
+                                aY = 1900 + aY;
+                            } else {
+                                aY = 2000 + aY;
+                            }
+                            dStr = dStr.substring(0, dStr.length() - 2) + String.valueOf(aY);
+                        }
+                        if (dStr.length() == 14) {
+                            StringBuilder strb = new StringBuilder(dStr);
+                            strb.insert(6, "0");
+                            dStr = strb.toString();
+                        }
+                        String mn = dStr.substring(8, 11);
+                        String Nmn = mn.substring(0, 1).toUpperCase() + mn.substring(1, 3).toLowerCase();
+                        dStr = dStr.replace(mn, Nmn);
+                        dStr = dStr.replace("Z", " ");
+                        SimpleDateFormat formatter = new SimpleDateFormat("HH:mm ddMMMyyyy", Locale.ENGLISH);
                         try {
-                            String dStr = dataArray[3 + i];
-                            dStr = dStr.replace("Z", " ");
-                            Date t = formatter.parse(dStr);
-                            TDEF.times.add(t);
-                            values.add(DateUtil.toOADate(t));
+                            TDEF.STime = formatter.parse(dStr);
                         } catch (ParseException ex) {
                             Logger.getLogger(GrADSDataInfo.class.getName()).log(Level.SEVERE, null, ex);
                         }
-                    }
-                    Dimension tDim = new Dimension(DimensionType.T);
-                    tDim.setShortName("T");
-                    tDim.setValues(values);
-                    this.setTimeDimension(tDim);
-                    this.addDimension(tDim);
-                }
-            } else if (hStr.equals("VARS")) {
-                int vNum = Integer.parseInt(dataArray[1]);
-                for (i = 0; i < vNum; i++) {
-                    aLine = sr.readLine().trim();
-                    dataArray = aLine.split("\\s+");
-                    Variable aVar = new Variable();
-                    aVar.setName(dataArray[0]);
-                    aVar.setDataType(DataType.FLOAT);
-                    int lNum = Integer.parseInt(dataArray[1]);
-                    List<Double> levs = new ArrayList<>();
-                    for (int j = 0; j < lNum; j++) {
-                        if (ZDEF.ZNum > j) {
-                            aVar.addLevel(ZDEF.ZLevels[j]);
-                            levs.add((double) ZDEF.ZLevels[j]);
-                        }
-                    }
-                    //aVar.setLevelNum(Integer.parseInt(dataArray[1]));
-                    aVar.setUnits(dataArray[2]);
-                    if (dataArray.length > 3) {
-                        aVar.setDescription(dataArray[3]);
-                    }
-                    aVar.setDimension(this.getTimeDimension());
-                    if (lNum > 1) {
-                        Dimension zDim = new Dimension(DimensionType.Z);
-                        zDim.setShortName("Z");
-                        zDim.setValues(levs);
-                        aVar.setDimension(zDim);
-                    }
-                    aVar.setDimension(this.getYDimension());
-                    aVar.setDimension(this.getXDimension());
-                    if (this.getDataType() == MeteoDataType.GrADS_Station) {
-                        aVar.setStation(true);
-                    }
-                    aVar.setFillValue(this.getMissingValue());
 
-                    VARDEF.addVar(aVar);
-                }
-            } else if (hStr.equals("ENDVARS")) {
-                isEnd = true;
+                        //Read time interval
+                        TDEF.TDelt = dataArray[4];
+                        char[] tChar = dataArray[4].toCharArray();
+                        int aPos = 0;    //Position between number and string
+                        for (i = 0; i < tChar.length; i++) {
+                            if (!Character.isDigit(tChar[i])) {
+                                aPos = i;
+                                break;
+                            }
+                        }
+                        if (aPos == 0) {
+                            errorStr = "TDEF is wrong! Please check the ctl file!";
+                            //goto ERROR;
+                        }
+                        int iNum = Integer.parseInt(TDEF.TDelt.substring(0, aPos));
+                        Calendar cal = Calendar.getInstance();
+                        cal.setTime(TDEF.STime);
+                        String tStr = TDEF.TDelt.substring(aPos).toLowerCase();
+                        switch (tStr) {
+                            case "mn":
+                                for (i = 0; i < tnum; i++) {
+                                    TDEF.times.add(cal.getTime());
+                                    cal.add(Calendar.MINUTE, iNum);
+                                }
+                                break;
+                            case "hr":
+                                for (i = 0; i < tnum; i++) {
+                                    TDEF.times.add(cal.getTime());
+                                    cal.add(Calendar.HOUR, iNum);
+                                }
+                                break;
+                            case "dy":
+                                for (i = 0; i < tnum; i++) {
+                                    TDEF.times.add(cal.getTime());
+                                    cal.add(Calendar.DAY_OF_YEAR, iNum);
+                                }
+                                break;
+                            case "mo":
+                            case "mon":
+                                for (i = 0; i < tnum; i++) {
+                                    TDEF.times.add(cal.getTime());
+                                    cal.add(Calendar.MONTH, iNum);
+                                }
+                                break;
+                            case "yr":
+                                for (i = 0; i < tnum; i++) {
+                                    TDEF.times.add(cal.getTime());
+                                    cal.add(Calendar.YEAR, iNum);
+
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                        values = new ArrayList<>();
+                        for (Date t : TDEF.times) {
+                            values.add(DateUtil.toOADate(t));
+                        }
+                        Dimension tDim = new Dimension(DimensionType.T);
+                        tDim.setShortName("T");
+                        tDim.setValues(values);
+                        this.setTimeDimension(tDim);
+                        this.addDimension(tDim);
+                    } else {
+                        if (dataArray.length < tnum + 3) {
+                            while (true) {
+                                aLine = aLine + " " + sr.readLine().trim();
+                                if (aLine.isEmpty()) {
+                                    continue;
+                                }
+                                dataArray = aLine.split("\\s+");
+                                if (dataArray.length >= tnum + 3) {
+                                    break;
+                                }
+                            }
+                        }
+                        if (dataArray.length > tnum + 3) {
+                            errorStr = "YDEF is wrong! Please check the ctl file!";
+                            //goto ERROR;
+                        }
+                        SimpleDateFormat formatter = new SimpleDateFormat("HH:mm ddMMMyyyy", Locale.ENGLISH);
+                        values = new ArrayList<>();
+                        for (i = 0; i < tnum; i++) {
+                            try {
+                                String dStr = dataArray[3 + i];
+                                dStr = dStr.replace("Z", " ");
+                                Date t = formatter.parse(dStr);
+                                TDEF.times.add(t);
+                                values.add(DateUtil.toOADate(t));
+                            } catch (ParseException ex) {
+                                Logger.getLogger(GrADSDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+                        Dimension tDim = new Dimension(DimensionType.T);
+                        tDim.setShortName("T");
+                        tDim.setValues(values);
+                        this.setTimeDimension(tDim);
+                        this.addDimension(tDim);
+                    }
+                    break;
+                case "VARS":
+                    int vNum = Integer.parseInt(dataArray[1]);
+                    for (i = 0; i < vNum; i++) {
+                        aLine = sr.readLine().trim();
+                        dataArray = aLine.split("\\s+");
+                        Variable aVar = new Variable();
+                        aVar.setName(dataArray[0]);
+                        aVar.setDataType(DataType.FLOAT);
+                        int lNum = Integer.parseInt(dataArray[1]);                        
+                        //aVar.setLevelNum(Integer.parseInt(dataArray[1]));
+                        aVar.setUnits(dataArray[2]);
+                        //attr = new Attribute("units", dataArray[2]);
+                        //aVar.addAttribute(attr);
+                        if (dataArray.length > 3) {
+                            aVar.setDescription(dataArray[3]);
+                            attr = new Attribute("description", dataArray[3]);
+                            aVar.addAttribute(attr);
+                        }
+                        aVar.setDimension(this.getTimeDimension());
+                        if (lNum > 1) {
+                            boolean isNew = true;
+                            for (Dimension dim : this.getDimensions()){
+                                if (dim.getDimType() == DimensionType.Z){
+                                    if (lNum == dim.getLength()) {
+                                        aVar.setDimension(dim);
+                                        isNew = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (isNew) {
+                                List<Double> levs = new ArrayList<>();
+                                for (int j = 0; j < lNum; j++) {
+                                    if (ZDEF.ZNum > j) {
+                                        aVar.addLevel(ZDEF.ZLevels[j]);
+                                        levs.add((double) ZDEF.ZLevels[j]);
+                                    }
+                                }
+                                Dimension dim = new Dimension(DimensionType.Z);
+                                dim.setShortName("Z_" + String.valueOf(lNum));
+                                dim.setValues(levs);
+                                aVar.setDimension(dim);
+                                this.addDimension(dim);
+                            }
+                        }
+                        aVar.setDimension(this.getYDimension());
+                        aVar.setDimension(this.getXDimension());
+                        if (this.getDataType() == MeteoDataType.GrADS_Station) {
+                            aVar.setStation(true);
+                        }
+                        aVar.setFillValue(this.getMissingValue());
+
+                        VARDEF.addVar(aVar);
+                    }
+                    break;
+                case "ENDVARS":
+                    isEnd = true;
+                    break;
+                default:
+                    break;
             }
 
             if (isEnd) {
@@ -1030,51 +1095,52 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
             Y[i] = ylb + i * YSize;
         }
     }
-    
+
     /**
      * Get global attributes
+     *
      * @return Global attributes
      */
     @Override
-    public List<Attribute> getGlobalAttributes(){
+    public List<Attribute> getGlobalAttributes() {
         return new ArrayList<>();
     }
 
-    /**
-     * Generate data info text
-     *
-     * @return Data info text
-     */
-    @Override
-    public String generateInfoText() {
-        String dataInfo;
-
-        dataInfo = "Title: " + TITLE;
-        dataInfo += System.getProperty("line.separator") + "Descriptor: " + DESCRIPTOR;
-        dataInfo += System.getProperty("line.separator") + "Binary: " + DSET;
-        dataInfo += System.getProperty("line.separator") + "Type = " + DTYPE;
-        if (DTYPE.toUpperCase().equals("STATION")) {
-            dataInfo += System.getProperty("line.separator") + "Tsize = " + String.valueOf(TDEF.getTimeNum());
-        } else {
-            Dimension xdim = this.getXDimension();
-            dataInfo += System.getProperty("line.separator") + "X Dimension: Xmin = " + String.valueOf(xdim.getMinValue())
-                    + "; Xmax = " + String.valueOf(xdim.getMaxValue()) + "; Xsize = "
-                    + String.valueOf(xdim.getLength()) + "; Xdelta = " + String.valueOf(xdim.getDeltaValue());
-            Dimension ydim = this.getYDimension();
-            dataInfo += System.getProperty("line.separator") + "Y Dimension: Ymin = " + String.valueOf(ydim.getMinValue())
-                    + "; Ymax = " + String.valueOf(ydim.getMaxValue()) + "; Ysize = "
-                    + String.valueOf(ydim.getLength()) + "; Ydelta = " + String.valueOf(ydim.getDeltaValue());
-            dataInfo += System.getProperty("line.separator") + "Zsize = " + String.valueOf(ZDEF.ZNum)
-                    + "  Tsize = " + String.valueOf(TDEF.getTimeNum());
-        }
-        dataInfo += System.getProperty("line.separator") + "Number of Variables = " + String.valueOf(VARDEF.getVNum());
-        for (Variable v : VARDEF.getVars()) {
-            dataInfo += System.getProperty("line.separator") + v.getName() + " " + String.valueOf(v.getLevelNum()) + " "
-                    + v.getUnits() + " " + v.getDescription();
-        }
-
-        return dataInfo;
-    }
+//    /**
+//     * Generate data info text
+//     *
+//     * @return Data info text
+//     */
+//    @Override
+//    public String generateInfoText() {
+//        String dataInfo;
+//
+//        dataInfo = "Title: " + TITLE;
+//        dataInfo += System.getProperty("line.separator") + "Descriptor: " + DESCRIPTOR;
+//        dataInfo += System.getProperty("line.separator") + "Binary: " + DSET;
+//        dataInfo += System.getProperty("line.separator") + "Type = " + DTYPE;
+//        if (DTYPE.toUpperCase().equals("STATION")) {
+//            dataInfo += System.getProperty("line.separator") + "Tsize = " + String.valueOf(TDEF.getTimeNum());
+//        } else {
+//            Dimension xdim = this.getXDimension();
+//            dataInfo += System.getProperty("line.separator") + "X Dimension: Xmin = " + String.valueOf(xdim.getMinValue())
+//                    + "; Xmax = " + String.valueOf(xdim.getMaxValue()) + "; Xsize = "
+//                    + String.valueOf(xdim.getLength()) + "; Xdelta = " + String.valueOf(xdim.getDeltaValue());
+//            Dimension ydim = this.getYDimension();
+//            dataInfo += System.getProperty("line.separator") + "Y Dimension: Ymin = " + String.valueOf(ydim.getMinValue())
+//                    + "; Ymax = " + String.valueOf(ydim.getMaxValue()) + "; Ysize = "
+//                    + String.valueOf(ydim.getLength()) + "; Ydelta = " + String.valueOf(ydim.getDeltaValue());
+//            dataInfo += System.getProperty("line.separator") + "Zsize = " + String.valueOf(ZDEF.ZNum)
+//                    + "  Tsize = " + String.valueOf(TDEF.getTimeNum());
+//        }
+//        dataInfo += System.getProperty("line.separator") + "Number of Variables = " + String.valueOf(VARDEF.getVNum());
+//        for (Variable v : VARDEF.getVars()) {
+//            dataInfo += System.getProperty("line.separator") + v.getName() + " " + String.valueOf(v.getLevelNum()) + " "
+//                    + v.getUnits() + " " + v.getDescription();
+//        }
+//
+//        return dataInfo;
+//    }
 
     private Object[] getFilePath_Template(int timeIdx) {
         String filePath;
@@ -1141,22 +1207,36 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
         int month = cal.get(Calendar.MONTH);
         int day = cal.get(Calendar.DAY_OF_MONTH);
         if (tStr.equalsIgnoreCase("year")) {
-            if (TDEF.unit.equals("mn")) {
-                tIdx = ((cal.get(Calendar.DAY_OF_YEAR) - 1) * 24 * 60 + cal.get(Calendar.MINUTE)) / TDEF.DeltaValue;
-            } else if (TDEF.unit.equals("hr")) {
-                tIdx = ((cal.get(Calendar.DAY_OF_YEAR) - 1) * 24 + cal.get(Calendar.HOUR_OF_DAY)) / TDEF.DeltaValue;
-            } else if (TDEF.unit.equals("dy")) {
-                tIdx = cal.get(Calendar.DAY_OF_YEAR) - 1;
-            } else if (TDEF.unit.equals("mo") || TDEF.unit.equals("mon")) {
-                tIdx = cal.get(Calendar.MONTH) - 1;
+            switch (TDEF.unit) {
+                case "mn":
+                    tIdx = ((cal.get(Calendar.DAY_OF_YEAR) - 1) * 24 * 60 + cal.get(Calendar.MINUTE)) / TDEF.DeltaValue;
+                    break;
+                case "hr":
+                    tIdx = ((cal.get(Calendar.DAY_OF_YEAR) - 1) * 24 + cal.get(Calendar.HOUR_OF_DAY)) / TDEF.DeltaValue;
+                    break;
+                case "dy":
+                    tIdx = cal.get(Calendar.DAY_OF_YEAR) - 1;
+                    break;
+                case "mo":
+                case "mon":
+                    tIdx = cal.get(Calendar.MONTH) - 1;
+                    break;
+                default:
+                    break;
             }
         } else if (tStr.equalsIgnoreCase("month")) {
-            if (TDEF.unit.equals("mn")) {
-                tIdx = ((cal.get(Calendar.DAY_OF_MONTH) - 1) * 24 * 60 + cal.get(Calendar.MINUTE)) / TDEF.DeltaValue;
-            } else if (TDEF.unit.equals("hr")) {
-                tIdx = ((cal.get(Calendar.DAY_OF_MONTH) - 1) * 24 + cal.get(Calendar.HOUR_OF_DAY)) / TDEF.DeltaValue;
-            } else if (TDEF.unit.equals("dy")) {
-                tIdx = cal.get(Calendar.DAY_OF_MONTH) - 1;
+            switch (TDEF.unit) {
+                case "mn":
+                    tIdx = ((cal.get(Calendar.DAY_OF_MONTH) - 1) * 24 * 60 + cal.get(Calendar.MINUTE)) / TDEF.DeltaValue;
+                    break;
+                case "hr":
+                    tIdx = ((cal.get(Calendar.DAY_OF_MONTH) - 1) * 24 + cal.get(Calendar.HOUR_OF_DAY)) / TDEF.DeltaValue;
+                    break;
+                case "dy":
+                    tIdx = cal.get(Calendar.DAY_OF_MONTH) - 1;
+                    break;
+                default:
+                    break;
             }
         } else if (tStr.equalsIgnoreCase("day")) {
             if (TDEF.unit.equals("mn")) {
@@ -1168,28 +1248,28 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
 
         return new Object[]{filePath, tIdx};
     }
-    
+
     /**
      * Read array data of a variable
-     * 
+     *
      * @param varName Variable name
      * @return Array data
      */
     @Override
-    public Array read(String varName){
+    public Array read(String varName) {
         Variable var = this.getVariable(varName);
         int n = var.getDimNumber();
         int[] origin = new int[n];
         int[] size = new int[n];
         int[] stride = new int[n];
-        for (int i = 0; i < n; i++){
+        for (int i = 0; i < n; i++) {
             origin[i] = 0;
             size[i] = var.getDimLength(i);
             stride[i] = 1;
         }
-        
+
         Array r = read(varName, origin, size, stride);
-        
+
         return r;
     }
 
@@ -2047,9 +2127,11 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
      *
      * @param timeIdx Time index
      * @return Station data list
+     * @throws java.io.FileNotFoundException
+     * @throws java.io.UnsupportedEncodingException
      */
     public List<STData> readGrADSData_Station(int timeIdx) throws FileNotFoundException, UnsupportedEncodingException, IOException {
-        List<STData> stDataList = new ArrayList<STData>();
+        List<STData> stDataList = new ArrayList<>();
 
         String filePath = DSET;
         int tIdx = timeIdx;
@@ -2060,7 +2142,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
         }
 
         RandomAccessFile br = new RandomAccessFile(filePath, "r");
-        int i, j, stNum, tNum;
+        int i, j, tNum;
         STDataHead aSTDH;
         STLevData aSTLevData;
         STData aSTData;
@@ -2071,12 +2153,6 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
         }
         byte[] aBytes;
 
-        boolean isBigEndian = false;
-        if (OPTIONS.big_endian || OPTIONS.byteswapped) {
-            isBigEndian = true;
-        }
-
-        stNum = 0;
         tNum = 0;
         if (OPTIONS.template) {
             timeIdx = 0;
@@ -2101,10 +2177,9 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
             aBytes = getByteArray(br, 4);
             aSTDH.Flag = DataConvert.bytes2Int(aBytes, _byteOrder);
             if (aSTDH.NLev > 0) {
-                stNum += 1;
                 aSTData = new STData();
                 aSTData.STHead = aSTDH;
-                aSTData.dataList = new ArrayList<STLevData>();
+                aSTData.dataList = new ArrayList<>();
                 if (aSTDH.Flag == 1) //Has ground level
                 {
                     aSTLevData = new STLevData();
@@ -2136,9 +2211,6 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                 }
             } else //End of time seriel
             {
-                //if (stNum > 0)    //Not end of the file
-                //{
-                stNum = 0;
                 if (tNum == tIdx) {
                     break;
                 }
@@ -2146,11 +2218,6 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                 if (br.getFilePointer() + 28 >= br.length()) {
                     break;
                 }
-                //}
-                //else       //End of the file
-                //{
-                //    break;
-                //}
             }
         } while (true);
 
@@ -2169,7 +2236,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
     public StationData getGroundStationData(List<STData> stDataList, int varIdx) {
         StationData stationData = new StationData();
         double[][] discretedData;
-        List<float[]> disDataList = new ArrayList<float[]>();
+        List<float[]> disDataList = new ArrayList<>();
         STLevData aSTLevData;
         float lon, lat, aValue;
         float minX, maxX, minY, maxY;
@@ -2178,7 +2245,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
         maxX = 0;
         minY = 0;
         maxY = 0;
-        List<String> stations = new ArrayList<String>();
+        List<String> stations = new ArrayList<>();
 
         for (STData aSTData : stDataList) {
             if (aSTData.STHead.Flag == 1) {

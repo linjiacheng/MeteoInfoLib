@@ -40,8 +40,8 @@ public class Variable extends ucar.nc2.Variable{
     private boolean _isStation = false;
     private boolean _isSwath = false;
     //private NetCDF4.NcType _ncType;
-    private List<Attribute> _attributes = new ArrayList<>();
-    private int _attNumber;
+    //private List<Attribute> _attributes = new ArrayList<>();
+    //private int _attNumber;
     private int _varId;
     private boolean _isCoordVar = false;
     private List<Integer> _levelIdxs = new ArrayList<>();
@@ -375,48 +375,13 @@ public class Variable extends ucar.nc2.Variable{
         return true;
     }
 
-//        /// <summary>
-//        /// Get of set NC type
-//        /// </summary>
-//        public NetCDF4.NcType NCType
-//        {
-//            get { return _ncType; }
-//            set { _ncType = value; }
-//        }
-    /**
-     * Get attributes
-     *
-     * @return Attributes
-     */
-    public List<Attribute> getAttributes() {
-        return _attributes;
-    }
-
-    /**
-     * Set attributes
-     *
-     * @param value Attributes
-     */
-    public void setAttributes(List<Attribute> value) {
-        _attributes = value;
-    }
-
     /**
      * Get attribute number
      *
      * @return Attribute number
      */
     public int getAttNumber() {
-        return _attNumber;
-    }
-
-    /**
-     * Set attribute number
-     *
-     * @param value Attribute number
-     */
-    public void setAttNumber(int value) {
-        _attNumber = value;
+        return this.getAttributes().size();
     }
 
     /**
@@ -559,7 +524,6 @@ public class Variable extends ucar.nc2.Variable{
         aPar.getDimensions().addAll(this.getDimensions());
         aPar.setCoorVar(_isCoordVar);
         aPar.getLevels().addAll(_levels);
-        aPar.setAttNumber(_attNumber);
         //aPar.NCType = _ncType;
         aPar.setVarId(_varId);
 
@@ -929,22 +893,6 @@ public class Variable extends ucar.nc2.Variable{
 
         return times;
     }
-    
-    /**
-     * Get attribute by name, return null if the name not exist.
-     *
-     * @param attName Attribute name
-     * @return Attribute
-     */
-    public Attribute findAttribute(String attName) {
-        for (int i = 0; i < _attributes.size(); i++) {
-            if (_attributes.get(i).getShortName().equalsIgnoreCase(attName)) {
-                return _attributes.get(i);
-            }
-        }
-
-        return null;
-    }
 
     /**
      * Get attribute index by name, return -1 if the name not exist.
@@ -954,8 +902,8 @@ public class Variable extends ucar.nc2.Variable{
      */
     public int getAttributeIndex(String attName) {
         int idx = -1;
-        for (int i = 0; i < _attributes.size(); i++) {
-            if (_attributes.get(i).getShortName().equalsIgnoreCase(attName)) {
+        for (int i = 0; i < this.getAttributes().size(); i++) {
+            if (this.getAttributes().get(i).getShortName().equalsIgnoreCase(attName)) {
                 idx = i;
                 break;
             }
@@ -972,7 +920,7 @@ public class Variable extends ucar.nc2.Variable{
      */
     public String getAttributeString(String attName) {
         String attStr = "";
-        for (Attribute aAtt : _attributes) {
+        for (Attribute aAtt : this.getAttributes()) {
             if (aAtt.getShortName().equalsIgnoreCase(attName)) {
                 attStr = aAtt.toString();
             }
@@ -1063,8 +1011,7 @@ public class Variable extends ucar.nc2.Variable{
     public void addAttribute(String attName, List attValue) {
         Attribute aAtt = new Attribute(attName, attValue);;
 
-        _attributes.add(aAtt);
-        _attNumber = _attributes.size();
+        this.addAttribute(aAtt);
     }
 
     /**
@@ -1076,8 +1023,7 @@ public class Variable extends ucar.nc2.Variable{
     public void addAttribute(String attName, String attValue) {
         Attribute aAtt = new Attribute(attName, attValue);
 
-        _attributes.add(aAtt);
-        _attNumber = _attributes.size();
+        this.addAttribute(aAtt);
     }
 
     /**
@@ -1089,8 +1035,7 @@ public class Variable extends ucar.nc2.Variable{
     public void addAttribute(String attName, double attValue) {
         Attribute aAtt = new Attribute(attName, attValue);
 
-        _attributes.add(aAtt);
-        _attNumber = _attributes.size();
+        this.addAttribute(aAtt);
     }
 
     /**

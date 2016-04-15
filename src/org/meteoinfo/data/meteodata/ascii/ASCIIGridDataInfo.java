@@ -98,12 +98,18 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
                 Y[i] = yllCorner + i * cellSize;
             }
             
+            this.addAttribute(new Attribute("data_format", "ASCII grid data"));            
+            
             Dimension xDim = new Dimension(DimensionType.X);
+            xDim.setShortName("X");
             xDim.setValues(X);
             this.setXDimension(xDim);
+            this.addDimension(xDim);
             Dimension yDim = new Dimension(DimensionType.Y);
+            yDim.setShortName("Y");
             yDim.setValues(Y);
             this.setYDimension(yDim);
+            this.addDimension(yDim);
             
             List<Variable> variables = new ArrayList<>();
             Variable aVar = new Variable();
@@ -111,6 +117,8 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
             aVar.addDimension(yDim);
             aVar.addDimension(xDim); 
             aVar.setFillValue(nodata_value);
+            aVar.setDataType(DataType.FLOAT);
+            aVar.addAttribute(new Attribute("fill_value", this.getMissingValue()));
             variables.add(aVar);
             this.setVariables(variables);
             

@@ -390,5 +390,14 @@ public class ChartSet {
     }
     // </editor-fold>
     // <editor-fold desc="Methods">
+    /**
+     * Update - avoid the disagree of field names and legend scheme
+     */
+    public void update(){
+        if (this._fieldNames.size() != this._legendScheme.getBreakNum()){
+            this._fieldNames = new ArrayList<>();
+            _legendScheme = new LegendScheme(ShapeTypes.Polygon);
+        }
+    }
     // </editor-fold>
 }
