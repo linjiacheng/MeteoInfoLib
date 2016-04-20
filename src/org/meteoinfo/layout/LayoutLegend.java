@@ -570,11 +570,13 @@ public class LayoutLegend extends LayoutElement {
             aP.Y = sY;
             for (int row = 0; row < rowNums[col]; row++) {
                 if (!aLS.getLegendBreaks().get(i).isDrawShape()) {
+                    i += 1;
+                    row -= 1;
                     continue;
                 }
 
                 aP.Y += height + breakSpace;
-                boolean isVisible = true;
+                //boolean isVisible = true;
                 switch (aLS.getShapeType()) {
                     case Point:
                         PointBreak aPB = (PointBreak) ((PointBreak) aLS.getLegendBreaks().get(i)).clone();
