@@ -30,6 +30,7 @@ public class FrmChartLabel extends javax.swing.JDialog {
         
         this.chartSet = chartSet;
         this.jCheckBox_DrawLabel.setSelected(chartSet.isDrawLabel());
+        this.jTextField_DecimalDigits.setText(String.valueOf(chartSet.getDecimalDigits()));
     }
 
     /**
@@ -73,6 +74,11 @@ public class FrmChartLabel extends javax.swing.JDialog {
         jLabel_DecimalDigits.setText("Decimal Digits:");
 
         jTextField_DecimalDigits.setText("0");
+        jTextField_DecimalDigits.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTextField_DecimalDigitsActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -154,6 +160,11 @@ public class FrmChartLabel extends javax.swing.JDialog {
         // TODO add your handling code here:
         this.chartSet.setDrawLabel(this.jCheckBox_DrawLabel.isSelected());
     }//GEN-LAST:event_jCheckBox_DrawLabelActionPerformed
+
+    private void jTextField_DecimalDigitsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField_DecimalDigitsActionPerformed
+        // TODO add your handling code here:
+        this.chartSet.setDecimalDigits(Integer.parseInt(this.jTextField_DecimalDigits.getText()));
+    }//GEN-LAST:event_jTextField_DecimalDigitsActionPerformed
 
     /**
      * @param args the command line arguments

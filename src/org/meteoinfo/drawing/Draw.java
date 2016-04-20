@@ -2644,7 +2644,8 @@ public class Draw {
             if (i == heights.size() - 1) {
                 if (drawValue) {
                     //String vstr = String.valueOf(aCB.getChartData().get(i));
-                    String vstr = String.format("%1$.0f", aCB.getChartData().get(i));
+                    String formatStr = "%1$." + String.valueOf(aCB.getDecimalDigits()) + "f";
+                    String vstr = String.format(formatStr, aCB.getChartData().get(i));
                     FontMetrics metrics = g.getFontMetrics(font);
                     Dimension labSize = new Dimension(metrics.stringWidth(vstr), metrics.getHeight());
                     aPoint.X += 5;

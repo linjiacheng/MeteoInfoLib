@@ -5,8 +5,6 @@
  */
 package org.meteoinfo.shape;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.meteoinfo.global.PointD;
 import org.meteoinfo.legend.ChartBreak;
 import org.w3c.dom.Attr;

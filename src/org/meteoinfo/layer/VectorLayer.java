@@ -520,6 +520,7 @@ public class VectorLayer extends MapLayer {
             aCP.setDrawLabel(_chartSet.isDrawLabel());
             aCP.setLabelColor(_chartSet.getLabelColor());
             aCP.setLabelFont(_chartSet.getLabelFont());
+            aCP.setDecimalDigits(_chartSet.getDecimalDigits());
 
             ChartGraphic aGraphic = new ChartGraphic(aPS, aCP);
             addChart(aGraphic);
@@ -553,6 +554,7 @@ public class VectorLayer extends MapLayer {
             aCP.setDrawLabel(_chartSet.isDrawLabel());
             aCP.setLabelColor(_chartSet.getLabelColor());
             aCP.setLabelFont(_chartSet.getLabelFont());
+            aCP.setDecimalDigits(_chartSet.getDecimalDigits());
         }
         _chartSet.setDrawCharts(true);
     }

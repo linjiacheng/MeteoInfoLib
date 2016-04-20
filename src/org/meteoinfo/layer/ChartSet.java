@@ -48,6 +48,7 @@ public class ChartSet {
     private boolean drawLabel;
     private Font labelFont;
     private Color labelColor;
+    private int decimalDigits;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -71,7 +72,7 @@ public class ChartSet {
         drawLabel = false;
         labelFont = new Font("Arial", Font.PLAIN, 12);
         labelColor = Color.black;
-        
+        this.decimalDigits = 0;
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -387,6 +388,22 @@ public class ChartSet {
      */
     public void setLabelColor(Color value){
         this.labelColor = value;
+    }
+    
+    /**
+     * Get decimal digits
+     * @return Decimal digits
+     */
+    public int getDecimalDigits(){
+        return this.decimalDigits;
+    }
+    
+    /**
+     * Set decimal digits
+     * @param value Decimal digits
+     */
+    public void setDecimalDigits(int value){
+        this.decimalDigits = value;
     }
     // </editor-fold>
     // <editor-fold desc="Methods">

@@ -22,7 +22,7 @@ import org.meteoinfo.shape.Graphic;
  */
 public class FrmLabelSet extends javax.swing.JDialog {
 
-    private MapView _mapView;
+    private final MapView _mapView;
     private VectorLayer _layer;
     private Font _font;
     private Color _color;
@@ -30,6 +30,9 @@ public class FrmLabelSet extends javax.swing.JDialog {
 
     /**
      * Creates new form FrmLabelSet
+     * @param parent Parent form
+     * @param modal Model
+     * @param mapView MapView
      */
     public FrmLabelSet(java.awt.Frame parent, boolean modal, MapView mapView) {
         super(parent, modal);

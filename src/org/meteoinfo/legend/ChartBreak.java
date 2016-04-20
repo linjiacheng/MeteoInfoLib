@@ -47,6 +47,7 @@ public class ChartBreak extends ColorBreak {
     private boolean drawLabel;
     private Font labelFont;
     private Color labelColor;
+    private int decimalDigits;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -73,6 +74,7 @@ public class ChartBreak extends ColorBreak {
         drawLabel = false;
         labelFont = new Font("Arial", Font.PLAIN, 12);
         labelColor = Color.black;
+        this.decimalDigits = 0;
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -398,6 +400,22 @@ public class ChartBreak extends ColorBreak {
     public void setLabelColor(Color value){
         this.labelColor = value;
     }
+    
+    /**
+     * Get decimal digits
+     * @return Decimal digits
+     */
+    public int getDecimalDigits(){
+        return this.decimalDigits;
+    }
+    
+    /**
+     * Set decimal digits
+     * @param value Decimal digits
+     */
+    public void setDecimalDigits(int value){
+        this.decimalDigits = value;
+    }
     // </editor-fold>
     // <editor-fold desc="Methods">
 
@@ -553,6 +571,7 @@ public class ChartBreak extends ColorBreak {
         aCB.setDrawLabel(this.drawLabel);
         aCB.setLabelColor(this.labelColor);
         aCB.setLabelFont(labelFont);
+        aCB.setDecimalDigits(this.decimalDigits);
 
         return aCB;
     }
