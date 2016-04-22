@@ -32,28 +32,30 @@ public class Dimension extends ucar.nc2.Dimension {
     //private int _dimLength = 1;
     //private boolean unlimited;
     private boolean reverse = false;
-    
+
     /**
      * Constructor
      */
-    public Dimension(){
+    public Dimension() {
         this("null", 1);
     }
-    
+
     /**
      * Constructor
+     *
      * @param dim Other dimension
      */
-    public Dimension(ucar.nc2.Dimension dim){
+    public Dimension(ucar.nc2.Dimension dim) {
         this(dim, DimensionType.Other);
     }
-    
+
     /**
      * Constructor
+     *
      * @param dim Other dimension
      * @param dimType Dimension type
      */
-    public Dimension(ucar.nc2.Dimension dim, DimensionType dimType){
+    public Dimension(ucar.nc2.Dimension dim, DimensionType dimType) {
         this(dim.getShortName(), dim.getLength(), dimType);
         this.setGroup(dim.getGroup());
         this.setDODSName(dim.getDODSName());
@@ -67,6 +69,7 @@ public class Dimension extends ucar.nc2.Dimension {
 
     /**
      * Constructor
+     *
      * @param name Name
      * @param len Length
      */
@@ -76,12 +79,13 @@ public class Dimension extends ucar.nc2.Dimension {
         _dimType = DimensionType.Other;
         _dimValue = new ArrayList<>();
     }
-    
+
     /**
      * Constructor
+     *
      * @param dimType Dimension type
      */
-    public Dimension(DimensionType dimType){
+    public Dimension(DimensionType dimType) {
         this("null", 1, dimType);
     }
 
@@ -327,20 +331,22 @@ public class Dimension extends ucar.nc2.Dimension {
         Dimension dim = new Dimension(this.getShortName(), this.getLength(), this._dimType);
         dim.setDimId(this._dimId);
         dim.setReverse(this.reverse);
-        List<Double> values = new ArrayList<>();
-        int step = Math.abs(stride);
-        if (this.reverse){
-            int ff = this.getLength() - last - 1;
-            int ll = this.getLength() - first - 1;
-            for (int i = ff; i <= ll; i += step){
-                values.add(this._dimValue.get(i));
+        if (this._dimValue.size() > last) {
+            List<Double> values = new ArrayList<>();
+            int step = Math.abs(stride);
+            if (this.reverse) {
+                int ff = this.getLength() - last - 1;
+                int ll = this.getLength() - first - 1;
+                for (int i = ff; i <= ll; i += step) {
+                    values.add(this._dimValue.get(i));
+                }
+            } else {
+                for (int i = first; i <= last; i += step) {
+                    values.add(this._dimValue.get(i));
+                }
             }
-        } else {
-            for (int i = first; i <= last; i += step) {
-                values.add(this._dimValue.get(i));
-            }
+            dim.setValues(values);
         }
-        dim.setValues(values);
 
         return dim;
     }
@@ -375,7 +381,7 @@ public class Dimension extends ucar.nc2.Dimension {
      */
     public int getValueIndex(double v) {
         int idx = this.getLength() - 1;
-        if (getDeltaValue() > 0){
+        if (getDeltaValue() > 0) {
             for (int i = 0; i < this.getLength(); i++) {
                 if (v <= this._dimValue.get(i)) {
                     idx = i;
@@ -390,7 +396,7 @@ public class Dimension extends ucar.nc2.Dimension {
                 }
             }
         }
-        if (this.reverse){
+        if (this.reverse) {
             idx = this.getLength() - idx - 1;
         }
 
