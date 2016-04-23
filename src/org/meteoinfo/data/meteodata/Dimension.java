@@ -146,7 +146,9 @@ public class Dimension extends ucar.nc2.Dimension {
     @Override
     public void setLength(int value) {
         super.setLength(value);
-        if (this._dimValue != null){
+        if (this._dimValue == null)
+            this._dimValue = new ArrayList<>();
+        if (this._dimValue.size() != value){
             this._dimValue.clear();
             for (int i = 0; i < value; i++) {
                 this._dimValue.add(Double.valueOf(i));
