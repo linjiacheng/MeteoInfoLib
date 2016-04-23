@@ -27,7 +27,7 @@ public class Dimension extends ucar.nc2.Dimension {
     //private ucar.nc2.Dimension _ncDimension = null;
     //private String _dimName;
     private DimensionType _dimType;
-    private List<Double> _dimValue;
+    private List<Double> _dimValue = new ArrayList<>();
     private int _dimId;
     //private int _dimLength = 1;
     //private boolean unlimited;
@@ -135,6 +135,22 @@ public class Dimension extends ucar.nc2.Dimension {
         this._dimValue.clear();
         for (int i = 0; i < value; i++) {
             this._dimValue.add(Double.valueOf(i));
+        }
+    }
+    
+    /**
+     * Set dimension length
+     *
+     * @param value Dimension length
+     */
+    @Override
+    public void setLength(int value) {
+        super.setLength(value);
+        if (this._dimValue != null){
+            this._dimValue.clear();
+            for (int i = 0; i < value; i++) {
+                this._dimValue.add(Double.valueOf(i));
+            }
         }
     }
 
