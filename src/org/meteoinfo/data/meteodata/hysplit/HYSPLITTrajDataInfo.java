@@ -295,12 +295,13 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
     @Override
     public VectorLayer createTrajLineLayer() {
         VectorLayer aLayer = new VectorLayer(ShapeTypes.PolylineZ);
-        aLayer.editAddField(new Field("TrajID", DataTypes.Integer));
-        aLayer.editAddField(new Field("StartDate", DataTypes.Date));
-        aLayer.editAddField(new Field("StartHour", DataTypes.Integer));
-        aLayer.editAddField(new Field("StartLon", DataTypes.Double));
-        aLayer.editAddField(new Field("StartLat", DataTypes.Double));
-        aLayer.editAddField(new Field("StartHeight", DataTypes.Double));
+        aLayer.editAddField("ID", DataTypes.Integer);
+        aLayer.editAddField("Date", DataTypes.Date);
+        aLayer.editAddField("Year", DataTypes.Integer);
+        aLayer.editAddField("Month", DataTypes.Integer);
+        aLayer.editAddField("Day", DataTypes.Integer);
+        aLayer.editAddField("Hour", DataTypes.Integer);
+        aLayer.editAddField("Height", DataTypes.Float);
 
         Calendar cal = Calendar.getInstance();
         int TrajNum = 0;
@@ -382,12 +383,15 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                     int shapeNum = aLayer.getShapeNum();
                     if (aLayer.editInsertShape(aPolyline, shapeNum)) {
                         cal.setTime(trajInfos.get(t).get(i).startTime);
-                        aLayer.editCellValue("TrajID", shapeNum, TrajNum);
-                        aLayer.editCellValue("StartDate", shapeNum, cal.getTime());
-                        aLayer.editCellValue("StartHour", shapeNum, cal.get(Calendar.HOUR_OF_DAY));
-                        aLayer.editCellValue("StartLat", shapeNum, trajInfos.get(t).get(i).startLat);
-                        aLayer.editCellValue("StartLon", shapeNum, trajInfos.get(t).get(i).startLon);
-                        aLayer.editCellValue("StartHeight", shapeNum, trajInfos.get(t).get(i).startHeight);
+                        aLayer.editCellValue("ID", shapeNum, TrajNum);
+                        aLayer.editCellValue("Date", shapeNum, cal.getTime());
+                        aLayer.editCellValue("Year", shapeNum, cal.get(Calendar.YEAR));
+                        aLayer.editCellValue("Month", shapeNum, cal.get(Calendar.MONTH) + 1);
+                        aLayer.editCellValue("Day", shapeNum, cal.get(Calendar.DAY_OF_MONTH));
+                        aLayer.editCellValue("Hour", shapeNum, cal.get(Calendar.HOUR_OF_DAY));
+                        aLayer.editCellValue("Height", shapeNum, trajInfos.get(t).get(i).startHeight);
+                        //aLayer.editCellValue("StartLat", shapeNum, trajInfos.get(t).get(i).startLat);
+                        //aLayer.editCellValue("StartLon", shapeNum, trajInfos.get(t).get(i).startLon);
                     }
                 }
 
@@ -404,7 +408,7 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
         //aLayer.LegendScheme = m_Legend.CreateSingleSymbolLegendScheme(Shape.ShapeType.Polyline, Color.Blue, 1.0F, 1, aDataInfo.TrajeoryNum);            
         aLayer.setVisible(true);
         //LegendScheme aLS = LegendManage.createUniqValueLegendScheme(aLayer, 1, trajeoryNumber);
-        aLayer.updateLegendScheme(LegendType.UniqueValue, "TrajID");
+        aLayer.updateLegendScheme(LegendType.UniqueValue, "ID");
         LegendScheme ls = aLayer.getLegendScheme();
         int i = 0;
         for (ColorBreak cb : ls.getLegendBreaks()) {

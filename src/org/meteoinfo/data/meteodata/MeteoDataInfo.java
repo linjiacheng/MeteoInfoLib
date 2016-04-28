@@ -616,6 +616,16 @@ public class MeteoDataInfo {
             Logger.getLogger(MeteoDataInfo.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    /**
+     * Open HYSPLIT traject data
+     *
+     * @param trajFiles File paths
+     */
+    public void openHYSPLITTrajData(List<String> trajFiles){
+        String[] files = trajFiles.toArray(new String[0]);
+        openHYSPLITTrajData(files);
+    }
 
     /**
      * Open HYSPLIT particle data

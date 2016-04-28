@@ -860,7 +860,8 @@ public class LegendScheme {
                             aPLB.setSymbolColor(ColorUtil.parseToColor(brk.getAttributes().getNamedItem("SymbolColor").getNodeValue()));
                             aPLB.setSymbolInterval(Integer.parseInt(brk.getAttributes().getNamedItem("SymbolInterval").getNodeValue()));
                             aPLB.setTag(brk.getAttributes().getNamedItem("Tag").getNodeValue());
-                        } catch (DOMException | NumberFormatException e) {
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         } finally {
                             legendBreaks.add(aPLB);
                         }
