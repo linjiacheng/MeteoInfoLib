@@ -997,7 +997,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 //                    ts.add(DataConvert.toOADate(t));
 //                }
 
-                int n = 1;
+                int n = (int)darray.getSize();
                 double[] values = new double[n];
                 for (int i = 0; i < n; i++) {
                     values[i] = darray.getDouble(i);
@@ -2932,8 +2932,13 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                     ucar.nc2.Dimension dim = var.getDimension(i);
                     switch (ndim.getDimType()) {
                         case T:
-                            origin[i] = timeIdx;
-                            size[i] = 1;
+                            if (this._isPROFILE){
+                                origin[i] = timeIdx;
+                                size[i] = ndim.getLength();
+                            } else {
+                                origin[i] = timeIdx;
+                                size[i] = 1;
+                            }
                             break;
                         case Xtrack:
                             origin[i] = levelIdx;
