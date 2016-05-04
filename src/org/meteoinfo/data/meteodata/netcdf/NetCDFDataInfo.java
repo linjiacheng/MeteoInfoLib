@@ -46,6 +46,7 @@ import org.meteoinfo.projection.Reproject;
 import ucar.ma2.Array;
 import ucar.ma2.ArrayInt;
 import ucar.ma2.DataType;
+import ucar.ma2.Index;
 import ucar.ma2.InvalidRangeException;
 import ucar.ma2.MAMath;
 import ucar.ma2.Section;
@@ -2498,16 +2499,21 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             }
 
             Array data2D = var.read(origin, size).reduce();
+            if (data2D.getShape()[0] == xNum){
+                data2D = data2D.transpose(0, 1);
+            }
 
+            Index index = data2D.getIndex();
             double v;
             for (i = 0; i < yNum; i++) {
                 for (j = 0; j < xNum; j++) {
-                    v = data2D.getDouble(i * xNum + j);
+                    v = data2D.getDouble(index);
                     if (v == missingValue) {
                         gridData[i][j] = v;
                     } else {
                         gridData[i][j] = v * scale_factor + add_offset;
                     }
+                    index.incr();
                 }
             }
 
