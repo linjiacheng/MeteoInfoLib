@@ -328,8 +328,8 @@ public class FrmPolygonSymbolSet extends javax.swing.JDialog {
         this.jLabel_FillColor.setBackground(aColor);
         _polygonBreak.setColor(aColor);
         if (_parent.getClass() == LegendView.class) {
-            //((LegendView) _parent).setLegendBreak_Color(aColor);
-            ((LegendView) _parent).repaint();
+            ((LegendView) _parent).setLegendBreak_Color(aColor);
+            //((LegendView) _parent).repaint();
         }
     }//GEN-LAST:event_jLabel_FillColorMouseClicked
 
@@ -345,8 +345,8 @@ public class FrmPolygonSymbolSet extends javax.swing.JDialog {
         // TODO add your handling code here:
         _polygonBreak.setDrawFill(this.jCheckBox_DrawFill.isSelected());
         if (_parent.getClass() == LegendView.class) {
-            //((LegendView) _parent).setLegendBreak_DrawFill(this.jCheckBox_DrawFill.isSelected());
-            ((LegendView) _parent).repaint();
+            ((LegendView) _parent).setLegendBreak_DrawFill(this.jCheckBox_DrawFill.isSelected());
+            //((LegendView) _parent).repaint();
         }
     }//GEN-LAST:event_jCheckBox_DrawFillActionPerformed
 

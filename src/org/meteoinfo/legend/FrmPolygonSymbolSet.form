@@ -279,9 +279,6 @@
     </Component>
     <Component class="org.meteoinfo.legend.SymbolControl" name="symbolControl1">
       <Properties>
-        <Property name="cellSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-          <Dimension value="[50, 40]"/>
-        </Property>
         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
           <Dimension value="[200, 50]"/>
         </Property>
