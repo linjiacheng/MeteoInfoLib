@@ -155,6 +155,7 @@ public class XY1DPlot extends XYPlot {
             si = 0;
         }
         for (int i = si; i < dataset.getSeriesCount(); i++) {
+            Color color = ColorUtil.getCommonColor(i);
             switch (this.chartPlotMethod) {
                 case LINE:
                 case LINE_POINT:
@@ -163,20 +164,22 @@ public class XY1DPlot extends XYPlot {
                         plb.setDrawSymbol(false);
                     } else {
                         plb.setDrawSymbol(true);
+                        plb.setSymbolColor(color);
+                        plb.setSymbolFillColor(color);
                     }
-                    plb.setColor(ColorUtil.getCommonColor(i));
+                    plb.setColor(color);
                     plb.setCaption(dataset.getSeriesKey(i));
                     seriesLegends.add(new SeriesLegend(plb));
                     break;
                 case POINT:
                     PointBreak pb = new PointBreak();
-                    pb.setColor(ColorUtil.getCommonColor(i));
+                    pb.setColor(color);
                     pb.setCaption(dataset.getSeriesKey(i));
                     seriesLegends.add(new SeriesLegend(pb));
                     break;
                 case BAR:
                     PolygonBreak pgb = new PolygonBreak();
-                    pgb.setColor(ColorUtil.getCommonColor(i));
+                    pgb.setColor(color);
                     pgb.setCaption(dataset.getSeriesKey(i));
                     seriesLegends.add(new SeriesLegend(pgb));
                     break;

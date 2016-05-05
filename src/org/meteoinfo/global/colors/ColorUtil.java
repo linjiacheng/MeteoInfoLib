@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import org.meteoinfo.global.util.GlobalUtil;
-import static org.meteoinfo.legend.LegendManage.getRainBowColors_HSV;
 
 /**
  * ColorUtiles class
@@ -72,37 +71,37 @@ public class ColorUtil {
      * @return Common color
      */
     public static Color getCommonColor(int idx) {
-        if (idx == 0) {
-            idx = 1;
-        }
-        if (idx > 12) {
-            idx = idx % 12;
+//        if (idx == 0) {
+//            idx = 1;
+//        }
+        if (idx > 11) {
+            idx = idx % 11;
         }
 
         switch (idx) {
-            case 1:
+            case 0:
                 return Color.red;
-            case 2:
+            case 1:
                 return Color.blue;
-            case 3:
+            case 2:
                 return Color.green;
-            case 4:
+            case 3:
                 return Color.black;
-            case 5:
+            case 4:
                 return Color.yellow;
-            case 6:
+            case 5:
                 return Color.pink;
-            case 7:
+            case 6:
                 return Color.gray;
-            case 8:
+            case 7:
                 return Color.cyan;
-            case 9:
+            case 8:
                 return Color.magenta;
-            case 10:
+            case 9:
                 return Color.orange;
-            case 11:
+            case 10:
                 return Color.darkGray;
-            case 12:
+            case 11:
                 return Color.lightGray;
         }
 
