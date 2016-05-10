@@ -835,6 +835,9 @@ public class Axis implements Cloneable {
     public void setMinMaxValue(double minValue, double maxValue) {
         this.minValue = minValue;
         this.maxValue = maxValue;
+        if (Double.isNaN(minValue) || Double.isNaN(maxValue))
+            return;
+        
         updateTickValues();
 //        if (this.timeAxis) {
 //            this.updateTimeLabels();

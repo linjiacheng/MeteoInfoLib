@@ -176,33 +176,31 @@ public class ArrayUtil {
             }
             if (bOrder == ByteOrder.BIG_ENDIAN) {
                 outs.write(bb.array());
+            } else if (a.getDataType() == DataType.BYTE) {
+                outs.write(bb.array());
             } else {
-                if (a.getDataType() == DataType.BYTE){
-                    outs.write(bb.array());
-                } else {
-                    ByteBuffer nbb = ByteBuffer.allocate(bb.array().length);
-                    nbb.order(bOrder);
-                    switch (a.getDataType()) {
-                        case INT:
-                            for (int i = 0; i < a.getSize(); i++) {
-                                nbb.putInt(i * 4, bb.getInt());
-                            }
-                            break;
-                        case FLOAT:
-                            for (int i = 0; i < a.getSize(); i++) {
-                                nbb.putFloat(i * 4, bb.getFloat());
-                            }
-                            break;
-                        case DOUBLE:
-                            for (int i = 0; i < a.getSize(); i++) {
-                                nbb.putDouble(i * 8, bb.getDouble());
-                            }
-                            break;
-                        default:
-                            nbb.put(bb);
-                    }
-                    outs.write(nbb.array());
+                ByteBuffer nbb = ByteBuffer.allocate(bb.array().length);
+                nbb.order(bOrder);
+                switch (a.getDataType()) {
+                    case INT:
+                        for (int i = 0; i < a.getSize(); i++) {
+                            nbb.putInt(i * 4, bb.getInt());
+                        }
+                        break;
+                    case FLOAT:
+                        for (int i = 0; i < a.getSize(); i++) {
+                            nbb.putFloat(i * 4, bb.getFloat());
+                        }
+                        break;
+                    case DOUBLE:
+                        for (int i = 0; i < a.getSize(); i++) {
+                            nbb.putDouble(i * 8, bb.getDouble());
+                        }
+                        break;
+                    default:
+                        nbb.put(bb);
                 }
+                outs.write(nbb.array());
             }
 
             outs.close();
@@ -1018,27 +1016,35 @@ public class ArrayUtil {
         Array r = Array.factory(a.getDataType(), a.getShape());
         double s = 0.5;
         if (Double.isNaN(unDefData)) {
-            for (int i = 1; i < rowNum - 1; i++) {
-                for (int j = 1; j < colNum - 2; j++) {
-                    if (Double.isNaN(a.getDouble(i * colNum + j)) || Double.isNaN(a.getDouble((i + 1) * colNum + j)) || Double.isNaN(a.getDouble((i - 1) * colNum + j))
-                            || Double.isNaN(a.getDouble(i * colNum + j + 1)) || Double.isNaN(a.getDouble(i * colNum + j - 1))) {
+            for (int i = 0; i < rowNum; i++) {
+                for (int j = 0; j < colNum; j++) {
+                    if (i == 0 || i == rowNum - 1 || j == 0 || j == colNum - 1){
                         r.setDouble(i * colNum + j, a.getDouble(i * colNum + j));
-                        continue;
+                    } else {
+                        if (Double.isNaN(a.getDouble(i * colNum + j)) || Double.isNaN(a.getDouble((i + 1) * colNum + j)) || Double.isNaN(a.getDouble((i - 1) * colNum + j))
+                                || Double.isNaN(a.getDouble(i * colNum + j + 1)) || Double.isNaN(a.getDouble(i * colNum + j - 1))) {
+                            r.setDouble(i * colNum + j, a.getDouble(i * colNum + j));
+                            continue;
+                        }
+                        r.setDouble(i * colNum + j, a.getDouble(i * colNum + j) + s / 4 * (a.getDouble((i + 1) * colNum + j) + a.getDouble((i - 1) * colNum + j) + a.getDouble(i * colNum + j + 1)
+                                + a.getDouble(i * colNum + j - 1) - 4 * a.getDouble(i * colNum + j)));
                     }
-                    r.setDouble(i * colNum + j, a.getDouble(i * colNum + j) + s / 4 * (a.getDouble((i + 1) * colNum + j) + a.getDouble((i - 1) * colNum + j) + a.getDouble(i * colNum + j + 1)
-                            + a.getDouble(i * colNum + j - 1) - 4 * a.getDouble(i * colNum + j)));
                 }
             }
         } else {
-            for (int i = 1; i < rowNum - 1; i++) {
-                for (int j = 1; j < colNum - 2; j++) {
-                    if (a.getDouble(i * colNum + j) == unDefData || a.getDouble((i + 1) * colNum + j) == unDefData || a.getDouble((i - 1) * colNum + j)
-                            == unDefData || a.getDouble(i * colNum + j + 1) == unDefData || a.getDouble(i * colNum + j - 1) == unDefData) {
+            for (int i = 0; i < rowNum; i++) {
+                for (int j = 0; j < colNum; j++) {
+                    if (i == 0 || i == rowNum - 1 || j == 0 || j == colNum - 1){
                         r.setDouble(i * colNum + j, a.getDouble(i * colNum + j));
-                        continue;
+                    } else {
+                        if (a.getDouble(i * colNum + j) == unDefData || a.getDouble((i + 1) * colNum + j) == unDefData || a.getDouble((i - 1) * colNum + j)
+                                == unDefData || a.getDouble(i * colNum + j + 1) == unDefData || a.getDouble(i * colNum + j - 1) == unDefData) {
+                            r.setDouble(i * colNum + j, a.getDouble(i * colNum + j));
+                            continue;
+                        }
+                        r.setDouble(i * colNum + j, a.getDouble(i * colNum + j) + s / 4 * (a.getDouble((i + 1) * colNum + j) + a.getDouble((i - 1) * colNum + j) + a.getDouble(i * colNum + j + 1)
+                                + a.getDouble(i * colNum + j - 1) - 4 * a.getDouble(i * colNum + j)));
                     }
-                    r.setDouble(i * colNum + j, a.getDouble(i * colNum + j) + s / 4 * (a.getDouble((i + 1) * colNum + j) + a.getDouble((i - 1) * colNum + j) + a.getDouble(i * colNum + j + 1)
-                            + a.getDouble(i * colNum + j - 1) - 4 * a.getDouble(i * colNum + j)));
                 }
             }
         }
@@ -1160,7 +1166,7 @@ public class ArrayUtil {
                     }
                     x = x_s.get(p).doubleValue();
                     y = y_s.get(p).doubleValue();
-                    if (Math.pow(X.get(j).doubleValue() - x, 2) + Math.pow(Y.get(i).doubleValue() - y, 2) == 0) {
+                    if (X.get(j).doubleValue() == x && Y.get(i).doubleValue() == y) {
                         r.setDouble(i * colNum + j, v);
                         break;
                     } else {
@@ -1174,6 +1180,15 @@ public class ArrayUtil {
                     }
                 }
 
+                aMin = NW[0][0];
+                aP = 0;
+                for (l = 1; l < points; l++) {
+                    if (NW[0][l] < aMin) {
+                        aMin = NW[0][l];
+                        aP = l;
+                    }
+                }
+
                 if (Double.isNaN(r.getDouble(i * colNum + j))) {
                     for (p = 0; p < pNum; p++) {
                         w = AllWeights[p];
@@ -1181,22 +1196,22 @@ public class ArrayUtil {
                             continue;
                         }
 
-                        aMin = NW[0][0];
-                        aP = 0;
-                        for (l = 1; l < points; l++) {
-                            if ((double) NW[0][l] < aMin) {
-                                aMin = (double) NW[0][l];
-                                aP = l;
-                            }
-                        }
                         if (w > aMin) {
                             NW[0][aP] = w;
                             NW[1][aP] = p;
+                            aMin = NW[0][0];
+                            aP = 0;
+                            for (l = 1; l < points; l++) {
+                                if (NW[0][l] < aMin) {
+                                    aMin = NW[0][l];
+                                    aP = l;
+                                }
+                            }
                         }
                     }
                     for (p = 0; p < points; p++) {
-                        SV += (double) NW[0][p] * a.getDouble((int) NW[1][p]);
-                        SW += (double) NW[0][p];
+                        SV += NW[0][p] * a.getDouble((int) NW[1][p]);
+                        SW += NW[0][p];
                     }
                     r.setDouble(i * colNum + j, SV / SW);
                 }
