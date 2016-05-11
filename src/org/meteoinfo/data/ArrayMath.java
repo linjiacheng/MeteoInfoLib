@@ -1046,6 +1046,197 @@ public class ArrayMath {
 
         return r;
     }
+    
+    /**
+     * Integrate vector array using the composite trapezoidal rule.
+     * @param y Vecotr array
+     * @param dx Spacing between all y elements
+     * @return Definite integral as approximated by trapezoidal rule
+     */
+    public static double trapz(Array y, double dx){
+        int n = (int)y.getSize() - 1;
+        double a = 1;
+        double b = n * dx + a;
+        double r = 0;
+        for (int i = 0; i < y.getSize(); i++){
+            r += y.getDouble(i);
+            if (i > 0 && i < n)
+                r += y.getDouble(i);
+        }
+        r = r * ((b - a) / (2 * n));
+        return r;
+    }
+    
+    /**
+     * Integrate vector array using the composite trapezoidal rule.
+     * @param y Vecotr array
+     * @param dx Spacing between all y elements
+     * @param ranges
+     * @return Definite integral as approximated by trapezoidal rule
+     * @throws ucar.ma2.InvalidRangeException
+     */
+    public static double trapz(Array y, double dx, List<Range> ranges) throws InvalidRangeException{
+        int n = 1;
+        for (Range range : ranges){
+            n = n * range.length();
+        }
+        n -= 1;
+        double a = 1;
+        double b = n * dx + a;
+        double r = 0;
+        double v;
+        IndexIterator ii = y.getRangeIterator(ranges);
+        int i = 0;
+        while (ii.hasNext()) {
+            v = ii.getDoubleNext();
+            r += v;
+            if (i > 0 && i < n)
+                r += v;
+            i += 1;
+        }
+        r = r * ((b - a) / (2 * n));
+        return r;
+    }
+    
+    /**
+     * Integrate vector array using the composite trapezoidal rule.
+     * @param y Vecotr array
+     * @param x Spacing array between all y elements
+     * @return Definite integral as approximated by trapezoidal rule
+     */
+    public static double trapz(Array y, Array x){
+        int n = (int)y.getSize() - 1;
+        double r = 0;
+        for (int i = 0; i < n; i++){
+            r += (x.getDouble(i + 1) - x.getDouble(i)) * (y.getDouble(i + 1) + y.getDouble(i));
+        }
+        r = r / 2;
+        return r;
+    }
+    
+    /**
+     * Integrate vector array using the composite trapezoidal rule.
+     * @param y Vecotr array
+     * @param x Spacing array between all y elements
+     * @param ranges
+     * @return Definite integral as approximated by trapezoidal rule
+     * @throws ucar.ma2.InvalidRangeException
+     */
+    public static double trapz(Array y, Array x, List<Range> ranges) throws InvalidRangeException{
+        double r = 0;
+        double v;
+        double v0 = Double.NaN;
+        IndexIterator ii = y.getRangeIterator(ranges);
+        int i = 0;
+        while (ii.hasNext()) {
+            v = ii.getDoubleNext();
+            if (Double.isNaN(v0)) {
+                v0 = v;
+                v = ii.getDoubleNext();
+            }
+            r += (x.getDouble(i + 1) - x.getDouble(i)) * (v + v0);
+            v0 = v;
+            i += 1;
+        }
+        r = r / 2;
+        return r;
+    }
+    
+    /**
+     * Integrate vector array using the composite trapezoidal rule.
+     *
+     * @param a Array a
+     * @param dx
+     * @param axis Axis
+     * @return Mean value array
+     * @throws ucar.ma2.InvalidRangeException
+     */
+    public static Array trapz(Array a, double dx, int axis) throws InvalidRangeException {
+        int[] dataShape = a.getShape();
+        int[] shape = new int[dataShape.length - 1];
+        int idx;
+        for (int i = 0; i < dataShape.length; i++) {
+            idx = i;
+            if (idx == axis) {
+                continue;
+            } else if (idx > axis) {
+                idx -= 1;
+            }
+            shape[idx] = dataShape[i];
+        }
+        Array r = Array.factory(DataType.DOUBLE, shape);
+        double mean;
+        Index indexr = r.getIndex();
+        int[] current;
+        for (int i = 0; i < r.getSize(); i++) {
+            current = indexr.getCurrentCounter();
+            List<Range> ranges = new ArrayList<>();
+            for (int j = 0; j < dataShape.length; j++) {
+                if (j == axis) {
+                    ranges.add(new Range(0, dataShape[j] - 1, 1));
+                } else {
+                    idx = j;
+                    if (idx > axis) {
+                        idx -= 1;
+                    }
+                    ranges.add(new Range(current[idx], current[idx], 1));
+                }
+            }
+            mean = trapz(a, dx, ranges);
+            r.setDouble(i, mean);
+            indexr.incr();
+        }
+
+        return r;
+    }
+    
+    /**
+     * Integrate vector array using the composite trapezoidal rule.
+     *
+     * @param a Array a
+     * @param x Array x
+     * @param axis Axis
+     * @return Mean value array
+     * @throws ucar.ma2.InvalidRangeException
+     */
+    public static Array trapz(Array a, Array x, int axis) throws InvalidRangeException {
+        int[] dataShape = a.getShape();
+        int[] shape = new int[dataShape.length - 1];
+        int idx;
+        for (int i = 0; i < dataShape.length; i++) {
+            idx = i;
+            if (idx == axis) {
+                continue;
+            } else if (idx > axis) {
+                idx -= 1;
+            }
+            shape[idx] = dataShape[i];
+        }
+        Array r = Array.factory(DataType.DOUBLE, shape);
+        double mean;
+        Index indexr = r.getIndex();
+        int[] current;
+        for (int i = 0; i < r.getSize(); i++) {
+            current = indexr.getCurrentCounter();
+            List<Range> ranges = new ArrayList<>();
+            for (int j = 0; j < dataShape.length; j++) {
+                if (j == axis) {
+                    ranges.add(new Range(0, dataShape[j] - 1, 1));
+                } else {
+                    idx = j;
+                    if (idx > axis) {
+                        idx -= 1;
+                    }
+                    ranges.add(new Range(current[idx], current[idx], 1));
+                }
+            }
+            mean = trapz(a, x, ranges);
+            r.setDouble(i, mean);
+            indexr.incr();
+        }
+
+        return r;
+    }
 
     // </editor-fold>
     // <editor-fold desc="Matrix">
