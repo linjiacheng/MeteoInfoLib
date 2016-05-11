@@ -1422,7 +1422,7 @@ public class ArrayMath {
      * @return Result array
      * @throws InvalidRangeException
      */
-    public static Array setSection(Array a, List<Range> ranges, Number v) throws InvalidRangeException {
+    public static Array setSection(Array a, List<Range> ranges, Number v) throws InvalidRangeException {        
         Array r = a.section(ranges);
         IndexIterator iter = r.getIndexIterator();
         while (iter.hasNext()) {
@@ -1438,9 +1438,10 @@ public class ArrayMath {
      * @param a Array a
      * @param ranges Ranges
      * @param v Array value
+     * @return Result array
      * @throws InvalidRangeException
      */
-    public static void setSection(Array a, List<Range> ranges, Array v) throws InvalidRangeException {
+    public static Array setSection(Array a, List<Range> ranges, Array v) throws InvalidRangeException {        
         Array r = a.section(ranges);
         IndexIterator iter = r.getIndexIterator();
         int i = 0;
@@ -1448,8 +1449,8 @@ public class ArrayMath {
             iter.setObjectNext(v.getObject(i));
             i += 1;
         }
-        a = Array.factory(a.getDataType(), a.getShape(), r.getStorage());
-        r = null;
+        r = Array.factory(a.getDataType(), a.getShape(), r.getStorage());
+        return r;
     }
 
     /**
