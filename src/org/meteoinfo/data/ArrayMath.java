@@ -1623,7 +1623,10 @@ public class ArrayMath {
                 }
             }
         }
-        return min;
+        if (min == 1.7976931348623157E+308D)
+            return Double.NaN;
+        else
+            return min;
     }
 
     /**
@@ -1643,7 +1646,10 @@ public class ArrayMath {
                 }
             }
         }
-        return max;
+        if (max == -1.797693134862316E+307D)
+            return Double.NaN;
+        else
+            return max;
     }
 
     /**
@@ -1743,7 +1749,10 @@ public class ArrayMath {
                 n += 1;
             }
         }
-        return sum / n;
+        if (n == 0)
+            return Double.NaN;
+        else
+            return sum / n;
     }
 
     /**
