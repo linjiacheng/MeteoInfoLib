@@ -382,6 +382,15 @@ public class MapView extends JPanel {
         _defPolylineBreak.setSize(2);
         _defPolygonBreak.setColor(new Color(104, 255, 104, 125));
     }
+    
+    /**
+     * Constructor
+     * @param proj Projection
+     */
+    public MapView(ProjectionInfo proj){
+        this();
+        this._projection.setProjInfo(proj);
+    }
     // </editor-fold>
 
     // <editor-fold desc="Get Set Methods">
@@ -6248,7 +6257,7 @@ public class MapView extends JPanel {
         aLayer.editAddField(aDC);
         int shapeNum;
 
-        double refLon = _projection.getRefCutLon();
+        double refLon = _projection.getProjInfo().getRefCutLon();
 
         //Longitude
         lineNum = 0;
@@ -8345,18 +8354,18 @@ public class MapView extends JPanel {
         Element Projection = m_Doc.createElement("Projection");
         Attr IsLonLatMap = m_Doc.createAttribute("IsLonLatMap");
         Attr ProjStr = m_Doc.createAttribute("ProjStr");
-        Attr RefLon = m_Doc.createAttribute("RefLon");
-        Attr RefCutLon = m_Doc.createAttribute("RefCutLon");
+        //Attr RefLon = m_Doc.createAttribute("RefLon");
+        //Attr RefCutLon = m_Doc.createAttribute("RefCutLon");
 
         IsLonLatMap.setValue(String.valueOf(_projection.isLonLatMap()));
         ProjStr.setValue(_projection.getProjInfo().toProj4String());
-        RefLon.setValue(String.valueOf(_projection.getRefLon()));
-        RefCutLon.setValue(String.valueOf(_projection.getRefCutLon()));
+        //RefLon.setValue(String.valueOf(_projection.getRefLon()));
+        //RefCutLon.setValue(String.valueOf(_projection.getRefCutLon()));
 
         Projection.setAttributeNode(IsLonLatMap);
         Projection.setAttributeNode(ProjStr);
-        Projection.setAttributeNode(RefLon);
-        Projection.setAttributeNode(RefCutLon);
+        //Projection.setAttributeNode(RefLon);
+        //Projection.setAttributeNode(RefCutLon);
 
         parent.appendChild(Projection);
     }
@@ -8824,10 +8833,10 @@ public class MapView extends JPanel {
         Node Projection = parent.getElementsByTagName("Projection").item(0);
         try {
             _projection.setProjStr(Projection.getAttributes().getNamedItem("ProjStr").getNodeValue());
-            _projection.setRefLon(Double.parseDouble(Projection.getAttributes().getNamedItem("RefLon").getNodeValue()));
-            _projection.setRefCutLon(Double.parseDouble(Projection.getAttributes().getNamedItem("RefCutLon").getNodeValue()));
+            //_projection.setRefLon(Double.parseDouble(Projection.getAttributes().getNamedItem("RefLon").getNodeValue()));
+            //_projection.setRefCutLon(Double.parseDouble(Projection.getAttributes().getNamedItem("RefCutLon").getNodeValue()));
             if (!(_projection.getProjInfo().getProjectionName() == ProjectionNames.LongLat)) {
-                ProjectionInfo fromProj = KnownCoordinateSystems.geographic.world.WGS1984;
+                //ProjectionInfo fromProj = KnownCoordinateSystems.geographic.world.WGS1984;
                 ProjectionInfo toProj = new ProjectionInfo(_projection.getProjStr());
                 projectLayers(toProj);
             }

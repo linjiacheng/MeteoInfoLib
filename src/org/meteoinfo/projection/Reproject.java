@@ -43,6 +43,16 @@ public class Reproject {
     }
     
     /**
+     * Reproject a point
+     * @param points The points
+     * @param source Source projection info
+     * @param dest Destination projection info
+     */
+    public static void reprojectPoints(double[][] points, ProjectionInfo source, ProjectionInfo dest) {
+        reprojectPoints(points, source, dest, 0, points.length);
+    }
+    
+    /**
      * Reproject points
      *
      * @param points The points

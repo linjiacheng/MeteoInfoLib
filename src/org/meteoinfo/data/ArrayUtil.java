@@ -34,6 +34,9 @@ import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
 import org.meteoinfo.global.util.BigDecimalUtil;
 import org.meteoinfo.global.util.GlobalUtil;
+import org.meteoinfo.jts.geom.Coordinate;
+import org.meteoinfo.jts.geom.Geometry;
+import org.meteoinfo.jts.geom.GeometryFactory;
 import org.meteoinfo.layer.VectorLayer;
 import org.meteoinfo.legend.LegendScheme;
 import org.meteoinfo.projection.KnownCoordinateSystems;
@@ -1821,7 +1824,7 @@ public class ArrayUtil {
     }
 
     // </editor-fold>    
-    // <editor-fold desc="Projection">
+    // <editor-fold desc="Geocomputation">
     /**
      * Reproject
      *
@@ -2576,6 +2579,27 @@ public class ArrayUtil {
 
         return r;
     }
+    
+    /**
+     *  Computes the smallest convex <code>Polygon</code> that contains all the
+     *  points
+     * @param x X array
+     * @param y Y array
+     * @return PolygonShape
+     */
+    public static PolygonShape convexHull(Array x, Array y){
+        int n = (int)x.getSize();
+        Geometry[] geos = new Geometry[n];
+        GeometryFactory factory = new GeometryFactory();
+        for (int i = 0; i < n; i++){
+            Coordinate c = new Coordinate(x.getDouble(i), y.getDouble(i));
+            geos[i] = factory.createPoint(c);            
+        }        
+        Geometry gs = factory.createGeometryCollection(geos);
+        Geometry ch = gs.convexHull();
+        return new PolygonShape(ch);
+    }
+
     // </editor-fold>
     // <editor-fold desc="Time average">
 

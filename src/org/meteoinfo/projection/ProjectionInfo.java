@@ -152,6 +152,20 @@ public class ProjectionInfo {
     }
     // </editor-fold>
     // <editor-fold desc="Methods">
+    /**
+     * Get reference cut longitude for projection operation
+     * @return Refrence cut longitude
+     */
+    public double getRefCutLon() {
+        double refLon = this.getCoordinateReferenceSystem().getProjection().getProjectionLongitudeDegrees();
+        refLon += 180;
+        if (refLon > 180) {
+            refLon = refLon - 360;
+        } else if (refLon < -180) {
+            refLon = refLon + 360;
+        }
+        return refLon;
+    }
 
     /**
      * Get proj4 string

@@ -17,6 +17,7 @@ import java.util.List;
 import org.meteoinfo.chart.ChartText;
 import org.meteoinfo.chart.Location;
 import org.meteoinfo.chart.axis.LonLatAxis;
+import org.meteoinfo.chart.axis.ProjLonLatAxis;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
@@ -52,8 +53,8 @@ public class MapPlot extends XY2DPlot {
      */
     public MapPlot() {
         super();
-        this.setXAxis(new LonLatAxis("Longitude", true, true));
-        this.setYAxis(new LonLatAxis("Latitude", false, false));
+        this.setXAxis(new LonLatAxis("Longitude", true));
+        this.setYAxis(new LonLatAxis("Latitude", false));
         this.getAxis(Location.RIGHT).setDrawTickLabel(false);
         this.setDrawNeatLine(true);
     }
@@ -64,7 +65,21 @@ public class MapPlot extends XY2DPlot {
      * @param mapView MapView
      */
     public MapPlot(MapView mapView) {
-        this();
+        super();
+        
+        this.setXAxis(new LonLatAxis("Longitude", true));
+        this.setYAxis(new LonLatAxis("Latitude", false));
+        
+//        if (mapView.getProjection().isLonLatMap()){
+//            this.setXAxis(new LonLatAxis("Longitude", true));
+//            this.setYAxis(new LonLatAxis("Latitude", false));
+//        } else {
+//            this.setXAxis(new ProjLonLatAxis("Longitude", true, mapView.getProjection().getProjInfo()));
+//            this.setYAxis(new ProjLonLatAxis("Latitude", false, mapView.getProjection().getProjInfo()));
+//        }
+
+        this.getAxis(Location.RIGHT).setDrawTickLabel(false);
+        this.setDrawNeatLine(true);
         this.setMapView(mapView, true);
         this.mapFrame = new MapFrame();
         this.mapFrame.setMapView(mapView);
@@ -109,6 +124,14 @@ public class MapPlot extends XY2DPlot {
      */
     public ProjectionInfo getProjInfo() {
         return this.getMapView().getProjection().getProjInfo();
+    }
+    
+    /**
+     * Is lon/lat map or not
+     * @return Boolean
+     */
+    public boolean isLonLatMap(){
+        return this.getMapView().getProjection().isLonLatMap();
     }
 
     // </editor-fold>
@@ -369,6 +392,42 @@ public class MapPlot extends XY2DPlot {
 //        }
 //        mapView.paintGraphics(g, area);
 //    }
+    
+//    /**
+//     * Set draw extent
+//     *
+//     * @param extent Extent
+//     */
+//    @Override
+//    public void setDrawExtent(Extent extent) {
+//        if (this.isLonLatMap()){
+//            super.updateDrawExtent();
+//        } else {            
+//            ((ProjLonLatAxis)this.getAxis(Location.BOTTOM)).setX_Y(extent.minY);
+//            ((ProjLonLatAxis)this.getAxis(Location.TOP)).setX_Y(extent.maxY);
+//            ((ProjLonLatAxis)this.getAxis(Location.LEFT)).setX_Y(extent.minX);
+//            ((ProjLonLatAxis)this.getAxis(Location.RIGHT)).setX_Y(extent.maxX);
+//            super.setDrawExtent(extent);
+//        }
+//    }
+//    
+//    /**
+//     * Update draw extent
+//     */
+//    @Override
+//    public void updateDrawExtent(){
+//        if (this.isLonLatMap()){
+//            super.updateDrawExtent();
+//        } else {
+//            Extent extent = this.getDrawExtent();
+//            ((ProjLonLatAxis)this.getAxis(Location.BOTTOM)).setX_Y(extent.minY);
+//            ((ProjLonLatAxis)this.getAxis(Location.TOP)).setX_Y(extent.maxY);
+//            ((ProjLonLatAxis)this.getAxis(Location.LEFT)).setX_Y(extent.minX);
+//            ((ProjLonLatAxis)this.getAxis(Location.RIGHT)).setX_Y(extent.maxX);
+//            super.updateDrawExtent();
+//        }
+//    }
+    
     @Override
     void drawAxis(Graphics2D g, Rectangle2D area) {
         if (this.mapFrame.getMapView().getProjection().isLonLatMap()) {

@@ -64,8 +64,8 @@ public class ProjectionSet {
     CRSFactory _crsFactory = new CRSFactory();
     private ProjectionInfo _projInfo;
     //private String _projStr;
-    private double _refLon;
-    private double _refCutLon;
+    //private double _refLon;
+    //private double _refCutLon;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -75,7 +75,7 @@ public class ProjectionSet {
     public ProjectionSet() {
         _projInfo = KnownCoordinateSystems.geographic.world.WGS1984;
         //_projStr = _projInfo.getParameterString();
-        _refLon = 0;
+        //_refLon = 0;
     }
     // </editor-fold>
 
@@ -152,41 +152,41 @@ public class ProjectionSet {
         _projInfo = new ProjectionInfo(projStr);
     }
 
-    /**
-     * Get reference longitude
-     *
-     * @return Reference longitue
-     */
-    public double getRefLon() {
-        return _refLon;
-    }
+//    /**
+//     * Get reference longitude
+//     *
+//     * @return Reference longitue
+//     */
+//    public double getRefLon() {
+//        return _refLon;
+//    }
+//
+//    /**
+//     * Set reference longitude
+//     *
+//     * @param lon Reference longitude
+//     */
+//    public void setRefLon(double lon) {
+//        _refLon = lon;
+//    }
 
-    /**
-     * Set reference longitude
-     *
-     * @param lon Reference longitude
-     */
-    public void setRefLon(double lon) {
-        _refLon = lon;
-    }
-
-    /**
-     * Get reference cut longitude
-     *
-     * @return Reference cut longitude
-     */
-    public double getRefCutLon() {
-        return _refCutLon;
-    }
-
-    /**
-     * Set reference cut longitude
-     *
-     * @param lon
-     */
-    public void setRefCutLon(double lon) {
-        _refCutLon = lon;
-    }
+//    /**
+//     * Get reference cut longitude
+//     *
+//     * @return Reference cut longitude
+//     */
+//    public double getRefCutLon() {
+//        return _refCutLon;
+//    }
+//
+//    /**
+//     * Set reference cut longitude
+//     *
+//     * @param lon
+//     */
+//    public void setRefCutLon(double lon) {
+//        _refCutLon = lon;
+//    }
     // </editor-fold>
     // <editor-fold desc="Methods">
 
@@ -245,14 +245,8 @@ public class ProjectionSet {
         ProjectionInfo fromProj = aMapView.getProjection().getProjInfo();
 
         aMapView.getProjection().setProjInfo(toProj);
-        double refLon = toProj.getCoordinateReferenceSystem().getProjection().getProjectionLongitudeDegrees();
-        refLon += 180;
-        if (refLon > 180) {
-            refLon = refLon - 360;
-        } else if (refLon < -180) {
-            refLon = refLon + 360;
-        }
-        aMapView.getProjection().setRefCutLon(refLon);
+        double refLon = toProj.getRefCutLon();
+        //aMapView.getProjection().setRefCutLon(refLon);
 
         for (int i = 0; i < aMapView.getLayers().size(); i++) {
             switch (aMapView.getLayers().get(i).getLayerType()) {
@@ -390,7 +384,7 @@ public class ProjectionSet {
             oLayer.updateOriginData();
         }
 
-        double refLon = _refCutLon;
+        double refLon = toProj.getRefCutLon();
         if (oLayer.getExtent().maxX > 180 && oLayer.getExtent().minX > refLon) {
             refLon += 360;
         }
@@ -718,7 +712,7 @@ public class ProjectionSet {
         }
 
         //Set reference longitude
-        double refLon = _refCutLon;
+        double refLon = toProj.getRefCutLon();
         if (oLayer.getExtent().maxX > 180 && oLayer.getExtent().minX > refLon) {
             refLon += 360;
         }

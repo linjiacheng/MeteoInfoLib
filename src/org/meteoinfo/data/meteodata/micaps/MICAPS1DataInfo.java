@@ -195,7 +195,8 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
             Logger.getLogger(MICAPS1DataInfo.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
-                sr.close();
+                if (sr != null)
+                    sr.close();
             } catch (IOException ex) {
                 Logger.getLogger(MICAPS1DataInfo.class.getName()).log(Level.SEVERE, null, ex);
             }

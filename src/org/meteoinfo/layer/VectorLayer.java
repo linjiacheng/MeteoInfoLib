@@ -619,28 +619,30 @@ public class VectorLayer extends MapLayer {
 
         return null;
     }
-    
+
     /**
      * Find a shape for reformation by a polyline shape
+     *
      * @param other The polyline shape
      * @return Result shape
      */
-    public Shape findReformShape(PolylineShape other){
-        if (this.getShapeType().isLine()){
+    public Shape findReformShape(PolylineShape other) {
+        if (this.getShapeType().isLine()) {
             return this.findShape_crosses(other);
-        } else if (this.getShapeType().isPolygon()){
+        } else if (this.getShapeType().isPolygon()) {
             PointShape a = new PointShape();
             a.setPoint(other.getPoints().get(0));
-            PolygonShape r = (PolygonShape)this.findShape_contains(a);
-            if (r == null){
+            PolygonShape r = (PolygonShape) this.findShape_contains(a);
+            if (r == null) {
                 return null;
             } else {
                 PointShape b = new PointShape();
                 b.setPoint(other.getPoints().get(other.getPointNum() - 1));
-                if (r.contains(b))
+                if (r.contains(b)) {
                     return r;
-                else
+                } else {
                     return null;
+                }
             }
         }
         return null;
@@ -1347,21 +1349,41 @@ public class VectorLayer extends MapLayer {
      * Clip the layer by a clipping layer
      *
      * @param clipLayer Clipping layer
+     * @return Clipped result layer
+     */
+    public VectorLayer clip(VectorLayer clipLayer) {
+        return this.clip(clipLayer, false);
+    }
+
+    /**
+     * Clip the layer by a clipping layer
+     *
+     * @param clipLayer Clipping layer
      * @param onlySel If only using selected shapes in clipping layer
      * @return Clipped result layer
      */
     public VectorLayer clip(VectorLayer clipLayer, boolean onlySel) {
-        List<Shape> shapes = new ArrayList<>();
+        List<PolygonShape> shapes = new ArrayList<>();
         if (onlySel) {
             for (Shape aShape : clipLayer.getShapes()) {
                 if (aShape.isSelected()) {
-                    shapes.add(aShape);
+                    shapes.add((PolygonShape) aShape);
                 }
             }
         } else {
-            shapes = (List<Shape>) clipLayer.getShapes();
+            shapes = (List<PolygonShape>) clipLayer.getShapes();
         }
 
+        return this.clip(shapes);
+    }
+
+    /**
+     * Clip the layer by clipping polygons
+     *
+     * @param clipPolys Clipping polygons
+     * @return Clipped result layer
+     */
+    public VectorLayer clip(List<PolygonShape> clipPolys) {
         VectorLayer newLayer = (VectorLayer) this.cloneValue();
         DataTable aTable = new DataTable();
         for (DataColumn aDC : this.getAttributeTable().getTable().getColumns()) {
@@ -1370,8 +1392,7 @@ public class VectorLayer extends MapLayer {
         }
 
         newLayer.setShapes(new ArrayList<Shape>());
-        for (Shape aShape : shapes) {
-            PolygonShape aPGS = (PolygonShape) aShape;
+        for (PolygonShape aPGS : clipPolys) {
             for (int i = 0; i < this.getShapeNum(); i++) {
                 Shape bShape = this.getShapes().get(i);
                 DataRow aDR = this.getAttributeTable().getTable().getRows().get(i);
@@ -1384,6 +1405,55 @@ public class VectorLayer extends MapLayer {
                         } catch (Exception ex) {
                             Logger.getLogger(VectorLayer.class.getName()).log(Level.SEVERE, null, ex);
                         }
+                    }
+                }                
+            }
+        }
+
+        newLayer.getAttributeTable().setTable(aTable);
+        newLayer.setLegendScheme((LegendScheme) this.getLegendScheme().clone());
+        newLayer.setTransparency(this.getTransparency());
+
+        return newLayer;
+    }
+    
+    /**
+     * Intersection the layer by polygons
+     *
+     * @param clipPolys Clipping polygons
+     * @return Clipped result layer
+     */
+    public VectorLayer intersection(List<PolygonShape> clipPolys) {
+        VectorLayer newLayer = (VectorLayer) this.cloneValue();
+        DataTable aTable = new DataTable();
+        for (DataColumn aDC : this.getAttributeTable().getTable().getColumns()) {
+            Field bDC = new Field(aDC.getColumnName(), aDC.getDataType());
+            aTable.getColumns().add(bDC);
+        }
+
+        newLayer.setShapes(new ArrayList<Shape>());
+        for (PolygonShape aPGS : clipPolys) {
+            for (int i = 0; i < this.getShapeNum(); i++) {
+                Shape bShape = this.getShapes().get(i);
+                DataRow aDR = this.getAttributeTable().getTable().getRows().get(i);
+//                for (Polygon aPolygon : aPGS.getPolygons()) {
+//                    Shape clipShape = GeoComputation.clipShape(bShape, aPolygon.getOutLine());
+//                    if (clipShape != null) {
+//                        newLayer.addShape(clipShape);
+//                        try {
+//                            aTable.addRow((DataRow) aDR.clone());
+//                        } catch (Exception ex) {
+//                            Logger.getLogger(VectorLayer.class.getName()).log(Level.SEVERE, null, ex);
+//                        }
+//                    }
+//                }
+                Shape clipShape = bShape.intersection(aPGS);
+                if (clipShape != null) {
+                    newLayer.addShape(clipShape);
+                    try {
+                        aTable.addRow((DataRow) aDR.clone());
+                    } catch (Exception ex) {
+                        Logger.getLogger(VectorLayer.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
             }
