@@ -564,15 +564,15 @@ public abstract class XYPlot extends Plot {
         if (this.drawLegend && this.getLegend() != null) {
             Object rendering = g.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            switch (this.legend.getPosition()) {
-                case UPPER_CENTER_OUTSIDE:
-                case LOWER_CENTER_OUTSIDE:
-                    this.legend.setPlotOrientation(PlotOrientation.HORIZONTAL);
-                    break;
-                default:
-                    this.legend.setPlotOrientation(PlotOrientation.VERTICAL);
-                    break;
-            }
+//            switch (this.legend.getPosition()) {
+//                case UPPER_CENTER_OUTSIDE:
+//                case LOWER_CENTER_OUTSIDE:
+//                    this.legend.setPlotOrientation(PlotOrientation.HORIZONTAL);
+//                    break;
+//                default:
+//                    this.legend.setPlotOrientation(PlotOrientation.VERTICAL);
+//                    break;
+//            }
             if (this.legend.isColorbar()) {
                 if (this.legend.getPlotOrientation() == PlotOrientation.VERTICAL) {
                     this.legend.setHeight((int) (graphArea.getHeight() * this.legend.getShrink()));
@@ -988,7 +988,7 @@ public abstract class XYPlot extends Plot {
         //Rectangle2D graphArea = this.getPositionArea();
         switch (this.legend.getPosition()) {
             case UPPER_CENTER_OUTSIDE:
-                x = (float) area.getWidth() / 2 - dim.width / 2;
+                x = (float) (area.getX() + area.getWidth() / 2 - dim.width / 2);
                 y += 5;
                 break;
             case LOWER_CENTER_OUTSIDE:
@@ -1003,9 +1003,17 @@ public abstract class XYPlot extends Plot {
                 x = (float) area.getX() + (float) area.getWidth() + 10;
                 y = (float) area.getY() + (float) area.getHeight() / 2 - dim.height / 2;
                 break;
+            case UPPER_CENTER:
+                x = (float) (area.getX() + area.getWidth() / 2 - dim.width / 2);
+                y = (float) area.getY() + 10;
+                break;
             case UPPER_RIGHT:
                 x = (float) (area.getX() + area.getWidth()) - dim.width - 10;
                 y = (float) area.getY() + 10;
+                break;
+            case LOWER_CENTER:
+                x = (float) (area.getX() + area.getWidth() / 2 - dim.width / 2);
+                y = (float) (area.getY() + area.getHeight()) - dim.height - 10;
                 break;
             case LOWER_RIGHT:
                 x = (float) (area.getX() + area.getWidth()) - dim.width - 10;

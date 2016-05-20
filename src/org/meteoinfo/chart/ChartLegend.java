@@ -707,7 +707,7 @@ public class ChartLegend {
         float breakHeight = this.getBreakHeight(g);
         float symbolHeight = this.symbolDimension.height;
         float symbolWidth = this.symbolDimension.width;
-        FontMetrics metrics = g.getFontMetrics(tickFont);
+        FontMetrics metrics = g.getFontMetrics(labelFont);
 
         //Set columns
         int[] colNums = new int[rowColNum];
@@ -1201,6 +1201,7 @@ public class ChartLegend {
             caption = legendScheme.getLegendBreaks().get(i).getCaption();
             boolean isValid = true;
             if (isValid) {
+                g.setFont(this.labelFont);
                 aSF = Draw.getStringDimension(caption, g);
                 int labwidth = aSF.width;
                 if (labWidth < labwidth) {
