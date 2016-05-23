@@ -24,7 +24,7 @@ import java.util.List;
 public class StationModelData {
     // <editor-fold desc="Variables">
 
-    private List<StationModel> _data = new ArrayList<StationModel>();
+    private List<StationModel> _data = new ArrayList<>();
     private Extent _dataExtent = new Extent();
     private double _missingValue = -9999.0;
     // </editor-fold>

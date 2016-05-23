@@ -13,19 +13,30 @@
  */
 package org.meteoinfo.data;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.meteoinfo.data.meteodata.Dimension;
 import org.meteoinfo.data.meteodata.DimensionType;
 import org.meteoinfo.data.meteodata.GridDataSetting;
 import org.meteoinfo.geoprocess.analysis.ResampleMethods;
 import org.meteoinfo.global.util.BigDecimalUtil;
+import org.meteoinfo.legend.LegendManage;
 import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.projection.ProjectionManage;
+import org.meteoinfo.projection.ProjectionNames;
+import org.meteoinfo.projection.Reproject;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
 import ucar.ma2.InvalidRangeException;
@@ -103,7 +114,7 @@ public class GridArray {
         for (int i = 0; i < yNum; i++) {
             yArray[i] = BigDecimalUtil.add(yStart, BigDecimalUtil.mul(yDelt, i));
         }
-        
+
         missingValue = -9999;
         int[] shape = new int[]{yNum, xNum};
         data = Array.factory(DataType.DOUBLE, shape);
@@ -130,7 +141,7 @@ public class GridArray {
         for (int i = 0; i < yn; i++) {
             this.yArray[i] = ydata.get(i).doubleValue();
         }
-        
+
         this.missingValue = missingValue;
         this.projInfo = projInfo;
     }
@@ -147,7 +158,7 @@ public class GridArray {
         int yn = (int) ydata.getSize();
         int xn = (int) xdata.getSize();
         this.data = array;
-        
+
         this.xArray = new double[xn];
         this.yArray = new double[yn];
         for (int i = 0; i < xn; i++) {
@@ -156,7 +167,7 @@ public class GridArray {
         for (int i = 0; i < yn; i++) {
             this.yArray[i] = ydata.getDouble(i);
         }
-        
+
         this.missingValue = missingValue.doubleValue();
         this.projInfo = KnownCoordinateSystems.geographic.world.WGS1984;;
     }
@@ -210,7 +221,7 @@ public class GridArray {
         extent.maxX = xArray[xArray.length - 1];
         extent.minY = yArray[0];
         extent.maxY = yArray[yArray.length - 1];
-        
+
         return extent;
     }
 
@@ -224,7 +235,7 @@ public class GridArray {
         if (MIMath.doubleEquals(xArray[getXNum() - 1] + getXDelt() - xArray[0], 360.0)) {
             isGlobal = true;
         }
-        
+
         return isGlobal;
     }
 
@@ -302,7 +313,7 @@ public class GridArray {
         Dimension xdim = new Dimension(DimensionType.X);
         xdim.setValues(this.xArray);
         dims.add(xdim);
-        
+
         return dims;
     }
 
@@ -400,7 +411,7 @@ public class GridArray {
             xidx = -1;
             yidx = -1;
         }
-        
+
         return new int[]{xidx, yidx};
     }
 
@@ -417,7 +428,7 @@ public class GridArray {
                 if (MIMath.doubleEquals(this.getValue(i, j).doubleValue(), missingValue)) {
                     continue;
                 }
-                
+
                 if (vdNum == 0) {
                     values.add(this.getValue(i, j));
                     vdNum += 1;
@@ -430,7 +441,7 @@ public class GridArray {
                 }
             }
         }
-        
+
         return true;
     }
 
@@ -447,7 +458,7 @@ public class GridArray {
                 if (MIMath.doubleEquals(this.getValue(i, j).doubleValue(), missingValue)) {
                     continue;
                 }
-                
+
                 if (vdNum == 0) {
                     values.add(this.getValue(i, j));
                 } else if (!values.contains(this.getValue(i, j))) {
@@ -456,7 +467,7 @@ public class GridArray {
                 vdNum += 1;
             }
         }
-        
+
         return values;
     }
 
@@ -489,7 +500,7 @@ public class GridArray {
                 hasUndef = true;
                 continue;
             }
-            
+
             if (vdNum == 0) {
                 min = data.getDouble(i);
                 max = min;
@@ -503,7 +514,7 @@ public class GridArray {
             }
             vdNum += 1;
         }
-        
+
         maxmin[0] = max;
         maxmin[1] = min;
         return hasUndef;
@@ -554,7 +565,7 @@ public class GridArray {
         if (this.projInfo == null) {
             return null;
         }
-        
+
         return project(this.projInfo, toProj, ResampleMethods.NearestNeighbor);
     }
 
@@ -568,18 +579,18 @@ public class GridArray {
      */
     public GridArray project(ProjectionInfo fromProj, ProjectionInfo toProj) throws InvalidRangeException {
         //return project(fromProj, toProj, ResampleMethods.NearestNeighbor);
-        List<Number> xx = new ArrayList<>(); 
+        List<Number> xx = new ArrayList<>();
         List<Number> yy = new ArrayList<>();
-        for (Double x : this.xArray){
+        for (Double x : this.xArray) {
             xx.add(x);
         }
-        for (Double y : this.yArray){
+        for (Double y : this.yArray) {
             yy.add(y);
         }
         Object[] r = ArrayUtil.reproject(data, xx, yy, fromProj, toProj);
-        GridArray rdata = new GridArray((Array)r[0], (Array)r[1], (Array)r[2], missingValue);
+        GridArray rdata = new GridArray((Array) r[0], (Array) r[1], (Array) r[2], missingValue);
         rdata.projInfo = toProj;
-        
+
         return rdata;
     }
 
@@ -601,7 +612,7 @@ public class GridArray {
         } else {
             aExtent = ProjectionManage.getProjectionExtent(fromProj, toProj, this.xArray, this.yArray);
         }
-        
+
         double xDelt = (aExtent.maxX - aExtent.minX) / (xnum - 1);
         double yDelt = (aExtent.maxY - aExtent.minY) / (ynum - 1);
         List<Number> x = new ArrayList<>();
@@ -612,20 +623,232 @@ public class GridArray {
             x.add(this.xArray[i]);
             rx.setDouble(i, aExtent.minX + i * xDelt);
         }
-        
+
         for (int i = 0; i < ynum; i++) {
             y.add(this.yArray[i]);
             ry.setDouble(i, aExtent.minY + i * yDelt);
-        }      
+        }
         Array[] rxy = ArrayUtil.meshgrid(rx, ry);
         Array rrx = rxy[0];
         Array rry = rxy[1];
-        
+
         Array r = ArrayUtil.reproject(data, x, y, rrx, rry, fromProj, toProj, missingValue, resampleMethod);
         GridArray rdata = new GridArray(r, rx, ry, missingValue);
         rdata.projInfo = toProj;
-        
+
         return rdata;
+    }
+
+    /**
+     * Save as Surfer ASCII data file
+     *
+     * @param aFile File path
+     */
+    public void saveAsSurferASCIIFile(String aFile) {
+        try {
+            BufferedWriter sw = new BufferedWriter(new FileWriter(new File(aFile)));
+            sw.write("DSAA");
+            sw.newLine();
+            sw.write(String.valueOf(this.getXNum()) + " " + String.valueOf(this.getYNum()));
+            sw.newLine();
+            sw.write(String.valueOf(xArray[0]) + " " + String.valueOf(xArray[xArray.length - 1]));
+            sw.newLine();
+            sw.write(String.valueOf(yArray[0]) + " " + String.valueOf(yArray[yArray.length - 1]));
+            sw.newLine();
+            double[] maxmin = new double[2];
+            getMaxMinValue(maxmin);
+            sw.write(String.valueOf(maxmin[1]) + " " + String.valueOf(maxmin[0]));
+            double value;
+            String aLine = "";
+            for (int i = 0; i < this.getYNum(); i++) {
+                for (int j = 0; j < this.getXNum(); j++) {
+                    value = data.getDouble(i * this.getXNum() + j);
+                    if (Double.isNaN(value)) {
+                        value = -9999.0;
+                    } else if (MIMath.doubleEquals(value, missingValue)) {
+                        value = -9999.0;
+                    }
+
+                    if (j == 0) {
+                        aLine = String.valueOf(value);
+                    } else {
+                        aLine = aLine + " " + String.valueOf(value);
+                    }
+                }
+                sw.newLine();
+                sw.write(aLine);
+            }
+            sw.flush();
+            sw.close();
+        } catch (IOException ex) {
+            Logger.getLogger(GridData.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * Save as MICAPS 4 data file
+     * @param aFile File path
+     * @param description Description
+     * @param aTime Data time
+     * @param hours Hours
+     * @param level Levels
+     * @param smooth Smooth coefficient
+     * @param boldValue Bold value
+     * @throws IOException 
+     */
+    public void saveAsMICAPS4File(String aFile, String description, Date aTime, int hours, int level,
+            float smooth, float boldValue) throws IOException {
+        //Get contour values
+        double[] CValues;
+        double undef = 9999;
+        double[] maxmin = new double[2];
+        this.getMaxMinValue(maxmin);
+        double min = maxmin[1];
+        double max = maxmin[0];
+        CValues = LegendManage.createContourValues(min, max);
+        double cDelt = CValues[1] - CValues[0];
+        int dNum = MIMath.getDecimalNum(min);
+        String dFormat = "%1$." + String.valueOf(dNum) + "f";
+
+        //Write file
+        SimpleDateFormat format = new SimpleDateFormat("yy MM dd HH");
+        BufferedWriter sw = new BufferedWriter(new FileWriter(new File(aFile)));
+        sw.write("diamond 4 " + description);
+        sw.newLine();
+        String aLine = format.format(aTime) + " " + String.valueOf(hours) + " " + String.valueOf(level);
+        sw.write(aLine);
+        sw.newLine();
+        aLine = String.valueOf(this.getXDelt()) + " " + String.valueOf(this.getYDelt()) + " "
+                + String.valueOf(this.xArray[0]) + " " + String.valueOf(this.xArray[this.getXNum() - 1])
+                + " " + String.valueOf(this.yArray[0]) + " " + String.valueOf(this.yArray[this.getYNum() - 1]);
+        sw.write(aLine);
+        sw.newLine();
+        aLine = String.valueOf(this.getXNum()) + " " + String.valueOf(this.getYNum()) + " "
+                + String.valueOf(cDelt) + " " + String.valueOf(CValues[0]) + " "
+                + String.valueOf(CValues[CValues.length - 1]) + " " + String.valueOf(smooth) + " "
+                + String.valueOf(boldValue);
+        sw.write(aLine);
+        sw.newLine();
+        double value;
+        for (int i = 0; i < this.getYNum(); i++) {
+            for (int j = 0; j < this.getXNum(); j++) {
+                value = this.data.getDouble(i * this.getXNum() + j);
+                if (Double.isNaN(value)) {
+                    value = undef;
+                } else if (MIMath.doubleEquals(value, this.missingValue)) {
+                    value = undef;
+                }
+
+                if (j == 0) {
+                    aLine = String.format(dFormat, value);
+                } else {
+                    aLine = aLine + " " + String.format(dFormat, value);
+                }
+            }
+            sw.write(aLine);
+            sw.newLine();
+        }
+
+        sw.close();
+    }
+    
+    /**
+     * Save as MICAPS 4 data file
+     * @param aFile File path
+     * @param description Description
+     * @param aTime Data time
+     * @param hours Hours
+     * @param level Levels
+     * @param smooth Smooth coefficient
+     * @param boldValue Bold value
+     * @param projInfo Projection info
+     * @throws IOException 
+     */
+    public void saveAsMICAPS4File(String aFile, String description, Date aTime, int hours, int level,
+            float smooth, float boldValue, ProjectionInfo projInfo) throws IOException {
+        //Get contour values
+        double[] CValues;
+        double undef = 9999;
+
+        double[] maxmin = new double[2];
+        this.getMaxMinValue(maxmin);
+        double min = maxmin[1];
+        double max = maxmin[0];
+        CValues = LegendManage.createContourValues(min, max);
+        double cDelt = CValues[1] - CValues[0];
+        int dNum = MIMath.getDecimalNum(min);
+        String dFormat = "%1$." + String.valueOf(dNum) + "f";
+
+        //Write file
+        SimpleDateFormat format = new SimpleDateFormat("yy MM dd HH");
+        BufferedWriter sw = new BufferedWriter(new FileWriter(new File(aFile)));
+        sw.write("diamond 4 " + description);
+        String aLine = format.format(aTime) + " " + String.valueOf(hours) + " " + String.valueOf(level);
+        sw.write(aLine);
+        sw.newLine();
+
+        double eCValue = CValues[CValues.length - 1];
+        double xdelt = this.getXDelt();
+        double ydelt = this.getYDelt();
+        double sLon = this.xArray[0];
+        double eLon = this.xArray[this.getXNum() - 1];
+        double sLat = this.yArray[0];
+        double eLat = this.yArray[this.getYNum() - 1];
+        if (!projInfo.isLonLat()) {
+            switch (projInfo.getProjectionName()) {
+                case Lambert_Conformal_Conic:
+                    eCValue = -1;
+                    break;
+                case Mercator:
+                    eCValue = -2;
+                    break;
+                case North_Polar_Stereographic_Azimuthal:
+                    eCValue = -3;
+                    break;
+            }
+            ProjectionInfo toProj = KnownCoordinateSystems.geographic.world.WGS1984;
+            double[][] points = new double[2][];
+            points[0] = new double[]{sLon, sLat};
+            points[1] = new double[]{eLon, eLat};
+            Reproject.reprojectPoints(points, projInfo, toProj, 0, 2);
+            xdelt = points[1][0];
+            ydelt = points[0][1];
+            sLon = points[0][0];
+            sLat = points[0][1];
+            eLon = points[1][0];
+            eLat = points[1][1];
+        }
+        aLine = String.valueOf(xdelt) + " " + String.valueOf(ydelt) + " " + String.valueOf(sLon)
+                + " " + String.valueOf(eLon) + " " + String.valueOf(sLat) + " " + String.valueOf(eLat);
+        sw.write(aLine);
+        sw.newLine();
+        aLine = String.valueOf(this.getXNum()) + " " + String.valueOf(this.getYNum()) + " "
+                + String.valueOf(cDelt) + " " + String.valueOf(CValues[0]) + " "
+                + String.valueOf(eCValue) + " " + String.valueOf(smooth) + " "
+                + String.valueOf(boldValue);
+        sw.write(aLine);
+        sw.newLine();
+        double value;
+        for (int i = 0; i < this.getYNum(); i++) {
+            for (int j = 0; j < this.getXNum(); j++) {
+                value = this.data.getDouble(i * this.getXNum() + j);
+                if (Double.isNaN(value)) {
+                    value = undef;
+                } else if (MIMath.doubleEquals(value, this.missingValue)) {
+                    value = undef;
+                }
+
+                if (j == 0) {
+                    aLine = String.format(dFormat, value);
+                } else {
+                    aLine = aLine + " " + String.format(dFormat, value);
+                }
+            }
+            sw.write(aLine);
+            sw.newLine();
+        }
+
+        sw.close();
     }
 
     /**
@@ -636,7 +859,7 @@ public class GridArray {
     @Override
     public Object clone() {
         GridArray newGriddata = new GridArray(this);
-        
+
         return newGriddata;
     }
     // </editor-fold>
