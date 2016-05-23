@@ -2781,14 +2781,22 @@ public class MapView extends JPanel {
                         final Shape sShape = sLayer.getSelectedShapes().get(0);
                         if (sShape != null) {
                             JPopupMenu jPopupMenu_Shape = new JPopupMenu();
-                            JMenuItem jMenuItem_Edit = new JMenuItem("Smooth");
-                            jMenuItem_Edit.addActionListener(new ActionListener() {
+                            JMenuItem jMenuItem_Smooth = new JMenuItem("Smooth");
+                            jMenuItem_Smooth.addActionListener(new ActionListener() {
                                 @Override
                                 public void actionPerformed(ActionEvent e) {
                                     onShapeSmoothClick(sLayer, sShape);
                                 }
                             });
-                            jPopupMenu_Shape.add(jMenuItem_Edit);
+                            jPopupMenu_Shape.add(jMenuItem_Smooth);
+                            JMenuItem jMenuItem_Reverse = new JMenuItem("Reverse");
+                            jMenuItem_Reverse.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    onShapeReverseClick(sShape);
+                                }
+                            });
+                            jPopupMenu_Shape.add(jMenuItem_Reverse);
                             jPopupMenu_Shape.show(this, e.getX(), e.getY());
                         }
                         break;
@@ -3193,6 +3201,11 @@ public class MapView extends JPanel {
         this.fireUndoEditEvent(edit);
 
         shape.setPoints(newPoints);
+        this.paintLayers();
+    }
+    
+    private void onShapeReverseClick(Shape shape) {
+        shape.reverse();
         this.paintLayers();
     }
 
@@ -5251,6 +5264,88 @@ public class MapView extends JPanel {
         drawPolylineShape(g, aPLS, aPLB, LonShift, isStreamline, false, false);
     }
 
+    private void drawPolylineShape_bak(Graphics2D g, PolylineShape aPLS, PolylineBreak aPLB, double LonShift,
+            boolean isStreamline, boolean isSelected, boolean isIdentifer) {
+        Extent shapeExtent = MIMath.shiftExtentLon(aPLS.getExtent(), LonShift);
+        if (!MIMath.isExtentCross(shapeExtent, _drawExtent)) {
+            return;
+        }
+
+        Color aColor = aPLB.getColor();
+        Float size = aPLB.getSize();
+        if (!isIdentifer) {
+            if (aPLS.isSelected()) {
+                aColor = _selectColor;
+                size = 2.5f;
+            }
+        }
+        float[] dashPattern = getDashPattern(aPLB.getStyle());
+        BasicStroke pen = new BasicStroke(size, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dashPattern, 0.0f);
+        g.setColor(aColor);
+        g.setStroke(pen);
+
+        List<PointF> drawPs = new ArrayList<>();
+        if (aPLB.getDrawPolyline()) {
+            for (Polyline aline : aPLS.getPolylines()) {
+                double[] sXY;
+                PointF[] Points = new PointF[aline.getPointList().size()];
+                for (int i = 0; i < aline.getPointList().size(); i++) {
+                    PointD wPoint = aline.getPointList().get(i);
+                    sXY = projToScreen(wPoint.X, wPoint.Y, LonShift);
+                    Points[i] = new PointF((float) sXY[0], (float) sXY[1]);
+                    drawPs.add(new PointF((float) sXY[0], (float) sXY[1]));
+                }
+
+                if (isStreamline) {
+                    int len = (int) (aPLS.value * 3);
+                    PointF aPoint;
+                    for (int i = 0; i < Points.length; i++) {
+                        if (i > 0 && i < Points.length - 2 && i % len == 0) {
+                            //Draw arraw
+                            aPoint = Points[i];
+                            PointF bPoint = Points[i + 1];
+                            double U = bPoint.X - aPoint.X;
+                            double V = bPoint.Y - aPoint.Y;
+                            double angle = Math.atan((V) / (U)) * 180 / Math.PI;
+                            if (Double.isNaN(angle)) {
+                                continue;
+                            }
+
+                            angle = angle + 90;
+                            if (U < 0) {
+                                angle = angle + 180;
+                            }
+
+                            if (angle >= 360) {
+                                angle = angle - 360;
+                            }
+
+                            Draw.drawArraw(g, aPoint, angle);
+                        }
+                    }
+                }
+
+                Draw.drawPolyline(Points, aPLB, g);
+            }
+        }
+
+        //Draw selected vertices
+        if (aPLS.isEditing()) {
+            for (PointF drawP : drawPs) {
+                Draw.drawSelectedVertice(g, drawP, 8, Color.red, Color.cyan);
+            }
+        }
+
+        //Draw selected rectangle
+        if (isSelected) {
+            Extent aExtent = MIMath.getPointFsExtent(drawPs);
+
+            //aPen.DashStyle = DashStyle.Dash;
+            g.setColor(Color.cyan);
+            g.drawRect((int) aExtent.minX, (int) aExtent.minY, (int) aExtent.getWidth(), (int) aExtent.getHeight());
+        }
+    }
+    
     private void drawPolylineShape(Graphics2D g, PolylineShape aPLS, PolylineBreak aPLB, double LonShift,
             boolean isStreamline, boolean isSelected, boolean isIdentifer) {
         Extent shapeExtent = MIMath.shiftExtentLon(aPLS.getExtent(), LonShift);

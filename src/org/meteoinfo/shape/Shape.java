@@ -224,6 +224,12 @@ public abstract class Shape implements Cloneable{
     }
     
     /**
+     * Reverse points direction
+     */
+    public void reverse(){        
+    }
+    
+    /**
      * To geometry method
      * @param factory GeometryFactory
      * @return Geometry

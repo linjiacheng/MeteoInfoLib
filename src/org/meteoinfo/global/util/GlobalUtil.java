@@ -643,7 +643,14 @@ public class GlobalUtil {
         if (separator == null || separator.equals(" ")) {
             return line.split("\\s+");
         } else {
-            return line.split(separator);
+            String[] strs = line.split(separator + "|\\s+");
+            List<String> r = new ArrayList<>();
+            for (String s : strs){
+                if (!s.isEmpty())
+                    r.add(s);
+            }
+            strs = r.toArray(new String[1]);
+            return strs;
         }
     }
     // </editor-fold>

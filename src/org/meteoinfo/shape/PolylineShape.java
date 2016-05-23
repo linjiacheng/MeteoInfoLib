@@ -17,6 +17,7 @@ import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.meteoinfo.jts.geom.Coordinate;
 import org.meteoinfo.jts.geom.Geometry;
@@ -325,6 +326,14 @@ public class PolylineShape extends Shape implements Cloneable {
         ((List<PointD>) _points).remove(vIdx);
         this.setExtent(MIMath.getPointsExtent(_points));
         updatePolyLines();
+    }
+    
+    /**
+     * Reverse points direction
+     */
+    @Override
+    public void reverse(){
+        Collections.reverse(_points);
     }
 
     //@Override
