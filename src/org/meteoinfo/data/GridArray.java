@@ -21,7 +21,6 @@ import java.text.SimpleDateFormat;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -35,7 +34,6 @@ import org.meteoinfo.legend.LegendManage;
 import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.projection.ProjectionManage;
-import org.meteoinfo.projection.ProjectionNames;
 import org.meteoinfo.projection.Reproject;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
@@ -706,7 +704,9 @@ public class GridArray {
         double min = maxmin[1];
         double max = maxmin[0];
         CValues = LegendManage.createContourValues(min, max);
-        double cDelt = CValues[1] - CValues[0];
+        double cDelt = 0;
+        if (CValues.length > 1)
+            cDelt = CValues[1] - CValues[0];
         int dNum = MIMath.getDecimalNum(min);
         String dFormat = "%1$." + String.valueOf(dNum) + "f";
 
