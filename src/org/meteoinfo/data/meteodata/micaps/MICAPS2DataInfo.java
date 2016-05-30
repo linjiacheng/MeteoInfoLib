@@ -31,7 +31,6 @@ import org.meteoinfo.data.meteodata.StationModel;
 import org.meteoinfo.data.meteodata.StationModelData;
 import org.meteoinfo.data.meteodata.Variable;
 import org.meteoinfo.global.Extent;
-import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.util.DateUtil;
 import ucar.ma2.Array;
 import ucar.nc2.Attribute;

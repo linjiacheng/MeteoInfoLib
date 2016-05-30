@@ -214,6 +214,8 @@ public class MICAPS120DataInfo extends DataInfo implements IStationDataInfo {
         DataType dt = DataType.FLOAT;
         switch (varName){
             case "Stid":
+                dt = DataType.STRING;
+                break;
             case "Grade":
                 dt = DataType.INT;
                 break;

@@ -1042,6 +1042,23 @@ public class VectorLayer extends MapLayer {
         Field aField = new Field(fieldName, fieldType);
         editAddField(aField);
     }
+    
+    /**
+     * Edit: Remove a field
+     * @param fieldName Field name
+     */
+    public void editRemoveField(String fieldName){
+        this._attributeTable.getTable().removeColumn(this.getField(fieldName));
+    }
+    
+    /**
+     * Edit: Rename a field
+     * @param fieldName Origin field name
+     * @param newFieldName New field name
+     */
+    public void editRenameField(String fieldName, String newFieldName){
+        this._attributeTable.getTable().renameColumn(this.getField(fieldName), newFieldName);
+    }
 
     private void insertRecord(int position) throws Exception {
         DataRow aDR = _attributeTable.getTable().newRow();
@@ -1209,6 +1226,21 @@ public class VectorLayer extends MapLayer {
     public boolean editAddShape(Shape aShape) throws Exception {
         int pos = _shapeList.size();
         return this.editInsertShape(aShape, pos);
+    }
+    
+    /**
+     * Edit: Add a shape
+     *
+     * @param aShape The shape
+     * @param fvalues Field values
+     * @throws Exception
+     */
+    public void editAddShape(Shape aShape, List<Object> fvalues) throws Exception {
+        int pos = _shapeList.size();
+        this.editInsertShape(aShape, pos);
+        for (int i = 0; i < this.getFieldNumber(); i++){
+            this.editCellValue(i, pos, fvalues.get(i));
+        }
     }
 
     /**

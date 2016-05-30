@@ -17,7 +17,6 @@ import java.util.List;
 import org.meteoinfo.chart.ChartText;
 import org.meteoinfo.chart.Location;
 import org.meteoinfo.chart.axis.LonLatAxis;
-import org.meteoinfo.chart.axis.ProjLonLatAxis;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
@@ -293,7 +292,7 @@ public class MapPlot extends XY2DPlot {
             x = lon.get(i).doubleValue();
             y = lat.get(i).doubleValue();
             if (Double.isNaN(x)) {
-                if (points.size() >= 2) {
+                if (points.size() > 2) {
                     pgs = new PolygonShape();
                     pgs.setPoints(points);
                     Graphic aGraphic = new Graphic(pgs, pgb);
@@ -309,7 +308,7 @@ public class MapPlot extends XY2DPlot {
                 points.add(lonlatp);
             }
         }
-        if (points.size() >= 2) {
+        if (points.size() > 2) {
             pgs = new PolygonShape();
             pgs.setPoints(points);
             Graphic aGraphic = new Graphic(pgs, pgb);

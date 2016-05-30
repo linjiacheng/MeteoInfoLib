@@ -270,6 +270,8 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
         DataType dt = DataType.FLOAT;
         switch (varName){
             case "Stid":
+                dt = DataType.STRING;
+                break;
             case "Grade":
             case "CloudCover":
             case "WeatherPast1":

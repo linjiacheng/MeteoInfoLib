@@ -543,8 +543,8 @@ public class DrawMeteoData {
         Object[] ccs = LegendManage.getContoursAndColors(ls);
         double[] cValues = (double[]) ccs[0];
 
-        double minData = 0;
-        double maxData = 0;
+        double minData;
+        double maxData;
         double[] maxmin = new double[2];
         gridData.getMaxMinValue(maxmin);
         maxData = maxmin[0];
