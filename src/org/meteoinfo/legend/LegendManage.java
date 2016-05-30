@@ -254,7 +254,7 @@ public class LegendManage {
         legendScheme.setMaxValue(max);
         legendScheme.setUndefValue(unDef);
         int i;
-        List<Integer> idxList = new ArrayList<Integer>();
+        //List<Integer> idxList = new ArrayList<Integer>();
         switch (aST) {
             case Point:
             case PointZ:
@@ -700,7 +700,7 @@ public class LegendManage {
     public static LegendScheme createUniqValueLegendScheme(VectorLayer aLayer, double min, double max) {
         double[] CValues;
         Color[] colors;
-        List<Double> valueList = new ArrayList<Double>();
+        List<Double> valueList = new ArrayList<>();
 
         switch (aLayer.getShapeType()) {
             case Point:
@@ -1736,7 +1736,7 @@ public class LegendManage {
 
         range = BigDecimalUtil.sub(max, min);
         if (range == 0.0) {
-            cNum = 1;
+            //cNum = 1;
             cValues = new double[1];
             cValues[0] = min;
             return cValues;
