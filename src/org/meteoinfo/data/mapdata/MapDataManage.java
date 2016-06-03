@@ -41,6 +41,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -48,6 +49,8 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import org.meteoinfo.data.GridArray;
+import org.meteoinfo.data.meteodata.ascii.ASCIIGridDataInfo;
+import org.meteoinfo.data.meteodata.ascii.SurferGridDataInfo;
 import org.meteoinfo.data.meteodata.bandraster.BILDataInfo;
 import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.layer.RasterLayer;
@@ -68,6 +71,56 @@ import static org.meteoinfo.shape.ShapeTypes.Polyline;
 public class MapDataManage {
 
     /**
+     * Can open or not as a map layer
+     * @param fileName File name
+     * @return MapDataType
+     * @throws java.io.FileNotFoundException
+     */
+    public static MapDataType canOpen(String fileName) throws FileNotFoundException, IOException{
+        MapDataType mdt = null;
+        if (new File(fileName).isFile()) {
+            String ext = GlobalUtil.getFileExtension(fileName);
+            switch (ext) {            
+                case "shp":
+                    mdt = MapDataType.SHAPE;
+                    break;
+                case "wmp":
+                    mdt = MapDataType.WMP;
+                    break;            
+                case "bmp":
+                case "gif":
+                case "jpg":
+                case "png":
+                    mdt = MapDataType.IMAGE;
+                    break;
+                case "tif":
+                    mdt = MapDataType.GEO_TIFF;
+                    break;
+                case "bil":
+                case "bip":
+                case "bsq":
+                    mdt = MapDataType.BIL;
+                    break;
+                default:
+                    RandomAccessFile br = new RandomAccessFile(fileName, "r");
+                    byte[] bytes = new byte[100];
+                    br.read(bytes);
+                    String line = new String(bytes).trim().toUpperCase();
+                    br.close();
+                    if (line.contains("NCOLS"))
+                        mdt = MapDataType.ESRI_ASCII_GRID;
+                    else if (line.contains("DSAA"))
+                        mdt = MapDataType.SURFER_ASCII_GRID;
+                    else
+                        mdt = MapDataType.GRADS;
+                    break;
+            }
+        }
+        
+        return mdt;
+    }
+    
+    /**
      * Load a layer from a file
      *
      * @param aFile The file path
@@ -75,30 +128,39 @@ public class MapDataManage {
      * @throws java.io.IOException
      * @throws java.io.FileNotFoundException
      */
-    public static MapLayer loadLayer(String aFile) throws IOException, FileNotFoundException, Exception {
+    public static MapLayer loadLayer(String aFile) throws IOException, FileNotFoundException, Exception {        
+        MapDataType mdt = canOpen(aFile);
+        if (mdt == null)
+            return null;
+        
         MapLayer aLayer = null;
-        //String a = "aa";
-        if (new File(aFile).isFile()) {
-            String ext = GlobalUtil.getFileExtension(aFile);
-            if (ext.equals("dat")) {
-                //aLayer = MapDataManage.ReadMapFile_MICAPS(aFile);
-            } else if (ext.equals("shp")) {
+        switch (mdt){
+            case SHAPE:
                 aLayer = readMapFile_ShapeFile(aFile);
-            } else if (ext.equals("wmp")) {
+                break;
+            case WMP:
                 aLayer = readMapFile_WMP(aFile);
-            } else if (ext.equals("bln")) {
-                //aLayer = MapDataManage.ReadMapFile_BLN(aFile);
-            } else if (ext.equals("bmp") || ext.equals("gif") || ext.equals("jpg") || ext.equals("png")) {
+                break;
+            case IMAGE:
                 aLayer = readImageFile(aFile);
-            } else if (ext.equals("tif")) {
+                break;
+            case GEO_TIFF:
                 aLayer = readGeoTiffFile(aFile);
-            } else if (ext.equals("bil") || ext.equals("bip") || ext.equals("bsq")) {
+                break;
+            case BIL:
                 aLayer = readBILFile(aFile);
-            } else {
+                break;
+            case ESRI_ASCII_GRID:
+                aLayer = readESRI_ASCII_GRID(aFile);
+                break;
+            case SURFER_ASCII_GRID:
+                aLayer = readSurfer_ASCII_GRID(aFile);
+                break;
+            case GRADS:
                 aLayer = readMapFile_GrADS(aFile);
-            }
+                break;
         }
-
+        
         return aLayer;
     }
 
@@ -124,6 +186,8 @@ public class MapDataManage {
      *
      * @param aFile File name
      * @return Vector layer
+     * @throws java.io.IOException
+     * @throws java.io.FileNotFoundException
      */
     public static VectorLayer readMapFile_ShapeFile(String aFile) throws IOException, FileNotFoundException, Exception {
         VectorLayer aLayer = ShapeFileManage.loadShapeFile(aFile);
@@ -136,6 +200,7 @@ public class MapDataManage {
      *
      * @param aFile The file path
      * @return The layer
+     * @throws java.io.FileNotFoundException
      */
     public static VectorLayer readMapFile_GrADS(String aFile) throws FileNotFoundException, IOException, Exception {
         DataInputStream br = new DataInputStream(new BufferedInputStream(new FileInputStream(new File(aFile))));
@@ -146,7 +211,7 @@ public class MapDataManage {
         byte[] bytes;
 
         PointD aPoint;
-        List<PointD> pList = new ArrayList<PointD>();
+        List<PointD> pList = new ArrayList<>();
 
         VectorLayer aLayer = new VectorLayer(ShapeTypes.Polyline);
         String columnName = "Value";
@@ -204,7 +269,7 @@ public class MapDataManage {
 
                 lineNum++;
             }
-            pList = new ArrayList<PointD>();
+            pList = new ArrayList<>();
 
         } while (br.available() > 0);
 
@@ -224,6 +289,7 @@ public class MapDataManage {
      *
      * @param aFile File path
      * @return Image layer
+     * @throws java.io.IOException
      */
     public static ImageLayer readImageFile(String aFile) throws IOException {
         String oEx = aFile.substring(aFile.lastIndexOf("."));
@@ -308,6 +374,42 @@ public class MapDataManage {
 
         return aLayer;
     }
+    
+    /**
+     * Read ESRI ASCII grid file and create a raster layer
+     *
+     * @param fileName File name
+     * @return Raster layer
+     */
+    public static RasterLayer readESRI_ASCII_GRID(String fileName) {
+        ASCIIGridDataInfo dataInfo = new ASCIIGridDataInfo();
+        dataInfo.readDataInfo(fileName);
+        GridData gData = dataInfo.getGridData_LonLat(0, 0, 0);
+        LegendScheme aLS = LegendManage.createLegendSchemeFromGridData(gData, LegendType.GraduatedColor,
+                ShapeTypes.Image);
+        RasterLayer aLayer = DrawMeteoData.createRasterLayer(gData, new File(fileName).getName(), aLS);
+        aLayer.setFileName(fileName);
+
+        return aLayer;
+    }
+    
+    /**
+     * Read surfer ASCII grid file and create a raster layer
+     *
+     * @param fileName File name
+     * @return Raster layer
+     */
+    public static RasterLayer readSurfer_ASCII_GRID(String fileName) {
+        SurferGridDataInfo dataInfo = new SurferGridDataInfo();
+        dataInfo.readDataInfo(fileName);
+        GridData gData = dataInfo.getGridData_LonLat(0, 0, 0);
+        LegendScheme aLS = LegendManage.createLegendSchemeFromGridData(gData, LegendType.GraduatedColor,
+                ShapeTypes.Image);
+        RasterLayer aLayer = DrawMeteoData.createRasterLayer(gData, new File(fileName).getName(), aLS);
+        aLayer.setFileName(fileName);
+
+        return aLayer;
+    }
 
     /**
      * Read WMP file
@@ -328,110 +430,106 @@ public class MapDataManage {
             int i, j, pNum;
             List<PointD> pList = new ArrayList<>();
             PointD aPoint;
-            boolean IsTrue = false;
+            boolean IsTrue;
             String columnName = "Value";
             VectorLayer aLayer = new VectorLayer(ShapeTypes.Point);
             //Read shape type
             shapeType = sr.readLine().trim().toLowerCase();
             //Read shape number
             shapeNum = Integer.parseInt(sr.readLine());
-            if (shapeType.equals("point")) {
-                aLayer = new VectorLayer(ShapeTypes.Point);
-                aLayer.editAddField(columnName, DataTypes.Integer);
-
-                for (i = 0; i < shapeNum; i++) {
-                    aLine = sr.readLine();
-                    dataArray = aLine.split(",");
-                    aPoint = new PointD();
-                    aPoint.X = Double.parseDouble(dataArray[0]);
-                    aPoint.Y = Double.parseDouble(dataArray[1]);
-                    pList.add(aPoint);
-                    PointShape aPS = new PointShape();
-                    aPS.setValue(i);
-                    aPS.setPoint(aPoint);
-
-                    int sNum = aLayer.getShapeNum();
-                    if (aLayer.editInsertShape(aPS, sNum)) {
-                        aLayer.editCellValue(columnName, sNum, i);
-                    }
-                }
-
-                aLayer.setLayerName(file.getName());
-                aLayer.setFileName(fileName);
-                aLayer.setLayerDrawType(LayerDrawType.Map);
-                aLayer.setLegendScheme(LegendManage.createSingleSymbolLegendScheme(ShapeTypes.Point, Color.black, 5));
-                aLayer.setVisible(true);
-                IsTrue = true;
-            } else if (shapeType.equals("polyline")) {
-                aLayer = new VectorLayer(ShapeTypes.Polyline);
-                aLayer.editAddField(columnName, DataTypes.Integer);
-
-                for (i = 0; i < shapeNum; i++) {
-                    pNum = Integer.parseInt(sr.readLine());
-                    pList = new ArrayList<PointD>();
-                    for (j = 0; j < pNum; j++) {
+            switch (shapeType) {
+                case "point":
+                    aLayer = new VectorLayer(ShapeTypes.Point);
+                    aLayer.editAddField(columnName, DataTypes.Integer);
+                    for (i = 0; i < shapeNum; i++) {
                         aLine = sr.readLine();
                         dataArray = aLine.split(",");
                         aPoint = new PointD();
                         aPoint.X = Double.parseDouble(dataArray[0]);
                         aPoint.Y = Double.parseDouble(dataArray[1]);
                         pList.add(aPoint);
-                    }
-                    PolylineShape aPLS = new PolylineShape();
-                    aPLS.value = i;
-                    aPLS.setExtent(MIMath.getPointsExtent(pList));
-                    aPLS.setPoints(pList);
-
-                    int sNum = aLayer.getShapeNum();
-                    if (aLayer.editInsertShape(aPLS, sNum)) {
-                        aLayer.editCellValue(columnName, sNum, i);
-                    }
-                }
-
-                aLayer.setLayerName(file.getName());
-                aLayer.setFileName(fileName);
-                aLayer.setLayerDrawType(LayerDrawType.Map);
-                aLayer.setLegendScheme(LegendManage.createSingleSymbolLegendScheme(ShapeTypes.Polyline, Color.darkGray, 1.0F));
-                aLayer.setVisible(true);
-                IsTrue = true;
-            } else if (shapeType.equals("polygon")) {
-                aLayer = new VectorLayer(ShapeTypes.Polygon);
-                aLayer.editAddField(columnName, DataTypes.Integer);
-
-                ArrayList polygons = new ArrayList();
-                for (i = 0; i < shapeNum; i++) {
-                    pNum = Integer.parseInt(sr.readLine());
-                    pList = new ArrayList<PointD>();
-                    for (j = 0; j < pNum; j++) {
-                        aLine = sr.readLine();
-                        dataArray = aLine.split(",");
-                        aPoint = new PointD();
-                        aPoint.X = Double.parseDouble(dataArray[0]);
-                        aPoint.Y = Double.parseDouble(dataArray[1]);
-                        pList.add(aPoint);
-                    }
-                    PolygonShape aPGS = new PolygonShape();
-                    aPGS.lowValue = i;
-                    aPGS.highValue = i;
-                    aPGS.setExtent(MIMath.getPointsExtent(pList));
-                    aPGS.setPoints(pList);
-
-                    int sNum = aLayer.getShapeNum();
-                    if (aLayer.editInsertShape(aPGS, sNum)) {
-                        aLayer.editCellValue(columnName, sNum, i);
-                    }
-                }
-
-                aLayer.setLayerName(file.getName());
-                aLayer.setFileName(fileName);
-                aLayer.setLayerDrawType(LayerDrawType.Map);
-                aLayer.setLegendScheme(LegendManage.createSingleSymbolLegendScheme(ShapeTypes.Polygon, new Color(255, 251, 195), 1.0F));
-                aLayer.setVisible(true);
-                IsTrue = true;
-            } else {
-                JOptionPane.showMessageDialog(null, "Shape type is invalid!" + System.getProperty("line.separator")
-                        + shapeType);
-                IsTrue = false;
+                        PointShape aPS = new PointShape();
+                        aPS.setValue(i);
+                        aPS.setPoint(aPoint);
+                        
+                        int sNum = aLayer.getShapeNum();
+                        if (aLayer.editInsertShape(aPS, sNum)) {
+                            aLayer.editCellValue(columnName, sNum, i);
+                        }
+                    }   aLayer.setLayerName(file.getName());
+                    aLayer.setFileName(fileName);
+                    aLayer.setLayerDrawType(LayerDrawType.Map);
+                    aLayer.setLegendScheme(LegendManage.createSingleSymbolLegendScheme(ShapeTypes.Point, Color.black, 5));
+                    aLayer.setVisible(true);
+                    IsTrue = true;
+                    break;
+                case "polyline":
+                    aLayer = new VectorLayer(ShapeTypes.Polyline);
+                    aLayer.editAddField(columnName, DataTypes.Integer);
+                    for (i = 0; i < shapeNum; i++) {
+                        pNum = Integer.parseInt(sr.readLine());
+                        pList = new ArrayList<>();
+                        for (j = 0; j < pNum; j++) {
+                            aLine = sr.readLine();
+                            dataArray = aLine.split(",");
+                            aPoint = new PointD();
+                            aPoint.X = Double.parseDouble(dataArray[0]);
+                            aPoint.Y = Double.parseDouble(dataArray[1]);
+                            pList.add(aPoint);
+                        }
+                        PolylineShape aPLS = new PolylineShape();
+                        aPLS.value = i;
+                        aPLS.setExtent(MIMath.getPointsExtent(pList));
+                        aPLS.setPoints(pList);
+                        
+                        int sNum = aLayer.getShapeNum();
+                        if (aLayer.editInsertShape(aPLS, sNum)) {
+                            aLayer.editCellValue(columnName, sNum, i);
+                        }
+                    }   aLayer.setLayerName(file.getName());
+                    aLayer.setFileName(fileName);
+                    aLayer.setLayerDrawType(LayerDrawType.Map);
+                    aLayer.setLegendScheme(LegendManage.createSingleSymbolLegendScheme(ShapeTypes.Polyline, Color.darkGray, 1.0F));
+                    aLayer.setVisible(true);
+                    IsTrue = true;
+                    break;
+                case "polygon":
+                    aLayer = new VectorLayer(ShapeTypes.Polygon);
+                    aLayer.editAddField(columnName, DataTypes.Integer);
+                    //ArrayList polygons = new ArrayList();
+                    for (i = 0; i < shapeNum; i++) {
+                        pNum = Integer.parseInt(sr.readLine());
+                        pList = new ArrayList<>();
+                        for (j = 0; j < pNum; j++) {
+                            aLine = sr.readLine();
+                            dataArray = aLine.split(",");
+                            aPoint = new PointD();
+                            aPoint.X = Double.parseDouble(dataArray[0]);
+                            aPoint.Y = Double.parseDouble(dataArray[1]);
+                            pList.add(aPoint);
+                        }
+                        PolygonShape aPGS = new PolygonShape();
+                        aPGS.lowValue = i;
+                        aPGS.highValue = i;
+                        aPGS.setExtent(MIMath.getPointsExtent(pList));
+                        aPGS.setPoints(pList);
+                        
+                        int sNum = aLayer.getShapeNum();
+                        if (aLayer.editInsertShape(aPGS, sNum)) {
+                            aLayer.editCellValue(columnName, sNum, i);
+                        }
+                    }   aLayer.setLayerName(file.getName());
+                    aLayer.setFileName(fileName);
+                    aLayer.setLayerDrawType(LayerDrawType.Map);
+                    aLayer.setLegendScheme(LegendManage.createSingleSymbolLegendScheme(ShapeTypes.Polygon, new Color(255, 251, 195), 1.0F));
+                    aLayer.setVisible(true);
+                    IsTrue = true;
+                    break;
+                default:
+                    JOptionPane.showMessageDialog(null, "Shape type is invalid!" + System.getProperty("line.separator")
+                            + shapeType);
+                    IsTrue = false;
+                    break;
             }
             sr.close();
             if (IsTrue) {
@@ -444,7 +542,8 @@ public class MapDataManage {
             return null;
         } finally {
             try {
-                sr.close();
+                if (sr != null)
+                    sr.close();
             } catch (IOException ex) {
                 Logger.getLogger(MapDataManage.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -563,7 +662,8 @@ public class MapDataManage {
             Logger.getLogger(MapDataManage.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
-                sw.close();
+                if (sw != null)
+                    sw.close();
             } catch (IOException ex) {
                 Logger.getLogger(MapDataManage.class.getName()).log(Level.SEVERE, null, ex);
             }

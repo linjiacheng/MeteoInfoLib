@@ -601,6 +601,40 @@ public class GeoComputation {
 
         return tdis;
     }
+    
+    /**
+     * Get distance
+     *
+     * @param xx X coordinates
+     * @param yy Y coordinates
+     * @param isLonLat If is lon/lat
+     * @return Distance
+     */
+    public static double getDistance(List<Number> xx, List<Number> yy, boolean isLonLat) {
+        double tdis = 0.0;
+        for (int i = 0; i < xx.size() - 1; i++) {
+            double ax = xx.get(i).doubleValue();
+            double ay = yy.get(i).doubleValue();
+            double bx = xx.get(i + 1).doubleValue();
+            double by = yy.get(i + 1).doubleValue();
+            double dx = Math.abs(bx - ax);
+            double dy = Math.abs(by - ay);
+            double dist;
+            if (isLonLat) {
+                double y = (by + ay) / 2;
+                double factor = Math.cos(y * Math.PI / 180);
+                dx *= factor;
+                dist = Math.sqrt(dx * dx + dy * dy);
+                dist = dist * 111319.5;
+            } else {
+                dist = Math.sqrt(dx * dx + dy * dy);
+            }
+
+            tdis += dist;
+        }
+
+        return tdis;
+    }
     // </editor-fold>
 
     // <editor-fold desc="Cipping">

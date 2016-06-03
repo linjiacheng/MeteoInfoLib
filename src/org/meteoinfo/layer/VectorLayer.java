@@ -1279,6 +1279,7 @@ public class VectorLayer extends MapLayer {
     /**
      * Save layer as a shape file
      */
+    @Override
     public void saveFile() {
         File aFile = new File(this.getFileName());
         if (aFile.exists()) {
@@ -1309,6 +1310,7 @@ public class VectorLayer extends MapLayer {
      *
      * @param shpfilepath Shape file path
      */
+    @Override
     public void saveFile(String shpfilepath) {
         this.setFileName(shpfilepath);
         File aFile = new File(shpfilepath);

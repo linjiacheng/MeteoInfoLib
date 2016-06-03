@@ -20,8 +20,16 @@ import org.meteoinfo.legend.LegendScheme;
 import org.meteoinfo.shape.ShapeTypes;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import org.meteoinfo.data.GridArray;
+import org.meteoinfo.global.GenericFileFilter;
+import org.meteoinfo.global.util.GlobalUtil;
 import org.meteoinfo.legend.LegendType;
 import ucar.ma2.Index;
 
@@ -314,6 +322,75 @@ public class RasterLayer extends ImageLayer {
      */
     public void getOriginData() {
         _gridData = (GridArray) _originGridData.clone();
+    }
+
+    /**
+     * Save layer as a shape file
+     */
+    @Override
+    public void saveFile() {
+        File aFile = new File(this.getFileName());
+        if (aFile.exists()) {
+            saveFile(aFile.getAbsolutePath());
+        } else {
+            JFileChooser aDlg = new JFileChooser();
+            String curDir = System.getProperty("user.dir");
+            aDlg.setCurrentDirectory(new File(curDir));
+            String[] fileExts = {"bil"};
+            GenericFileFilter pFileFilter = new GenericFileFilter(fileExts, "BIL File (*.bil)");
+            aDlg.addChoosableFileFilter(pFileFilter);
+            aDlg.setFileFilter(pFileFilter);
+            fileExts = new String[]{"grd"};
+            pFileFilter = new GenericFileFilter(fileExts, "Surfer ASCII Grid File (*.grd)");
+            aDlg.addChoosableFileFilter(pFileFilter);
+            fileExts = new String[]{"asc"};
+            pFileFilter = new GenericFileFilter(fileExts, "ESRI ASCII Grid File (*.asc)");
+            aDlg.addChoosableFileFilter(pFileFilter);
+            aDlg.setAcceptAllFileFilterUsed(false);
+            if (JFileChooser.APPROVE_OPTION == aDlg.showSaveDialog(null)) {
+                aFile = aDlg.getSelectedFile();
+                System.setProperty("user.dir", aFile.getParent());
+                String extent = ((GenericFileFilter) aDlg.getFileFilter()).getFileExtent();
+                String fileName = aFile.getAbsolutePath();
+                if (!fileName.substring(fileName.length() - extent.length()).equals(extent)) {
+                    fileName = fileName + "." + extent;
+                }
+                saveFile(fileName);
+            }
+        }
+    }
+
+    /**
+     * Save layer as a file
+     *
+     * @param fileName File name
+     */
+    @Override
+    public void saveFile(String fileName) {        
+        File aFile = new File(fileName);
+        if (aFile.exists()) {
+            int n = JOptionPane.showConfirmDialog(null, "Overwirte the existing file?", "Overwrite confirm", JOptionPane.YES_NO_OPTION);
+            if (n == JOptionPane.NO_OPTION) {
+                return;
+            }
+        }
+        try {
+            this.setFileName(fileName);
+            String ext = GlobalUtil.getFileExtension(fileName);
+            switch (ext) {
+                case "bil":
+                    this._gridData.saveAsBILFile(fileName);
+                    break;
+                case "grd":
+                    this._gridData.saveAsSurferASCIIFile(fileName);
+                    break;
+                case "asc":
+                    this._gridData.saveAsESRIASCIIFile(fileName);
+                    break;
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(RasterLayer.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     // </editor-fold>

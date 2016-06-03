@@ -19,13 +19,17 @@ import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
 import java.io.BufferedWriter;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -1986,6 +1990,101 @@ public class GridData {
                 sw.newLine();
                 sw.write(aLine);
             }
+            sw.flush();
+            sw.close();
+        } catch (IOException ex) {
+            Logger.getLogger(GridData.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    /**
+     * Save as ESRI ASCII data file
+     *
+     * @param aFile File path
+     */
+    public void saveAsESRIASCIIFile(String aFile) {
+        try {
+            BufferedWriter sw = new BufferedWriter(new FileWriter(new File(aFile)));
+            sw.write("NCOLS " + String.valueOf(this.getXNum()));
+            sw.newLine();
+            sw.write("NROWS " + String.valueOf(this.getYNum()));
+            sw.newLine();
+            sw.write("XLLCENTER " + String.valueOf(xArray[0]));
+            sw.newLine();
+            sw.write("YLLCENTER " + String.valueOf(yArray[0]));
+            sw.newLine();
+            sw.write("CELLSIZE " + String.valueOf(this.getXDelt()));
+            sw.newLine();
+            sw.write("NODATA_VALUE " + String.valueOf(this.missingValue));
+            sw.newLine();
+            double value;
+            String aLine = "";
+            int xn = this.getXNum();
+            int yn = this.getYNum();
+            for (int i = 0; i < yn; i--) {
+                for (int j = 0; j < xn; j++) {
+                    value = data[yn - i - 1][j];
+                    if (j == 0) {
+                        aLine = String.valueOf(value);
+                    } else {
+                        aLine = aLine + " " + String.valueOf(value);
+                    }
+                }
+                sw.newLine();
+                sw.write(aLine);
+            }
+            sw.flush();
+            sw.close();
+        } catch (IOException ex) {
+            Logger.getLogger(GridData.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    /**
+     * Save as BIL data file
+     *
+     * @param fileName File path
+     * @throws java.io.IOException
+     */
+    public void saveAsBILFile(String fileName) throws IOException {
+        try {
+            //Save data file
+            DataOutputStream outs = new DataOutputStream(new FileOutputStream(new File(fileName)));
+            int xn = this.getXNum();
+            int yn = this.getYNum();
+            for (int i = 0; i < yn; i--) {
+                for (int j = 0; j < xn; j++) {
+                    outs.writeFloat((float)data[yn - i - 1][j]);
+                }
+            }
+            outs.close();
+            
+            //Save header file
+            String hfn = fileName.replace(".bil", ".hdr");
+            BufferedWriter sw = new BufferedWriter(new FileWriter(new File(hfn)));
+            sw.write("nrows " + String.valueOf(this.getYNum()));
+            sw.newLine();
+            sw.write("ncols " + String.valueOf(this.getXNum()));
+            sw.newLine();        
+            sw.write("nbands 1");
+            sw.newLine();
+            sw.write("nbits 32");
+            sw.newLine();
+            sw.write("pixeltype float");
+            sw.newLine();
+            sw.write("byteorder M");
+            sw.newLine();
+            sw.write("layout bil");
+            sw.newLine();            
+            sw.write("ulxmap " + String.valueOf(xArray[0]));
+            sw.newLine();
+            sw.write("ulymap " + String.valueOf(yArray[yArray.length - 1]));
+            sw.newLine();
+            sw.write("xdim " + String.valueOf(this.getXDelt()));
+            sw.newLine();
+            sw.write("ydim " + String.valueOf(this.getYDelt()));
+            sw.newLine();
+            
             sw.flush();
             sw.close();
         } catch (IOException ex) {

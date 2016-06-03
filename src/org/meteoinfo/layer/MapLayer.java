@@ -366,6 +366,17 @@ public class MapLayer implements Cloneable {
         
         return str;
     }
+    
+    /**
+     * Save layer to a file
+     */
+    public void saveFile(){}
+    
+    /**
+     * Save layer to a file
+     * @param fileName File name
+     */
+    public void saveFile(String fileName){}
     // </editor-fold>
 
 }

@@ -85,39 +85,54 @@ public class BILDataInfo extends DataInfo implements IGridDataInfo {
                     }
                     dataArray = line.split("\\s+");
                     key = dataArray[0].trim().toLowerCase();
-                    if (key.equals("nrows")) {
-                        _nrows = Integer.parseInt(dataArray[1]);
-                    } else if (key.equals("ncols")) {
-                        _ncols = Integer.parseInt(dataArray[1]);
-                    } else if (key.equals("nbits")) {
-                        _nbits = Integer.parseInt(dataArray[1]);
-                    } else if (key.equals("pixeltype")) {
-                        _pixeltype = dataArray[1].trim();
-                    } else if (key.equals("byteorder")) {
-                        String byteOrder = dataArray[1].trim();
-                        if (byteOrder.toLowerCase().equals("m")) {
-                            this._byteOrder = ByteOrder.BIG_ENDIAN;
-                        }
-                    } else if (key.equals("layout")) {
-                        _layout = dataArray[1].trim();
-                    } else if (key.equals("bandrowbytes")) {
-                        _bandrowbytes = Integer.parseInt(dataArray[1]);
-                    } else if (key.equals("totalrowbytes")) {
-                        _totalrowbytes = Integer.parseInt(dataArray[1]);
-                    } else if (key.equals("ulxmap")) {
-                        ulxmap = Double.parseDouble(dataArray[1]);
-                        mn += 1;
-                    } else if (key.equals("ulymap")) {
-                        ulymap = Double.parseDouble(dataArray[1]);
-                        mn += 1;
-                    } else if (key.equals("xdim")) {
-                        xdim = Double.parseDouble(dataArray[1]);
-                        mn += 1;
-                    } else if (key.equals("ydim")) {
-                        ydim = Double.parseDouble(dataArray[1]);
-                        mn += 1;
-                    } else if (key.equals("nodata")) {
-                        nodata = Double.parseDouble(dataArray[1]);
+                    switch (key) {
+                        case "nrows":
+                            _nrows = Integer.parseInt(dataArray[1]);
+                            break;
+                        case "ncols":
+                            _ncols = Integer.parseInt(dataArray[1]);
+                            break;
+                        case "nbits":
+                            _nbits = Integer.parseInt(dataArray[1]);
+                            break;
+                        case "pixeltype":
+                            _pixeltype = dataArray[1].trim();
+                            break;
+                        case "byteorder":
+                            String byteOrder = dataArray[1].trim();
+                            if (byteOrder.toLowerCase().equals("m")) {
+                                this._byteOrder = ByteOrder.BIG_ENDIAN;
+                            }   break;
+                        case "layout":
+                            _layout = dataArray[1].trim();
+                            break;
+                        case "bandrowbytes":
+                            _bandrowbytes = Integer.parseInt(dataArray[1]);
+                            break;
+                        case "totalrowbytes":
+                            _totalrowbytes = Integer.parseInt(dataArray[1]);
+                            break;
+                        case "ulxmap":
+                            ulxmap = Double.parseDouble(dataArray[1]);
+                            mn += 1;
+                            break;
+                        case "ulymap":
+                            ulymap = Double.parseDouble(dataArray[1]);
+                            mn += 1;
+                            break;
+                        case "xdim":
+                            xdim = Double.parseDouble(dataArray[1]);
+                            mn += 1;
+                            break;
+                        case "ydim":
+                            ydim = Double.parseDouble(dataArray[1]);
+                            mn += 1;
+                            break;
+                        case "nodata":
+                            nodata = Double.parseDouble(dataArray[1]);
+                            break;
+                        default:
+                            break;
                     }
 
                     line = sr.readLine();

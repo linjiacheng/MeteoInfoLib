@@ -427,8 +427,9 @@ public class LayersLegend extends JPanel {
             MousePos mPos = new MousePos();
             ItemNode aNode = getNodeByPosition(e.getX(), e.getY(), mPos);
             if (aNode != null) {
-                if (aNode.getNodeType() == NodeTypes.LayerNode) {
-                    this.onPropertiesClick(null);
+                switch (aNode.getNodeType()) {
+                    case LayerNode:
+                        this.onPropertiesClick(null);
 //                    LayerNode aLN = (LayerNode) aNode;
 //                    MapLayer aLayer = aLN.getMapLayer();
 //                    if (aLayer.getLayerType() == LayerTypes.WebMapLayer) {
@@ -450,16 +451,19 @@ public class LayersLegend extends JPanel {
 //                        //frmLayerProp.Legend = this;
 //                        frmLayerProp.setVisible(true);
 //                    }
-                } else if (aNode.getNodeType() == NodeTypes.GroupNode) {
-                    FrmProperty pFrm = new FrmProperty((JFrame) SwingUtilities.getWindowAncestor(this), true, false);
-                    pFrm.setObject(((GroupNode) aNode).new GroupNodeBean());
-                    pFrm.setLocationRelativeTo(this);
-                    pFrm.setVisible(true);
-                } else if (aNode.getNodeType() == NodeTypes.MapFrameNode) {
-                    FrmProperty pFrm = new FrmProperty((JFrame) SwingUtilities.getWindowAncestor(this), true, false);
-                    pFrm.setObject(((MapFrame) aNode).new MapFrameBean());
-                    pFrm.setLocationRelativeTo(this);
-                    pFrm.setVisible(true);
+                        break;
+                    case GroupNode:
+                        FrmProperty pFrm = new FrmProperty((JFrame) SwingUtilities.getWindowAncestor(this), true, false);
+                        pFrm.setObject(((GroupNode) aNode).new GroupNodeBean());
+                        pFrm.setLocationRelativeTo(this);
+                        pFrm.setVisible(true);
+                        break;
+                    case MapFrameNode:
+                        pFrm = new FrmProperty((JFrame) SwingUtilities.getWindowAncestor(this), true, false);
+                        pFrm.setObject(((MapFrame) aNode).new MapFrameBean());
+                        pFrm.setLocationRelativeTo(this);
+                        pFrm.setVisible(true);
+                        break;
                 }
             }
         }
@@ -525,41 +529,39 @@ public class LayersLegend extends JPanel {
                         }
 
                         mapFrame.reOrderMapViewLayers();
-                    } else {
-                        if (_dragNode.getNodeType() == NodeTypes.GroupNode) {
-                            //Add the node to new position
-                            GroupNode newGN = new GroupNode(_dragNode.getText());
-                            for (LayerNode aLN : ((GroupNode) _dragNode).getLayers()) {
-                                LayerNode bLN = (LayerNode) aLN.clone();
-                                //if (!fromMF.MapView.Projection.IsLonLatMap)
-                                //    bLN.MapLayer = (MapLayer)fromMF.MapView.GetGeoLayerFromHandle(bLN.LayerHandle).Clone();
-                                newGN.addLayer(bLN);
-                            }
-                            if (aNode.getNodeType() == NodeTypes.MapFrameNode) {
-                                mapFrame.addGroupNode(newGN);
+                    } else if (_dragNode.getNodeType() == NodeTypes.GroupNode) {
+                        //Add the node to new position
+                        GroupNode newGN = new GroupNode(_dragNode.getText());
+                        for (LayerNode aLN : ((GroupNode) _dragNode).getLayers()) {
+                            LayerNode bLN = (LayerNode) aLN.clone();
+                            //if (!fromMF.MapView.Projection.IsLonLatMap)
+                            //    bLN.MapLayer = (MapLayer)fromMF.MapView.GetGeoLayerFromHandle(bLN.LayerHandle).Clone();
+                            newGN.addLayer(bLN);
+                        }
+                        if (aNode.getNodeType() == NodeTypes.MapFrameNode) {
+                            mapFrame.addGroupNode(newGN);
+                        } else {
+                            int idx = mapFrame.getNodes().indexOf(aNode);
+                            mapFrame.addGroupNode(idx, newGN);
+                        }
+                    } else if (_dragNode.getNodeType() == NodeTypes.LayerNode) {
+                        //Add to new position
+                        LayerNode aLN = (LayerNode) ((LayerNode) (_dragNode)).clone();
+                        if (aNode.getNodeType() == NodeTypes.MapFrameNode) {
+                            mapFrame.addLayerNode(aLN);
+                        } else if (aNode.getNodeType() == NodeTypes.GroupNode) {
+                            mapFrame.addLayerNode(aLN, (GroupNode) aNode);
+                        } else if (aNode.getNodeType() == NodeTypes.LayerNode) {
+                            if (((LayerNode) aNode).getGroupHandle() >= 0) {
+                                GroupNode dGroup = mapFrame.getGroupByHandle(((LayerNode) aNode).getGroupHandle());
+                                //dGroup.InsertLayer((LayerNode)_dragNode, dGroup.GetLayerIndex((LayerNode)aNode));
+                                mapFrame.addLayerNode(dGroup.getLayerIndex((LayerNode) aNode), aLN, dGroup);
                             } else {
                                 int idx = mapFrame.getNodes().indexOf(aNode);
-                                mapFrame.addGroupNode(idx, newGN);
-                            }
-                        } else if (_dragNode.getNodeType() == NodeTypes.LayerNode) {
-                            //Add to new position
-                            LayerNode aLN = (LayerNode) ((LayerNode) (_dragNode)).clone();
-                            if (aNode.getNodeType() == NodeTypes.MapFrameNode) {
-                                mapFrame.addLayerNode(aLN);
-                            } else if (aNode.getNodeType() == NodeTypes.GroupNode) {
-                                mapFrame.addLayerNode(aLN, (GroupNode) aNode);
-                            } else if (aNode.getNodeType() == NodeTypes.LayerNode) {
-                                if (((LayerNode) aNode).getGroupHandle() >= 0) {
-                                    GroupNode dGroup = mapFrame.getGroupByHandle(((LayerNode) aNode).getGroupHandle());
-                                    //dGroup.InsertLayer((LayerNode)_dragNode, dGroup.GetLayerIndex((LayerNode)aNode));
-                                    mapFrame.addLayerNode(dGroup.getLayerIndex((LayerNode) aNode), aLN, dGroup);
-                                } else {
-                                    int idx = mapFrame.getNodes().indexOf(aNode);
-                                    mapFrame.addLayerNode(idx, aLN);
-                                }
+                                mapFrame.addLayerNode(idx, aLN);
                             }
                         }
-                    }                    
+                    }
                 }
                 this.paintGraphics();
             }
@@ -628,28 +630,26 @@ public class LayersLegend extends JPanel {
                 aNode.getMapFrame().fireLayersUpdatedEvent();
                 aNode.getMapFrame().getMapView().paintLayers();
             }
-        } else {
-            if (e.getButton() == MouseEvent.BUTTON3) {
-                _currentMapFrame = getMapFrame(aNode);
-                JPopupMenu mnuGroup = new JPopupMenu();
-                JMenuItem newGroupMI = new JMenuItem("New Group");
-                newGroupMI.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        onAddGroupClick(e);
-                    }
-                });
-                mnuGroup.add(newGroupMI);
-                JMenuItem removeGroupMI = new JMenuItem("Remove Group");
-                removeGroupMI.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        onRemoveGroupClick(e);
-                    }
-                });
-                mnuGroup.add(removeGroupMI);
-                mnuGroup.show(this, e.getX(), e.getY());
-            }
+        } else if (e.getButton() == MouseEvent.BUTTON3) {
+            _currentMapFrame = getMapFrame(aNode);
+            JPopupMenu mnuGroup = new JPopupMenu();
+            JMenuItem newGroupMI = new JMenuItem("New Group");
+            newGroupMI.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    onAddGroupClick(e);
+                }
+            });
+            mnuGroup.add(newGroupMI);
+            JMenuItem removeGroupMI = new JMenuItem("Remove Group");
+            removeGroupMI.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    onRemoveGroupClick(e);
+                }
+            });
+            mnuGroup.add(removeGroupMI);
+            mnuGroup.show(this, e.getX(), e.getY());
         }
     }
 
@@ -683,22 +683,22 @@ public class LayersLegend extends JPanel {
                 aLN.getMapFrame().getMapView().paintLayers();
                 //aLN.getMapFrame().fireMapViewUpdatedEvent();
             }
-        } else {
-            if (e.getButton() == MouseEvent.BUTTON3) {
-                JPopupMenu mnuLayer = new JPopupMenu();
+        } else if (e.getButton() == MouseEvent.BUTTON3) {
+            JPopupMenu mnuLayer = new JPopupMenu();
 
-                //Remove/save layer
-                JMenuItem removeLayerMI = new JMenuItem("Remove Layer");
-                removeLayerMI.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        onRemoveLayerClick(e);
-                    }
-                });
-                mnuLayer.add(removeLayerMI);
-                if (aLayerObj.getLayerType() == LayerTypes.VectorLayer) {
-                    VectorLayer aLayer = (VectorLayer) aLayerObj;
-                    if (!new File(aLayer.getFileName()).exists()) {
+            //Remove/save layer
+            JMenuItem removeLayerMI = new JMenuItem("Remove Layer");
+            removeLayerMI.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    onRemoveLayerClick(e);
+                }
+            });
+            mnuLayer.add(removeLayerMI);
+            switch (aLayerObj.getLayerType()) {
+                case VectorLayer:
+                case RasterLayer:
+                    if (!new File(aLayerObj.getFileName()).exists()) {
                         JMenuItem saveLayerMI = new JMenuItem("Save Layer");
                         saveLayerMI.addActionListener(new ActionListener() {
                             @Override
@@ -708,92 +708,92 @@ public class LayersLegend extends JPanel {
                         });
                         mnuLayer.add(saveLayerMI);
                     }
-                }
-                mnuLayer.addSeparator();
+                    break;
+            }
+            mnuLayer.addSeparator();
 
-                //Attribute table
-                if (aLayerObj.getLayerType() == LayerTypes.VectorLayer) {
-                    JMenuItem attrTableMI = new JMenuItem("Attribute Table");
-                    ImageIcon icon = null;
-                    try {
-                        icon = new ImageIcon(this.getClass().getResource("/org/meteoinfo/resources/AttributeTable.png"));
-                        attrTableMI.setIcon(icon);
-                    } catch (Exception ex) {
-                    }
-                    attrTableMI.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            onAttrTableClick(e);
-                        }
-                    });
-                    mnuLayer.add(attrTableMI);
-                    mnuLayer.addSeparator();
-                }
-
-                //Zoom to layer and Visible scale
-                JMenuItem zoomToLayerMI = new JMenuItem("Zoom To Layer");
-                ImageIcon icon = null;
+            //Attribute table
+            if (aLayerObj.getLayerType() == LayerTypes.VectorLayer) {
+                JMenuItem attrTableMI = new JMenuItem("Attribute Table");
                 try {
-                    icon = new ImageIcon(this.getClass().getResource("/org/meteoinfo/resources/ZoomToLayer.png"));
-                    zoomToLayerMI.setIcon(icon);
+                    ImageIcon icon = new ImageIcon(this.getClass().getResource("/org/meteoinfo/resources/AttributeTable.png"));
+                    attrTableMI.setIcon(icon);
                 } catch (Exception ex) {
                 }
-                zoomToLayerMI.addActionListener(new ActionListener() {
+                attrTableMI.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        onZoomToLayerClick(e);
+                        onAttrTableClick(e);
                     }
                 });
-                mnuLayer.add(zoomToLayerMI);
-                JMenu visScaleMenu = new JMenu("Visible Scale");
-                JMenuItem minVisScaleMI = new JMenuItem("Set Minimum Scale");
-                minVisScaleMI.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        onMinVisScaleClick(e);
-                    }
-                });
-                visScaleMenu.add(minVisScaleMI);
-                JMenuItem maxVisScaleMI = new JMenuItem("Set Maximum Scale");
-                maxVisScaleMI.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        onMaxVisScaleClick(e);
-                    }
-                });
-                visScaleMenu.add(maxVisScaleMI);
-                JMenuItem removeVisScaleMI = new JMenuItem("Remove Visible Scale");
-                removeVisScaleMI.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        onRemoveVisScaleClick(e);
-                    }
-                });
-                if (aLayerObj.getVisibleScale().isVisibleScaleEnabled()) {
-                    removeVisScaleMI.setEnabled(true);
-                } else {
-                    removeVisScaleMI.setEnabled(false);
-                }
-                visScaleMenu.add(removeVisScaleMI);
-                mnuLayer.add(visScaleMenu);
+                mnuLayer.add(attrTableMI);
                 mnuLayer.addSeparator();
+            }
 
-                //Label
-                if (aLayerObj.getLayerType() == LayerTypes.VectorLayer) {
-                    JMenuItem labelMI = new JMenuItem("Label");
-                    try {
-                        icon = new ImageIcon(this.getClass().getResource("/org/meteoinfo/resources/Label.png"));
-                        labelMI.setIcon(icon);
-                    } catch (Exception ex) {
+            //Zoom to layer and Visible scale
+            JMenuItem zoomToLayerMI = new JMenuItem("Zoom To Layer");
+            ImageIcon icon = null;
+            try {
+                icon = new ImageIcon(this.getClass().getResource("/org/meteoinfo/resources/ZoomToLayer.png"));
+                zoomToLayerMI.setIcon(icon);
+            } catch (Exception ex) {
+            }
+            zoomToLayerMI.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    onZoomToLayerClick(e);
+                }
+            });
+            mnuLayer.add(zoomToLayerMI);
+            JMenu visScaleMenu = new JMenu("Visible Scale");
+            JMenuItem minVisScaleMI = new JMenuItem("Set Minimum Scale");
+            minVisScaleMI.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    onMinVisScaleClick(e);
+                }
+            });
+            visScaleMenu.add(minVisScaleMI);
+            JMenuItem maxVisScaleMI = new JMenuItem("Set Maximum Scale");
+            maxVisScaleMI.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    onMaxVisScaleClick(e);
+                }
+            });
+            visScaleMenu.add(maxVisScaleMI);
+            JMenuItem removeVisScaleMI = new JMenuItem("Remove Visible Scale");
+            removeVisScaleMI.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    onRemoveVisScaleClick(e);
+                }
+            });
+            if (aLayerObj.getVisibleScale().isVisibleScaleEnabled()) {
+                removeVisScaleMI.setEnabled(true);
+            } else {
+                removeVisScaleMI.setEnabled(false);
+            }
+            visScaleMenu.add(removeVisScaleMI);
+            mnuLayer.add(visScaleMenu);
+            mnuLayer.addSeparator();
+
+            //Label
+            if (aLayerObj.getLayerType() == LayerTypes.VectorLayer) {
+                JMenuItem labelMI = new JMenuItem("Label");
+                try {
+                    icon = new ImageIcon(this.getClass().getResource("/org/meteoinfo/resources/Label.png"));
+                    labelMI.setIcon(icon);
+                } catch (Exception ex) {
+                }
+                labelMI.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        onLabelClick(e);
                     }
-                    labelMI.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            onLabelClick(e);
-                        }
-                    });
-                    mnuLayer.add(labelMI);
-                    mnuLayer.addSeparator();
+                });
+                mnuLayer.add(labelMI);
+                mnuLayer.addSeparator();
 
 //                    //Edit and export features
 //                    String editMIName = "Switch Edit Status";
@@ -806,25 +806,24 @@ public class LayersLegend extends JPanel {
 //                    });
 //                    mnuLayer.add(editMI);
 //                    mnuLayer.addSeparator();
-                }
-
-                //Properties
-                JMenuItem propMI = new JMenuItem("Properties");
-                try {
-                    icon = new ImageIcon(this.getClass().getResource("/org/meteoinfo/resources/Properties.png"));
-                    propMI.setIcon(icon);
-                } catch (Exception ex) {
-                }
-                propMI.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        onPropertiesClick(e);
-                    }
-                });
-                mnuLayer.add(propMI);
-
-                mnuLayer.show(this, e.getX(), e.getY());
             }
+
+            //Properties
+            JMenuItem propMI = new JMenuItem("Properties");
+            try {
+                icon = new ImageIcon(this.getClass().getResource("/org/meteoinfo/resources/Properties.png"));
+                propMI.setIcon(icon);
+            } catch (Exception ex) {
+            }
+            propMI.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    onPropertiesClick(e);
+                }
+            });
+            mnuLayer.add(propMI);
+
+            mnuLayer.show(this, e.getX(), e.getY());
         }
     }
 
@@ -844,9 +843,8 @@ public class LayersLegend extends JPanel {
 
                 this.paintGraphics();
             }
-        } else {
-            if (e.getButton() == MouseEvent.BUTTON3) {
-                JPopupMenu mnuMapFrame = new JPopupMenu();
+        } else if (e.getButton() == MouseEvent.BUTTON3) {
+            JPopupMenu mnuMapFrame = new JPopupMenu();
 //                JMenuItem newMapFrameMI = new JMenuItem("New Map Frame");
 //                newMapFrameMI.addActionListener(new ActionListener(){
 //
@@ -857,52 +855,51 @@ public class LayersLegend extends JPanel {
 //                    
 //                });
 //                mnuMapFrame.add(newMapFrameMI);
-                JMenuItem newGroupMI = new JMenuItem("New Group");
-                newGroupMI.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        onAddGroupClick(e);
-                    }
-                });
-                mnuMapFrame.add(newGroupMI);
-                JMenuItem addLayerMI = new JMenuItem("Add Layer");
-                addLayerMI.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        onAddLayerClick(e);
-                    }
-                });
-                mnuMapFrame.add(addLayerMI);
-                JMenuItem addWebLayerMI = new JMenuItem("Add Web Layer");
-                addWebLayerMI.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        onAddWebLayerClick(e);
-                    }
-                });
-                mnuMapFrame.add(addWebLayerMI);
-                mnuMapFrame.add(new JSeparator());
-                JMenuItem activeMI = new JMenuItem("Active");
-                activeMI.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        onMapFrameActiveClick(e);
-                    }
-                });
-                mnuMapFrame.add(activeMI);
-                if (_mapFrames.size() > 1) {
-                    mnuMapFrame.add(new JSeparator());
-                    JMenuItem removeMapFrameMI = new JMenuItem("Remove Map Frame");
-                    removeMapFrameMI.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            onRemoveMapFrameClick(e);
-                        }
-                    });
-                    mnuMapFrame.add(removeMapFrameMI);
+            JMenuItem newGroupMI = new JMenuItem("New Group");
+            newGroupMI.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    onAddGroupClick(e);
                 }
-                mnuMapFrame.show(this, e.getX(), e.getY());
+            });
+            mnuMapFrame.add(newGroupMI);
+            JMenuItem addLayerMI = new JMenuItem("Add Layer");
+            addLayerMI.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    onAddLayerClick(e);
+                }
+            });
+            mnuMapFrame.add(addLayerMI);
+            JMenuItem addWebLayerMI = new JMenuItem("Add Web Layer");
+            addWebLayerMI.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    onAddWebLayerClick(e);
+                }
+            });
+            mnuMapFrame.add(addWebLayerMI);
+            mnuMapFrame.add(new JSeparator());
+            JMenuItem activeMI = new JMenuItem("Active");
+            activeMI.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    onMapFrameActiveClick(e);
+                }
+            });
+            mnuMapFrame.add(activeMI);
+            if (_mapFrames.size() > 1) {
+                mnuMapFrame.add(new JSeparator());
+                JMenuItem removeMapFrameMI = new JMenuItem("Remove Map Frame");
+                removeMapFrameMI.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        onRemoveMapFrameClick(e);
+                    }
+                });
+                mnuMapFrame.add(removeMapFrameMI);
             }
+            mnuMapFrame.show(this, e.getX(), e.getY());
         }
     }
 
@@ -963,13 +960,17 @@ public class LayersLegend extends JPanel {
     private void onSaveLayerClick(ActionEvent e) {
         if (_selectedNode.getNodeType() == NodeTypes.LayerNode) {
             LayerNode aLN = (LayerNode) _selectedNode;
-            VectorLayer aLayer = (VectorLayer) aLN.getMapLayer();
+            MapLayer aLayer = aLN.getMapLayer();
             if (aLN.getMapFrame().getMapView().getProjection().getProjInfo().equals(aLayer.getProjInfo())) {
                 aLayer.saveFile();
             } else {
-                VectorLayer bLayer = (VectorLayer) aLayer.clone();
-                bLayer.saveFile();
-                aLayer.setFileName(bLayer.getFileName());
+                try {
+                    MapLayer bLayer = (MapLayer)aLayer.clone();
+                    bLayer.saveFile();
+                    aLayer.setFileName(bLayer.getFileName());
+                } catch (CloneNotSupportedException ex) {
+                    Logger.getLogger(LayersLegend.class.getName()).log(Level.SEVERE, null, ex);
+                }                
             }
         }
     }
@@ -1018,9 +1019,9 @@ public class LayersLegend extends JPanel {
         LayerNode aLN = (LayerNode) _selectedNode;
         MapLayer aLayer = aLN.getMapFrame().getMapView().getLayerByHandle(aLN.getLayerHandle());
         MapView mapView = aLN.getMapFrame().getMapView();
-        Extent oldExtent = (Extent)mapView.getViewExtent().clone();
+        Extent oldExtent = (Extent) mapView.getViewExtent().clone();
         aLN.getMapFrame().getMapView().zoomToExtent(aLayer.getExtent());
-        UndoableEdit edit = (new MapViewUndoRedo()).new ZoomEdit(mapView, oldExtent, (Extent)mapView.getViewExtent().clone());
+        UndoableEdit edit = (new MapViewUndoRedo()).new ZoomEdit(mapView, oldExtent, (Extent) mapView.getViewExtent().clone());
         mapView.fireUndoEditEvent(edit);
     }
 
@@ -1079,12 +1080,13 @@ public class LayersLegend extends JPanel {
 
     private ItemNode getNodeByPosition(int x, int y, MousePos mPos) {
         if (y < 0) {
-            if (_vScrollBar.getValue() == 0)
+            if (_vScrollBar.getValue() == 0) {
                 return _mapFrames.get(0);
-            else
+            } else {
                 return null;
+            }
         }
-        
+
         ItemNode aIN = null;
         mPos.inItem = false;
         mPos.curTop = 0;
@@ -1131,18 +1133,18 @@ public class LayersLegend extends JPanel {
                 }
             }
         }
-        
-        if (aIN == null){
-            if (y < this.getHeight()){
+
+        if (aIN == null) {
+            if (y < this.getHeight()) {
                 List<ItemNode> nodes = _mapFrames.get(_mapFrames.size() - 1).getNodes();
-                if (nodes != null && nodes.size() > 0){
-                    ItemNode selNode =  _mapFrames.get(_mapFrames.size() - 1).getNodes().get(0);
+                if (nodes != null && nodes.size() > 0) {
+                    ItemNode selNode = _mapFrames.get(_mapFrames.size() - 1).getNodes().get(0);
                     mPos.curTop = mPos.curTop - selNode.getDrawHeight() - Constants.ITEM_PAD;
                     return selNode;
                 }
             }
         }
-        
+
         return aIN;
     }
 
@@ -1400,7 +1402,7 @@ public class LayersLegend extends JPanel {
             _vScrollBar.setMaximum(totalHeight);
             _vScrollBar.setVisibleAmount(totalHeight - sHeight);
             _vScrollBar.setUnitIncrement(totalHeight / 10);
-            _vScrollBar.setBlockIncrement(totalHeight / 5);            
+            _vScrollBar.setBlockIncrement(totalHeight / 5);
             if (_vScrollBar.isVisible() == false) {
                 _vScrollBar.setValue(0);
                 _vScrollBar.setVisible(true);
