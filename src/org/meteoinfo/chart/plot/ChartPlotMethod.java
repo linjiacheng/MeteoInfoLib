@@ -13,5 +13,6 @@ public enum ChartPlotMethod {
     LINE,
     BAR,
     POINT,
-    LINE_POINT
+    LINE_POINT,
+    FILL
 }
