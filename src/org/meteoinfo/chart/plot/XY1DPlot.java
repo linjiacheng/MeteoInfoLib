@@ -414,91 +414,132 @@ public class XY1DPlot extends XYPlot {
             } else if (slegend.isPolygon()) {
                 switch (slegend.getPlotMethod()) {
                     case BAR:
-                        drawBaseline = true;
-                        XYErrorSeriesData esdata = (XYErrorSeriesData) sdata;
-                        double[] bottom = esdata.getBottom();
-                        float[] yBottoms = null;
-                        if (bottom != null) {
-                            yBottoms = new float[bottom.length];
-                            for (int j = 0; j < bottom.length; j++) {
-                                xy = this.projToScreen(esdata.getBottom(j), esdata.getBottom(j), area);
-                                yBottoms[j] = (float) xy[1];
+                        if (sdata instanceof XYErrorSeriesData) {
+                            drawBaseline = true;
+                            XYErrorSeriesData esdata = (XYErrorSeriesData) sdata;
+                            double[] bottom = esdata.getBottom();
+                            float[] yBottoms = null;
+                            if (bottom != null) {
+                                yBottoms = new float[bottom.length];
+                                for (int j = 0; j < bottom.length; j++) {
+                                    xy = this.projToScreen(esdata.getBottom(j), esdata.getBottom(j), area);
+                                    yBottoms[j] = (float) xy[1];
+                                }
                             }
-                        }
-                        float width = this.barWidth;
-                        if (this.autoBarWidth) {
-                            if (points.length > 1) {
-                                width = (float) ((points[1].X - points[0].X) * 0.5) / this.dataset.getSeriesCount();
-                            } else {
-                                width = (float) (area.getWidth() / 10) / this.dataset.getSeriesCount();
-                            }
-                            float height;
-                            PolygonBreak pgb;
-                            for (int j = 0; j < len; j++) {
-                                if (!mvIdx.contains(j)) {
-                                    pgb = (PolygonBreak) slegend.getLegendBreak(j);
-                                    height = Math.abs((float) (points[j].Y - y0));
-                                    float yBottom = y0;
-                                    if (yBottoms != null) {
-                                        if (j < yBottoms.length) {
-                                            yBottom = yBottoms[j];
-                                        } else {
-                                            yBottom = yBottoms[0];
+                            float width = this.barWidth;
+                            if (this.autoBarWidth) {
+                                if (points.length > 1) {
+                                    width = (float) ((points[1].X - points[0].X) * 0.5) / this.dataset.getSeriesCount();
+                                } else {
+                                    width = (float) (area.getWidth() / 10) / this.dataset.getSeriesCount();
+                                }
+                                float height;
+                                PolygonBreak pgb;
+                                for (int j = 0; j < len; j++) {
+                                    if (!mvIdx.contains(j)) {
+                                        pgb = (PolygonBreak) slegend.getLegendBreak(j);
+                                        height = Math.abs((float) (points[j].Y - y0));
+                                        float yBottom = y0;
+                                        if (yBottoms != null) {
+                                            if (j < yBottoms.length) {
+                                                yBottom = yBottoms[j];
+                                            } else {
+                                                yBottom = yBottoms[0];
+                                            }
+                                        }
+                                        float yb = yBottom;
+                                        if (points[j].Y >= y0) {
+                                            yb += height;
+                                        }
+                                        Draw.drawBar(new PointF(points[j].X - width * this.dataset.getSeriesCount() / 2
+                                                + i * width, yb), width, height, pgb, g, false, 5);
+                                        if (esdata.getYerror() != null) {
+                                            PointF p = (PointF) points[j].clone();
+                                            p.Y -= y0 - yBottom;
+                                            double elen = 6;
+                                            double error = esdata.getYerror(j);
+                                            error = this.projYLength(error, area);
+                                            double x = p.X - width * this.dataset.getSeriesCount() / 2
+                                                    + i * width + width / 2;
+                                            g.setColor(slegend.getErrorColor());
+                                            g.draw(new Line2D.Double(x, p.Y - error, x, p.Y + error));
+                                            g.draw(new Line2D.Double(x - (elen * 0.5), p.Y - error, x + (elen * 0.5), p.Y - error));
+                                            g.draw(new Line2D.Double(x - (elen * 0.5), p.Y + error, x + (elen * 0.5), p.Y + error));
                                         }
                                     }
-                                    float yb = yBottom;
-                                    if (points[j].Y >= y0) {
-                                        yb += height;
-                                    }
-                                    Draw.drawBar(new PointF(points[j].X - width * this.dataset.getSeriesCount() / 2
-                                            + i * width, yb), width, height, pgb, g, false, 5);
-                                    if (esdata.getYerror() != null) {
-                                        PointF p = (PointF) points[j].clone();
-                                        p.Y -= y0 - yBottom;
-                                        double elen = 6;
-                                        double error = esdata.getYerror(j);
-                                        error = this.projYLength(error, area);
-                                        double x = p.X - width * this.dataset.getSeriesCount() / 2
-                                                + i * width + width / 2;
-                                        g.setColor(slegend.getErrorColor());
-                                        g.draw(new Line2D.Double(x, p.Y - error, x, p.Y + error));
-                                        g.draw(new Line2D.Double(x - (elen * 0.5), p.Y - error, x + (elen * 0.5), p.Y - error));
-                                        g.draw(new Line2D.Double(x - (elen * 0.5), p.Y + error, x + (elen * 0.5), p.Y + error));
+                                }
+                            } else {
+                                width = (float) this.projXLength(width, area);
+                                float height;
+                                PolygonBreak pgb;
+                                for (int j = 0; j < len; j++) {
+                                    if (!mvIdx.contains(j)) {
+                                        pgb = (PolygonBreak) slegend.getLegendBreak(j);
+                                        height = Math.abs((float) (points[j].Y - y0));
+                                        float yBottom = y0;
+                                        if (yBottoms != null) {
+                                            if (j < yBottoms.length) {
+                                                yBottom = yBottoms[j];
+                                            } else {
+                                                yBottom = yBottoms[0];
+                                            }
+                                        }
+                                        float yb = yBottom;
+                                        if (points[j].Y >= y0) {
+                                            yb += height;
+                                        }
+                                        Draw.drawBar(new PointF(points[j].X, yb), width, height, pgb, g, false, 5);
+                                        if (esdata.getYerror() != null) {
+                                            PointF p = (PointF) points[j].clone();
+                                            p.Y -= y0 - yBottom;
+                                            double elen = 6;
+                                            double error = esdata.getYerror(j);
+                                            error = this.projYLength(error, area);
+                                            double x = p.X + width / 2;
+                                            g.setColor(slegend.getErrorColor());
+                                            g.draw(new Line2D.Double(x, p.Y - error, x, p.Y + error));
+                                            g.draw(new Line2D.Double(x - (elen * 0.5), p.Y - error, x + (elen * 0.5), p.Y - error));
+                                            g.draw(new Line2D.Double(x - (elen * 0.5), p.Y + error, x + (elen * 0.5), p.Y + error));
+                                        }
                                     }
                                 }
                             }
                         } else {
-                            width = (float) this.projXLength(width, area);
-                            float height;
-                            PolygonBreak pgb;
-                            for (int j = 0; j < len; j++) {
-                                if (!mvIdx.contains(j)) {
-                                    pgb = (PolygonBreak) slegend.getLegendBreak(j);
-                                    height = Math.abs((float) (points[j].Y - y0));
-                                    float yBottom = y0;
-                                    if (yBottoms != null) {
-                                        if (j < yBottoms.length) {
-                                            yBottom = yBottoms[j];
-                                        } else {
-                                            yBottom = yBottoms[0];
+                            drawBaseline = true;                            
+                            float width = this.barWidth;
+                            if (this.autoBarWidth) {
+                                if (points.length > 1) {
+                                    width = (float) ((points[1].X - points[0].X) * 0.5) / this.dataset.getSeriesCount();
+                                } else {
+                                    width = (float) (area.getWidth() / 10) / this.dataset.getSeriesCount();
+                                }
+                                float height;
+                                PolygonBreak pgb;
+                                for (int j = 0; j < len; j++) {
+                                    if (!mvIdx.contains(j)) {
+                                        pgb = (PolygonBreak) slegend.getLegendBreak(j);
+                                        height = Math.abs((float) (points[j].Y - y0));
+                                        float yb = y0;
+                                        if (points[j].Y >= y0) {
+                                            yb += height;
                                         }
+                                        Draw.drawBar(new PointF(points[j].X - width * this.dataset.getSeriesCount() / 2
+                                                + i * width, yb), width, height, pgb, g, false, 5);
                                     }
-                                    float yb = yBottom;
-                                    if (points[j].Y >= y0) {
-                                        yb += height;
-                                    }
-                                    Draw.drawBar(new PointF(points[j].X, yb), width, height, pgb, g, false, 5);
-                                    if (esdata.getYerror() != null) {
-                                        PointF p = (PointF) points[j].clone();
-                                        p.Y -= y0 - yBottom;
-                                        double elen = 6;
-                                        double error = esdata.getYerror(j);
-                                        error = this.projYLength(error, area);
-                                        double x = p.X + width / 2;
-                                        g.setColor(slegend.getErrorColor());
-                                        g.draw(new Line2D.Double(x, p.Y - error, x, p.Y + error));
-                                        g.draw(new Line2D.Double(x - (elen * 0.5), p.Y - error, x + (elen * 0.5), p.Y - error));
-                                        g.draw(new Line2D.Double(x - (elen * 0.5), p.Y + error, x + (elen * 0.5), p.Y + error));
+                                }
+                            } else {
+                                width = (float) this.projXLength(width, area);
+                                float height;
+                                PolygonBreak pgb;
+                                for (int j = 0; j < len; j++) {
+                                    if (!mvIdx.contains(j)) {
+                                        pgb = (PolygonBreak) slegend.getLegendBreak(j);
+                                        height = Math.abs((float) (points[j].Y - y0));
+                                        float yb = y0;
+                                        if (points[j].Y >= y0) {
+                                            yb += height;
+                                        }
+                                        Draw.drawBar(new PointF(points[j].X, yb), width, height, pgb, g, false, 5);                                        
                                     }
                                 }
                             }
@@ -507,36 +548,34 @@ public class XY1DPlot extends XYPlot {
                     case FILL:
                         XYYSeriesData xyydata = (XYYSeriesData) sdata;
                         PointF[] y2Points = this.getScreenPoints(xyydata.getXdata(), xyydata.getY2data(), mvIdx, area);
-                        if (xyydata.getWhere() == null){
+                        if (xyydata.getWhere() == null) {
                             PointF[] npoints = new PointF[len * 2];
-                            for (int j = 0; j < len; j++){
+                            for (int j = 0; j < len; j++) {
                                 npoints[j] = points[len - j - 1];
                                 npoints[j + len] = y2Points[j];
                             }
                             Draw.drawPolygon(npoints, (PolygonBreak) slegend.getLegendBreak(), g);
                         } else {
                             boolean ob = false;
-                            List<List<Integer>> idxs = new ArrayList<>(); 
+                            List<List<Integer>> idxs = new ArrayList<>();
                             List<Integer> idx = new ArrayList<>();
-                            for (int j = 0; j < len; j++){
-                                if (xyydata.getWhere().get(j)){
-                                    if (!ob){
-                                        idx = new ArrayList<>();                                        
-                                    }      
-                                    idx.add(j);
-                                } else {
-                                    if (ob){
-                                        idxs.add(idx);
+                            for (int j = 0; j < len; j++) {
+                                if (xyydata.getWhere().get(j)) {
+                                    if (!ob) {
+                                        idx = new ArrayList<>();
                                     }
+                                    idx.add(j);
+                                } else if (ob) {
+                                    idxs.add(idx);
                                 }
                                 ob = xyydata.getWhere().get(j);
                             }
-                            for (List<Integer> index : idxs){
+                            for (List<Integer> index : idxs) {
                                 int nn = index.size();
-                                if (nn >= 2){
+                                if (nn >= 2) {
                                     PointF[] npoints = new PointF[nn * 2];
-                                    int ii, ii2;                                    
-                                    for (int j = 0; j < nn; j++){
+                                    int ii, ii2;
+                                    for (int j = 0; j < nn; j++) {
                                         ii = index.get(j);
                                         ii2 = index.get(nn - j - 1);
                                         npoints[j] = points[ii];

@@ -289,9 +289,8 @@ public class TimeAxis extends Axis implements Cloneable {
                 }
                 while (!scal.after(ecal)) {
                     scal.add(Calendar.MONTH, 1);
-                    if (!scal.before(sscal)) {
+                    if (scal.before(ecal))
                         dates.add(scal.getTime());
-                    }
                 }
             } else {
                 scal.setTime(sdate);
@@ -308,9 +307,8 @@ public class TimeAxis extends Axis implements Cloneable {
                     }
                     while (!scal.after(ecal)) {
                         scal.add(Calendar.DAY_OF_MONTH, 1);
-                        if (!scal.before(sscal)) {
+                        if (scal.before(ecal))
                             dates.add(scal.getTime());
-                        }
                     }
                 } else {
                     scal.setTime(sdate);
@@ -326,9 +324,8 @@ public class TimeAxis extends Axis implements Cloneable {
                         }
                         while (!scal.after(ecal)) {
                             scal.add(Calendar.HOUR_OF_DAY, 1);
-                            if (!scal.before(sscal)) {
+                            if (scal.before(ecal))
                                 dates.add(scal.getTime());
-                            }
                         }
                     } else {
                         scal.setTime(sdate);
@@ -343,9 +340,8 @@ public class TimeAxis extends Axis implements Cloneable {
                             }
                             while (!scal.after(ecal)) {
                                 scal.add(Calendar.MINUTE, 1);
-                                if (!scal.before(sscal)) {
+                                if (scal.before(ecal))
                                     dates.add(scal.getTime());
-                                }
                             }
                         } else {
                             scal.setTime(sdate);
@@ -356,9 +352,8 @@ public class TimeAxis extends Axis implements Cloneable {
                             }
                             while (!scal.after(ecal)) {
                                 scal.add(Calendar.SECOND, 1);
-                                if (!scal.before(sscal)) {
+                                if (scal.before(ecal))
                                     dates.add(scal.getTime());
-                                }
                             }
                         }
                     }
