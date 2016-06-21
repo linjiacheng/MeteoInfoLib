@@ -771,6 +771,15 @@ public class XY1DPlot extends XYPlot {
     @Override
     public Extent getAutoExtent() {
         Extent extent = dataset.getDataExtent();
+        if (extent.minX == extent.maxX){
+            extent.minX = extent.minX - Math.abs(extent.minX);
+            extent.maxX = extent.maxX + Math.abs(extent.minX);
+        }
+        if (extent.minY == extent.maxY){
+            extent.minY = extent.minY - Math.abs(extent.minY);
+            extent.maxY = extent.maxY + Math.abs(extent.maxY);
+        }
+        
         int barIdx = this.getBarIndex();
         if (barIdx >= 0) {
             double dx = getBarXInterval(barIdx);
