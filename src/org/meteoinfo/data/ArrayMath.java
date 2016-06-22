@@ -810,7 +810,7 @@ public class ArrayMath {
     public static Array equal(Array a, Number b) {
         Array r = Array.factory(DataType.INT, a.getShape());
         double v = b.doubleValue();
-        if (Double.isNaN(v)){
+        if (Double.isNaN(v)) {
             for (int i = 0; i < a.getSize(); i++) {
                 if (Double.isNaN(a.getDouble(i))) {
                     r.setDouble(i, 1);
@@ -820,7 +820,7 @@ public class ArrayMath {
             }
         } else {
             for (int i = 0; i < a.getSize(); i++) {
-                if (a.getDouble(i) == b.doubleValue()) {
+                if (a.getDouble(i) == v) {
                     r.setDouble(i, 1);
                 } else {
                     r.setDouble(i, 0);
@@ -1020,11 +1020,22 @@ public class ArrayMath {
      */
     public static Array notEqual(Array a, Number b) {
         Array r = Array.factory(DataType.INT, a.getShape());
-        for (int i = 0; i < a.getSize(); i++) {
-            if (a.getDouble(i) != b.doubleValue()) {
-                r.setDouble(i, 1);
-            } else {
-                r.setDouble(i, 0);
+        double v = b.doubleValue();
+        if (Double.isNaN(v)) {
+            for (int i = 0; i < a.getSize(); i++) {
+                if (Double.isNaN(a.getDouble(i))) {
+                    r.setDouble(i, 0);
+                } else {
+                    r.setDouble(i, 1);
+                }
+            }
+        } else {
+            for (int i = 0; i < a.getSize(); i++) {
+                if (a.getDouble(i) != v) {
+                    r.setDouble(i, 1);
+                } else {
+                    r.setDouble(i, 0);
+                }
             }
         }
 
@@ -1046,38 +1057,41 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     /**
      * Integrate vector array using the composite trapezoidal rule.
+     *
      * @param y Vecotr array
      * @param dx Spacing between all y elements
      * @return Definite integral as approximated by trapezoidal rule
      */
-    public static double trapz(Array y, double dx){
-        int n = (int)y.getSize() - 1;
+    public static double trapz(Array y, double dx) {
+        int n = (int) y.getSize() - 1;
         double a = 1;
         double b = n * dx + a;
         double r = 0;
-        for (int i = 0; i < y.getSize(); i++){
+        for (int i = 0; i < y.getSize(); i++) {
             r += y.getDouble(i);
-            if (i > 0 && i < n)
+            if (i > 0 && i < n) {
                 r += y.getDouble(i);
+            }
         }
         r = r * ((b - a) / (2 * n));
         return r;
     }
-    
+
     /**
      * Integrate vector array using the composite trapezoidal rule.
+     *
      * @param y Vecotr array
      * @param dx Spacing between all y elements
      * @param ranges
      * @return Definite integral as approximated by trapezoidal rule
      * @throws ucar.ma2.InvalidRangeException
      */
-    public static double trapz(Array y, double dx, List<Range> ranges) throws InvalidRangeException{
+    public static double trapz(Array y, double dx, List<Range> ranges) throws InvalidRangeException {
         int n = 1;
-        for (Range range : ranges){
+        for (Range range : ranges) {
             n = n * range.length();
         }
         n -= 1;
@@ -1090,39 +1104,42 @@ public class ArrayMath {
         while (ii.hasNext()) {
             v = ii.getDoubleNext();
             r += v;
-            if (i > 0 && i < n)
+            if (i > 0 && i < n) {
                 r += v;
+            }
             i += 1;
         }
         r = r * ((b - a) / (2 * n));
         return r;
     }
-    
+
     /**
      * Integrate vector array using the composite trapezoidal rule.
+     *
      * @param y Vecotr array
      * @param x Spacing array between all y elements
      * @return Definite integral as approximated by trapezoidal rule
      */
-    public static double trapz(Array y, Array x){
-        int n = (int)y.getSize() - 1;
+    public static double trapz(Array y, Array x) {
+        int n = (int) y.getSize() - 1;
         double r = 0;
-        for (int i = 0; i < n; i++){
+        for (int i = 0; i < n; i++) {
             r += (x.getDouble(i + 1) - x.getDouble(i)) * (y.getDouble(i + 1) + y.getDouble(i));
         }
         r = r / 2;
         return r;
     }
-    
+
     /**
      * Integrate vector array using the composite trapezoidal rule.
+     *
      * @param y Vecotr array
      * @param x Spacing array between all y elements
      * @param ranges
      * @return Definite integral as approximated by trapezoidal rule
      * @throws ucar.ma2.InvalidRangeException
      */
-    public static double trapz(Array y, Array x, List<Range> ranges) throws InvalidRangeException{
+    public static double trapz(Array y, Array x, List<Range> ranges) throws InvalidRangeException {
         double r = 0;
         double v;
         double v0 = Double.NaN;
@@ -1141,7 +1158,7 @@ public class ArrayMath {
         r = r / 2;
         return r;
     }
-    
+
     /**
      * Integrate vector array using the composite trapezoidal rule.
      *
@@ -1189,7 +1206,7 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     /**
      * Integrate vector array using the composite trapezoidal rule.
      *
@@ -1422,7 +1439,7 @@ public class ArrayMath {
      * @return Result array
      * @throws InvalidRangeException
      */
-    public static Array setSection(Array a, List<Range> ranges, Number v) throws InvalidRangeException {        
+    public static Array setSection(Array a, List<Range> ranges, Number v) throws InvalidRangeException {
         Array r = a.section(ranges);
         IndexIterator iter = r.getIndexIterator();
         while (iter.hasNext()) {
@@ -1441,7 +1458,7 @@ public class ArrayMath {
      * @return Result array
      * @throws InvalidRangeException
      */
-    public static Array setSection(Array a, List<Range> ranges, Array v) throws InvalidRangeException {        
+    public static Array setSection(Array a, List<Range> ranges, Array v) throws InvalidRangeException {
         Array r = a.section(ranges);
         IndexIterator iter = r.getIndexIterator();
         int i = 0;
@@ -1623,10 +1640,11 @@ public class ArrayMath {
                 }
             }
         }
-        if (min == 1.7976931348623157E+308D)
+        if (min == 1.7976931348623157E+308D) {
             return Double.NaN;
-        else
+        } else {
             return min;
+        }
     }
 
     /**
@@ -1646,10 +1664,11 @@ public class ArrayMath {
                 }
             }
         }
-        if (max == -1.797693134862316E+307D)
+        if (max == -1.797693134862316E+307D) {
             return Double.NaN;
-        else
+        } else {
             return max;
+        }
     }
 
     /**
@@ -1706,8 +1725,9 @@ public class ArrayMath {
         IndexIterator iterA = a.getIndexIterator();
         while (iterA.hasNext()) {
             v = iterA.getDoubleNext();
-            if (!Double.isNaN(v))
+            if (!Double.isNaN(v)) {
                 sum += v;
+            }
         }
         return sum;
     }
@@ -1744,15 +1764,16 @@ public class ArrayMath {
         IndexIterator iterA = a.getIndexIterator();
         while (iterA.hasNext()) {
             v = iterA.getDoubleNext();
-            if (!Double.isNaN(v)){
+            if (!Double.isNaN(v)) {
                 sum += v;
                 n += 1;
             }
         }
-        if (n == 0)
+        if (n == 0) {
             return Double.NaN;
-        else
+        } else {
             return sum / n;
+        }
     }
 
     /**
@@ -2421,27 +2442,27 @@ public class ArrayMath {
         int df = n - 2;
         double TINY = 1.0e-20;
         double t = r * Math.sqrt(df / ((1.0 - r + TINY) * (1.0 + r + TINY)));
-        
+
         double xbar = x_sum / n;
         double ybar = y_sum / n;
-        double bhat =0.0;
+        double bhat = 0.0;
         double ssqx = 0.0;
-        for (int i = 0; i < n; i++ ) {
-            bhat = bhat + (yi.get(i) - ybar)*(xi.get(i) - xbar);
-            ssqx = ssqx + (xi.get(i) - xbar)*(xi.get(i) - xbar);
+        for (int i = 0; i < n; i++) {
+            bhat = bhat + (yi.get(i) - ybar) * (xi.get(i) - xbar);
+            ssqx = ssqx + (xi.get(i) - xbar) * (xi.get(i) - xbar);
         }
-        bhat = bhat/ssqx;
-        double ahat = ybar - bhat*xbar;
+        bhat = bhat / ssqx;
+        double ahat = ybar - bhat * xbar;
         double sigmahat2 = 0.0;
         double[] ri = new double[n];
-        for (int i = 0; i < n; i++ ) {
-            ri[i] = yi.get(i) - (ahat + bhat*xi.get(i));
-            sigmahat2 = sigmahat2 + ri[i]*ri[i];
+        for (int i = 0; i < n; i++) {
+            ri[i] = yi.get(i) - (ahat + bhat * xi.get(i));
+            sigmahat2 = sigmahat2 + ri[i] * ri[i];
         }
-        sigmahat2 = sigmahat2 / ( n*1.0 - 2.0 );
-        double seb = Math.sqrt(sigmahat2/ssqx);
-        double sigmahat = Math.sqrt((seb*seb)*ssqx);
-        double sea = Math.sqrt(sigmahat*sigmahat * ( 1 /(n*1.0) + xbar*xbar/ssqx));
+        sigmahat2 = sigmahat2 / (n * 1.0 - 2.0);
+        double seb = Math.sqrt(sigmahat2 / ssqx);
+        double sigmahat = Math.sqrt((seb * seb) * ssqx);
+        double sea = Math.sqrt(sigmahat * sigmahat * (1 / (n * 1.0) + xbar * xbar / ssqx));
         double b0 = 0;
         double Tb = (bhat - b0) / seb;
         double a0 = 0;
