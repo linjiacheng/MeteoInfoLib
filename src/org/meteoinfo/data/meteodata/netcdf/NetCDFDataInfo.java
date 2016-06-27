@@ -1021,9 +1021,8 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
     private void getDimValues_CF() throws IOException {
         for (ucar.nc2.Variable var : _variables) {
             if (var.getRank() == 1) {
-                if (var.getDataType() == DataType.STRING) {
+                if (!var.getDataType().isNumeric())
                     continue;
-                }
 
                 int idx = this.getDimensionIndex(var.getDimension(0));
                 if (idx == -1) {

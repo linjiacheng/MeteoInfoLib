@@ -1925,6 +1925,80 @@ public class ArrayMath {
 
         return r;
     }
+    
+    /**
+     * Element-wise maximum of array elements.
+     * @param x1 Array 1
+     * @param x2 Array 2
+     * @return The maximum of x1 and x2, element-wise.
+     */
+    public static Array maximum(Array x1, Array x2){
+        DataType dt = commonType(x1.getDataType(), x2.getDataType());
+        Array r = Array.factory(dt, x1.getShape());
+        for (int i = 0; i < r.getSize(); i++){
+            r.setObject(i, Math.max(x1.getDouble(i), x2.getDouble(i)));
+        }
+        
+        return r;
+    }
+    
+    /**
+     * Element-wise maximum of array elements, ignores NaNs.
+     * @param x1 Array 1
+     * @param x2 Array 2
+     * @return The maximum of x1 and x2, element-wise.
+     */
+    public static Array fmax(Array x1, Array x2){
+        DataType dt = commonType(x1.getDataType(), x2.getDataType());
+        Array r = Array.factory(dt, x1.getShape());
+        for (int i = 0; i < r.getSize(); i++){
+            if (Double.isNaN(x1.getDouble(i)))
+                r.setObject(i, x2.getDouble(i));
+            else if (Double.isNaN(x2.getDouble(i)))
+                r.setObject(i, x1.getDouble(i));
+            else
+                r.setObject(i, Math.max(x1.getDouble(i), x2.getDouble(i)));
+        }
+        
+        return r;
+    }
+    
+    /**
+     * Element-wise minimum of array elements.
+     * @param x1 Array 1
+     * @param x2 Array 2
+     * @return The minimum of x1 and x2, element-wise.
+     */
+    public static Array minimum(Array x1, Array x2){
+        DataType dt = commonType(x1.getDataType(), x2.getDataType());
+        Array r = Array.factory(dt, x1.getShape());
+        for (int i = 0; i < r.getSize(); i++){
+            r.setObject(i, Math.min(x1.getDouble(i), x2.getDouble(i)));
+        }
+        
+        return r;
+    }
+    
+    /**
+     * Element-wise minimum of array elements, ignores NaNs.
+     * @param x1 Array 1
+     * @param x2 Array 2
+     * @return The minimum of x1 and x2, element-wise.
+     */
+    public static Array fmin(Array x1, Array x2){
+        DataType dt = commonType(x1.getDataType(), x2.getDataType());
+        Array r = Array.factory(dt, x1.getShape());
+        for (int i = 0; i < r.getSize(); i++){
+            if (Double.isNaN(x1.getDouble(i)))
+                r.setObject(i, x2.getDouble(i));
+            else if (Double.isNaN(x2.getDouble(i)))
+                r.setObject(i, x1.getDouble(i));
+            else
+                r.setObject(i, Math.min(x1.getDouble(i), x2.getDouble(i)));
+        }
+        
+        return r;
+    }
 
     // </editor-fold>
     // <editor-fold desc="Convert">
@@ -1935,6 +2009,9 @@ public class ArrayMath {
      * @param missingv Missing value
      */
     public static void missingToNaN(Array a, Number missingv) {
+        if (!a.getDataType().isNumeric())
+            return;
+        
         IndexIterator iterA = a.getIndexIterator();
         switch (a.getDataType()) {
             case INT:

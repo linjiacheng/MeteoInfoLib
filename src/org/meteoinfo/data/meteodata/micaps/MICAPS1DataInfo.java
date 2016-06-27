@@ -57,7 +57,7 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
     private int _stNum;
     private boolean _hasAllCols = false;
     private int _varNum;
-    private final List<List<String>> _dataList = new ArrayList<>();
+    //private final List<List<String>> _dataList = new ArrayList<>();
     private final List<String> _fieldList = new ArrayList<>();
     // </editor-fold>
     // <editor-fold desc="Constructor">
@@ -186,8 +186,9 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
                 dataNum++;
                 if (dataNum == 1) {
                     _varNum = aList.size();
+                    break;
                 }
-                _dataList.add(aList);
+                //_dataList.add(aList);
             } while (aLine != null);
         } catch (FileNotFoundException ex) {
             Logger.getLogger(MICAPS1DataInfo.class.getName()).log(Level.SEVERE, null, ex);
@@ -202,7 +203,79 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
             }
         }
     }
-    
+        
+    private List<List<String>> readData(){
+        BufferedReader sr = null;
+        try {
+            sr = new BufferedReader(new InputStreamReader(new FileInputStream(this.getFileName()), "gbk"));
+            String aLine;
+            String[] dataArray;
+            List<String> aList;
+            int n;
+            List<List<String>> dataList = new ArrayList<>();
+
+            //Read file head            
+            sr.readLine();
+            aLine = sr.readLine().trim();
+            if (aLine.isEmpty()) {
+                sr.readLine();
+            }            
+            
+            //Read data
+            do {
+                aLine = sr.readLine();
+                if (aLine == null) {
+                    break;
+                }
+                aLine = aLine.trim();
+                dataArray = aLine.split("\\s+");
+                aList = new ArrayList<>();
+                aList.addAll(Arrays.asList(dataArray));
+                for (n = 0; n <= 10; n++) {
+                    if (aList.size() < 24) {
+                        aLine = sr.readLine();
+                        if (aLine == null) {
+                            break;
+                        }
+                        dataArray = aLine.split("\\s+");
+                        for (String str : dataArray) {
+                            if (!str.isEmpty()) {
+                                aList.add(str);
+                            }
+                        }
+                    } else {
+                        break;
+                    }
+                }
+
+                if (aList.size() < 24) {
+                    break;
+                } else {
+                    for (n = 0; n < 10; n++) {
+                        aList.remove(aList.size() - 1);
+                        if (aList.size() == 22) {
+                            break;
+                        }
+                    }
+                }
+                dataList.add(aList);
+            } while (aLine != null);
+            return dataList;
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(MICAPS1DataInfo.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        } catch (IOException ex) {
+            Logger.getLogger(MICAPS1DataInfo.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        } finally {
+            try {
+                if (sr != null)
+                    sr.close();
+            } catch (IOException ex) {
+                Logger.getLogger(MICAPS1DataInfo.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
     /**
      * Get global attributes
      * @return Global attributes
@@ -288,9 +361,10 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
         int i;
         float v;       
         List<String> dataList;
+        List<List<String>> allDataList = this.readData();
 
-        for (i = 0; i < _dataList.size(); i++) {
-            dataList = _dataList.get(i);
+        for (i = 0; i < allDataList.size(); i++) {
+            dataList = allDataList.get(i);
             v = Float.parseFloat(dataList.get(varIdx));
 
             if (varIdx == 8) //Pressure
@@ -313,11 +387,12 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
     public StationData getStationData(int timeIdx, int varIdx, int levelIdx) {
         //varIdx += 3;
 
+        List<List<String>> allDataList = this.readData();
         String aStid;
         int i;
         float lon, lat, t;
         List<String> dataList;
-        double[][] discreteData = new double[_dataList.size()][3];
+        double[][] discreteData = new double[allDataList.size()][3];
         float minX, maxX, minY, maxY;
         minX = 0;
         maxX = 0;
@@ -325,8 +400,8 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
         maxY = 0;
         List<String> stations = new ArrayList<>();
 
-        for (i = 0; i < _dataList.size(); i++) {
-            dataList = _dataList.get(i);
+        for (i = 0; i < allDataList.size(); i++) {
+            dataList = allDataList.get(i);
             aStid = dataList.get(0);
             lon = Float.parseFloat(dataList.get(1));
             lat = Float.parseFloat(dataList.get(2));
@@ -384,14 +459,15 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
     @Override
     public StationInfoData getStationInfoData(int timeIdx, int levelIdx) {
         StationInfoData stInfoData = new StationInfoData();
-        stInfoData.setDataList(_dataList);
+        List<List<String>> allDataList = this.readData();
+        stInfoData.setDataList(allDataList);
         stInfoData.setFields(_fieldList);
         stInfoData.setVariables(_varList);
 
         List<String> stations = new ArrayList<>();
-        int stNum = _dataList.size();
+        int stNum = allDataList.size();
         for (int i = 0; i < stNum; i++) {
-            stations.add(_dataList.get(i).get(0));
+            stations.add(allDataList.get(i).get(0));
         }
         stInfoData.setStations(stations);
 
@@ -412,8 +488,9 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
         minY = 0;
         maxY = 0;
 
-        for (i = 0; i < _dataList.size(); i++) {
-            dataList = _dataList.get(i);
+        List<List<String>> allDataList = this.readData();
+        for (i = 0; i < allDataList.size(); i++) {
+            dataList = allDataList.get(i);
             aStid = dataList.get(0);
             lon = Float.parseFloat(dataList.get(1));
             lat = Float.parseFloat(dataList.get(2));
