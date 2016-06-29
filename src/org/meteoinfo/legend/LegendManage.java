@@ -909,6 +909,7 @@ public class LegendManage {
                 for (i = 0; i < colors.length; i++) {
                     ColorBreak aCB = new ColorBreak();
                     aCB.setColor(colors[i]);
+                    //System.out.println(aCB.getColor().getAlpha());
                     if (i == 0) {
                         aCB.setStartValue(min);
                     } else {

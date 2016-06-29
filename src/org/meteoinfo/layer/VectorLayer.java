@@ -1042,21 +1042,23 @@ public class VectorLayer extends MapLayer {
         Field aField = new Field(fieldName, fieldType);
         editAddField(aField);
     }
-    
+
     /**
      * Edit: Remove a field
+     *
      * @param fieldName Field name
      */
-    public void editRemoveField(String fieldName){
+    public void editRemoveField(String fieldName) {
         this._attributeTable.getTable().removeColumn(this.getField(fieldName));
     }
-    
+
     /**
      * Edit: Rename a field
+     *
      * @param fieldName Origin field name
      * @param newFieldName New field name
      */
-    public void editRenameField(String fieldName, String newFieldName){
+    public void editRenameField(String fieldName, String newFieldName) {
         this._attributeTable.getTable().renameColumn(this.getField(fieldName), newFieldName);
     }
 
@@ -1227,7 +1229,7 @@ public class VectorLayer extends MapLayer {
         int pos = _shapeList.size();
         return this.editInsertShape(aShape, pos);
     }
-    
+
     /**
      * Edit: Add a shape
      *
@@ -1238,7 +1240,7 @@ public class VectorLayer extends MapLayer {
     public void editAddShape(Shape aShape, List<Object> fvalues) throws Exception {
         int pos = _shapeList.size();
         this.editInsertShape(aShape, pos);
-        for (int i = 0; i < this.getFieldNumber(); i++){
+        for (int i = 0; i < this.getFieldNumber(); i++) {
             this.editCellValue(i, pos, fvalues.get(i));
         }
     }
@@ -1430,6 +1432,44 @@ public class VectorLayer extends MapLayer {
             for (int i = 0; i < this.getShapeNum(); i++) {
                 Shape bShape = this.getShapes().get(i);
                 DataRow aDR = this.getAttributeTable().getTable().getRows().get(i);
+                Shape clipShape = bShape.intersection(aPGS);
+                if (clipShape != null) {
+                    newLayer.addShape(clipShape);
+                    try {
+                        aTable.addRow((DataRow) aDR.clone());
+                    } catch (Exception ex) {
+                        Logger.getLogger(VectorLayer.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        }
+
+        newLayer.getAttributeTable().setTable(aTable);
+        newLayer.setLegendScheme((LegendScheme) this.getLegendScheme().clone());
+        //newLayer.setTransparency(this.getTransparency());
+
+        return newLayer;
+    }
+
+    /**
+     * Clip the layer by clipping polygons
+     *
+     * @param clipPolys Clipping polygons
+     * @return Clipped result layer
+     */
+    public VectorLayer clip_bak(List<PolygonShape> clipPolys) {
+        VectorLayer newLayer = (VectorLayer) this.cloneValue();
+        DataTable aTable = new DataTable();
+        for (DataColumn aDC : this.getAttributeTable().getTable().getColumns()) {
+            Field bDC = new Field(aDC.getColumnName(), aDC.getDataType());
+            aTable.getColumns().add(bDC);
+        }
+
+        newLayer.setShapes(new ArrayList<Shape>());
+        for (PolygonShape aPGS : clipPolys) {
+            for (int i = 0; i < this.getShapeNum(); i++) {
+                Shape bShape = this.getShapes().get(i);
+                DataRow aDR = this.getAttributeTable().getTable().getRows().get(i);
                 for (Polygon aPolygon : aPGS.getPolygons()) {
                     Shape clipShape = GeoComputation.clipShape(bShape, aPolygon.getOutLine());
                     if (clipShape != null) {
@@ -1440,7 +1480,7 @@ public class VectorLayer extends MapLayer {
                             Logger.getLogger(VectorLayer.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }
-                }                
+                }
             }
         }
 
@@ -1450,7 +1490,7 @@ public class VectorLayer extends MapLayer {
 
         return newLayer;
     }
-    
+
     /**
      * Intersection the layer by polygons
      *
@@ -1901,6 +1941,12 @@ public class VectorLayer extends MapLayer {
                 str = ColorUtil.toKMLColor(pgb.getOutlineColor());
                 handler.characters(str.toCharArray(), 0, str.length());
                 handler.endElement("", "", "color");    //color
+                handler.startElement("", "", "width", atts);
+                str = String.valueOf((int)pgb.getOutlineSize());
+                if (!pgb.isDrawOutline())
+                    str = "0";
+                handler.characters(str.toCharArray(), 0, str.length());
+                handler.endElement("", "", "width");
                 handler.endElement("", "", "LineStyle");    //LineStyle
                 handler.startElement("", "", "PolyStyle", atts);
                 handler.startElement("", "", "color", atts);

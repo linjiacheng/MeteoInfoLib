@@ -290,6 +290,38 @@ public class ColorUtil {
     }
     
     /**
+     * Get color map
+     * @param ctName Color map name
+     * @param alpha Alpha
+     * @return Color table
+     * @throws java.io.IOException
+     */
+    public static ColorMap getColorMap(String ctName, int alpha) throws IOException{
+        String fn = GlobalUtil.getAppPath(ColorUtil.class);
+        boolean isDebug = java.lang.management.ManagementFactory.getRuntimeMXBean().
+                getInputArguments().toString().contains("jdwp");
+        if (isDebug) {
+            fn = "D:/MyProgram/java/MeteoInfoDev/MeteoInfo/";
+        }     
+        fn = fn.substring(0, fn.lastIndexOf("/"));
+        String path = fn + File.separator + "colormaps";
+        File pathDir = new File(path);
+        if (!pathDir.isDirectory()) {
+            return null;
+        }
+        
+        fn = path + File.separator + ctName + ".rgb";
+        File ctFile = new File(fn);
+        if (!ctFile.isFile())
+            return null;                
+        
+        ColorMap ct = new ColorMap();
+        ct.readFromFile(fn, alpha);
+        
+        return ct;
+    }
+    
+    /**
      * Find color table
      * @param cts Color tables
      * @param name Color table name

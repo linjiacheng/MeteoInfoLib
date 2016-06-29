@@ -5142,6 +5142,7 @@ public class MapView extends JPanel {
             PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(aPGS.getLegendIndex());
             if (aPGB.isDrawShape()) {
                 drawPolygonShape(g, aPGS, aPGB, LonShift);
+                //System.out.println(aPGB.getColor().getAlpha());
             }
         }
 

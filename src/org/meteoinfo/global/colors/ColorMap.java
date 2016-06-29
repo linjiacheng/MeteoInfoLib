@@ -165,6 +165,7 @@ public class ColorMap {
         
         for (int i = 0; i < n; i++){
             ncs[i] = this.colors[idx];
+            //System.out.println(ncs[i].getAlpha());
             idx += gap;
             if (idx >= cn)
                 idx = 0;
@@ -359,6 +360,50 @@ public class ColorMap {
             this.colors[i] = clist.get(i);
     }
     
+    private void readFromFile(BufferedReader sr, int alpha) throws IOException{
+        String line = sr.readLine();
+        String[] strs;
+        Color color;
+        List<Color> clist = new ArrayList<>();
+        int r, g, b;
+        int n = 0;
+        boolean isdouble = false;
+        while (line != null){
+            line = line.trim();
+            strs = line.split("\\s+");
+            if (strs.length == 3){
+                if (MIMath.isNumeric(strs[0])){
+                    if (n == 0){
+                        if (strs[0].contains("."))
+                            isdouble = true;
+                    }
+                    if (isdouble){
+                        r = (int)(Double.parseDouble(strs[0]) * 255);
+                        g = (int)(Double.parseDouble(strs[1]) * 255);
+                        b = (int)(Double.parseDouble(strs[2]) * 255);
+                    } else {
+                        r = Integer.parseInt(strs[0]);
+                        g = Integer.parseInt(strs[1]);
+                        b = Integer.parseInt(strs[2]);
+                    }
+                    color = new Color(r, g, b, alpha);
+                    //System.out.println(color.getAlpha());
+                    clist.add(color);
+                    n += 1;
+                }                
+            }
+                        
+            line = sr.readLine();
+        }
+        sr.close();
+        
+        this.colors = new Color[clist.size()];
+        for (int i = 0; i < clist.size(); i++){
+            this.colors[i] = clist.get(i);
+            //System.out.println(this.colors[i].getAlpha());
+        }
+    }
+    
     /**
      * Read from input stream
      * @param is Input stram
@@ -377,6 +422,17 @@ public class ColorMap {
     public void readFromFile(String fileName) throws FileNotFoundException, IOException{
         BufferedReader sr = new BufferedReader(new FileReader(new File(fileName)));
         this.readFromFile(sr);
+    }
+    
+    /**
+     * Read colors from file
+     * @param fileName The file name
+     * @param alpha Alpha
+     * @throws java.io.FileNotFoundException
+     */
+    public void readFromFile(String fileName, int alpha) throws FileNotFoundException, IOException{
+        BufferedReader sr = new BufferedReader(new FileReader(new File(fileName)));
+        this.readFromFile(sr, alpha);
     }
     
     /**

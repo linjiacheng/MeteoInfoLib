@@ -643,7 +643,8 @@ public class GlobalUtil {
         if (separator == null || separator.equals(" ")) {
             return line.split("\\s+");
         } else {
-            String[] strs = line.split(separator + "|\\s+");
+            //String[] strs = line.split(separator + "|\\s+");
+            String[] strs = line.split(separator);
             List<String> r = new ArrayList<>();
             for (String s : strs){
                 if (!s.isEmpty())

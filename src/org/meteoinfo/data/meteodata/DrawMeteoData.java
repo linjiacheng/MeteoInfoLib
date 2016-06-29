@@ -641,6 +641,9 @@ public class DrawMeteoData {
         ls.setFieldName(fieldName + "_Low");
         aLayer.setLegendScheme(ls);
         aLayer.setLayerDrawType(LayerDrawType.Shaded);
+//        for (org.meteoinfo.legend.ColorBreak cb : aLayer.getLegendScheme().getLegendBreaks()){
+//            System.out.println(cb.getColor().getAlpha());
+//        }
 
         return aLayer;
     }

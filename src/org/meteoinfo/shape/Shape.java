@@ -247,10 +247,13 @@ public abstract class Shape implements Cloneable{
     public static Shape geometry2Shape(Geometry geo){
         switch (geo.getGeometryType()){
             case "Point":
+            case "MultiPoint":
                 return new PointShape(geo);
             case "LineString":
+            case "MultiLineString":
                 return new PolylineShape(geo);
             case "Polygon":
+            case "MultiPolygon":
                 return new PolygonShape(geo);
             default:
                 return null;

@@ -461,6 +461,7 @@ public class LegendScheme {
                 case Polygon:
                     PolygonBreak pgb = new PolygonBreak();
                     pgb.setColor(cb.getColor());
+                    //System.out.println(pgb.getColor().getAlpha());
                     pgb.setStartValue(cb.getStartValue());
                     pgb.setEndValue(cb.getEndValue());
                     pgb.setCaption(cb.getCaption());
