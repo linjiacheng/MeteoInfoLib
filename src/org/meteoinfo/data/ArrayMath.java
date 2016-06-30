@@ -2424,6 +2424,35 @@ public class ArrayMath {
         double r = (n * xy_sum - x_sum * y_sum) / (Math.sqrt(n * sx_sum - x_sum * x_sum) * Math.sqrt(n * sy_sum - y_sum * y_sum));
         return (float) r;
     }
+    
+    /**
+     * Get correlation coefficient How well did the forecast values correspond
+     * to the observed values? Range: -1 to 1. Perfect score: 1.
+     *
+     * @param xData X data array
+     * @param yData Y data array
+     * @return Correlation coefficent
+     */
+    public static float getR(Array xData, Array yData) {
+        int n = (int)xData.getSize();
+        double x_sum = 0;
+        double y_sum = 0;
+        for (int i = 0; i < n; i++) {
+            x_sum += xData.getDouble(i);
+            y_sum += yData.getDouble(i);
+        }
+        double sx_sum = 0.0;
+        double sy_sum = 0.0;
+        double xy_sum = 0.0;
+        for (int i = 0; i < n; i++) {
+            sx_sum += xData.getDouble(i) * xData.getDouble(i);
+            sy_sum += yData.getDouble(i) * yData.getDouble(i);
+            xy_sum += xData.getDouble(i) * yData.getDouble(i);
+        }
+
+        double r = (n * xy_sum - x_sum * y_sum) / (Math.sqrt(n * sx_sum - x_sum * x_sum) * Math.sqrt(n * sy_sum - y_sum * y_sum));
+        return (float) r;
+    }
 
     /**
      * Determine the least square trend equation - linear fitting
