@@ -2437,20 +2437,25 @@ public class ArrayMath {
         int n = (int)xData.getSize();
         double x_sum = 0;
         double y_sum = 0;
-        for (int i = 0; i < n; i++) {
-            x_sum += xData.getDouble(i);
-            y_sum += yData.getDouble(i);
-        }
         double sx_sum = 0.0;
         double sy_sum = 0.0;
         double xy_sum = 0.0;
+        int nn = 0;
+        double x, y;
         for (int i = 0; i < n; i++) {
-            sx_sum += xData.getDouble(i) * xData.getDouble(i);
-            sy_sum += yData.getDouble(i) * yData.getDouble(i);
-            xy_sum += xData.getDouble(i) * yData.getDouble(i);
+            x = xData.getDouble(i);
+            y = yData.getDouble(i);
+            if (Double.isNaN(x) || Double.isNaN(y))
+                continue;
+            x_sum += x;
+            y_sum += y;
+            sx_sum += x * x;
+            sy_sum += y * y;
+            xy_sum += x * y;
+            nn += 1;
         }
 
-        double r = (n * xy_sum - x_sum * y_sum) / (Math.sqrt(n * sx_sum - x_sum * x_sum) * Math.sqrt(n * sy_sum - y_sum * y_sum));
+        double r = (nn * xy_sum - x_sum * y_sum) / (Math.sqrt(nn * sx_sum - x_sum * x_sum) * Math.sqrt(nn * sy_sum - y_sum * y_sum));
         return (float) r;
     }
 
