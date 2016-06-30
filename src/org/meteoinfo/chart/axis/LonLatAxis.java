@@ -15,17 +15,29 @@ import org.meteoinfo.global.DataConvert;
  */
 public class LonLatAxis extends Axis implements Cloneable {
 
-    private boolean drawDegreeSymbol;        
+    private boolean drawDegreeSymbol;
+    private boolean longitude;
     
     /**
      * Constructor
-     * @param label
-     * @param isX
+     * @param label Axis label
+     * @param isX Is x axis or not
+     * @param longitude Is longitude or not
      */
-    public LonLatAxis(String label, boolean isX){
+    public LonLatAxis(String label, boolean isX, boolean longitude){
         super(label, isX);
         
         this.drawDegreeSymbol = true;
+        this.longitude = longitude;
+    }
+    
+    /**
+     * Constructor
+     * @param label Axis label
+     * @param isX Is x axis or not
+     */
+    public LonLatAxis(String label, boolean isX){
+        this(label, isX, isX);
     }
     
     /**
@@ -42,7 +54,23 @@ public class LonLatAxis extends Axis implements Cloneable {
      */
     public void setDrawDegreeSymbol(boolean value){
         this.drawDegreeSymbol = value;
-    }        
+    }      
+    
+    /**
+     * Get is longitude or not
+     * @return Longitude or not
+     */
+    public boolean isLongitude(){
+        return this.longitude;
+    }
+    
+    /**
+     * Set is longitude or not
+     * @param value Longitude or not
+     */
+    public void setLongitude(boolean value){
+        this.longitude = value;
+    }
     
     /**
      * Get tick labels

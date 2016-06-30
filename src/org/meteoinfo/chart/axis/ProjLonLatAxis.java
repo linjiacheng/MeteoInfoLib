@@ -30,7 +30,7 @@ public class ProjLonLatAxis extends LonLatAxis{
      * @param proj Projection
      */
     public ProjLonLatAxis(String label, boolean isX, ProjectionInfo proj){
-        super(label, isX);
+        super(label, isX, isX);
         this.proj = proj;
     }
     
