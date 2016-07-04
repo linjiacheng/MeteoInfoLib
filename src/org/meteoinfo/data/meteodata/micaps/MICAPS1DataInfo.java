@@ -176,11 +176,7 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
                 }
 
                 if (dataNum == 0) {
-                    if (dataArray.length == 26) {
-                        _hasAllCols = true;
-                    } else {
-                        _hasAllCols = false;
-                    }
+                    _hasAllCols = dataArray.length == 26;
                 }
 
                 dataNum++;

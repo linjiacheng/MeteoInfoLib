@@ -311,7 +311,7 @@ public abstract class Shape implements Cloneable{
     /**
      * Get buffer shape
      * @param distance Distance
-     * @return Intersection shape
+     * @return Buffered shape
      */
     public Shape buffer(double distance){
         Geometry g1 = this.toGeometry();
@@ -320,8 +320,8 @@ public abstract class Shape implements Cloneable{
     }
     
     /**
-     * Get buffer shape
-     * @return Intersection shape
+     * Get convexhull shape
+     * @return Convexhull shape
      */
     public Shape convexHull(){
         Geometry g1 = this.toGeometry();
@@ -428,7 +428,7 @@ public abstract class Shape implements Cloneable{
     }
     
     /**
-     * If shapes cross each other
+     * Is shapes cross each other or not
      * @param other Other shape
      * @return Cross or not
      */
