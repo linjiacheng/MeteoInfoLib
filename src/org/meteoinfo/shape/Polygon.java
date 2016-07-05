@@ -20,6 +20,7 @@ import org.meteoinfo.global.PointD;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.jts.geom.Coordinate;
 import org.meteoinfo.jts.geom.Geometry;
 import org.meteoinfo.jts.geom.GeometryFactory;
@@ -159,6 +160,10 @@ public class Polygon {
         for (int i = 0; i < cs.length; i++) {
             p = _outLine.get(i);
             cs[i] = new Coordinate(p.X, p.Y);
+        }
+        if (cs[0].x != cs[cs.length -1].x){
+            cs = (Coordinate[])DataConvert.resizeArray(cs, cs.length + 1);
+            cs[cs.length - 1] = new Coordinate(cs[0].x, cs[1].y);
         }
         LinearRing shell = factory.createLinearRing(cs);
         LinearRing[] holes = new LinearRing[this._holeLines.size()];

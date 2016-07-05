@@ -1777,6 +1777,8 @@ public class MapView extends JPanel {
             case Edit_ReformFeature:
             case Edit_SplitFeature:
                 VectorLayer selLayer = (VectorLayer) this.getSelectedLayer();
+                if (selLayer == null)
+                    return;
                 if (!selLayer.getShapeType().isPoint()) {
                     switch (this._mouseTool) {
                         case Edit_NewFeature:
@@ -1810,6 +1812,8 @@ public class MapView extends JPanel {
                 break;
             case Edit_FeatureVertices:
                 selLayer = (VectorLayer) this.getSelectedLayer();
+                if (selLayer == null)
+                    return;
                 Shape eShape = selLayer.getEditingShape();
                 if (eShape != null) {
                     if (eShape.isEditing()) {

@@ -51,7 +51,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.EventListenerList;
 import org.meteoinfo.projection.proj4j.CRSFactory;
-import ucar.ma2.InvalidRangeException;
 
 /**
  *
@@ -346,7 +345,7 @@ public class ProjectionSet {
             } else {
                 oLayer.setPaletteByLegend();
             }
-        } catch (InvalidRangeException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(ProjectionSet.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
