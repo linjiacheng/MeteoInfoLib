@@ -537,9 +537,11 @@ public class AWXDataInfo extends DataInfo implements IGridDataInfo, IStationData
         }
 
         Dimension xdim = new Dimension(DimensionType.X);
+        xdim.setShortName("X");
         xdim.setValues(x);
         this.setXDimension(xdim);
         Dimension ydim = new Dimension(DimensionType.Y);
+        ydim.setShortName("Y");
         ydim.setValues(y);
         this.setYDimension(ydim);
     }
@@ -566,9 +568,11 @@ public class AWXDataInfo extends DataInfo implements IGridDataInfo, IStationData
             y[i] = _lrLatitude + yDelt * i;
         }
         Dimension xdim = new Dimension(DimensionType.X);
+        xdim.setShortName("X");
         xdim.setValues(x);
         this.setXDimension(xdim);
         Dimension ydim = new Dimension(DimensionType.Y);
+        ydim.setShortName("Y");
         ydim.setValues(y);
         this.setYDimension(ydim);
     }
