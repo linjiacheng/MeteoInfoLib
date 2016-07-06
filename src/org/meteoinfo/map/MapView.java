@@ -7818,6 +7818,10 @@ public class MapView extends JPanel {
                 vIdx = i;
                 vertices.add(points.get(i));
                 switch (aShape.getShapeType()) {
+                    case Point:
+                    case PointZ:
+                        vertices.add(points.get(0));
+                        break;
                     case Polyline:
                     case CurveLine:
                         if (i == 0) {
