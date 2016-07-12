@@ -37,6 +37,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.meteoinfo.ui.CheckBoxListEntry;
 import org.meteoinfo.legend.AlignType;
 import org.meteoinfo.legend.ChartTypes;
+import org.meteoinfo.shape.PointZ;
+import org.meteoinfo.shape.Shape;
 import org.xml.sax.SAXException;
 
 /**
@@ -1058,6 +1060,15 @@ public class FrmLayerProperty extends javax.swing.JDialog {
                             this.jComboBox_Field.addItem(aLayer.getFieldName(i));
                         }
                     }
+                    switch (aLayer.getShapeType()){
+                        case PolylineM:
+                            this.jComboBox_Field.addItem("Geometry_M");
+                            break;
+                        case PolylineZ:
+                            this.jComboBox_Field.addItem("Geometry_M");
+                            this.jComboBox_Field.addItem("Geometry_Z");
+                            break;
+                    }
                     this.jComboBox_Field.setSelectedItem("<None>");
                     break;
             }
@@ -1157,13 +1168,27 @@ public class FrmLayerProperty extends javax.swing.JDialog {
                     break;
                 case GraduatedColor:
                     aLayer = (VectorLayer) _mapLayer;
-                    double[] S = new double[aLayer.getAttributeTable().getNumRecords()];
-                    for (int i = 0; i < S.length; i++) {
-                        String vstr = aLayer.getCellValue(fieldName, i).toString();
-                        if (vstr.isEmpty()) {
-                            S[i] = 0;
-                        } else {
-                            S[i] = Double.parseDouble(vstr);
+                    List<Double> S  = new ArrayList<>();
+                    if (fieldName.equals("Geometry_M")){
+                        for (Shape shape : aLayer.getShapes()){
+                            for (PointZ p : (List<PointZ>)shape.getPoints()){
+                                S.add(p.M);
+                            }
+                        }
+                    } else if (fieldName.equals("Geometry_Z")){
+                        for (Shape shape : aLayer.getShapes()){
+                            for (PointZ p : (List<PointZ>)shape.getPoints()){
+                                S.add(p.Z);
+                            }
+                        }
+                    } else {
+                        for (int i = 0; i < aLayer.getAttributeTable().getNumRecords(); i++) {
+                            String vstr = aLayer.getCellValue(fieldName, i).toString();
+                            if (vstr.isEmpty()) {
+                                S.add(0D);
+                            } else {
+                                S.add(Double.parseDouble(vstr));
+                            }
                         }
                     }
                     double[] minmax = MIMath.getMinMaxValue(S, _legendScheme.getUndefValue());

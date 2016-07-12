@@ -10,6 +10,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -258,8 +259,9 @@ public class TimeTableData extends TableData {
      *
      * @return Date list
      */
-    public List<String> getDays() {
+    public List<Date> getDates_Day() {
         List<String> days = new ArrayList<>();
+        List<Date> dates = new ArrayList<>();
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
         String day;
         Date date;
@@ -271,10 +273,37 @@ public class TimeTableData extends TableData {
             day = format.format(date);
             if (!days.contains(day)) {
                 days.add(day);
+                dates.add(date);
             }
         }
 
-        return days;
+        return dates;
+    }
+    
+    /**
+     * Get date hours
+     *
+     * @return Date list
+     */
+    public List<Date> getDates_Hour() {
+        List<String> hours = new ArrayList<>();
+        List<Date> dates = new ArrayList<>();
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHH");
+        String hour;
+        Date date;
+        for (DataRow row : dataTable.getRows()) {
+            date = (Date) row.getValue(this.timeColName);
+            if (date == null) {
+                continue;
+            }
+            hour = format.format(date);
+            if (!hours.contains(hour)) {
+                hours.add(hour);
+                dates.add(date);
+            }
+        }
+
+        return dates;
     }
 
     /**
@@ -379,13 +408,42 @@ public class TimeTableData extends TableData {
      * Get data row list by date
      *
      * @param date Date string
+     * @param drs Data rows
      * @return Data row list
      */
-    public List<DataRow> getDataByDate(String date) {
-        int year = Integer.parseInt(date.substring(0, 4));
-        int month = Integer.parseInt(date.substring(4, 6));
-        int day = Integer.parseInt(date.substring(6));
-        return this.getDataByDate(year, month, day);
+    public List<DataRow> getDataByDate(Date date, List<DataRow> drs) {
+        List<DataRow> rows = new ArrayList<>();
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+        Date bdate;
+        for (DataRow row : drs) {
+            bdate = (Date) row.getValue(this.timeColName);
+            if (format.format(bdate).equals(format.format(date))) {
+                rows.add(row);
+            }
+        }
+
+        return rows;
+    }
+    
+    /**
+     * Get data row list by date - hour
+     *
+     * @param date Date string
+     * @param drs Data rows
+     * @return Data row list
+     */
+    public List<DataRow> getDataByDate_Hour(Date date, List<DataRow> drs) {
+        List<DataRow> rows = new ArrayList<>();
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHH");
+        Date bdate;
+        for (DataRow row : drs) {
+            bdate = (Date) row.getValue(this.timeColName);
+            if (format.format(bdate).equals(format.format(date))) {
+                rows.add(row);
+            }
+        }        
+
+        return rows;
     }
 
     /**
@@ -405,6 +463,33 @@ public class TimeTableData extends TableData {
                 if (cal.get(Calendar.MONTH) == month - 1) {
                     if (cal.get(Calendar.DAY_OF_MONTH) == day) {
                         rows.add(row);
+                    }
+                }
+            }
+        }
+
+        return rows;
+    }
+    
+    /**
+     * Get data row list by date
+     *
+     * @param year The year
+     * @param month The month
+     * @param day The day
+     * @param hour The hour
+     * @return Data row list
+     */
+    public List<DataRow> getDataByDate(int year, int month, int day, int hour) {
+        List<DataRow> rows = new ArrayList<>();
+        Calendar cal = Calendar.getInstance();
+        for (DataRow row : dataTable.getRows()) {
+            cal.setTime((Date) row.getValue(this.timeColName));
+            if (cal.get(Calendar.YEAR) == year) {
+                if (cal.get(Calendar.MONTH) == month - 1) {
+                    if (cal.get(Calendar.DAY_OF_MONTH) == day) {
+                        if (cal.get(Calendar.HOUR_OF_DAY) == hour)
+                            rows.add(row);
                     }
                 }
             }
@@ -652,16 +737,48 @@ public class TimeTableData extends TableData {
      */
     public DataTable ave_Day(List<DataColumn> cols) throws Exception {
         DataTable rTable = new DataTable();
-        rTable.addColumn("Date", DataTypes.String);
+        rTable.addColumn(new DataColumn("Date", DataTypes.Date, "yyyyMMdd"));
         for (DataColumn col : cols) {
             rTable.addColumn(col.getColumnName(), DataTypes.Double);
         }
 
-        List<String> days = this.getDays();
-        for (String day : days) {
+        List<Date> days = this.getDates_Day();
+        List<DataRow> drs = new ArrayList<>(this.dataTable.getRows());
+        for (Date day : days) {
             DataRow nRow = rTable.addRow();
             nRow.setValue(0, day);
-            List<DataRow> rows = this.getDataByDate(day);
+            List<DataRow> rows = this.getDataByDate(day, drs);
+            drs.removeAll(rows);
+            for (DataColumn col : cols) {
+                List<Double> values = this.getValidColumnValues(rows, col);
+                nRow.setValue(col.getColumnName(), Statistics.mean(values));
+            }
+        }
+
+        return rTable;
+    }
+    
+    /**
+     * Average Hourly
+     *
+     * @param cols The data columns
+     * @return Result data table
+     * @throws Exception
+     */
+    public DataTable ave_Hour(List<DataColumn> cols) throws Exception {
+        DataTable rTable = new DataTable();
+        rTable.addColumn(new DataColumn("Date", DataTypes.Date, "yyyyMMddHH"));
+        for (DataColumn col : cols) {
+            rTable.addColumn(col.getColumnName(), DataTypes.Double);
+        }
+
+        List<Date> hours = this.getDates_Hour();
+        List<DataRow> drs = new ArrayList<>(this.dataTable.getRows());
+        for (Date hour : hours) {
+            DataRow nRow = rTable.addRow();
+            nRow.setValue(0, hour);
+            List<DataRow> rows = this.getDataByDate_Hour(hour, drs);
+            drs.removeAll(rows);
             for (DataColumn col : cols) {
                 List<Double> values = this.getValidColumnValues(rows, col);
                 nRow.setValue(col.getColumnName(), Statistics.mean(values));
@@ -804,6 +921,94 @@ public class TimeTableData extends TableData {
         }
 
         return rTable;
+    }
+    
+    /**
+     * Get date list - String
+     * @param stdate Start date
+     * @param enddate End date
+     * @param tdtype Calendar type
+     * @param timeDelt Time delta value
+     * @return Date list
+     * @throws FileNotFoundException
+     * @throws IOException
+     * @throws ParseException 
+     */
+    public static List<Date> getDateList(Date stdate, Date enddate, String tdtype, int timeDelt)
+            throws FileNotFoundException, IOException, ParseException {
+        Calendar stCal = Calendar.getInstance();
+        stCal.setTime(stdate);
+        Calendar endCal = Calendar.getInstance();
+        endCal.setTime(enddate);
+        List<Date> dates = new ArrayList<>();        
+
+        while (stCal.before(endCal)) {
+            dates.add(stCal.getTime());
+            switch (tdtype.toUpperCase()) {
+                case "YEAR":
+                    stCal.add(Calendar.YEAR, timeDelt);
+                    break;
+                case "MONTH":
+                    stCal.add(Calendar.MONTH, timeDelt);
+                    break;
+                case "DAY":
+                    stCal.add(Calendar.DAY_OF_MONTH, timeDelt);
+                    break;                
+                case "HOUR":
+                    stCal.add(Calendar.HOUR, timeDelt);
+                    break;
+                case "MINUTE":
+                    stCal.add(Calendar.MINUTE, timeDelt);
+                    break;
+                default:
+                    stCal.add(Calendar.SECOND, timeDelt);
+                    break;
+            }            
+        }
+        dates.add(endCal.getTime());
+        return dates;
+    }
+    
+    /**
+     * Time order for data
+     * @param stdate Start date
+     * @param enddate End date
+     * @param tdtype Calendar type
+     * @param timeDelt Time delta
+     * @return Ordered data
+     * @throws IOException
+     * @throws FileNotFoundException
+     * @throws ParseException 
+     */
+    public TimeTableData timeOrder(Date stdate, Date enddate, String tdtype, int timeDelt) throws IOException, FileNotFoundException, ParseException, Exception{
+        List<Date> dateList = getDateList(stdate, enddate, tdtype, timeDelt);
+        int lineNum = this.dataTable.getRowCount();
+        int colNum = this.dataTable.getColumnCount();
+        DataTable outData = new DataTable();
+        for (DataColumn col : this.getDataColumns()){
+            outData.addColumn((DataColumn)col.clone());
+        }
+        for (int i = 0; i < dateList.size(); i++){
+            outData.addRow();
+            //outData.setValue(i, timeColName, date);
+            i += 1;
+        }
+        
+        int idx;
+        Date date;
+        for (int i = 0; i < lineNum; i++) {
+            date = (Date)this.dataTable.getValue(i, timeColName);
+            idx = dateList.indexOf(date);
+            if (idx >= 0) {                
+                for (int j = 0; j < colNum; j++){
+                    outData.setValue(idx, j, this.dataTable.getValue(i, j));
+                }
+            }
+        }
+        
+        TimeTableData r = new TimeTableData(outData);
+        r.setTimeColName(this.timeColName);
+        return r;
     }
 
     // </editor-fold>

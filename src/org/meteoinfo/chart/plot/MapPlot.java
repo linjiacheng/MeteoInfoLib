@@ -54,6 +54,7 @@ public class MapPlot extends XY2DPlot {
         super();
         this.setXAxis(new LonLatAxis("Longitude", true));
         this.setYAxis(new LonLatAxis("Latitude", false));
+        this.getAxis(Location.TOP).setDrawTickLabel(false);
         this.getAxis(Location.RIGHT).setDrawTickLabel(false);
         this.setDrawNeatLine(true);
     }
@@ -64,21 +65,7 @@ public class MapPlot extends XY2DPlot {
      * @param mapView MapView
      */
     public MapPlot(MapView mapView) {
-        super();
-        
-        this.setXAxis(new LonLatAxis("Longitude", true));
-        this.setYAxis(new LonLatAxis("Latitude", false));
-        
-//        if (mapView.getProjection().isLonLatMap()){
-//            this.setXAxis(new LonLatAxis("Longitude", true));
-//            this.setYAxis(new LonLatAxis("Latitude", false));
-//        } else {
-//            this.setXAxis(new ProjLonLatAxis("Longitude", true, mapView.getProjection().getProjInfo()));
-//            this.setYAxis(new ProjLonLatAxis("Latitude", false, mapView.getProjection().getProjInfo()));
-//        }
-
-        this.getAxis(Location.RIGHT).setDrawTickLabel(false);
-        this.setDrawNeatLine(true);
+        this();
         this.setMapView(mapView, true);
         this.mapFrame = new MapFrame();
         this.mapFrame.setMapView(mapView);

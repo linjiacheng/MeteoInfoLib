@@ -460,6 +460,15 @@ public abstract class XYPlot extends Plot {
     // </editor-fold>
     // <editor-fold desc="Method">
     /**
+     * Set axis
+     * @param axis The axis
+     * @param loc Axis location
+     */
+    public void setAxis(Axis axis, Location loc){
+        this.axises.put(loc, axis);
+    }
+    
+    /**
      * Set axis label font
      *
      * @param font Font

@@ -213,7 +213,7 @@ public class Axis implements Cloneable {
      */
     public void setLabel(String value) {
         label = value;
-        if (!label.isEmpty() && (this.location == Location.BOTTOM || this.location == location.LEFT)) {
+        if (!label.isEmpty() && (this.location == Location.BOTTOM || this.location == Location.LEFT)) {
             this.drawLabel = true;
         }
     }
@@ -755,7 +755,7 @@ public class Axis implements Cloneable {
         this.tickLabels = value;
         this.autoTick = false;
     }
-    
+
     /**
      * Set tick labels
      *
@@ -763,7 +763,7 @@ public class Axis implements Cloneable {
      */
     public void setTickLabels_Number(List<Number> value) {
         List<String> labels = new ArrayList<>();
-        for (Number v : value){
+        for (Number v : value) {
             labels.add(v.toString());
         }
         this.tickLabels = labels;
@@ -835,9 +835,10 @@ public class Axis implements Cloneable {
     public void setMinMaxValue(double minValue, double maxValue) {
         this.minValue = minValue;
         this.maxValue = maxValue;
-        if (Double.isNaN(minValue) || Double.isNaN(maxValue))
+        if (Double.isNaN(minValue) || Double.isNaN(maxValue)) {
             return;
-        
+        }
+
         updateTickValues();
 //        if (this.timeAxis) {
 //            this.updateTimeLabels();
@@ -1003,8 +1004,9 @@ public class Axis implements Cloneable {
             }
         } else {
             for (int i = 0; i < this.tickLocations.size(); i++) {
-                if (i >= this.tickLabels.size())
+                if (i >= this.tickLabels.size()) {
                     break;
+                }
                 double v = this.tickLocations.get(i);
                 if (v >= this.minValue && v <= this.maxValue) {
                     tls.add(this.tickLabels.get(i));
@@ -1151,7 +1153,11 @@ public class Axis implements Cloneable {
                 drawStr = xTickLabels.get(n);
                 dim = new Dimension(metrics.stringWidth(drawStr), metrics.getHeight());
                 labx = (float) (x - dim.width / 2);
-                laby = (float) (maxy + len + dim.height * 3 / 4 + space);
+                if (this.location == Location.BOTTOM) {
+                    laby = (float) (maxy + len + dim.height * 3 / 4 + space);
+                } else {
+                    laby = (float) (miny - len - space);
+                }
                 g.drawString(drawStr, labx, laby);
             }
             n += this.getTickLabelGap();
@@ -1209,37 +1215,39 @@ public class Axis implements Cloneable {
             }
         }
         //Time label - left
-        SimpleDateFormat format;
-        if (this instanceof TimeAxis) {
-            TimeAxis tAxis = (TimeAxis) this;
-            if (tAxis.isVarFormat()) {
-                drawStr = null;
-                switch (tAxis.getTimeUnit()) {
-                    case MONTH:
-                        format = new SimpleDateFormat("yyyy");
-                        Date cdate = DateUtil.fromOADate(this.getTickValues()[0]);
-                        drawStr = format.format(cdate);
-                        break;
-                    case DAY:
-                        format = new SimpleDateFormat("yyyy-MM");
-                        cdate = DateUtil.fromOADate(this.getTickValues()[0]);
-                        drawStr = format.format(cdate);
-                        break;
-                    case HOUR:
-                    case MINUTE:
-                    case SECOND:
-                        format = new SimpleDateFormat("yyyy-MM-dd");
-                        cdate = DateUtil.fromOADate(this.getTickValues()[0]);
-                        drawStr = format.format(cdate);
-                        break;
-                }
-                if (drawStr != null) {
-                    labx = (float) minx;
-                    laby = (float) (maxy + metrics.getHeight() * 2 + space);
-                    if (!this.isInsideTick()) {
-                        laby += len;
+        if (this.drawTickLabel) {
+            SimpleDateFormat format;
+            if (this instanceof TimeAxis) {
+                TimeAxis tAxis = (TimeAxis) this;
+                if (tAxis.isVarFormat()) {
+                    drawStr = null;
+                    switch (tAxis.getTimeUnit()) {
+                        case MONTH:
+                            format = new SimpleDateFormat("yyyy");
+                            Date cdate = DateUtil.fromOADate(this.getTickValues()[0]);
+                            drawStr = format.format(cdate);
+                            break;
+                        case DAY:
+                            format = new SimpleDateFormat("yyyy-MM");
+                            cdate = DateUtil.fromOADate(this.getTickValues()[0]);
+                            drawStr = format.format(cdate);
+                            break;
+                        case HOUR:
+                        case MINUTE:
+                        case SECOND:
+                            format = new SimpleDateFormat("yyyy-MM-dd");
+                            cdate = DateUtil.fromOADate(this.getTickValues()[0]);
+                            drawStr = format.format(cdate);
+                            break;
                     }
-                    g.drawString(drawStr, labx, laby);
+                    if (drawStr != null) {
+                        labx = (float) minx;
+                        laby = (float) (maxy + metrics.getHeight() * 2 + space);
+                        if (!this.isInsideTick()) {
+                            laby += len;
+                        }
+                        g.drawString(drawStr, labx, laby);
+                    }
                 }
             }
         }

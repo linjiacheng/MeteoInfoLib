@@ -134,6 +134,14 @@ public class LegendScheme {
     public void setFieldName(String fn) {
         fieldName = fn;
     }
+    
+    /**
+     * Is Geometry legend scheme or not
+     * @return Boolean
+     */
+    public boolean isGeometry(){
+        return this.fieldName.equals("Geometry_M") || this.fieldName.equals("Geometry_Z");
+    }
 
     /**
      * Get legend type
@@ -345,6 +353,21 @@ public class LegendScheme {
      */
     public void addLegendBreak(ColorBreak lb){
         this.legendBreaks.add(lb);
+    }
+    
+    /**
+     * Get legend break by value
+     * @param v Value
+     * @return Legend break
+     */
+    public ColorBreak getLegenBreak(double v){
+        for (ColorBreak cb : this.legendBreaks){
+            if (v >= Double.parseDouble(cb.getStartValue().toString()) && v <
+                    Double.parseDouble(cb.getEndValue().toString())){
+                return cb;
+            }
+        }
+        return this.legendBreaks.get(0);
     }
 
     /**

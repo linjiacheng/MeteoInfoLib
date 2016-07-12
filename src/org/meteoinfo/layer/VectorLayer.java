@@ -381,7 +381,7 @@ public class VectorLayer extends MapLayer {
                 }
                 break;
             case GraduatedColor:
-                if (!fieldNames.contains(value.getFieldName())) {
+                if (!fieldNames.contains(value.getFieldName()) && !value.isGeometry()) {
                     String fName = "";
                     if (fieldNames.size() > 0) {
                         fName = fieldNames.get(0);
@@ -2452,23 +2452,25 @@ public class VectorLayer extends MapLayer {
                 }
                 break;
             case GraduatedColor:
-                shapeIdx = 0;
-                for (Shape aShape : this.getShapes()) {
-                    aShape.setLegendIndex(-1);
-                    String vStr = this.getCellValue(ls.getFieldName(), shapeIdx).toString();
-                    double v = Double.parseDouble(vStr);
-                    int blNum = 0;
-                    for (int i = 0; i < ls.getBreakNum(); i++) {
-                        ColorBreak cb = ls.getLegendBreaks().get(i);
-                        blNum += 1;
-                        if (MIMath.doubleEquals(v, Double.parseDouble(cb.getStartValue().toString()))
-                                || (v > Double.parseDouble(cb.getStartValue().toString())
-                                && v < Double.parseDouble(cb.getEndValue().toString()))
-                                || (blNum == ls.getBreakNum() && v == Double.parseDouble(cb.getEndValue().toString()))) {
-                            aShape.setLegendIndex(i);
+                if (!ls.isGeometry()){
+                    shapeIdx = 0;
+                    for (Shape aShape : this.getShapes()) {
+                        aShape.setLegendIndex(-1);
+                        String vStr = this.getCellValue(ls.getFieldName(), shapeIdx).toString();
+                        double v = Double.parseDouble(vStr);
+                        int blNum = 0;
+                        for (int i = 0; i < ls.getBreakNum(); i++) {
+                            ColorBreak cb = ls.getLegendBreaks().get(i);
+                            blNum += 1;
+                            if (MIMath.doubleEquals(v, Double.parseDouble(cb.getStartValue().toString()))
+                                    || (v > Double.parseDouble(cb.getStartValue().toString())
+                                    && v < Double.parseDouble(cb.getEndValue().toString()))
+                                    || (blNum == ls.getBreakNum() && v == Double.parseDouble(cb.getEndValue().toString()))) {
+                                aShape.setLegendIndex(i);
+                            }
                         }
+                        shapeIdx += 1;
                     }
-                    shapeIdx += 1;
                 }
                 break;
             default:

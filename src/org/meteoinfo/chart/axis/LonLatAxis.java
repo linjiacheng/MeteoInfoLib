@@ -41,6 +41,34 @@ public class LonLatAxis extends Axis implements Cloneable {
     }
     
     /**
+     * Constructor
+     * @param axis Axis
+     */
+    public LonLatAxis(Axis axis) {
+        this(axis.getLabel(), axis.isXAxis());
+        this.setAutoTick(axis.isAutoTick());
+        this.setDrawLabel(axis.isDrawLabel());
+        this.setDrawTickLabel(axis.isDrawTickLabel());
+        this.setDrawTickLine(axis.isDrawTickLine());
+        this.setInsideTick(axis.isInsideTick());
+        this.setInverse(axis.isInverse());
+        this.setLabelColor(axis.getLabelColor());
+        this.setLineStroke(axis.getLineStroke());
+        this.setLocation(axis.getLocation());
+        this.setMaxValue(axis.getMaxValue());
+        this.setMinValue(axis.getMinValue());
+        this.setMinorTickNum(axis.getMinorTickNum());
+        this.setMinorTickVisible(axis.isMinorTickVisible());
+        this.setShift(axis.getShift());
+        this.setTickColor(axis.getTickColor());
+        this.setTickDeltaValue(axis.getTickDeltaValue());
+        this.setTickLabelColor(axis.getTickLabelColor());
+        this.setTickLabelFont(axis.getTickLabelFont());
+        this.setTickLength(axis.getTickLength());
+        this.setVisible(axis.isVisible());
+    }
+    
+    /**
      * Get if draw degree symbol
      * @return Boolean
      */

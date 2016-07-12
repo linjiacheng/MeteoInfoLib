@@ -14,6 +14,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 import org.meteoinfo.chart.ChartLegend;
+import org.meteoinfo.chart.Location;
 import org.meteoinfo.chart.axis.TimeAxis;
 import org.meteoinfo.data.Dataset;
 import org.meteoinfo.data.XYDataset;
@@ -95,6 +96,7 @@ public class XY1DPlot extends XYPlot {
         this();
         if (isTime) {
             this.setXAxis(new TimeAxis("X", true));
+            this.getAxis(Location.TOP).setDrawTickLabel(false);
         }
         //this.getXAxis().setTimeAxis(isTime);
         this.setDataset(dateset);
@@ -111,6 +113,7 @@ public class XY1DPlot extends XYPlot {
         this();
         if (isTime) {
             this.setXAxis(new TimeAxis("X", true));
+            this.getAxis(Location.TOP).setDrawTickLabel(false);
         }
         //this.getXAxis().setTimeAxis(isTime);
         this.setChartPlotMethod(cpMethod);
@@ -128,6 +131,7 @@ public class XY1DPlot extends XYPlot {
         this();
         if (isTime) {
             this.setXAxis(new TimeAxis("X", true));
+            this.getAxis(Location.TOP).setDrawTickLabel(false);
         }
         //this.getXAxis().setTimeAxis(isTime);
         this.setPlotOrientation(orientation);

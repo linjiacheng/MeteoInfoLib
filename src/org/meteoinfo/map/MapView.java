@@ -382,12 +382,13 @@ public class MapView extends JPanel {
         _defPolylineBreak.setSize(2);
         _defPolygonBreak.setColor(new Color(104, 255, 104, 125));
     }
-    
+
     /**
      * Constructor
+     *
      * @param proj Projection
      */
-    public MapView(ProjectionInfo proj){
+    public MapView(ProjectionInfo proj) {
         this();
         this._projection.setProjInfo(proj);
     }
@@ -1777,8 +1778,9 @@ public class MapView extends JPanel {
             case Edit_ReformFeature:
             case Edit_SplitFeature:
                 VectorLayer selLayer = (VectorLayer) this.getSelectedLayer();
-                if (selLayer == null)
+                if (selLayer == null) {
                     return;
+                }
                 if (!selLayer.getShapeType().isPoint()) {
                     switch (this._mouseTool) {
                         case Edit_NewFeature:
@@ -1812,8 +1814,9 @@ public class MapView extends JPanel {
                 break;
             case Edit_FeatureVertices:
                 selLayer = (VectorLayer) this.getSelectedLayer();
-                if (selLayer == null)
+                if (selLayer == null) {
                     return;
+                }
                 Shape eShape = selLayer.getEditingShape();
                 if (eShape != null) {
                     if (eShape.isEditing()) {
@@ -3207,7 +3210,7 @@ public class MapView extends JPanel {
         shape.setPoints(newPoints);
         this.paintLayers();
     }
-    
+
     private void onShapeReverseClick(Shape shape) {
         shape.reverse();
         this.paintLayers();
@@ -5189,11 +5192,21 @@ public class MapView extends JPanel {
 
     private void drawPolylineLayer(VectorLayer aLayer, Graphics2D g, double LonShift) {
         LegendScheme aLS = aLayer.getLegendScheme();
-        //PointD wPoint;
-        boolean isStreamline = false;
-        //double[] screenXY;
 
-        switch (aLayer.getLayerDrawType()) {
+        if (aLS.isGeometry()) {
+            for (int s = 0; s < aLayer.getShapeNum(); s++) {
+                PolylineShape aPLS = (PolylineShape) aLayer.getShapes().get(s);
+                if (!aPLS.isVisible()) {
+                    continue;
+                }
+                drawPolylineShape(g, aPLS, aLS, LonShift);
+            }
+        } else {
+            //PointD wPoint;
+            boolean isStreamline = false;
+            //double[] screenXY;
+
+            switch (aLayer.getLayerDrawType()) {
 //            case TrajLine:
 //                //Draw start point symbol                                     
 //                PointF aPF = new PointF();
@@ -5211,23 +5224,24 @@ public class MapView extends JPanel {
 //                    }
 //                }
 //                break;
-            case Streamline:
-                isStreamline = true;
-                break;
-        }
-
-        for (int s = 0; s < aLayer.getShapeNum(); s++) {
-            PolylineShape aPLS = (PolylineShape) aLayer.getShapes().get(s);
-            if (!aPLS.isVisible()) {
-                continue;
-            }
-            if (aPLS.getLegendIndex() < 0) {
-                continue;
+                case Streamline:
+                    isStreamline = true;
+                    break;
             }
 
-            PolylineBreak aPLB = (PolylineBreak) aLS.getLegendBreaks().get(aPLS.getLegendIndex());
-            if (aPLB.getDrawPolyline() || aPLB.getDrawSymbol()) {
-                drawPolylineShape(g, aPLS, aPLB, LonShift, isStreamline);
+            for (int s = 0; s < aLayer.getShapeNum(); s++) {
+                PolylineShape aPLS = (PolylineShape) aLayer.getShapes().get(s);
+                if (!aPLS.isVisible()) {
+                    continue;
+                }
+                if (aPLS.getLegendIndex() < 0) {
+                    continue;
+                }
+
+                PolylineBreak aPLB = (PolylineBreak) aLS.getLegendBreaks().get(aPLS.getLegendIndex());
+                if (aPLB.getDrawPolyline() || aPLB.getDrawSymbol()) {
+                    drawPolylineShape(g, aPLS, aPLB, LonShift, isStreamline);
+                }
             }
         }
 
@@ -5350,7 +5364,7 @@ public class MapView extends JPanel {
             g.drawRect((int) aExtent.minX, (int) aExtent.minY, (int) aExtent.getWidth(), (int) aExtent.getHeight());
         }
     }
-    
+
     private void drawPolylineShape(Graphics2D g, PolylineShape aPLS, PolylineBreak aPLB, double LonShift,
             boolean isStreamline, boolean isSelected, boolean isIdentifer) {
         Extent shapeExtent = MIMath.shiftExtentLon(aPLS.getExtent(), LonShift);
@@ -5433,6 +5447,7 @@ public class MapView extends JPanel {
                 }
 
                 g.draw(path);
+                path.reset();
             }
         }
 
@@ -5463,6 +5478,64 @@ public class MapView extends JPanel {
             //aPen.DashStyle = DashStyle.Dash;
             g.setColor(Color.cyan);
             g.drawRect((int) aExtent.minX, (int) aExtent.minY, (int) aExtent.getWidth(), (int) aExtent.getHeight());
+        }
+    }
+
+    private void drawPolylineShape(Graphics2D g, PolylineShape aPLS, LegendScheme ls, double LonShift) {
+        Extent shapeExtent = MIMath.shiftExtentLon(aPLS.getExtent(), LonShift);
+        if (!MIMath.isExtentCross(shapeExtent, _drawExtent)) {
+            return;
+        }
+
+        int len1 = aPLS.getPoints().size();
+        GeneralPath path = new GeneralPath(GeneralPath.WIND_EVEN_ODD, len1);
+        List<PointF> drawPs = new ArrayList<>();
+        double v;
+        boolean isZ = ls.getFieldName().equals("Geometry_Z");
+        for (Polyline aline : aPLS.getPolylines()) {
+            double[] sXY;
+            for (int i = 0; i < aline.getPointList().size(); i++) {
+                PointZ wPoint = (PointZ) aline.getPointList().get(i);
+                sXY = projToScreen(wPoint.X, wPoint.Y, LonShift);
+                if (i == 0) {
+                    path.moveTo(sXY[0], sXY[1]);
+                } else {
+                    path.lineTo(sXY[0], sXY[1]);                    
+                    if (isZ) {
+                        v = wPoint.Z;
+                    } else {
+                        v = wPoint.M;
+                    }
+                    PolylineBreak aPLB = (PolylineBreak) ls.getLegenBreak(v);
+                    Color aColor = aPLB.getColor();
+                    Float size = aPLB.getSize();
+                    float[] dashPattern = getDashPattern(aPLB.getStyle());
+                    BasicStroke pen = new BasicStroke(size, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dashPattern, 0.0f);
+                    g.setColor(aColor);
+                    g.setStroke(pen);
+                    g.draw(path);
+                    path.reset();
+                    path.moveTo(sXY[0], sXY[1]);
+                    //Draw symbol            
+                    if (aPLB.getDrawSymbol()) {
+                        Object rend = g.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
+                        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                        for (int j = 0; j < drawPs.size(); j++) {
+                            Draw.drawPoint(aPLB.getSymbolStyle(), new PointF((float) sXY[0], (float) sXY[1]), aPLB.getSymbolFillColor(), aPLB.getSymbolColor(),
+                                    aPLB.getSymbolSize(), true, aPLB.isFillSymbol(), g);
+                        }
+                        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, rend);
+                    }
+                }
+                drawPs.add(new PointF((float) sXY[0], (float) sXY[1]));
+            }
+        }
+
+        //Draw selected vertices
+        if (aPLS.isEditing()) {
+            for (PointF drawP : drawPs) {
+                Draw.drawSelectedVertice(g, drawP, 8, Color.red, Color.cyan);
+            }
         }
     }
 
