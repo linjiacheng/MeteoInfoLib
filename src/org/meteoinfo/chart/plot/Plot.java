@@ -229,7 +229,7 @@ public abstract class Plot {
      */
     public abstract void draw(Graphics2D g2, Rectangle2D area);
     
-    private Rectangle2D positionArea;
+    private Rectangle2D positionArea = new Rectangle2D.Double();
     
     /**
      * Get positioin area
@@ -336,6 +336,9 @@ public abstract class Plot {
      * @param shrink Shrink
      */
     public void setPlotShrink(Margin shrink){
+        if (this.positionArea == null)
+            return;
+        
         double x = this.positionArea.getX() + shrink.getLeft();
         double y = this.positionArea.getY() + shrink.getTop();
         double w = this.positionArea.getWidth() - (shrink.getLeft() + shrink.getRight());

@@ -32,6 +32,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
+import org.meteoinfo.global.Extent;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -114,9 +115,53 @@ public class Graphic {
     public ResizeAbility getResizeAbility() {
         return _resizeAbility;
     }
+    
+    /**
+     * Get extent
+     *
+     * @return The extent
+     */
+    public Extent getExtent() {
+        return this._shape.getExtent();
+    }
+    
+    /**
+     * Get is single legend or not
+     * @return Boolean
+     */
+    public boolean isSingleLegend(){
+        return true;
+    }
 
     // </editor-fold>
     // <editor-fold desc="Methods">
+    /**
+     * Get graphics number
+     * @return 1
+     */
+    public int getNumGrahics(){
+        return 1;
+    }
+    
+    /**
+     * Get Graphic by index
+     * @param idx Index
+     * @return Graphic
+     */
+    public Graphic getGraphicN(int idx){
+        return this;
+    }
+    
+    /**
+     * Get graphic list
+     * @return Graphic list
+     */
+    public List<Graphic> getGraphics(){
+        List<Graphic> gs = new ArrayList<>();
+        gs.add(this);
+        return gs;
+    }
+    
     private void updateResizeAbility() {
         if (_shape != null && _legend != null) {
             switch (_shape.getShapeType()) {

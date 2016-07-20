@@ -302,9 +302,14 @@ public class BarPlot_Old extends XYPlot {
             return new Extent(0, yValues[yValues.length - 1], xmin, xmax);
         }
     }
+    
+    @Override
+    public void setAutoExtent(){
+        
+    }
 
     @Override
-    void updateLegendScheme() {
+    public void updateLegendScheme() {
         if (this.getLegend() == null) {
             this.setLegend(new ChartLegend(this.getLegendScheme()));
         } else {

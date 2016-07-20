@@ -32,6 +32,7 @@ import org.meteoinfo.legend.LegendScheme;
 import org.meteoinfo.legend.PointBreak;
 import org.meteoinfo.legend.PolygonBreak;
 import org.meteoinfo.legend.PolylineBreak;
+import org.meteoinfo.shape.Graphic;
 import org.meteoinfo.shape.ShapeTypes;
 
 /**
@@ -810,6 +811,7 @@ public class XY1DPlot extends XYPlot {
     /**
      * Set auto extent
      */
+    @Override
     public void setAutoExtent() {
         Extent extent = this.getAutoExtent();
         this.setDrawExtent(extent);

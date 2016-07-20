@@ -63,8 +63,8 @@ import org.freehep.graphics2d.VectorGraphics;
 import org.freehep.graphicsio.emf.EMFGraphics2D;
 import org.freehep.graphicsio.pdf.PDFGraphics2D;
 import org.freehep.graphicsio.ps.PSGraphics2D;
+import org.meteoinfo.chart.plot.MapPlot;
 import org.meteoinfo.chart.plot.XY1DPlot;
-import org.meteoinfo.chart.plot.XY2DPlot;
 import org.meteoinfo.chart.plot.XYPlot;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.GenericFileFilter;
@@ -363,8 +363,8 @@ public class ChartPanel extends JPanel {
                     if (xyplot == null)
                         return;
                     
-                    if (xyplot instanceof XY1DPlot) {
-                        XY1DPlot plot = (XY1DPlot) xyplot;
+                    if (xyplot instanceof MapPlot) {
+                        MapPlot plot = (MapPlot) xyplot;
                         Rectangle2D graphArea = this.chart.getGraphArea();
                         if (graphArea.contains(mouseDownPoint.x, mouseDownPoint.y) || graphArea.contains(mouseLastPos.x, mouseLastPos.y)) {
                             double[] xy1 = plot.screenToProj(mouseDownPoint.x - graphArea.getX(), mouseDownPoint.y - graphArea.getY(), graphArea);
@@ -374,37 +374,36 @@ public class ChartPanel extends JPanel {
                             extent.maxX = Math.max(xy1[0], xy2[0]);
                             extent.minY = Math.min(xy1[1], xy2[1]);
                             extent.maxY = Math.max(xy1[1], xy2[1]);
-                            if (plot.getXAxis().isInverse()) {
-                                Extent drawExtent = plot.getDrawExtent();
+                            plot.setDrawExtent(extent);
+                            this.paintGraphics();
+                        }
+                    } else {
+                        Rectangle2D graphArea = this.chart.getGraphArea();
+                        if (graphArea.contains(mouseDownPoint.x, mouseDownPoint.y) || graphArea.contains(mouseLastPos.x, mouseLastPos.y)) {
+                            double[] xy1 = xyplot.screenToProj(mouseDownPoint.x - graphArea.getX(), mouseDownPoint.y - graphArea.getY(), graphArea);
+                            double[] xy2 = xyplot.screenToProj(mouseLastPos.x - graphArea.getX(), mouseLastPos.y - graphArea.getY(), graphArea);
+                            Extent extent = new Extent();
+                            extent.minX = Math.min(xy1[0], xy2[0]);
+                            extent.maxX = Math.max(xy1[0], xy2[0]);
+                            extent.minY = Math.min(xy1[1], xy2[1]);
+                            extent.maxY = Math.max(xy1[1], xy2[1]);
+                            if (xyplot.getXAxis().isInverse()) {
+                                Extent drawExtent = xyplot.getDrawExtent();
                                 double minx, maxx;
                                 minx = drawExtent.getWidth() - (extent.maxX - drawExtent.minX) + drawExtent.minX;
                                 maxx = drawExtent.getWidth() - (extent.minX - drawExtent.minX) + drawExtent.minX;
                                 extent.minX = minx;
                                 extent.maxX = maxx;
                             }
-                            if (plot.getYAxis().isInverse()) {
-                                Extent drawExtent = plot.getDrawExtent();
+                            if (xyplot.getYAxis().isInverse()) {
+                                Extent drawExtent = xyplot.getDrawExtent();
                                 double miny, maxy;
                                 miny = drawExtent.getHeight() - (extent.maxY - drawExtent.minY) + drawExtent.minY;
                                 maxy = drawExtent.getHeight() - (extent.minY - drawExtent.minY) + drawExtent.minY;
                                 extent.minY = miny;
                                 extent.maxY = maxy;
                             }
-                            plot.setDrawExtent(extent);
-                            this.paintGraphics();
-                        }
-                    } else if (xyplot instanceof XY2DPlot) {
-                        XY2DPlot plot = (XY2DPlot) xyplot;
-                        Rectangle2D graphArea = this.chart.getGraphArea();
-                        if (graphArea.contains(mouseDownPoint.x, mouseDownPoint.y) || graphArea.contains(mouseLastPos.x, mouseLastPos.y)) {
-                            double[] xy1 = plot.screenToProj(mouseDownPoint.x - graphArea.getX(), mouseDownPoint.y - graphArea.getY(), graphArea);
-                            double[] xy2 = plot.screenToProj(mouseLastPos.x - graphArea.getX(), mouseLastPos.y - graphArea.getY(), graphArea);
-                            Extent extent = new Extent();
-                            extent.minX = Math.min(xy1[0], xy2[0]);
-                            extent.maxX = Math.max(xy1[0], xy2[0]);
-                            extent.minY = Math.min(xy1[1], xy2[1]);
-                            extent.maxY = Math.max(xy1[1], xy2[1]);
-                            plot.setDrawExtent(extent);
+                            xyplot.setDrawExtent(extent);
                             this.paintGraphics();
                         }
                     }
@@ -453,13 +452,13 @@ public class ChartPanel extends JPanel {
 
     private void onUndoZoomClick(ActionEvent e) {
         XYPlot xyplot = (XYPlot) this.chart.getPlots().get(0);
-        if (xyplot instanceof XY1DPlot) {
-            XY1DPlot plot = (XY1DPlot) xyplot;
-            plot.setAutoExtent();
-        } else if (xyplot instanceof XY2DPlot) {
-            XY2DPlot plot = (XY2DPlot) xyplot;
-            plot.setDrawExtent(plot.getMapView().getLastAddedLayer().getExtent());
-        }
+        xyplot.setDrawExtent((Extent)xyplot.getExtent().clone());
+//        if (xyplot instanceof MapPlot) {
+//            MapPlot plot = (MapPlot) xyplot;
+//            plot.setDrawExtent(plot.getMapView().getLastAddedLayer().getExtent());
+//        } else {
+//            xyplot.setAutoExtent();
+//        }
         this.paintGraphics();
     }
 

@@ -18,15 +18,21 @@ import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+import org.meteoinfo.legend.ColorBreak;
 
 /**
  *
  * @author Yaqiang Wang
  */
-public class GraphicCollection extends ArrayList<Graphic> {
+public class GraphicCollection extends Graphic implements Iterator {
     // <editor-fold desc="Variables">
-
+    List<Graphic> graphics = new ArrayList<>();
     private Extent _extent = new Extent();
+    private boolean singleLegend = true;
+    private int index;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -34,24 +40,62 @@ public class GraphicCollection extends ArrayList<Graphic> {
      * Constructor
      */
     public GraphicCollection() {
+        this.index = 0;
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
+    /**
+     * Get graphic list
+     * @return Graphic list
+     */
+    @Override
+    public List<Graphic> getGraphics(){
+        return this.graphics;
+    }
+    
+    /**
+     * Set graphic list
+     * @param value Graphic list
+     */
+    public void setGraphics(List<Graphic> value){
+        this.graphics = value;
+    }
 
     /**
      * Get extent
      *
      * @return The extent
      */
+    @Override
     public Extent getExtent() {
         return _extent;
+    }
+    
+    /**
+     * Get is single legend or not
+     * @return Boolean
+     */
+    @Override
+    public boolean isSingleLegend(){
+        return this.singleLegend;
+    }
+    
+    /**
+     * Set is single legend or not
+     * @param value Boolean
+     */
+    public void setSingleLegend(boolean value){
+        this.singleLegend = value;
     }
     // </editor-fold>
     // <editor-fold desc="Methods">
 
-    private void updateExtent() {
+    /**
+     * Update extent
+     */
+    public void updateExtent() {
         int i = 0;
-        for (Graphic g : this) {
+        for (Graphic g : this.graphics) {
             if (i == 0) {
                 _extent = g.getShape().getExtent();
             } else {
@@ -68,15 +112,14 @@ public class GraphicCollection extends ArrayList<Graphic> {
      * @param aGraphic The graphic
      * @return Boolean
      */
-    @Override
     public boolean add(Graphic aGraphic) {
-        boolean istrue = super.add(aGraphic);
-
+        boolean istrue = this.graphics.add(aGraphic);
+        
         //Update extent
-        if (this.size() == 1) {
-            _extent = aGraphic.getShape().getExtent();
+        if (this.graphics.size() == 1) {
+            _extent = aGraphic.getExtent();
         } else {
-            _extent = MIMath.getLagerExtent(_extent, aGraphic.getShape().getExtent());
+            _extent = MIMath.getLagerExtent(_extent, aGraphic.getExtent());
         }
 
         return istrue;
@@ -88,16 +131,77 @@ public class GraphicCollection extends ArrayList<Graphic> {
      * @param index Index
      * @param aGraphic The graphic
      */
-    @Override
     public void add(int index, Graphic aGraphic) {
-        super.add(index, aGraphic);
+        this.graphics.add(index, aGraphic);
 
         //Update extent
-        if (this.size() == 1) {
+        if (this.graphics.size() == 1) {
             _extent = aGraphic.getShape().getExtent();
         } else {
             _extent = MIMath.getLagerExtent(_extent, aGraphic.getShape().getExtent());
         }
+    }
+    
+    /**
+     * Get a graphic by index
+     * @param idx Index
+     * @return Graphic
+     */
+    public Graphic get(int idx){
+        return this.graphics.get(idx);
+    }
+    
+    /**
+     * Index of
+     * @param g Graphic
+     * @return Index
+     */
+    public int indexOf(Graphic g){
+        return this.graphics.indexOf(g);
+    }
+    
+    /**
+     * Contains or not
+     * @param g Graphic
+     * @return Boolean
+     */
+    public boolean contains(Graphic g){
+        return this.graphics.contains(g);
+    }
+    
+    /**
+     * Get graphic list size
+     * @return Gaphic list size
+     */
+    public int size(){
+        return this.graphics.size();
+    }
+    
+    /**
+     * Get is empty or not
+     * @return Boolean
+     */
+    public boolean isEmpty(){
+        return this.graphics.isEmpty();
+    }
+    
+    /**
+     * Get graphics number
+     * @return 1
+     */
+    @Override
+    public int getNumGrahics(){
+        return this.size();
+    }
+    
+    /**
+     * Get Graphic by index
+     * @param idx Index
+     * @return Graphic
+     */
+    @Override
+    public Graphic getGraphicN(int idx){
+        return this.get(idx);
     }
 
     /**
@@ -106,9 +210,8 @@ public class GraphicCollection extends ArrayList<Graphic> {
      * @param aGraphic The graphic
      * @return Boolean
      */
-    @Override
-    public boolean remove(Object aGraphic) {
-        boolean istrue = super.remove(aGraphic);
+    public boolean remove(Graphic aGraphic) {
+        boolean istrue = this.graphics.remove(aGraphic);
         this.updateExtent();
 
         return istrue;
@@ -120,12 +223,43 @@ public class GraphicCollection extends ArrayList<Graphic> {
      * @param index The index
      * @return The removed graphic
      */
-    @Override
     public Graphic remove(int index) {
-        Graphic ag = super.remove(index);
+        Graphic ag = this.graphics.remove(index);
         this.updateExtent();
 
         return ag;
+    }
+    
+    /**
+     * Clear graphics
+     */
+    public void clear(){
+        this.graphics.clear();
+    }
+    
+    /**
+     * Add all
+     * @param gs Graphic list
+     */
+    public void addAll(List<Graphic> gs){
+        this.graphics.addAll(gs);
+    }
+    
+    /**
+     * Remove all
+     * @param gs Graphic list
+     */
+    public void removeAll(List<Graphic> gs){
+        this.graphics.removeAll(gs);
+    }
+    
+    /**
+     * Get legend
+     * @return Legend
+     */
+    @Override
+    public ColorBreak getLegend(){
+        return this.graphics.get(0).getLegend();
     }
 
     /// <summary>
@@ -141,7 +275,7 @@ public class GraphicCollection extends ArrayList<Graphic> {
         aPoint.X = (aExtent.minX + aExtent.maxX) / 2;
         aPoint.Y = (aExtent.minY + aExtent.maxY) / 2;
 
-        for (Graphic aGraphic : this) {
+        for (Graphic aGraphic : this.graphics) {
             switch (aGraphic.getShape().getShapeType()) {
                 case Point:
                     PointShape aPS = (PointShape) aGraphic.getShape();
@@ -192,6 +326,20 @@ public class GraphicCollection extends ArrayList<Graphic> {
         }
 
         return selectedGraphics;
+    }
+    
+    @Override
+    public boolean hasNext() {
+        return index < this.size() - 1;
+    }
+
+    @Override
+    public Object next() {
+        if (index >= this.size()) {
+            throw new NoSuchElementException();
+        }
+        
+        return this.get(index++);
     }
     // </editor-fold>
 }

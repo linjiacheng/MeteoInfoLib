@@ -229,8 +229,19 @@ public class MICAPS120DataInfo extends DataInfo implements IStationDataInfo {
 
         for (i = 0; i < _dataList.size(); i++) {
             dataList = _dataList.get(i);
-            v = Float.parseFloat(dataList.get(varIdx));
-            r.setObject(i, v);
+            switch (dt) {
+                case STRING:
+                    r.setObject(i, dataList.get(varIdx));
+                    break;
+                case INT:
+                    int vi = Integer.parseInt(dataList.get(varIdx));
+                    r.setInt(i, vi);
+                    break;
+                case FLOAT:
+                    v = Float.parseFloat(dataList.get(varIdx));
+                    r.setFloat(i, v);
+                    break;
+            }
         }
         
         return r;

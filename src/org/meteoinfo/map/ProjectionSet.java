@@ -1194,7 +1194,7 @@ public class ProjectionSet {
 
     private GraphicCollection projectGraphics(GraphicCollection aGCollection, ProjectionInfo fromProj, ProjectionInfo toProj) {
         GraphicCollection newGCollection = new GraphicCollection();
-        for (Graphic aGraphic : aGCollection) {
+        for (Graphic aGraphic : aGCollection.getGraphics()) {
             aGraphic.setShape(projectShape(aGraphic.getShape(), fromProj, toProj));
             if (aGraphic.getShape() != null) {
                 newGCollection.add(aGraphic);

@@ -42,8 +42,10 @@ import org.meteoinfo.shape.WindArrow;
 public abstract class XYPlot extends Plot {
 
     // <editor-fold desc="Variables">
-    private Color background;
+    private Color background;    
     private boolean drawBackground;
+    private Color selectColor = Color.yellow;
+    private Extent extent;
     private Extent drawExtent;
     private final Map<Location, Axis> axises;
     //private Axis xAxis;
@@ -121,6 +123,22 @@ public abstract class XYPlot extends Plot {
             this.title.setText(text);
         }
     }
+    
+    /**
+     * Get selected color
+     * @return Selected color
+     */
+    public Color getSelectedColor(){
+        return this.selectColor;
+    }
+    
+    /**
+     * Set selected color
+     * @param value Selected color
+     */
+    public void setSelectedColor(Color value){
+        this.selectColor = value;
+    }
 
     /**
      * Get sub title
@@ -174,7 +192,7 @@ public abstract class XYPlot extends Plot {
      */
     public void setDrawLegend(boolean value) {
         this.drawLegend = value;
-        this.updateLegendScheme();
+        //this.updateLegendScheme();
     }
 
     /**
@@ -197,6 +215,22 @@ public abstract class XYPlot extends Plot {
         this.getAxis(Location.TOP).setMinMaxValue(extent.minX, extent.maxX);
         this.getAxis(Location.LEFT).setMinMaxValue(extent.minY, extent.maxY);
         this.getAxis(Location.RIGHT).setMinMaxValue(extent.minY, extent.maxY);
+    }
+    
+    /**
+     * Get extent
+     * @return Extent
+     */
+    public Extent getExtent(){
+        return this.extent;
+    }
+    
+    /**
+     * Set extent
+     * @param extent Extent
+     */
+    public void setExtent(Extent extent){
+        this.extent = extent;
     }
     
     /**
@@ -1099,8 +1133,10 @@ public abstract class XYPlot extends Plot {
     }
 
     abstract Extent getAutoExtent();
+    
+    public abstract void setAutoExtent();
 
-    abstract void updateLegendScheme();
+    public abstract void updateLegendScheme();
 
     /**
      * Add text

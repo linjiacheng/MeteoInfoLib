@@ -2050,7 +2050,7 @@ public class MapView extends JPanel {
                 if (e.getButton() == MouseEvent.BUTTON1) {
                     if (!(e.isControlDown() || e.isShiftDown())) {
                         //Remove selected graphics
-                        for (Graphic aGraphic : _selectedGraphics) {
+                        for (Graphic aGraphic : _selectedGraphics.getGraphics()) {
                             aGraphic.getShape().setSelected(false);
                         }
                         _selectedGraphics.clear();
@@ -2067,12 +2067,12 @@ public class MapView extends JPanel {
                         GraphicCollection tempGraphics = new GraphicCollection();
                         if (selectGraphics(rect, tempGraphics, lonShift)) {
                             if (!(e.isControlDown() || e.isShiftDown())) {
-                                for (Graphic aGraphic : tempGraphics) {
+                                for (Graphic aGraphic : tempGraphics.getGraphics()) {
                                     aGraphic.getShape().setSelected(true);
                                     _selectedGraphics.add(aGraphic);
                                 }
                             } else {
-                                for (Graphic aGraphic : tempGraphics) {
+                                for (Graphic aGraphic : tempGraphics.getGraphics()) {
                                     aGraphic.getShape().setSelected(!aGraphic.getShape().isSelected());
                                     if (aGraphic.getShape().isSelected()) {
                                         _selectedGraphics.add(aGraphic);
@@ -2825,7 +2825,7 @@ public class MapView extends JPanel {
                     Graphic aGraphic = _selectedGraphics.get(0);
 
                     //Remove selected graphics
-                    for (Graphic aG : _selectedGraphics) {
+                    for (Graphic aG : _selectedGraphics.getGraphics()) {
                         aG.getShape().setSelected(false);
                     }
                     _selectedGraphics.clear();
@@ -5801,7 +5801,7 @@ public class MapView extends JPanel {
 
             Object aSM = g.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            for (Graphic aGraphic : _graphicCollection) {
+            for (Graphic aGraphic : _graphicCollection.getGraphics()) {
                 drawGraphic(g, aGraphic, lonShift);
             }
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, aSM);
@@ -7459,7 +7459,7 @@ public class MapView extends JPanel {
 
     private GraphicCollection getVisibleGraphics() {
         GraphicCollection graphicCollection = new GraphicCollection();
-        for (Graphic aGraphic : _graphicCollection) {
+        for (Graphic aGraphic : _graphicCollection.getGraphics()) {
             graphicCollection.add(aGraphic);
         }
 
@@ -8397,9 +8397,9 @@ public class MapView extends JPanel {
      * Remove selected graphics
      */
     public void removeSelectedGraphics() {
-        UndoableEdit edit = (new MapViewUndoRedo()).new RemoveGraphicsEdit(this, _selectedGraphics);
+        UndoableEdit edit = (new MapViewUndoRedo()).new RemoveGraphicsEdit(this, _selectedGraphics.getGraphics());
         this.fireUndoEditEvent(edit);
-        for (Graphic aGraphic : _selectedGraphics) {
+        for (Graphic aGraphic : _selectedGraphics.getGraphics()) {
             removeGraphic(aGraphic);
         }
 
@@ -9093,7 +9093,7 @@ public class MapView extends JPanel {
 
             //Load label graphics
             GraphicCollection gc = loadGraphicCollection((Element) aVLayer);
-            aLayer.setLabelPoints(gc);
+            aLayer.setLabelPoints(gc.getGraphics());
 
             //Load chart set 
             NodeList chartNodes = ((Element) aVLayer).getElementsByTagName("ChartSet");

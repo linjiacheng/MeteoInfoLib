@@ -1,4 +1,4 @@
- /* Copyright 2012 Yaqiang Wang,
+/* Copyright 2012 Yaqiang Wang,
  * yaqiang.wang@gmail.com
  * 
  * This library is free software; you can redistribute it and/or modify it
@@ -118,7 +118,7 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
             values[0] = DateUtil.toOADate(time);
             tdim.setValues(values);
             this.setTimeDimension(tdim);
-            
+
             _stNum = Integer.parseInt(dataArray[4]);
             Dimension stdim = new Dimension(DimensionType.Other);
             values = new double[_stNum];
@@ -135,7 +135,7 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
                 variables.add(var);
             }
             this.setVariables(variables);
-            
+
             //Read data
             dataNum = 0;
             do {
@@ -192,15 +192,16 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
             Logger.getLogger(MICAPS1DataInfo.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
-                if (sr != null)
+                if (sr != null) {
                     sr.close();
+                }
             } catch (IOException ex) {
                 Logger.getLogger(MICAPS1DataInfo.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
-        
-    private List<List<String>> readData(){
+
+    private List<List<String>> readData() {
         BufferedReader sr = null;
         try {
             sr = new BufferedReader(new InputStreamReader(new FileInputStream(this.getFileName()), "gbk"));
@@ -215,8 +216,8 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
             aLine = sr.readLine().trim();
             if (aLine.isEmpty()) {
                 sr.readLine();
-            }            
-            
+            }
+
             //Read data
             do {
                 aLine = sr.readLine();
@@ -265,19 +266,22 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
             return null;
         } finally {
             try {
-                if (sr != null)
+                if (sr != null) {
                     sr.close();
+                }
             } catch (IOException ex) {
                 Logger.getLogger(MICAPS1DataInfo.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
+
     /**
      * Get global attributes
+     *
      * @return Global attributes
      */
     @Override
-    public List<Attribute> getGlobalAttributes(){
+    public List<Attribute> getGlobalAttributes() {
         return new ArrayList<>();
     }
 
@@ -290,37 +294,37 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
         dataInfo += System.getProperty("line.separator") + "Time: " + format.format(this.getTimes().get(0));
         dataInfo += System.getProperty("line.separator") + "Station Number: " + _stNum;
         dataInfo += System.getProperty("line.separator") + "Number of Variables = " + String.valueOf(this.getVariableNum());
-        for (int i = 0; i < this.getVariableNum(); i++){
+        for (int i = 0; i < this.getVariableNum(); i++) {
             dataInfo += System.getProperty("line.separator") + "\t" + this.getVariableNames().get(i);
         }
 
         return dataInfo;
     }
-    
+
     /**
      * Read array data of a variable
-     * 
+     *
      * @param varName Variable name
      * @return Array data
      */
     @Override
-    public Array read(String varName){
+    public Array read(String varName) {
         Variable var = this.getVariable(varName);
         int n = var.getDimNumber();
         int[] origin = new int[n];
         int[] size = new int[n];
         int[] stride = new int[n];
-        for (int i = 0; i < n; i++){
+        for (int i = 0; i < n; i++) {
             origin[i] = 0;
             size[i] = var.getDimLength(i);
             stride[i] = 1;
         }
-        
+
         Array r = read(varName, origin, size, stride);
-        
+
         return r;
     }
-    
+
     /**
      * Read array data of the variable
      *
@@ -333,11 +337,12 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
     @Override
     public Array read(String varName, int[] origin, int[] size, int[] stride) {
         int varIdx = this._fieldList.indexOf(varName);
-        if (varIdx < 0)
+        if (varIdx < 0) {
             return null;
-        
+        }
+
         DataType dt = DataType.FLOAT;
-        switch (varName){
+        switch (varName) {
             case "Stid":
                 dt = DataType.STRING;
                 break;
@@ -355,27 +360,37 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
         shape[0] = this._stNum;
         Array r = Array.factory(dt, shape);
         int i;
-        float v;       
+        float v;
         List<String> dataList;
         List<List<String>> allDataList = this.readData();
 
         for (i = 0; i < allDataList.size(); i++) {
             dataList = allDataList.get(i);
-            v = Float.parseFloat(dataList.get(varIdx));
-
-            if (varIdx == 8) //Pressure
-            {
-                if (!MIMath.doubleEquals(v, this.getMissingValue())) {
-                    if (v > 800) {
-                        v = v / 10 + 900;
-                    } else {
-                        v = v / 10 + 1000;
+            switch (dt) {
+                case STRING:
+                    r.setObject(i, dataList.get(varIdx));
+                    break;
+                case INT:
+                    int vi = Integer.parseInt(dataList.get(varIdx));
+                    r.setInt(i, vi);
+                    break;
+                case FLOAT:
+                    v = Float.parseFloat(dataList.get(varIdx));
+                    if (varIdx == 8) //Pressure
+                    {
+                        if (!MIMath.doubleEquals(v, this.getMissingValue())) {
+                            if (v > 800) {
+                                v = v / 10 + 900;
+                            } else {
+                                v = v / 10 + 1000;
+                            }
+                        }
                     }
-                }
+                    r.setFloat(i, v);
+                    break;
             }
-            r.setObject(i, v);
         }
-        
+
         return r;
     }
 
@@ -477,7 +492,7 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
         float lon, lat;
         String aStid;
         List<String> dataList;
-        List<StationModel> smList = new ArrayList<>();        
+        List<StationModel> smList = new ArrayList<>();
         float minX, maxX, minY, maxY;
         minX = 0;
         maxX = 0;
@@ -506,12 +521,10 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
             double press = Double.parseDouble(dataList.get(8));
             if (MIMath.doubleEquals(press, this.getMissingValue())) {
                 sm.setPressure(press);
+            } else if (press > 800) {
+                sm.setPressure(press / 10 + 900);
             } else {
-                if (press > 800) {
-                    sm.setPressure(press / 10 + 900);
-                } else {
-                    sm.setPressure(press / 10 + 1000);
-                }
+                sm.setPressure(press / 10 + 1000);
             }
             smList.add(sm);
 

@@ -39,7 +39,8 @@ public enum ShapeTypes {
     CurveLine(52),
     CurvePolygon(53),
     Ellipse(54),
-    Circle(55);
+    Circle(55),
+    Bar(56);
     private final int value;
 
     /**

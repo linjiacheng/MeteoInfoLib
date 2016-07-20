@@ -918,7 +918,7 @@ public class MapFrame extends ItemNode {
      * @return Layer nodes
      */
     public List<LayerNode> getLayerNodes() {
-        List<LayerNode> layerNodes = new ArrayList<LayerNode>();
+        List<LayerNode> layerNodes = new ArrayList<>();
         for (ItemNode aIN : _nodes) {
             if (aIN.getNodeType() == NodeTypes.GroupNode) {
                 for (LayerNode aLN : ((GroupNode) aIN).getLayers()) {
@@ -1600,7 +1600,7 @@ public class MapFrame extends ItemNode {
         _mapView.exportMaskOutElement(m_Doc, mapFrame);
         _mapView.exportProjectionElement(m_Doc, mapFrame);
         addGroupLayerElement(m_Doc, mapFrame, projectFilePath);
-        _mapView.exportGraphics(m_Doc, mapFrame, _mapView.getGraphicCollection());
+        _mapView.exportGraphics(m_Doc, mapFrame, _mapView.getGraphicCollection().getGraphics());
 
         parent.appendChild(mapFrame);
     }

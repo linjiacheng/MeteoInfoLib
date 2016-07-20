@@ -420,6 +420,11 @@ public class MIMath {
      */
     public static Extent getLagerExtent(Extent aET, Extent bET) {
         Extent cET = new Extent();
+        if (aET.isNaN())
+            return bET;
+        else if (bET.isNaN())
+            return aET;
+        
         cET.minX = Math.min(aET.minX, bET.minX);
         cET.minY = Math.min(aET.minY, bET.minY);
         cET.maxX = Math.max(aET.maxX, bET.maxX);

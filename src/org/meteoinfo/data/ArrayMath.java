@@ -2306,12 +2306,12 @@ public class ArrayMath {
      * @return Result arrays removing cells outside polygons
      */
     public static Array[] maskout_Remove(Array a, Array x, Array y, List<PolygonShape> polygons) {
-        List<Double> rdata = new ArrayList<>();
+        List<Object> rdata = new ArrayList<>();
         List<Double> rxdata = new ArrayList<>();
         List<Double> rydata = new ArrayList<>();
         for (int i = 0; i < a.getSize(); i++) {
             if (GeoComputation.pointInPolygons(polygons, new PointD(x.getDouble(i), y.getDouble(i)))) {
-                rdata.add(a.getDouble(i));
+                rdata.add(a.getObject(i));
                 rxdata.add(x.getDouble(i));
                 rydata.add(y.getDouble(i));
             }
@@ -2324,7 +2324,7 @@ public class ArrayMath {
         Array rx = Array.factory(x.getDataType(), shape);
         Array ry = Array.factory(y.getDataType(), shape);
         for (int i = 0; i < n; i++) {
-            r.setDouble(i, rdata.get(i));
+            r.setObject(i, rdata.get(i));
             rx.setDouble(i, rxdata.get(i));
             ry.setDouble(i, rydata.get(i));
         }
@@ -2386,6 +2386,27 @@ public class ArrayMath {
         for (int i = 0; i < n; i++) {
             if (m.getDouble(i) < 0) {
                 r.setObject(i, missingValue);
+            } else {
+                r.setObject(i, a.getObject(i));
+            }
+        }
+
+        return r;
+    }
+    
+    /**
+     * Maskout function
+     *
+     * @param a Array a
+     * @param m Array mask
+     * @return Result array
+     */
+    public static Array maskout(Array a, Array m) {
+        Array r = Array.factory(a.getDataType(), a.getShape());
+        int n = (int) a.getSize();
+        for (int i = 0; i < n; i++) {
+            if (m.getDouble(i) < 0) {
+                r.setObject(i, Double.NaN);
             } else {
                 r.setObject(i, a.getObject(i));
             }

@@ -43,7 +43,7 @@ public class RectangleShape extends PolygonShape {
     public Object clone() {
         RectangleShape aPGS = new RectangleShape();
         aPGS.setExtent(this.getExtent());
-        aPGS.setPoints(new ArrayList<PointD>(this.getPoints()));
+        aPGS.setPoints(new ArrayList<>(this.getPoints()));
         aPGS.setVisible(this.isVisible());
         aPGS.setSelected(this.isSelected());
 

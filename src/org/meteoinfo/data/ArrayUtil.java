@@ -168,10 +168,10 @@ public class ArrayUtil {
      * @param fn File path
      * @param a Array
      * @param byteOrder Byte order
+     * @param append
      */
-    public static void saveBinFile(String fn, Array a, String byteOrder) {
-        try {
-            DataOutputStream outs = new DataOutputStream(new FileOutputStream(new File(fn)));
+    public static void saveBinFile(String fn, Array a, String byteOrder, boolean append) {
+        try (DataOutputStream outs = new DataOutputStream(new FileOutputStream(new File(fn), append))){
             ByteBuffer bb = a.getDataAsByteBuffer();
             ByteOrder bOrder = ByteOrder.LITTLE_ENDIAN;
             if (byteOrder.equalsIgnoreCase("big_endian")) {
@@ -188,6 +188,7 @@ public class ArrayUtil {
                     case INT:
                         for (int i = 0; i < a.getSize(); i++) {
                             nbb.putInt(i * 4, bb.getInt());
+                            //nbb.putInt(a.getInt(i));
                         }
                         break;
                     case FLOAT:

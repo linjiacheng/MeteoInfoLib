@@ -116,7 +116,7 @@ public class LonLatAxis extends Axis implements Cloneable {
             }
             lab = String.valueOf(value);
             lab = DataConvert.removeTailingZeros(lab);
-            if (this.isXAxis()) {
+            if (this.isLongitude()) {
                 if (value == -180) {
                     lab = "180";
                 } else if (!(value == 0 || value == 180)) {

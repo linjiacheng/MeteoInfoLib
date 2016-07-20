@@ -139,6 +139,14 @@ public class Extent implements Cloneable{
     public Extent extend(double dx, double dy){
         return new Extent(minX - dx, maxX + dx, minY - dy, maxY + dy);
     }
+    
+    /**
+     * Get is NaN or not
+     * @return Boolean
+     */
+    public boolean isNaN(){
+        return Double.isNaN(minX) || Double.isNaN(maxX) || Double.isNaN(minY) || Double.isNaN(maxY);
+    }
 
     /**
      * Clone
