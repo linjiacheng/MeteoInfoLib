@@ -204,6 +204,7 @@ public class XY2DPlot extends XYPlot {
         PointD p = aPS.getPoint();
         double[] sXY = projToScreen(p.X, p.Y, area);
         PointF pf = new PointF((float) sXY[0], (float) sXY[1]);
+        g.setStroke(new BasicStroke(1));
         Draw.drawWindBarb(aPB.getColor(), pf, aPS, g, aPB.getSize());
     }
 
@@ -212,6 +213,7 @@ public class XY2DPlot extends XYPlot {
         double[] sXY = projToScreen(p.X, p.Y, area);
         PointF pf = new PointF((float) sXY[0], (float) sXY[1]);
         float zoom = aPB.getSize() / 10;
+        g.setStroke(new BasicStroke(1));
         Draw.drawArraw(aPB.getColor(), pf, aPS, g, zoom);
     }
 
