@@ -24,7 +24,7 @@ public class ChartWindArrow {
     private float x;
     private float y;
     private String label;
-    private VectorLayer layer;
+    private Object layer;
     private Color background;
     private boolean drawBackground;
     private boolean drawNeatline;
@@ -96,7 +96,7 @@ public class ChartWindArrow {
      * Get layer
      * @return Layer
      */
-    public VectorLayer getLayer(){
+    public Object getLayer(){
         return this.layer;
     }
     
@@ -104,7 +104,7 @@ public class ChartWindArrow {
      * Set layer
      * @param value Layer
      */
-    public void setLayer(VectorLayer value){
+    public void setLayer(Object value){
         this.layer = value;
     }
     

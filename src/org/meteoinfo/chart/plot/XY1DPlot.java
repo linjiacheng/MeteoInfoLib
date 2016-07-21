@@ -32,7 +32,6 @@ import org.meteoinfo.legend.LegendScheme;
 import org.meteoinfo.legend.PointBreak;
 import org.meteoinfo.legend.PolygonBreak;
 import org.meteoinfo.legend.PolylineBreak;
-import org.meteoinfo.shape.Graphic;
 import org.meteoinfo.shape.ShapeTypes;
 
 /**

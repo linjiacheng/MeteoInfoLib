@@ -15,6 +15,9 @@ package org.meteoinfo.chart.plot;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.TexturePaint;
@@ -35,7 +38,9 @@ import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
 import org.meteoinfo.global.PointF;
 import org.meteoinfo.legend.BarBreak;
+import static org.meteoinfo.legend.BreakTypes.LabelBreak;
 import org.meteoinfo.legend.ColorBreak;
+import org.meteoinfo.legend.LabelBreak;
 import org.meteoinfo.legend.LegendScheme;
 import org.meteoinfo.legend.PointBreak;
 import org.meteoinfo.legend.PolygonBreak;
@@ -48,9 +53,12 @@ import org.meteoinfo.shape.PointShape;
 import org.meteoinfo.shape.Polygon;
 import org.meteoinfo.shape.PolygonShape;
 import org.meteoinfo.shape.Polyline;
+import org.meteoinfo.shape.PolylineErrorShape;
 import org.meteoinfo.shape.PolylineShape;
 import org.meteoinfo.shape.Shape;
 import org.meteoinfo.shape.ShapeTypes;
+import org.meteoinfo.shape.WindArrow;
+import org.meteoinfo.shape.WindBarb;
 
 /**
  *
@@ -122,7 +130,8 @@ public class XY2DPlot extends XYPlot {
         }
 
         int barIdx = 0;
-        for (Graphic graphic : this.graphics.getGraphics()) {
+        for (int m = 0; m < this.graphics.getNumGrahics(); m++) {
+            Graphic graphic = this.graphics.get(m);
             ColorBreak cb = graphic.getLegend();
             if (graphic.getGraphicN(0).getShape().getShapeType() == ShapeTypes.Bar) {
                 this.drawBars(g, (GraphicCollection) graphic, barIdx, area);
@@ -148,15 +157,34 @@ public class XY2DPlot extends XYPlot {
                             this.drawPolyline(g, (PolylineShape) shape, (PolylineBreak) cb, area);
                         }
                         break;
+                    case PolylineError:
+                        if (cb instanceof PointBreak) {
+                            this.drawPolylineError(g, (PolylineErrorShape) shape, (PointBreak) cb, area);
+                        } else {
+                            this.drawPolylineError(g, (PolylineErrorShape) shape, (PolylineBreak) cb, area);
+                        }
+                        break;
                     case Polygon:
                     case PolygonZ:
                         for (Polygon poly : ((PolygonShape) shape).getPolygons()) {
                             drawPolygon(g, poly, (PolygonBreak) cb, false, area);
                         }
                         break;
+                    case WindBarb:
+                        this.drawWindBarb(g, (WindBarb) shape, (PointBreak) cb, area);
+                        break;
+                    case WindArraw:
+                        this.drawWindArrow(g, (WindArrow) shape, (PointBreak) cb, area);
+                        break;
                     case Image:
                         this.drawImage(g, gg, area);
                         break;
+                }
+            }
+            if (graphic instanceof GraphicCollection) {
+                GraphicCollection gc = (GraphicCollection) graphic;
+                if (gc.getLabelSet().isDrawLabels()) {
+                    this.drawLabels(g, gc, area);
                 }
             }
         }
@@ -170,6 +198,21 @@ public class XY2DPlot extends XYPlot {
         double[] sXY = projToScreen(p.X, p.Y, area);
         PointF pf = new PointF((float) sXY[0], (float) sXY[1]);
         Draw.drawPoint(pf, aPB, g);
+    }
+
+    private void drawWindBarb(Graphics2D g, WindBarb aPS, PointBreak aPB, Rectangle2D area) {
+        PointD p = aPS.getPoint();
+        double[] sXY = projToScreen(p.X, p.Y, area);
+        PointF pf = new PointF((float) sXY[0], (float) sXY[1]);
+        Draw.drawWindBarb(aPB.getColor(), pf, aPS, g, aPB.getSize());
+    }
+
+    private void drawWindArrow(Graphics2D g, WindArrow aPS, PointBreak aPB, Rectangle2D area) {
+        PointD p = aPS.getPoint();
+        double[] sXY = projToScreen(p.X, p.Y, area);
+        PointF pf = new PointF((float) sXY[0], (float) sXY[1]);
+        float zoom = aPB.getSize() / 10;
+        Draw.drawArraw(aPB.getColor(), pf, aPS, g, zoom);
     }
 
     private void drawPolyline(Graphics2D g, PolylineShape aPLS, PointBreak aPB, Rectangle2D area) {
@@ -196,6 +239,257 @@ public class XY2DPlot extends XYPlot {
             }
             Draw.drawPolyline(points, aPLB, g);
         }
+    }
+
+    private void drawPolylineError(Graphics2D g, PolylineErrorShape aPLS, PointBreak aPB, Rectangle2D area) {
+        for (Polyline aline : aPLS.getPolylines()) {
+            double[] sXY;
+            PointF p;
+            double error;
+            double elen = 6;
+            g.setColor(aPB.getColor());
+            for (int i = 0; i < aline.getPointList().size(); i++) {
+                PointD wPoint = aline.getPointList().get(i);
+                sXY = projToScreen(wPoint.X, wPoint.Y, area);
+                p = new PointF((float) sXY[0], (float) sXY[1]);
+                if (aPLS.getYerror() != null) {
+                    error = aPLS.getYerror(i);
+                    error = this.projYLength(error, area);
+                    g.draw(new Line2D.Double(p.X, p.Y - error, p.X, p.Y + error));
+                    g.draw(new Line2D.Double(p.X - (elen * 0.5), p.Y - error, p.X + (elen * 0.5), p.Y - error));
+                    g.draw(new Line2D.Double(p.X - (elen * 0.5), p.Y + error, p.X + (elen * 0.5), p.Y + error));
+                }
+                if (aPLS.getXerror() != null) {
+                    error = aPLS.getXerror(i);
+                    error = this.projXLength(error, area);
+                    g.draw(new Line2D.Double(p.X - error, p.Y, p.X + error, p.Y));
+                    g.draw(new Line2D.Double(p.X - error, p.Y - (elen * 0.5), p.X - error, p.Y + (elen * 0.5)));
+                    g.draw(new Line2D.Double(p.X + error, p.Y - (elen * 0.5), p.X + error, p.Y + (elen * 0.5)));
+                }
+                Draw.drawPoint(p, aPB, g);
+            }
+        }
+    }
+
+    private void drawPolylineError(Graphics2D g, PolylineErrorShape aPLS, PolylineBreak aPLB, Rectangle2D area) {
+        for (Polyline aline : aPLS.getPolylines()) {
+            double[] sXY;
+            PointF[] points = new PointF[aline.getPointList().size()];
+            PointF p;
+            double error;
+            double elen = 6;
+            g.setColor(aPLB.getColor());
+            for (int i = 0; i < aline.getPointList().size(); i++) {
+                PointD wPoint = aline.getPointList().get(i);
+                sXY = projToScreen(wPoint.X, wPoint.Y, area);
+                p = new PointF((float) sXY[0], (float) sXY[1]);
+                points[i] = p;
+                if (aPLS.getYerror() != null) {
+                    error = aPLS.getYerror(i);
+                    error = this.projYLength(error, area);
+                    g.draw(new Line2D.Double(p.X, p.Y - error, p.X, p.Y + error));
+                    g.draw(new Line2D.Double(p.X - (elen * 0.5), p.Y - error, p.X + (elen * 0.5), p.Y - error));
+                    g.draw(new Line2D.Double(p.X - (elen * 0.5), p.Y + error, p.X + (elen * 0.5), p.Y + error));
+                }
+                if (aPLS.getXerror() != null) {
+                    error = aPLS.getXerror(i);
+                    error = this.projXLength(error, area);
+                    g.draw(new Line2D.Double(p.X - error, p.Y, p.X + error, p.Y));
+                    g.draw(new Line2D.Double(p.X - error, p.Y - (elen * 0.5), p.X - error, p.Y + (elen * 0.5)));
+                    g.draw(new Line2D.Double(p.X + error, p.Y - (elen * 0.5), p.X + error, p.Y + (elen * 0.5)));
+                }
+            }
+            Draw.drawPolyline(points, aPLB, g);
+        }
+    }
+
+    private void drawLabels(Graphics2D g, GraphicCollection graphics, Rectangle2D area) {
+        Extent lExtent = graphics.getExtent();
+        Extent drawExtent = this.getDrawExtent();
+        if (!MIMath.isExtentCross(lExtent, drawExtent)) {
+            return;
+        }
+
+        Font drawFont;
+        List<Extent> extentList = new ArrayList<>();
+        Extent maxExtent = new Extent();
+        Extent aExtent;
+        int i, j;
+        List<Graphic> LabelPoints = graphics.getLabelPoints();
+        String LabelStr;
+        PointF aPoint = new PointF();
+
+        for (i = 0; i < LabelPoints.size(); i++) {
+            Graphic aLP = LabelPoints.get(i);
+            PointShape aPS = (PointShape) aLP.getShape();
+            LabelBreak aLB = (LabelBreak) aLP.getLegend();
+            aPS.setVisible(true);
+            LabelStr = aLB.getText();
+            aPoint.X = (float) aPS.getPoint().X;
+            aPoint.Y = (float) aPS.getPoint().Y;
+            drawFont = aLB.getFont();
+            if (aPoint.X < drawExtent.minX || aPoint.X > drawExtent.maxX
+                    || aPoint.Y < drawExtent.minY || aPoint.Y > drawExtent.maxY) {
+                continue;
+            }
+            double[] xy = projToScreen(aPoint.X, aPoint.Y, area);
+            aPoint.X = (float) xy[0];
+            aPoint.Y = (float) xy[1];
+            FontMetrics metrics = g.getFontMetrics(drawFont);
+            Dimension labSize = new Dimension(metrics.stringWidth(LabelStr), metrics.getHeight());
+            switch (aLB.getAlignType()) {
+                case Center:
+                    aPoint.X = (float) xy[0] - labSize.width / 2;
+                    break;
+                case Left:
+                    aPoint.X = (float) xy[0] - labSize.width;
+                    break;
+            }
+            aPoint.Y += labSize.height / 2;
+            aPoint.Y -= aLB.getYShift();
+            aPoint.X += aLB.getXShift();
+
+            AffineTransform tempTrans = g.getTransform();
+            if (aLB.getAngle() != 0) {
+                AffineTransform myTrans = new AffineTransform();
+                myTrans.translate(aPoint.X, aPoint.Y);
+                myTrans.rotate(aLB.getAngle() * Math.PI / 180);
+                g.setTransform(myTrans);
+                aPoint.X = 0;
+                aPoint.Y = 0;
+            }
+
+            boolean ifDraw = true;
+            Rectangle rect = this.getGraphicRectangle(g, aLP, area);
+            aExtent = new Extent();
+            aExtent.minX = rect.x;
+            aExtent.maxX = rect.x + rect.width;
+            aExtent.minY = rect.y;
+            aExtent.maxY = rect.y + rect.height;
+            if (graphics.getLabelSet().isAvoidCollision()) {
+                //Judge extent                                        
+                if (extentList.isEmpty()) {
+                    maxExtent = (Extent) aExtent.clone();
+                    extentList.add(aExtent);
+                } else if (!MIMath.isExtentCross(aExtent, maxExtent)) {
+                    extentList.add(aExtent);
+                    maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
+                } else {
+                    for (j = 0; j < extentList.size(); j++) {
+                        if (MIMath.isExtentCross(aExtent, extentList.get(j))) {
+                            ifDraw = false;
+                            break;
+                        }
+                    }
+                    if (ifDraw) {
+                        extentList.add(aExtent);
+                        maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
+                    } else {
+                        aPS.setVisible(false);
+                    }
+                }
+            }
+
+            if (ifDraw) {
+                if (graphics.getLabelSet().isDrawShadow()) {
+                    g.setColor(graphics.getLabelSet().getShadowColor());
+                    g.fill(new Rectangle.Float((float) aExtent.minX, (float) aExtent.minY, labSize.width, labSize.height));
+                }
+                g.setFont(drawFont);
+                //g.setColor(aLayer.getLabelSet().getLabelColor());
+                g.setColor(aLP.getLegend().getColor());
+                g.drawString(LabelStr, aPoint.X, aPoint.Y);
+
+                //Draw selected rectangle
+                if (aPS.isSelected()) {
+                    float[] dashPattern = new float[]{2.0F, 1.0F};
+                    g.setColor(Color.cyan);
+                    g.setStroke(new BasicStroke(1.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 10.0f, dashPattern, 0.0f));
+                    g.draw(new Rectangle.Float((float) aExtent.minX, (float) aExtent.minY, labSize.width, labSize.height));
+                }
+            }
+
+            if (aLB.getAngle() != 0) {
+                g.setTransform(tempTrans);
+            }
+        }
+    }
+
+    /**
+     * Get graphic rectangle
+     *
+     * @param g The graphics
+     * @param aGraphic The graphic
+     * @param area Area
+     * @return Rectangle
+     */
+    public Rectangle getGraphicRectangle(Graphics2D g, Graphic aGraphic, Rectangle2D area) {
+        Rectangle rect = new Rectangle();
+        double[] sXY;
+        float aX, aY;
+        switch (aGraphic.getShape().getShapeType()) {
+            case Point:
+            case PointM:
+                PointShape aPS = (PointShape) aGraphic.getShape();
+                sXY = projToScreen(aPS.getPoint().X, aPS.getPoint().Y, area);
+                aX = (float) sXY[0];
+                aY = (float) sXY[1];
+                switch (aGraphic.getLegend().getBreakType()) {
+                    case PointBreak:
+                        PointBreak aPB = (PointBreak) aGraphic.getLegend();
+                        int buffer = (int) aPB.getSize() + 2;
+                        rect.x = (int) aX - buffer / 2;
+                        rect.y = (int) aY - buffer / 2;
+                        rect.width = buffer;
+                        rect.height = buffer;
+                        break;
+                    case LabelBreak:
+                        LabelBreak aLB = (LabelBreak) aGraphic.getLegend();
+                        g.setFont(aLB.getFont());
+                        //FontMetrics metrics = g.getFontMetrics(aLB.getFont());
+                        //Dimension labSize = new Dimension(metrics.stringWidth(aLB.getText()), metrics.getHeight());
+                        Dimension labSize = Draw.getStringDimension(aLB.getText(), g);
+                        switch (aLB.getAlignType()) {
+                            case Center:
+                                aX = aX - labSize.width / 2;
+                                break;
+                            case Left:
+                                aX = aX - labSize.width;
+                                break;
+                        }
+                        aY -= aLB.getYShift();
+                        aY -= labSize.height / 3;
+                        rect.x = (int) aX;
+                        rect.y = (int) aY;
+                        rect.width = (int) labSize.width;
+                        rect.height = (int) labSize.height;
+                        break;
+                }
+                break;
+            case Polyline:
+            case Polygon:
+            case Rectangle:
+            case CurveLine:
+            case Ellipse:
+            case Circle:
+            case CurvePolygon:
+                List<PointD> newPList = (List<PointD>) aGraphic.getShape().getPoints();
+                List<PointD> points = new ArrayList<>();
+                for (PointD wPoint : newPList) {
+                    sXY = projToScreen(wPoint.X, wPoint.Y, area);
+                    aX = (float) sXY[0];
+                    aY = (float) sXY[1];
+                    points.add(new PointD(aX, aY));
+                }
+                Extent aExtent = MIMath.getPointsExtent(points);
+                rect.x = (int) aExtent.minX;
+                rect.y = (int) aExtent.minY;
+                rect.width = (int) (aExtent.maxX - aExtent.minX);
+                rect.height = (int) (aExtent.maxY - aExtent.minY);
+                break;
+        }
+
+        return rect;
     }
 
     private List<PointF> drawPolygon(Graphics2D g, Polygon aPG, PolygonBreak aPGB,

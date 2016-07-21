@@ -5316,7 +5316,7 @@ public class MapView extends JPanel {
                 }
 
                 if (isStreamline) {
-                    int len = (int) (aPLS.value * 3);
+                    int len = (int) (aPLS.getValue() * 3);
                     PointF aPoint;
                     for (int i = 0; i < Points.length; i++) {
                         if (i > 0 && i < Points.length - 2 && i % len == 0) {
@@ -5406,7 +5406,7 @@ public class MapView extends JPanel {
                 }
 
                 if (isStreamline) {
-                    int len = (int) (aPLS.value * 3);
+                    int len = (int) (aPLS.getValue() * 3);
                     PointF aPoint;
                     for (int i = 0; i < Points.length; i++) {
                         if (i > 0 && i < Points.length - 2 && i % len == 0) {
@@ -6462,7 +6462,7 @@ public class MapView extends JPanel {
             }
 
             aPLS = new PolylineShape();
-            aPLS.value = lon;
+            aPLS.setValue(lon);
             extent.minX = lon;
             extent.maxX = lon;
             extent.minY = -90;
@@ -6506,7 +6506,7 @@ public class MapView extends JPanel {
                     lon += 360;
                 }
                 aPLS = new PolylineShape();
-                aPLS.value = lon;
+                aPLS.setValue(lon);
                 extent.minX = lon;
                 extent.maxX = lon;
                 extent.minY = -90;
@@ -6542,7 +6542,7 @@ public class MapView extends JPanel {
                     lon -= 360;
                 }
                 aPLS = new PolylineShape();
-                aPLS.value = lon;
+                aPLS.setValue(lon);
                 extent.minX = lon;
                 extent.maxX = lon;
                 extent.minY = -90;
@@ -6579,7 +6579,7 @@ public class MapView extends JPanel {
         lat = -90;
         while (lat <= 90) {
             aPLS = new PolylineShape();
-            aPLS.value = lat;
+            aPLS.setValue(lat);
             extent.minX = -180;
             extent.minY = lat;
             extent.maxY = lat;

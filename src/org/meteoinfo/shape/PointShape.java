@@ -31,7 +31,6 @@ public class PointShape extends Shape implements Cloneable{
     // <editor-fold desc="Variables">
 
     private PointD _point = new PointD();
-    private double _value;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -93,23 +92,6 @@ public class PointShape extends Shape implements Cloneable{
         this.setExtent(aExtent);
     }
 
-    /**
-     * Get value
-     * 
-     * @return value
-     */
-    public double getValue() {
-        return _value;
-    }
-
-    /**
-     * Set value
-     * 
-     * @param value value
-     */
-    public void setValue(double value) {
-        _value = value;
-    }
     // </editor-fold>
     // <editor-fold desc="Methods">
 
@@ -154,7 +136,7 @@ public class PointShape extends Shape implements Cloneable{
     @Override
     public Object clone() {
         PointShape ps = new PointShape();
-        ps._value = _value;
+        ps.setValue(this.getValue());
         ps.setPoint((PointD)_point.clone());
         ps.setVisible(this.isVisible());
         ps.setSelected(this.isSelected());

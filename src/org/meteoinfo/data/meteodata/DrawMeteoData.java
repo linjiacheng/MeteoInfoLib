@@ -93,7 +93,7 @@ public class DrawMeteoData {
                 pList.add(aPoint);
             }
             aPolyline.setPoints(pList);
-            aPolyline.value = i;
+            aPolyline.setValue(i);
             aPolyline.setExtent(MIMath.getPointsExtent(pList));
 
             int shapeNum = layer.getShapeNum();
@@ -141,7 +141,7 @@ public class DrawMeteoData {
                 pList.add(aPoint);
             }
             aPolyline.setPoints(pList);
-            aPolyline.value = i;
+            aPolyline.setValue(i);
             aPolyline.setExtent(MIMath.getPointsExtent(pList));
 
             int shapeNum = layer.getShapeNum();
@@ -211,7 +211,7 @@ public class DrawMeteoData {
             for (List<PointD> ps : ppList) {
                 PolylineShape aPolyline = new PolylineShape();
                 aPolyline.setPoints(ps);
-                aPolyline.value = i;
+                aPolyline.setValue(i);
                 aPolyline.setExtent(MIMath.getPointsExtent(ps));
 
                 int shapeNum = layer.getShapeNum();
@@ -283,7 +283,7 @@ public class DrawMeteoData {
             for (List<PointD> ps : ppList) {
                 PolylineShape aPolyline = new PolylineShape();
                 aPolyline.setPoints(ps);
-                aPolyline.value = i;
+                aPolyline.setValue(i);
                 aPolyline.setExtent(MIMath.getPointsExtent(ps));
 
                 int shapeNum = layer.getShapeNum();
@@ -381,7 +381,7 @@ public class DrawMeteoData {
                 pList.add(aPoint);
             }
             aPolyline.setPoints(pList);
-            aPolyline.value = aValue;
+            aPolyline.setValue(aValue);
             aPolyline.setExtent(MIMath.getPointsExtent(pList));
 
             int shapeNum = aLayer.getShapeNum();
@@ -467,7 +467,7 @@ public class DrawMeteoData {
                 pList.add(aPoint);
             }
             aPolyline.setPoints(pList);
-            aPolyline.value = aValue;
+            aPolyline.setValue(aValue);
             aPolyline.setExtent(MIMath.getPointsExtent(pList));
             int shapeNum = aLayer.getShapeNum();
             try {
@@ -1218,7 +1218,7 @@ public class DrawMeteoData {
                 pList.add(aPoint);
             }
             aPolyline.setPoints(pList);
-            aPolyline.value = density;
+            aPolyline.setValue(density);
 
             int shapeNum = aLayer.getShapeNum();
             try {

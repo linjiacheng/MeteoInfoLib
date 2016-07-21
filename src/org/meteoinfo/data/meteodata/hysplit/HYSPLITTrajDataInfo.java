@@ -376,7 +376,7 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                 for (i = 0; i < trajeoryNums.get(t); i++) {
                     PolylineZShape aPolyline = new PolylineZShape();
                     TrajNum += 1;
-                    aPolyline.value = TrajNum;
+                    aPolyline.setValue(TrajNum);
                     aPolyline.setPoints(PointList.get(i));
                     aPolyline.setExtent(MIMath.getPointsExtent(aPolyline.getPoints()));
 

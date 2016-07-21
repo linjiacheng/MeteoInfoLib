@@ -332,7 +332,7 @@ public class MICAPS7DataInfo extends DataInfo implements TrajDataInfo {
                     PolylineShape aPolyline = new PolylineShape();
                     //aPolyline.value = aDataInfo.TrajInfos[i].StartTime.ToBinary();
                     TrajNum += 1;
-                    aPolyline.value = TrajNum;
+                    aPolyline.setValue(TrajNum);
                     aPolyline.setPoints(PointList.get(i));
                     aPolyline.setExtent(MIMath.getPointsExtent(aPolyline.getPoints()));
 

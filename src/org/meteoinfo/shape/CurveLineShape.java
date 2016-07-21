@@ -45,7 +45,7 @@ public class CurveLineShape extends PolylineShape {
     @Override
     public Object clone() {
         CurveLineShape aPLS = new CurveLineShape();
-        aPLS.value = value;
+        aPLS.setValue(this.getValue());
         aPLS.setExtent(this.getExtent());
         aPLS.setPartNum(this.getPartNum());
         aPLS.parts = (int[]) parts.clone();
@@ -64,7 +64,7 @@ public class CurveLineShape extends PolylineShape {
     @Override
     public CurveLineShape valueClone() {
         CurveLineShape aPLS = new CurveLineShape();
-        aPLS.value = value;        
+        aPLS.setValue(this.getValue());        
         aPLS.setVisible(this.isVisible());
         aPLS.setSelected(this.isSelected());
         

@@ -36,10 +36,6 @@ public class PolylineShape extends Shape implements Cloneable {
     private List<? extends PointD> _points;
     private List<? extends Polyline> _polylines;
     /**
-     * Value
-     */
-    public double value;
-    /**
      * Part number
      */
     private int _numParts;
@@ -356,7 +352,7 @@ public class PolylineShape extends Shape implements Cloneable {
     @Override
     public Object clone() {
         PolylineShape aPLS = new PolylineShape();
-        aPLS.value = value;
+        aPLS.setValue(this.getValue());
         aPLS.setExtent(this.getExtent());
         aPLS._numParts = _numParts;
         aPLS.parts = (int[]) parts.clone();
@@ -379,7 +375,7 @@ public class PolylineShape extends Shape implements Cloneable {
      */
     public PolylineShape valueClone() {
         PolylineShape aPLS = new PolylineShape();
-        aPLS.value = value;
+        aPLS.setValue(this.getValue());
         aPLS.setVisible(this.isVisible());
         aPLS.setSelected(this.isSelected());
         aPLS.setLegendIndex(this.getLegendIndex());
@@ -395,7 +391,7 @@ public class PolylineShape extends Shape implements Cloneable {
     @Override
     public void cloneValue(Shape other){
         PolylineShape o = (PolylineShape)other;
-        this.value = o.value;
+        this.setValue(o.getValue());
         this.setExtent(o.getExtent());
         this._numParts = o._numParts;
         this.parts = (int[]) o.parts.clone();

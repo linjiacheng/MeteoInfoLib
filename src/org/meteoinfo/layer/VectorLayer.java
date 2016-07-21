@@ -2185,7 +2185,7 @@ public class VectorLayer extends MapLayer {
                         continue;
                     }
                 }
-                double currentLevel = pgs.value;
+                double currentLevel = pgs.getValue();
                 int levelNum = pgs.getLegendIndex();
                 int i = 0;
                 for (Polyline line : pgs.getPolylines()) {

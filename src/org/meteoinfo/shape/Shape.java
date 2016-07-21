@@ -40,6 +40,7 @@ public abstract class Shape implements Cloneable{
     private boolean editing;
     private Extent _extent = new Extent();
     private int _legendIndex = 0;
+    private double value;
 
     // </editor-fold>
     // <editor-fold desc="Constructor">
@@ -156,6 +157,22 @@ public abstract class Shape implements Cloneable{
      */
     public void setLegendIndex(int value) {
         _legendIndex = value;
+    }
+    
+    /**
+     * Get value
+     * @return Value
+     */
+    public double getValue(){
+        return this.value;
+    }
+    
+    /**
+     * Set value
+     * @param value Value
+     */
+    public void setValue(double value){
+        this.value = value;
     }
 
     // </editor-fold>

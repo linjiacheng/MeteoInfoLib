@@ -713,8 +713,8 @@ public class LegendManage {
             case Polyline:
             case PolylineZ:
                 for (Shape aPLS : aLayer.getShapes()) {
-                    if (!valueList.contains(((PolylineShape) aPLS).value)) {
-                        valueList.add(((PolylineShape) aPLS).value);
+                    if (!valueList.contains(((PolylineShape) aPLS).getValue())) {
+                        valueList.add(((PolylineShape) aPLS).getValue());
                     }
                 }
                 break;

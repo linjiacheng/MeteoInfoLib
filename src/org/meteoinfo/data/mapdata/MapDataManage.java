@@ -255,7 +255,7 @@ public class MapDataManage {
             }
             if (pList.size() > 1) {
                 PolylineShape aPolyline = new PolylineShape();
-                aPolyline.value = lineNum;
+                aPolyline.setValue(lineNum);
                 aPolyline.setPoints(pList);
                 aPolyline.setExtent(MIMath.getPointsExtent(pList));
                 aPolyline.setPartNum(1);
@@ -478,7 +478,7 @@ public class MapDataManage {
                             pList.add(aPoint);
                         }
                         PolylineShape aPLS = new PolylineShape();
-                        aPLS.value = i;
+                        aPLS.setValue(i);
                         aPLS.setExtent(MIMath.getPointsExtent(pList));
                         aPLS.setPoints(pList);
                         

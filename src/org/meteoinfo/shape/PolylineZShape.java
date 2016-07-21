@@ -125,7 +125,7 @@ public class PolylineZShape extends PolylineShape {
     @Override
     public Object clone() {
         PolylineZShape aPLS = new PolylineZShape();
-        aPLS.value = value;
+        aPLS.setValue(this.getValue());
         aPLS.setExtent((Extent)this.getExtent().clone());
         aPLS.setPartNum(this.getPartNum());
         aPLS.parts = (int[]) parts.clone();
@@ -152,7 +152,7 @@ public class PolylineZShape extends PolylineShape {
      */
     public PolylineZShape ValueClone() {
         PolylineZShape aPLS = new PolylineZShape();
-        aPLS.value = value;
+        aPLS.setValue(this.getValue());
         aPLS.setVisible(this.isVisible());
         aPLS.setSelected(this.isSelected());
         aPLS.setLegendIndex(this.getLegendIndex());

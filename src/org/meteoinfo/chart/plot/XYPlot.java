@@ -33,6 +33,8 @@ import org.meteoinfo.drawing.Draw;
 import static org.meteoinfo.drawing.Draw.getDashPattern;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.PointF;
+import org.meteoinfo.layer.VectorLayer;
+import org.meteoinfo.shape.GraphicCollection;
 import org.meteoinfo.shape.WindArrow;
 
 /**
@@ -642,7 +644,10 @@ public abstract class XYPlot extends Plot {
             ChartWindArrow wa = this.getWindArrow();
             float zoom = 1.0f;
             if (wa.getLayer() != null) {
-                zoom = wa.getLayer().getDrawingZoom();
+                if (wa.getLayer() instanceof VectorLayer)
+                    zoom = ((VectorLayer)wa.getLayer()).getDrawingZoom();
+                else if (wa.getLayer() instanceof GraphicCollection)
+                    zoom = ((GraphicCollection)wa.getLayer()).getArrowZoom();
             }
             float x = (float) (area.getWidth() * wa.getX());
             y = (float) (area.getHeight() * (1 - wa.getY()));

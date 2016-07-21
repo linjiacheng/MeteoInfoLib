@@ -21,7 +21,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import org.meteoinfo.global.DataConvert;
+import org.meteoinfo.layer.LabelSet;
+import org.meteoinfo.legend.BreakTypes;
 import org.meteoinfo.legend.ColorBreak;
+import org.meteoinfo.legend.LabelBreak;
+import org.meteoinfo.legend.LegendScheme;
+import org.meteoinfo.legend.PointBreak;
 
 /**
  *
@@ -33,6 +39,9 @@ public class GraphicCollection extends Graphic implements Iterator {
     private Extent _extent = new Extent();
     private boolean singleLegend = true;
     private int index;
+    private LabelSet labelSet;
+    private List<Graphic> labelPoints;
+    private LegendScheme legendScheme;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -41,6 +50,8 @@ public class GraphicCollection extends Graphic implements Iterator {
      */
     public GraphicCollection() {
         this.index = 0;
+        labelSet = new LabelSet();
+        labelPoints = new ArrayList<>();
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -86,6 +97,58 @@ public class GraphicCollection extends Graphic implements Iterator {
      */
     public void setSingleLegend(boolean value){
         this.singleLegend = value;
+    }
+    
+    /**
+     * Get label set
+     *
+     * @return Label set
+     */
+    public LabelSet getLabelSet() {
+        return labelSet;
+    }
+
+    /**
+     * Set label set
+     *
+     * @param ls Label set
+     */
+    public void setLabelSet(LabelSet ls) {
+        labelSet = ls;
+    }
+
+    /**
+     * Get label points
+     *
+     * @return The lable points
+     */
+    public List<Graphic> getLabelPoints() {
+        return this.labelPoints;
+    }
+
+    /**
+     * Set label points
+     *
+     * @param lps The lable points
+     */
+    public void setLabelPoints(List<Graphic> lps) {
+        this.labelPoints = lps;
+    }
+    
+    /**
+     * Get legend scheme
+     * @return Legend scheme
+     */
+    public LegendScheme getLegendScheme(){
+        return this.legendScheme;
+    }
+    
+    /**
+     * Set legend scheme
+     * @param value Legend scheme
+     */
+    public void setLegendScheme(LegendScheme value){
+        this.legendScheme = value;
     }
     // </editor-fold>
     // <editor-fold desc="Methods">
@@ -340,6 +403,131 @@ public class GraphicCollection extends Graphic implements Iterator {
         }
         
         return this.get(index++);
+    }
+    
+    /**
+     * Add labels
+     */
+    public void addLabels() {
+        addLabelsByColor();
+
+        labelSet.setDrawLabels(true);
+    }
+    
+    /**
+     * Get shapes
+     * @return Shapes
+     */
+    public List<Shape> getShapes(){
+        List<Shape> shapes = new ArrayList<>();
+        for (Graphic g : this.graphics){
+            shapes.add(g.getShape());
+        }
+        return shapes;
+    }
+
+    /**
+     * Add labels
+     */
+    private void addLabelsByColor() {
+        PointD aPoint;
+        for (Graphic graphic : this.graphics) {           
+            ColorBreak cb = graphic.getLegend();
+            Shape shape = graphic.getShape();
+            PointShape aPS = new PointShape();
+            switch (shape.getShapeType()) {
+                case Point:
+                case PointM:
+                case PointZ:
+                    aPS.setPoint((PointD) ((PointShape) shape).getPoint().clone());
+                    break;
+                case Polyline:
+                case PolylineM:
+                case PolylineZ:
+                    int pIdx = ((PolylineShape) shape).getPoints().size() / 2;
+                    aPS.setPoint((PointD) ((PolylineShape) shape).getPoints().get(pIdx - 1).clone());
+                    break;
+                case Polygon:
+                case PolygonM:
+                    Extent aExtent = shape.getExtent();
+                    aPoint = new PointD();
+                    aPoint.X = ((aExtent.minX + aExtent.maxX) / 2);
+                    aPoint.Y = ((aExtent.minY + aExtent.maxY) / 2);
+                    aPS.setPoint(aPoint);
+                    break;
+            }
+
+            LabelBreak aLP = new LabelBreak();
+            aLP.setText(DataConvert.removeTailingZeros(String.valueOf(shape.getValue())));
+
+            if (labelSet.isColorByLegend()) {
+                aLP.setColor(cb.getColor());
+            } else {
+                aLP.setColor(labelSet.getLabelColor());
+            }
+            aLP.setFont(labelSet.getLabelFont());
+            aLP.setAlignType(labelSet.getLabelAlignType());
+            aLP.setYShift(labelSet.getYOffset());
+            aLP.setXShift(labelSet.getXOffset());
+            Graphic aGraphic = new Graphic(aPS, aLP);
+            addLabel(aGraphic);
+        }
+    }
+    
+    /**
+     * Add label point
+     *
+     * @param aLP Label point
+     */
+    public void addLabel(Graphic aLP) {
+        labelPoints.add(aLP);
+    }
+    
+    /**
+     * Add labels of contour layer dynamicly
+     *
+     * @param sExtent View extent of MapView
+     */
+    public void addLabelsContourDynamic(Extent sExtent) {
+        //String dFormat = "%1$." + String.valueOf(labelSet.getDecimalDigits()) + "f";
+        String text;
+        for (Graphic graphic : this.graphics) {
+            Shape shape = graphic.getShape();
+            ColorBreak cb = graphic.getLegend();
+            PolylineShape aPLS = (PolylineShape) shape;
+            Extent IExtent = aPLS.getExtent();
+            if (IExtent.maxX - IExtent.minX > (sExtent.maxX - sExtent.minX) / 10
+                    || IExtent.maxY - IExtent.minY > (sExtent.maxY - sExtent.minY) / 10) {
+                LabelBreak aLP = new LabelBreak();
+                int pIdx = aPLS.getPoints().size() / 2;
+                //PointF aPoint = new PointF(0, 0);
+                PointShape aPS = new PointShape();
+                aPS.setPoint(aPLS.getPoints().get(pIdx - 1));
+                text = DataConvert.removeTailingZeros(String.valueOf(aPLS.getValue()));
+                aLP.setText(text);
+                aLP.setFont(labelSet.getLabelFont());
+                aLP.setAlignType(labelSet.getLabelAlignType());
+                aLP.setYShift(labelSet.getYOffset());
+                aLP.setColor(cb.getColor());
+                Graphic aGraphic = new Graphic(aPS, aLP);
+                addLabel(aGraphic);
+            }
+        }
+
+        labelSet.setDrawLabels(true);
+    }
+    
+    /**
+     * Get arrow zoom
+     * @return Arrow zoom
+     */
+    public float getArrowZoom(){
+        if (this.getLegend().getBreakType() == BreakTypes.PointBreak){
+            float size = ((PointBreak)this.getLegend()).getSize();
+            return size / 10;
+        }
+        
+        return 1.0f;
     }
     // </editor-fold>
 }
