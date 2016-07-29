@@ -901,7 +901,7 @@ public class LayoutLegend extends LayoutElement {
                     FillColor = aPGB.getColor();
                     break;
                 case Image:
-                    ColorBreak aCB = aLS.getLegendBreaks().get(i);
+                    ColorBreak aCB = aLS.getLegendBreaks().get(idx);
                     DrawShape = true;
                     DrawFill = true;
                     FillColor = aCB.getColor();

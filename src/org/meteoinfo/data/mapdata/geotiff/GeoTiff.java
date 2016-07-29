@@ -931,16 +931,22 @@ public class GeoTiff {
 //        } else {
 //            shape = new int[]{width, height, samplesPerPixel};
 //        }
-        Array r;
+        DataType dataType = DataType.INT;    
+        IFDEntry sampleFormatTag = findTag(Tag.SampleFormat);
+        int sampleFormat = 0;
+        if (sampleFormatTag != null){
+            sampleFormat = sampleFormatTag.value[0];
+        }
         switch (bitsPerSample){
-            case 8:
-            case 16:
-                r = Array.factory(DataType.INT, shape);
-                break;
-            default:
-                r = Array.factory(DataType.FLOAT, shape);
+            case 32:
+                switch (sampleFormat) {
+                    case 3:
+                        dataType = DataType.FLOAT;
+                        break;
+                }
                 break;
         }
+        Array r = Array.factory(dataType, shape);
         IFDEntry tileOffsetTag = findTag(Tag.TileOffsets);
         ByteBuffer buffer;
         if (tileOffsetTag != null) {
@@ -1039,12 +1045,18 @@ public class GeoTiff {
                                         break;
                                     }
                                     index.set1(hIdx);
-                                    if (samplesPerPixel == 1)
-                                        r.setFloat(index, buffer.getFloat());
-                                    else {
+                                    if (samplesPerPixel == 1){
+                                        if (dataType == DataType.FLOAT)
+                                            r.setFloat(index, buffer.getFloat());
+                                        else
+                                            r.setInt(index, buffer.getInt());
+                                    } else {
                                         for (int k = 0; k < samplesPerPixel; k++) {
                                             index.set2(k);
-                                            r.setFloat(index, buffer.getFloat());
+                                            if (dataType == DataType.FLOAT)
+                                                r.setFloat(index, buffer.getFloat());
+                                            else
+                                                r.setInt(index, buffer.getInt());
                                         }
                                     }
                                 }
