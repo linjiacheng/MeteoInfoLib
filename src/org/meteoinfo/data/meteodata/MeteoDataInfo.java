@@ -1053,6 +1053,7 @@ public class MeteoDataInfo {
                 int h = DateUtil.getTimeDeltaValue(t, times.get(i - 1), "hours");
                 int th = DateUtil.getTimeDeltaValue(times.get(i), times.get(i - 1), "hours");
                 ivalue = (v_t2 - v_t1) * h / th + v_t1;
+                break;
             }
         }
 
@@ -1154,22 +1155,43 @@ public class MeteoDataInfo {
         int znum = levels.size();
         double v_z1, v_z2;
         this.setTimeIndex(tidx);
-        for (int j = 0; j < znum; j++) {
-            if (MIMath.doubleEquals(z, levels.get(j))) {
-                this.setLevelIndex(j);
-                ivalue = this.getGridData(varName).toStation(x, y);
-                break;
-            }
-            if (z < levels.get(j)) {
-                if (j == 0) {
-                    j = 1;
+        if (levels.get(1) - levels.get(0) > 0){
+            for (int j = 0; j < znum; j++) {
+                if (MIMath.doubleEquals(z, levels.get(j))) {
+                    this.setLevelIndex(j);
+                    ivalue = this.getGridData(varName).toStation(x, y);
+                    break;
                 }
-                this.setLevelIndex(j - 1);
-                v_z1 = this.getGridData(varName).toStation(x, y);
-                this.setLatIndex(j);
-                v_z2 = this.getGridData(varName).toStation(x, y);
-                ivalue = (v_z2 - v_z1) * (z - levels.get(j - 1)) / (levels.get(j) - levels.get(j - 1)) + v_z1;
-                break;
+                if (z < levels.get(j)) {
+                    if (j == 0) {
+                        j = 1;
+                    }
+                    this.setLevelIndex(j - 1);
+                    v_z1 = this.getGridData(varName).toStation(x, y);
+                    this.setLevelIndex(j);
+                    v_z2 = this.getGridData(varName).toStation(x, y);
+                    ivalue = (v_z2 - v_z1) * (z - levels.get(j - 1)) / (levels.get(j) - levels.get(j - 1)) + v_z1;
+                    break;
+                }
+            }
+        } else {
+            for (int j = 0; j < znum; j++) {
+                if (MIMath.doubleEquals(z, levels.get(j))) {
+                    this.setLevelIndex(j);
+                    ivalue = this.getGridData(varName).toStation(x, y);
+                    break;
+                }
+                if (z > levels.get(j)) {
+                    if (j == 0) {
+                        j = 1;
+                    }
+                    this.setLevelIndex(j - 1);
+                    v_z1 = this.getGridData(varName).toStation(x, y);
+                    this.setLevelIndex(j);
+                    v_z2 = this.getGridData(varName).toStation(x, y);
+                    ivalue = (v_z2 - v_z1) * (z - levels.get(j - 1)) / (levels.get(j) - levels.get(j - 1)) + v_z1;
+                    break;
+                }
             }
         }
 
@@ -1221,7 +1243,7 @@ public class MeteoDataInfo {
                 if (z < levels.get(j)) {
                     this.setLevelIndex(j - 1);
                     v_z1 = this.getGridData(varName).toStation(x, y);
-                    this.setLatIndex(j);
+                    this.setLevelIndex(j);
                     v_z2 = this.getGridData(varName).toStation(x, y);
                     ivalue = (v_z2 - v_z1) * (z - levels.get(j - 1)) / (levels.get(j) - levels.get(j - 1)) + v_z1;
                     ivalues.add(ivalue);
