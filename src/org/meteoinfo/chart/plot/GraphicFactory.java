@@ -14,6 +14,7 @@ import java.util.List;
 import org.meteoinfo.data.ArrayMath;
 import org.meteoinfo.data.GridArray;
 import org.meteoinfo.data.GridData;
+import org.meteoinfo.data.XYListDataset;
 import org.meteoinfo.drawing.ContourDraw;
 import org.meteoinfo.drawing.Draw;
 import org.meteoinfo.geoprocess.GeoComputation;
@@ -84,6 +85,34 @@ public class GraphicFactory {
         pls = new PolylineShape();
         pls.setPoints(points);
         gc.add(new Graphic(pls, cb));
+
+        return gc;
+    }
+
+    /**
+     * Create LineString graphic
+     *
+     * @param data Y data array
+     * @param cbs Color breaks
+     * @return LineString graphic
+     */
+    public static GraphicCollection createLineString(XYListDataset data, List<ColorBreak> cbs) {
+        GraphicCollection gc = new GraphicCollection();
+        PolylineShape pls;
+        List<PointD> points;
+        double x, y;
+        for (int i = 0; i < data.getSeriesCount(); i++) {
+            points = new ArrayList<>();
+            for (int j = 0; j < data.getItemCount(i); j++) {
+                x = data.getX(i, j);
+                y = data.getY(i, j);
+                points.add(new PointD(x, y));
+            }
+            pls = new PolylineShape();
+            pls.setPoints(points);
+            gc.add(new Graphic(pls, cbs.get(i)));
+        }
+        gc.setSingleLegend(false);
 
         return gc;
     }

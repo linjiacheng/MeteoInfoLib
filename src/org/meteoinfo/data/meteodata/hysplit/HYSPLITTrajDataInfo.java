@@ -38,6 +38,7 @@ import java.util.logging.Logger;
 import org.meteoinfo.data.XYListDataset;
 import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.drawing.PointStyle;
+import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.util.DateUtil;
 import org.meteoinfo.layer.LayerDrawType;
 import org.meteoinfo.layer.VectorLayer;
@@ -342,6 +343,7 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                 }
                 PointZ aPoint;
                 //ArrayList polylines = new ArrayList();
+                int dn = 12 + this.varNums.get(t);
                 while (true) {
                     aLine = sr.readLine();
                     if (aLine == null) {
@@ -352,6 +354,11 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                     }
                     aLine = aLine.trim();
                     dataArray = aLine.split("\\s+");
+                    if (dataArray.length < dn){
+                        sr.readLine();
+                        //aLine = sr.readLine().trim();
+                        //tempArray = aLine.split("\\s+");
+                    }
                     TrajIdx = Integer.parseInt(dataArray[0]) - 1;
                     aPoint = new PointZ();
                     aPoint.X = Double.parseDouble(dataArray[10]);
@@ -452,7 +459,7 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                 String aFile = fileNames.get(t);
                 BufferedReader sr = new BufferedReader(new FileReader(new File(aFile)));
                 String aLine;
-                String[] dataArray;
+                String[] dataArray, tempArray;
                 int i;
 
                 //Record #1
@@ -484,6 +491,7 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                 }
                 PointD aPoint;
                 double Height, Press;
+                int dn = 12 + this.varNums.get(t);
                 while (true) {
                     aLine = sr.readLine();
                     if (aLine == null) {
@@ -494,6 +502,14 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                     }
                     aLine = aLine.trim();
                     dataArray = aLine.split("\\s+");
+                    if (dataArray.length < dn){
+                        aLine = sr.readLine().trim();
+                        tempArray = aLine.split("\\s+");
+                        dataArray = (String[])DataConvert.resizeArray(dataArray, dn);
+                        for (i = 0; i < tempArray.length; i++){
+                            dataArray[dn - tempArray.length + i] = tempArray[i];
+                        }
+                    }
                     List<Object> dList = new ArrayList<>();
                     TrajIdx = Integer.parseInt(dataArray[0]) - 1;
                     int y = Integer.parseInt(dataArray[2]);
@@ -612,6 +628,7 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                     PointList.add(aPoint);
                 }
 
+                int dn = 12 + this.varNums.get(t);
                 //ArrayList polylines = new ArrayList();
                 while (true) {
                     aLine = sr.readLine();
@@ -623,6 +640,9 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                     }
                     aLine = aLine.trim();
                     dataArray = aLine.split("\\s+");
+                    if (dataArray.length < dn){
+                        sr.readLine();
+                    }
                     if (Float.parseFloat(dataArray[8]) == 0) {
                         TrajIdx = Integer.parseInt(dataArray[0]) - 1;
                         aPoint = new PointD();
@@ -682,7 +702,7 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                 String aFile = fileNames.get(t);
                 BufferedReader sr = new BufferedReader(new FileReader(new File(aFile)));
                 String aLine;
-                String[] dataArray;
+                String[] dataArray, tempArray;
                 int i;
 
                 //Record #1
@@ -714,6 +734,7 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                 }
                 PointD aPoint;
                 //ArrayList polylines = new ArrayList();
+                int dn = 12 + this.varNums.get(t);
                 while (true) {
                     aLine = sr.readLine();
                     if (aLine == null) {
@@ -724,6 +745,14 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                     }
                     aLine = aLine.trim();
                     dataArray = aLine.split("\\s+");
+                    if (dataArray.length < dn){
+                        aLine = sr.readLine().trim();
+                        tempArray = aLine.split("\\s+");
+                        dataArray = (String[])DataConvert.resizeArray(dataArray, dn);
+                        for (i = 0; i < tempArray.length; i++){
+                            dataArray[dn - tempArray.length + i] = tempArray[i];
+                        }
+                    }
                     TrajIdx = Integer.parseInt(dataArray[0]) - 1;
                     int y = Integer.parseInt(dataArray[2]);
                     if (y < 100) {
@@ -779,7 +808,7 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                 String aFile = fileNames.get(t);
                 BufferedReader sr = new BufferedReader(new FileReader(new File(aFile)));
                 String aLine;
-                String[] dataArray;
+                String[] dataArray, tempArray;
                 int i;
 
                 //Record #1
@@ -810,6 +839,7 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                     PointList.add(pList);
                 }
                 PointD aPoint;
+                int dn = 12 + this.varNums.get(t);
                 while (true) {
                     aLine = sr.readLine();
                     if (aLine == null) {
@@ -820,6 +850,14 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                     }
                     aLine = aLine.trim();
                     dataArray = aLine.split("\\s+");
+                    if (dataArray.length < dn){
+                        aLine = sr.readLine().trim();
+                        tempArray = aLine.split("\\s+");
+                        dataArray = (String[])DataConvert.resizeArray(dataArray, dn);
+                        for (i = 0; i < tempArray.length; i++){
+                            dataArray[dn - tempArray.length + i] = tempArray[i];
+                        }
+                    }
                     TrajIdx = Integer.parseInt(dataArray[0]) - 1;
                     int y = Integer.parseInt(dataArray[2]);
                     if (y < 100) {
