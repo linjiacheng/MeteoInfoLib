@@ -1209,6 +1209,7 @@ public class MeteoDataInfo {
      */
     public double toStation(String varName, double x, double y, int tidx) {
         this.setTimeIndex(tidx);
+        this.setLevelIndex(0);
         double ivalue = this.getGridData(varName).toStation(x, y);
         
         return ivalue;
