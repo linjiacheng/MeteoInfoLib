@@ -50,6 +50,7 @@ public class Axis implements Cloneable {
     private Color labelColor;
     private Font tickLabelFont;
     private Color tickLabelColor;
+    private float tickLabelAngle;
     private int tickLabelGap;
     private double tickStartValue;
     private double tickDeltaValue;
@@ -89,6 +90,7 @@ public class Axis implements Cloneable {
         this.labelColor = Color.darkGray;
         this.tickLabelFont = new Font("Arial", Font.PLAIN, 14);
         this.tickLabelColor = Color.darkGray;
+        this.tickLabelAngle = 0;
         this.tickLabelGap = 1;
         this.minValue = 0;
         this.maxValue = 1;
@@ -468,6 +470,22 @@ public class Axis implements Cloneable {
      */
     public void setTickLabelColor(Color value) {
         tickLabelColor = value;
+    }
+    
+    /**
+     * Get tick label angle
+     * @return Tick label angle
+     */
+    public float getTickLabelAngle(){
+        return this.tickLabelAngle;
+    }
+    
+    /**
+     * Set tick label angle
+     * @param value Angle
+     */
+    public void setTickLabelAngle(float value){
+        this.tickLabelAngle = value;
     }
 
     /**
@@ -1037,6 +1055,23 @@ public class Axis implements Cloneable {
 
         return max;
     }
+    
+    /**
+     * Get label string with maximum length
+     *
+     * @return Maximum length lable string
+     */
+    public String getMaxLenLable() {
+        List<String> tls = this.updateTickLabels();
+        String rlab = tls.get(0);
+        for (String lab : tls) {
+            if (lab.length() > rlab.length()) {
+                rlab = lab;
+            }
+        }
+
+        return rlab;
+    }
 
     /**
      * Update lable gap
@@ -1149,16 +1184,19 @@ public class Axis implements Cloneable {
             }
 
             //Draw tick label
-            if (this.drawTickLabel) {
+            if (this.drawTickLabel) {                
                 drawStr = xTickLabels.get(n);
                 dim = new Dimension(metrics.stringWidth(drawStr), metrics.getHeight());
-                labx = (float) (x - dim.width / 2);
+                //labx = (float) (x - dim.width / 2);
+                labx = (float)x;
                 if (this.location == Location.BOTTOM) {
                     laby = (float) (maxy + len + dim.height * 3 / 4 + space);
                 } else {
                     laby = (float) (miny - len - space);
                 }
-                g.drawString(drawStr, labx, laby);
+                Draw.drawTickLabel(labx, laby, this.tickLabelFont, drawStr, this.tickLabelColor, 
+                        this.tickLabelAngle, g);
+                //g.drawString(drawStr, labx, laby);
             }
             n += this.getTickLabelGap();
 

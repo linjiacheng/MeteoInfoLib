@@ -117,6 +117,36 @@ public class Draw {
     }
 
     /**
+     * Get string dimension
+     *
+     * @param str String
+     * @param anlge Angle
+     * @param g Graphics2D
+     * @return String dimension
+     */
+    public static Dimension getStringDimension(String str, float anlge, Graphics2D g) {
+        if (isLaTeX(str)) {
+            float size = g.getFont().getSize2D();
+            // create a formula
+            TeXFormula formula = new TeXFormula(str);
+
+            // render the formla to an icon of the same size as the formula.
+            TeXIcon icon = formula.createTeXIcon(TeXConstants.STYLE_TEXT, size);
+
+            // insert a border 
+            //icon.setInsets(new Insets(5, 5, 5, 5));
+            //return new Dimension(icon.getIconWidth(), icon.getIconHeight());
+            int width = (int) icon.getTrueIconWidth() + 10;
+            //int height = (int)icon.getTrueIconHeight();
+            int height = icon.getIconHeight();
+            return new Dimension(width, height);
+        } else {
+            FontMetrics metrics = g.getFontMetrics();
+            return new Dimension(metrics.stringWidth(str), metrics.getHeight());
+        }
+    }
+
+    /**
      * Draw string
      *
      * @param g Graphics2D
@@ -1062,6 +1092,43 @@ public class Draw {
                 rect.x = (int) inx;
                 rect.y = (int) iny;
             }
+        }
+    }
+
+    /**
+     * Draw label point
+     *
+     * @param x X
+     * @param y Y
+     * @param font Font
+     * @param text Text
+     * @param color Color
+     * @param g Graphics2D
+     * @param angle Angle
+     */
+    public static void drawTickLabel(float x, float y, Font font, String text, Color color, float angle, Graphics2D g) {
+        g.setColor(color);
+        g.setFont(font);
+        Dimension labSize = Draw.getStringDimension(text, g);
+        if (angle == 0) {
+            x = x - (float) labSize.getWidth() / 2;
+            y -= (float) labSize.getHeight() / 2;
+            Draw.drawString(g, text, x, y + labSize.height / 2);
+        } else {
+            AffineTransform tempTrans = g.getTransform();
+            AffineTransform myTrans = new AffineTransform();
+            myTrans.translate(x, y);
+            myTrans.rotate(-angle * Math.PI / 180);
+            g.setTransform(myTrans);           
+            if (angle == 90){
+                x = -(float)(labSize.getWidth() - 10);
+                y = (float)(labSize.getHeight() / 3);
+            } else {
+                x = -(float)(labSize.getWidth() - 5);
+                y = 0;
+            }
+            Draw.drawString(g, text, x, y);
+            g.setTransform(tempTrans);
         }
     }
 

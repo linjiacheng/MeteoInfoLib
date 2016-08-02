@@ -877,8 +877,14 @@ public abstract class XYPlot extends Plot {
         int height = space;
         if (xAxis.isDrawTickLabel()) {
             g.setFont(xAxis.getTickLabelFont());
-            Dimension dim = Draw.getStringDimension("label", g);
-            height += dim.height + space;
+            String maxLabel = xAxis.getMaxLenLable();
+            Dimension dim = Draw.getStringDimension(maxLabel, g);
+            if (xAxis.getTickLabelAngle() == 0)
+                height += dim.height + space;
+            else {
+                height += dim.height + space + (int)(dim.getWidth() * 
+                    Math.sin(xAxis.getTickLabelAngle() * Math.PI / 180));
+            }
             if (xAxis instanceof TimeAxis) {
                 height += dim.height + space;
             }
