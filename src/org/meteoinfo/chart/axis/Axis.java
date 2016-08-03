@@ -1292,7 +1292,10 @@ public class Axis implements Cloneable {
         //Draw label
         if (this.isDrawLabel()) {
             x = (maxx - minx) / 2 + minx;
-            y = maxy + space + metrics.getHeight() + 5;
+            String maxLabel = this.getMaxLenLable();
+            dim = Draw.getStringDimension(maxLabel, g);
+            y = maxy + space + dim.getHeight() + (dim.getWidth() * 
+                    Math.sin(this.tickLabelAngle * Math.PI / 180)) + 5;
             g.setFont(this.getLabelFont());
             g.setColor(this.getLabelColor());
             //metrics = g.getFontMetrics(this.xAxis.getLabelFont());
