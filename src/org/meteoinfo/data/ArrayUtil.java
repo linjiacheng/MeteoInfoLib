@@ -171,7 +171,7 @@ public class ArrayUtil {
      * @param append
      */
     public static void saveBinFile(String fn, Array a, String byteOrder, boolean append) {
-        try (DataOutputStream outs = new DataOutputStream(new FileOutputStream(new File(fn), append))){
+        try (DataOutputStream outs = new DataOutputStream(new FileOutputStream(new File(fn), append))) {
             ByteBuffer bb = a.getDataAsByteBuffer();
             ByteOrder bOrder = ByteOrder.LITTLE_ENDIAN;
             if (byteOrder.equalsIgnoreCase("big_endian")) {
@@ -1022,7 +1022,7 @@ public class ArrayUtil {
         if (Double.isNaN(unDefData)) {
             for (int i = 0; i < rowNum; i++) {
                 for (int j = 0; j < colNum; j++) {
-                    if (i == 0 || i == rowNum - 1 || j == 0 || j == colNum - 1){
+                    if (i == 0 || i == rowNum - 1 || j == 0 || j == colNum - 1) {
                         r.setDouble(i * colNum + j, a.getDouble(i * colNum + j));
                     } else {
                         if (Double.isNaN(a.getDouble(i * colNum + j)) || Double.isNaN(a.getDouble((i + 1) * colNum + j)) || Double.isNaN(a.getDouble((i - 1) * colNum + j))
@@ -1038,7 +1038,7 @@ public class ArrayUtil {
         } else {
             for (int i = 0; i < rowNum; i++) {
                 for (int j = 0; j < colNum; j++) {
-                    if (i == 0 || i == rowNum - 1 || j == 0 || j == colNum - 1){
+                    if (i == 0 || i == rowNum - 1 || j == 0 || j == colNum - 1) {
                         r.setDouble(i * colNum + j, a.getDouble(i * colNum + j));
                     } else {
                         if (a.getDouble(i * colNum + j) == unDefData || a.getDouble((i + 1) * colNum + j) == unDefData || a.getDouble((i - 1) * colNum + j)
@@ -1524,10 +1524,10 @@ public class ArrayUtil {
         xn = (int) X.getSize();
         yn = (int) Y.getSize();
         Array r = Array.factory(DataType.DOUBLE, new int[]{yn, xn});
-        for (int i = 0; i < r.getSize(); i++){
+        for (int i = 0; i < r.getSize(); i++) {
             r.setDouble(i, Double.NaN);
         }
-        
+
         double x, y;
         double v, xll, xtl, xtr, xlr, yll, ytl, ytr, ylr;
         double dX = X.getDouble(1) - X.getDouble(0);
@@ -1536,8 +1536,9 @@ public class ArrayUtil {
         for (int i = 0; i < rowNum - 1; i++) {
             for (int j = 0; j < colNum - 1; j++) {
                 v = a.getDouble(i * colNum + j);
-                if (Double.isNaN(v))
+                if (Double.isNaN(v)) {
                     continue;
+                }
                 xll = x_s.getDouble(i * colNum + j);
                 xtl = x_s.getDouble((i + 1) * colNum + j);
                 xtr = x_s.getDouble((i + 1) * colNum + j + 1);
@@ -1546,9 +1547,10 @@ public class ArrayUtil {
                 ytl = y_s.getDouble((i + 1) * colNum + j);
                 ytr = y_s.getDouble((i + 1) * colNum + j + 1);
                 ylr = y_s.getDouble(i * colNum + j + 1);
-                if (Double.isNaN(xll) || Double.isNaN(xtl) || Double.isNaN(xtr) || Double.isNaN(xlr) ||
-                    Double.isNaN(yll) || Double.isNaN(ytl) || Double.isNaN(ytr) || Double.isNaN(ylr))
+                if (Double.isNaN(xll) || Double.isNaN(xtl) || Double.isNaN(xtr) || Double.isNaN(xlr)
+                        || Double.isNaN(yll) || Double.isNaN(ytl) || Double.isNaN(ytr) || Double.isNaN(ylr)) {
                     continue;
+                }
                 PolygonShape ps = new PolygonShape();
                 List<PointD> points = new ArrayList<>();
                 points.add(new PointD(xll, yll));
@@ -1563,21 +1565,26 @@ public class ArrayUtil {
                 maxyi = (int) ((ps.getExtent().maxY - Y.getDouble(0)) / dY);
                 maxxi += 1;
                 maxyi += 1;
-                if (maxxi < 0 || minxi >= xn)
+                if (maxxi < 0 || minxi >= xn) {
                     continue;
-                if (maxyi < 0 || minyi >= yn)
+                }
+                if (maxyi < 0 || minyi >= yn) {
                     continue;
-                if (minxi < 0)
+                }
+                if (minxi < 0) {
                     minxi = 0;
-                if (maxxi >= xn)
+                }
+                if (maxxi >= xn) {
                     maxxi = xn - 1;
-                if (maxyi >= yn)
+                }
+                if (maxyi >= yn) {
                     maxyi = yn - 1;
+                }
                 for (int m = minyi; m <= maxyi; m++) {
                     y = Y.getDouble(m);
                     for (int n = minxi; n <= maxxi; n++) {
                         x = X.getDouble(n);
-                        if (GeoComputation.pointInPolygon(ps, x, y)){
+                        if (GeoComputation.pointInPolygon(ps, x, y)) {
                             r.setDouble(m * xn + n, v);
                         }
                     }
@@ -1587,7 +1594,7 @@ public class ArrayUtil {
 
         return r;
     }
-    
+
     /**
      * Interpolate with surface method
      *
@@ -1904,6 +1911,131 @@ public class ArrayUtil {
         }
 
         return resample_Bilinear(a, X, Y, newX, newY);
+    }
+
+    /**
+     * Multidimensional interpolation on regular grids.
+     *
+     * @param points The points defining the regular grid in n dimensions.
+     * @param values The data on the regular grid in n dimensions.
+     * @param xi The coordinates to sample the gridded data at
+     * @return Interpolation value
+     */
+    public static double interpn(List<List<Number>> points, Array values, List<Number> xi) {
+        Object[] r = findIndices(points, xi);
+        boolean outBounds = (boolean) r[2];
+        if (outBounds) {
+            return Double.NaN;
+        } else {
+            double v, weight;
+            Index index = values.getIndex();
+            int[] indices = (int[]) r[0];
+            double[] distances = (double[]) r[1];
+            v = 0;
+            List<Index> ii = new ArrayList<>();
+            iterIndex(ii, index, indices, 0);
+            int n = indices.length;
+            for (Index idx : ii){
+                weight = 1;
+                for (int i = 0; i < n; i++){
+                    weight *= idx.getCurrentCounter()[i] == indices[i] ? 1 - distances[i] : distances[i];
+                }
+                v += values.getDouble(idx) * weight;
+            }
+
+            return v;
+        }
+    }
+    
+    private static void iterIndex(List<Index> ii, Index index, int[] indices, int idx){
+        int n = indices.length;
+        if (idx < n - 1){
+            index.setDim(idx, indices[idx]);
+            iterIndex(ii, index, indices, idx + 1);
+            index.setDim(idx, indices[idx] + 1);
+            iterIndex(ii, index, indices, idx + 1);
+        } else {
+            index.setDim(idx, indices[idx]);
+            ii.add((Index)index.clone());
+            //System.out.println(index);
+            index.setDim(idx, indices[idx] + 1);
+            ii.add((Index)index.clone());
+            //System.out.println(index);
+        }
+    }
+
+    /**
+     * Find indices
+     *
+     * @param points The points defining the regular grid in n dimensions.
+     * @param xi The coordinates to sample the gridded data at
+     * @return Indices
+     */
+    public static Object[] findIndices(List<List<Number>> points, List<Number> xi) {
+        int n = points.size();
+        int[] indices = new int[n];
+        double[] distances = new double[n];
+        boolean outBounds = false;
+        double x;
+        List<Number> a;
+        for (int i = 0; i < n; i++) {
+            x = xi.get(i).doubleValue();
+            a = points.get(i);
+            int idx = searchSorted(a, x);
+            if (idx < 0) {
+                outBounds = true;
+                idx = 0;
+            }
+            indices[i] = idx;
+            distances[i] = (x - a.get(idx).doubleValue()) / (a.get(idx + 1).doubleValue() - a.get(idx).doubleValue());
+        }
+
+        return new Object[]{indices, distances, outBounds};
+    }
+
+    /**
+     * Search sorted list index
+     *
+     * @param a Sorted list
+     * @param v value
+     * @return Index
+     */
+    public static int searchSorted(List<Number> a, double v) {
+        int idx = -1;
+        int n = a.size();
+        if (a.get(1).doubleValue() > a.get(0).doubleValue()) {
+            if (v < a.get(0).doubleValue()) {
+                return idx;
+            }
+
+            if (v > a.get(n - 1).doubleValue()) {
+                return idx;
+            }
+
+            for (int i = 1; i < n; i++) {
+                if (v < a.get(i).doubleValue()) {
+                    idx = i - 1;
+                    break;
+                }
+            }
+        } else {
+            if (v > a.get(0).doubleValue()) {
+                return idx;
+            }
+
+            if (v < a.get(n - 1).doubleValue()) {
+                return idx;
+            }
+
+            for (int i = 1; i < n; i++) {
+                if (v > a.get(i).doubleValue()) {
+                    idx = i - 1;
+                    break;
+                }
+            }
+        }
+
+        return idx;
     }
 
     // </editor-fold>    
@@ -2662,22 +2794,23 @@ public class ArrayUtil {
 
         return r;
     }
-    
+
     /**
-     *  Computes the smallest convex <code>Polygon</code> that contains all the
-     *  points
+     * Computes the smallest convex <code>Polygon</code> that contains all the
+     * points
+     *
      * @param x X array
      * @param y Y array
      * @return PolygonShape
      */
-    public static PolygonShape convexHull(Array x, Array y){
-        int n = (int)x.getSize();
+    public static PolygonShape convexHull(Array x, Array y) {
+        int n = (int) x.getSize();
         Geometry[] geos = new Geometry[n];
         GeometryFactory factory = new GeometryFactory();
-        for (int i = 0; i < n; i++){
+        for (int i = 0; i < n; i++) {
             Coordinate c = new Coordinate(x.getDouble(i), y.getDouble(i));
-            geos[i] = factory.createPoint(c);            
-        }        
+            geos[i] = factory.createPoint(c);
+        }
         Geometry gs = factory.createGeometryCollection(geos);
         Geometry ch = gs.convexHull();
         return new PolygonShape(ch);
@@ -2685,6 +2818,5 @@ public class ArrayUtil {
 
     // </editor-fold>
     // <editor-fold desc="Time average">
-
     // </editor-fold>
 }
