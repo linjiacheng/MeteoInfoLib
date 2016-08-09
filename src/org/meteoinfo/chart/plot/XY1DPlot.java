@@ -150,6 +150,7 @@ public class XY1DPlot extends XYPlot {
         dataset = (XYListDataset) value;
         Extent extent = this.getAutoExtent();
         this.setDrawExtent(extent);
+        this.setExtent(extent);
         this.updateSeriesLegend();
     }
 
