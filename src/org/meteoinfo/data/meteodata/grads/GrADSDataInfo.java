@@ -799,7 +799,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                             }
                         }
                         if (dataArray.length > tnum + 3) {
-                            errorStr = "YDEF is wrong! Please check the ctl file!";
+                            errorStr = "TDEF is wrong! Please check the ctl file!";
                             //goto ERROR;
                         }
                         SimpleDateFormat formatter = new SimpleDateFormat("HH:mm ddMMMyyyy", Locale.ENGLISH);
@@ -830,7 +830,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                         Variable aVar = new Variable();
                         aVar.setName(dataArray[0]);
                         aVar.setDataType(DataType.FLOAT);
-                        int lNum = Integer.parseInt(dataArray[1]);                        
+                        int lNum = Integer.parseInt(dataArray[1]);
                         //aVar.setLevelNum(Integer.parseInt(dataArray[1]));
                         aVar.setUnits(dataArray[2]);
                         //attr = new Attribute("units", dataArray[2]);
@@ -843,8 +843,8 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                         aVar.setDimension(this.getTimeDimension());
                         if (lNum > 1) {
                             boolean isNew = true;
-                            for (Dimension dim : this.getDimensions()){
-                                if (dim.getDimType() == DimensionType.Z){
+                            for (Dimension dim : this.getDimensions()) {
+                                if (dim.getDimType() == DimensionType.Z) {
                                     if (lNum == dim.getLength()) {
                                         aVar.setDimension(dim);
                                         isNew = false;
@@ -1141,7 +1141,6 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
 //
 //        return dataInfo;
 //    }
-
     private Object[] getFilePath_Template(int timeIdx) {
         String filePath;
         File file = new File(DSET);
@@ -1204,8 +1203,8 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
         int tIdx = 0;
         Calendar cal = Calendar.getInstance();
         cal.setTime(time);
-        int month = cal.get(Calendar.MONTH);
-        int day = cal.get(Calendar.DAY_OF_MONTH);
+        //int month = cal.get(Calendar.MONTH);
+        //int day = cal.get(Calendar.DAY_OF_MONTH);
         if (tStr.equalsIgnoreCase("year")) {
             switch (TDEF.unit) {
                 case "mn":
@@ -1327,12 +1326,20 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
             yNum = YNum;
             float[] data = new float[yNum * xNum];
 
-            RandomAccessFile br = new RandomAccessFile(DSET, "r");
-            int i, j, lNum;
+            String filePath = DSET;
+            int tIdx = timeIdx;
+            if (OPTIONS.template)
+            {
+                Object[] result = getFilePath_Template(timeIdx);
+                filePath = (String)result[0];
+                tIdx = (int)result[1];
+            }
+            RandomAccessFile br = new RandomAccessFile(filePath, "r");
+            int i, lNum;
             byte[] aBytes;
 
             br.seek(FILEHEADER);
-            br.seek(br.getFilePointer() + (long) timeIdx * (long) RecLenPerTime);
+            br.seek(br.getFilePointer() + tIdx * RecLenPerTime);
             for (i = 0; i < varIdx; i++) {
                 lNum = VARDEF.getVars().get(i).getLevelNum();
                 if (lNum == 0) {
@@ -1416,12 +1423,19 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
         yNum = YNum;
         double[][] gridData = new double[yNum][xNum];
 
-        RandomAccessFile br = new RandomAccessFile(DSET, "r");
+        String filePath = DSET;
+        int tIdx = timeIdx;
+        if (OPTIONS.template) {
+            Object[] result = getFilePath_Template(timeIdx);
+            filePath = (String) result[0];
+            tIdx = (int) result[1];
+        }
+        RandomAccessFile br = new RandomAccessFile(filePath, "r");
         int i, j, lNum;
         byte[] aBytes;
 
         br.seek(FILEHEADER);
-        br.seek(br.getFilePointer() + (long) timeIdx * (long) RecLenPerTime);
+        br.seek(br.getFilePointer() + tIdx * RecLenPerTime);
         for (i = 0; i < varIdx; i++) {
             lNum = VARDEF.getVars().get(i).getLevelNum();
             if (lNum == 0) {
@@ -1444,9 +1458,6 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                 aBytes = new byte[4];
                 System.arraycopy(byteData, start, aBytes, 0, 4);
                 start += 4;
-//                if (OPTIONS.big_endian || OPTIONS.byteswapped) {
-//                    Collections.reverse(Arrays.asList(aBytes));
-//                }
                 gridData[i][j] = DataConvert.bytes2Float(aBytes, _byteOrder);
             }
         }
@@ -1463,48 +1474,87 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
             xNum = YNum;
             yNum = TDEF.getTimeNum();
             double[][] gridData = new double[yNum][xNum];
-
-            RandomAccessFile br = new RandomAccessFile(DSET, "r");
             int i, j, lNum, t;
             long aTPosition;
 
-            for (t = 0; t < TDEF.getTimeNum(); t++) {
-                br.seek((long) FILEHEADER + (long) t * (long) RecLenPerTime);
-                aTPosition = br.getFilePointer();
-
-                for (i = 0; i < varIdx; i++) {
-                    lNum = VARDEF.getVars().get(i).getLevelNum();
-                    if (lNum == 0) {
-                        lNum = 1;
-                    }
-                    br.seek(br.getFilePointer() + lNum * RecordLen);
-                }
-                br.seek(br.getFilePointer() + levelIdx * RecordLen);
-
-                if (OPTIONS.sequential) {
-                    br.seek(br.getFilePointer() + 4);
-                }
-
-                if (br.getFilePointer() >= br.length()) {
-                    System.out.println("Erro");
-                }
-
+            if (OPTIONS.template)
+            {
                 byte[] aBytes = new byte[4];
-                for (i = 0; i < YNum; i++) {
-                    for (j = 0; j < XNum; j++) {
-                        br.read(aBytes);
-                        if (j == lonIdx) {
-//                            if (OPTIONS.big_endian || OPTIONS.byteswapped) {
-//                                Collections.reverse(Arrays.asList(aBytes));
-//                            }
-                            gridData[t][i] = DataConvert.bytes2Float(aBytes, _byteOrder);
+                for (t = 0; t < TDEF.getTimeNum(); t++)
+                {
+                    Object[] result = getFilePath_Template(t);
+                    String filePath = (String)result[0];
+                    int tIdx = (int)result[1];
+                    RandomAccessFile br = new RandomAccessFile(filePath, "r");  
+                    br.seek(FILEHEADER + tIdx * RecLenPerTime);
+
+                    for (i = 0; i < varIdx; i++)
+                    {
+                        lNum = VARDEF.getVars().get(i).getLevelNum();
+                        if (lNum == 0)
+                        {
+                            lNum = 1;
+                        }
+                        br.seek(br.getFilePointer() + lNum * RecordLen);
+                    }
+                    br.seek(br.getFilePointer() + levelIdx * RecordLen);
+                    if (OPTIONS.sequential)
+                        br.seek(br.getFilePointer() + 4);
+                    
+                    if (br.getFilePointer() >= br.length()) {
+                        System.out.println("Erro");
+                    }
+
+                    for (i = 0; i < YNum; i++)
+                    {
+                        for (j = 0; j < XNum; j++)
+                        {
+                            br.read(aBytes);
+                            if (j == lonIdx)
+                            {
+                                gridData[t][i] = DataConvert.bytes2Float(aBytes, _byteOrder);
+                            }
                         }
                     }
-                }
-                br.seek(aTPosition);
-            }
+                    br.close();
+                }                
+            } else {
+                RandomAccessFile br = new RandomAccessFile(DSET, "r");                
+                for (t = 0; t < TDEF.getTimeNum(); t++) {
+                    br.seek(FILEHEADER + t * RecLenPerTime);
+                    aTPosition = br.getFilePointer();
 
-            br.close();
+                    for (i = 0; i < varIdx; i++) {
+                        lNum = VARDEF.getVars().get(i).getLevelNum();
+                        if (lNum == 0) {
+                            lNum = 1;
+                        }
+                        br.seek(br.getFilePointer() + lNum * RecordLen);
+                    }
+                    br.seek(br.getFilePointer() + levelIdx * RecordLen);
+
+                    if (OPTIONS.sequential) {
+                        br.seek(br.getFilePointer() + 4);
+                    }
+
+                    if (br.getFilePointer() >= br.length()) {
+                        System.out.println("Erro");
+                    }
+
+                    byte[] aBytes = new byte[4];
+                    for (i = 0; i < YNum; i++) {
+                        for (j = 0; j < XNum; j++) {
+                            br.read(aBytes);
+                            if (j == lonIdx) {
+                                gridData[t][i] = DataConvert.bytes2Float(aBytes, _byteOrder);
+                            }
+                        }
+                    }
+                    br.seek(aTPosition);
+                }
+
+                br.close();
+            }
 
             GridData aGridData = new GridData();
             aGridData.data = gridData;
@@ -1530,44 +1580,79 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
             xNum = XNum;
             yNum = TDEF.getTimeNum();
             double[][] gridData = new double[yNum][xNum];
-
-            RandomAccessFile br = new RandomAccessFile(DSET, "r");
             int i, j, lNum, t;
             long aTPosition;
 
-            for (t = 0; t < TDEF.getTimeNum(); t++) {
-                br.seek((long) FILEHEADER + (long) t * (long) RecLenPerTime);
-                aTPosition = br.getFilePointer();
-
-                for (i = 0; i < varIdx; i++) {
-                    lNum = VARDEF.getVars().get(i).getLevelNum();
-                    if (lNum == 0) {
-                        lNum = 1;
-                    }
-                    br.seek(br.getFilePointer() + lNum * RecordLen);
-                }
-                br.seek(br.getFilePointer() + levelIdx * RecordLen);
-                if (OPTIONS.sequential) {
-                    br.seek(br.getFilePointer() + 4);
-                }
-                br.seek(br.getFilePointer() + latIdx * xNum * 4);
-
-                if (br.getFilePointer() >= br.length()) {
-                    System.out.println("Erro");
-                }
-
+            if (OPTIONS.template)
+            {
                 byte[] aBytes = new byte[4];
-                for (j = 0; j < xNum; j++) {
-                    br.read(aBytes);
-//                    if (OPTIONS.big_endian || OPTIONS.byteswapped) {
-//                        Collections.reverse(Arrays.asList(aBytes));
-//                    }
-                    gridData[t][j] = DataConvert.bytes2Float(aBytes, _byteOrder);
-                }
-                br.seek(aTPosition);
-            }
+                for (t = 0; t < TDEF.getTimeNum(); t++)
+                {
+                    Object[] result = getFilePath_Template(t);
+                    String filePath = (String)result[0];
+                    int tIdx = (int)result[1];
+                    RandomAccessFile br = new RandomAccessFile(filePath, "r");
+                    br.seek(FILEHEADER + tIdx * RecLenPerTime);
 
-            br.close();
+                    for (i = 0; i < varIdx; i++)
+                    {
+                        lNum = VARDEF.getVars().get(i).getLevelNum();
+                        if (lNum == 0)
+                        {
+                            lNum = 1;
+                        }
+                        br.seek(br.getFilePointer() + lNum * RecordLen);
+                    }
+                    br.seek(br.getFilePointer() + levelIdx * RecordLen);
+                    if (OPTIONS.sequential)
+                        br.seek(br.getFilePointer() + 4);
+                    br.seek(br.getFilePointer() + latIdx * xNum * 4);
+
+                    if (br.getFilePointer() >= br.length())
+                    {
+                        System.out.println("Erro");
+                    }
+
+                    for (j = 0; j < xNum; j++)
+                    {
+                        br.read(aBytes);
+                        gridData[t][j] = DataConvert.bytes2Float(aBytes, _byteOrder);
+                    }
+                    br.close();
+                }                
+            } else {
+                RandomAccessFile br = new RandomAccessFile(DSET, "r");                
+                for (t = 0; t < TDEF.getTimeNum(); t++) {
+                    br.seek(FILEHEADER + t * RecLenPerTime);
+                    aTPosition = br.getFilePointer();
+
+                    for (i = 0; i < varIdx; i++) {
+                        lNum = VARDEF.getVars().get(i).getLevelNum();
+                        if (lNum == 0) {
+                            lNum = 1;
+                        }
+                        br.seek(br.getFilePointer() + lNum * RecordLen);
+                    }
+                    br.seek(br.getFilePointer() + levelIdx * RecordLen);
+                    if (OPTIONS.sequential) {
+                        br.seek(br.getFilePointer() + 4);
+                    }
+                    br.seek(br.getFilePointer() + latIdx * xNum * 4);
+
+                    if (br.getFilePointer() >= br.length()) {
+                        System.out.println("Erro");
+                    }
+
+                    byte[] aBytes = new byte[4];
+                    for (j = 0; j < xNum; j++) {
+                        br.read(aBytes);
+                        gridData[t][j] = DataConvert.bytes2Float(aBytes, _byteOrder);
+                    }
+                    br.seek(aTPosition);
+                }
+
+                br.close();
+            }
 
             GridData aGridData = new GridData();
             aGridData.data = gridData;
@@ -1594,10 +1679,19 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
             yNum = VARDEF.getVars().get(varIdx).getLevelNum();
             double[][] gridData = new double[yNum][xNum];
 
-            RandomAccessFile br = new RandomAccessFile(DSET, "r");
+            String filePath = DSET;
+            int tIdx = timeIdx;
+            if (OPTIONS.template)
+            {
+                Object[] result = getFilePath_Template(timeIdx);
+                filePath = (String)result[0];
+                tIdx = (int)result[1];
+            }
+            
+            RandomAccessFile br = new RandomAccessFile(filePath, "r");
             int i, j, lNum;
 
-            br.seek((long) FILEHEADER + (long) timeIdx * (long) RecLenPerTime);
+            br.seek(FILEHEADER + tIdx * RecLenPerTime);
 
             for (i = 0; i < varIdx; i++) {
                 lNum = VARDEF.getVars().get(i).getLevelNum();
@@ -1620,17 +1714,11 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                 byte[] aBytes = new byte[4];
                 for (j = 0; j < YNum; j++) {
                     br.skipBytes(lonIdx * 4);
-
                     br.read(aBytes);
-//                    if (OPTIONS.big_endian || OPTIONS.byteswapped) {
-//                        Collections.reverse(Arrays.asList(aBytes));
-//                    }
                     gridData[i][j] = DataConvert.bytes2Float(aBytes, _byteOrder);
-
                     br.skipBytes((XNum - lonIdx - 1) * 4);
                 }
             }
-
             br.close();
 
             GridData aGridData = new GridData();
@@ -1641,7 +1729,6 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
             for (i = 0; i < levels.length; i++) {
                 levels[i] = ZDEF.ZLevels[i];
             }
-
             aGridData.yArray = levels;
 
             return aGridData;
@@ -1660,17 +1747,26 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
             yNum = VARDEF.getVars().get(varIdx).getLevelNum();
             double[][] gridData = new double[yNum][xNum];
 
-            RandomAccessFile br = new RandomAccessFile(DSET, "r");
+            String filePath = DSET;
+            int tIdx = timeIdx;
+            if (OPTIONS.template)
+            {
+                Object[] result = getFilePath_Template(timeIdx);
+                filePath = (String)result[0];
+                tIdx = (int)result[1];
+            }
+            
+            RandomAccessFile br = new RandomAccessFile(filePath, "r");
             int i, j, lNum;
 
-            br.seek((long) FILEHEADER + (long) timeIdx * (long) RecLenPerTime);
+            br.seek(FILEHEADER + tIdx * RecLenPerTime);
 
             for (i = 0; i < varIdx; i++) {
                 lNum = VARDEF.getVars().get(i).getLevelNum();
                 if (lNum == 0) {
                     lNum = 1;
                 }
-                br.seek(br.getFilePointer() + (long) lNum * (long) RecordLen);
+                br.seek(br.getFilePointer() + lNum * RecordLen);
             }
 
             if (br.getFilePointer() >= br.length()) {
@@ -1682,19 +1778,15 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                 if (OPTIONS.sequential) {
                     br.seek(br.getFilePointer() + 4);
                 }
-                br.seek(br.getFilePointer() + (long) latIdx * (long) xNum * 4);
+                br.seek(br.getFilePointer() + latIdx * xNum * 4);
 
                 byte[] aBytes = new byte[4];
                 for (j = 0; j < xNum; j++) {
                     br.read(aBytes);
-//                    if (OPTIONS.big_endian || OPTIONS.byteswapped) {
-//                        Collections.reverse(Arrays.asList(aBytes));
-//                    }
                     gridData[i][j] = DataConvert.bytes2Float(aBytes, _byteOrder);
                 }
                 br.seek(br.getFilePointer() + (YNum - latIdx - 1) * xNum * 4);
             }
-
             br.close();
 
             GridData aGridData = new GridData();
@@ -1705,7 +1797,6 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
             for (i = 0; i < levels.length; i++) {
                 levels[i] = ZDEF.ZLevels[i];
             }
-
             aGridData.yArray = levels;
 
             return aGridData;
@@ -1723,48 +1814,81 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
             xNum = TDEF.getTimeNum();
             yNum = VARDEF.getVars().get(varIdx).getLevelNum();
             double[][] gridData = new double[yNum][xNum];
-
-            RandomAccessFile br = new RandomAccessFile(DSET, "r");
             int i, lNum, t;
             long aTPosition;
 
-            for (t = 0; t < xNum; t++) {
-                br.seek((long) FILEHEADER + (long) t * (long) RecLenPerTime);
-                aTPosition = br.getFilePointer();
-
-                for (i = 0; i < varIdx; i++) {
-                    lNum = VARDEF.getVars().get(i).getLevelNum();
-                    if (lNum == 0) {
-                        lNum = 1;
-                    }
-                    br.seek(br.getFilePointer() + (long) lNum * (long) RecordLen);
-                }
-
-                if (br.getFilePointer() >= br.length()) {
-                    System.out.println("Erro");
-                }
-
-                byte[] aBytes = new byte[4];
-                for (i = 0; i < yNum; i++) //Levels
+            if (OPTIONS.template)
+            {                
+                byte[] aBytes = new byte[4];              
+                for (t = 0; t < TDEF.getTimeNum(); t++)
                 {
-                    if (OPTIONS.sequential) {
-                        br.seek(br.getFilePointer() + 4);
+                    Object[] result = getFilePath_Template(t);
+                    String filePath = (String)result[0];
+                    int tIdx = (int)result[1];
+                    RandomAccessFile br = new RandomAccessFile(filePath, "r");
+                    br.seek(FILEHEADER + tIdx * RecLenPerTime);
+
+                    for (i = 0; i < varIdx; i++)
+                    {
+                        lNum = VARDEF.getVars().get(i).getLevelNum();
+                        if (lNum == 0)
+                        {
+                            lNum = 1;
+                        }
+                        br.seek(br.getFilePointer() + lNum * RecordLen);
                     }
-                    br.seek(br.getFilePointer() + latIdx * xNum * 4 + lonIdx * 4);
 
-                    br.read(aBytes);
-//                    if (OPTIONS.big_endian || OPTIONS.byteswapped) {
-//                        Collections.reverse(Arrays.asList(aBytes));
-//                    }
-                    gridData[i][t] = DataConvert.bytes2Float(aBytes, _byteOrder);
+                    if (br.getFilePointer() >= br.length())
+                    {
+                        System.out.println("Erro");
+                    }
 
-                    br.seek(br.getFilePointer() + (XNum - lonIdx - 1) * 4 + (YNum - latIdx - 1) * xNum * 4);
+                    for (i = 0; i < yNum; i++)    //Levels
+                    {
+                        if (OPTIONS.sequential)
+                            br.seek(br.getFilePointer() + 4);
+                        br.seek(br.getFilePointer() + latIdx * xNum * 4 + lonIdx * 4);
+                        br.read(aBytes);
+                        gridData[i][t] = DataConvert.bytes2Float(aBytes, _byteOrder);
+                        br.seek(br.getFilePointer() + (XNum - lonIdx - 1) * 4 + (YNum - latIdx - 1) * xNum * 4);
+                    }
+                    br.close();
+                }
+            } else {
+                RandomAccessFile br = new RandomAccessFile(DSET, "r");                
+                for (t = 0; t < xNum; t++) {
+                    br.seek(FILEHEADER + t * RecLenPerTime);
+                    aTPosition = br.getFilePointer();
+
+                    for (i = 0; i < varIdx; i++) {
+                        lNum = VARDEF.getVars().get(i).getLevelNum();
+                        if (lNum == 0) {
+                            lNum = 1;
+                        }
+                        br.seek(br.getFilePointer() + lNum * RecordLen);
+                    }
+
+                    if (br.getFilePointer() >= br.length()) {
+                        System.out.println("Erro");
+                    }
+
+                    byte[] aBytes = new byte[4];
+                    for (i = 0; i < yNum; i++) //Levels
+                    {
+                        if (OPTIONS.sequential) {
+                            br.seek(br.getFilePointer() + 4);
+                        }
+                        br.seek(br.getFilePointer() + latIdx * xNum * 4 + lonIdx * 4);
+                        br.read(aBytes);
+                        gridData[i][t] = DataConvert.bytes2Float(aBytes, _byteOrder);
+                        br.seek(br.getFilePointer() + (XNum - lonIdx - 1) * 4 + (YNum - latIdx - 1) * xNum * 4);
+                    }
+
+                    br.seek(aTPosition);
                 }
 
-                br.seek(aTPosition);
+                br.close();
             }
-
-            br.close();
 
             GridData aGridData = new GridData();
             aGridData.data = gridData;
@@ -1789,8 +1913,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
 
     @Override
     public GridData getGridData_Time(int lonIdx, int latIdx, int varIdx, int levelIdx) {
-        try {
-            RandomAccessFile br = new RandomAccessFile(DSET, "r");
+        try {            
             int i, lNum, t;
             byte[] aBytes = new byte[4];
             float aValue;
@@ -1802,37 +1925,75 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
             aGridData.yArray[0] = 0;
             aGridData.data = new double[1][TDEF.getTimeNum()];
 
-            for (t = 0; t < TDEF.getTimeNum(); t++) {
-                br.seek((long) FILEHEADER + (long) t * (long) RecLenPerTime);
-                for (i = 0; i < varIdx; i++) {
-                    lNum = VARDEF.getVars().get(i).getLevelNum();
-                    if (lNum == 0) {
-                        lNum = 1;
+            if (OPTIONS.template)
+            {
+                for (t = 0; t < TDEF.getTimeNum(); t++)
+                {
+                    Object[] result = getFilePath_Template(t);
+                    String filePath = (String)result[0];
+                    int tIdx = (int)result[1];
+                    RandomAccessFile br = new RandomAccessFile(filePath, "r");
+                    br.seek(FILEHEADER + tIdx * RecLenPerTime);
+
+                    for (i = 0; i < varIdx; i++)
+                    {
+                        lNum = VARDEF.getVars().get(i).getLevelNum();
+                        if (lNum == 0)
+                        {
+                            lNum = 1;
+                        }
+                        br.seek(br.getFilePointer() + lNum * RecordLen);
                     }
-                    br.seek(br.getFilePointer() + (long) lNum * (long) RecordLen);
-                }
-                br.seek(br.getFilePointer() + (long) levelIdx * (long) RecordLen);
-                if (OPTIONS.sequential) {
-                    br.seek(br.getFilePointer() + 4);
-                }
-                br.seek(br.getFilePointer() + latIdx * XNum * 4);
+                    br.seek(br.getFilePointer() + levelIdx * RecordLen);
+                    if (OPTIONS.sequential)
+                        br.seek(br.getFilePointer() + 4);
+                    br.seek(br.getFilePointer() + latIdx * XNum * 4);
 
-                if (br.getFilePointer() >= br.length()) {
-                    System.out.println("Erro");
+                    if (br.getFilePointer() >= br.length())
+                    {
+                        System.out.println("Erro");
+                    }
+
+                    br.seek(br.getFilePointer() + lonIdx * 4);
+
+                    br.read(aBytes);
+                    aValue = DataConvert.bytes2Float(aBytes, _byteOrder);
+                    aGridData.xArray[t] = DateUtil.toOADate(TDEF.times.get(t));
+                    aGridData.data[0][t] = aValue;
+
+                    br.close();
+                }
+            } else {
+                RandomAccessFile br = new RandomAccessFile(DSET, "r");
+                for (t = 0; t < TDEF.getTimeNum(); t++) {
+                    br.seek(FILEHEADER + t * RecLenPerTime);
+                    for (i = 0; i < varIdx; i++) {
+                        lNum = VARDEF.getVars().get(i).getLevelNum();
+                        if (lNum == 0) {
+                            lNum = 1;
+                        }
+                        br.seek(br.getFilePointer() + lNum * RecordLen);
+                    }
+                    br.seek(br.getFilePointer() + levelIdx * RecordLen);
+                    if (OPTIONS.sequential) {
+                        br.seek(br.getFilePointer() + 4);
+                    }
+                    br.seek(br.getFilePointer() + latIdx * XNum * 4);
+
+                    if (br.getFilePointer() >= br.length()) {
+                        System.out.println("Erro");
+                    }
+
+                    br.seek(br.getFilePointer() + lonIdx * 4);
+
+                    br.read(aBytes);
+                    aValue = DataConvert.bytes2Float(aBytes, _byteOrder);
+                    aGridData.xArray[t] = DateUtil.toOADate(TDEF.times.get(t));
+                    aGridData.data[0][t] = aValue;
                 }
 
-                br.seek(br.getFilePointer() + lonIdx * 4);
-
-                br.read(aBytes);
-//                if (OPTIONS.big_endian || OPTIONS.byteswapped) {
-//                    Collections.reverse(Arrays.asList(aBytes));
-//                }
-                aValue = DataConvert.bytes2Float(aBytes, _byteOrder);
-                aGridData.xArray[t] = DateUtil.toOADate(TDEF.times.get(t));
-                aGridData.data[0][t] = aValue;
+                br.close();
             }
-
-            br.close();
 
             return aGridData;
         } catch (IOException ex) {
@@ -1845,7 +2006,16 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
     @Override
     public GridData getGridData_Level(int lonIdx, int latIdx, int varIdx, int timeIdx) {
         try {
-            RandomAccessFile br = new RandomAccessFile(DSET, "r");
+            String filePath = DSET;
+            int tIdx = timeIdx;
+            if (OPTIONS.template)
+            {
+                Object[] result = getFilePath_Template(timeIdx);
+                filePath = (String)result[0];
+                tIdx = (int)result[1];
+            }
+            
+            RandomAccessFile br = new RandomAccessFile(filePath, "r");
             int i, lNum;
             byte[] aBytes = new byte[4];
             float aValue;
@@ -1857,29 +2027,26 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
             aGridData.yArray[0] = 0;
             aGridData.data = new double[1][ZDEF.ZNum];
 
-            br.seek((long) FILEHEADER + (long) timeIdx * (long) RecLenPerTime);
+            br.seek(FILEHEADER + tIdx * RecLenPerTime);
 
             for (i = 0; i < varIdx; i++) {
                 lNum = VARDEF.getVars().get(i).getLevelNum();
                 if (lNum == 0) {
                     lNum = 1;
                 }
-                br.seek(br.getFilePointer() + (long) lNum * (long) RecordLen);
+                br.seek(br.getFilePointer() + lNum * RecordLen);
             }
 
             long aPosition = br.getFilePointer();
 
             for (i = 0; i < ZDEF.ZNum; i++) {
-                br.seek(aPosition + (long) i * (long) RecordLen);
+                br.seek(aPosition + i * RecordLen);
                 if (OPTIONS.sequential) {
                     br.seek(br.getFilePointer() + 4);
                 }
                 br.seek(br.getFilePointer() + latIdx * XNum * 4 + lonIdx * 4);
 
                 br.read(aBytes);
-//                if (OPTIONS.big_endian || OPTIONS.byteswapped) {
-//                    Collections.reverse(Arrays.asList(aBytes));
-//                }
                 aValue = DataConvert.bytes2Float(aBytes, _byteOrder);
                 aGridData.xArray[i] = ZDEF.ZLevels[i];
                 aGridData.data[0][i] = aValue;
@@ -1898,7 +2065,15 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
     @Override
     public GridData getGridData_Lon(int timeIdx, int latIdx, int varIdx, int levelIdx) {
         try {
-            RandomAccessFile br = new RandomAccessFile(DSET, "r");
+            String filePath = DSET;
+            int tIdx = timeIdx;
+            if (OPTIONS.template)
+            {
+                Object[] result = getFilePath_Template(timeIdx);
+                filePath = (String)result[0];
+                tIdx = (int)result[1];
+            }
+            RandomAccessFile br = new RandomAccessFile(filePath, "r");
             int i, lNum;
             byte[] aBytes = new byte[4];
             float aValue;
@@ -1910,15 +2085,15 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
             aGridData.yArray[0] = 0;
             aGridData.data = new double[1][X.length];
 
-            br.seek((long) FILEHEADER + (long) timeIdx * (long) RecLenPerTime);
+            br.seek(FILEHEADER + tIdx * RecLenPerTime);
             for (i = 0; i < varIdx; i++) {
                 lNum = VARDEF.getVars().get(i).getLevelNum();
                 if (lNum == 0) {
                     lNum = 1;
                 }
-                br.seek(br.getFilePointer() + (long) lNum * (long) RecordLen);
+                br.seek(br.getFilePointer() + lNum * RecordLen);
             }
-            br.seek(br.getFilePointer() + (long) levelIdx * (long) RecordLen);
+            br.seek(br.getFilePointer() + levelIdx * RecordLen);
             if (OPTIONS.sequential) {
                 br.seek(br.getFilePointer() + 4);
             }
@@ -1926,9 +2101,6 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
 
             for (i = 0; i < XNum; i++) {
                 br.read(aBytes);
-//                if (OPTIONS.big_endian || OPTIONS.byteswapped) {
-//                    Collections.reverse(Arrays.asList(aBytes));
-//                }
                 aValue = DataConvert.bytes2Float(aBytes, _byteOrder);
                 aGridData.data[0][i] = aValue;
             }
@@ -1946,7 +2118,15 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
     @Override
     public GridData getGridData_Lat(int timeIdx, int lonIdx, int varIdx, int levelIdx) {
         try {
-            RandomAccessFile br = new RandomAccessFile(DSET, "r");
+            String filePath = DSET;
+            int tIdx = timeIdx;
+            if (OPTIONS.template)
+            {
+                Object[] result = getFilePath_Template(timeIdx);
+                filePath = (String)result[0];
+                tIdx = (int)result[1];
+            }
+            RandomAccessFile br = new RandomAccessFile(filePath, "r");
             int i, lNum;
             byte[] aBytes = new byte[4];
             float aValue;
@@ -1958,26 +2138,23 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
             aGridData.yArray[0] = 0;
             aGridData.data = new double[1][Y.length];
 
-            br.seek((long) FILEHEADER + (long) timeIdx * (long) RecLenPerTime);
+            br.seek(FILEHEADER + tIdx * RecLenPerTime);
             for (i = 0; i < varIdx; i++) {
                 lNum = VARDEF.getVars().get(i).getLevelNum();
                 if (lNum == 0) {
                     lNum = 1;
                 }
-                br.seek(br.getFilePointer() + (long) lNum * (long) RecordLen);
+                br.seek(br.getFilePointer() + lNum * RecordLen);
             }
-            br.seek(br.getFilePointer() + (long) levelIdx * (long) RecordLen);
+            br.seek(br.getFilePointer() + levelIdx * RecordLen);
             if (OPTIONS.sequential) {
                 br.seek(br.getFilePointer() + 4);
             }
             long aPosition = br.getFilePointer();
 
             for (i = 0; i < YNum; i++) {
-                br.seek(aPosition + (long) i * (long) XNum * 4 + lonIdx * 4);
+                br.seek(aPosition + i * XNum * 4 + lonIdx * 4);
                 br.read(aBytes);
-//                if (OPTIONS.big_endian || OPTIONS.byteswapped) {
-//                    Collections.reverse(Arrays.asList(aBytes));
-//                }
                 aValue = DataConvert.bytes2Float(aBytes, _byteOrder);
                 aGridData.data[0][i] = aValue;
             }
@@ -2054,7 +2231,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                 if (aSTDH.NLev > 0) {
                     stNum += 1;
                     aSTData.STHead = aSTDH;
-                    aSTData.dataList = new ArrayList<STLevData>();
+                    aSTData.dataList = new ArrayList<>();
                     if (aSTDH.Flag == 1) //Has ground level
                     {
                         if (aSTDH.STID.equals(stID)) {

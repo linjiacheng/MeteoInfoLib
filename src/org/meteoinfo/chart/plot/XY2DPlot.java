@@ -106,6 +106,38 @@ public class XY2DPlot extends XYPlot {
     public void addGraphic(Graphic g) {
         this.graphics.add(g);
     }
+    
+    /**
+     * Add a graphic by index
+     * @param idx Index
+     * @param g Graphic
+     */
+    public void addGraphic(int idx, Graphic g){
+        this.graphics.add(idx, g);
+    }
+    
+    /**
+     * Remove a graphic
+     * @param g Graphic
+     */
+    public void removeGraphic(Graphic g){
+        this.graphics.remove(g);
+    }
+    
+    /**
+     * Remove a graphic by index
+     * @param idx Index
+     */
+    public void removeGraphic(int idx){
+        this.graphics.remove(idx);
+    }
+    
+    /**
+     * Remove last graphic
+     */
+    public void removeLastGraphic(){
+        this.graphics.remove(this.graphics.size() - 1);
+    }
 
     /**
      * Add graphic list

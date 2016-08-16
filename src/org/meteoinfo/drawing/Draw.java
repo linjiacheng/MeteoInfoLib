@@ -400,6 +400,44 @@ public class Draw {
             g.setTransform(tempTrans);
         }
     }
+    
+    /**
+     * Draw arraw
+     *
+     * @param g Graphics2D
+     * @param sP Start point
+     * @param angle Angle
+     * @param size Arrow size
+     */
+    public static void drawArraw(Graphics2D g, PointF sP, double angle, int size) {
+        GeneralPath path = new GeneralPath(GeneralPath.WIND_EVEN_ODD, 5);
+        Rectangle.Float rect = new Rectangle.Float(-size, -size, size * 2, size * 2);
+        PointF[] pt = new PointF[5];
+        pt[0] = new PointF(rect.x, rect.y);
+        pt[1] = new PointF(rect.x + rect.width, rect.y + (rect.height / 2));
+        pt[2] = new PointF(rect.x, rect.y + rect.height);
+        pt[3] = new PointF(rect.x + rect.width / 2, pt[1].Y);
+        pt[4] = pt[0];
+        path.moveTo(pt[0].X, pt[0].Y);
+        for (int i = 1; i < 5; i++) {
+            path.lineTo(pt[i].X, pt[i].Y);
+        }
+
+        AffineTransform tempTrans = g.getTransform();
+        if (angle != 0) {
+            AffineTransform myTrans = new AffineTransform();
+            myTrans.translate(tempTrans.getTranslateX() + sP.X, tempTrans.getTranslateY() + sP.Y);
+            double angle1 = angle - 90;
+            myTrans.rotate(angle1 * Math.PI / 180);
+            g.setTransform(myTrans);
+        }
+        path.closePath();
+        g.fill(path);
+
+        if (angle != 0) {
+            g.setTransform(tempTrans);
+        }
+    }
 
     /**
      * Draw wind barb
@@ -1119,12 +1157,12 @@ public class Draw {
             AffineTransform myTrans = new AffineTransform();
             myTrans.translate(x, y);
             myTrans.rotate(-angle * Math.PI / 180);
-            g.setTransform(myTrans);           
-            if (angle == 90){
-                x = -(float)(labSize.getWidth() - 10);
-                y = (float)(labSize.getHeight() / 3);
+            g.setTransform(myTrans);
+            if (angle == 90) {
+                x = -(float) (labSize.getWidth() - 10);
+                y = (float) (labSize.getHeight() / 3);
             } else {
-                x = -(float)(labSize.getWidth() - 5);
+                x = -(float) (labSize.getWidth() - 5);
                 y = 0;
             }
             Draw.drawString(g, text, x, y);
@@ -1736,6 +1774,30 @@ public class Draw {
                     g.setStroke(new BasicStroke(aPLB.getSize()));
                     drawPolyline(points, g);
                     break;
+                case ArrowLine:
+                    g.setColor(aPLB.getColor());
+                    g.setStroke(new BasicStroke(aPLB.getSize()));
+                    //float[] dashPattern = getDashPattern(aPLB.getStyle());
+                    //g.setStroke(new BasicStroke(aPLB.getSize(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dashPattern, 0.0f));
+                    drawPolyline(points, g);
+
+                    int n = points.length;
+                    PointF aPoint = points[n - 2];
+                    PointF bPoint = points[n - 1];
+                    double U = bPoint.X - aPoint.X;
+                    double V = bPoint.Y - aPoint.Y;
+                    double angle = Math.atan((V) / (U)) * 180 / Math.PI;
+                    angle = angle + 90;
+                    if (U < 0) {
+                        angle = angle + 180;
+                    }
+
+                    if (angle >= 360) {
+                        angle = angle - 360;
+                    }
+
+                    Draw.drawArraw(g, bPoint, angle, 8);
+                    break;
             }
         }
     }
@@ -2038,6 +2100,30 @@ public class Draw {
                     g.setStroke(new BasicStroke(lineWidth));
                     drawPolyline(points, g);
                     break;
+                case ArrowLine:
+                    g.setColor(aPLB.getColor());
+                    g.setStroke(new BasicStroke(lineWidth));
+                    //float[] dashPattern = getDashPattern(aPLB.getStyle());
+                    //g.setStroke(new BasicStroke(aPLB.getSize(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dashPattern, 0.0f));
+                    drawPolyline(points, g);
+
+                    int n = points.length;
+                    aPoint = points[n - 2];
+                    PointF bPoint = points[n - 1];
+                    double U = bPoint.X - aPoint.X;
+                    double V = bPoint.Y - aPoint.Y;
+                    double angle = Math.atan((V) / (U)) * 180 / Math.PI;
+                    angle = angle + 90;
+                    if (U < 0) {
+                        angle = angle + 180;
+                    }
+
+                    if (angle >= 360) {
+                        angle = angle - 360;
+                    }
+
+                    Draw.drawArraw(g, bPoint, angle, 8);
+                    break;
             }
         }
     }
@@ -2162,6 +2248,30 @@ public class Draw {
                     g.setColor(Color.blue);
                     g.setStroke(new BasicStroke(lineWidth));
                     drawPolyline(points, g);
+                    break;
+                case ArrowLine:
+                    g.setColor(aPLB.getColor());
+                    g.setStroke(new BasicStroke(lineWidth));
+                    //float[] dashPattern = getDashPattern(aPLB.getStyle());
+                    //g.setStroke(new BasicStroke(aPLB.getSize(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dashPattern, 0.0f));
+                    drawPolyline(points, g);
+
+                    int n = points.length;
+                    aPoint = points[n - 2];
+                    PointF bPoint = points[n - 1];
+                    double U = bPoint.X - aPoint.X;
+                    double V = bPoint.Y - aPoint.Y;
+                    double angle = Math.atan((V) / (U)) * 180 / Math.PI;
+                    angle = angle + 90;
+                    if (U < 0) {
+                        angle = angle + 180;
+                    }
+
+                    if (angle >= 360) {
+                        angle = angle - 360;
+                    }
+
+                    Draw.drawArraw(g, bPoint, angle, 8);
                     break;
             }
         }

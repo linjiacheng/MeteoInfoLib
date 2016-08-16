@@ -25,6 +25,7 @@ public enum LineStyles {
     Dot,
     DashDot,
     DashDotDot,
+    ArrowLine,
     ColdFront,
     WarmFront,
     OccludedFront,
