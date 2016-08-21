@@ -400,7 +400,7 @@ public class Draw {
             g.setTransform(tempTrans);
         }
     }
-    
+
     /**
      * Draw arraw
      *
@@ -619,6 +619,27 @@ public class Draw {
                     drawPoint_Image(aP, aPB, g);
                     break;
             }
+        }
+    }
+
+    /**
+     * Draw point
+     *
+     * @param aP Position
+     * @param aPB Point break
+     * @param g Graphics
+     */
+    public static void drawMapPoint(PointF aP, PointBreak aPB, Graphics2D g) {
+        switch (aPB.getMarkerType()) {
+            case Simple:
+                drawPoint_Simple(aP, aPB, g);
+                break;
+            case Character:
+                drawPoint_Character(aP, aPB, g);
+                break;
+            case Image:
+                drawPoint_Image(aP, aPB, g);
+                break;
         }
     }
 

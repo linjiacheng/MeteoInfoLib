@@ -5009,12 +5009,12 @@ public class MapView extends JPanel {
                         } else {
                             newPB.setDrawOutline(false);
                         }
-                        Draw.drawPoint(new PointF(aPoint.X, aPoint.Y), newPB, g);
+                        Draw.drawMapPoint(new PointF(aPoint.X, aPoint.Y), newPB, g);
                         if (aPS.isEditing()) {
                             Draw.drawSelectedVertice(g, aPoint, 8, Color.red, Color.cyan);
                         }
                     } else {
-                        Draw.drawPoint(aPoint, aPB, g);
+                        Draw.drawMapPoint(aPoint, aPB, g);
                     }
                 }
             }
