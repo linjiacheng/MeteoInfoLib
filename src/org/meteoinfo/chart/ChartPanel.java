@@ -260,20 +260,23 @@ public class ChartPanel extends JPanel {
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         Cursor customCursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
         switch (this.mouseMode) {
+            case SELECT:
+                customCursor = Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR);
+                break;
             case ZOOM_IN:
-                image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/laboratory/resources/zoom_in_32x32x32.png"));
+                image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/resources/zoom_in_32x32x32.png"));
                 customCursor = toolkit.createCustomCursor(image, new Point(8, 8), "Zoom In");
                 break;
             case ZOOM_OUT:
-                image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/laboratory/resources/zoom_out_32x32x32.png"));
+                image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/resources/zoom_out_32x32x32.png"));
                 customCursor = toolkit.createCustomCursor(image, new Point(8, 8), "Zoom In");
                 break;
             case PAN:
-                image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/laboratory/resources/Pan_Open_32x32x32.png"));
+                image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/resources/Pan_Open_32x32x32.png"));
                 customCursor = toolkit.createCustomCursor(image, new Point(8, 8), "Pan");
                 break;
             case IDENTIFER:
-                image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/laboratory/resources/identifer_32x32x32.png"));
+                image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/resources/identifer_32x32x32.png"));
                 customCursor = toolkit.createCustomCursor(image, new Point(8, 8), "Identifer");
                 break;
         }
@@ -358,6 +361,7 @@ public class ChartPanel extends JPanel {
         if (this.dragMode) {
             switch (this.mouseMode) {
                 case ZOOM_IN:
+                case SELECT:
                     int aWidth = Math.abs(mouseLastPos.x - mouseDownPoint.x);
                     int aHeight = Math.abs(mouseLastPos.y - mouseDownPoint.y);
                     int aX = Math.min(mouseLastPos.x, mouseDownPoint.x);
@@ -536,7 +540,7 @@ public class ChartPanel extends JPanel {
 
                     if (xyplot instanceof XY1DPlot) {
                         XY1DPlot plot = (XY1DPlot) xyplot;
-                        Rectangle2D graphArea = this.chart.getGraphArea();
+                        Rectangle2D graphArea = plot.getGraphArea();
                         if (graphArea.contains(mouseDownPoint.x, mouseDownPoint.y) || graphArea.contains(mouseLastPos.x, mouseLastPos.y)) {
                             double[] xy1 = plot.screenToProj(mouseDownPoint.x - graphArea.getX(), mouseDownPoint.y - graphArea.getY(), graphArea);
                             double[] xy2 = plot.screenToProj(mouseLastPos.x - graphArea.getX(), mouseLastPos.y - graphArea.getY(), graphArea);
@@ -577,6 +581,7 @@ public class ChartPanel extends JPanel {
         mouseLastPos.y = e.getY();
         switch (this.mouseMode) {
             case ZOOM_IN:
+            case SELECT:
                 this.repaint();
                 break;
             case PAN:
