@@ -263,6 +263,24 @@ public abstract class Plot {
         this.positionArea = value;
     }
     
+    private Rectangle2D graphArea = new Rectangle2D.Double();
+    
+    /**
+     * Get graph area
+     * @return Graph area
+     */
+    public Rectangle2D getGraphArea(){
+        return graphArea;
+    }
+    
+    /**
+     * Set graph area
+     * @param value Graph area
+     */
+    public void setGraphArea(Rectangle2D value){
+        graphArea = value;
+    }
+    
     /**
      * Get position area
      * @param g Graphics2D

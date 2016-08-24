@@ -11,8 +11,10 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -22,6 +24,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
@@ -30,6 +34,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -55,19 +61,34 @@ import javax.print.StreamPrintServiceFactory;
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
+import javax.swing.table.DefaultTableModel;
 import org.freehep.graphics2d.VectorGraphics;
 import org.freehep.graphicsio.emf.EMFGraphics2D;
 import org.freehep.graphicsio.pdf.PDFGraphics2D;
 import org.freehep.graphicsio.ps.PSGraphics2D;
 import org.meteoinfo.chart.plot.MapPlot;
+import org.meteoinfo.chart.plot.Plot;
 import org.meteoinfo.chart.plot.XY1DPlot;
 import org.meteoinfo.chart.plot.XYPlot;
+import org.meteoinfo.data.DataTypes;
+import org.meteoinfo.data.mapdata.Field;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.GenericFileFilter;
+import org.meteoinfo.global.PointF;
+import org.meteoinfo.layer.LayerTypes;
+import org.meteoinfo.layer.MapLayer;
+import org.meteoinfo.layer.RasterLayer;
+import org.meteoinfo.layer.VectorLayer;
+import org.meteoinfo.map.FrmIdentifer;
+import org.meteoinfo.map.FrmIdentiferGrid;
+import org.meteoinfo.map.MapView;
+import org.meteoinfo.shape.Shape;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -82,13 +103,15 @@ public class ChartPanel extends JPanel {
     // <editor-fold desc="Variables">
     private final EventListenerList listeners = new EventListenerList();
     private BufferedImage mapBitmap = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
+    private BufferedImage tempImage = null;
     private Chart chart;
+    private Plot currentPlot;
     private Dimension chartSize;
     private Point mouseDownPoint = new Point(0, 0);
     private Point mouseLastPos = new Point(0, 0);
     private boolean dragMode = false;
     private JPopupMenu popupMenu;
-    private MouseMode mouseMode = MouseMode.ZOOM;
+    private MouseMode mouseMode;
     private List<int[]> selectedPoints;
     private final double INCH_2_CM = 2.54;
     // </editor-fold>
@@ -147,7 +170,7 @@ public class ChartPanel extends JPanel {
         undoZoom.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                onUndoZoomClick(e);
+                onUndoZoomClick();
             }
         });
         popupMenu.add(undoZoom);
@@ -163,6 +186,7 @@ public class ChartPanel extends JPanel {
         popupMenu.add(saveFigure);
 
         this.chart = null;
+        this.setMouseMode(mouseMode.ZOOM_IN);
     }
 
     /**
@@ -174,14 +198,15 @@ public class ChartPanel extends JPanel {
         this();
         this.chart = chart;
     }
-    
+
     /**
      * Constructor
+     *
      * @param chart Chart
      * @param width Chart width
      * @param height Chart height
      */
-    public ChartPanel(Chart chart, int width, int height){
+    public ChartPanel(Chart chart, int width, int height) {
         this(chart);
         this.chartSize = new Dimension(width, height);
     }
@@ -231,14 +256,28 @@ public class ChartPanel extends JPanel {
      */
     public void setMouseMode(MouseMode value) {
         this.mouseMode = value;
+        Image image;
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
+        Cursor customCursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
         switch (this.mouseMode) {
-            case SELECT:
-                this.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+            case ZOOM_IN:
+                image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/laboratory/resources/zoom_in_32x32x32.png"));
+                customCursor = toolkit.createCustomCursor(image, new Point(8, 8), "Zoom In");
                 break;
-            default:
-                this.setCursor(Cursor.getDefaultCursor());
+            case ZOOM_OUT:
+                image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/laboratory/resources/zoom_out_32x32x32.png"));
+                customCursor = toolkit.createCustomCursor(image, new Point(8, 8), "Zoom In");
+                break;
+            case PAN:
+                image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/laboratory/resources/Pan_Open_32x32x32.png"));
+                customCursor = toolkit.createCustomCursor(image, new Point(8, 8), "Pan");
+                break;
+            case IDENTIFER:
+                image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/laboratory/resources/identifer_32x32x32.png"));
+                customCursor = toolkit.createCustomCursor(image, new Point(8, 8), "Identifer");
                 break;
         }
+        this.setCursor(customCursor);
     }
 
     /**
@@ -276,6 +315,29 @@ public class ChartPanel extends JPanel {
 
     // <editor-fold desc="Method">
     /**
+     * Select a plot by point
+     *
+     * @param x X
+     * @param y Y
+     * @return Selected plot
+     */
+    public Plot selPlot(int x, int y) {
+        if (this.chart == null) {
+            return null;
+        }
+
+        int n = this.chart.getPlots().size();
+        for (int i = n - 1; i >= 0; i--) {
+            Plot plot = this.chart.getPlots().get(i);
+            Rectangle2D rect = plot.getGraphArea();
+            if (rect.contains(x, y)) {
+                return plot;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Paint component
      *
      * @param g Graphics
@@ -294,14 +356,36 @@ public class ChartPanel extends JPanel {
 
         //Draw dynamic graphics
         if (this.dragMode) {
-            int aWidth = Math.abs(mouseLastPos.x - mouseDownPoint.x);
-            int aHeight = Math.abs(mouseLastPos.y - mouseDownPoint.y);
-            int aX = Math.min(mouseLastPos.x, mouseDownPoint.x);
-            int aY = Math.min(mouseLastPos.y, mouseDownPoint.y);
-            g2.setColor(this.getForeground());
-            float dash1[] = {2.0f};
-            g2.setStroke(new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash1, 0.0f));
-            g2.draw(new Rectangle(aX, aY, aWidth, aHeight));
+            switch (this.mouseMode) {
+                case ZOOM_IN:
+                    int aWidth = Math.abs(mouseLastPos.x - mouseDownPoint.x);
+                    int aHeight = Math.abs(mouseLastPos.y - mouseDownPoint.y);
+                    int aX = Math.min(mouseLastPos.x, mouseDownPoint.x);
+                    int aY = Math.min(mouseLastPos.y, mouseDownPoint.y);
+                    g2.setColor(this.getForeground());
+                    float dash1[] = {2.0f};
+                    g2.setStroke(new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash1, 0.0f));
+                    g2.draw(new Rectangle(aX, aY, aWidth, aHeight));
+                    break;
+            }
+        }
+
+        //Draw identifer shape
+        if (this.currentPlot != null) {
+            if (this.currentPlot instanceof MapPlot) {
+                MapPlot plot = (MapPlot) this.currentPlot;
+                if (plot.getMapView().isDrawIdentiferShape()) {
+                    if (plot.getSelectedLayer() != null) {
+                        if (plot.getSelectedLayer().getLayerType() == LayerTypes.VectorLayer) {
+                            VectorLayer layer = (VectorLayer) plot.getSelectedLayer();
+                            Rectangle2D rect = plot.getGraphArea();
+                            Rectangle rr = new Rectangle((int) rect.getX(), (int) rect.getY(),
+                                    (int) rect.getWidth(), (int) rect.getHeight());
+                            plot.getMapView().drawIdShape(g2, layer.getShapes().get(layer.getIdentiferShape()), rr);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -318,10 +402,11 @@ public class ChartPanel extends JPanel {
         if (this.chart != null) {
             Graphics2D g = this.mapBitmap.createGraphics();
             Rectangle2D chartArea;
-            if (this.chartSize == null)
+            if (this.chartSize == null) {
                 chartArea = new Rectangle2D.Double(0.0, 0.0, this.mapBitmap.getWidth(), this.mapBitmap.getHeight());
-            else
+            } else {
                 chartArea = new Rectangle2D.Double(0.0, 0.0, this.chartSize.width, this.chartSize.height);
+            }
             this.chart.draw(g, chartArea);
         }
         this.repaint();
@@ -330,13 +415,14 @@ public class ChartPanel extends JPanel {
     public void paintGraphics(Graphics2D g) {
         if (this.chart != null) {
             Rectangle2D chartArea;
-            if (this.chartSize == null)
+            if (this.chartSize == null) {
                 chartArea = new Rectangle2D.Double(0.0, 0.0, this.mapBitmap.getWidth(), this.mapBitmap.getHeight());
-            else
+            } else {
                 chartArea = new Rectangle2D.Double(0.0, 0.0, this.chartSize.width, this.chartSize.height);
+            }
             this.chart.draw(g, chartArea);
         }
-    }        
+    }
 
     void onComponentResized(ComponentEvent e) {
         if (this.chart != null) {
@@ -348,6 +434,21 @@ public class ChartPanel extends JPanel {
         mouseDownPoint.x = e.getX();
         mouseDownPoint.y = e.getY();
         mouseLastPos = (Point) mouseDownPoint.clone();
+        switch (this.mouseMode) {
+            case PAN:
+                Plot plot = selPlot(e.getX(), e.getY());
+                if (plot != null) {
+                    Rectangle2D mapRect = plot.getGraphArea();
+                    tempImage = new BufferedImage((int) mapRect.getWidth() - 2,
+                            (int) mapRect.getHeight() - 2, BufferedImage.TYPE_INT_ARGB);
+                    Graphics2D tg = tempImage.createGraphics();
+                    tg.setColor(Color.white);
+                    tg.fill(mapRect);
+                    tg.drawImage(this.mapBitmap, -(int) mapRect.getX() - 1, -(int) mapRect.getY() - 1, this);
+                    tg.dispose();
+                }
+                break;
+        }
     }
 
     void onMouseMoved(MouseEvent e) {
@@ -356,62 +457,83 @@ public class ChartPanel extends JPanel {
 
     void onMouseReleased(MouseEvent e) {
         this.dragMode = false;
+        XYPlot xyplot = (XYPlot) this.chart.findPlot(mouseDownPoint.x, mouseDownPoint.y);
+        this.currentPlot = xyplot;
         switch (this.mouseMode) {
-            case ZOOM:
+            case ZOOM_IN:
                 if (Math.abs(mouseLastPos.x - mouseDownPoint.x) > 5) {
-                    XYPlot xyplot = (XYPlot) this.chart.findPlot(mouseDownPoint.x, mouseDownPoint.y);
-                    if (xyplot == null)
+                    if (xyplot == null) {
                         return;
-                    
+                    }
+
                     if (xyplot instanceof MapPlot) {
                         MapPlot plot = (MapPlot) xyplot;
-                        Rectangle2D graphArea = this.chart.getGraphArea();
-                        if (graphArea.contains(mouseDownPoint.x, mouseDownPoint.y) || graphArea.contains(mouseLastPos.x, mouseLastPos.y)) {
-                            double[] xy1 = plot.screenToProj(mouseDownPoint.x - graphArea.getX(), mouseDownPoint.y - graphArea.getY(), graphArea);
-                            double[] xy2 = plot.screenToProj(mouseLastPos.x - graphArea.getX(), mouseLastPos.y - graphArea.getY(), graphArea);
-                            Extent extent = new Extent();
-                            extent.minX = Math.min(xy1[0], xy2[0]);
-                            extent.maxX = Math.max(xy1[0], xy2[0]);
-                            extent.minY = Math.min(xy1[1], xy2[1]);
-                            extent.maxY = Math.max(xy1[1], xy2[1]);
-                            plot.setDrawExtent(extent);
-                            this.paintGraphics();
-                        }
+                        Rectangle2D graphArea = xyplot.getGraphArea();
+                        double[] xy1 = plot.screenToProj(mouseDownPoint.x - graphArea.getX(), mouseDownPoint.y - graphArea.getY(), graphArea);
+                        double[] xy2 = plot.screenToProj(mouseLastPos.x - graphArea.getX(), mouseLastPos.y - graphArea.getY(), graphArea);
+                        Extent extent = new Extent();
+                        extent.minX = Math.min(xy1[0], xy2[0]);
+                        extent.maxX = Math.max(xy1[0], xy2[0]);
+                        extent.minY = Math.min(xy1[1], xy2[1]);
+                        extent.maxY = Math.max(xy1[1], xy2[1]);
+                        plot.setDrawExtent(extent);
+                        this.paintGraphics();
                     } else {
-                        Rectangle2D graphArea = this.chart.getGraphArea();
-                        if (graphArea.contains(mouseDownPoint.x, mouseDownPoint.y) || graphArea.contains(mouseLastPos.x, mouseLastPos.y)) {
-                            double[] xy1 = xyplot.screenToProj(mouseDownPoint.x - graphArea.getX(), mouseDownPoint.y - graphArea.getY(), graphArea);
-                            double[] xy2 = xyplot.screenToProj(mouseLastPos.x - graphArea.getX(), mouseLastPos.y - graphArea.getY(), graphArea);
-                            Extent extent = new Extent();
-                            extent.minX = Math.min(xy1[0], xy2[0]);
-                            extent.maxX = Math.max(xy1[0], xy2[0]);
-                            extent.minY = Math.min(xy1[1], xy2[1]);
-                            extent.maxY = Math.max(xy1[1], xy2[1]);
-                            if (xyplot.getXAxis().isInverse()) {
-                                Extent drawExtent = xyplot.getDrawExtent();
-                                double minx, maxx;
-                                minx = drawExtent.getWidth() - (extent.maxX - drawExtent.minX) + drawExtent.minX;
-                                maxx = drawExtent.getWidth() - (extent.minX - drawExtent.minX) + drawExtent.minX;
-                                extent.minX = minx;
-                                extent.maxX = maxx;
-                            }
-                            if (xyplot.getYAxis().isInverse()) {
-                                Extent drawExtent = xyplot.getDrawExtent();
-                                double miny, maxy;
-                                miny = drawExtent.getHeight() - (extent.maxY - drawExtent.minY) + drawExtent.minY;
-                                maxy = drawExtent.getHeight() - (extent.minY - drawExtent.minY) + drawExtent.minY;
-                                extent.minY = miny;
-                                extent.maxY = maxy;
-                            }
-                            xyplot.setDrawExtent(extent);
-                            this.paintGraphics();
+                        Rectangle2D graphArea = xyplot.getGraphArea();
+                        double[] xy1 = xyplot.screenToProj(mouseDownPoint.x - graphArea.getX(), mouseDownPoint.y - graphArea.getY(), graphArea);
+                        double[] xy2 = xyplot.screenToProj(mouseLastPos.x - graphArea.getX(), mouseLastPos.y - graphArea.getY(), graphArea);
+                        Extent extent = new Extent();
+                        extent.minX = Math.min(xy1[0], xy2[0]);
+                        extent.maxX = Math.max(xy1[0], xy2[0]);
+                        extent.minY = Math.min(xy1[1], xy2[1]);
+                        extent.maxY = Math.max(xy1[1], xy2[1]);
+                        if (xyplot.getXAxis().isInverse()) {
+                            Extent drawExtent = xyplot.getDrawExtent();
+                            double minx, maxx;
+                            minx = drawExtent.getWidth() - (extent.maxX - drawExtent.minX) + drawExtent.minX;
+                            maxx = drawExtent.getWidth() - (extent.minX - drawExtent.minX) + drawExtent.minX;
+                            extent.minX = minx;
+                            extent.maxX = maxx;
                         }
+                        if (xyplot.getYAxis().isInverse()) {
+                            Extent drawExtent = xyplot.getDrawExtent();
+                            double miny, maxy;
+                            miny = drawExtent.getHeight() - (extent.maxY - drawExtent.minY) + drawExtent.minY;
+                            maxy = drawExtent.getHeight() - (extent.minY - drawExtent.minY) + drawExtent.minY;
+                            extent.minY = miny;
+                            extent.maxY = maxy;
+                        }
+                        xyplot.setDrawExtent(extent);
+                        this.paintGraphics();
+                    }
+                }
+                break;
+            case ZOOM_OUT:
+                if (xyplot != null) {
+                    if (e.getButton() == MouseEvent.BUTTON1) {
+                        double zoom = 1.5;
+                        Extent extent = xyplot.getDrawExtent();
+                        double owidth = extent.getWidth();
+                        double oheight = extent.getHeight();
+                        double width = owidth * zoom;
+                        double height = oheight * zoom;
+                        double xshift = (owidth - width) * 0.5;
+                        double yshift = (oheight - height) * 0.5;
+                        extent.minX += xshift;
+                        extent.maxX -= xshift;
+                        extent.minY += yshift;
+                        extent.maxY -= yshift;
+                        xyplot.setDrawExtent(extent);
+                        this.paintGraphics();
                     }
                 }
                 break;
             case SELECT:
                 if (Math.abs(mouseLastPos.x - mouseDownPoint.x) > 5) {
-                    XYPlot xyplot = (XYPlot) this.chart.getPlots().get(0);
+                    if (xyplot == null) {
+                        return;
+                    }
+
                     if (xyplot instanceof XY1DPlot) {
                         XY1DPlot plot = (XY1DPlot) xyplot;
                         Rectangle2D graphArea = this.chart.getGraphArea();
@@ -430,6 +552,22 @@ public class ChartPanel extends JPanel {
                     }
                 }
                 break;
+            case PAN:
+                if (xyplot == null) {
+                    return;
+                }
+
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    int deltaX = e.getX() - mouseDownPoint.x;
+                    int deltaY = e.getY() - mouseDownPoint.y;
+                    double minX = -deltaX;
+                    double minY = -deltaY;
+                    double maxX = xyplot.getGraphArea().getWidth() - deltaX;
+                    double maxY = xyplot.getGraphArea().getHeight() - deltaY;
+                    xyplot.zoomToExtentScreen(minX, maxX, minY, maxY);
+                    this.paintGraphics();
+                }
+                break;
         }
     }
 
@@ -437,22 +575,178 @@ public class ChartPanel extends JPanel {
         this.dragMode = true;
         mouseLastPos.x = e.getX();
         mouseLastPos.y = e.getY();
-
-        this.repaint();
+        switch (this.mouseMode) {
+            case ZOOM_IN:
+                this.repaint();
+                break;
+            case PAN:
+                Plot plot = selPlot(e.getX(), e.getY());
+                if (plot != null) {
+                    Graphics2D g = (Graphics2D) this.getGraphics();
+                    Rectangle2D mapRect = plot.getGraphArea();
+                    g.setClip(mapRect);
+                    g.setColor(Color.white);
+                    int aX = e.getX() - mouseDownPoint.x;
+                    int aY = e.getY() - mouseDownPoint.y;
+                    if (aX > 0) {
+                        if (mapRect.getX() >= 0) {
+                            g.fillRect((int) mapRect.getX(), (int) mapRect.getY(), aX, (int) mapRect.getHeight());
+                        } else {
+                            g.fillRect(0, (int) mapRect.getY(), aX, (int) mapRect.getHeight());
+                        }
+                    } else if (mapRect.getX() <= this.getWidth()) {
+                        g.fillRect((int) (mapRect.getX() + mapRect.getWidth() + aX), (int) mapRect.getY(), Math.abs(aX), (int) mapRect.getHeight());
+                    } else {
+                        g.fillRect(this.getWidth() + aX, (int) mapRect.getY(), Math.abs(aX), (int) mapRect.getHeight());
+                    }
+                    if (aY > 0) {
+                        if (mapRect.getY() >= 0) {
+                            g.fillRect((int) mapRect.getX(), (int) mapRect.getY(), (int) mapRect.getWidth(), aY);
+                        } else {
+                            g.fillRect((int) mapRect.getX(), 0, (int) mapRect.getWidth(), aY);
+                        }
+                    } else if (mapRect.getY() + mapRect.getHeight() <= this.getX() + this.getHeight()) {
+                        g.fillRect((int) mapRect.getX(), (int) mapRect.getY() + (int) mapRect.getHeight() + aY, (int) mapRect.getWidth(), Math.abs(aY));
+                    } else {
+                        g.fillRect((int) mapRect.getX(), this.getY() + this.getHeight() + aY, (int) mapRect.getWidth(), Math.abs(aY));
+                    }
+                    int startX = (int) mapRect.getX() + aX;
+                    int startY = (int) mapRect.getY() + aY;
+                    g.drawImage(tempImage, startX, startY, this);
+                    g.setColor(this.getForeground());
+                    g.draw(mapRect);
+                }
+                break;
+        }
     }
 
     void onMouseClicked(MouseEvent e) {
         int clickTimes = e.getClickCount();
         if (clickTimes == 1) {
-            if (e.getButton() == MouseEvent.BUTTON3) {
+            if (e.getButton() == MouseEvent.BUTTON1) {
+                switch (this.mouseMode) {
+                    case IDENTIFER:
+                        Plot plot = selPlot(e.getX(), e.getY());
+                        if (plot == null) {
+                            return;
+                        }
+
+                        if (!(plot instanceof MapPlot)) {
+                            return;
+                        }
+
+                        this.currentPlot = plot;
+                        MapPlot mplot = (MapPlot) plot;
+                        final MapView mapView = mplot.getMapView();
+                        MapLayer aMLayer = mplot.getSelectedLayer();
+                        if (aMLayer == null) {
+                            return;
+                        }
+                        if (aMLayer.getLayerType() == LayerTypes.ImageLayer) {
+                            return;
+                        }
+
+                        Rectangle2D rect = mplot.getGraphArea();
+                        PointF aPoint = new PointF(e.getX() - (float) rect.getX(), e.getY() - (float) rect.getY());
+                        if (aMLayer.getLayerType() == LayerTypes.VectorLayer) {
+                            VectorLayer aLayer = (VectorLayer) aMLayer;
+                            List<Integer> selectedShapes = mapView.selectShapes(aLayer, aPoint, true, false);
+                            if (selectedShapes.size() > 0) {
+                                if (mapView.frmIdentifer == null) {
+                                    mapView.frmIdentifer = new FrmIdentifer((JFrame) SwingUtilities.getWindowAncestor(this), false, mapView);
+                                    mapView.frmIdentifer.addWindowListener(new WindowAdapter() {
+                                        @Override
+                                        public void windowClosed(WindowEvent e) {
+                                            mapView.setDrawIdentiferShape(false);
+                                            ChartPanel.this.repaint();
+                                        }
+                                    });
+                                }
+                                String[] colNames = {"Field", "Value"};
+                                String fieldStr, valueStr;
+                                int shapeIdx = selectedShapes.get(0);
+                                aLayer.setIdentiferShape(shapeIdx);
+                                mapView._drawIdentiferShape = true;
+
+                                Object[][] tData = new Object[aLayer.getFieldNumber() + 1][2];
+                                fieldStr = "Index";
+                                valueStr = String.valueOf(shapeIdx);
+                                tData[0][0] = fieldStr;
+                                tData[0][1] = valueStr;
+                                Object value;
+                                if (aLayer.getShapeNum() > 0) {
+                                    for (int i = 0; i < aLayer.getFieldNumber(); i++) {
+                                        Field field = aLayer.getField(i);
+                                        fieldStr = field.getColumnName();
+                                        value = aLayer.getCellValue(i, shapeIdx);
+                                        if (value == null) {
+                                            valueStr = "";
+                                        } else if (field.getDataType() == DataTypes.Date) {
+                                            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                                            valueStr = format.format((Date) value);
+                                        } else {
+                                            valueStr = value.toString();
+                                        }
+                                        tData[i + 1][0] = fieldStr;
+                                        tData[i + 1][1] = valueStr;
+                                    }
+                                }
+                                DefaultTableModel dtm = new javax.swing.table.DefaultTableModel(tData, colNames) {
+                                    @Override
+                                    public boolean isCellEditable(int row, int column) {
+                                        return false;
+                                    }
+                                };
+                                mapView.frmIdentifer.getTable().setModel(dtm);
+                                mapView.frmIdentifer.repaint();
+                                if (!mapView.frmIdentifer.isVisible()) {
+                                    //this._frmIdentifer.setLocation(e.getX(), e.getY());
+                                    mapView.frmIdentifer.setLocationRelativeTo(this);
+                                    mapView.frmIdentifer.setVisible(true);
+                                }
+
+                                mapView.setDrawIdentiferShape(true);
+                                this.repaint();
+                            }
+                        } else if (aMLayer.getLayerType() == LayerTypes.RasterLayer) {
+                            RasterLayer aRLayer = (RasterLayer) aMLayer;
+                            int[] ijIdx = mapView.selectGridCell(aRLayer, aPoint);
+                            if (ijIdx != null) {
+                                int iIdx = ijIdx[0];
+                                int jIdx = ijIdx[1];
+                                double aValue = aRLayer.getCellValue(iIdx, jIdx);
+                                if (mapView._frmIdentiferGrid == null) {
+                                    mapView._frmIdentiferGrid = new FrmIdentiferGrid((JFrame) SwingUtilities.getWindowAncestor(this), false);
+                                }
+
+                                mapView._frmIdentiferGrid.setIIndex(iIdx);
+                                mapView._frmIdentiferGrid.setJIndex(jIdx);
+                                mapView._frmIdentiferGrid.setCellValue(aValue);
+                                if (!mapView._frmIdentiferGrid.isVisible()) {
+                                    //this._frmIdentiferGrid.setLocation(e.getX(), e.getY());
+                                    mapView._frmIdentiferGrid.setLocationRelativeTo(this);
+                                    mapView._frmIdentiferGrid.setVisible(true);
+                                }
+                            }
+                        }
+                        break;
+                }
+            } else if (e.getButton() == MouseEvent.BUTTON3) {
                 popupMenu.show(this, e.getX(), e.getY());
             }
         }
     }
 
-    private void onUndoZoomClick(ActionEvent e) {
-        XYPlot xyplot = (XYPlot) this.chart.getPlots().get(0);
-        xyplot.setDrawExtent((Extent)xyplot.getExtent().clone());
+    /**
+     * Zoom back to full extent
+     */
+    public void onUndoZoomClick() {
+        XYPlot xyplot;
+        if (this.currentPlot == null)
+            xyplot = (XYPlot) this.chart.getPlots().get(0);
+        else
+            xyplot =(XYPlot) this.currentPlot;
+        xyplot.setDrawExtent((Extent) xyplot.getExtent().clone());
 //        if (xyplot instanceof MapPlot) {
 //            MapPlot plot = (MapPlot) xyplot;
 //            plot.setDrawExtent(plot.getMapView().getLastAddedLayer().getExtent());
@@ -586,23 +880,24 @@ public class ChartPanel extends JPanel {
         } else {
             //String extension = aFile.substring(aFile.lastIndexOf('.') + 1);
             //ImageIO.write(this.mapBitmap, extension, new File(aFile));
-            
+
             String extension = aFile.substring(aFile.lastIndexOf('.') + 1);
             BufferedImage aImage;
             int w, h;
-            if (this.chartSize == null){
+            if (this.chartSize == null) {
                 w = this.getWidth();
                 h = this.getHeight();
             } else {
                 w = this.chartSize.width;
                 h = this.chartSize.height;
             }
-            if (extension.equalsIgnoreCase("bmp"))
+            if (extension.equalsIgnoreCase("bmp")) {
                 aImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-            else
+            } else {
                 aImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+            }
             Graphics2D g = aImage.createGraphics();
-            paintGraphics(g);            
+            paintGraphics(g);
             ImageIO.write(aImage, extension, new File(aFile));
         }
     }
@@ -812,26 +1107,27 @@ public class ChartPanel extends JPanel {
     public BufferedImage getViewImage() {
         return this.mapBitmap;
     }
-    
+
     /**
      * Paint view image
+     *
      * @return View image
      */
-    public BufferedImage paintViewImage(){
+    public BufferedImage paintViewImage() {
         BufferedImage aImage;
-            int w, h;
-            if (this.chartSize == null){
-                w = this.getWidth();
-                h = this.getHeight();
-            } else {
-                w = this.chartSize.width;
-                h = this.chartSize.height;
-            }
-            aImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g = aImage.createGraphics();
-            paintGraphics(g); 
-            
-            return aImage;
+        int w, h;
+        if (this.chartSize == null) {
+            w = this.getWidth();
+            h = this.getHeight();
+        } else {
+            w = this.chartSize.width;
+            h = this.chartSize.height;
+        }
+        aImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = aImage.createGraphics();
+        paintGraphics(g);
+
+        return aImage;
     }
     // </editor-fold>
 }

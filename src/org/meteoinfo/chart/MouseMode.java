@@ -10,6 +10,9 @@ package org.meteoinfo.chart;
  * @author yaqiang
  */
 public enum MouseMode {
-    ZOOM,
-    SELECT
+    ZOOM_IN,
+    ZOOM_OUT,
+    SELECT,
+    PAN,
+    IDENTIFER
 }

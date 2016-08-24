@@ -2073,12 +2073,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
     public GridData getGridData_TimeLat(int lonIdx, int varIdx, int levelIdx) {
         NetcdfFile ncfile = null;
         try {
-            ncfile = NetcdfDataset.openFile(this.getFileName(), null);
-
-            int xNum, yNum;
-            xNum = this.getYDimension().getLength();
-            yNum = this.getTimeDimension().getLength();
-            double[][] gridData = new double[yNum][xNum];
+            ncfile = NetcdfDataset.openFile(this.getFileName(), null);            
 
             int i, j;
             //int tVarIdx = this.getTrueVarIndex(varIdx);
@@ -2095,11 +2090,14 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
             //Read grid data
             Variable nvar = this.getVariables().get(tVarIdx);
+            int xNum, yNum;
+            xNum = nvar.getYDimension().getLength();
+            yNum = nvar.getTDimension().getLength();
+            double[][] gridData = new double[yNum][xNum];
             int rank = var.getRank();
             int[] origin = new int[rank];
             int[] size = new int[rank];
             for (i = 0; i < rank; i++) {
-                ucar.nc2.Dimension dim = var.getDimension(i);
                 Dimension ndim = (Dimension)nvar.getDimension(i);
                 switch (ndim.getDimType()) {
                     case T:
@@ -2141,8 +2139,8 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
             GridData aGridData = new GridData();
             aGridData.data = gridData;
-            aGridData.xArray = this.getYDimension().getValues();
-            aGridData.yArray = this.getTimeDimension().getValues();
+            aGridData.xArray = nvar.getYDimension().getValues();
+            aGridData.yArray = nvar.getTDimension().getValues();
             aGridData.missingValue = missingValue;
 
             if (this.isYReverse()) {
@@ -2168,12 +2166,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
     public GridData getGridData_TimeLon(int latIdx, int varIdx, int levelIdx) {
         NetcdfFile ncfile = null;
         try {
-            ncfile = NetcdfDataset.openFile(this.getFileName(), null);
-
-            int xNum, yNum;
-            xNum = this.getXDimension().getLength();
-            yNum = this.getTimeDimension().getLength();
-            double[][] gridData = new double[yNum][xNum];
+            ncfile = NetcdfDataset.openFile(this.getFileName(), null);            
 
             int i, j;
             //int tVarIdx = this.getTrueVarIndex(varIdx);
@@ -2190,11 +2183,14 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
             //Read grid data
             Variable nvar = this.getVariables().get(tVarIdx);
+            int xNum, yNum;
+            xNum = nvar.getXDimension().getLength();
+            yNum = nvar.getTDimension().getLength();
+            double[][] gridData = new double[yNum][xNum];
             int rank = var.getRank();
             int[] origin = new int[rank];
             int[] size = new int[rank];
             for (i = 0; i < rank; i++) {
-                ucar.nc2.Dimension dim = var.getDimension(i);
                 Dimension ndim = (Dimension)nvar.getDimension(i);
                 switch (ndim.getDimType()) {
                     case T:
@@ -2236,8 +2232,8 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
             GridData aGridData = new GridData();
             aGridData.data = gridData;
-            aGridData.xArray = this.getYDimension().getValues();
-            aGridData.yArray = this.getTimeDimension().getValues();
+            aGridData.xArray = nvar.getYDimension().getValues();
+            aGridData.yArray = nvar.getTDimension().getValues();
             aGridData.missingValue = missingValue;
 
             return aGridData;
@@ -2259,12 +2255,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
     public GridData getGridData_LevelLat(int lonIdx, int varIdx, int timeIdx) {
         NetcdfFile ncfile = null;
         try {
-            ncfile = NetcdfDataset.openFile(this.getFileName(), null);
-
-            int xNum, yNum;
-            xNum = this.getYDimension().getLength();
-            yNum = this.getZDimension().getLength();
-            double[][] gridData = new double[yNum][xNum];
+            ncfile = NetcdfDataset.openFile(this.getFileName(), null);            
 
             int i, j;
             //int tVarIdx = this.getTrueVarIndex(varIdx);
@@ -2281,11 +2272,15 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
             //Read grid data
             Variable nvar = this.getVariables().get(tVarIdx);
+            int xNum, yNum;
+            xNum = nvar.getYDimension().getLength();
+            yNum = nvar.getZDimension().getLength();
+            double[][] gridData = new double[yNum][xNum];
+            
             int rank = var.getRank();
             int[] origin = new int[rank];
             int[] size = new int[rank];
             for (i = 0; i < rank; i++) {
-                ucar.nc2.Dimension dim = var.getDimension(i);
                 Dimension ndim = (Dimension)nvar.getDimension(i);
                 switch (ndim.getDimType()) {
                     case T:
@@ -2327,8 +2322,8 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
             GridData aGridData = new GridData();
             aGridData.data = gridData;
-            aGridData.xArray = this.getYDimension().getValues();
-            aGridData.yArray = this.getZDimension().getValues();
+            aGridData.xArray = nvar.getYDimension().getValues();
+            aGridData.yArray = nvar.getZDimension().getValues();
             aGridData.missingValue = missingValue;
 
             if (this.isYReverse()) {
@@ -2354,12 +2349,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
     public GridData getGridData_LevelLon(int latIdx, int varIdx, int timeIdx) {
         NetcdfFile ncfile = null;
         try {
-            ncfile = NetcdfDataset.openFile(this.getFileName(), null);
-
-            int xNum, yNum;
-            xNum = this.getXDimension().getLength();
-            yNum = this.getZDimension().getLength();
-            double[][] gridData = new double[yNum][xNum];
+            ncfile = NetcdfDataset.openFile(this.getFileName(), null);            
 
             int i, j;
             //int tVarIdx = this.getTrueVarIndex(varIdx);
@@ -2376,11 +2366,14 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
             //Read grid data
             Variable nvar = this.getVariables().get(tVarIdx);
+            int xNum, yNum;
+            xNum = nvar.getXDimension().getLength();
+            yNum = nvar.getZDimension().getLength();
+            double[][] gridData = new double[yNum][xNum];
             int rank = var.getRank();
             int[] origin = new int[rank];
             int[] size = new int[rank];
             for (i = 0; i < rank; i++) {
-                ucar.nc2.Dimension dim = var.getDimension(i);
                 Dimension ndim = (Dimension)nvar.getDimension(i);
                 switch (ndim.getDimType()) {
                     case T:
@@ -2422,8 +2415,8 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
             GridData aGridData = new GridData();
             aGridData.data = gridData;
-            aGridData.xArray = this.getYDimension().getValues();
-            aGridData.yArray = this.getTimeDimension().getValues();
+            aGridData.xArray = nvar.getXDimension().getValues();
+            aGridData.yArray = nvar.getZDimension().getValues();
             aGridData.missingValue = missingValue;
 
             return aGridData;
@@ -2445,12 +2438,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
     public GridData getGridData_LevelTime(int latIdx, int varIdx, int lonIdx) {
         NetcdfFile ncfile = null;
         try {
-            ncfile = NetcdfDataset.openFile(this.getFileName(), null);
-
-            int xNum, yNum;
-            xNum = this.getTimeDimension().getLength();
-            yNum = this.getZDimension().getLength();
-            double[][] gridData = new double[yNum][xNum];
+            ncfile = NetcdfDataset.openFile(this.getFileName(), null);            
 
             int i, j;
             //int tVarIdx = this.getTrueVarIndex(varIdx);
@@ -2467,11 +2455,14 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
             //Read grid data
             Variable nvar = this.getVariables().get(tVarIdx);
+            int xNum, yNum;
+            xNum = nvar.getTDimension().getLength();
+            yNum = nvar.getZDimension().getLength();
+            double[][] gridData = new double[yNum][xNum];
             int rank = var.getRank();
             int[] origin = new int[rank];
             int[] size = new int[rank];
             for (i = 0; i < rank; i++) {
-                ucar.nc2.Dimension dim = var.getDimension(i);
                 Dimension ndim = (Dimension)nvar.getDimension(i);
                 switch (ndim.getDimType()) {
                     case T:
@@ -2518,8 +2509,8 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
             GridData aGridData = new GridData();
             aGridData.data = gridData;
-            aGridData.xArray = this.getYDimension().getValues();
-            aGridData.yArray = this.getTimeDimension().getValues();
+            aGridData.xArray = nvar.getTDimension().getValues();
+            aGridData.yArray = nvar.getZDimension().getValues();
             aGridData.missingValue = missingValue;
 
             return aGridData;
@@ -2543,10 +2534,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
         try {
             ncfile = NetcdfDataset.openFile(this.getFileName(), null);
 
-            int dNum = this.getTimeDimension().getLength();
-            double[][] gridData = new double[1][dNum];
-
-            int i, j;
+            int i;
             //int tVarIdx = this.getTrueVarIndex(varIdx);
             int tVarIdx = varIdx;
             ucar.nc2.Variable var = _variables.get(tVarIdx);
@@ -2561,11 +2549,12 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
             //Read grid data
             Variable nvar = this.getVariables().get(tVarIdx);
+            int dNum = nvar.getTDimension().getLength();
+            double[][] gridData = new double[1][dNum];
             int rank = var.getRank();
             int[] origin = new int[rank];
             int[] size = new int[rank];
             for (i = 0; i < rank; i++) {
-                ucar.nc2.Dimension dim = var.getDimension(i);
                 Dimension ndim = (Dimension)nvar.getDimension(i);
                 switch (ndim.getDimType()) {
                     case T:
@@ -2605,7 +2594,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
             GridData aGridData = new GridData();
             aGridData.data = gridData;
-            aGridData.xArray = this.getTimeDimension().getValues();
+            aGridData.xArray = nvar.getTDimension().getValues();
             aGridData.yArray = new double[1];
             aGridData.missingValue = missingValue;
 
@@ -2628,12 +2617,9 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
     public GridData getGridData_Level(int lonIdx, int latIdx, int varIdx, int timeIdx) {
         NetcdfFile ncfile = null;
         try {
-            ncfile = NetcdfDataset.openFile(this.getFileName(), null);
+            ncfile = NetcdfDataset.openFile(this.getFileName(), null);            
 
-            int dNum = this.getZDimension().getLength();
-            double[][] gridData = new double[1][dNum];
-
-            int i, j;
+            int i;
             //int tVarIdx = this.getTrueVarIndex(varIdx);
             int tVarIdx = varIdx;
             ucar.nc2.Variable var = _variables.get(tVarIdx);
@@ -2648,11 +2634,12 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
             //Read grid data
             Variable nvar = this.getVariables().get(tVarIdx);
+            int dNum = nvar.getZDimension().getLength();
+            double[][] gridData = new double[1][dNum];
             int rank = var.getRank();
             int[] origin = new int[rank];
             int[] size = new int[rank];
             for (i = 0; i < rank; i++) {
-                ucar.nc2.Dimension dim = var.getDimension(i);
                 Dimension ndim = (Dimension)nvar.getDimension(i);
                 switch (ndim.getDimType()) {
                     case T:
@@ -2692,7 +2679,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
             GridData aGridData = new GridData();
             aGridData.data = gridData;
-            aGridData.xArray = this.getZDimension().getValues();
+            aGridData.xArray = nvar.getZDimension().getValues();
             aGridData.yArray = new double[1];
             aGridData.missingValue = missingValue;
 
@@ -2715,12 +2702,9 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
     public GridData getGridData_Lon(int timeIdx, int latIdx, int varIdx, int levelIdx) {
         NetcdfFile ncfile = null;
         try {
-            ncfile = NetcdfDataset.openFile(this.getFileName(), null);
+            ncfile = NetcdfDataset.openFile(this.getFileName(), null);            
 
-            int dNum = this.getXDimension().getLength();
-            double[][] gridData = new double[1][dNum];
-
-            int i, j;
+            int i;
             //int tVarIdx = this.getTrueVarIndex(varIdx);
             int tVarIdx = varIdx;
             ucar.nc2.Variable var = _variables.get(tVarIdx);
@@ -2735,11 +2719,12 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
             //Read grid data
             Variable nvar = this.getVariables().get(tVarIdx);
+            int dNum = nvar.getXDimension().getLength();
+            double[][] gridData = new double[1][dNum];
             int rank = var.getRank();
             int[] origin = new int[rank];
             int[] size = new int[rank];
             for (i = 0; i < rank; i++) {
-                ucar.nc2.Dimension dim = var.getDimension(i);
                 Dimension ndim = (Dimension)nvar.getDimension(i);
                 switch (ndim.getDimType()) {
                     case T:
@@ -2779,7 +2764,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
             GridData aGridData = new GridData();
             aGridData.data = gridData;
-            aGridData.xArray = this.getXDimension().getValues();
+            aGridData.xArray = nvar.getXDimension().getValues();
             aGridData.yArray = new double[1];
             aGridData.missingValue = missingValue;
 
@@ -2802,12 +2787,9 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
     public GridData getGridData_Lat(int timeIdx, int lonIdx, int varIdx, int levelIdx) {
         NetcdfFile ncfile = null;
         try {
-            ncfile = NetcdfDataset.openFile(this.getFileName(), null);
+            ncfile = NetcdfDataset.openFile(this.getFileName(), null);            
 
-            int dNum = this.getYDimension().getLength();
-            double[][] gridData = new double[1][dNum];
-
-            int i, j;
+            int i;
             //int tVarIdx = this.getTrueVarIndex(varIdx);
             int tVarIdx = varIdx;
             ucar.nc2.Variable var = _variables.get(tVarIdx);
@@ -2822,11 +2804,12 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
             //Read grid data
             Variable nvar = this.getVariables().get(tVarIdx);
+            int dNum = nvar.getYDimension().getLength();
+            double[][] gridData = new double[1][dNum];
             int rank = var.getRank();
             int[] origin = new int[rank];
             int[] size = new int[rank];
             for (i = 0; i < rank; i++) {
-                ucar.nc2.Dimension dim = var.getDimension(i);
                 Dimension ndim = (Dimension)nvar.getDimension(i);
                 switch (ndim.getDimType()) {
                     case T:
@@ -2866,7 +2849,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 
             GridData aGridData = new GridData();
             aGridData.data = gridData;
-            aGridData.xArray = this.getYDimension().getValues();
+            aGridData.xArray = nvar.getYDimension().getValues();
             aGridData.yArray = new double[1];
             aGridData.missingValue = missingValue;
 

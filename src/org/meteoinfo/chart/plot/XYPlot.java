@@ -555,6 +555,7 @@ public abstract class XYPlot extends Plot {
             //graphArea = this.getPositionArea(this.getPositionAreaZoom());
             graphArea = this.getPositionArea(g, area);
         }
+        this.setGraphArea(graphArea);
 
         //Draw title
         //float y = 5;
@@ -1148,6 +1149,19 @@ public abstract class XYPlot extends Plot {
     public abstract void setAutoExtent();
 
     public abstract void updateLegendScheme();
+    
+    /**
+     * Zoom to screen extent
+     * @param minX Minimum x
+     * @param maxX Maximum x
+     * @param minY Minimum y
+     * @param maxY Maximum y
+     */
+    public void zoomToExtentScreen(double minX, double maxX, double minY, double maxY){
+        double[] pMin = screenToProj(minX, maxY, this.getGraphArea());
+        double[] pMax = screenToProj(maxX, minY, this.getGraphArea());
+        this.setDrawExtent(new Extent(pMin[0], pMax[0], pMin[1], pMax[1]));
+    }
 
     /**
      * Add text

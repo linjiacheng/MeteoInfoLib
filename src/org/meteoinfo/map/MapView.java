@@ -204,8 +204,8 @@ public class MapView extends JPanel {
     // <editor-fold desc="Variables">
 
     private final EventListenerList _listeners = new EventListenerList();
-    private FrmIdentifer _frmIdentifer = null;
-    private FrmIdentiferGrid _frmIdentiferGrid = null;
+    public FrmIdentifer frmIdentifer = null;
+    public FrmIdentiferGrid _frmIdentiferGrid = null;
     private FrmMeasurement _frmMeasure = null;
     private BufferedImage _mapBitmap = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
     //private BufferedImage _tempImage = null;
@@ -235,7 +235,7 @@ public class MapView extends JPanel {
     private Rectangle _selectedRectangle = new Rectangle();
     private Edge _resizeSelectedEdge = Edge.None;
     private Rectangle _resizeRectangle = new Rectangle();
-    private boolean _drawIdentiferShape = false;
+    public boolean _drawIdentiferShape = false;
     private boolean _mouseDoubleClicked = false;    //If fired mouse double click event
     Point _mouseDownPoint = new Point(0, 0);
     Point _mouseLastPos = new Point(0, 0);
@@ -2499,9 +2499,9 @@ public class MapView extends JPanel {
                             VectorLayer aLayer = (VectorLayer) aMLayer;
                             List<Integer> selectedShapes = selectShapes(aLayer, aPoint, true, false);
                             if (selectedShapes.size() > 0) {
-                                if (_frmIdentifer == null) {
-                                    _frmIdentifer = new FrmIdentifer((JFrame) SwingUtilities.getWindowAncestor(this), false, this);
-                                    _frmIdentifer.addWindowListener(new WindowAdapter() {
+                                if (frmIdentifer == null) {
+                                    frmIdentifer = new FrmIdentifer((JFrame) SwingUtilities.getWindowAncestor(this), false, this);
+                                    frmIdentifer.addWindowListener(new WindowAdapter() {
                                         @Override
                                         public void windowClosed(WindowEvent e) {
                                             _drawIdentiferShape = false;
@@ -2544,12 +2544,12 @@ public class MapView extends JPanel {
                                         return false;
                                     }
                                 };
-                                this._frmIdentifer.getTable().setModel(dtm);
-                                this._frmIdentifer.repaint();
-                                if (!this._frmIdentifer.isVisible()) {
-                                    //this._frmIdentifer.setLocation(e.getX(), e.getY());
-                                    this._frmIdentifer.setLocationRelativeTo(this);
-                                    this._frmIdentifer.setVisible(true);
+                                this.frmIdentifer.getTable().setModel(dtm);
+                                this.frmIdentifer.repaint();
+                                if (!this.frmIdentifer.isVisible()) {
+                                    //this.frmIdentifer.setLocation(e.getX(), e.getY());
+                                    this.frmIdentifer.setLocationRelativeTo(this);
+                                    this.frmIdentifer.setVisible(true);
                                 }
 
                                 this.repaint();

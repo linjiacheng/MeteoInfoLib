@@ -27,7 +27,7 @@ public class ChartForm extends javax.swing.JFrame {
         initComponents();
         
         this.chartPanel = chartPanel;
-        this.chartPanel.setMouseMode(MouseMode.ZOOM);
+        this.chartPanel.setMouseMode(MouseMode.ZOOM_IN);
         this.getContentPane().add(this.chartPanel, BorderLayout.CENTER);
         
         BufferedImage image = null;

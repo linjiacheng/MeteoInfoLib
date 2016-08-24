@@ -49,6 +49,7 @@ public class MapPlot extends XYPlot {
     private MapFrame mapFrame;
     private MapView mapView;
     private boolean antialias;
+    private MapLayer selectedLayer;
     // </editor-fold>
     // <editor-fold desc="Constructor">
     /**
@@ -197,6 +198,29 @@ public class MapPlot extends XYPlot {
      */
     public boolean isLonLatMap(){
         return this.getMapView().getProjection().isLonLatMap();
+    }
+    
+    /**
+     * Get selected layer
+     * @return Selected layer
+     */
+    public MapLayer getSelectedLayer(){
+        if (this.selectedLayer != null)
+            return this.selectedLayer;
+        else {
+            if (this.mapView.getLastAddedLayer() != null)
+                return this.mapView.getLastAddedLayer();
+            else
+                return null;
+        }
+    }
+    
+    /**
+     * Set selected layer
+     * @param value Selected layer
+     */
+    public void setSelectedLayer(MapLayer value){
+        this.selectedLayer = value;
     }
 
     // </editor-fold>
@@ -713,5 +737,10 @@ public class MapPlot extends XYPlot {
             }
         }
     }
+    
+//    @Override
+//    public void zoomToExtentScreen(double minX, double maxX, double minY, double maxY){
+//        this.mapView.zoomToExtentScreen(minX, maxX, minY, maxY, 1);
+//    }
     // </editor-fold>
 }

@@ -242,7 +242,7 @@ public class RasterLayer extends ImageLayer {
         int n = colors.size();
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                oneValue = (int) gdata.getValue(i, j);
+                oneValue = gdata.getValue(i, j).intValue();
                 oneColor = colors.get(oneValue);
                 aImage.setRGB(j, height - i - 1, oneColor.getRGB());
             }
