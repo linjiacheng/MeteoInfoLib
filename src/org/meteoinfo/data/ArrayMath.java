@@ -2085,6 +2085,21 @@ public class ArrayMath {
             }
         }
     }
+    
+    /**
+     * Set value
+     *
+     * @param a Array a
+     * @param b Array b - 0/1 data
+     * @param value Value array
+     */
+    public static void setValue(Array a, Array b, Array value) {
+        for (int i = 0; i < a.getSize(); i++) {
+            if (b.getInt(i) == 1) {
+                a.setObject(i, value.getObject(i));
+            }
+        }
+    }
 
     /**
      * As number list
