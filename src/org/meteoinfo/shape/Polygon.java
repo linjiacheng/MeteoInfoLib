@@ -167,12 +167,23 @@ public class Polygon {
         }
         LinearRing shell = factory.createLinearRing(cs);
         LinearRing[] holes = new LinearRing[this._holeLines.size()];
+        int n;
+        boolean isclose;
         for (int j = 0; j < holes.length; j++) {
             List<PointD> hole = this._holeLines.get(j);
-            cs = new Coordinate[hole.size()];
-            for (int i = 0; i < cs.length; i++) {
+            n = hole.size();
+            isclose = true;
+            if (n == 3) {
+                n = 4;
+                isclose = false;
+            }
+            cs = new Coordinate[n];
+            for (int i = 0; i < hole.size(); i++) {
                 p = hole.get(i);
                 cs[i] = new Coordinate(p.X, p.Y);
+            }      
+            if (!isclose){
+                cs[n - 1] = new Coordinate(hole.get(0).X, hole.get(0).Y);
             }
             holes[j] = factory.createLinearRing(cs);
         }

@@ -591,6 +591,8 @@ public class DrawMeteoData {
             aPolygonShape.lowValue = aValue;
             if (aPolygon.HasHoles()) {
                 for (PolyLine holeLine : aPolygon.HoleLines) {
+                    if (holeLine.PointList.size() < 3)
+                        continue;
                     pList = new ArrayList<>();
                     for (wContour.Global.PointD pointList : holeLine.PointList) {
                         aPoint = new PointD();

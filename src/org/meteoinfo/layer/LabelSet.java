@@ -45,7 +45,7 @@ public class LabelSet {
 
     public LabelSet() {
         _drawLabels = false;
-        _fieldName = "";
+        _fieldName = null;
         _labelFont = new Font(GlobalUtil.getDefaultFontName(), Font.PLAIN, 12);
         _labelColor = Color.black;
         _drawShadow = false;
