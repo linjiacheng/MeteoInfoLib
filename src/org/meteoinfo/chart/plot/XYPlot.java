@@ -26,6 +26,7 @@ import org.meteoinfo.chart.LegendPosition;
 import org.meteoinfo.chart.Location;
 import org.meteoinfo.chart.Margin;
 import org.meteoinfo.chart.axis.Axis;
+import org.meteoinfo.chart.axis.LogAxis;
 import org.meteoinfo.chart.axis.TimeAxis;
 import static org.meteoinfo.chart.plot.Plot.MINIMUM_HEIGHT_TO_DRAW;
 import static org.meteoinfo.chart.plot.Plot.MINIMUM_WIDTH_TO_DRAW;
@@ -491,6 +492,24 @@ public abstract class XYPlot extends Plot {
      */
     public void setWindArrow(ChartWindArrow value) {
         this.windArrow = value;
+    }
+    
+    /**
+     * Get x axis is log or not
+     * @return Boolean
+     */
+    public boolean isLogX(){
+        Axis xAxis = this.getXAxis();
+        return xAxis instanceof LogAxis;
+    }
+    
+    /**
+     * Get y axis is log or not
+     * @return Boolean
+     */
+    public boolean isLogY(){
+        Axis yAxis = this.getYAxis();
+        return yAxis instanceof LogAxis;
     }
 
     // </editor-fold>
@@ -1099,6 +1118,9 @@ public abstract class XYPlot extends Plot {
         double scaleY = area.getHeight() / drawExtent.getHeight();
         double screenX = (projX - drawExtent.minX) * scaleX;
         double screenY = (drawExtent.maxY - projY) * scaleY;
+        if (this.isLogY()){
+            screenY = area.getHeight() - Math.log(area.getHeight() - screenY) / Math.log(area.getHeight()) * area.getHeight();
+        }
 
         return new double[]{screenX, screenY};
     }

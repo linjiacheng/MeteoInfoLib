@@ -67,7 +67,7 @@ import org.meteoinfo.shape.WindBarb;
 public class XY2DPlot extends XYPlot {
 
     // <editor-fold desc="Variables">
-    private GraphicCollection graphics;
+    private GraphicCollection graphics;    
 
     // </editor-fold>
     // <editor-fold desc="Constructor">
@@ -95,7 +95,7 @@ public class XY2DPlot extends XYPlot {
     public void setGraphics(GraphicCollection value) {
         this.graphics = value;
     }
-
+        
     // </editor-fold>
     // <editor-fold desc="Methods">
     /**
