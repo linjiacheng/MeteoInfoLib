@@ -241,6 +241,21 @@ public abstract class Shape implements Cloneable{
     }
     
     /**
+     * Move the shape
+     * @param xShift X shift
+     * @param yShift Y shift
+     */
+    public void move(double xShift, double yShift){
+        List<PointD> points = (List<PointD>) this.getPoints();
+        for (PointD aPoint : points) {
+            aPoint.X += xShift;
+            aPoint.Y += yShift;
+        }
+
+        this.setPoints(points);
+    }
+    
+    /**
      * Reverse points direction
      */
     public void reverse(){        
