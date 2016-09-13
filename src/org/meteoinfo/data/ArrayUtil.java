@@ -1395,6 +1395,177 @@ public class ArrayUtil {
 
         return r;
     }
+    
+    /**
+     * Interpolate with inside method - The grid cell value is the maximum value
+     * of the inside points or fill value if no inside point.
+     *
+     * @param x_s scatter X array
+     * @param y_s scatter Y array
+     * @param a scatter value array
+     * @param X x coordinate
+     * @param Y y coordinate
+     * @return grid data
+     */
+    public static Array interpolation_Inside_Max(List<Number> x_s, List<Number> y_s, Array a, List<Number> X, List<Number> Y) {
+        int rowNum, colNum, pNum;
+        colNum = X.size();
+        rowNum = Y.size();
+        pNum = x_s.size();
+        Array r = Array.factory(DataType.DOUBLE, new int[]{rowNum, colNum});
+        double dX = X.get(1).doubleValue() - X.get(0).doubleValue();
+        double dY = Y.get(1).doubleValue() - Y.get(0).doubleValue();
+        int[][] pNums = new int[rowNum][colNum];
+        double x, y, v;
+        double min = Double.MIN_VALUE;
+
+        for (int i = 0; i < rowNum; i++) {
+            for (int j = 0; j < colNum; j++) {
+                pNums[i][j] = 0;
+                r.setDouble(i * colNum + j, min);
+            }
+        }
+
+        for (int p = 0; p < pNum; p++) {
+            v = a.getDouble(p);
+            if (Double.isNaN(v)) {
+                continue;
+            }
+
+            x = x_s.get(p).doubleValue();
+            y = y_s.get(p).doubleValue();
+            if (x < X.get(0).doubleValue() || x > X.get(colNum - 1).doubleValue()) {
+                continue;
+            }
+            if (y < Y.get(0).doubleValue() || y > Y.get(rowNum - 1).doubleValue()) {
+                continue;
+            }
+
+            int j = (int) ((x - X.get(0).doubleValue()) / dX);
+            int i = (int) ((y - Y.get(0).doubleValue()) / dY);
+            pNums[i][j] += 1;
+            r.setDouble(i * colNum + j, Math.max(r.getDouble(i * colNum + j), v));
+        }
+
+        for (int i = 0; i < rowNum; i++) {
+            for (int j = 0; j < colNum; j++) {
+                if (pNums[i][j] == 0 || r.getDouble(i * colNum + j) == Double.MIN_VALUE) {
+                    r.setDouble(i * colNum + j, Double.NaN);
+                }
+            }
+        }
+
+        return r;
+    }
+    
+    /**
+     * Interpolate with inside method - The grid cell value is the minimum value
+     * of the inside points or fill value if no inside point.
+     *
+     * @param x_s scatter X array
+     * @param y_s scatter Y array
+     * @param a scatter value array
+     * @param X x coordinate
+     * @param Y y coordinate
+     * @return grid data
+     */
+    public static Array interpolation_Inside_Min(List<Number> x_s, List<Number> y_s, Array a, List<Number> X, List<Number> Y) {
+        int rowNum, colNum, pNum;
+        colNum = X.size();
+        rowNum = Y.size();
+        pNum = x_s.size();
+        Array r = Array.factory(DataType.DOUBLE, new int[]{rowNum, colNum});
+        double dX = X.get(1).doubleValue() - X.get(0).doubleValue();
+        double dY = Y.get(1).doubleValue() - Y.get(0).doubleValue();
+        int[][] pNums = new int[rowNum][colNum];
+        double x, y, v;
+        double max = Double.MAX_VALUE;
+
+        for (int i = 0; i < rowNum; i++) {
+            for (int j = 0; j < colNum; j++) {
+                pNums[i][j] = 0;
+                r.setDouble(i * colNum + j, max);
+            }
+        }
+
+        for (int p = 0; p < pNum; p++) {
+            v = a.getDouble(p);
+            if (Double.isNaN(v)) {
+                continue;
+            }
+
+            x = x_s.get(p).doubleValue();
+            y = y_s.get(p).doubleValue();
+            if (x < X.get(0).doubleValue() || x > X.get(colNum - 1).doubleValue()) {
+                continue;
+            }
+            if (y < Y.get(0).doubleValue() || y > Y.get(rowNum - 1).doubleValue()) {
+                continue;
+            }
+
+            int j = (int) ((x - X.get(0).doubleValue()) / dX);
+            int i = (int) ((y - Y.get(0).doubleValue()) / dY);
+            pNums[i][j] += 1;
+            r.setDouble(i * colNum + j, Math.min(r.getDouble(i * colNum + j), v));
+        }
+
+        for (int i = 0; i < rowNum; i++) {
+            for (int j = 0; j < colNum; j++) {
+                if (pNums[i][j] == 0 || r.getDouble(i * colNum + j) == Double.MAX_VALUE) {
+                    r.setDouble(i * colNum + j, Double.NaN);
+                }
+            }
+        }
+
+        return r;
+    }
+    
+    /**
+     * Interpolate with inside method - The grid cell value is the count number
+     * of the inside points or fill value if no inside point.
+     *
+     * @param x_s scatter X array
+     * @param y_s scatter Y array
+     * @param X x coordinate
+     * @param Y y coordinate
+     * @return grid data
+     */
+    public static Array interpolation_Inside_Count(List<Number> x_s, List<Number> y_s, List<Number> X, List<Number> Y) {
+        int rowNum, colNum, pNum;
+        colNum = X.size();
+        rowNum = Y.size();
+        pNum = x_s.size();
+        Array r = Array.factory(DataType.INT, new int[]{rowNum, colNum});
+        double dX = X.get(1).doubleValue() - X.get(0).doubleValue();
+        double dY = Y.get(1).doubleValue() - Y.get(0).doubleValue();
+        int[][] pNums = new int[rowNum][colNum];
+        double x, y;
+
+        for (int i = 0; i < rowNum; i++) {
+            for (int j = 0; j < colNum; j++) {
+                pNums[i][j] = 0;
+                r.setDouble(i * colNum + j, 0);
+            }
+        }
+
+        for (int p = 0; p < pNum; p++) {
+            x = x_s.get(p).doubleValue();
+            y = y_s.get(p).doubleValue();
+            if (x < X.get(0).doubleValue() || x > X.get(colNum - 1).doubleValue()) {
+                continue;
+            }
+            if (y < Y.get(0).doubleValue() || y > Y.get(rowNum - 1).doubleValue()) {
+                continue;
+            }
+
+            int j = (int) ((x - X.get(0).doubleValue()) / dX);
+            int i = (int) ((y - Y.get(0).doubleValue()) / dY);
+            pNums[i][j] += 1;
+            r.setInt(i * colNum + j, r.getInt(i * colNum + j) + 1);
+        }
+
+        return r;
+    }
 
     private static List<int[]> getPointsIJ(List<Number> x_s, List<Number> y_s, List<Number> X, List<Number> Y) {
         int rowNum, colNum, pNum;
