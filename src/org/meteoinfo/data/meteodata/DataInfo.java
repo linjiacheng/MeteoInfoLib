@@ -456,6 +456,14 @@ public abstract class DataInfo {
      * @param fileName File name
      */
     public abstract void readDataInfo(String fileName);
+    
+    /**
+     * Read data info
+     *
+     * @param fileName File name
+     * @param keepOpen Keep file opened or not
+     */
+    public void readDataInfo(String fileName, boolean keepOpen){    };
 
     /**
      * Generate data info text

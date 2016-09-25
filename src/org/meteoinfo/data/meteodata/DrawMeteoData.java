@@ -264,7 +264,11 @@ public class DrawMeteoData {
                     preLon = xd.getDouble(j);
                     pList.add(aPoint);
                 } else {
-                    if (Math.abs(aPoint.X - preLon) > 350) {
+                    if (Double.isNaN(aPoint.X)){
+                        if (pList.size() > 1)
+                            ppList.add(new ArrayList<>(pList));
+                        pList.clear();
+                    } else if (Math.abs(aPoint.X - preLon) > 350) {
                         if (aPoint.X > preLon)
                             pList.add(new PointD(westLon, aPoint.Y));
                         else
@@ -1377,6 +1381,8 @@ public class DrawMeteoData {
             aPoint = new PointD();
             aPoint.X = stationData.data[i][0];
             aPoint.Y = stationData.data[i][1];
+            if (Double.isNaN(aPoint.X))
+                continue;
             PointShape aPointShape = new PointShape();
             aPointShape.setPoint(aPoint);
             aPointShape.setValue(stationData.data[i][2]);

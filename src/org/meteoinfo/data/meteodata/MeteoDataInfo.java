@@ -1,4 +1,4 @@
- /* Copyright 2012 Yaqiang Wang,
+/* Copyright 2012 Yaqiang Wang,
  * yaqiang.wang@gmail.com
  * 
  * This library is free software; you can redistribute it and/or modify it
@@ -433,13 +433,46 @@ public class MeteoDataInfo {
             boolean canOpen = NetcdfFile.canOpen(fileName);
             if (canOpen) {
                 this.openNetCDFData(fileName);
-            } else {
-                if (ARLDataInfo.canOpen(fileName)) {
-                    this.openARLData(fileName);
-                }
+            } else if (ARLDataInfo.canOpen(fileName)) {
+                this.openARLData(fileName);
             }
         } catch (IOException ex) {
             Logger.getLogger(MeteoDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * Open data file
+     *
+     * @param fileName File name
+     * @param keepOpen Keep the file opened or not
+     */
+    public void openData(String fileName, boolean keepOpen) {
+        try {
+            boolean canOpen = NetcdfFile.canOpen(fileName);
+            if (canOpen) {
+                this.openNetCDFData(fileName, keepOpen);
+            } else if (ARLDataInfo.canOpen(fileName)) {
+                this.openARLData(fileName);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(MeteoDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * Close opened file
+     */
+    public void close() {
+        if (this._dataInfo.getDataType() == MeteoDataType.NetCDF) {
+            NetCDFDataInfo dinfo = (NetCDFDataInfo) this._dataInfo;
+            if (dinfo.getFile() != null) {
+                try {
+                    dinfo.getFile().close();
+                } catch (IOException ex) {
+                    Logger.getLogger(MeteoDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
         }
     }
 
@@ -519,7 +552,7 @@ public class MeteoDataInfo {
         _meteoUVSet.setUStr("WindDirection");
         _meteoUVSet.setVStr("WindSpeed");
     }
-    
+
     /**
      * Open SYNOP data
      *
@@ -616,13 +649,13 @@ public class MeteoDataInfo {
             Logger.getLogger(MeteoDataInfo.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     /**
      * Open HYSPLIT traject data
      *
      * @param trajFiles File paths
      */
-    public void openHYSPLITTrajData(List<String> trajFiles){
+    public void openHYSPLITTrajData(List<String> trajFiles) {
         String[] files = trajFiles.toArray(new String[0]);
         openHYSPLITTrajData(files);
     }
@@ -648,6 +681,19 @@ public class MeteoDataInfo {
     public void openNetCDFData(String fileName) {
         NetCDFDataInfo aDataInfo = new NetCDFDataInfo();
         aDataInfo.readDataInfo(fileName);
+        _dataInfo = aDataInfo;
+        _infoText = aDataInfo.generateInfoText();
+    }
+
+    /**
+     * Open NetCDF data
+     *
+     * @param fileName File path
+     * @param keepOpen Keep file opened or not
+     */
+    public void openNetCDFData(String fileName, boolean keepOpen) {
+        NetCDFDataInfo aDataInfo = new NetCDFDataInfo();
+        aDataInfo.readDataInfo(fileName, keepOpen);
         _dataInfo = aDataInfo;
         _infoText = aDataInfo.generateInfoText();
     }
@@ -759,13 +805,14 @@ public class MeteoDataInfo {
     public String getFileName() {
         return _dataInfo.getFileName();
     }
-    
+
     /**
      * Read array data of the variable
+     *
      * @param varName Variable name
      * @return Array data
      */
-    public Array read(String varName){
+    public Array read(String varName) {
         return this._dataInfo.read(varName);
     }
 
@@ -1059,7 +1106,7 @@ public class MeteoDataInfo {
 
         return ivalue;
     }
-    
+
     /**
      * Interpolate data to a station point
      *
@@ -1075,7 +1122,7 @@ public class MeteoDataInfo {
         if (t.before(times.get(0)) || t.after(times.get(tnum - 1))) {
             return this.getDataInfo().getMissingValue();
         }
-        
+
         double ivalue = this.getDataInfo().getMissingValue();
         double v_t1, v_t2;
         for (int i = 0; i < tnum; i++) {
@@ -1155,7 +1202,7 @@ public class MeteoDataInfo {
         int znum = levels.size();
         double v_z1, v_z2;
         this.setTimeIndex(tidx);
-        if (levels.get(1) - levels.get(0) > 0){
+        if (levels.get(1) - levels.get(0) > 0) {
             for (int j = 0; j < znum; j++) {
                 if (MIMath.doubleEquals(z, levels.get(j))) {
                     this.setLevelIndex(j);
@@ -1197,7 +1244,7 @@ public class MeteoDataInfo {
 
         return ivalue;
     }
-    
+
     /**
      * Interpolate data to a station point
      *
@@ -1211,7 +1258,7 @@ public class MeteoDataInfo {
         this.setTimeIndex(tidx);
         this.setLevelIndex(0);
         double ivalue = this.getGridData(varName).toStation(x, y);
-        
+
         return ivalue;
     }
 

@@ -1395,7 +1395,7 @@ public class ArrayUtil {
 
         return r;
     }
-    
+
     /**
      * Interpolate with inside method - The grid cell value is the maximum value
      * of the inside points or fill value if no inside point.
@@ -1417,7 +1417,7 @@ public class ArrayUtil {
         double dY = Y.get(1).doubleValue() - Y.get(0).doubleValue();
         int[][] pNums = new int[rowNum][colNum];
         double x, y, v;
-        double min = Double.MIN_VALUE;
+        double min = Double.NEGATIVE_INFINITY;
 
         for (int i = 0; i < rowNum; i++) {
             for (int j = 0; j < colNum; j++) {
@@ -1449,7 +1449,7 @@ public class ArrayUtil {
 
         for (int i = 0; i < rowNum; i++) {
             for (int j = 0; j < colNum; j++) {
-                if (pNums[i][j] == 0 || r.getDouble(i * colNum + j) == Double.MIN_VALUE) {
+                if (pNums[i][j] == 0 || Double.isInfinite(r.getDouble(i * colNum + j))) {
                     r.setDouble(i * colNum + j, Double.NaN);
                 }
             }
@@ -1457,7 +1457,7 @@ public class ArrayUtil {
 
         return r;
     }
-    
+
     /**
      * Interpolate with inside method - The grid cell value is the minimum value
      * of the inside points or fill value if no inside point.
@@ -1519,7 +1519,7 @@ public class ArrayUtil {
 
         return r;
     }
-    
+
     /**
      * Interpolate with inside method - The grid cell value is the count number
      * of the inside points or fill value if no inside point.
@@ -2026,12 +2026,22 @@ public class ArrayUtil {
         return r;
     }
 
-    private static Array resample_Bilinear(Array a, List<Number> X, List<Number> Y, List<Number> newX, List<Number> newY) {
-        Array r = Array.factory(DataType.DOUBLE, a.getShape());
+    /**
+     * Resample grid array with bilinear method
+     *
+     * @param a The sample array
+     * @param X X coordinate of the sample array
+     * @param Y Y coordinate of the sample array
+     * @param newX X coordinate of the query points
+     * @param newY Y coordinate of the query points
+     * @return Resampled array
+     */
+    public static Array resample_Bilinear(Array a, List<Number> X, List<Number> Y, List<Number> newX, List<Number> newY) {
         int i, j;
         int xn = newX.size();
         int yn = newY.size();
-        double x, y;
+        double x, y, v;
+        Array r = Array.factory(DataType.DOUBLE, new int[]{yn, xn});
 
         for (i = 0; i < yn; i++) {
             y = newY.get(i).doubleValue();
@@ -2042,9 +2052,41 @@ public class ArrayUtil {
                 } else if (y < Y.get(0).doubleValue() || y > Y.get(Y.size() - 1).doubleValue()) {
                     r.setDouble(i * xn + j, Double.NaN);
                 } else {
-                    r.setDouble(i * xn + j, 9999.0);
-                    //newdata[i][j] = this.toStation(x, y);
+                    v = toStation(a, X, Y, x, y);
+                    r.setDouble(i * xn + j, v);
                 }
+            }
+        }
+
+        return r;
+    }
+
+    /**
+     * Resample grid array with bilinear method
+     *
+     * @param a The sample array
+     * @param X X coordinate of the sample array
+     * @param Y Y coordinate of the sample array
+     * @param newX X coordinate of the query points
+     * @param newY Y coordinate of the query points
+     * @return Resampled array
+     */
+    public static Array resample_Bilinear(Array a, Array X, Array Y, Array newX, Array newY) {
+        int i;
+        int n = (int) newX.getSize();
+        double x, y, v;
+        Array r = Array.factory(DataType.DOUBLE, newX.getShape());
+
+        for (i = 0; i < n; i++) {
+            x = newX.getDouble(i);
+            y = newY.getDouble(i);
+            if (x < X.getDouble(0) || x > X.getDouble((int) X.getSize() - 1)) {
+                r.setDouble(i, Double.NaN);
+            } else if (y < Y.getDouble(0) || y > Y.getDouble((int) Y.getSize() - 1)) {
+                r.setDouble(i, Double.NaN);
+            } else {
+                v = toStation(a, X, Y, x, y);
+                r.setDouble(i, v);
             }
         }
 
@@ -2106,9 +2148,9 @@ public class ArrayUtil {
             List<Index> ii = new ArrayList<>();
             iterIndex(ii, index, indices, 0);
             int n = indices.length;
-            for (Index idx : ii){
+            for (Index idx : ii) {
                 weight = 1;
-                for (int i = 0; i < n; i++){
+                for (int i = 0; i < n; i++) {
                     weight *= idx.getCurrentCounter()[i] == indices[i] ? 1 - distances[i] : distances[i];
                 }
                 v += values.getDouble(idx) * weight;
@@ -2117,20 +2159,20 @@ public class ArrayUtil {
             return v;
         }
     }
-    
-    private static void iterIndex(List<Index> ii, Index index, int[] indices, int idx){
+
+    private static void iterIndex(List<Index> ii, Index index, int[] indices, int idx) {
         int n = indices.length;
-        if (idx < n - 1){
+        if (idx < n - 1) {
             index.setDim(idx, indices[idx]);
             iterIndex(ii, index, indices, idx + 1);
             index.setDim(idx, indices[idx] + 1);
             iterIndex(ii, index, indices, idx + 1);
         } else {
             index.setDim(idx, indices[idx]);
-            ii.add((Index)index.clone());
+            ii.add((Index) index.clone());
             //System.out.println(index);
             index.setDim(idx, indices[idx] + 1);
-            ii.add((Index)index.clone());
+            ii.add((Index) index.clone());
             //System.out.println(index);
         }
     }
@@ -2425,6 +2467,95 @@ public class ArrayUtil {
             double x1val = a + (c - a) * (y - yArray.get(i1).doubleValue()) / dy;
             double x2val = b + (d - b) * (y - yArray.get(i1).doubleValue()) / dy;
             iValue = x1val + (x2val - x1val) * (x - xArray.get(j1).doubleValue()) / dx;
+        }
+
+        return iValue;
+    }
+    
+    /**
+     * Interpolate data to a station point
+     *
+     * @param data Data array
+     * @param xArray X array
+     * @param yArray Y array
+     * @param x X coordinate of the station
+     * @param y Y coordinate of the station
+     * @return Interpolated value
+     */
+    public static double toStation(Array data, Array xArray, Array yArray, double x, double y) {
+        double iValue = Double.NaN;
+        int nx = (int)xArray.getSize();
+        int ny = (int)yArray.getSize();
+        if (x < xArray.getDouble(0) || x > xArray.getDouble(nx - 1)
+                || y < yArray.getDouble(0) || y > yArray.getDouble(ny - 1)) {
+            return iValue;
+        }
+
+        //Get x/y index
+        int xIdx = 0, yIdx = 0;
+        int i;
+        boolean isIn = false;
+        for (i = 1; i < nx; i++) {
+            if (x < xArray.getDouble(i)) {
+                xIdx = i - 1;
+                isIn = true;
+                break;
+            }
+        }
+        if (!isIn) {
+            xIdx = nx - 2;
+        }
+        isIn = false;
+        for (i = 1; i < ny; i++) {
+            if (y < yArray.getDouble(i)) {
+                yIdx = i - 1;
+                isIn = true;
+                break;
+            }
+        }
+        if (!isIn) {
+            yIdx = ny - 2;
+        }
+
+        int i1 = yIdx;
+        int j1 = xIdx;
+        int i2 = i1 + 1;
+        int j2 = j1 + 1;
+        Index index = data.getIndex();
+        double a = data.getDouble(index.set(i1, j1));
+        double b = data.getDouble(index.set(i1, j2));
+        double c = data.getDouble(index.set(i2, j1));
+        double d = data.getDouble(index.set(i2, j2));
+        List<java.lang.Double> dList = new ArrayList<>();
+        if (!Double.isNaN(a)) {
+            dList.add(a);
+        }
+        if (!Double.isNaN(b)) {
+            dList.add(b);
+        }
+        if (!Double.isNaN(c)) {
+            dList.add(c);
+        }
+        if (!Double.isNaN(d)) {
+            dList.add(d);
+        }
+
+        if (dList.isEmpty()) {
+            return iValue;
+        } else if (dList.size() == 1) {
+            iValue = dList.get(0);
+        } else if (dList.size() <= 3) {
+            double aSum = 0;
+            for (double dd : dList) {
+                aSum += dd;
+            }
+            iValue = aSum / dList.size();
+        } else {
+            double dx = xArray.getDouble(xIdx + 1) - xArray.getDouble(xIdx);
+            double dy = yArray.getDouble(yIdx + 1) - yArray.getDouble(yIdx);
+            double x1val = a + (c - a) * (y - yArray.getDouble(i1)) / dy;
+            double x2val = b + (d - b) * (y - yArray.getDouble(i1)) / dy;
+            iValue = x1val + (x2val - x1val) * (x - xArray.getDouble(j1)) / dx;
         }
 
         return iValue;
