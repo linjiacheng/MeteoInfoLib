@@ -36,7 +36,7 @@ public class GRIB2DataInfo extends DataInfo implements IGridDataInfo {
 
     // <editor-fold desc="Variables">
     private int _headerLength = 0;
-    private List<GRIB2MessageIndex> _messageIdxList = new ArrayList<GRIB2MessageIndex>();
+    private List<GRIB2MessageIndex> _messageIdxList = new ArrayList<>();
     private ProjectionInfo _projInfo;
     // </editor-fold>
     // <editor-fold desc="Constructor">

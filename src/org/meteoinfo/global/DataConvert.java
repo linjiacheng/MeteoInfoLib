@@ -144,6 +144,20 @@ public class DataConvert {
         bytes[3] = (byte) (i & 0xff);
         return bytes;
     }
+    
+    /**
+     * Convert int to byte array.
+     *
+     * @param i Int value
+     * @return Byte array
+     */
+    public static int[] toUint3Int(int i) {
+        int[] ints = new int[3];
+        ints[0] = (i >> 16 & 0xff);
+        ints[1] = (i >> 8 & 0xff);
+        ints[2] = (i & 0xff);
+        return ints;
+    }
 
     /**
      * Convert int to byte array - LittleEndian
