@@ -1855,6 +1855,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                     case "height":
                     case "isobaric":
                     case "pressure":
+                    case "depth":
                         dimType = DimensionType.Z;
                         break;
                 }
@@ -1948,9 +1949,12 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
         int year = 2000, month = 1, day = 1;
         int hour = 0, min = 0, sec = 0;
         if (ST.contains("-")) {
-            year = Integer.parseInt(ST.split("-")[0]);
-            month = Integer.parseInt(ST.split("-")[1]);
-            day = Integer.parseInt(ST.split("-")[2]);
+            String[] darray1 = ST.split("-");
+            year = Integer.parseInt(darray1[0]);
+            month = Integer.parseInt(darray1[1]);
+            if (darray1[2].length() > 2)
+                darray1[2] = darray1[2].substring(0, 2);
+            day = Integer.parseInt(darray1[2]);
             if (dataArray.length >= 4) {
                 String hmsStr = dataArray[3];
                 hmsStr = hmsStr.replace("0.0", "00");

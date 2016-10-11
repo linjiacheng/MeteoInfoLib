@@ -306,14 +306,15 @@ public class GridData {
     public void setYStagger(boolean value) {
         _yStag = value;
     }
-    
+
     /**
      * Get value
+     *
      * @param i I index
      * @param j J index
      * @return Value
      */
-    public Number getValue(int i, int j){
+    public Number getValue(int i, int j) {
         return data[i][j];
     }
 
@@ -609,23 +610,24 @@ public class GridData {
 
         return iValue;
     }
-    
+
     /**
      * Interpolate grid data to station points
+     *
      * @param xlist X coordinate list
      * @param ylist Y coordinate list
      * @return Result data list
      */
-    public List<java.lang.Double> toStation(List<Number> xlist, List<Number> ylist){
+    public List<java.lang.Double> toStation(List<Number> xlist, List<Number> ylist) {
         List<java.lang.Double> r = new ArrayList<>();
         double x, y, v;
-        for (int i = 0; i < xlist.size(); i++){
+        for (int i = 0; i < xlist.size(); i++) {
             x = xlist.get(i).doubleValue();
             y = ylist.get(i).doubleValue();
             v = this.toStation(x, y);
             r.add(v);
         }
-        
+
         return r;
     }
 
@@ -898,10 +900,8 @@ public class GridData {
                     if (data[i][j] > aValue) {
                         data[i][j] = bValue;
                     }
-                } else {
-                    if (data[i][j] < aValue) {
-                        data[i][j] = bValue;
-                    }
+                } else if (data[i][j] < aValue) {
+                    data[i][j] = bValue;
                 }
             }
         }
@@ -1376,30 +1376,32 @@ public class GridData {
         data = newGriddata;
         xArray = newX;
     }
-    
+
     /**
      * Get array from data
+     *
      * @return Array
      */
-    public Array getArray(){
+    public Array getArray() {
         int yn = this.getYNum();
         int xn = this.getXNum();
         int[] shape = new int[]{yn, xn};
         Array r = Array.factory(DataType.DOUBLE, shape);
-        for (int i = 0; i < yn; i++){
-            for (int j = 0; j < xn; j++){
+        for (int i = 0; i < yn; i++) {
+            for (int j = 0; j < xn; j++) {
                 r.setDouble(i * xn + j, this.data[i][j]);
             }
         }
-        
+
         return r;
     }
-    
+
     /**
      * Get dimensions
+     *
      * @return Dimensions
      */
-    public List<Dimension> getDimensions(){
+    public List<Dimension> getDimensions() {
         List<Dimension> dims = new ArrayList<>();
         Dimension ydim = new Dimension(DimensionType.Y);
         ydim.setValues(this.yArray);
@@ -1407,7 +1409,7 @@ public class GridData {
         Dimension xdim = new Dimension(DimensionType.X);
         xdim.setValues(this.xArray);
         dims.add(xdim);
-        
+
         return dims;
     }
 
@@ -1632,10 +1634,8 @@ public class GridData {
                     if (this.data[i][j] > value) {
                         this.data[i][j] = this.missingValue;
                     }
-                } else {
-                    if (this.data[i][j] < value) {
-                        this.data[i][j] = this.missingValue;
-                    }
+                } else if (this.data[i][j] < value) {
+                    this.data[i][j] = this.missingValue;
                 }
             }
         }
@@ -1996,7 +1996,7 @@ public class GridData {
             Logger.getLogger(GridData.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     /**
      * Save as ESRI ASCII data file
      *
@@ -2039,7 +2039,7 @@ public class GridData {
             Logger.getLogger(GridData.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     /**
      * Save as BIL data file
      *
@@ -2054,18 +2054,18 @@ public class GridData {
             int yn = this.getYNum();
             for (int i = 0; i < yn; i--) {
                 for (int j = 0; j < xn; j++) {
-                    outs.writeFloat((float)data[yn - i - 1][j]);
+                    outs.writeFloat((float) data[yn - i - 1][j]);
                 }
             }
             outs.close();
-            
+
             //Save header file
             String hfn = fileName.replace(".bil", ".hdr");
             BufferedWriter sw = new BufferedWriter(new FileWriter(new File(hfn)));
             sw.write("nrows " + String.valueOf(this.getYNum()));
             sw.newLine();
             sw.write("ncols " + String.valueOf(this.getXNum()));
-            sw.newLine();        
+            sw.newLine();
             sw.write("nbands 1");
             sw.newLine();
             sw.write("nbits 32");
@@ -2075,7 +2075,7 @@ public class GridData {
             sw.write("byteorder M");
             sw.newLine();
             sw.write("layout bil");
-            sw.newLine();            
+            sw.newLine();
             sw.write("ulxmap " + String.valueOf(xArray[0]));
             sw.newLine();
             sw.write("ulymap " + String.valueOf(yArray[yArray.length - 1]));
@@ -2084,7 +2084,7 @@ public class GridData {
             sw.newLine();
             sw.write("ydim " + String.valueOf(this.getYDelt()));
             sw.newLine();
-            
+
             sw.flush();
             sw.close();
         } catch (IOException ex) {
@@ -2157,12 +2157,13 @@ public class GridData {
         maxmin[1] = min;
         return hasUndef;
     }
-    
+
     /**
      * Get if has NaN value
+     *
      * @return Boolean
      */
-    public boolean hasNaN(){
+    public boolean hasNaN() {
         boolean hasNaN = false;
         for (int i = 0; i < getYNum(); i++) {
             for (int j = 0; j < getXNum(); j++) {
@@ -2225,7 +2226,7 @@ public class GridData {
     public double getMinValue() {
         return this.getMaxMinValue()[1];
     }
-    
+
     /**
      * Test unique values
      *
@@ -2243,20 +2244,19 @@ public class GridData {
                 if (vdNum == 0) {
                     values.add(this.getValue(i, j));
                     vdNum += 1;
-                } else {
-                    if (!values.contains(this.getValue(i, j))) {
-                        values.add(this.getValue(i, j));
-                        vdNum += 1;
-                    }
+                } else if (!values.contains(this.getValue(i, j))) {
+                    values.add(this.getValue(i, j));
+                    vdNum += 1;
                 }
-                if (vdNum > 20)
+                if (vdNum > 20) {
                     return false;
+                }
             }
         }
 
         return true;
     }
-    
+
     /**
      * Get unique values
      *
@@ -2273,9 +2273,8 @@ public class GridData {
 
                 if (vdNum == 0) {
                     values.add(this.getValue(i, j));
-                } else {
-                    if (!values.contains(this.getValue(i, j)))
-                        values.add(this.getValue(i, j));
+                } else if (!values.contains(this.getValue(i, j))) {
+                    values.add(this.getValue(i, j));
                 }
                 vdNum += 1;
             }
@@ -2502,17 +2501,18 @@ public class GridData {
 
         return gData;
     }
-    
+
     /**
      * Interpolate grid data
+     *
      * @return Result grid data
      */
-    public GridData interpolate(){
+    public GridData interpolate() {
         int nxNum = this.xArray.length * 2 - 1;
         int nyNum = this.yArray.length * 2 - 1;
         double[] newX = new double[nxNum];
         double[] newY = new double[nyNum];
-        
+
         double[][] newData = interpolation_Grid(data, this.xArray, this.yArray, missingValue, newX, newY);
         int i;
         for (i = 0; i < nxNum; i++) {
@@ -2534,10 +2534,10 @@ public class GridData {
         gdata.xArray = newX;
         gdata.yArray = newY;
         gdata.missingValue = this.missingValue;
-        
+
         return gdata;
     }
-    
+
     /**
      * Interpolate from grid data
      *
@@ -2649,18 +2649,19 @@ public class GridData {
 
         return nGridData;
     }
-    
+
     /**
      * Interpolate grid data
+     *
      * @return Result grid data
      */
-    public GridData interpolate_old(){
+    public GridData interpolate_old() {
         int nxNum = this.xArray.length * 2 - 1;
         int nyNum = this.yArray.length * 2 - 1;
         double[] newX = new double[nxNum];
         double[] newY = new double[nyNum];
         int i;
-        
+
         for (i = 0; i < nxNum; i++) {
             if (i % 2 == 0) {
                 newX[i] = this.xArray[i / 2];
@@ -2675,7 +2676,7 @@ public class GridData {
                 newY[i] = (this.yArray[(i - 1) / 2] + this.yArray[(i - 1) / 2 + 1]) / 2;
             }
         }
-        
+
         return this.resample_Bilinear(newX, newY);
     }
 
@@ -3186,6 +3187,31 @@ public class GridData {
             maxmin[1] = min;
             return hasUndef;
         }
+
+        /**
+         * Convert to GridArray object
+         *
+         * @return GridArray object
+         */
+        @Override
+        public GridArray toGridArray() {
+            Array a = Array.factory(DataType.DOUBLE, new int[]{this.getYNum(), this.getXNum()});
+            int idx = 0;
+            for (int i = 0; i < this.getYNum(); i++) {
+                for (int j = 0; j < this.getXNum(); j++) {
+                    a.setDouble(idx, this.data[i][j]);
+                    idx += 1;
+                }
+            }
+
+            GridArray r = new GridArray();
+            r.data = a;
+            r.xArray = this.xArray;
+            r.yArray = this.yArray;
+            r.projInfo = this.projInfo;
+            r.missingValue = this.missingValue;
+            return r;
+        }
     }
 
     /**
@@ -3445,21 +3471,22 @@ public class GridData {
             return data[i][j];
         }
     }
-    
+
     /**
      * Convert to GridArray object
+     *
      * @return GridArray object
      */
-    public GridArray toGridArray(){
+    public GridArray toGridArray() {
         Array a = Array.factory(DataType.DOUBLE, new int[]{this.getYNum(), this.getXNum()});
         int idx = 0;
-        for (int i = 0; i < this.getYNum(); i++){
-            for (int j = 0; j < this.getXNum(); j++){
+        for (int i = 0; i < this.getYNum(); i++) {
+            for (int j = 0; j < this.getXNum(); j++) {
                 a.setDouble(idx, this.data[i][j]);
                 idx += 1;
             }
         }
-        
+
         GridArray r = new GridArray();
         r.data = a;
         r.xArray = this.xArray;

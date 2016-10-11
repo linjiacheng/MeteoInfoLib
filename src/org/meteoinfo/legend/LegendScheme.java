@@ -858,7 +858,8 @@ public class LegendScheme {
                             aPB.setCharIndex(Integer.parseInt(brk.getAttributes().getNamedItem("CharIndex").getNodeValue()));
                             aPB.setImagePath(brk.getAttributes().getNamedItem("ImagePath").getNodeValue());
                             aPB.setAngle(Float.parseFloat(brk.getAttributes().getNamedItem("Angle").getNodeValue()));
-                            aPB.setTag(brk.getAttributes().getNamedItem("Tag").getNodeValue());
+                            if (brk.getAttributes().getNamedItem("Tag") != null)
+                                aPB.setTag(brk.getAttributes().getNamedItem("Tag").getNodeValue());
                         } catch (DOMException | NumberFormatException e) {
                         } finally {
                             legendBreaks.add(aPB);
@@ -883,7 +884,8 @@ public class LegendScheme {
                             aPLB.setSymbolStyle(PointStyle.valueOf(brk.getAttributes().getNamedItem("SymbolStyle").getNodeValue()));
                             aPLB.setSymbolColor(ColorUtil.parseToColor(brk.getAttributes().getNamedItem("SymbolColor").getNodeValue()));
                             aPLB.setSymbolInterval(Integer.parseInt(brk.getAttributes().getNamedItem("SymbolInterval").getNodeValue()));
-                            aPLB.setTag(brk.getAttributes().getNamedItem("Tag").getNodeValue());
+                            if (brk.getAttributes().getNamedItem("Tag") != null)
+                                aPLB.setTag(brk.getAttributes().getNamedItem("Tag").getNodeValue());
                         } catch (Exception e) {
                             e.printStackTrace();
                         } finally {
@@ -907,7 +909,8 @@ public class LegendScheme {
                             aPGB.setOutlineColor(ColorUtil.parseToColor(brk.getAttributes().getNamedItem("OutlineColor").getNodeValue()));
                             aPGB.setStyle(HatchStyle.valueOf(brk.getAttributes().getNamedItem("Style").getNodeValue()));
                             aPGB.setBackColor(ColorUtil.parseToColor(brk.getAttributes().getNamedItem("BackColor").getNodeValue()));
-                            aPGB.setTag(brk.getAttributes().getNamedItem("Tag").getNodeValue());
+                            if (brk.getAttributes().getNamedItem("Tag") != null)
+                                aPGB.setTag(brk.getAttributes().getNamedItem("Tag").getNodeValue());
                             aPGB.setStyleSize(Integer.parseInt(brk.getAttributes().getNamedItem("StyleSize").getNodeValue()));
                         } catch (Exception e) {
                         } finally {
