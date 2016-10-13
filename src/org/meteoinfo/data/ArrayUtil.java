@@ -1544,7 +1544,7 @@ public class ArrayUtil {
         for (int i = 0; i < rowNum; i++) {
             for (int j = 0; j < colNum; j++) {
                 pNums[i][j] = 0;
-                r.setDouble(i * colNum + j, 0);
+                //r.setInt(i * colNum + j, 0);
             }
         }
 
@@ -1561,7 +1561,13 @@ public class ArrayUtil {
             int j = (int) ((x - X.get(0).doubleValue()) / dX);
             int i = (int) ((y - Y.get(0).doubleValue()) / dY);
             pNums[i][j] += 1;
-            r.setInt(i * colNum + j, r.getInt(i * colNum + j) + 1);
+            //r.setInt(i * colNum + j, r.getInt(i * colNum + j) + 1);
+        }
+        
+        for (int i = 0; i < rowNum; i++) {
+            for (int j = 0; j < colNum; j++) {
+                r.setInt(i * colNum + j, pNums[i][j]);
+            }
         }
 
         return r;
