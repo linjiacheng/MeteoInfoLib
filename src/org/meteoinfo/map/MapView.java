@@ -369,7 +369,7 @@ public class MapView extends JPanel {
 
         _scaleX = 1;
         _scaleY = 1;
-        _XYScaleFactor = 1.2;
+        //_XYScaleFactor = 1.2;
 
         //m_IsSelectedInLayout = false;
         _selectColor = Color.yellow;

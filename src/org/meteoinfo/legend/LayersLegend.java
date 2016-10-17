@@ -54,6 +54,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -69,6 +70,9 @@ import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 import javax.swing.undo.UndoableEdit;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.meteoinfo.data.mapdata.FrmAttriData;
 import org.meteoinfo.data.mapdata.webmap.WebMapProvider;
 import org.meteoinfo.global.Extent;
@@ -83,6 +87,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -1718,6 +1723,34 @@ public class LayersLegend extends JPanel {
             mf.exportProjectXML(m_Doc, mapFrames, projectFilePath);
         }
         parent.appendChild(mapFrames);
+    }
+    
+    /**
+     * Import project XML content
+     *
+     * @param fileName XML file name
+     * @throws org.xml.sax.SAXException
+     * @throws java.io.IOException
+     * @throws javax.xml.parsers.ParserConfigurationException
+     */
+    public void importProjectXML(String fileName) throws SAXException, IOException, ParserConfigurationException{
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        Document doc = db.parse(new File(fileName));
+
+        Element root = doc.getDocumentElement();
+        
+        Properties property = System.getProperties();
+        String path = System.getProperty("user.dir");
+        property.setProperty("user.dir", new File(fileName).getAbsolutePath());
+        
+        this.getActiveMapFrame().getMapView().setLockViewUpdate(true);
+        this.importProjectXML(root);
+        this.getActiveMapFrame().getMapView().setLockViewUpdate(false);
+        this.paintGraphics();
+        this.getActiveMapFrame().getMapView().paintLayers();
+                
+        property.setProperty("user.dir", path);
     }
 
     /**
