@@ -544,6 +544,25 @@ public abstract class XYPlot extends Plot {
             axis.setVisible(value);
         }
     }
+    
+    /**
+     * Set axis tick line inside box or not
+     * @param isInside Inside box ot not
+     */
+    public void setInsideTick(boolean isInside){
+        this.getAxis(Location.LEFT).setInsideTick(isInside);
+        this.getAxis(Location.RIGHT).setInsideTick(isInside);
+        this.getAxis(Location.TOP).setInsideTick(isInside);
+        this.getAxis(Location.BOTTOM).setInsideTick(isInside);
+    }
+    
+    /**
+     * Get is inside tick line or not
+     * @return Is inside or not
+     */
+    public boolean isInsideTick(){
+        return this.getAxis(Location.BOTTOM).isInsideTick();
+    }
 
     /**
      * Draw plot
