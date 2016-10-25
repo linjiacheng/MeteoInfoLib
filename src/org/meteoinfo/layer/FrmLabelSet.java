@@ -341,6 +341,9 @@ public class FrmLabelSet extends javax.swing.JDialog {
         if (this.jComboBox_Field.getItemCount() == 0) {
             return;
         }
+        
+        if (this.jComboBox_Field.getSelectedItem() == null)
+            return;
 
         String fieldName = this.jComboBox_Field.getSelectedItem().toString();
         Field field = (Field) _layer.getAttributeTable().getTable().getColumns().
