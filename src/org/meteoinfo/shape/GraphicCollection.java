@@ -430,6 +430,14 @@ public class GraphicCollection extends Graphic implements Iterator {
         }
         return shapes;
     }
+    
+    /**
+     * Get shape type
+     * @return Shape type
+     */
+    public ShapeTypes getShapeType(){
+        return this.graphics.get(0).getShape().getShapeType();
+    }
 
     /**
      * Add labels
