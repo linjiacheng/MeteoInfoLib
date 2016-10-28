@@ -38,7 +38,7 @@ public class FontUtil {
      * @return Font list
      */
     public static List<Font> getAllFonts() {
-        List<Font> fontList = new ArrayList<Font>();
+        List<Font> fontList = new ArrayList<>();
 
         //Weather font
         Font weatherFont = getWeatherFont();
@@ -49,8 +49,8 @@ public class FontUtil {
         //System fonts
         GraphicsEnvironment gEnv = GraphicsEnvironment.getLocalGraphicsEnvironment();
         Font[] fonts = gEnv.getAllFonts();
-        for (int i = 0; i < fonts.length; i++) {
-            fontList.add(fonts[i]);
+        for (Font font : fonts) {
+            fontList.add(font);
         }
 
         //Custom fonts
@@ -66,6 +66,25 @@ public class FontUtil {
     }
     
     /**
+     * Register a font
+     * @param font The font
+     */
+    public static void registerFont(Font font){
+        GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(font);
+    }
+    
+    /**
+     * Register a font
+     * @param fileName Font file name
+     */
+    public static void registerFont(String fileName){
+        Font font = getFont(fileName);
+        if (font != null){
+            registerFont(font);
+        }
+    }
+    
+    /**
      * Register weather font
      */
     public static void registerWeatherFont(){
@@ -73,6 +92,21 @@ public class FontUtil {
         if (weatherFont != null) {
             GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(weatherFont);
         }
+    }
+    
+    /**
+     * Get font from font file - .ttf
+     * @param fileName Font file name
+     * @return The font
+     */
+    public static Font getFont(String fileName){
+        Font font = null;
+        try {
+            font = Font.createFont(Font.TRUETYPE_FONT, new File(fileName));
+        } catch (FontFormatException | IOException ex) {
+            Logger.getLogger(FontUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return font;
     }
 
     /**
@@ -85,9 +119,7 @@ public class FontUtil {
         InputStream is = Draw.class.getResourceAsStream("/org/meteoinfo/resources/WeatherSymbol.ttf");
         try {
             font = Font.createFont(Font.TRUETYPE_FONT, is);
-        } catch (FontFormatException ex) {
-            Logger.getLogger(Draw.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
+        } catch (FontFormatException | IOException ex) {
             Logger.getLogger(Draw.class.getName()).log(Level.SEVERE, null, ex);
         }
 
