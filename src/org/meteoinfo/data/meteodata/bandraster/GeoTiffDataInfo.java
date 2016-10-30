@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.meteoinfo.data.ArrayMath;
+import org.meteoinfo.data.GridArray;
 import org.meteoinfo.data.GridData;
 import org.meteoinfo.data.mapdata.geotiff.GeoTiff;
 import org.meteoinfo.data.meteodata.DataInfo;
@@ -174,6 +175,17 @@ public class GeoTiffDataInfo extends DataInfo implements IGridDataInfo {
                 ii.setFloatNext(data[y][x]);
             }
         }
+    }
+    
+    /**
+     * Get grid data
+     *
+     * @param varName Variable name
+     * @return Grid data
+     */
+    @Override
+    public GridArray getGridArray(String varName) {
+        return null;    
     }
 
     @Override

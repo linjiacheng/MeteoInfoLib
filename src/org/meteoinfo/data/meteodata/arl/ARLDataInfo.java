@@ -34,6 +34,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.meteoinfo.data.GridArray;
 import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.util.DateUtil;
@@ -801,6 +802,17 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         } catch (IOException ex) {
             Logger.getLogger(ARLDataInfo.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    /**
+     * Get grid data
+     *
+     * @param varName Variable name
+     * @return Grid data
+     */
+    @Override
+    public GridArray getGridArray(String varName) {
+        return null;    
     }
 
     @Override

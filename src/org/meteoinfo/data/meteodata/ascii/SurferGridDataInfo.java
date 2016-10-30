@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.meteoinfo.data.GridArray;
 import org.meteoinfo.data.meteodata.MeteoDataType;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
@@ -237,6 +238,17 @@ public class SurferGridDataInfo extends DataInfo implements IGridDataInfo {
         } catch (IOException ex) {
             Logger.getLogger(SurferGridDataInfo.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    /**
+     * Get grid data
+     *
+     * @param varName Variable name
+     * @return Grid data
+     */
+    @Override
+    public GridArray getGridArray(String varName) {
+        return null;    
     }
 
     @Override

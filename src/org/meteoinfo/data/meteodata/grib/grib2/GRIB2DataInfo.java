@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.meteoinfo.data.DataMath;
+import org.meteoinfo.data.GridArray;
 import org.meteoinfo.data.GridData;
 import org.meteoinfo.data.meteodata.DataInfo;
 import org.meteoinfo.data.meteodata.IGridDataInfo;
@@ -469,6 +470,17 @@ public class GRIB2DataInfo extends DataInfo implements IGridDataInfo {
     @Override
     public String generateInfoText() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    /**
+     * Get grid data
+     *
+     * @param varName Variable name
+     * @return Grid data
+     */
+    @Override
+    public GridArray getGridArray(String varName) {
+        return null;    
     }
 
     @Override

@@ -16,6 +16,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.meteoinfo.data.GridArray;
 import org.meteoinfo.data.GridData;
 import org.meteoinfo.data.StationData;
 import org.meteoinfo.data.meteodata.DataInfo;
@@ -738,6 +739,17 @@ public class AWXDataInfo extends DataInfo implements IGridDataInfo, IStationData
                 ii.setFloatNext(data[index]);
             }
         }
+    }
+    
+    /**
+     * Get grid data
+     *
+     * @param varName Variable name
+     * @return Grid data
+     */
+    @Override
+    public GridArray getGridArray(String varName) {
+        return null;    
     }
 
     @Override

@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.meteoinfo.data.GridArray;
 import org.meteoinfo.data.StationData;
 import org.meteoinfo.data.meteodata.IStationDataInfo;
 import org.meteoinfo.data.meteodata.MeteoDataType;
@@ -1378,6 +1379,17 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
         } catch (IOException ex) {
             Logger.getLogger(ARLDataInfo.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    /**
+     * Get grid data
+     *
+     * @param varName Variable name
+     * @return Grid data
+     */
+    @Override
+    public GridArray getGridArray(String varName) {
+        return null;    
     }
 
     /**

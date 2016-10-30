@@ -38,6 +38,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.meteoinfo.data.ArrayMath;
+import org.meteoinfo.data.GridArray;
 import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.global.util.DateUtil;
 import org.meteoinfo.projection.KnownCoordinateSystems;
@@ -2095,6 +2096,17 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
 //            missingValue = missingValue * scale_factor + add_offset;
 //        }
         return new double[]{add_offset, scale_factor, missingValue};
+    }
+    
+    /**
+     * Get grid data
+     *
+     * @param varName Variable name
+     * @return Grid data
+     */
+    @Override
+    public GridArray getGridArray(String varName) {
+        return null;    
     }
 
     @Override

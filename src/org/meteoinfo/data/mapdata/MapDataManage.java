@@ -1,4 +1,4 @@
- /* Copyright 2012 Yaqiang Wang,
+/* Copyright 2012 Yaqiang Wang,
  * yaqiang.wang@gmail.com
  * 
  * This library is free software; you can redistribute it and/or modify it
@@ -56,6 +56,7 @@ import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.layer.RasterLayer;
 import org.meteoinfo.legend.LegendScheme;
 import org.meteoinfo.legend.LegendType;
+import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.shape.PointShape;
 import org.meteoinfo.shape.PolygonShape;
@@ -72,21 +73,22 @@ public class MapDataManage {
 
     /**
      * Can open or not as a map layer
+     *
      * @param fileName File name
      * @return MapDataType
      * @throws java.io.FileNotFoundException
      */
-    public static MapDataType canOpen(String fileName) throws FileNotFoundException, IOException{
+    public static MapDataType canOpen(String fileName) throws FileNotFoundException, IOException {
         MapDataType mdt = null;
         if (new File(fileName).isFile()) {
             String ext = GlobalUtil.getFileExtension(fileName);
-            switch (ext) {            
+            switch (ext) {
                 case "shp":
                     mdt = MapDataType.SHAPE;
                     break;
                 case "wmp":
                     mdt = MapDataType.WMP;
-                    break;            
+                    break;
                 case "bmp":
                 case "gif":
                 case "jpg":
@@ -107,19 +109,20 @@ public class MapDataManage {
                     br.read(bytes);
                     String line = new String(bytes).trim().toUpperCase();
                     br.close();
-                    if (line.contains("NCOLS"))
+                    if (line.contains("NCOLS")) {
                         mdt = MapDataType.ESRI_ASCII_GRID;
-                    else if (line.contains("DSAA"))
+                    } else if (line.contains("DSAA")) {
                         mdt = MapDataType.SURFER_ASCII_GRID;
-                    else
+                    } else {
                         mdt = MapDataType.GRADS;
+                    }
                     break;
             }
         }
-        
+
         return mdt;
     }
-    
+
     /**
      * Load a layer from a file
      *
@@ -128,13 +131,14 @@ public class MapDataManage {
      * @throws java.io.IOException
      * @throws java.io.FileNotFoundException
      */
-    public static MapLayer loadLayer(String aFile) throws IOException, FileNotFoundException, Exception {        
+    public static MapLayer loadLayer(String aFile) throws IOException, FileNotFoundException, Exception {
         MapDataType mdt = canOpen(aFile);
-        if (mdt == null)
+        if (mdt == null) {
             return null;
-        
+        }
+
         MapLayer aLayer = null;
-        switch (mdt){
+        switch (mdt) {
             case SHAPE:
                 aLayer = readMapFile_ShapeFile(aFile);
                 break;
@@ -160,7 +164,7 @@ public class MapDataManage {
                 aLayer = readMapFile_GrADS(aFile);
                 break;
         }
-        
+
         return aLayer;
     }
 
@@ -374,7 +378,7 @@ public class MapDataManage {
 
         return aLayer;
     }
-    
+
     /**
      * Read ESRI ASCII grid file and create a raster layer
      *
@@ -384,15 +388,14 @@ public class MapDataManage {
     public static RasterLayer readESRI_ASCII_GRID(String fileName) {
         ASCIIGridDataInfo dataInfo = new ASCIIGridDataInfo();
         dataInfo.readDataInfo(fileName);
-        GridData gData = dataInfo.getGridData_LonLat(0, 0, 0);
-        LegendScheme aLS = LegendManage.createLegendSchemeFromGridData(gData, LegendType.GraduatedColor,
-                ShapeTypes.Image);
-        RasterLayer aLayer = DrawMeteoData.createRasterLayer(gData, new File(fileName).getName(), aLS);
+        GridArray gData = dataInfo.getGridArray("var");
+        RasterLayer aLayer = DrawMeteoData.createRasterLayer(gData, new File(fileName).getName());
+        aLayer.setProjInfo(KnownCoordinateSystems.geographic.world.WGS1984);
         aLayer.setFileName(fileName);
 
         return aLayer;
     }
-    
+
     /**
      * Read surfer ASCII grid file and create a raster layer
      *
@@ -451,12 +454,13 @@ public class MapDataManage {
                         PointShape aPS = new PointShape();
                         aPS.setValue(i);
                         aPS.setPoint(aPoint);
-                        
+
                         int sNum = aLayer.getShapeNum();
                         if (aLayer.editInsertShape(aPS, sNum)) {
                             aLayer.editCellValue(columnName, sNum, i);
                         }
-                    }   aLayer.setLayerName(file.getName());
+                    }
+                    aLayer.setLayerName(file.getName());
                     aLayer.setFileName(fileName);
                     aLayer.setLayerDrawType(LayerDrawType.Map);
                     aLayer.setLegendScheme(LegendManage.createSingleSymbolLegendScheme(ShapeTypes.Point, Color.black, 5));
@@ -481,12 +485,13 @@ public class MapDataManage {
                         aPLS.setValue(i);
                         aPLS.setExtent(MIMath.getPointsExtent(pList));
                         aPLS.setPoints(pList);
-                        
+
                         int sNum = aLayer.getShapeNum();
                         if (aLayer.editInsertShape(aPLS, sNum)) {
                             aLayer.editCellValue(columnName, sNum, i);
                         }
-                    }   aLayer.setLayerName(file.getName());
+                    }
+                    aLayer.setLayerName(file.getName());
                     aLayer.setFileName(fileName);
                     aLayer.setLayerDrawType(LayerDrawType.Map);
                     aLayer.setLegendScheme(LegendManage.createSingleSymbolLegendScheme(ShapeTypes.Polyline, Color.darkGray, 1.0F));
@@ -513,12 +518,13 @@ public class MapDataManage {
                         aPGS.highValue = i;
                         aPGS.setExtent(MIMath.getPointsExtent(pList));
                         aPGS.setPoints(pList);
-                        
+
                         int sNum = aLayer.getShapeNum();
                         if (aLayer.editInsertShape(aPGS, sNum)) {
                             aLayer.editCellValue(columnName, sNum, i);
                         }
-                    }   aLayer.setLayerName(file.getName());
+                    }
+                    aLayer.setLayerName(file.getName());
                     aLayer.setFileName(fileName);
                     aLayer.setLayerDrawType(LayerDrawType.Map);
                     aLayer.setLegendScheme(LegendManage.createSingleSymbolLegendScheme(ShapeTypes.Polygon, new Color(255, 251, 195), 1.0F));
@@ -542,8 +548,9 @@ public class MapDataManage {
             return null;
         } finally {
             try {
-                if (sr != null)
+                if (sr != null) {
                     sr.close();
+                }
             } catch (IOException ex) {
                 Logger.getLogger(MapDataManage.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -662,8 +669,9 @@ public class MapDataManage {
             Logger.getLogger(MapDataManage.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
-                if (sw != null)
+                if (sw != null) {
                     sw.close();
+                }
             } catch (IOException ex) {
                 Logger.getLogger(MapDataManage.class.getName()).log(Level.SEVERE, null, ex);
             }

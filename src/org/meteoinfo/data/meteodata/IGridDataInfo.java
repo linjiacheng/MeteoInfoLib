@@ -13,6 +13,7 @@
  */
 package org.meteoinfo.data.meteodata;
 
+import org.meteoinfo.data.GridArray;
 import org.meteoinfo.data.GridData;
 
 /**
@@ -23,6 +24,14 @@ import org.meteoinfo.data.GridData;
 public interface IGridDataInfo {
     
     // <editor-fold desc="Methods">
+    
+    /**
+     * Get grid array
+     *
+     * @param varName Variable name
+     * @return Grid array
+     */
+    public abstract GridArray getGridArray(String varName);
         
     /**
      * Read grid data - lon/lat

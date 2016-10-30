@@ -1,4 +1,4 @@
- /* Copyright 2012 Yaqiang Wang,
+/* Copyright 2012 Yaqiang Wang,
  * yaqiang.wang@gmail.com
  * 
  * This library is free software; you can redistribute it and/or modify it
@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.meteoinfo.data.GridArray;
 import org.meteoinfo.data.meteodata.MeteoDataType;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
@@ -46,13 +47,16 @@ import ucar.nc2.Attribute;
  * @author yaqiang
  */
 public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
+
     // <editor-fold desc="Variables">
+    private DataType dataType;
+
     // </editor-fold>
     // <editor-fold desc="Constructor">
     /**
      * Constructor
      */
-    public ASCIIGridDataInfo(){
+    public ASCIIGridDataInfo() {
         this.setDataType(MeteoDataType.ASCII_Grid);
     }
     // </editor-fold>
@@ -64,18 +68,17 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
     public void readDataInfo(String fileName) {
         try {
             this.setFileName(fileName);
-            
+
             BufferedReader sr = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "utf-8"));
             double xllCorner, yllCorner, cellSize, nodata_value;
             int ncols, nrows, i;
             String aLine;
             String[] dataArray;
-            
+
             aLine = sr.readLine();
             for (i = 1; i <= 5; i++) {
                 aLine = aLine + " " + sr.readLine();
             }
-            
             dataArray = aLine.split("\\s+");
             ncols = Integer.parseInt(dataArray[1]);
             nrows = Integer.parseInt(dataArray[3]);
@@ -83,7 +86,17 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
             yllCorner = Double.parseDouble(dataArray[7]);
             cellSize = Double.parseDouble(dataArray[9]);
             nodata_value = Double.parseDouble(dataArray[11]);
-            
+
+            aLine = sr.readLine();
+            dataArray = aLine.split("\\s+");
+            boolean isInt = true;
+            for (String dd : dataArray) {
+                if (dd.contains(".")) {
+                    isInt = false;
+                    break;
+                }
+            }
+
             this.setMissingValue(nodata_value);
             double[] X = new double[ncols];
             for (i = 0; i < ncols; i++) {
@@ -92,14 +105,14 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
             if (X[ncols - 1] + cellSize - X[0] == 360) {
                 this.setGlobal(true);
             }
-            
+
             double[] Y = new double[nrows];
             for (i = 0; i < nrows; i++) {
                 Y[i] = yllCorner + i * cellSize;
             }
-            
-            this.addAttribute(new Attribute("data_format", "ASCII grid data"));            
-            
+
+            this.addAttribute(new Attribute("data_format", "ASCII grid data"));
+
             Dimension xDim = new Dimension(DimensionType.X);
             xDim.setShortName("X");
             xDim.setValues(X);
@@ -110,33 +123,40 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
             yDim.setValues(Y);
             this.setYDimension(yDim);
             this.addDimension(yDim);
-            
+
             List<Variable> variables = new ArrayList<>();
             Variable aVar = new Variable();
             aVar.setName("var");
             aVar.addDimension(yDim);
-            aVar.addDimension(xDim); 
+            aVar.addDimension(xDim);
             aVar.setFillValue(nodata_value);
-            aVar.setDataType(DataType.FLOAT);
+            if (isInt) {
+                this.dataType = DataType.INT;
+            } else {
+                this.dataType = DataType.FLOAT;
+            }
+            this.dataType = DataType.FLOAT;
+            aVar.setDataType(dataType);
             aVar.addAttribute(new Attribute("fill_value", this.getMissingValue()));
             variables.add(aVar);
             this.setVariables(variables);
-            
+
             sr.close();
         } catch (IOException ex) {
             Logger.getLogger(ASCIIGridDataInfo.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     /**
      * Get global attributes
+     *
      * @return Global attributes
      */
     @Override
-    public List<Attribute> getGlobalAttributes(){
+    public List<Attribute> getGlobalAttributes() {
         return new ArrayList<>();
     }
-    
+
     @Override
     public String generateInfoText() {
         String dataInfo;
@@ -154,31 +174,31 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
 
         return dataInfo;
     }
-    
+
     /**
      * Read array data of a variable
-     * 
+     *
      * @param varName Variable name
      * @return Array data
      */
     @Override
-    public Array read(String varName){
+    public Array read(String varName) {
         Variable var = this.getVariable(varName);
         int n = var.getDimNumber();
         int[] origin = new int[n];
         int[] size = new int[n];
         int[] stride = new int[n];
-        for (int i = 0; i < n; i++){
+        for (int i = 0; i < n; i++) {
             origin[i] = 0;
             size[i] = var.getDimLength(i);
             stride[i] = 1;
         }
-        
+
         Array r = read(varName, origin, size, stride);
-        
+
         return r;
     }
-    
+
     /**
      * Read array data of the variable
      *
@@ -192,12 +212,12 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
     public Array read(String varName, int[] origin, int[] size, int[] stride) {
         try {
             Section section = new Section(origin, size, stride);
-            Array dataArray = Array.factory(DataType.FLOAT, section.getShape());
+            Array dataArray = Array.factory(this.dataType, section.getShape());
             int rangeIdx = 0;
             Range yRange = section.getRange(rangeIdx++);
             Range xRange = section.getRange(rangeIdx);
-            IndexIterator ii = dataArray.getIndexIterator();
-            readXY(yRange, xRange, ii);
+            //IndexIterator ii = dataArray.getIndexIterator();
+            readXY(yRange, xRange, dataArray);
 
             return dataArray;
         } catch (InvalidRangeException ex) {
@@ -206,7 +226,149 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
         }
     }
 
-    private void readXY(Range yRange, Range xRange, IndexIterator ii) {
+    private void readXY(Range yRange, Range xRange, Array data) {
+        try {
+            int xNum = this.getXDimension().getLength();
+            int yNum = this.getYDimension().getLength();
+            BufferedReader sr = new BufferedReader(new FileReader(new File(this.getFileName())));
+            String[] dataArray;
+            int i, j;
+            String aLine;
+
+            for (i = 0; i < 6; i++) {
+                sr.readLine();
+            }
+
+            List<String> dataList = new ArrayList<>();
+            int row = 0;
+            int drow = 0;
+            int idx, ii;
+            do {
+                aLine = sr.readLine();
+                if (aLine == null) {
+                    break;
+                }
+                dataArray = aLine.trim().split("\\s+");
+                dataList.addAll(Arrays.asList(dataArray));
+                if (row == 0) {
+                    if (!MIMath.isNumeric(dataList.get(0))) {
+                        aLine = sr.readLine();
+                        dataArray = aLine.trim().split("\\s+");
+                        dataList = Arrays.asList(dataArray);
+                    }
+                }
+                for (i = 0; i < 100; i++) {
+                    if (dataList.size() < xNum) {
+                        aLine = sr.readLine();
+                        if (aLine == null) {
+                            break;
+                        }
+                        dataArray = aLine.trim().split("\\s+");
+                        dataList.addAll(Arrays.asList(dataArray));
+                    } else {
+                        break;
+                    }
+                }
+                if (row >= yRange.first() && row <= yRange.last()) {
+                    if ((row - yRange.first()) % yRange.stride() == 0) {
+                        ii = 0;
+                        for (i = xRange.first(); i <= xRange.last(); i += xRange.stride()) {
+                            idx = yRange.length() - drow - 1;
+                            idx = idx * xRange.length() + ii;
+                            if (this.dataType == DataType.INT) {
+                                data.setObject(idx, Integer.parseInt(dataList.get(i)));
+                            } else {
+                                data.setObject(idx, Float.parseFloat(dataList.get(i)));
+                            }
+                            ii += 1;
+                        }
+                        drow += 1;
+                    }
+                }
+                if (dataList.size() > xNum) {
+                    dataList = dataList.subList(xNum, dataList.size() - 1);
+                } else {
+                    dataList = new ArrayList<>();
+                }
+                row += 1;
+            } while (aLine != null);
+
+            sr.close();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(ASCIIGridDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(ASCIIGridDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void readXY_bak1(Range yRange, Range xRange, IndexIterator ii) {
+        try {
+            int xNum = this.getXDimension().getLength();
+            BufferedReader sr = new BufferedReader(new FileReader(new File(this.getFileName())));
+            String[] dataArray;
+            int i, j;
+            String aLine;
+
+            for (i = 0; i < 6; i++) {
+                sr.readLine();
+            }
+
+            List<String> dataList = new ArrayList<>();
+            int row = 0;
+            do {
+                aLine = sr.readLine();
+                if (aLine == null) {
+                    break;
+                }
+                dataArray = aLine.trim().split("\\s+");
+                dataList.addAll(Arrays.asList(dataArray));
+                if (row == 0) {
+                    if (!MIMath.isNumeric(dataList.get(0))) {
+                        aLine = sr.readLine();
+                        dataArray = aLine.trim().split("\\s+");
+                        dataList = Arrays.asList(dataArray);
+                    }
+                }
+                for (i = 0; i < 100; i++) {
+                    if (dataList.size() < xNum) {
+                        aLine = sr.readLine();
+                        if (aLine == null) {
+                            break;
+                        }
+                        dataArray = aLine.trim().split("\\s+");
+                        dataList.addAll(Arrays.asList(dataArray));
+                    } else {
+                        break;
+                    }
+                }
+                if (row >= yRange.first() && row <= yRange.last()) {
+                    if ((row - yRange.first()) % yRange.stride() == 0) {
+                        for (i = xRange.first(); i <= xRange.last(); i += xRange.stride()) {
+                            if (this.dataType == DataType.INT) {
+                                ii.setObjectNext(Integer.parseInt(dataList.get(i)));
+                            } else {
+                                ii.setObjectNext(Float.parseFloat(dataList.get(i)));
+                            }
+                        }
+                    }
+                }
+                if (dataList.size() > xNum) {
+                    dataList = dataList.subList(xNum, dataList.size() - 1);
+                } else {
+                    dataList = new ArrayList<>();
+                }
+                row += 1;
+            } while (aLine != null);
+
+            sr.close();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(ASCIIGridDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(ASCIIGridDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void readXY_bak(Range yRange, Range xRange, IndexIterator ii) {
         try {
             int xNum = this.getXDimension().getLength();
             int yNum = this.getYDimension().getLength();
@@ -215,11 +377,11 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
             String[] dataArray;
             int i, j;
             String aLine;
-            
+
             for (i = 0; i < 6; i++) {
                 sr.readLine();
             }
-            
+
             List<String> dataList = new ArrayList<>();
             int col = 0;
             do {
@@ -258,9 +420,9 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
                 }
                 col += 1;
             } while (aLine != null);
-            
+
             sr.close();
-            
+
             float[] data = new float[yNum * xNum];
             for (i = 0; i < yNum; i++) {
                 for (j = 0; j < xNum; j++) {
@@ -282,7 +444,24 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
             Logger.getLogger(ASCIIGridDataInfo.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
+    /**
+     * Get grid data
+     *
+     * @param varName Variable name
+     * @return Grid data
+     */
+    @Override
+    public GridArray getGridArray(String varName) {
+        GridArray ga = new GridArray();
+        ga.data = this.read(varName);
+        ga.xArray = this.getXDimension().getValues();
+        ga.yArray = this.getYDimension().getValues();
+        ga.missingValue = this.getMissingValue();
+
+        return ga;
+    }
+
     @Override
     public GridData getGridData_LonLat(int timeIdx, int varIdx, int levelIdx) {
         try {
@@ -293,11 +472,11 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
             String[] dataArray;
             int i, j;
             String aLine;
-            
+
             for (i = 0; i < 6; i++) {
                 sr.readLine();
             }
-            
+
             List<String> dataList = new ArrayList<>();
             int col = 0;
             do {
@@ -336,69 +515,69 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
                 }
                 col += 1;
             } while (aLine != null);
-            
+
             sr.close();
-            
+
             double[][] newGridData = new double[yNum][xNum];
             for (i = 0; i < yNum; i++) {
                 for (j = 0; j < xNum; j++) {
                     newGridData[i][j] = theData[yNum - 1 - i][j];
                 }
             }
-            
+
             GridData aGridData = new GridData();
             aGridData.data = newGridData;
             aGridData.xArray = this.getXDimension().getValues();
             aGridData.yArray = this.getYDimension().getValues();
             aGridData.missingValue = this.getMissingValue();
-            
+
             return aGridData;
         } catch (IOException ex) {
             Logger.getLogger(ASCIIGridDataInfo.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }
     }
-    
+
     @Override
     public GridData getGridData_TimeLat(int lonIdx, int varIdx, int levelIdx) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
     @Override
     public GridData getGridData_TimeLon(int latIdx, int varIdx, int levelIdx) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
     @Override
     public GridData getGridData_LevelLat(int lonIdx, int varIdx, int timeIdx) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
     @Override
     public GridData getGridData_LevelLon(int latIdx, int varIdx, int timeIdx) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
     @Override
     public GridData getGridData_LevelTime(int latIdx, int varIdx, int lonIdx) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
     @Override
     public GridData getGridData_Time(int lonIdx, int latIdx, int varIdx, int levelIdx) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
     @Override
     public GridData getGridData_Level(int lonIdx, int latIdx, int varIdx, int timeIdx) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
     @Override
     public GridData getGridData_Lon(int timeIdx, int latIdx, int varIdx, int levelIdx) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
     @Override
     public GridData getGridData_Lat(int timeIdx, int lonIdx, int varIdx, int levelIdx) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
