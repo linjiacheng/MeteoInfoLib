@@ -680,58 +680,64 @@ public class LayoutLegend extends LayoutElement {
                 order = false;
             }
         }
+        
+        int idx;
         for (int i = 0; i < bNum; i++) {
+            if (order)
+                idx = bNum - i - 1;
+            else
+                idx = i;
             switch (aLS.getShapeType()) {
                 case Point:
-                    PointBreak aPB = (PointBreak) aLS.getLegendBreaks().get(i);
+                    PointBreak aPB = (PointBreak) aLS.getLegendBreaks().get(idx);
                     DrawShape = aPB.isDrawShape();
                     DrawFill = aPB.getDrawFill();
                     FillColor = aPB.getColor();
                     if (aLS.getLegendType() == LegendType.UniqueValue) {
                         caption = aPB.getCaption();
                     } else {
-                        if (order)
+                        if (!order)
                             caption = DataConvert.removeTailingZeros(aPB.getEndValue().toString());
                         else
                             caption = DataConvert.removeTailingZeros(aPB.getStartValue().toString());
                     }
                     break;
                 case Polyline:
-                    PolylineBreak aPLB = (PolylineBreak) aLS.getLegendBreaks().get(i);
+                    PolylineBreak aPLB = (PolylineBreak) aLS.getLegendBreaks().get(idx);
                     DrawShape = aPLB.getDrawPolyline();
                     FillColor = aPLB.getColor();
                     if (aLS.getLegendType() == LegendType.UniqueValue) {
                         caption = aPLB.getCaption();
                     } else {
-                        if (order)
+                        if (!order)
                             caption = DataConvert.removeTailingZeros(aPLB.getEndValue().toString());
                         else
                             caption = DataConvert.removeTailingZeros(aPLB.getStartValue().toString());
                     }
                     break;
                 case Polygon:
-                    PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(i);
+                    PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(idx);
                     DrawShape = aPGB.isDrawShape();
                     DrawFill = aPGB.isDrawFill();
                     FillColor = aPGB.getColor();
                     if (aLS.getLegendType() == LegendType.UniqueValue) {
                         caption = aPGB.getCaption();
                     } else {
-                        if (order)
+                        if (!order)
                             caption = DataConvert.removeTailingZeros(aPGB.getEndValue().toString());
                         else
                             caption = DataConvert.removeTailingZeros(aPGB.getStartValue().toString());
                     }
                     break;
                 case Image:
-                    ColorBreak aCB = aLS.getLegendBreaks().get(i);
+                    ColorBreak aCB = aLS.getLegendBreaks().get(idx);
                     DrawShape = true;
                     DrawFill = true;
                     FillColor = aCB.getColor();
                     if (aLS.getLegendType() == LegendType.UniqueValue) {
                         caption = aCB.getCaption();
                     } else {
-                        if (order)
+                        if (!order)
                             caption = DataConvert.removeTailingZeros(aCB.getEndValue().toString());
                         else
                             caption = DataConvert.removeTailingZeros(aCB.getStartValue().toString());
@@ -745,7 +751,7 @@ public class LayoutLegend extends LayoutElement {
             if (aLS.getLegendType() == LegendType.UniqueValue) {
                 if (DrawShape) {
                     if (aLS.getShapeType() == ShapeTypes.Polygon) {
-                        PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(i).clone();
+                        PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(idx).clone();
                         aPGB.setDrawOutline(true);
                         aPGB.setOutlineColor(Color.black);
                         Draw.drawPolygonSymbol((PointF) aP.clone(), width, height, aPGB, g);
@@ -779,7 +785,7 @@ public class LayoutLegend extends LayoutElement {
                         Points[3].X = aP.X;
                         Points[3].Y = 0;
                         if (aLS.getShapeType() == ShapeTypes.Polygon) {
-                            PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(i).clone();
+                            PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(idx).clone();
                             aPGB.setDrawOutline(true);
                             aPGB.setOutlineColor(Color.black);
                             Draw.drawPolygon(Points, aPGB, g);
@@ -801,7 +807,7 @@ public class LayoutLegend extends LayoutElement {
                         Points[3].X = 0;
                         Points[3].Y = i * height;
                         if (aLS.getShapeType() == ShapeTypes.Polygon) {
-                            PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(i).clone();
+                            PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(idx).clone();
                             aPGB.setDrawOutline(true);
                             aPGB.setOutlineColor(Color.black);
                             Draw.drawPolygon(Points, aPGB, g);
@@ -810,7 +816,7 @@ public class LayoutLegend extends LayoutElement {
                         }
                     } else {
                         if (aLS.getShapeType() == ShapeTypes.Polygon) {
-                            PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(i).clone();
+                            PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(idx).clone();
                             aPGB.setDrawOutline(true);
                             aPGB.setOutlineColor(Color.black);
                             Draw.drawPolygonSymbol((PointF) aP.clone(), width, height, aPGB, g);
