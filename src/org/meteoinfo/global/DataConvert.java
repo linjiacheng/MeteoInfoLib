@@ -13,9 +13,12 @@
  */
 package org.meteoinfo.global;
 
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.BitSet;
 
 /**
  *
@@ -35,7 +38,7 @@ public class DataConvert {
         buf.order(byteOrder);
         return buf.getFloat();
     }
-    
+
     /**
      * Byte array convert to double
      *
@@ -65,7 +68,7 @@ public class DataConvert {
             return buf.getShort();
         }
     }
-    
+
     /**
      * Byte array convert to short integer
      *
@@ -144,18 +147,45 @@ public class DataConvert {
         bytes[3] = (byte) (i & 0xff);
         return bytes;
     }
-    
+
     /**
-     * Convert int to byte array.
+     * Convert int to 3 byte array.
      *
      * @param i Int value
      * @return Byte array
      */
-    public static int[] toUint3Int(int i) {
-        int[] ints = new int[3];
-        ints[0] = (i >> 16 & 0xff);
-        ints[1] = (i >> 8 & 0xff);
-        ints[2] = (i & 0xff);
+    public static byte[] toUint3Int(int i) {
+        byte[] ints = new byte[3];
+        ints[0] = (byte) (i >> 16 & 0xff);
+        ints[1] = (byte) (i >> 8 & 0xff);
+        ints[2] = (byte) (i & 0xff);
+        return ints;
+    }
+
+    /**
+     * Convert int to 2 byte array.
+     *
+     * @param i Int value
+     * @return Byte array
+     */
+    public static byte[] toUint2Int(int i) {
+        byte[] ints = new byte[2];
+        ints[0] = (byte) (i >> 8 & 0xff);
+        ints[1] = (byte) (i & 0xff);
+        return ints;
+    }
+
+    /**
+     * Convert int to N byte array.
+     *
+     * @param i Int value
+     * @param n bit number
+     * @return Byte array
+     */
+    public static byte[] toUintNInt(int i, int n) {
+        byte[] ints = new byte[2];
+        ints[0] = (byte) (i >> 8 & 0xff);
+        ints[1] = (byte) (i & 0xff);
         return ints;
     }
 
@@ -206,7 +236,7 @@ public class DataConvert {
      */
     public static byte[] toLittleBytes(float f) {
         return toLittleBytes(Float.floatToIntBits(f));
-    }    
+    }
 
     /**
      * Resize array
@@ -265,13 +295,52 @@ public class DataConvert {
      * @return Result string
      */
     public static String removeTailingZeros(String s) {
-        if (s.equals("0.0"))
+        if (s.equals("0.0")) {
             s = "0";
-        if (s.length() <= 1)
+        }
+        if (s.length() <= 1) {
             return s;
-        if (s.substring(s.length() - 2).equals(".0"))
+        }
+        if (s.substring(s.length() - 2).equals(".0")) {
             return new BigDecimal(s).stripTrailingZeros().toPlainString();
-        else
+        } else {
             return s;
+        }
+    }
+
+    // Returns a byte array of at least length 1.
+// The most significant bit in the result is guaranteed not to be a 1
+// (since BitSet does not support sign extension).
+// The byte-ordering of the result is big-endian which means the most significant bit is in element 0.
+// The bit at index 0 of the bit set is assumed to be the least significant bit.
+    public static byte[] toByte_bak1(BitSet bits) {
+        byte[] bytes = new byte[bits.length() / 8 + 1];
+        for (int i = 0; i < bits.length(); i++) {
+            if (bits.get(i)) {
+                bytes[bytes.length - i / 8 - 1] |= 1 << (i % 8);
+            }
+        }
+        return bytes;
+    }
+    
+    public static byte[] toByteArray(BitSet bits) {
+        byte[] bytes = new byte[bits.length() / 8 + 1];
+        for (int i = 0; i < bits.length(); i++) {
+            if (bits.get(i)) {
+                bytes[i / 8] |= 1 << (i % 8);
+            }
+        }
+        return bytes;
+    }
+
+    public static byte[] toByteArray_bak(BitSet bitSet) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(bitSet.size());
+        try {
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+            oos.writeObject(bitSet);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return baos.toByteArray();
     }
 }
