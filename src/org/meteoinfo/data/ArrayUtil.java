@@ -351,6 +351,12 @@ public class ArrayUtil {
                 a.setObject(i, data.get(i));
             }
             return a;
+        } else if (d0 instanceof String) {
+            Array a = Array.factory(DataType.STRING, new int[]{data.size()});
+            for (int i = 0; i < data.size(); i++) {
+                a.setObject(i, data.get(i));
+            }
+            return a;
         } else if (d0 instanceof List) {
             int ndim = data.size();
             int len = ((List) d0).size();
