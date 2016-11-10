@@ -1091,6 +1091,9 @@ public class Axis implements Cloneable {
      */
     public String getMaxLenLable() {
         List<String> tls = this.updateTickLabels();
+        if (tls.isEmpty())
+            return "1";
+        
         String rlab = tls.get(0);
         for (String lab : tls) {
             if (lab.length() > rlab.length()) {
