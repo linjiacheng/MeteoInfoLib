@@ -1006,4 +1006,65 @@ public class MIMath {
         r.add(cDelt);
         return r;
     }
+    
+    /**
+     * Create log interval values by minimum and maximum values
+     *
+     * @param min Minimum value
+     * @param max Maximum value
+     * @return Interval values
+     */
+    public static double[] getIntervalValues_Log(double min, double max) {
+        int i, v;
+        int minE = (int) Math.floor(Math.log10(min));
+        int maxE = (int) Math.ceil(Math.log10(max));
+        if (min == 0){
+            minE = maxE - 2;
+        }
+        if (max == 0){
+            maxE = minE + 2;
+        }
+
+        double[] cValues = new double[maxE - minE + 1];
+        i = 0;
+        for (v = minE; v <= maxE; v++) {
+            cValues[i] = Math.pow(10, v);
+            i++;
+        }
+
+        return cValues;
+    }
+    
+    /**
+     * Create log interval values by minimum and maximum values
+     *
+     * @param min Minimum value
+     * @param max Maximum value
+     * @return Interval values
+     */
+    public static double[] getIntervalValues_Log_bak(double min, double max) {
+        int i, v;
+        int minE = (int) Math.floor(Math.log10(min));
+        int maxE = (int) Math.ceil(Math.log10(max));
+        if (min == 0){
+            minE = maxE - 2;
+        }
+        if (max == 0){
+            maxE = minE + 2;
+        }
+
+        List<Double> values = new ArrayList<>();
+        double vv;
+        for (v = minE; v <= maxE; v++) {
+            vv = Math.pow(10, v);
+            if (vv >= min && vv <= max)
+            values.add(vv);
+        }
+        double[] cValues = new double[values.size()];
+        for (i = 0; i < values.size(); i++){
+            cValues[i] = values.get(i);
+        }
+
+        return cValues;
+    }
 }

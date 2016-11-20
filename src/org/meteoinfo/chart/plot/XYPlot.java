@@ -1133,13 +1133,24 @@ public abstract class XYPlot extends Plot {
      * @return Screen X/Y array
      */
     public double[] projToScreen(double projX, double projY, Rectangle2D area) {
-        double scaleX = area.getWidth() / drawExtent.getWidth();
-        double scaleY = area.getHeight() / drawExtent.getHeight();
+        double width = drawExtent.getWidth();
+        double height = drawExtent.getHeight();
+        if (this.isLogY()){
+            height = Math.log10(drawExtent.maxY) - Math.log10(drawExtent.minY);
+        }
+        if (this.isLogX()){
+            width = Math.log10(drawExtent.maxX) - Math.log10(drawExtent.minX);
+        }
+        double scaleX = area.getWidth() / width;
+        double scaleY = area.getHeight() / height;
         double screenX = (projX - drawExtent.minX) * scaleX;
         double screenY = (drawExtent.maxY - projY) * scaleY;
         if (this.isLogY()){
-            screenY = area.getHeight() - Math.log(area.getHeight() - screenY) / Math.log(area.getHeight()) * area.getHeight();
-        }
+            screenY = (Math.log10(drawExtent.maxY) - Math.log10(projY)) * scaleY;
+        } 
+        if (this.isLogX()){
+            screenX = (Math.log10(projX) - Math.log10(drawExtent.minX)) * scaleX;
+        }        
 
         return new double[]{screenX, screenY};
     }
@@ -1177,10 +1188,24 @@ public abstract class XYPlot extends Plot {
      * @return Projected X/Y
      */
     public double[] screenToProj(double screenX, double screenY, Rectangle2D area) {
-        double scaleX = area.getWidth() / drawExtent.getWidth();
-        double scaleY = area.getHeight() / drawExtent.getHeight();
+        double width = drawExtent.getWidth();
+        double height = drawExtent.getHeight();
+        if (this.isLogY()){
+            height = Math.log10(drawExtent.maxY) - Math.log10(drawExtent.minY);
+        }
+        if (this.isLogX()){
+            width = Math.log10(drawExtent.maxX) - Math.log10(drawExtent.minX);
+        }
+        double scaleX = area.getWidth() / width;
+        double scaleY = area.getHeight() / height;
         double projX = screenX / scaleX + drawExtent.minX;
-        double projY = drawExtent.maxY - screenY / scaleY;
+        double projY = drawExtent.maxY - screenY / scaleY;        
+        if (this.isLogY()){
+            projY = Math.pow(10, Math.log10(drawExtent.maxY) - screenY / scaleY);
+        } 
+        if (this.isLogX()){
+            projX = Math.pow(10, screenX / scaleX + Math.log10(drawExtent.minX));
+        } 
 
         return new double[]{projX, projY};
     }

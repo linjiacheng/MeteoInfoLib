@@ -29,6 +29,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import org.meteoinfo.chart.ChartLegend;
+import org.meteoinfo.chart.axis.LogAxis;
 import org.meteoinfo.chart.axis.TimeAxis;
 import org.meteoinfo.data.Dataset;
 import org.meteoinfo.drawing.Draw;
@@ -770,14 +771,20 @@ public class XY2DPlot extends XYPlot {
         }
         double[] xValues;
         if (this.getXAxis() instanceof TimeAxis) {
-            //if (this.getXAxis().isTimeAxis()) {
             xValues = (double[]) MIMath.getIntervalValues(extent.minX, extent.maxX, false).get(0);
             xValues[0] = extent.minX;
             xValues[xValues.length - 1] = extent.maxX;
+        } else if (this.getXAxis() instanceof LogAxis) {
+            xValues = (double[]) MIMath.getIntervalValues_Log(extent.minX, extent.maxX);
         } else {
             xValues = (double[]) MIMath.getIntervalValues(extent.minX, extent.maxX, true).get(0);
         }
-        double[] yValues = (double[]) MIMath.getIntervalValues(extent.minY, extent.maxY, true).get(0);
+        double[] yValues;
+        if (this.getYAxis() instanceof LogAxis){
+            yValues = (double[]) MIMath.getIntervalValues_Log(extent.minY, extent.maxY);
+        } else {
+            yValues = (double[]) MIMath.getIntervalValues(extent.minY, extent.maxY, true).get(0);
+        }
         if (this.getPlotOrientation() == PlotOrientation.VERTICAL) {
             return new Extent(xValues[0], xValues[xValues.length - 1], yValues[0], yValues[yValues.length - 1]);
         } else {

@@ -5,6 +5,13 @@
  */
 package org.meteoinfo.chart.axis;
 
+import java.awt.font.TextAttribute;
+import java.text.AttributedString;
+import java.util.ArrayList;
+import java.util.List;
+import org.meteoinfo.global.DataConvert;
+import org.meteoinfo.global.MIMath;
+
 /**
  *
  * @author Yaqiang Wang
@@ -24,5 +31,54 @@ public class LogAxis extends Axis {
     // <editor-fold desc="Get Set Methods">
     // </editor-fold>
     // <editor-fold desc="Methods">
+    /**
+     * Update tick values
+     */
+    @Override
+    public void updateTickValues() {
+        double[] r = MIMath.getIntervalValues_Log(this.getMinValue(), this.getMaxValue());
+        this.setTickValues((double[]) r);
+        this.setTickDeltaValue(1);
+    }
+    
+    @Override
+    public List<String> updateTickLabels(){
+        List<String> tls = new ArrayList<>();
+        String lab;
+        if (this.isAutoTick()) {
+            if (this.getTickValues() == null) {
+                return tls;
+            }
+            for (double value : this.getTickValues()) {
+                lab = String.valueOf(value);
+                lab = DataConvert.removeTailingZeros(lab);
+                tls.add(lab);
+            }
+        } else {
+            for (int i = 0; i < this.getTickLocations().size(); i++) {
+                if (i >= this.getTickLabels().size()) {
+                    break;
+                }
+                double v = this.getTickLocations().get(i);
+                if (v >= this.getMinValue() && v <= this.getMaxValue()) {
+                    tls.add(this.getTickLabels().get(i));
+                }
+            }
+        }
+        
+        List<Double> values = new ArrayList<>();
+        for (String tl : tls){
+            values.add(Double.parseDouble(tl));
+        }
+        tls.clear();
+        int e;
+        for (Double v : values){
+            e = (int) Math.floor(Math.log10(v));
+            tls.add("$10^{" + String.valueOf(e) + "}$");
+        }
+
+        return tls;
+    }
+    
     // </editor-fold>
 }

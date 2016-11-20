@@ -1190,6 +1190,43 @@ public class Draw {
             g.setTransform(tempTrans);
         }
     }
+    
+    /**
+     * Draw label point
+     *
+     * @param x X
+     * @param y Y
+     * @param font Font
+     * @param text Text
+     * @param color Color
+     * @param g Graphics2D
+     * @param angle Angle
+     */
+    public static void drawTickLabel_Y(float x, float y, Font font, String text, Color color, float angle, Graphics2D g) {
+        g.setColor(color);
+        g.setFont(font);
+        Dimension labSize = Draw.getStringDimension(text, g);
+        if (angle == 0) {
+            //x = x - (float) labSize.getWidth() / 2;
+            //y -= (float) labSize.getHeight() / 2;
+            Draw.drawString(g, text, x, y);
+        } else {
+            AffineTransform tempTrans = g.getTransform();
+            AffineTransform myTrans = new AffineTransform();
+            myTrans.translate(x, y);
+            myTrans.rotate(-angle * Math.PI / 180);
+            g.setTransform(myTrans);
+            if (angle == 90) {
+                x = -(float) (labSize.getWidth() - 10);
+                y = (float) (labSize.getHeight() / 3);
+            } else {
+                x = -(float) (labSize.getWidth() - 5);
+                y = 0;
+            }
+            Draw.drawString(g, text, x, y);
+            g.setTransform(tempTrans);
+        }
+    }
 
     /**
      * Draw label point (270 degress)

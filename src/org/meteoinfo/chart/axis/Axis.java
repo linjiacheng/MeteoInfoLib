@@ -1070,12 +1070,13 @@ public class Axis implements Cloneable {
      * @return Maximum lable string length
      */
     public int getMaxLabelLength(Graphics2D g) {
-        FontMetrics metrics = g.getFontMetrics(this.tickLabelFont);
+        //FontMetrics metrics = g.getFontMetrics(this.tickLabelFont);
         List<String> tls = this.updateTickLabels();
         int max = 0;
         int width;
+        g.setFont(this.tickLabelFont);
         for (String lab : tls) {
-            width = metrics.stringWidth(lab);
+            width = Draw.getStringDimension(lab, g).width;
             if (max < width) {
                 max = width;
             }
@@ -1234,7 +1235,13 @@ public class Axis implements Cloneable {
             //Draw minor tick lines
             if (this.isMinorTickVisible()) {
                 int minorLen = len - 2;
-                double sp = this.tickDeltaValue * this.getTickLabelGap() / this.minorTickNum;
+                double sp;
+                sp = this.tickDeltaValue * this.getTickLabelGap() / this.minorTickNum;
+                if (this instanceof LogAxis){
+                    if (n >= this.getTickValues().length)
+                        break;
+                    sp = (this.getTickValues()[n] - this.getTickValues()[n - 1]) / this.minorTickNum;
+                }
                 List<Double> xx = new ArrayList<>();
                 if (n == 1) {
                     if (value > this.minValue + sp) {
@@ -1258,6 +1265,8 @@ public class Axis implements Cloneable {
                     value = value + sp;
                     if (value >= this.maxValue) {
                         break;
+                    } else if (value <= this.minValue) {
+                        continue;
                     }
                     xy = plot.projToScreen(value, plot.getDrawExtent().minY, area);
                     x = xy[0];
@@ -1324,6 +1333,7 @@ public class Axis implements Cloneable {
         if (this.isDrawLabel()) {
             x = (maxx - minx) / 2 + minx;
             String maxLabel = this.getMaxLenLable();
+            g.setFont(this.tickLabelFont);
             dim = Draw.getStringDimension(maxLabel, g);
             y = maxy + space + dim.getHeight() + (dim.getWidth() * 
                     Math.sin(this.tickLabelAngle * Math.PI / 180)) + 5;
@@ -1481,7 +1491,7 @@ public class Axis implements Cloneable {
         g.setColor(this.getTickColor());
         g.setStroke(this.getTickStroke());
         g.setFont(this.getTickLabelFont());
-        FontMetrics metrics = g.getFontMetrics();
+        //FontMetrics metrics = g.getFontMetrics();
         this.updateLabelGap(g, area);
         int len = this.getTickLength();
         List<String> yTickLabels = this.updateTickLabels();
@@ -1510,29 +1520,39 @@ public class Axis implements Cloneable {
             //Draw tick label
             if (this.drawTickLabel) {
                 drawStr = yTickLabels.get(n);
-                dim = new Dimension(metrics.stringWidth(drawStr), metrics.getHeight());
+                //dim = new Dimension(metrics.stringWidth(drawStr), metrics.getHeight());
+                g.setFont(this.tickLabelFont);
+                dim = Draw.getStringDimension(drawStr, g);
                 if (this.location == Location.LEFT) {
                     labx = (float) (sx - dim.width - space - space);
                     if (!this.isInsideTick()) {
                         labx -= len;
                     }
                     laby = (float) (y + dim.height / 3);
-                    g.drawString(drawStr, labx, laby);
+                    //g.drawString(drawStr, labx, laby);
                 } else {
                     labx = (float) (sx + space + space);
                     if (!this.isInsideTick()) {
                         labx += len;
                     }
                     laby = (float) (y + dim.height / 3);
-                    g.drawString(drawStr, labx, laby);
+                    //g.drawString(drawStr, labx, laby);
                 }
+                Draw.drawTickLabel_Y(labx, laby, this.tickLabelFont, drawStr, this.tickLabelColor, 
+                        this.tickLabelAngle, g);
             }
             n += this.getTickLabelGap();
 
             //Draw minor tick lines
             if (this.isMinorTickVisible()) {
                 int minorLen = len - 2;
-                double sp = this.tickDeltaValue * this.getTickLabelGap() / this.minorTickNum;
+                double sp;
+                sp = this.tickDeltaValue * this.getTickLabelGap() / this.minorTickNum;
+                if (this instanceof LogAxis){
+                    if (n >= this.getTickValues().length)
+                        break;
+                    sp = (this.getTickValues()[n] - this.getTickValues()[n - 1]) / this.minorTickNum;
+                }
                 List<Double> yy = new ArrayList<>();
                 if (n == 1) {
                     if (value > this.minValue + sp) {
@@ -1556,6 +1576,8 @@ public class Axis implements Cloneable {
                     value = value + sp;
                     if (value >= this.maxValue) {
                         break;
+                    } else if (value <= this.minValue) {
+                        continue;
                     }
                     xy = plot.projToScreen(plot.getDrawExtent().minX, value, area);
                     y = xy[1];
