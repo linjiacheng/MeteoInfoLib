@@ -579,6 +579,15 @@ public class VectorLayer extends MapLayer {
     // </editor-fold>
     // <editor-fold desc="Shape">
     /**
+     * Get a shape by index
+     * @param idx Shape index
+     * @return Shape
+     */
+    public Shape getShape(int idx){
+        return this._shapeList.get(idx);
+    }
+    
+    /**
      * Add a shape
      *
      * @param aShape Shape

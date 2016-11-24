@@ -4277,51 +4277,61 @@ public class MapView extends JPanel {
                         break;
                     case VectorLayer:
                         VectorLayer aVLayer = (VectorLayer) aLayer;
+                        boolean isDraw = true;
                         switch (aVLayer.getLayerDrawType()) {
                             case Vector:
-                                drawVectLayerWithLegendScheme(aVLayer, g, 0);
-                                if (this._multiGlobalDraw) {
-                                    if (aLayer.getExtent().minX > -360 && aLayer.getExtent().maxX > 0) {
-                                        drawVectLayerWithLegendScheme(aVLayer, g, -360);
+                                if (aVLayer.getShape(0).getShapeType() == ShapeTypes.WindArraw) {
+                                    drawVectLayerWithLegendScheme(aVLayer, g, 0);
+                                    if (this._multiGlobalDraw) {
+                                        if (aLayer.getExtent().minX > -360 && aLayer.getExtent().maxX > 0) {
+                                            drawVectLayerWithLegendScheme(aVLayer, g, -360);
+                                        }
+                                        if (aLayer.getExtent().maxX < 360 && aLayer.getExtent().minX < 0) {
+                                            drawVectLayerWithLegendScheme(aVLayer, g, 360);
+                                        }
                                     }
-                                    if (aLayer.getExtent().maxX < 360 && aLayer.getExtent().minX < 0) {
-                                        drawVectLayerWithLegendScheme(aVLayer, g, 360);
-                                    }
+                                    isDraw = false;
                                 }
                                 break;
                             case Barb:
-                                drawBarbLayerWithLegendScheme(aVLayer, g, 0);
-                                if (this._multiGlobalDraw) {
-                                    if (aLayer.getExtent().minX > -360 && aLayer.getExtent().maxX > 0) {
-                                        drawBarbLayerWithLegendScheme(aVLayer, g, -360);
+                                if (aVLayer.getShape(0).getShapeType() == ShapeTypes.WindBarb) {
+                                    drawBarbLayerWithLegendScheme(aVLayer, g, 0);
+                                    if (this._multiGlobalDraw) {
+                                        if (aLayer.getExtent().minX > -360 && aLayer.getExtent().maxX > 0) {
+                                            drawBarbLayerWithLegendScheme(aVLayer, g, -360);
+                                        }
+                                        if (aLayer.getExtent().maxX < 360 && aLayer.getExtent().minX < 0) {
+                                            drawBarbLayerWithLegendScheme(aVLayer, g, 360);
+                                        }
                                     }
-                                    if (aLayer.getExtent().maxX < 360 && aLayer.getExtent().minX < 0) {
-                                        drawBarbLayerWithLegendScheme(aVLayer, g, 360);
-                                    }
+                                    isDraw = false;
                                 }
                                 break;
                             case StationModel:
-                                drawStationModelLayer(aVLayer, g, 0);
-                                if (this._multiGlobalDraw) {
-                                    if (aLayer.getExtent().minX > -360 && aLayer.getExtent().maxX > 0) {
-                                        drawStationModelLayer(aVLayer, g, -360);
+                                if (aVLayer.getShape(0).getShapeType() == ShapeTypes.StationModel) {
+                                    drawStationModelLayer(aVLayer, g, 0);
+                                    if (this._multiGlobalDraw) {
+                                        if (aLayer.getExtent().minX > -360 && aLayer.getExtent().maxX > 0) {
+                                            drawStationModelLayer(aVLayer, g, -360);
+                                        }
+                                        if (aLayer.getExtent().maxX < 360 && aLayer.getExtent().minX < 0) {
+                                            drawStationModelLayer(aVLayer, g, 360);
+                                        }
                                     }
-                                    if (aLayer.getExtent().maxX < 360 && aLayer.getExtent().minX < 0) {
-                                        drawStationModelLayer(aVLayer, g, 360);
-                                    }
+                                    isDraw = false;
                                 }
                                 break;
-                            default:
-                                drawLayerWithLegendScheme(aVLayer, g, 0);
-                                if (this._multiGlobalDraw) {
-                                    if (aLayer.getExtent().minX > -360 && aLayer.getExtent().maxX > 0) {
-                                        drawLayerWithLegendScheme(aVLayer, g, -360);
-                                    }
-                                    if (aLayer.getExtent().maxX < 360 && aLayer.getExtent().minX < 0) {
-                                        drawLayerWithLegendScheme(aVLayer, g, 360);
-                                    }
+                        }
+                        if (isDraw) {
+                            drawLayerWithLegendScheme(aVLayer, g, 0);
+                            if (this._multiGlobalDraw) {
+                                if (aLayer.getExtent().minX > -360 && aLayer.getExtent().maxX > 0) {
+                                    drawLayerWithLegendScheme(aVLayer, g, -360);
                                 }
-                                break;
+                                if (aLayer.getExtent().maxX < 360 && aLayer.getExtent().minX < 0) {
+                                    drawLayerWithLegendScheme(aVLayer, g, 360);
+                                }
+                            }
                         }
                         break;
                     case WebMapLayer:
@@ -5500,7 +5510,7 @@ public class MapView extends JPanel {
                 if (i == 0) {
                     path.moveTo(sXY[0], sXY[1]);
                 } else {
-                    path.lineTo(sXY[0], sXY[1]);                    
+                    path.lineTo(sXY[0], sXY[1]);
                     if (isZ) {
                         v = wPoint.Z;
                     } else {

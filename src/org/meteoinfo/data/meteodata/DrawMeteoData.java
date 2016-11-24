@@ -897,7 +897,7 @@ public class DrawMeteoData {
         int YNum = uData.yArray.length;
 
         String columnName = lName.split("_")[0];
-        VectorLayer aLayer = new VectorLayer(ShapeTypes.WindArraw);
+        VectorLayer aLayer = new VectorLayer(ShapeTypes.Point);
         //Add data column   
         if (isUV) {
             aLayer.editAddField("U", DataTypes.Float);
@@ -1077,7 +1077,7 @@ public class DrawMeteoData {
         int YNum = windDirData.yArray.length;
         String columnName = lName.split("_")[0];
 
-        VectorLayer aLayer = new VectorLayer(ShapeTypes.WindBarb);
+        VectorLayer aLayer = new VectorLayer(ShapeTypes.Point);
         //Add data column  
         if (isUV) {
             aLayer.editAddField("U", DataTypes.Float);
@@ -2153,7 +2153,7 @@ public class DrawMeteoData {
         int weather, cCover, temp, dewPoint, pressure;
         PointD aPoint;
 
-        VectorLayer aLayer = new VectorLayer(ShapeTypes.StationModel);
+        VectorLayer aLayer = new VectorLayer(ShapeTypes.Point);
         aLayer.editAddField(new Field("WindDirection", DataTypes.Float));
         aLayer.editAddField(new Field("WindSpeed", DataTypes.Float));
         aLayer.editAddField(new Field("Weather", DataTypes.Integer));
