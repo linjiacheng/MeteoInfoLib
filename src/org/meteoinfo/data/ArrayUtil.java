@@ -450,9 +450,6 @@ public class ArrayUtil {
             stop = start;
             start = 0;
         }
-//        DataType dataType = ArrayMath.objectsToType(new Object[]{
-//            start,
-//            stop});
         double startv = start.doubleValue();
         double stopv = stop.doubleValue();
         double stepv = (stopv - startv) / (n - 1);
@@ -465,8 +462,8 @@ public class ArrayUtil {
         } else if (endv >= stopv) {
             nn -= 1;
         }
-        Array a = Array.factory(DataType.FLOAT, new int[]{n});
-        for (int i = 0; i < n; i++) {
+        Array a = Array.factory(DataType.FLOAT, new int[]{nn});
+        for (int i = 0; i < nn; i++) {
             a.setObject(i, BigDecimalUtil.add(BigDecimalUtil.mul(i, stepv), startv));
         }
 
