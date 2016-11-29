@@ -14,6 +14,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
+import org.meteoinfo.chart.plot.MapPlot;
 import org.meteoinfo.chart.plot.Plot;
 import org.meteoinfo.chart.plot.XY2DPlotBak;
 import org.meteoinfo.drawing.Draw;
@@ -396,8 +397,8 @@ public class Chart {
                 } else {
                     plot.setPlotShrink(this.getPlotShrink(g, area, plot));
                 }
-                if (plot instanceof XY2DPlotBak) {
-                    ((XY2DPlotBak) plot).setAntialias(this.antiAlias);
+                if (plot instanceof MapPlot) {
+                    ((MapPlot) plot).setAntialias(this.antiAlias);
                 }
                 plot.draw(g, plotArea);
             }
