@@ -45,7 +45,7 @@ import org.meteoinfo.shape.WindArrow;
 public abstract class XYPlot extends Plot {
 
     // <editor-fold desc="Variables">
-    private Color background;    
+    private Color background;
     private boolean drawBackground;
     private Color selectColor = Color.yellow;
     private Extent extent;
@@ -66,6 +66,8 @@ public abstract class XYPlot extends Plot {
     private boolean drawLegend;
     private List<ChartText> texts;
     private ChartWindArrow windArrow;
+    private boolean autoAspect = true;
+    private double aspect = 1;
 
     // </editor-fold>
     // <editor-fold desc="Constructor">
@@ -126,20 +128,22 @@ public abstract class XYPlot extends Plot {
             this.title.setText(text);
         }
     }
-    
+
     /**
      * Get selected color
+     *
      * @return Selected color
      */
-    public Color getSelectedColor(){
+    public Color getSelectedColor() {
         return this.selectColor;
     }
-    
+
     /**
      * Set selected color
+     *
      * @param value Selected color
      */
-    public void setSelectedColor(Color value){
+    public void setSelectedColor(Color value) {
         this.selectColor = value;
     }
 
@@ -219,27 +223,29 @@ public abstract class XYPlot extends Plot {
         this.getAxis(Location.LEFT).setMinMaxValue(extent.minY, extent.maxY);
         this.getAxis(Location.RIGHT).setMinMaxValue(extent.minY, extent.maxY);
     }
-    
+
     /**
      * Get extent
+     *
      * @return Extent
      */
-    public Extent getExtent(){
+    public Extent getExtent() {
         return this.extent;
     }
-    
+
     /**
      * Set extent
+     *
      * @param extent Extent
      */
-    public void setExtent(Extent extent){
+    public void setExtent(Extent extent) {
         this.extent = extent;
     }
-    
+
     /**
      * Update draw extent
      */
-    public void updateDrawExtent(){
+    public void updateDrawExtent() {
         this.getAxis(Location.BOTTOM).setMinMaxValue(drawExtent.minX, drawExtent.maxX);
         this.getAxis(Location.TOP).setMinMaxValue(drawExtent.minX, drawExtent.maxX);
         this.getAxis(Location.LEFT).setMinMaxValue(drawExtent.minY, drawExtent.maxY);
@@ -493,36 +499,75 @@ public abstract class XYPlot extends Plot {
     public void setWindArrow(ChartWindArrow value) {
         this.windArrow = value;
     }
-    
+
     /**
      * Get x axis is log or not
+     *
      * @return Boolean
      */
-    public boolean isLogX(){
+    public boolean isLogX() {
         Axis xAxis = this.getXAxis();
         return xAxis instanceof LogAxis;
     }
-    
+
     /**
      * Get y axis is log or not
+     *
      * @return Boolean
      */
-    public boolean isLogY(){
+    public boolean isLogY() {
         Axis yAxis = this.getYAxis();
         return yAxis instanceof LogAxis;
+    }
+
+    /**
+     * Get is auto aspect or not
+     *
+     * @return Boolean
+     */
+    public boolean isAutoAspect() {
+        return this.autoAspect;
+    }
+
+    /**
+     * Set is auto aspect or not
+     *
+     * @param value Boolean
+     */
+    public void setAutoAspect(boolean value) {
+        this.autoAspect = value;
+    }
+
+    /**
+     * Get aspect - scaling from data to plot units for x and y
+     *
+     * @return Aspect
+     */
+    public double getAspect() {
+        return this.aspect;
+    }
+
+    /**
+     * Set aspect
+     *
+     * @param value Aspect
+     */
+    public void setAspect(double value) {
+        this.aspect = value;
     }
 
     // </editor-fold>
     // <editor-fold desc="Method">
     /**
      * Set axis
+     *
      * @param axis The axis
      * @param loc Axis location
      */
-    public void setAxis(Axis axis, Location loc){
+    public void setAxis(Axis axis, Location loc) {
         this.axises.put(loc, axis);
     }
-    
+
     /**
      * Set axis label font
      *
@@ -544,23 +589,25 @@ public abstract class XYPlot extends Plot {
             axis.setVisible(value);
         }
     }
-    
+
     /**
      * Set axis tick line inside box or not
+     *
      * @param isInside Inside box ot not
      */
-    public void setInsideTick(boolean isInside){
+    public void setInsideTick(boolean isInside) {
         this.getAxis(Location.LEFT).setInsideTick(isInside);
         this.getAxis(Location.RIGHT).setInsideTick(isInside);
         this.getAxis(Location.TOP).setInsideTick(isInside);
         this.getAxis(Location.BOTTOM).setInsideTick(isInside);
     }
-    
+
     /**
      * Get is inside tick line or not
+     *
      * @return Is inside or not
      */
-    public boolean isInsideTick(){
+    public boolean isInsideTick() {
         return this.getAxis(Location.BOTTOM).isInsideTick();
     }
 
@@ -683,10 +730,11 @@ public abstract class XYPlot extends Plot {
             ChartWindArrow wa = this.getWindArrow();
             float zoom = 1.0f;
             if (wa.getLayer() != null) {
-                if (wa.getLayer() instanceof VectorLayer)
-                    zoom = ((VectorLayer)wa.getLayer()).getDrawingZoom();
-                else if (wa.getLayer() instanceof GraphicCollection)
-                    zoom = ((GraphicCollection)wa.getLayer()).getArrowZoom();
+                if (wa.getLayer() instanceof VectorLayer) {
+                    zoom = ((VectorLayer) wa.getLayer()).getDrawingZoom();
+                } else if (wa.getLayer() instanceof GraphicCollection) {
+                    zoom = ((GraphicCollection) wa.getLayer()).getArrowZoom();
+                }
             }
             float x = (float) (area.getWidth() * wa.getX());
             y = (float) (area.getHeight() * (1 - wa.getY()));
@@ -836,7 +884,24 @@ public abstract class XYPlot extends Plot {
      */
     @Override
     public Rectangle2D getPositionArea(Graphics2D g, Rectangle2D area) {
-        return this.getPositionArea();
+        if (this.autoAspect) {
+            return this.getPositionArea();
+        } else {
+            Rectangle2D plotArea = this.getPositionArea();
+            double width = this.drawExtent.getWidth();
+            double height = this.drawExtent.getHeight();
+            if (width / height / aspect > plotArea.getWidth() / plotArea.getHeight()) {
+                double h = plotArea.getWidth() * height * aspect / width;
+                double delta = plotArea.getHeight() - h;
+                plotArea.setRect(plotArea.getX(), plotArea.getY() + delta / 2, plotArea.getWidth(), h);
+            } else {
+                double w = width * plotArea.getHeight() / height / aspect;
+                double delta = plotArea.getWidth() - w;
+                plotArea.setRect(plotArea.getX() + delta / 2, plotArea.getY(), w, plotArea.getHeight());
+            }
+
+            return plotArea;
+        }
     }
 
     /**
@@ -918,11 +983,11 @@ public abstract class XYPlot extends Plot {
             g.setFont(xAxis.getTickLabelFont());
             String maxLabel = xAxis.getMaxLenLable();
             Dimension dim = Draw.getStringDimension(maxLabel, g);
-            if (xAxis.getTickLabelAngle() == 0)
+            if (xAxis.getTickLabelAngle() == 0) {
                 height += dim.height + space;
-            else {
-                height += dim.height + space + (int)(dim.getWidth() * 
-                    Math.sin(xAxis.getTickLabelAngle() * Math.PI / 180));
+            } else {
+                height += dim.height + space + (int) (dim.getWidth()
+                        * Math.sin(xAxis.getTickLabelAngle() * Math.PI / 180));
             }
             if (xAxis instanceof TimeAxis) {
                 height += dim.height + space;
@@ -1135,22 +1200,22 @@ public abstract class XYPlot extends Plot {
     public double[] projToScreen(double projX, double projY, Rectangle2D area) {
         double width = drawExtent.getWidth();
         double height = drawExtent.getHeight();
-        if (this.isLogY()){
+        if (this.isLogY()) {
             height = Math.log10(drawExtent.maxY) - Math.log10(drawExtent.minY);
         }
-        if (this.isLogX()){
+        if (this.isLogX()) {
             width = Math.log10(drawExtent.maxX) - Math.log10(drawExtent.minX);
         }
         double scaleX = area.getWidth() / width;
         double scaleY = area.getHeight() / height;
         double screenX = (projX - drawExtent.minX) * scaleX;
         double screenY = (drawExtent.maxY - projY) * scaleY;
-        if (this.isLogY()){
+        if (this.isLogY()) {
             screenY = (Math.log10(drawExtent.maxY) - Math.log10(projY)) * scaleY;
-        } 
-        if (this.isLogX()){
+        }
+        if (this.isLogX()) {
             screenX = (Math.log10(projX) - Math.log10(drawExtent.minX)) * scaleX;
-        }        
+        }
 
         return new double[]{screenX, screenY};
     }
@@ -1190,40 +1255,41 @@ public abstract class XYPlot extends Plot {
     public double[] screenToProj(double screenX, double screenY, Rectangle2D area) {
         double width = drawExtent.getWidth();
         double height = drawExtent.getHeight();
-        if (this.isLogY()){
+        if (this.isLogY()) {
             height = Math.log10(drawExtent.maxY) - Math.log10(drawExtent.minY);
         }
-        if (this.isLogX()){
+        if (this.isLogX()) {
             width = Math.log10(drawExtent.maxX) - Math.log10(drawExtent.minX);
         }
         double scaleX = area.getWidth() / width;
         double scaleY = area.getHeight() / height;
         double projX = screenX / scaleX + drawExtent.minX;
-        double projY = drawExtent.maxY - screenY / scaleY;        
-        if (this.isLogY()){
+        double projY = drawExtent.maxY - screenY / scaleY;
+        if (this.isLogY()) {
             projY = Math.pow(10, Math.log10(drawExtent.maxY) - screenY / scaleY);
-        } 
-        if (this.isLogX()){
+        }
+        if (this.isLogX()) {
             projX = Math.pow(10, screenX / scaleX + Math.log10(drawExtent.minX));
-        } 
+        }
 
         return new double[]{projX, projY};
     }
 
     abstract Extent getAutoExtent();
-    
+
     public abstract void setAutoExtent();
 
     public abstract void updateLegendScheme();
-    
+
     /**
      * Zoom to screen extent
+     *
      * @param minX Minimum x
      * @param maxX Maximum x
      * @param minY Minimum y
      * @param maxY Maximum y
      */
-    public void zoomToExtentScreen(double minX, double maxX, double minY, double maxY){
+    public void zoomToExtentScreen(double minX, double maxX, double minY, double maxY) {
         double[] pMin = screenToProj(minX, maxY, this.getGraphArea());
         double[] pMax = screenToProj(maxX, minY, this.getGraphArea());
         this.setDrawExtent(new Extent(pMin[0], pMax[0], pMin[1], pMax[1]));

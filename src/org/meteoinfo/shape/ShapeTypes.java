@@ -41,7 +41,8 @@ public enum ShapeTypes {
     Ellipse(54),
     Circle(55),
     Bar(56),
-    PolylineError(57);
+    PolylineError(57),
+    ARC(58);
     private final int value;
 
     /**

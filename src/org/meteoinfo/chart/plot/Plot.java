@@ -62,7 +62,7 @@ public abstract class Plot {
     public int rowIndex = 0;
     
     private boolean autoPosition = false;
-    private boolean sameShrink = false;
+    private boolean sameShrink = false;    
     
     /**
      * Get if automaticly set position
@@ -94,7 +94,7 @@ public abstract class Plot {
      */
     public void setSameShrink(boolean value){
         this.sameShrink = value;
-    }
+    }    
     
     private Rectangle2D position = new Rectangle2D.Double(0.13, 0.11, 0.775, 0.815);
     

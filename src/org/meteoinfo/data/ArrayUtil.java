@@ -887,8 +887,58 @@ public class ArrayUtil {
 
             return r;
         }
+    }    
+    // </editor-fold>
+    // <editor-fold desc="Statistics">
+    /**
+     * Histogram x/y array
+     * @param a Data array
+     * @param nbins bin number
+     * @return X/Y arrays
+     */
+    public static List<Array> histogram(Array a, int nbins){
+        double min = ArrayMath.getMinimum(a);
+        double max = ArrayMath.getMaximum(a);
+        double[] bins = MIMath.getIntervalValues(min, max, nbins);
+        int n = bins.length;
+        double delta = bins[1] - bins[0];
+        int[] count = new int[n + 1];
+        double v;
+        for (int i = 0; i < a.getSize(); i++){
+            v = a.getDouble(i);
+            if (v < bins[0])
+                count[0] += 1;
+            else if (v > bins[n - 1])
+                count[n] += 1;
+            else {
+                for (int j = 0; j < n - 1; j++){
+                    if (v > bins[j] && v < bins[j + 1]){
+                        count[j + 1] += 1;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        Array x = Array.factory(DataType.DOUBLE, new int[]{count.length + 1});
+        Array y = Array.factory(DataType.INT, new int[]{count.length});
+        for (int i = 0; i < count.length; i++){
+            y.setInt(i, count[i]);
+            if (i == 0){
+                x.setDouble(0, bins[0] - delta);
+                x.setDouble(1, bins[0]);
+            } else if (i == count.length - 1) {
+                x.setDouble(i + 1, bins[i - 1] + delta);
+            } else {
+                x.setDouble(i + 1, bins[i]);
+            }
+        }
+        List<Array> r = new ArrayList<>();
+        r.add(x);
+        r.add(y);
+        
+        return r;
     }
-
     // </editor-fold>
     // <editor-fold desc="Resample/Interpolate">
     /**

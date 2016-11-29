@@ -3093,7 +3093,14 @@ public class Draw {
         }
     }
 
-    private static PointF getPieLabelPoint(PointF sPoint, float r, float angle) {
+    /**
+     * Get pie wedge label point
+     * @param sPoint Center point
+     * @param r Radius
+     * @param angle Angle
+     * @return Label point
+     */
+    public static PointF getPieLabelPoint(PointF sPoint, float r, float angle) {
         float x = (float) (sPoint.X + r * Math.cos(angle * Math.PI / 180));
         float y = (float) (sPoint.Y - r * Math.sin(angle * Math.PI / 180));
         return new PointF(x, y);

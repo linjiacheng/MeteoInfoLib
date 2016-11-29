@@ -5,8 +5,11 @@
  */
 package org.meteoinfo.data.analysis;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import ucar.ma2.Array;
+import ucar.ma2.IndexIterator;
 
 /**
  *
@@ -31,7 +34,7 @@ public class Statistics {
 
         return count;
     }
-    
+
     /**
      * Sum funtion
      *
@@ -153,6 +156,22 @@ public class Statistics {
         }
 
         return aData;
+    }
+
+    /**
+     * Quantile function
+     *
+     * @param a The data array
+     * @param aNum Quantile index
+     * @return Quantile value
+     */
+    public static double quantile(Array a, int aNum) {
+        List<Double> dlist = new ArrayList<>();
+        IndexIterator ii = a.getIndexIterator();
+        while (ii.hasNext()) {
+            dlist.add(ii.getDoubleNext());
+        }
+        return quantile(dlist, aNum);
     }
 
     /**

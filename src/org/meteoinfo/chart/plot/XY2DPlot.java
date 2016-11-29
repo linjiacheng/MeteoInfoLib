@@ -46,6 +46,7 @@ import org.meteoinfo.legend.LegendScheme;
 import org.meteoinfo.legend.PointBreak;
 import org.meteoinfo.legend.PolygonBreak;
 import org.meteoinfo.legend.PolylineBreak;
+import org.meteoinfo.shape.ArcShape;
 import org.meteoinfo.shape.BarShape;
 import org.meteoinfo.shape.Graphic;
 import org.meteoinfo.shape.GraphicCollection;
@@ -68,7 +69,7 @@ import org.meteoinfo.shape.WindBarb;
 public class XY2DPlot extends XYPlot {
 
     // <editor-fold desc="Variables">
-    private GraphicCollection graphics;    
+    private GraphicCollection graphics;
 
     // </editor-fold>
     // <editor-fold desc="Constructor">
@@ -96,7 +97,7 @@ public class XY2DPlot extends XYPlot {
     public void setGraphics(GraphicCollection value) {
         this.graphics = value;
     }
-        
+
     // </editor-fold>
     // <editor-fold desc="Methods">
     /**
@@ -107,36 +108,39 @@ public class XY2DPlot extends XYPlot {
     public void addGraphic(Graphic g) {
         this.graphics.add(g);
     }
-    
+
     /**
      * Add a graphic by index
+     *
      * @param idx Index
      * @param g Graphic
      */
-    public void addGraphic(int idx, Graphic g){
+    public void addGraphic(int idx, Graphic g) {
         this.graphics.add(idx, g);
     }
-    
+
     /**
      * Remove a graphic
+     *
      * @param g Graphic
      */
-    public void removeGraphic(Graphic g){
+    public void removeGraphic(Graphic g) {
         this.graphics.remove(g);
     }
-    
+
     /**
      * Remove a graphic by index
+     *
      * @param idx Index
      */
-    public void removeGraphic(int idx){
+    public void removeGraphic(int idx) {
         this.graphics.remove(idx);
     }
-    
+
     /**
      * Remove last graphic
      */
-    public void removeLastGraphic(){
+    public void removeLastGraphic() {
         this.graphics.remove(this.graphics.size() - 1);
     }
 
@@ -202,6 +206,9 @@ public class XY2DPlot extends XYPlot {
                         for (Polygon poly : ((PolygonShape) shape).getPolygons()) {
                             drawPolygon(g, poly, (PolygonBreak) cb, false, area);
                         }
+                        break;
+                    case ARC:
+                        this.drawArc(g, (ArcShape) shape, (PolygonBreak) cb, area, 5);
                         break;
                     case WindBarb:
                         this.drawWindBarb(g, (WindBarb) shape, (PointBreak) cb, area);
@@ -594,6 +601,70 @@ public class XY2DPlot extends XYPlot {
         return rPoints;
     }
 
+    private void drawArc(Graphics2D g, ArcShape aShape, PolygonBreak aPGB,
+            Rectangle2D area, float dis) {
+        float startAngle = aShape.getStartAngle();
+        float sweepAngle = aShape.getSweepAngle();
+        float angle = startAngle + sweepAngle / 2;
+        double ex = 10;
+        Rectangle2D rect = new Rectangle2D.Double(area.getX(), area.getY(), area.getWidth() - ex, 
+            area.getHeight() - ex);
+        double dx = 0, dy = 0;
+        if (aShape.getExplode() > 0){
+            dx = ex * Math.cos(angle * Math.PI / 180);
+            dy = ex * Math.sin(angle * Math.PI / 180);
+            rect.setRect(rect.getX() + dx, rect.getY() + dy, rect.getWidth(), rect.getHeight());
+        }
+        Draw.drawPie(new PointF((float)dx, (float)dy),
+                (float) rect.getWidth(), (float) rect.getHeight(), startAngle, sweepAngle, aPGB, g);
+        
+        //Draw label
+        Rectangle clip = g.getClipBounds();
+        if (clip != null) {
+            g.setClip(null);
+        }
+        
+        float x, y, w, h;
+        PointF sPoint = new PointF((float) (rect.getWidth() * 0.5 + dx), (float) (rect.getHeight() * 0.5 + dy));
+        String label = aPGB.getCaption();        
+        if (angle > 360)
+            angle = angle - 360;
+        float r = sPoint.X + dis;
+        PointF lPoint = Draw.getPieLabelPoint(sPoint, r, angle);
+        x = lPoint.X;
+        y = lPoint.Y;
+        Dimension dim = Draw.getStringDimension(label, g);
+        h = dim.height;
+        w = dim.width;
+        if ((angle >= 0 && angle < 45)) {
+            //x = x + dis;
+            y = y - h;
+        } else if (angle >= 45 && angle < 90) {
+            //y = y - dis;
+        } else if (angle >= 90 && angle < 135) {
+            x = x - w;
+            //y = y - dis;
+        } else if (angle >= 135 && angle < 225) {
+            x = x - w - 3;
+            y = y + h / 2;
+        } else if (angle >= 225 && angle < 270) {
+            x = x - w / 2;
+            y = y + h;
+        } else if (angle >= 270 && angle < 315) {
+            //x = x + dis;
+            y = y + h;
+        } else {
+            //x = x + dis;
+            y = y + h / 2;
+        }
+        //g.drawOval((int)(x - 3), (int)(y - 3), 6, 6);
+        g.drawString(label, x, y);
+        
+        if (clip != null) {
+            g.setClip(clip);
+        }
+    }
+
     private void drawBar(Graphics2D g, BarShape bar, BarBreak bb, float width, Rectangle2D area) {
         double[] xy;
         xy = this.projToScreen(0, 0, area);
@@ -780,7 +851,7 @@ public class XY2DPlot extends XYPlot {
             xValues = (double[]) MIMath.getIntervalValues(extent.minX, extent.maxX, true).get(0);
         }
         double[] yValues;
-        if (this.getYAxis() instanceof LogAxis){
+        if (this.getYAxis() instanceof LogAxis) {
             yValues = (double[]) MIMath.getIntervalValues_Log(extent.minY, extent.maxY);
         } else {
             yValues = (double[]) MIMath.getIntervalValues(extent.minY, extent.maxY, true).get(0);

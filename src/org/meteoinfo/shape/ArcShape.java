@@ -17,10 +17,13 @@ import java.util.ArrayList;
 
 /**
  *
- * @author yaqiang
+ * @author Yaqiang Wang
  */
-public class RectangleShape extends PolygonShape {
+public class ArcShape extends PolygonShape {
     // <editor-fold desc="Variables">
+    private float startAngle;
+    private float sweepAngle;
+    private float explode = 0;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -28,7 +31,55 @@ public class RectangleShape extends PolygonShape {
     // <editor-fold desc="Get Set Methods">
     @Override
     public ShapeTypes getShapeType(){
-        return ShapeTypes.Rectangle;
+        return ShapeTypes.ARC;
+    }
+    
+    /**
+     * Get start angle
+     * @return Start angle
+     */
+    public float getStartAngle(){
+        return this.startAngle;
+    }
+    
+    /**
+     * Set start angle
+     * @param value 
+     */
+    public void setStartAngle(float value){
+        this.startAngle = value;
+    }
+    
+    /**
+     * Get sweep angle
+     * @return Sweep angle
+     */
+    public float getSweepAngle(){
+        return this.sweepAngle;
+    }
+    
+    /**
+     * Set sweep angle
+     * @param value Sweep angle
+     */
+    public void setSweepAngle(float value){
+        this.sweepAngle = value;
+    }
+    
+    /**
+     * Get explode
+     * @return Explode
+     */
+    public float getExplode(){
+        return this.explode;
+    }
+    
+    /**
+     * Set explode
+     * @param value Explode 
+     */
+    public void setExplode(float value){
+        this.explode = value;
     }
     // </editor-fold>
     // <editor-fold desc="Methods">
@@ -40,7 +91,7 @@ public class RectangleShape extends PolygonShape {
      */
     @Override
     public Object clone() {
-        RectangleShape aPGS = new RectangleShape();
+        ArcShape aPGS = new ArcShape();
         aPGS.setExtent(this.getExtent());
         aPGS.setPoints(new ArrayList<>(this.getPoints()));
         aPGS.setVisible(this.isVisible());

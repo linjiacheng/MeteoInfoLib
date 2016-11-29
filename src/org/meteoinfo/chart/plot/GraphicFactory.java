@@ -6,17 +6,22 @@
 package org.meteoinfo.chart.plot;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.image.BufferedImage;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.meteoinfo.data.ArrayMath;
+import org.meteoinfo.data.ArrayUtil;
 import org.meteoinfo.data.GridArray;
 import org.meteoinfo.data.GridData;
 import org.meteoinfo.data.XYListDataset;
+import org.meteoinfo.data.analysis.Statistics;
 import org.meteoinfo.drawing.ContourDraw;
 import org.meteoinfo.drawing.Draw;
+import org.meteoinfo.drawing.PointStyle;
 import org.meteoinfo.geoprocess.GeoComputation;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
@@ -25,9 +30,11 @@ import org.meteoinfo.legend.ColorBreak;
 import org.meteoinfo.legend.LegendManage;
 import org.meteoinfo.legend.LegendScheme;
 import org.meteoinfo.legend.LegendType;
+import org.meteoinfo.legend.LineStyles;
 import org.meteoinfo.legend.PointBreak;
 import org.meteoinfo.legend.PolygonBreak;
 import org.meteoinfo.legend.PolylineBreak;
+import org.meteoinfo.shape.ArcShape;
 import org.meteoinfo.shape.BarShape;
 import org.meteoinfo.shape.Graphic;
 import org.meteoinfo.shape.GraphicCollection;
@@ -271,6 +278,46 @@ public class GraphicFactory {
             if (drawBottom) {
                 bs.setBottom(bottom.getDouble(i));
             }
+            if (bbs.size() > i) {
+                bb = bbs.get(i);
+            }
+            graphics.add(new Graphic(bs, bb));
+        }
+        if (bbs.size() == 1) {
+            graphics.setSingleLegend(true);
+        } else {
+            graphics.setSingleLegend(false);
+        }
+
+        return graphics;
+    }
+
+    /**
+     * Create histogram bar graphics
+     *
+     * @param data The data array
+     * @param nbin Bin number
+     * @param bbs Bar breaks
+     * @return Bar graphics
+     */
+    public static GraphicCollection createHistBars(Array data, int nbin,
+            List<BarBreak> bbs) {
+        List<Array> r = ArrayUtil.histogram(data, nbin);
+        Array xdata = r.get(0);
+        Array ydata = r.get(1);
+        GraphicCollection graphics = new GraphicCollection();
+        int n = (int) ydata.getSize();
+        double x, y, width;
+        BarBreak bb = bbs.get(0);
+        for (int i = 0; i < n; i++) {
+            x = (xdata.getDouble(i + 1) + xdata.getDouble(i)) * 0.5;
+            width = xdata.getDouble(i + 1) - xdata.getDouble(i);
+            y = ydata.getDouble(i);
+            BarShape bs = new BarShape();
+            bs.setPoint(new PointD(x, y));
+            bs.setAutoWidth(false);
+            bs.setWidth(width);
+            bs.setDrawBottom(false);
             if (bbs.size() > i) {
                 bb = bbs.get(i);
             }
@@ -821,6 +868,193 @@ public class GraphicFactory {
         if (cdata != null) {
             gc.setSingleLegend(false);
         }
+
+        return gc;
+    }
+
+    /**
+     * Create pie arc polygons
+     *
+     * @param xdata X data array
+     * @param colors Colors
+     * @param labels Labels
+     * @param startAngle Start angle
+     * @param explode Explode
+     * @param labelFont Label font
+     * @param labelColor Label color
+     * @param autopct
+     * @return GraphicCollection
+     */
+    public static GraphicCollection createPieArcs(Array xdata, List<Color> colors,
+            List<String> labels, float startAngle, List<Number> explode, Font labelFont,
+            Color labelColor, String autopct) {
+        GraphicCollection gc = new GraphicCollection();
+        double sum = ArrayMath.sumDouble(xdata);
+        double v;
+        int n = (int) xdata.getSize();
+        float sweepAngle;
+        NumberFormat nf = NumberFormat.getPercentInstance();
+        // nf.setMinimumFractionDigits(2);
+        for (int i = 0; i < n; i++) {
+            v = xdata.getDouble(i);
+            if (sum > 1) {
+                v = v / sum;
+            }
+            sweepAngle = (float) (360.0 * v);
+            ArcShape aShape = new ArcShape();
+            aShape.setStartAngle(startAngle);
+            aShape.setSweepAngle(sweepAngle);
+            List<PointD> points = new ArrayList<>();
+            points.add(new PointD(0, 0));
+            points.add(new PointD(0, 1));
+            points.add(new PointD(1, 1));
+            points.add(new PointD(1, 0));
+            points.add(new PointD(0, 0));
+            aShape.setPoints(points);
+            if (explode != null) {
+                aShape.setExplode(explode.get(i).floatValue());
+            }
+            PolygonBreak pgb = new PolygonBreak();
+            pgb.setColor(colors.get(i));
+            if (labels == null) {
+                if (autopct == null) {
+                    pgb.setCaption(nf.format(v));
+                } else {
+                    pgb.setCaption(String.format(autopct, v * 100));
+                }
+            } else {
+                pgb.setCaption(labels.get(i));
+            }
+            Graphic graphic = new Graphic(aShape, pgb);
+            gc.add(graphic);
+            startAngle += sweepAngle;
+        }
+        gc.setSingleLegend(false);
+        gc.getLabelSet().setLabelFont(labelFont);
+        gc.getLabelSet().setLabelColor(labelColor);
+
+        return gc;
+    }
+
+    /**
+     * Create box graphics
+     *
+     * @param xdata X data array list
+     * @param showmeans Show means or not
+     * @return GraphicCollection
+     */
+    public static GraphicCollection createBox(List<Array> xdata, boolean showmeans) {
+        GraphicCollection gc = new GraphicCollection();
+        int n = xdata.size();
+        double v, width = 0.3;
+        for (int i = 0; i < n; i++) {
+            Array a = xdata.get(i);
+            v = i + 1;
+            double q1 = Statistics.quantile(a, 1);
+            double q3 = Statistics.quantile(a, 3);
+            double median = Statistics.quantile(a, 2);
+            double mind = ArrayMath.getMinimum(a);
+            double maxd = ArrayMath.getMaximum(a);
+            double mino = q1 - (q3 - q1) * 1.5;
+            double maxo = q3 + (q3 - q1) * 1.5;
+            //GraphicCollection gc1 = new GraphicCollection();
+            List<PointD> pList = new ArrayList<>();
+            pList.add(new PointD(v - width * 0.5, q1));
+            pList.add(new PointD(v - width * 0.5, q3));
+            pList.add(new PointD(v + width * 0.5, q3));
+            pList.add(new PointD(v + width * 0.5, q1));
+            pList.add(new PointD(v - width * 0.5, q1));
+            PolygonShape pgs = new PolygonShape();
+            pgs.setPoints(pList);
+            PolygonBreak pgb = new PolygonBreak();
+            pgb.setDrawFill(false);
+            pgb.setOutlineColor(Color.blue);
+            //gc1.add(new Graphic(pgs, pgb));
+            gc.add(new Graphic(pgs, pgb));
+
+            pList = new ArrayList<>();
+            pList.add(new PointD(v - width * 0.5, median));
+            pList.add(new PointD(v + width * 0.5, median));
+            PolylineShape pls = new PolylineShape();
+            pls.setPoints(pList);
+            PolylineBreak plb = new PolylineBreak();
+            plb.setColor(Color.red);
+            gc.add(new Graphic(pls, plb));
+
+            double min = Math.max(mino, mind);
+            pList = new ArrayList<>();
+            pList.add(new PointD(v, q1));
+            pList.add(new PointD(v, min));
+            pls = new PolylineShape();
+            pls.setPoints(pList);
+            plb = new PolylineBreak();
+            plb.setColor(Color.black);
+            plb.setStyle(LineStyles.Dash);
+            gc.add(new Graphic(pls, plb));
+            pList = new ArrayList<>();
+            pList.add(new PointD(v - width * 0.25, min));
+            pList.add(new PointD(v + width * 0.25, min));
+            pls = new PolylineShape();
+            pls.setPoints(pList);
+            plb = new PolylineBreak();
+            plb.setColor(Color.black);
+            plb.setStyle(LineStyles.Solid);
+            gc.add(new Graphic(pls, plb));
+            if (mino > mind) {
+                for (int j = 0; j < a.getSize(); j++) {
+                    if (a.getDouble(j) < mino) {
+                        PointShape ps = new PointShape();
+                        ps.setPoint(new PointD(v, a.getDouble(j)));
+                        PointBreak pb = new PointBreak();
+                        pb.setStyle(PointStyle.Plus);
+                        gc.add(new Graphic(ps, pb));
+                    }
+                }
+            }
+
+            double max = Math.min(maxo, maxd);
+            pList = new ArrayList<>();
+            pList.add(new PointD(v, q3));
+            pList.add(new PointD(v, max));
+            pls = new PolylineShape();
+            pls.setPoints(pList);
+            plb = new PolylineBreak();
+            plb.setColor(Color.black);
+            plb.setStyle(LineStyles.Dash);
+            gc.add(new Graphic(pls, plb));
+            pList = new ArrayList<>();
+            pList.add(new PointD(v - width * 0.25, max));
+            pList.add(new PointD(v + width * 0.25, max));
+            pls = new PolylineShape();
+            pls.setPoints(pList);
+            plb = new PolylineBreak();
+            plb.setColor(Color.black);
+            plb.setStyle(LineStyles.Solid);
+            gc.add(new Graphic(pls, plb));
+            if (maxo < maxd) {
+                for (int j = 0; j < a.getSize(); j++) {
+                    if (a.getDouble(j) > maxo) {
+                        PointShape ps = new PointShape();
+                        ps.setPoint(new PointD(v, a.getDouble(j)));
+                        PointBreak pb = new PointBreak();
+                        pb.setStyle(PointStyle.Plus);
+                        gc.add(new Graphic(ps, pb));
+                    }
+                }
+            }
+
+            if (showmeans) {
+                double mean = ArrayMath.mean(a);
+                PointShape ps = new PointShape();
+                ps.setPoint(new PointD(v, mean));
+                PointBreak pb = new PointBreak();
+                pb.setStyle(PointStyle.Square);
+                pb.setColor(Color.red);
+                pb.setOutlineColor(Color.black);
+                gc.add(new Graphic(ps, pb));
+            }
+        }
+        gc.setSingleLegend(false);
 
         return gc;
     }
