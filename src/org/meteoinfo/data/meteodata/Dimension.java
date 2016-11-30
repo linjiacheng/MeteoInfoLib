@@ -405,14 +405,28 @@ public class Dimension extends ucar.nc2.Dimension {
         if (getDeltaValue() > 0) {
             for (int i = 0; i < this.getLength(); i++) {
                 if (v <= this._dimValue.get(i)) {
-                    idx = i;
+                    if (i == 0)
+                        idx = 0;
+                    else {
+                        if (this._dimValue.get(i) - v > v - this._dimValue.get(i - 1))
+                            idx = i - 1;
+                        else
+                            idx = i;
+                    }
                     break;
                 }
             }
         } else {
             for (int i = 0; i < this.getLength(); i++) {
                 if (v >= this._dimValue.get(i)) {
-                    idx = i;
+                    if (i == 0)
+                        idx = 0;
+                    else {
+                        if (this._dimValue.get(i - 1) - v > v - this._dimValue.get(i))
+                            idx = i;
+                        else
+                            idx = i - 1;
+                    }
                     break;
                 }
             }
