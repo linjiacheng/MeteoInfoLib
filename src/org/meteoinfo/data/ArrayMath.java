@@ -2141,7 +2141,7 @@ public class ArrayMath {
         double ws, wd, U, V;
         for (int i = 0; i < windSpeed.getSize(); i++) {
             U = u.getDouble(i);
-            V = u.getDouble(i);
+            V = v.getDouble(i);
             if (Double.isNaN(U) || Double.isNaN(V)) {
                 windDir.setDouble(i, Double.NaN);
                 continue;
