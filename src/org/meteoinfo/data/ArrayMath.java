@@ -2107,23 +2107,31 @@ public class ArrayMath {
      * @param a Array a
      * @return Result number list
      */
-    public static List<Number> asList(Array a) {
+    public static List<Object> asList(Array a) {
         IndexIterator iterA = a.getIndexIterator();
-        List<Number> r = new ArrayList<>();
+        List<Object> r = new ArrayList<>();
         switch (a.getDataType()) {
             case SHORT:
             case INT:
                 while (iterA.hasNext()) {
                     r.add(iterA.getIntNext());
                 }
+                break;
             case FLOAT:
                 while (iterA.hasNext()) {
                     r.add(iterA.getFloatNext());
                 }
+                break;
             case DOUBLE:
                 while (iterA.hasNext()) {
                     r.add(iterA.getDoubleNext());
                 }
+                break;
+            case OBJECT:
+                while (iterA.hasNext()) {
+                    r.add(iterA.getObjectNext());
+                }
+                break;
         }
         return r;
     }
