@@ -674,10 +674,14 @@ public class LayoutLegend extends LayoutElement {
 
         boolean order = true;
         if (aLS.getBreakNum() > 1){
-            double v1 = Double.parseDouble(aLS.getLegendBreaks().get(0).getEndValue().toString());
-            double v2 = Double.parseDouble(aLS.getLegendBreaks().get(1).getEndValue().toString());
-            if (v2 < v1){
-                order = false;
+            try {
+                double v1 = Double.parseDouble(aLS.getLegendBreaks().get(0).getEndValue().toString());
+                double v2 = Double.parseDouble(aLS.getLegendBreaks().get(1).getEndValue().toString());
+                if (v2 < v1){
+                    order = false;
+                }
+            } catch (Exception e){
+                
             }
         }
         
@@ -876,10 +880,14 @@ public class LayoutLegend extends LayoutElement {
 
         boolean order = true;
         if (aLS.getBreakNum() > 1){
-            double v1 = Double.parseDouble(aLS.getLegendBreaks().get(0).getEndValue().toString());
-            double v2 = Double.parseDouble(aLS.getLegendBreaks().get(1).getEndValue().toString());
-            if (v2 < v1){
-                order = false;
+            try {
+                double v1 = Double.parseDouble(aLS.getLegendBreaks().get(0).getEndValue().toString());
+                double v2 = Double.parseDouble(aLS.getLegendBreaks().get(1).getEndValue().toString());
+                if (v2 < v1){
+                    order = false;
+                }
+            } catch (Exception e){
+                
             }
         }
         int idx;
