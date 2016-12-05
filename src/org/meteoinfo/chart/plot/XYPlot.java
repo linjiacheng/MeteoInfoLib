@@ -555,6 +555,22 @@ public abstract class XYPlot extends Plot {
     public void setAspect(double value) {
         this.aspect = value;
     }
+    
+    /**
+     * Get if y axis is reverse or not
+     * @return Boolean
+     */
+    public boolean isYReverse(){
+        return this.getYAxis().isInverse();
+    }
+    
+     /**
+     * Get if x axis is reverse or not
+     * @return Boolean
+     */
+    public boolean isXReverse(){
+        return this.getXAxis().isInverse();
+    }
 
     // </editor-fold>
     // <editor-fold desc="Method">
@@ -1216,6 +1232,12 @@ public abstract class XYPlot extends Plot {
         if (this.isLogX()) {
             screenX = (Math.log10(projX) - Math.log10(drawExtent.minX)) * scaleX;
         }
+        if (this.isYReverse()){
+            screenY = area.getHeight() - screenY;
+        }
+        if (this.isXReverse()){
+            screenX = area.getWidth() - screenX;
+        }
 
         return new double[]{screenX, screenY};
     }
@@ -1260,6 +1282,12 @@ public abstract class XYPlot extends Plot {
         }
         if (this.isLogX()) {
             width = Math.log10(drawExtent.maxX) - Math.log10(drawExtent.minX);
+        }
+        if (this.isYReverse()){
+            screenY = area.getHeight() - screenY;
+        }
+        if (this.isXReverse()){
+            screenX = area.getWidth() - screenX;
         }
         double scaleX = area.getWidth() / width;
         double scaleY = area.getHeight() / height;

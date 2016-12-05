@@ -1199,9 +1199,9 @@ public class Axis implements Cloneable {
             double value = this.getTickValues()[n];
             xy = plot.projToScreen(value, plot.getDrawExtent().minY, area);
             x = xy[0];
-            if (this.inverse) {
-                x = area.getWidth() - x;
-            }
+//            if (this.inverse) {
+//                x = area.getWidth() - x;
+//            }
             x += minx;
             if (this.location == Location.BOTTOM) {
                 if (this.insideTick) {
@@ -1253,9 +1253,9 @@ public class Axis implements Cloneable {
                             }
                             xy = plot.projToScreen(value1, plot.getDrawExtent().minY, area);
                             x = xy[0];
-                            if (this.inverse) {
-                                x = area.getWidth() - x;
-                            }
+//                            if (this.inverse) {
+//                                x = area.getWidth() - x;
+//                            }
                             x += minx;
                             xx.add(x);
                         }
@@ -1270,9 +1270,9 @@ public class Axis implements Cloneable {
                     }
                     xy = plot.projToScreen(value, plot.getDrawExtent().minY, area);
                     x = xy[0];
-                    if (this.inverse) {
-                        x = area.getWidth() - x;
-                    }
+//                    if (this.inverse) {
+//                        x = area.getWidth() - x;
+//                    }
                     x += minx;
                     xx.add(x);
                 }
@@ -1387,9 +1387,9 @@ public class Axis implements Cloneable {
             double value = this.getTickValues()[n];
             xy = plot.projToScreen(value, plot.getDrawExtent().minY, area);
             x = xy[0];
-            if (this.inverse) {
-                x = area.getWidth() - x;
-            }
+//            if (this.inverse) {
+//                x = area.getWidth() - x;
+//            }
             x += minx;
             if (this.location == Location.BOTTOM) {
                 if (this.insideTick) {
@@ -1502,9 +1502,9 @@ public class Axis implements Cloneable {
             double value = this.getTickValues()[n];
             xy = plot.projToScreen(plot.getDrawExtent().minX, value, area);
             y = xy[1];
-            if (this.isInverse()) {
-                y = area.getHeight() - y;
-            }
+//            if (this.isInverse()) {
+//                y = area.getHeight() - y;
+//            }
             y += area.getY();
             if (this.location == Location.LEFT) {
                 if (this.isInsideTick()) {
@@ -1564,9 +1564,9 @@ public class Axis implements Cloneable {
                             }
                             xy = plot.projToScreen(plot.getDrawExtent().minX, value1, area);
                             y = xy[1];
-                            if (this.inverse) {
-                                y = area.getHeight() - y;
-                            }
+//                            if (this.inverse) {
+//                                y = area.getHeight() - y;
+//                            }
                             y += miny;
                             yy.add(y);
                         }
@@ -1581,9 +1581,9 @@ public class Axis implements Cloneable {
                     }
                     xy = plot.projToScreen(plot.getDrawExtent().minX, value, area);
                     y = xy[1];
-                    if (this.inverse) {
-                        y = area.getHeight() - y;
-                    }
+//                    if (this.inverse) {
+//                        y = area.getHeight() - y;
+//                    }
                     y += miny;
                     yy.add(y);
                 }
