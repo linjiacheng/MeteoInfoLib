@@ -798,6 +798,24 @@ public class Variable extends ucar.nc2.Variable{
     }
     
     /**
+     * If the variable has a null dimension
+     * @return Boolean
+     */
+    public boolean hasNullDimension(){
+        for (int i = 0; i < this.getDimNumber(); i++) {
+            Dimension aDim = (Dimension)this.getDimension(i);
+            if (aDim == null)
+                return true;
+            if (aDim.getShortName() == null)
+                return true;
+            if (aDim.getShortName().equals("null")) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
      * If the dimensions equales with another variable
      * @param var Another variable
      * @return Boolean

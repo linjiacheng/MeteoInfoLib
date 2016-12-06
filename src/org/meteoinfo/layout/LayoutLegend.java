@@ -707,6 +707,7 @@ public class LayoutLegend extends LayoutElement {
                     }
                     break;
                 case Polyline:
+                case PolylineZ:
                     PolylineBreak aPLB = (PolylineBreak) aLS.getLegendBreaks().get(idx);
                     DrawShape = aPLB.getDrawPolyline();
                     FillColor = aPLB.getColor();
@@ -904,6 +905,7 @@ public class LayoutLegend extends LayoutElement {
                     FillColor = aPB.getColor();
                     break;
                 case Polyline:
+                case PolylineZ:
                     PolylineBreak aPLB = (PolylineBreak) aLS.getLegendBreaks().get(idx);
                     DrawShape = aPLB.getDrawPolyline();
                     FillColor = aPLB.getColor();
@@ -1101,6 +1103,7 @@ public class LayoutLegend extends LayoutElement {
                     }
                     break;
                 case Polyline:
+                case PolylineZ:
                     PolylineBreak aPLB = (PolylineBreak) aLS.getLegendBreaks().get(i);
                     DrawShape = aPLB.getDrawPolyline();
                     FillColor = aPLB.getColor();
@@ -1273,6 +1276,7 @@ public class LayoutLegend extends LayoutElement {
                     FillColor = aPB.getColor();
                     break;
                 case Polyline:
+                case PolylineZ:
                     PolylineBreak aPLB = (PolylineBreak) aLS.getLegendBreaks().get(i);
                     DrawShape = aPLB.getDrawPolyline();
                     FillColor = aPLB.getColor();

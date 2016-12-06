@@ -556,7 +556,7 @@ public class ChartBreak extends ColorBreak {
         aCB.setCaption(this.getCaption());
         aCB.setAlignType(_alignType);
         aCB.setBarWidth(_barWidth);
-        aCB.setChartData(new ArrayList<Float>(_chartData));
+        aCB.setChartData(new ArrayList<>(_chartData));
         aCB.setColor(this.getColor());
         aCB.setDrawShape(this.isDrawShape());
         aCB.setLegendScheme(_legendScheme);
