@@ -22,7 +22,9 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -43,6 +45,8 @@ import java.io.PrintStream;
 import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.Icon;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -120,6 +124,11 @@ public class JConsole extends JScrollPane
 
     // hack to prevent key repeat for some reason?
     private boolean gotUp = true;
+    
+    private Popup popup;
+    private int dotWidth;
+    private int textHeight;
+    private final Pattern FROM_PACKAGE_IMPORT = Pattern.compile("from\\s+(\\w+(?:\\.\\w+)*)\\.?(?:\\s*import\\s*)?");
 
     public JConsole() {
         this(null, null);
@@ -161,9 +170,15 @@ public class JConsole extends JScrollPane
         menu.add(new JMenuItem(PASTE)).addActionListener(this);
 
         text.addMouseListener(this);
+        text.getCaret().setMagicCaretPosition(new Point(0,0));
 
         // make sure popup menu follows Look & Feel
         UIManager.addPropertyChangeListener(this);
+        
+        popup = new Popup(null, this.text);
+        FontMetrics metrics = this.text.getFontMetrics(this.text.getFont());
+        this.dotWidth = metrics.stringWidth(".");
+        this.textHeight = metrics.getHeight();
 
         outPipe = cout;
         if (outPipe == null) {
@@ -215,6 +230,12 @@ public class JConsole extends JScrollPane
     }
 
     private synchronized void type(KeyEvent e) {
+        if (this.popup.isVisible()){
+            if (e.getID() == KeyEvent.KEY_PRESSED)
+                this.popup.type(e);
+            return;
+        }
+            
         switch (e.getKeyCode()) {
             case (KeyEvent.VK_ENTER):
                 if (e.getID() == KeyEvent.KEY_PRESSED) {
@@ -314,7 +335,23 @@ public class JConsole extends JScrollPane
                 }
                 e.consume();
                 break;
-
+            case (KeyEvent.VK_PERIOD):
+                if (e.getID() == KeyEvent.KEY_RELEASED) {
+                    //String part = text.getText().substring(cmdStart);
+                    //doCommandCompletion(part);
+                    this.showPopup();
+                }
+                e.consume();
+                break;
+            case (KeyEvent.VK_SPACE):
+                if (e.getID() == KeyEvent.KEY_RELEASED) {
+                    String command = this.getCurrentText();
+                    Matcher match = FROM_PACKAGE_IMPORT.matcher(command);
+                    if (match.matches())
+                        this.showPopup();
+                }
+                e.consume();
+                break;
             default:
                 if ((e.getModifiers()
                         & (InputEvent.CTRL_MASK
@@ -339,6 +376,71 @@ public class JConsole extends JScrollPane
     }
 
     private void doCommandCompletion(String part) {
+        if (nameCompletion == null) {
+            return;
+        }
+
+        int i = part.length() - 1;
+
+        // Character.isJavaIdentifierPart()  How convenient for us!! 
+//        while (i >= 0
+//                && (Character.isJavaIdentifierPart(part.charAt(i))
+//                || part.charAt(i) == '.')) {
+//            i--;
+//        }
+//
+//        part = part.substring(i + 1);
+        int idx = part.lastIndexOf(">");
+        if (idx >= 0)
+            part = part.substring(part.lastIndexOf(">") + 2);
+
+        if (part.length() < 2) // reasonable completion length
+        {
+            return;
+        }
+
+                //System.out.println("completing part: "+part);
+        // no completion
+        String[] complete = nameCompletion.completeName(part);
+        if (complete == null){
+            java.awt.Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+        
+        if (complete.length == 0) {
+            java.awt.Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+
+        // Found one completion (possibly what we already have)
+        if (complete.length == 1 && !complete.equals(part)) {
+            String append = complete[0].substring(part.length());
+            append(append);
+            return;
+        }
+
+                // Found ambiguous, show (some of) them
+        String line = text.getText();
+        String command = line.substring(cmdStart);
+        // Find prompt
+        for (i = cmdStart; line.charAt(i) != '\n' && i > 0; i--);
+        String prompt = line.substring(i + 1, cmdStart);
+
+        // Show ambiguous
+        StringBuffer sb = new StringBuffer("\n");
+        for (i = 0; i < complete.length && i < SHOW_AMBIG_MAX; i++) {
+            sb.append(complete[i] + "\n");
+        }
+        if (i == SHOW_AMBIG_MAX) {
+            sb.append("...\n");
+        }
+
+        print(sb, Color.gray);
+        print(prompt); // print resets command start
+        append(command); // append does not reset command start
+    }
+    
+    private void doCommandCompletion_bak(String part) {
         if (nameCompletion == null) {
             return;
         }
@@ -393,6 +495,64 @@ public class JConsole extends JScrollPane
         print(sb, Color.gray);
         print(prompt); // print resets command start
         append(command); // append does not reset command start
+    }
+    
+    private Point getDisplayPoint(){
+        //Get the point where the popup window should be displayed
+        Point screenPoint = this.text.getLocationOnScreen();
+        Point caretPoint = this.text.getCaret().getMagicCaretPosition();
+        if (caretPoint == null){
+            caretPoint = new Point(0, 0);
+        }
+        
+        int x = (int)(screenPoint.getX() + caretPoint.getX() + this.dotWidth);
+        int y = (int)(screenPoint.getY() + caretPoint.getY() + this.textHeight);
+        if (y < 0)
+            y = this.getY() + this.getHeight();
+        
+        return new Point(x, y);
+    }
+    
+    private String getCurrentText(){
+        String part = text.getText().substring(cmdStart);
+        
+        int idx = part.lastIndexOf(">");
+        if (idx >= 0)
+            part = part.substring(part.lastIndexOf(">") + 2);
+        
+        return part;
+    }
+    
+    private void showPopup(){        
+        if (nameCompletion == null) {
+            return;
+        }
+        
+        String part = this.getCurrentText();        
+        if (part.length() < 2) // reasonable completion length
+        {
+            return;
+        }
+
+        String[] complete = nameCompletion.completeName(part);
+        if (complete == null){
+            //java.awt.Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+        
+        if (complete.length == 0) {
+            //java.awt.Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+
+        // Found one completion (possibly what we already have)
+        if (complete.length == 1 && !complete.equals(part)) {
+            String append = complete[0].substring(part.length());
+            append(append);
+            return;
+        }
+        
+        this.popup.showMethodCompletionList(complete, this.getDisplayPoint());
     }
 
     private void resetCommandStart() {

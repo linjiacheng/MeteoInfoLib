@@ -5579,6 +5579,7 @@ public class MapView extends JPanel {
             boolean isSelected) {
         int len = aPG.getOutLine().size();
         GeneralPath path = new GeneralPath(GeneralPath.WIND_EVEN_ODD, len);
+        path.moveTo(0, 0);
         PointD wPoint;
         double[] sXY;
         List<PointF> rPoints = new ArrayList<>();
@@ -5829,16 +5830,7 @@ public class MapView extends JPanel {
         Extent aExtent = MIMath.shiftExtentLon(aGraphic.getShape().getExtent(), lonShift);
         if (MIMath.isExtentCross(aExtent, _drawExtent)) {
             Object rend = g.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
-            double[] sXY;
-
-            //Get screen points
-            List<PointD> points = (List<PointD>) aGraphic.getShape().getPoints();
-            PointF[] screenPoints = new PointF[points.size()];
-            for (int i = 0; i < points.size(); i++) {
-                sXY = projToScreen(points.get(i).X, points.get(i).Y, lonShift);
-                screenPoints[i] = new PointF((float) sXY[0], (float) sXY[1]);
-            }
-
+                 
             //Region oldRegion = g.Clip;
             switch (aGraphic.getShape().getShapeType()) {
                 case Polygon:
@@ -5852,8 +5844,23 @@ public class MapView extends JPanel {
                     break;
             }
 
-            Draw.drawGrahpic(screenPoints, aGraphic, g, _mouseTool == MouseTools.EditVertices);
-
+            switch(aGraphic.getShape().getShapeType()){
+                case Polygon:
+                    this.drawPolygonShape(g, (PolygonShape)aGraphic.getShape(), (PolygonBreak)aGraphic.getLegend(), lonShift);
+                    break;
+                default:
+                    //Get screen points
+                    double[] sXY;
+                    List<PointD> points = (List<PointD>) aGraphic.getShape().getPoints();
+                    PointF[] screenPoints = new PointF[points.size()];
+                    for (int i = 0; i < points.size(); i++) {
+                        sXY = projToScreen(points.get(i).X, points.get(i).Y, lonShift);
+                        screenPoints[i] = new PointF((float) sXY[0], (float) sXY[1]);
+                    }
+                    Draw.drawGrahpic(screenPoints, aGraphic, g, _mouseTool == MouseTools.EditVertices);
+                    break;
+            }
+            
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, rend);
         }
     }
