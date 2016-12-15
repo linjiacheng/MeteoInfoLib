@@ -549,14 +549,17 @@ public class JConsole extends JScrollPane
             return;
         }
         
-        if (this.popup.isVisible())
-            this.popup.setVisible(false);
-        
-        String part = this.getCurrentText();        
+        String part = this.getCurrentText();     
         if (part.length() < 2) // reasonable completion length
         {
             return;
         }
+        if (part.endsWith(" (") || part.endsWith("((")){
+            return;
+        }
+        
+        if (this.popup.isVisible())
+            this.popup.setVisible(false);                
         
         String[] callTip = nameCompletion.getTip(part);
         String tipstr = callTip[2];
