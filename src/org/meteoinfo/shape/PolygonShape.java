@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.meteoinfo.global.PointF;
 import org.meteoinfo.jts.geom.Coordinate;
 import org.meteoinfo.jts.geom.Geometry;
 import org.meteoinfo.jts.geom.GeometryFactory;
@@ -187,6 +188,18 @@ public class PolygonShape extends Shape implements Cloneable {
         _points = (List<PointD>) points;
         this.setExtent(MIMath.getPointsExtent(_points));
         updatePolygons();
+    }
+    
+    /**
+     *
+     * @param points
+     */
+    public void setPoints(PointF[] points){
+        List<PointD> ps = new ArrayList<>();
+        for (int i = 0; i < points.length; i++){
+            ps.add(new PointD(points[i].X, points[i].Y));
+        }
+        setPoints(ps);
     }
 
     /**

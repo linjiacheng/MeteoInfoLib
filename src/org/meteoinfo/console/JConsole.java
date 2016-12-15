@@ -126,6 +126,7 @@ public class JConsole extends JScrollPane
     private boolean gotUp = true;
     
     private Popup popup;
+    private Tip tip;
     private int dotWidth;
     private int textHeight;
     private final Pattern FROM_PACKAGE_IMPORT = Pattern.compile("from\\s+(\\w+(?:\\.\\w+)*)\\.?(?:\\s*import\\s*)?");
@@ -176,6 +177,7 @@ public class JConsole extends JScrollPane
         UIManager.addPropertyChangeListener(this);
         
         popup = new Popup(null, this.text);
+        tip = new Tip(null);
         FontMetrics metrics = this.text.getFontMetrics(this.text.getFont());
         this.dotWidth = metrics.stringWidth(".");
         this.textHeight = metrics.getHeight();
@@ -266,6 +268,9 @@ public class JConsole extends JScrollPane
             case (KeyEvent.VK_LEFT):
             case (KeyEvent.VK_BACK_SPACE):
             case (KeyEvent.VK_DELETE):
+                if (this.tip.isVisible())
+                    this.tip.setVisible(false);
+                
                 if (text.getCaretPosition() <= cmdStart) {
                                         // This doesn't work for backspace.
                     // See default case for workaround
@@ -349,6 +354,20 @@ public class JConsole extends JScrollPane
                     Matcher match = FROM_PACKAGE_IMPORT.matcher(command);
                     if (match.matches())
                         this.showPopup();
+                }
+                e.consume();
+                break;
+            case (KeyEvent.VK_9):
+                if (e.getID() == KeyEvent.KEY_RELEASED) {
+                    if (e.isShiftDown())
+                        this.showTip();
+                }
+                e.consume();
+                break;
+            case (KeyEvent.VK_0):
+                if (e.getID() == KeyEvent.KEY_RELEASED) {
+                    if (e.isShiftDown())
+                        this.tip.setVisible(false);
                 }
                 e.consume();
                 break;
@@ -507,8 +526,10 @@ public class JConsole extends JScrollPane
         
         int x = (int)(screenPoint.getX() + caretPoint.getX() + this.dotWidth);
         int y = (int)(screenPoint.getY() + caretPoint.getY() + this.textHeight);
-        if (y < 0)
-            y = this.getY() + this.getHeight();
+        if (y < 0){
+            //y = this.getY() + this.getHeight();
+            y = this.getLocationOnScreen().y;
+        }
         
         return new Point(x, y);
     }
@@ -521,6 +542,28 @@ public class JConsole extends JScrollPane
             part = part.substring(part.lastIndexOf(">") + 2);
         
         return part;
+    }
+    
+    private void showTip(){
+        if (nameCompletion == null) {
+            return;
+        }
+        
+        if (this.popup.isVisible())
+            this.popup.setVisible(false);
+        
+        String part = this.getCurrentText();        
+        if (part.length() < 2) // reasonable completion length
+        {
+            return;
+        }
+        
+        String[] callTip = nameCompletion.getTip(part);
+        String tipstr = callTip[2];
+        if (!tipstr.isEmpty()){
+            Point displayPoint = this.getDisplayPoint();
+            this.tip.showTip(tipstr, displayPoint);
+        }
     }
     
     private void showPopup(){        

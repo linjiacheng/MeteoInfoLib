@@ -11,4 +11,5 @@ package org.meteoinfo.console;
  */
 public abstract interface NameCompletion {
     public abstract String[] completeName(String paramString);
+    public abstract String[] getTip(String paramString);
 }

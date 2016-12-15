@@ -8,6 +8,8 @@ package org.meteoinfo.console;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -55,6 +57,17 @@ public class Popup extends JWindow {
         this.getContentPane().add(new JScrollPane(this.list));
         this.list.setSelectedIndex(0);
         this.typed = "";
+        this.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentHidden(ComponentEvent e) 
+            {
+                typed = "";
+            }
+            @Override
+            public void componentShown(ComponentEvent e) {
+                
+            }
+        });
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -87,6 +100,7 @@ public class Popup extends JWindow {
         //this.show();
         this.setVisible(true);
         this.list.setSelectedIndex(0);
+        this.setAlwaysOnTop(true);
     }
     
     @Override

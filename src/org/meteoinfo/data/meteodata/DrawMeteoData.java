@@ -608,6 +608,8 @@ public class DrawMeteoData {
                 }
             }
             valueIdx = Arrays.binarySearch(cValues, aValue);
+            if (valueIdx < -1)
+                valueIdx = -1;
             //valueIdx = Arrays.asList(cValues).indexOf(aValue);            
             if (valueIdx == cValues.length - 1) {
                 aPolygonShape.highValue = maxData;

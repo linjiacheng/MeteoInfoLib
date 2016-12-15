@@ -55,9 +55,10 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
-import javax.sound.sampled.Line;
 import org.meteoinfo.legend.HatchStyle;
 import org.meteoinfo.shape.EllipseShape;
+import org.meteoinfo.shape.Polygon;
+import org.meteoinfo.shape.PolygonShape;
 import org.meteoinfo.shape.StationModelShape;
 import org.scilab.forge.jlatexmath.TeXConstants;
 import org.scilab.forge.jlatexmath.TeXFormula;
@@ -1417,6 +1418,10 @@ public class Draw {
                 drawPolyline(points, (PolylineBreak) aGraphic.getLegend(), g);
                 break;
             case Polygon:
+                PolygonShape pgs = (PolygonShape)aGraphic.getShape().clone();
+                pgs.setPoints(points);
+                drawPolygonShape(pgs, (PolygonBreak) aGraphic.getLegend(), g);
+                break;
             case Rectangle:
                 drawPolygon(points, (PolygonBreak) aGraphic.getLegend(), g);
                 break;
@@ -1561,6 +1566,78 @@ public class Draw {
             }
         } else {
             g.fill(path);
+        }
+    }
+    
+    /**
+     * Draw polygon shape with screen coordinates
+     * @param pgs Polygon shape
+     * @param pgb Polygon break
+     * @param g Graphics2D
+     */
+    public static void drawPolygonShape(PolygonShape pgs, PolygonBreak pgb, Graphics2D g){
+        for (Polygon polygon : pgs.getPolygons()){
+            drawPolygon(polygon, pgb, g);
+        }
+    }
+    
+    /**
+     * Draw polygon with screen coordinate
+     * @param aPG Polygon shape
+     * @param aPGB Polygon break
+     * @param g Graphics2D
+     */
+    public static void drawPolygon(Polygon aPG, PolygonBreak aPGB, Graphics2D g) {
+        int len = aPG.getOutLine().size();
+        GeneralPath path = new GeneralPath(GeneralPath.WIND_EVEN_ODD, len);
+        path.moveTo(0, 0);
+        PointD wPoint;
+        for (int i = 0; i < aPG.getOutLine().size(); i++) {
+            wPoint = aPG.getOutLine().get(i);
+            if (i == 0) {
+                path.moveTo(wPoint.X, wPoint.Y);
+            } else {
+                path.lineTo(wPoint.X, wPoint.Y);
+            }
+        }
+
+        List<PointD> newPList;
+        if (aPG.hasHole()) {
+            for (int h = 0; h < aPG.getHoleLines().size(); h++) {
+                newPList = aPG.getHoleLines().get(h);
+                for (int j = 0; j < newPList.size(); j++) {
+                    wPoint = newPList.get(j);
+                    if (j == 0) {
+                        path.moveTo(wPoint.X, wPoint.Y);
+                    } else {
+                        path.lineTo(wPoint.X, wPoint.Y);
+                    }
+                }
+            }
+        }
+        path.closePath();
+
+        if (aPGB.isDrawFill()) {
+            //int alpha = (int)((1 - (double)transparencyPerc / 100.0) * 255);
+            //Color aColor = Color.FromArgb(alpha, aPGB.Color);
+            Color aColor = aPGB.getColor();
+            if (aPGB.isUsingHatchStyle()) {
+                int size = aPGB.getStyleSize();
+                BufferedImage bi = getHatchImage(aPGB.getStyle(), size, aPGB.getColor(), aPGB.getBackColor());
+                Rectangle2D rect = new Rectangle2D.Double(0, 0, size, size);
+                g.setPaint(new TexturePaint(bi, rect));
+                g.fill(path);
+            } else {
+                g.setColor(aColor);
+                g.fill(path);
+            }
+        }
+
+        if (aPGB.isDrawOutline()) {
+            BasicStroke pen = new BasicStroke(aPGB.getOutlineSize());
+            g.setStroke(pen);
+            g.setColor(aPGB.getOutlineColor());
+            g.draw(path);
         }
     }
 
