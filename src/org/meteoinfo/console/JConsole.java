@@ -591,10 +591,10 @@ public class JConsole extends JScrollPane
             return;
         }
 
-        // Found one completion (possibly what we already have)
+        // Found one completion (possibly what we already have
         if (complete.length == 1 && !complete.equals(part)) {
-            String append = complete[0].substring(part.length());
-            append(append);
+            //String append = complete[0].substring(part.length());
+            append(complete[0]);
             return;
         }
         
