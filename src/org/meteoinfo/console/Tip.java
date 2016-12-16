@@ -21,7 +21,7 @@ public class Tip extends JWindow {
     // <editor-fold desc="Variables">
     private final static int MAX_HEIGHT = 300;
     private final static int MAX_WIDTH = 400;
-    private JTextArea textarea;
+    private final JTextArea textarea;
     // </editor-fold>
     // <editor-fold desc="Constructor">
     /**

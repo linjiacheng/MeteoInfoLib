@@ -554,10 +554,10 @@ public class JConsole extends JScrollPane
         {
             return;
         }
-        if (part.endsWith(" (") || part.endsWith("((")){
+        String s = part.trim().substring(part.length() - 2, part.length() - 1);
+        if (!Character.isLetter(s.charAt(0)))
             return;
-        }
-        
+       
         if (this.popup.isVisible())
             this.popup.setVisible(false);                
         
