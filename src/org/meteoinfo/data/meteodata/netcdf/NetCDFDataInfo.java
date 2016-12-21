@@ -2491,10 +2491,6 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             aGridData.yArray = nvar.getZDimension().getValues();
             aGridData.missingValue = missingValue;
 
-            if (this.isYReverse()) {
-                aGridData.yReverse();
-            }
-
             return aGridData;
         } catch (IOException | InvalidRangeException ex) {
             Logger.getLogger(NetCDFDataInfo.class.getName()).log(Level.SEVERE, null, ex);
