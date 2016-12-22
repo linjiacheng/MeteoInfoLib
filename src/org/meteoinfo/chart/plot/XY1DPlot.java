@@ -337,38 +337,38 @@ public class XY1DPlot extends XYPlot {
                 points[j] = new PointF((float) xy[0], (float) xy[1]);
             }
         }
-        if (this.getYAxis().isInverse()) {
-            PointF[] npoints = new PointF[len];
-            PointF p;
-            float y;
-            for (int j = 0; j < len; j++) {
-                p = points[len - j - 1];
-                y = (float) area.getHeight() - p.Y;
-                npoints[j] = new PointF(p.X, y);
-            }
-            points = npoints;
-            if (!mvIdx.isEmpty()) {
-                for (int j = 0; j < mvIdx.size(); j++) {
-                    mvIdx.set(j, len - mvIdx.get(j) - 1);
-                }
-            }
-        }
-        if (this.getXAxis().isInverse()) {
-            PointF[] npoints = new PointF[len];
-            PointF p;
-            float x;
-            for (int j = 0; j < len; j++) {
-                p = points[len - j - 1];
-                x = (float) area.getWidth() - p.X;
-                npoints[j] = new PointF(x, p.Y);
-            }
-            points = npoints;
-            if (!mvIdx.isEmpty()) {
-                for (int j = 0; j < mvIdx.size(); j++) {
-                    mvIdx.set(j, len - mvIdx.get(j) - 1);
-                }
-            }
-        }
+//        if (this.getYAxis().isInverse()) {
+//            PointF[] npoints = new PointF[len];
+//            PointF p;
+//            float y;
+//            for (int j = 0; j < len; j++) {
+//                p = points[len - j - 1];
+//                y = (float) area.getHeight() - p.Y;
+//                npoints[j] = new PointF(p.X, y);
+//            }
+//            points = npoints;
+//            if (!mvIdx.isEmpty()) {
+//                for (int j = 0; j < mvIdx.size(); j++) {
+//                    mvIdx.set(j, len - mvIdx.get(j) - 1);
+//                }
+//            }
+//        }
+//        if (this.getXAxis().isInverse()) {
+//            PointF[] npoints = new PointF[len];
+//            PointF p;
+//            float x;
+//            for (int j = 0; j < len; j++) {
+//                p = points[len - j - 1];
+//                x = (float) area.getWidth() - p.X;
+//                npoints[j] = new PointF(x, p.Y);
+//            }
+//            points = npoints;
+//            if (!mvIdx.isEmpty()) {
+//                for (int j = 0; j < mvIdx.size(); j++) {
+//                    mvIdx.set(j, len - mvIdx.get(j) - 1);
+//                }
+//            }
+//        }
 
         return points;
     }
