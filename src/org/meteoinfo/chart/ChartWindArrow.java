@@ -8,7 +8,6 @@ package org.meteoinfo.chart;
 import java.awt.Color;
 import java.awt.Font;
 import org.meteoinfo.global.DataConvert;
-import org.meteoinfo.layer.VectorLayer;
 import org.meteoinfo.shape.WindArrow;
 
 /**
