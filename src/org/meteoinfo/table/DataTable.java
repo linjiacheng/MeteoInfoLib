@@ -810,6 +810,7 @@ public final class DataTable {
         if (n > 100) {
             n = 100;
         }
+        Object v;
         for (int r = 0; r < n; r++) {
             DataRow row = this.rows.get(r);
             int i = 0;
@@ -826,7 +827,11 @@ public final class DataTable {
                         sb.append("'").append(row.getValue(col.getColumnName()).toString()).append("'");
                         break;
                     default:
-                        sb.append(row.getValue(col.getColumnName()).toString());
+                        v = row.getValue(col.getColumnName());
+                        if (v == null)
+                            sb.append("null");
+                        else
+                            sb.append(v.toString());
                         break;
                 }
                 i += 1;

@@ -597,7 +597,7 @@ public class GeoTiff {
             return null;
         }
     }
-    
+
     /**
      * Get grid data
      *
@@ -632,10 +632,10 @@ public class GeoTiff {
             //gData.data = values;
             gData.xArray = X;
             gData.yArray = Y;
-            
+
             //Get missing value
             IFDEntry noDataTag = findTag(Tag.GDALNoData);
-            if (noDataTag != null){
+            if (noDataTag != null) {
                 double missingValue = Double.parseDouble(noDataTag.valueS);
                 gData.missingValue = missingValue;
             }
@@ -893,12 +893,13 @@ public class GeoTiff {
 
         return values;
     }
-    
+
     /**
      * Get band number
+     *
      * @return Band number
      */
-    public int getBandNum(){
+    public int getBandNum() {
         IFDEntry samplesPerPixelTag = findTag(Tag.SamplesPerPixel);
         int samplesPerPixel = samplesPerPixelTag.value[0];    //Number of bands
         return samplesPerPixel;
@@ -931,13 +932,13 @@ public class GeoTiff {
 //        } else {
 //            shape = new int[]{width, height, samplesPerPixel};
 //        }
-        DataType dataType = DataType.INT;    
+        DataType dataType = DataType.INT;
         IFDEntry sampleFormatTag = findTag(Tag.SampleFormat);
         int sampleFormat = 0;
-        if (sampleFormatTag != null){
+        if (sampleFormatTag != null) {
             sampleFormat = sampleFormatTag.value[0];
         }
-        switch (bitsPerSample){
+        switch (bitsPerSample) {
             case 32:
                 switch (sampleFormat) {
                     case 3:
@@ -982,9 +983,9 @@ public class GeoTiff {
                                     }
                                     index.set0(vIdx);
                                     index.set1(hIdx);
-                                    if (samplesPerPixel == 1)
+                                    if (samplesPerPixel == 1) {
                                         r.setInt(index, DataConvert.byte2Int(buffer.get()));
-                                    else {
+                                    } else {
                                         for (int k = 0; k < samplesPerPixel; k++) {
                                             index.set2(k);
                                             r.setInt(index, DataConvert.byte2Int(buffer.get()));
@@ -993,7 +994,8 @@ public class GeoTiff {
                                 }
                             }
                         }
-                    }   break;
+                    }
+                    break;
                 case 16:
                     for (int i = 0; i < vTileNum; i++) {
                         for (int j = 0; j < hTileNum; j++) {
@@ -1013,9 +1015,9 @@ public class GeoTiff {
                                     }
                                     index.set0(vIdx);
                                     index.set1(hIdx);
-                                    if (samplesPerPixel == 1)
+                                    if (samplesPerPixel == 1) {
                                         r.setInt(index, buffer.getShort());
-                                    else {
+                                    } else {
                                         for (int k = 0; k < samplesPerPixel; k++) {
                                             index.set2(k);
                                             r.setInt(index, buffer.getShort());
@@ -1024,7 +1026,8 @@ public class GeoTiff {
                                 }
                             }
                         }
-                    }   break;
+                    }
+                    break;
                 case 32:
                     for (int i = 0; i < vTileNum; i++) {
                         for (int j = 0; j < hTileNum; j++) {
@@ -1045,26 +1048,29 @@ public class GeoTiff {
                                         break;
                                     }
                                     index.set1(hIdx);
-                                    if (samplesPerPixel == 1){
-                                        if (dataType == DataType.FLOAT)
+                                    if (samplesPerPixel == 1) {
+                                        if (dataType == DataType.FLOAT) {
                                             r.setFloat(index, buffer.getFloat());
-                                        else
+                                        } else {
                                             r.setInt(index, buffer.getInt());
+                                        }
                                     } else {
                                         for (int k = 0; k < samplesPerPixel; k++) {
                                             index.set2(k);
-                                            if (dataType == DataType.FLOAT)
+                                            if (dataType == DataType.FLOAT) {
                                                 r.setFloat(index, buffer.getFloat());
-                                            else
+                                            } else {
                                                 r.setInt(index, buffer.getInt());
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
-                    }   break;
+                    }
+                    break;
                 default:
-                    break; 
+                    break;
             }
         } else {
             IFDEntry stripOffsetTag = findTag(Tag.StripOffsets);
@@ -1077,28 +1083,47 @@ public class GeoTiff {
                 int rowNum = rowsPerStripTag.value[0];
                 //System.out.println("stripOffset =" + stripOffset + " stripSize=" + stripSize);
                 int idx = 0;
-                if (bitsPerSample == 8) {
-                    for (int i = 0; i < stripNum; i++) {
-                        stripOffset = stripOffsetTag.value[i];
-                        buffer = testReadData(stripOffset, stripSize);
-                        for (int j = 0; j < width * rowNum; j++) {
-                            for (int k = 0; k < samplesPerPixel; k++) {
-                                r.setInt(idx, DataConvert.byte2Int(buffer.get()));
-                                idx += 1;
+                switch (bitsPerSample) {
+                    case 8:
+                        for (int i = 0; i < stripNum; i++) {
+                            stripOffset = stripOffsetTag.value[i];
+                            buffer = testReadData(stripOffset, stripSize);
+                            for (int j = 0; j < width * rowNum; j++) {
+                                for (int k = 0; k < samplesPerPixel; k++) {
+                                    r.setInt(idx, DataConvert.byte2Int(buffer.get()));
+                                    idx += 1;
+                                }
                             }
                         }
-                    }
-                } else if (bitsPerSample == 16) {
-                    for (int i = 0; i < stripNum; i++) {
-                        stripOffset = stripOffsetTag.value[i];
-                        buffer = testReadData(stripOffset, stripSize);
-                        for (int j = 0; j < width * rowNum; j++) {
-                            for (int k = 0; k < samplesPerPixel; k++) {
-                                r.setInt(idx, buffer.getShort());
-                                idx += 1;
+                        break;
+                    case 16:
+                        for (int i = 0; i < stripNum; i++) {
+                            stripOffset = stripOffsetTag.value[i];
+                            buffer = testReadData(stripOffset, stripSize);
+                            for (int j = 0; j < width * rowNum; j++) {
+                                for (int k = 0; k < samplesPerPixel; k++) {
+                                    if (dataType == DataType.FLOAT) {
+                                        r.setFloat(idx, buffer.getFloat());
+                                    } else {
+                                        r.setInt(idx, buffer.getInt());
+                                    }
+                                    idx += 1;
+                                }
                             }
                         }
-                    }
+                        break;
+                    case 32:
+                        for (int i = 0; i < stripNum; i++) {
+                            stripOffset = stripOffsetTag.value[i];
+                            buffer = testReadData(stripOffset, stripSize);
+                            for (int j = 0; j < width * rowNum; j++) {
+                                for (int k = 0; k < samplesPerPixel; k++) {
+                                    r.setFloat(idx, buffer.getFloat());
+                                    idx += 1;
+                                }
+                            }
+                        }
+                        break;
                 }
             }
         }
