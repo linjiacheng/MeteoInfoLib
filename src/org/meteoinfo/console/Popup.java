@@ -19,6 +19,7 @@ import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.JWindow;
+import javax.swing.text.JTextComponent;
 
 /**
  *
@@ -29,7 +30,7 @@ public class Popup extends JWindow {
     private final static int MAX_HEIGHT = 300;
     private final static int MIN_WIDTH = 200;
     private final static int MAX_WIDTH = 400;
-    private final JTextPane textCompnent;
+    private final JTextComponent textCompnent;
     private int dotPosition;
     private final JList list;
     private String[] originalData;
@@ -42,7 +43,7 @@ public class Popup extends JWindow {
      * @param frame JFrame
      * @param textComponent 
      */
-    public Popup(JFrame frame, JTextPane textComponent){
+    public Popup(JFrame frame, JTextComponent textComponent){
         super(frame);
         this.textCompnent = textComponent;
         this.setSize(200, 200);
@@ -96,7 +97,8 @@ public class Popup extends JWindow {
         Dimension size = this.getPreferredSize();
         this.setBounds(displayPoint.x, displayPoint.y, size.width, size.height);
         this.setMethods(list);
-        this.dotPosition = this.textCompnent.getCaretPosition();
+        if (this.textCompnent != null)
+            this.dotPosition = this.textCompnent.getCaretPosition();
         //this.show();
         this.setVisible(true);
         this.list.setSelectedIndex(0);

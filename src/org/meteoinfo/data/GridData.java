@@ -3071,6 +3071,21 @@ public class GridData {
         }
         data = newdata;
     }
+    
+    /**
+     * xArray reverse to the grid data
+     */
+    public void xReverse() {
+        int xNum = getXNum();
+        int yNum = getYNum();
+        double[][] newdata = new double[yNum][xNum];
+        for (int i = 0; i < yNum; i++) {
+            for (int j = 0; j < xNum; j++){
+                newdata[i][j] = data[i][xNum - j - 1];
+            }
+        }
+        data = newdata;
+    }
 
     // </editor-fold>
     // </editor-fold>
