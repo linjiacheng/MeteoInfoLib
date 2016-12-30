@@ -12,6 +12,9 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFrame;
@@ -52,6 +55,14 @@ public class Popup extends JWindow {
             @Override
             public void keyPressed(KeyEvent e){
                 Popup.this.type(e);
+            }
+        });
+        this.list.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2){
+                    Popup.this.chooseSelected();
+                }
             }
         });
         this.list.setBackground(new Color(255,255,225));
