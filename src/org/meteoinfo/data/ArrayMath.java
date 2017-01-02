@@ -673,7 +673,7 @@ public class ArrayMath {
         }
         return null;
     }
-    
+
     /**
      * Array pow function
      *
@@ -712,7 +712,7 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     private static Array powInt(Array a, Array b) {
         Array r = Array.factory(DataType.INT, b.getShape());
         for (int i = 0; i < b.getSize(); i++) {
@@ -739,7 +739,7 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     private static Array powDouble(Array a, Array b) {
         Array r = Array.factory(DataType.DOUBLE, b.getShape());
         for (int i = 0; i < b.getSize(); i++) {
@@ -1964,78 +1964,84 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     /**
      * Element-wise maximum of array elements.
+     *
      * @param x1 Array 1
      * @param x2 Array 2
      * @return The maximum of x1 and x2, element-wise.
      */
-    public static Array maximum(Array x1, Array x2){
+    public static Array maximum(Array x1, Array x2) {
         DataType dt = commonType(x1.getDataType(), x2.getDataType());
         Array r = Array.factory(dt, x1.getShape());
-        for (int i = 0; i < r.getSize(); i++){
+        for (int i = 0; i < r.getSize(); i++) {
             r.setObject(i, Math.max(x1.getDouble(i), x2.getDouble(i)));
         }
-        
+
         return r;
     }
-    
+
     /**
      * Element-wise maximum of array elements, ignores NaNs.
+     *
      * @param x1 Array 1
      * @param x2 Array 2
      * @return The maximum of x1 and x2, element-wise.
      */
-    public static Array fmax(Array x1, Array x2){
+    public static Array fmax(Array x1, Array x2) {
         DataType dt = commonType(x1.getDataType(), x2.getDataType());
         Array r = Array.factory(dt, x1.getShape());
-        for (int i = 0; i < r.getSize(); i++){
-            if (Double.isNaN(x1.getDouble(i)))
+        for (int i = 0; i < r.getSize(); i++) {
+            if (Double.isNaN(x1.getDouble(i))) {
                 r.setObject(i, x2.getDouble(i));
-            else if (Double.isNaN(x2.getDouble(i)))
+            } else if (Double.isNaN(x2.getDouble(i))) {
                 r.setObject(i, x1.getDouble(i));
-            else
+            } else {
                 r.setObject(i, Math.max(x1.getDouble(i), x2.getDouble(i)));
+            }
         }
-        
+
         return r;
     }
-    
+
     /**
      * Element-wise minimum of array elements.
+     *
      * @param x1 Array 1
      * @param x2 Array 2
      * @return The minimum of x1 and x2, element-wise.
      */
-    public static Array minimum(Array x1, Array x2){
+    public static Array minimum(Array x1, Array x2) {
         DataType dt = commonType(x1.getDataType(), x2.getDataType());
         Array r = Array.factory(dt, x1.getShape());
-        for (int i = 0; i < r.getSize(); i++){
+        for (int i = 0; i < r.getSize(); i++) {
             r.setObject(i, Math.min(x1.getDouble(i), x2.getDouble(i)));
         }
-        
+
         return r;
     }
-    
+
     /**
      * Element-wise minimum of array elements, ignores NaNs.
+     *
      * @param x1 Array 1
      * @param x2 Array 2
      * @return The minimum of x1 and x2, element-wise.
      */
-    public static Array fmin(Array x1, Array x2){
+    public static Array fmin(Array x1, Array x2) {
         DataType dt = commonType(x1.getDataType(), x2.getDataType());
         Array r = Array.factory(dt, x1.getShape());
-        for (int i = 0; i < r.getSize(); i++){
-            if (Double.isNaN(x1.getDouble(i)))
+        for (int i = 0; i < r.getSize(); i++) {
+            if (Double.isNaN(x1.getDouble(i))) {
                 r.setObject(i, x2.getDouble(i));
-            else if (Double.isNaN(x2.getDouble(i)))
+            } else if (Double.isNaN(x2.getDouble(i))) {
                 r.setObject(i, x1.getDouble(i));
-            else
+            } else {
                 r.setObject(i, Math.min(x1.getDouble(i), x2.getDouble(i)));
+            }
         }
-        
+
         return r;
     }
 
@@ -2048,9 +2054,10 @@ public class ArrayMath {
      * @param missingv Missing value
      */
     public static void missingToNaN(Array a, Number missingv) {
-        if (!a.getDataType().isNumeric())
+        if (!a.getDataType().isNumeric()) {
             return;
-        
+        }
+
         IndexIterator iterA = a.getIndexIterator();
         switch (a.getDataType()) {
             case INT:
@@ -2085,7 +2092,7 @@ public class ArrayMath {
             }
         }
     }
-    
+
     /**
      * Set value
      *
@@ -2178,6 +2185,36 @@ public class ArrayMath {
     }
 
     /**
+     * Get wind direction and wind speed from U/V
+     *
+     * @param u U component
+     * @param v V component
+     * @return Wind direction and wind speed
+     */
+    public static double[] uv2ds(double u, double v) {
+        double ws = Math.sqrt(u * u + v * v);
+        double wd;
+        if (ws == 0) {
+            wd = 0;
+        } else {
+            wd = Math.asin(u / ws) * 180 / Math.PI;
+            if (u < 0 && v < 0) {
+                wd = 180.0 - wd;
+            } else if (u > 0 && v < 0) {
+                wd = 180.0 - wd;
+            } else if (u < 0 && v > 0) {
+                wd = 360.0 + wd;
+            }
+            wd += 180;
+            if (wd >= 360) {
+                wd -= 360;
+            }
+        }
+
+        return new double[]{wd, ws};
+    }
+
+    /**
      * Get wind U/V components from wind direction and speed
      *
      * @param windDir Wind direction
@@ -2203,6 +2240,26 @@ public class ArrayMath {
         }
 
         return new Array[]{U, V};
+    }
+
+    /**
+     * Get wind U/V components from wind direction and speed
+     *
+     * @param windDir Wind direction
+     * @param windSpeed Wind speed
+     * @return Wind U/V components
+     */
+    public static double[] ds2uv(double windDir, double windSpeed) {
+        double dir;
+        dir = windDir + 180;
+        if (dir > 360) {
+            dir = dir - 360;
+        }
+        dir = dir * Math.PI / 180;
+        double u = windSpeed * Math.sin(dir);
+        double v = windSpeed * Math.cos(dir);
+
+        return new double[]{u, v};
     }
 
     // </editor-fold>       
@@ -2455,7 +2512,7 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     /**
      * Maskout function
      *
@@ -2507,7 +2564,7 @@ public class ArrayMath {
         double r = (n * xy_sum - x_sum * y_sum) / (Math.sqrt(n * sx_sum - x_sum * x_sum) * Math.sqrt(n * sy_sum - y_sum * y_sum));
         return (float) r;
     }
-    
+
     /**
      * Get correlation coefficient How well did the forecast values correspond
      * to the observed values? Range: -1 to 1. Perfect score: 1.
@@ -2517,7 +2574,7 @@ public class ArrayMath {
      * @return Correlation coefficent
      */
     public static float getR(Array xData, Array yData) {
-        int n = (int)xData.getSize();
+        int n = (int) xData.getSize();
         double x_sum = 0;
         double y_sum = 0;
         double sx_sum = 0.0;
@@ -2528,8 +2585,9 @@ public class ArrayMath {
         for (int i = 0; i < n; i++) {
             x = xData.getDouble(i);
             y = yData.getDouble(i);
-            if (Double.isNaN(x) || Double.isNaN(y))
+            if (Double.isNaN(x) || Double.isNaN(y)) {
                 continue;
+            }
             x_sum += x;
             y_sum += y;
             sx_sum += x * x;
