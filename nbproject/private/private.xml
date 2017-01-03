@@ -7,7 +7,9 @@
             <file>file:/D:/MyProgram/java/MeteoInfoDev/MeteoInfoLib/src/org/meteoinfo/console/JConsole.java</file>
             <file>file:/D:/MyProgram/java/MeteoInfoDev/MeteoInfoLib/src/org/meteoinfo/console/Popup.java</file>
             <file>file:/D:/MyProgram/java/MeteoInfoDev/MeteoInfoLib/src/org/meteoinfo/shape/ShapeUtil.java</file>
+            <file>file:/D:/MyProgram/java/MeteoInfoDev/MeteoInfoLib/src/org/meteoinfo/data/DataMath.java</file>
             <file>file:/D:/MyProgram/java/MeteoInfoDev/MeteoInfoLib/src/org/meteoinfo/data/ArrayMath.java</file>
+            <file>file:/D:/MyProgram/java/MeteoInfoDev/MeteoInfoLib/src/org/meteoinfo/data/meteodata/DrawMeteoData.java</file>
             <file>file:/D:/MyProgram/java/MeteoInfoDev/MeteoInfoLib/src/org/meteoinfo/data/mapdata/MapDataManage.java</file>
             <file>file:/D:/MyProgram/java/MeteoInfoDev/MeteoInfoLib/src/org/meteoinfo/data/meteodata/Dimension.java</file>
         </group>

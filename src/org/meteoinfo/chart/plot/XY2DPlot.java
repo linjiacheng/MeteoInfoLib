@@ -69,7 +69,8 @@ import org.meteoinfo.shape.WindBarb;
 public class XY2DPlot extends XYPlot {
 
     // <editor-fold desc="Variables">
-    private GraphicCollection graphics;
+    private GraphicCollection graphics;    
+    private float barsWidth = 0.8f;
 
     // </editor-fold>
     // <editor-fold desc="Constructor">
@@ -96,6 +97,22 @@ public class XY2DPlot extends XYPlot {
      */
     public void setGraphics(GraphicCollection value) {
         this.graphics = value;
+    }
+    
+    /**
+     * Get bars width (0 - 1), only used for automatic bar width.
+     * @return Bars width
+     */
+    public float getBarsWidth(){
+        return this.barsWidth;
+    }
+    
+    /**
+     * Set bars width (0 - 1), only used for automatic bar width.
+     * @param value Bars width
+     */
+    public void setBarsWidth(float value){
+        this.barsWidth = value;
     }
 
     // </editor-fold>
@@ -708,7 +725,7 @@ public class XY2DPlot extends XYPlot {
         BarShape bs1 = (BarShape) bars.getGraphicN(0).getShape();
         if (bs1.isAutoWidth()) {
             if (len > 1) {
-                width = (float) ((points[1].X - points[0].X) * 0.5) / barSeriesN;
+                width = (float) ((points[1].X - points[0].X) * this.barsWidth) / barSeriesN;
             } else {
                 width = (float) (area.getWidth() / 10) / barSeriesN;
             }

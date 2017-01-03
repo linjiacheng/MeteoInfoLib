@@ -1216,7 +1216,7 @@ public class Axis implements Cloneable {
             }
 
             //Draw tick label
-            if (this.drawTickLabel) {                
+            if (this.drawTickLabel && n < xTickLabels.size()) {                
                 drawStr = xTickLabels.get(n);
                 dim = new Dimension(metrics.stringWidth(drawStr), metrics.getHeight());
                 //labx = (float) (x - dim.width / 2);
@@ -1518,7 +1518,7 @@ public class Axis implements Cloneable {
                 g.draw(new Line2D.Double(sx, y, sx + len, y));
             }
             //Draw tick label
-            if (this.drawTickLabel) {
+            if (this.drawTickLabel && n < yTickLabels.size()) {
                 drawStr = yTickLabels.get(n);
                 //dim = new Dimension(metrics.stringWidth(drawStr), metrics.getHeight());
                 g.setFont(this.tickLabelFont);

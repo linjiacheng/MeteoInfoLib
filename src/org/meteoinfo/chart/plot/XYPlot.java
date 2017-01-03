@@ -739,7 +739,7 @@ public abstract class XYPlot extends Plot {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, rendering);
         }
 
-        //Draw wind arrow
+        //Draw wind arrow - quiverkey
         if (this.getWindArrow() != null) {
             Object rendering = g.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -762,7 +762,8 @@ public abstract class XYPlot extends Plot {
             if (wa.isFill() || wa.isDrawNeatline()) {
                 Rectangle2D rect = Draw.getArrawBorder(new PointF(x, y), aArraw, g, zoom);
                 double gap = 5;
-                rect.setRect(rect.getX() - gap, rect.getY() - gap, rect.getWidth() + gap * 2,
+                double width = Math.max(rect.getWidth(), dim.getWidth());
+                rect.setRect(rect.getX() - gap, rect.getY() - gap, width + gap * 2,
                         rect.getHeight() + dim.height + gap * 2);
                 if (wa.isFill()) {
                     g.setColor(wa.getBackground());
