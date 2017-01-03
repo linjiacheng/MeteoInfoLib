@@ -108,7 +108,11 @@ public class ArrayUtil {
             for (String dstr : dataArray) {
                 a.setDouble(i, Double.parseDouble(dstr));
                 i += 1;
+                if (i >= a.getSize())
+                    break;
             }
+            if (i >= a.getSize())
+                break;
 
             line = sr.readLine();
         }
