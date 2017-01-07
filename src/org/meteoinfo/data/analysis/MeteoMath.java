@@ -212,4 +212,34 @@ public class MeteoMath {
             return h;
         }
     }
+    
+    /**
+     * Calculate pressure frmo height
+     *
+     * @param height Height - meter
+     * @return Pressure - hPa
+     */
+    public static double height2Press(double height) {        
+        double[] ps = new double[]{1013.3, 845.4, 700.8, 504.7, 410.4, 307.1, 193.1, 102.8, 46.7, 8.7};
+        double[] hs = new double[]{0, 1500, 3000, 5500, 7000, 9000, 12000, 16000, 21000, 32000};
+        int idx = -1;
+        int i = -1;
+        for (double h : hs) {
+            if (height < h) {
+                idx = i;
+                break;
+            }
+            i += 1;
+        }
+        if (idx == -1) {
+            return 5;
+        } else {
+            double z1 = hs[idx];
+            double p1 = ps[idx];
+            double z2 = hs[idx + 1];
+            double p2 = ps[idx + 1];
+            double p = (height - z1) * (p2 - p1) / (z2 - z1) + p1;
+            return p;
+        }
+    }
 }

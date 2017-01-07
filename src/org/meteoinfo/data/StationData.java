@@ -1280,7 +1280,7 @@ public class StationData {
      * @return Grid data
      */
     public GridData interpolate_Cressman(List<Number> X, List<Number> Y,
-            List<Double> radList, double missingValue) {
+            List<Number> radList, double missingValue) {
         double[] nX = new double[X.size()];
         double[] nY = new double[Y.size()];
         for (int i = 0; i < X.size(); i++){
@@ -1290,7 +1290,11 @@ public class StationData {
             nY[i] = Y.get(i).doubleValue();
         }
 
-        return this.interpolate_Cressman(data, nX, nY, radList, missingValue);
+        List<Double> rlist = new ArrayList<>();
+        for (Number r : radList){
+            rlist.add(r.doubleValue());
+        }
+        return this.interpolate_Cressman(data, nX, nY, rlist, missingValue);
     }
 
     /**

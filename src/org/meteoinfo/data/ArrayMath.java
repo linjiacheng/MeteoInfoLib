@@ -2045,6 +2045,74 @@ public class ArrayMath {
         return r;
     }
 
+    /**
+     * Moving average function
+     *
+     * @param x The data array
+     * @param window Size of moving window
+     * @param center Set the data in center moving window
+     * @return Moving averaged array
+     */
+    public static Array rolling_mean(Array x, int window, boolean center) {
+        int n = (int) x.getSize();
+        Array r = Array.factory(DataType.DOUBLE, new int[]{n});
+        double v, vv;
+        int dn;
+        if (center) {
+            int halfn = (window - 1) / 2;
+            int idx;
+            for (int i = 0; i < n; i++) {
+                v = 0;
+                dn = 0;
+                for (int j = 0; j < window; j++) {
+                    if (j < halfn)
+                        idx = i - j;
+                    else if (j == halfn)
+                        idx = i;
+                    else
+                        idx = i + (j - halfn);
+                    if (idx < 0 || idx >= n) {
+                        break;
+                    }
+                    vv = x.getDouble(idx);
+                    if (!Double.isNaN(vv)) {
+                        v += vv;
+                        dn += 1;
+                    }
+                }
+                if (dn > 0) {
+                    v = v / dn;
+                } else {
+                    v = Double.NaN;
+                }
+                r.setDouble(i, v);
+            }
+        } else {
+            for (int i = 0; i < n; i++) {
+                v = 0;
+                dn = 0;
+                for (int j = 0; j < window; j++) {
+                    if (i - j < 0) {
+                        break;
+                    }
+                    vv = x.getDouble(i - j);
+                    if (!Double.isNaN(vv)) {
+                        v += vv;
+                        dn += 1;
+                    }
+                }
+                if (dn > 0) {
+                    v = v / dn;
+                } else {
+                    v = Double.NaN;
+                }
+                r.setDouble(i, v);
+            }
+        }
+
+        return r;
+    }
+
     // </editor-fold>
     // <editor-fold desc="Convert">
     /**
@@ -3058,16 +3126,33 @@ public class ArrayMath {
     }
 
     /**
-     * Calculate height form pressure
+     * Calculate height from pressure
      *
-     * @param press Pressure
-     * @return Height
+     * @param press Pressure - hPa
+     * @return Height - m
      */
     public static Array press2Height(Array press) {
         Array r = Array.factory(DataType.DOUBLE, press.getShape());
         double rh;
         for (int i = 0; i < r.getSize(); i++) {
             rh = MeteoMath.press2Height(press.getDouble(i));
+            r.setDouble(i, rh);
+        }
+
+        return r;
+    }
+
+    /**
+     * Calculate pressure from height
+     *
+     * @param height Height - m
+     * @return Pressure - hPa
+     */
+    public static Array height2Press(Array height) {
+        Array r = Array.factory(DataType.DOUBLE, height.getShape());
+        double rh;
+        for (int i = 0; i < r.getSize(); i++) {
+            rh = MeteoMath.height2Press(height.getDouble(i));
             r.setDouble(i, rh);
         }
 
