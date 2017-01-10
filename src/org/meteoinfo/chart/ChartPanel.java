@@ -427,6 +427,14 @@ public class ChartPanel extends JPanel {
             this.chart.draw(g, chartArea);
         }
     }
+    
+    public void paintGraphics(Graphics2D g, int width, int height) {
+        if (this.chart != null) {
+            Rectangle2D chartArea;
+            chartArea = new Rectangle2D.Double(0.0, 0.0, width, height);
+            this.chart.draw(g, chartArea);
+        }
+    }
 
     void onComponentResized(ComponentEvent e) {
         if (this.chart != null) {
@@ -902,7 +910,7 @@ public class ChartPanel extends JPanel {
                 aImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
             }
             Graphics2D g = aImage.createGraphics();
-            paintGraphics(g);
+            paintGraphics(g, w, h);
             ImageIO.write(aImage, extension, new File(aFile));
         }
     }
