@@ -108,11 +108,13 @@ public class ArrayUtil {
             for (String dstr : dataArray) {
                 a.setDouble(i, Double.parseDouble(dstr));
                 i += 1;
-                if (i >= a.getSize())
+                if (i >= a.getSize()) {
                     break;
+                }
             }
-            if (i >= a.getSize())
+            if (i >= a.getSize()) {
                 break;
+            }
 
             line = sr.readLine();
         }
@@ -817,6 +819,102 @@ public class ArrayUtil {
     }
 
     /**
+     * Concatenate arrays to one array along a axis
+     *
+     * @param arrays Array list
+     * @param axis The axis
+     * @return Concatenated array
+     * @throws ucar.ma2.InvalidRangeException
+     */
+    public static Array concatenate(List<Array> arrays, Integer axis) throws InvalidRangeException {
+        int ndim = arrays.get(0).getRank();
+        if (axis == -1) {
+            axis = ndim - 1;
+        }
+        int len = 0;
+        int[] lens = new int[arrays.size()];
+        int i = 0;
+        List<Index> indexList = new ArrayList<>();
+        for (Array a : arrays){
+            len += a.getShape()[axis];
+            lens[i] = len;
+            indexList.add(Index.factory(a.getShape()));
+            i += 1;
+        }
+        int[] shape = arrays.get(0).getShape();
+        shape[axis] = len;
+        Array r = Array.factory(arrays.get(0).getDataType(), shape);
+        int[] current;
+        IndexIterator ii = r.getIndexIterator();
+        Index index;
+        int idx = 0;
+        while (ii.hasNext()){
+            ii.next();
+            current = ii.getCurrentCounter();
+            for (i = 0; i < lens.length; i++){
+                if (current[axis] < lens[i]){
+                    idx = i;                    
+                    break;
+                }
+            }
+            if (idx > 0){
+                current[axis] = current[axis] - lens[idx - 1];
+            }
+            index = indexList.get(idx);
+            index.set(current);
+            ii.setObjectCurrent(arrays.get(idx).getObject(index));
+        }
+        
+        return r;
+    }
+    
+    /**
+     * Concatenate two arrays to one array along a axis
+     *
+     * @param a Array a
+     * @param b Array b
+     * @param axis The axis
+     * @return Concatenated array
+     * @throws ucar.ma2.InvalidRangeException
+     */
+    public static Array concatenate(Array a, Array b, Integer axis) throws InvalidRangeException {
+        int n = a.getRank();
+        int[] shape = a.getShape();
+        if (axis == -1) {
+            axis = n - 1;
+        }
+        int nn = shape[axis];
+        int[] bshape = b.getShape();
+        int[] nshape = new int[n];
+        for (int i = 0; i < n; i++) {
+            if (i == axis) {
+                nshape[i] = shape[i] + bshape[i];
+            } else {
+                nshape[i] = shape[i];
+            }
+        }
+        Array r = Array.factory(a.getDataType(), nshape);
+        Index indexr = r.getIndex();
+        Index indexa = a.getIndex();
+        Index indexb = b.getIndex();
+        int[] current;
+        for (int i = 0; i < r.getSize(); i++) {
+            current = indexr.getCurrentCounter();
+            if (current[axis] < nn) {
+                indexa.set(current);
+                r.setObject(indexr, a.getObject(indexa));
+            } else {
+                current[axis] = current[axis - nn];
+                indexb.set(current);
+                r.setObject(indexr, b.getObject(indexb));
+            }      
+            indexr.incr();
+        }
+
+        return r;
+    }
+
+    /**
      * Sort array along an axis
      *
      * @param a Array a
@@ -891,16 +989,18 @@ public class ArrayUtil {
 
             return r;
         }
-    }    
+    }
+
     // </editor-fold>
     // <editor-fold desc="Statistics">
     /**
      * Histogram x/y array
+     *
      * @param a Data array
      * @param nbins bin number
      * @return X/Y arrays
      */
-    public static List<Array> histogram(Array a, int nbins){
+    public static List<Array> histogram(Array a, int nbins) {
         double min = ArrayMath.getMinimum(a);
         double max = ArrayMath.getMaximum(a);
         double[] bins = MIMath.getIntervalValues(min, max, nbins);
@@ -908,27 +1008,27 @@ public class ArrayUtil {
         double delta = bins[1] - bins[0];
         int[] count = new int[n + 1];
         double v;
-        for (int i = 0; i < a.getSize(); i++){
+        for (int i = 0; i < a.getSize(); i++) {
             v = a.getDouble(i);
-            if (v < bins[0])
+            if (v < bins[0]) {
                 count[0] += 1;
-            else if (v > bins[n - 1])
+            } else if (v > bins[n - 1]) {
                 count[n] += 1;
-            else {
-                for (int j = 0; j < n - 1; j++){
-                    if (v > bins[j] && v < bins[j + 1]){
+            } else {
+                for (int j = 0; j < n - 1; j++) {
+                    if (v > bins[j] && v < bins[j + 1]) {
                         count[j + 1] += 1;
                         break;
                     }
                 }
             }
         }
-        
+
         Array x = Array.factory(DataType.DOUBLE, new int[]{count.length + 1});
         Array y = Array.factory(DataType.INT, new int[]{count.length});
-        for (int i = 0; i < count.length; i++){
+        for (int i = 0; i < count.length; i++) {
             y.setInt(i, count[i]);
-            if (i == 0){
+            if (i == 0) {
                 x.setDouble(0, bins[0] - delta);
                 x.setDouble(1, bins[0]);
             } else if (i == count.length - 1) {
@@ -940,9 +1040,10 @@ public class ArrayUtil {
         List<Array> r = new ArrayList<>();
         r.add(x);
         r.add(y);
-        
+
         return r;
     }
+
     // </editor-fold>
     // <editor-fold desc="Resample/Interpolate">
     /**
@@ -1620,7 +1721,7 @@ public class ArrayUtil {
             pNums[i][j] += 1;
             //r.setInt(i * colNum + j, r.getInt(i * colNum + j) + 1);
         }
-        
+
         for (int i = 0; i < rowNum; i++) {
             for (int j = 0; j < colNum; j++) {
                 r.setInt(i * colNum + j, pNums[i][j]);
@@ -2534,7 +2635,7 @@ public class ArrayUtil {
 
         return iValue;
     }
-    
+
     /**
      * Interpolate data to a station point
      *
@@ -2547,8 +2648,8 @@ public class ArrayUtil {
      */
     public static double toStation(Array data, Array xArray, Array yArray, double x, double y) {
         double iValue = Double.NaN;
-        int nx = (int)xArray.getSize();
-        int ny = (int)yArray.getSize();
+        int nx = (int) xArray.getSize();
+        int ny = (int) yArray.getSize();
         if (x < xArray.getDouble(0) || x > xArray.getDouble(nx - 1)
                 || y < yArray.getDouble(0) || y > yArray.getDouble(ny - 1)) {
             return iValue;

@@ -35,6 +35,7 @@ import org.meteoinfo.projection.ProjectionInfo;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.meteoinfo.data.ArrayMath;
 import org.meteoinfo.data.meteodata.micaps.MICAPS11DataInfo;
 import org.meteoinfo.data.meteodata.micaps.MICAPS120DataInfo;
 import org.meteoinfo.data.meteodata.micaps.MICAPS13DataInfo;
@@ -51,6 +52,8 @@ import org.meteoinfo.data.meteodata.metar.METARDataInfo;
 import org.meteoinfo.data.meteodata.micaps.MICAPS2DataInfo;
 import org.meteoinfo.data.meteodata.synop.SYNOPDataInfo;
 import ucar.ma2.Array;
+import ucar.ma2.InvalidRangeException;
+import ucar.ma2.Range;
 import ucar.nc2.NetcdfFile;
 
 /**
@@ -828,6 +831,26 @@ public class MeteoDataInfo {
     public Array read(String varName, int[] origin, int[] size, int[] stride) {
         return this._dataInfo.read(varName, origin, size, stride);
     }
+    
+    /**
+     * Read array data from a variable
+     * @param varName Variable name
+     * @param ranges List of dimension ranges
+     * @return Array data
+     */
+    public Array read(String varName, List<Range> ranges){
+        int n = ranges.size();
+        int[] origin = new int[n];
+        int[] size = new int[n];
+        int[] stride = new int[n];
+        for (int i = 0; i < n; i++) {
+            origin[i] = ranges.get(i).first();
+            size[i] = ranges.get(i).last() - ranges.get(i).first() + 1;
+            stride[i] = ranges.get(i).stride();
+        }
+        
+        return read(varName, origin, size, stride);
+    }
 
     /**
      * Read array data of the variable
@@ -870,6 +893,49 @@ public class MeteoDataInfo {
      */
     public Array read(String varName, List<Integer> origin, List<Integer> size) {
         return this.read(varName, origin, size, null);
+    }
+    
+    /**
+     * Take array data from the variable
+     * @param varName Variable name
+     * @param ranges Range list
+     * @return Array data
+     * @throws InvalidRangeException 
+     */
+    public Array take(String varName, List<Object> ranges) throws InvalidRangeException{
+        int n = ranges.size();
+        List<Range> nranges = new ArrayList<>();
+        List<Object> branges = new ArrayList<>();
+        for (int i = 0; i < n; i++){
+            if (ranges.get(i) instanceof Range){
+                nranges.add((Range)ranges.get(i));
+                branges.add(new Range(0, ((Range)ranges.get(i)).length() - 1, 1));
+            } else {
+                List<Integer> list = (List<Integer>)ranges.get(i);
+                int min = list.get(0);
+                int max = min;
+                if (list.size() > 1){
+                    for (int j = 1; j < list.size(); j++){
+                        if (min > list.get(j))
+                            min = list.get(j);
+                        if (max < list.get(j))
+                            max = list.get(j);
+                    }
+                }
+                Range range = new Range(min, max, 1);
+                nranges.add(range);
+                List<Integer> nlist = new ArrayList<>();
+                for (int j = 0; j < list.size(); j++){
+                    nlist.add(list.get(j) - min);
+                }
+                branges.add(nlist);
+            }
+        }
+        
+        Array r = read(varName, nranges);
+        r = ArrayMath.take(r, branges);
+        
+        return r;
     }
 
     /**

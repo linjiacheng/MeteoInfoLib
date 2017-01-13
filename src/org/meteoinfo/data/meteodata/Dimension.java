@@ -393,6 +393,31 @@ public class Dimension extends ucar.nc2.Dimension {
 
         return dim;
     }
+    
+    /**
+     * Extract dimension
+     *
+     * @param index Indices
+     * @return Extracted dimension
+     */
+    public Dimension extract(List<Integer> index) {
+        Dimension dim = new Dimension(this.getShortName(), this.getLength(), this._dimType);
+        dim.setDimId(this._dimId);
+        dim.setReverse(this.reverse);
+        List<Double> values = new ArrayList<>();
+            if (this.reverse) {
+                for (int i = index.size() - 1; i <= 0; i--) {
+                    values.add(this._dimValue.get(index.get(i)));
+                }
+            } else {
+                for (int i = 0; i < index.size(); i++) {
+                    values.add(this._dimValue.get(index.get(i)));
+                }
+            }
+            dim.setValues(values);
+
+        return dim;
+    }
 
     /**
      * Get value index

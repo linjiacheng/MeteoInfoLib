@@ -1468,6 +1468,51 @@ public class ArrayMath {
         MAMath.copy(rr, r);
         return rr;
     }
+    
+    /**
+     * Take elements from an array along an axis.
+     * @param a The array
+     * @param ranges The indices of the values to extract.
+     * @return The returned array has the same type as a.
+     */
+    public static Array take(Array a, List<Object> ranges) {
+        int n = a.getRank();
+        int[] shape = new int[n];
+        List<List<Integer>> indexlist = new ArrayList<>();
+        List<Integer> list;
+        for (int i = 0; i < n; i++){
+            Object k = ranges.get(i);
+            if (k instanceof Range){
+                Range kr = (Range)k;
+                shape[i] = kr.length();
+                list = new ArrayList<>();
+                for (int j = kr.first(); j <= kr.last(); j += kr.stride()){
+                    list.add(j);
+                }
+                indexlist.add(list);
+            } else {
+                List<Integer> kl = (List<Integer>)k;
+                shape[i] = kl.size();
+                indexlist.add(kl);
+            }
+        }
+        
+        Array r = Array.factory(a.getDataType(), shape);
+        IndexIterator ii = r.getIndexIterator(); 
+        int[] current, acurrent = new int[n];
+        Index index = a.getIndex();
+        while(ii.hasNext()){
+            ii.next();
+            current = ii.getCurrentCounter();
+            for (int i = 0; i < n; i++){
+                acurrent[i] = indexlist.get(i).get(current[i]);
+            }
+            index.set(acurrent);
+            ii.setObjectCurrent(a.getObject(index));
+        }
+        
+        return r;
+    }
 
     /**
      * Set section
