@@ -500,11 +500,22 @@ public class ArrayUtil {
      */
     public static Array zeros(List<Integer> shape, String dtype) {
         DataType dt = toDataType(dtype);
+        return zeros(shape, dt);
+    }
+    
+    /**
+     * Get zero array
+     *
+     * @param shape Shape
+     * @param dtype Data type
+     * @return Array Result array
+     */
+    public static Array zeros(List<Integer> shape, DataType dtype) {
         int[] ashape = new int[shape.size()];
         for (int i = 0; i < shape.size(); i++) {
             ashape[i] = shape.get(i);
         }
-        Array a = Array.factory(dt, ashape);
+        Array a = Array.factory(dtype, ashape);
         for (int i = 0; i < a.getSize(); i++) {
             a.setObject(i, 0);
         }
@@ -543,6 +554,62 @@ public class ArrayUtil {
         Array a = Array.factory(dt, ashape);
         for (int i = 0; i < a.getSize(); i++) {
             a.setObject(i, 1);
+        }
+
+        return a;
+    }
+    
+    /**
+     * Return the identity array - a square array with ones on the main diagonal.
+     * @param n Number of rows (and columns) in n x n output.
+     * @param dtype Data type
+     * @return Identity array
+     */
+    public static Array identity(int n, String dtype){
+        DataType dt = toDataType(dtype);
+        int[] shape = new int[]{n, n};
+        Array a = Array.factory(dt, shape);
+        IndexIterator index = a.getIndexIterator();     
+        int[] current;
+        while(index.hasNext()){
+            index.next();
+            current = index.getCurrentCounter();
+            if (current[0] == current[1]){
+                index.setObjectCurrent(1);                
+            } else {
+                index.setObjectCurrent(0);
+            }
+        }
+
+        return a;
+    }
+    
+    /**
+     * Return a 2-D array with ones on the diagonal and zeros elsewhere.
+     * @param n Number of rows in the output.
+     * @param m Number of columns in the output.
+     * @param k Index of the diagonal: 0 (the default) refers to the main diagonal, 
+     *   a positive value refers to an upper diagonal, and a negative value to a lower diagonal.
+     * @param dtype Data type
+     * @return Created array
+     */
+    public static Array eye(int n, int m, int k, String dtype){
+        DataType dt = toDataType(dtype);
+        int[] shape = new int[]{n, m};
+        Array a = Array.factory(dt, shape);
+        IndexIterator index = a.getIndexIterator();     
+        int[] current;
+        int i, j;
+        while(index.hasNext()){
+            index.next();
+            current = index.getCurrentCounter();
+            i = current[0];
+            j = current[1] + k;            
+            if (i == j){
+                index.setObjectCurrent(1);                
+            } else {
+                index.setObjectCurrent(0);
+            }
         }
 
         return a;
@@ -754,6 +821,34 @@ public class ArrayUtil {
 
     // </editor-fold>
     // <editor-fold desc="Convert/Sort">
+    /**
+     * Get data type string
+     * @param dt The data type
+     * @return Data type string
+     */
+    public static String dataTypeString(DataType dt){
+        String str = "string";
+        switch (dt){
+            case BYTE:
+                str = "byte";
+                break;
+            case SHORT:
+                str = "short";
+                break;
+            case INT:
+                str = "int";
+                break;
+            case FLOAT:
+                str = "float";
+                break;
+            case DOUBLE:
+                str = "double";
+                break;
+        }
+        
+        return str;
+    }
+    
     /**
      * To data type - ucar.ma2
      *

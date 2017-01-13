@@ -1834,6 +1834,25 @@ public class ArrayMath {
         }
         return sum;
     }
+    
+    /**
+     * Produce array
+     *
+     * @param a Array a
+     * @return Produce value
+     */
+    public static double prodDouble(Array a) {
+        double prod = 1.0D;
+        double v;
+        IndexIterator iterA = a.getIndexIterator();
+        while (iterA.hasNext()) {
+            v = iterA.getDoubleNext();
+            if (!Double.isNaN(v)) {
+                prod *= v;
+            }
+        }
+        return prod;
+    }
 
     /**
      * Average array

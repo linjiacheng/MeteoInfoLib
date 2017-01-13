@@ -537,9 +537,9 @@ public class JConsole extends JScrollPane
     private String getCurrentText(){
         String part = text.getText().substring(cmdStart);
         
-        int idx = part.lastIndexOf(">");
+        int idx = part.lastIndexOf(">>>");
         if (idx >= 0)
-            part = part.substring(part.lastIndexOf(">") + 2);
+            part = part.substring(idx + 2);
         
         return part;
     }
