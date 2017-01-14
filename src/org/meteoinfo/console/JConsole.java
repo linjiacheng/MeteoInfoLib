@@ -516,7 +516,11 @@ public class JConsole extends JScrollPane
         append(command); // append does not reset command start
     }
     
-    private Point getDisplayPoint(){
+    /**
+     * Get popup window display point
+     * @return Point
+     */
+    public Point getDisplayPoint(){
         //Get the point where the popup window should be displayed
         Point screenPoint = this.text.getLocationOnScreen();
         Point caretPoint = this.text.getCaret().getMagicCaretPosition();

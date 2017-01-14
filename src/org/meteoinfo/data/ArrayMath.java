@@ -1326,6 +1326,21 @@ public class ArrayMath {
 
         return r;
     }
+    
+    /**
+     * Return the dot product of two vectors.
+     * @param a Vector a
+     * @param b Vector b
+     * @return Result
+     */
+    public static double vdot(Array a, Array b){
+        double r = 0;
+        for (int i = 0; i < a.getSize(); i++){
+            r += a.getDouble(i) * b.getDouble(i);
+        }
+        
+        return r;
+    }
 
     // </editor-fold>
     // <editor-fold desc="Circular function">

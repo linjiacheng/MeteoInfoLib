@@ -502,7 +502,7 @@ public class ArrayUtil {
         DataType dt = toDataType(dtype);
         return zeros(shape, dt);
     }
-    
+
     /**
      * Get zero array
      *
@@ -558,24 +558,26 @@ public class ArrayUtil {
 
         return a;
     }
-    
+
     /**
-     * Return the identity array - a square array with ones on the main diagonal.
+     * Return the identity array - a square array with ones on the main
+     * diagonal.
+     *
      * @param n Number of rows (and columns) in n x n output.
      * @param dtype Data type
      * @return Identity array
      */
-    public static Array identity(int n, String dtype){
+    public static Array identity(int n, String dtype) {
         DataType dt = toDataType(dtype);
         int[] shape = new int[]{n, n};
         Array a = Array.factory(dt, shape);
-        IndexIterator index = a.getIndexIterator();     
+        IndexIterator index = a.getIndexIterator();
         int[] current;
-        while(index.hasNext()){
+        while (index.hasNext()) {
             index.next();
             current = index.getCurrentCounter();
-            if (current[0] == current[1]){
-                index.setObjectCurrent(1);                
+            if (current[0] == current[1]) {
+                index.setObjectCurrent(1);
             } else {
                 index.setObjectCurrent(0);
             }
@@ -583,30 +585,32 @@ public class ArrayUtil {
 
         return a;
     }
-    
+
     /**
      * Return a 2-D array with ones on the diagonal and zeros elsewhere.
+     *
      * @param n Number of rows in the output.
      * @param m Number of columns in the output.
-     * @param k Index of the diagonal: 0 (the default) refers to the main diagonal, 
-     *   a positive value refers to an upper diagonal, and a negative value to a lower diagonal.
+     * @param k Index of the diagonal: 0 (the default) refers to the main
+     * diagonal, a positive value refers to an upper diagonal, and a negative
+     * value to a lower diagonal.
      * @param dtype Data type
      * @return Created array
      */
-    public static Array eye(int n, int m, int k, String dtype){
+    public static Array eye(int n, int m, int k, String dtype) {
         DataType dt = toDataType(dtype);
         int[] shape = new int[]{n, m};
         Array a = Array.factory(dt, shape);
-        IndexIterator index = a.getIndexIterator();     
+        IndexIterator index = a.getIndexIterator();
         int[] current;
         int i, j;
-        while(index.hasNext()){
+        while (index.hasNext()) {
             index.next();
             current = index.getCurrentCounter();
             i = current[0];
-            j = current[1] + k;            
-            if (i == j){
-                index.setObjectCurrent(1);                
+            j = current[1] + k;
+            if (i == j) {
+                index.setObjectCurrent(1);
             } else {
                 index.setObjectCurrent(0);
             }
@@ -823,12 +827,13 @@ public class ArrayUtil {
     // <editor-fold desc="Convert/Sort">
     /**
      * Get data type string
+     *
      * @param dt The data type
      * @return Data type string
      */
-    public static String dataTypeString(DataType dt){
+    public static String dataTypeString(DataType dt) {
         String str = "string";
-        switch (dt){
+        switch (dt) {
             case BYTE:
                 str = "byte";
                 break;
@@ -845,10 +850,10 @@ public class ArrayUtil {
                 str = "double";
                 break;
         }
-        
+
         return str;
     }
-    
+
     /**
      * To data type - ucar.ma2
      *
@@ -930,7 +935,7 @@ public class ArrayUtil {
         int[] lens = new int[arrays.size()];
         int i = 0;
         List<Index> indexList = new ArrayList<>();
-        for (Array a : arrays){
+        for (Array a : arrays) {
             len += a.getShape()[axis];
             lens[i] = len;
             indexList.add(Index.factory(a.getShape()));
@@ -943,26 +948,26 @@ public class ArrayUtil {
         IndexIterator ii = r.getIndexIterator();
         Index index;
         int idx = 0;
-        while (ii.hasNext()){
+        while (ii.hasNext()) {
             ii.next();
             current = ii.getCurrentCounter();
-            for (i = 0; i < lens.length; i++){
-                if (current[axis] < lens[i]){
-                    idx = i;                    
+            for (i = 0; i < lens.length; i++) {
+                if (current[axis] < lens[i]) {
+                    idx = i;
                     break;
                 }
             }
-            if (idx > 0){
+            if (idx > 0) {
                 current[axis] = current[axis] - lens[idx - 1];
             }
             index = indexList.get(idx);
             index.set(current);
             ii.setObjectCurrent(arrays.get(idx).getObject(index));
         }
-        
+
         return r;
     }
-    
+
     /**
      * Concatenate two arrays to one array along a axis
      *
@@ -1002,7 +1007,7 @@ public class ArrayUtil {
                 current[axis] = current[axis - nn];
                 indexb.set(current);
                 r.setObject(indexr, b.getObject(indexb));
-            }      
+            }
             indexr.incr();
         }
 
@@ -1083,6 +1088,44 @@ public class ArrayUtil {
             }
 
             return r;
+        }
+    }
+
+    /**
+     * Convert array to N-Dimension double Java array
+     *
+     * @param a Array a
+     * @return N-D Java array
+     */
+    public static Object copyToNDJavaArray(Array a) {
+        Object javaArray;
+        try {
+            javaArray = java.lang.reflect.Array.newInstance(Double.TYPE, a.getShape());
+        } catch (IllegalArgumentException | NegativeArraySizeException e) {
+            throw new IllegalArgumentException(e);
+        }
+        IndexIterator iter = a.getIndexIterator();
+        reflectArrayCopyOut(javaArray, a, iter);
+
+        return javaArray;
+    }
+
+    private static void reflectArrayCopyOut(Object jArray, Array aa, IndexIterator aaIter) {
+        Class cType = jArray.getClass().getComponentType();
+
+        if (!cType.isArray()) {
+            copyTo1DJavaArray(aaIter, jArray);
+        } else {
+            for (int i = 0; i < java.lang.reflect.Array.getLength(jArray); i++) {
+                reflectArrayCopyOut(java.lang.reflect.Array.get(jArray, i), aa, aaIter);
+            }
+        }
+    }
+
+    protected static void copyTo1DJavaArray(IndexIterator iter, Object javaArray) {
+        double[] ja = (double[]) javaArray;
+        for (int i = 0; i < ja.length; i++) {
+            ja[i] = iter.getDoubleNext();
         }
     }
 
