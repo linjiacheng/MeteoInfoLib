@@ -608,7 +608,7 @@ public class ArrayUtil {
             index.next();
             current = index.getCurrentCounter();
             i = current[0];
-            j = current[1] + k;
+            j = current[1] - k;
             if (i == j) {
                 index.setObjectCurrent(1);
             } else {
@@ -617,6 +617,52 @@ public class ArrayUtil {
         }
 
         return a;
+    }
+    
+    /**
+     * Extract a diagonal or construct a diagonal array.
+     * @param a If a is a 2-D array, return a copy of its k-th diagonal. If a is a 1-D array, 
+     *  return a 2-D array with a on the k-th diagonal.
+     * @param k Diagonal in question.
+     * @return Diagonal array
+     */
+    public static Array diag(Array a, int k){
+        if (a.getRank() == 2){
+            int m = a.getShape()[0];
+            int n = a.getShape()[1];
+            int len = Math.min(m, n) - Math.abs(k);
+            Array r = Array.factory(a.getDataType(), new int[]{len});
+            IndexIterator index = a.getIndexIterator();
+            int[] current;
+            int idx = 0, i, j;
+            while (index.hasNext()){
+                index.next();
+                current = index.getCurrentCounter();
+                i = current[0];
+                j = current[1] - k;
+                if (i == j){
+                    r.setObject(idx, index.getObjectCurrent());
+                    idx += 1;
+                    if (idx == len){
+                        break;
+                    }
+                }
+            }            
+            return r;
+        } else {
+            int m = a.getShape()[0];
+            Array r = Array.factory(a.getDataType(), new int[]{m, m});
+            for (int i = 0; i < m; i++){
+                for (int j = 0; j < m; j++){
+                    if (i == j - k){
+                        r.setObject(i * m + j, a.getObject(i));
+                    } else {
+                        r.setObject(i * m + j, 0);
+                    }
+                }
+            }
+            return r;
+        }
     }
 
     /**
