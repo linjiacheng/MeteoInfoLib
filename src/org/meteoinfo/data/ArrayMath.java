@@ -1560,10 +1560,13 @@ public class ArrayMath {
     public static Array setSection(Array a, List<Range> ranges, Array v) throws InvalidRangeException {
         Array r = a.section(ranges);
         IndexIterator iter = r.getIndexIterator();
-        int i = 0;
+        int[] current;
+        Index index = v.getIndex();
         while (iter.hasNext()) {
-            iter.setObjectNext(v.getObject(i));
-            i += 1;
+            iter.next();
+            current = iter.getCurrentCounter();
+            index.set(current);
+            iter.setObjectCurrent(v.getObject(index));
         }
         r = Array.factory(a.getDataType(), a.getShape(), r.getStorage());
         return r;

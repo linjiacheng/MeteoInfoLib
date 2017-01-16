@@ -4643,6 +4643,7 @@ public class MapView extends JPanel {
         LegendScheme aLS = aLayer.getLegendScheme();
         Color aColor;
         double value;
+        g.setStroke(new BasicStroke(1));
         switch (aLS.getLegendType()) {
             case SingleSymbol:
                 PointBreak aPB = (PointBreak) aLS.getLegendBreaks().get(0);
