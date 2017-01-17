@@ -86,7 +86,7 @@ public class Dimension extends ucar.nc2.Dimension {
      * @param dimType Dimension type
      */
     public Dimension(DimensionType dimType) {
-        this("null", 1, dimType);
+        this(dimType.toString(), 1, dimType);
     }
 
     /**
