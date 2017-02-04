@@ -1382,8 +1382,13 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
         String sTimeStr = getGlobalAttStr("STIME");
         int len = sTimeStr.length();
         Calendar cal = Calendar.getInstance();
-        cal.set(Integer.parseInt(sDateStr.substring(0, 4)), 0, 1, 0, 0, 0);
-        cal.add(Calendar.DAY_OF_YEAR, Integer.parseInt(sDateStr.substring(4)) - 1);
+        try {
+            cal.set(Integer.parseInt(sDateStr.substring(0, 4)), 0, 1, 0, 0, 0);
+            if (MIMath.isNumeric(sDateStr.substring(4)))
+                cal.add(Calendar.DAY_OF_YEAR, Integer.parseInt(sDateStr.substring(4)) - 1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         if (sTimeStr.length() <= 2) {
             cal.add(Calendar.SECOND, Integer.parseInt(sTimeStr));
         } else if (sTimeStr.length() <= 4) {

@@ -33,6 +33,7 @@ import org.meteoinfo.data.meteodata.Variable;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.util.DateUtil;
 import ucar.ma2.Array;
+import ucar.ma2.DataType;
 import ucar.nc2.Attribute;
 
 /**
@@ -45,6 +46,7 @@ public class MICAPS2DataInfo extends DataInfo implements IStationDataInfo{
     private List<String> _varList = new ArrayList<>();
     private List<String> _fieldList = new ArrayList<>();
     private List<List<String>> _dataList = new ArrayList<>();
+    private int stNum;
     // </editor-fold>
     // <editor-fold desc="Constructor">
     
@@ -100,7 +102,7 @@ public class MICAPS2DataInfo extends DataInfo implements IStationDataInfo{
                     Integer.parseInt(dataList.get(3)), 0, 0);
             Date time = cal.getTime();
             int level = Integer.parseInt(dataList.get(4));
-            int stNum = Integer.parseInt(dataList.get(5));
+            stNum = Integer.parseInt(dataList.get(5));
             
             //Read data
             while((aLine = sr.readLine()) != null){
@@ -128,13 +130,18 @@ public class MICAPS2DataInfo extends DataInfo implements IStationDataInfo{
             Dimension zdim = new Dimension(DimensionType.Z);
             zdim.setValues(new double[]{level});
             this.setZDimension(zdim);
+            Dimension stdim = new Dimension(DimensionType.Other);
+            values = new double[stNum];
+            stdim.setValues(values);
+            this.addDimension(stdim);
             List<Variable> variables = new ArrayList<>();
-            for (String vName : _varList) {
+            for (String vName : this._fieldList) {
                 Variable var = new Variable();
                 var.setName(vName);
                 var.setStation(true);
-                var.setDimension(tdim);
-                var.setDimension(zdim);
+                //var.setDimension(tdim);
+                //var.setDimension(zdim);
+                var.setDimension(stdim);
                 var.setFillValue(this.getMissingValue());
                 variables.add(var);
             }
@@ -214,7 +221,46 @@ public class MICAPS2DataInfo extends DataInfo implements IStationDataInfo{
      */
     @Override
     public Array read(String varName, int[] origin, int[] size, int[] stride) {
-        return null;
+        int varIdx = this._fieldList.indexOf(varName);
+        if (varIdx < 0) {
+            return null;
+        }
+
+        DataType dt = DataType.FLOAT;
+        switch (varName) {
+            case "Stid":
+                dt = DataType.STRING;
+                break;
+            case "Grade":
+                dt = DataType.INT;
+                break;
+        }
+        int[] shape = new int[1];
+        shape[0] = this.stNum;
+        Array r = Array.factory(dt, shape);
+        int i;
+        float v;
+        List<String> dataList;
+        //List<List<String>> allDataList = this.readData();
+
+        for (i = 0; i < this.stNum; i++) {
+            dataList = this._dataList.get(i);
+            switch (dt) {
+                case STRING:
+                    r.setObject(i, dataList.get(varIdx));
+                    break;
+                case INT:
+                    int vi = Integer.parseInt(dataList.get(varIdx));
+                    r.setInt(i, vi);
+                    break;
+                case FLOAT:
+                    v = Float.parseFloat(dataList.get(varIdx));
+                    r.setFloat(i, v);
+                    break;
+            }
+        }
+
+        return r;
     }
 
     @Override
@@ -235,7 +281,7 @@ public class MICAPS2DataInfo extends DataInfo implements IStationDataInfo{
         List<String> stations = new ArrayList<>();
 
         //Get real variable index
-        varIdx = _fieldList.indexOf(_varList.get(varIdx));
+        //varIdx = _fieldList.indexOf(_varList.get(varIdx));
 
         for (i = 0; i < _dataList.size(); i++) {
             dataList = _dataList.get(i);
