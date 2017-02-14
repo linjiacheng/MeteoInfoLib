@@ -24,6 +24,7 @@ import org.meteoinfo.global.util.GlobalUtil;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -387,9 +388,9 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                                 + "+lon_0=" + String.valueOf(aDH.REF_LON + aDH.ORIENT);
                     } else {
                         ProjStr = "+proj=lcc"
-                                + "+lat_0=" + String.valueOf(aDH.TANG_LAT)
-                                + "+lat_1=" + String.valueOf(aDH.REF_LAT)
-                                + "+lat_2=" + String.valueOf(aDH.REF_LAT)
+                                + "+lat_0=" + String.valueOf(aDH.REF_LAT)
+                                + "+lat_1=" + String.valueOf(aDH.TANG_LAT)
+                                + "+lat_2=" + String.valueOf(aDH.TANG_LAT)
                                 + "+lon_0=" + String.valueOf(aDH.REF_LON + aDH.ORIENT);
                     }
                 } else if (aDH.TANG_LAT == 0) {
@@ -562,7 +563,8 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         ProjectionInfo fromProj = KnownCoordinateSystems.geographic.world.WGS1984;
         double sync_X, sync_Y;
         double[][] points = new double[1][];
-        points[0] = new double[]{sync_Lon, sync_Lat};
+        points[0] = new double[]{new BigDecimal(String.valueOf(sync_Lon)).doubleValue(), 
+            new BigDecimal(String.valueOf(sync_Lat)).doubleValue()};
         Reproject.reprojectPoints(points, fromProj, projInfo, 0, 1);
         sync_X = points[0][0];
         sync_Y = points[0][1];
@@ -1454,12 +1456,16 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             aDH.NZ = levels.size();
         } else {
             float sync_x, sync_y;
-            sync_x = 0.5f * (X.length + 1);
-            sync_y = 0.5f * (Y.length + 1);
+            //sync_x = 0.5f * (X.length + 1);
+            //sync_y = 0.5f * (Y.length + 1);
+            sync_x = 1;
+            sync_y = 1;
             double sync_lon, sync_lat;
             if (Double.isNaN(projInfo.getCenterLon())) {
-                double x = MIMath.getValue(X, sync_x);
-                double y = MIMath.getValue(Y, sync_y);
+                //double x = MIMath.getValue(X, sync_x);
+                //double y = MIMath.getValue(Y, sync_y);
+                double x = X[0];
+                double y = Y[0];
                 double[][] points = new double[1][];
                 points[0] = new double[]{x, y};
                 ProjectionInfo toProj = KnownCoordinateSystems.geographic.world.WGS1984;
@@ -1476,9 +1482,12 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             tanLat = Double.parseDouble(String.format("%.2f", tanLat));
             switch (projInfo.getProjectionName()) {
                 case Lambert_Conformal_Conic:
-                    aDH.POLE_LAT = (float) tanLat;
-                    aDH.POLE_LON = (float) aProj.getProjectionLongitudeDegrees();
-                    aDH.REF_LAT = (float) tanLat;
+                    //aDH.POLE_LAT = (float) tanLat;
+                    aDH.POLE_LAT = 90;
+                    //aDH.POLE_LON = (float) aProj.getProjectionLongitudeDegrees();
+                    aDH.POLE_LON = 0;
+                    //aDH.REF_LAT = (float) tanLat;
+                    aDH.REF_LAT = (float) aProj.getProjectionLatitudeDegrees();
                     aDH.REF_LON = (float) aProj.getProjectionLongitudeDegrees();
                     aDH.SIZE = (float) (X[1] - X[0]) / 1000;
                     aDH.ORIENT = 0;
@@ -1649,6 +1658,14 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         return GlobalUtil.padRight(nstr, n, '0');
     }
     
+    private String padNumStr1(String str, int n) {
+        String nstr = str;
+        if (nstr.indexOf('.') < 0) {
+            nstr = nstr + ".";
+        }
+        return GlobalUtil.padRight(nstr, n, '0');
+    }
+    
     /**
      * Set index record position
      */
@@ -1698,7 +1715,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         _bw.writeBytes(padNumStr(String.valueOf(aDH.SYNC_XP), 7));
         _bw.writeBytes(padNumStr(String.valueOf(aDH.SYNC_YP), 7));
         _bw.writeBytes(padNumStr(String.valueOf(aDH.SYNC_LAT), 7));
-        _bw.writeBytes(padNumStr(String.valueOf(aDH.SYNC_LON), 7));
+        _bw.writeBytes(padNumStr1(String.valueOf(aDH.SYNC_LON), 7));
         _bw.writeBytes(padNumStr(String.valueOf(aDH.DUMMY), 7));
         _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDH.NX), 3, ' '));
         _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDH.NY), 3, ' '));
