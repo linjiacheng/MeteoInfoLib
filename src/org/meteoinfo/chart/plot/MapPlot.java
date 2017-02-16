@@ -317,10 +317,23 @@ public class MapPlot extends XYPlot {
             super.setDrawExtent(extent);
         } else {
             this.getMapView().zoomToExtentLonLatEx(extent);
-            super.setDrawExtent(this.getMapView().getViewExtent());
+            super.setDrawExtent1(this.getMapView().getViewExtent());
+            this.setAxisExtent(extent);
         }
     }
-
+    
+    /**
+     * Set axis extent
+     *
+     * @param extent Extent
+     */
+    public void setAxisExtent(Extent extent) {
+        this.getAxis(Location.BOTTOM).setMinMaxValue(extent.minX, extent.maxX);
+        this.getAxis(Location.TOP).setMinMaxValue(extent.minX, extent.maxX);
+        this.getAxis(Location.LEFT).setMinMaxValue(extent.minY, extent.maxY);
+        this.getAxis(Location.RIGHT).setMinMaxValue(extent.minY, extent.maxY);
+    }
+    
     @Override
     public void addText(ChartText text) {
         if (this.getMapView().getProjection().isLonLatMap()) {

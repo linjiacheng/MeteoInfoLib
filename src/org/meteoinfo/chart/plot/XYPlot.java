@@ -223,6 +223,15 @@ public abstract class XYPlot extends Plot {
         this.getAxis(Location.LEFT).setMinMaxValue(extent.minY, extent.maxY);
         this.getAxis(Location.RIGHT).setMinMaxValue(extent.minY, extent.maxY);
     }
+    
+    /**
+     * Set draw extent
+     *
+     * @param extent Extent
+     */
+    public void setDrawExtent1(Extent extent) {
+        this.drawExtent = extent;        
+    }
 
     /**
      * Get extent
