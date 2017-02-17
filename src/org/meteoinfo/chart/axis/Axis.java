@@ -1073,10 +1073,17 @@ public class Axis implements Cloneable {
         //FontMetrics metrics = g.getFontMetrics(this.tickLabelFont);
         List<String> tls = this.updateTickLabels();
         int max = 0;
-        int width;
+        Dimension dim;
+        int width, height;
         g.setFont(this.tickLabelFont);
         for (String lab : tls) {
-            width = Draw.getStringDimension(lab, g).width;
+            dim = Draw.getStringDimension(lab, g);
+            width = dim.width;
+            if (this.tickLabelAngle != 0) {
+                width = (int) (dim.getWidth() * Math.cos(this.tickLabelAngle * Math.PI / 180));
+                height = dim.height;
+                width = Math.max(width, height);
+            }
             if (max < width) {
                 max = width;
             }

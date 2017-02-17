@@ -119,6 +119,27 @@ public class ColorMap {
     }
     
     /**
+     * Get color by float index
+     * @param idx Float index
+     * @return Color
+     */
+    public Color getColor(float idx){
+        int iidx = (int)idx;
+        if (iidx >= this.colors.length - 1)
+            return this.colors[this.colors.length - 1];
+        
+        if (idx - iidx == 0)
+            return colors[iidx];
+        else {
+            Color sc = colors[iidx];
+            Color ec = colors[iidx + 1];
+            float p = idx - iidx;
+            Color c = ColorUtil.createColor(sc, ec, p);
+            return c;
+        }
+    }
+    
+    /**
      * Set color
      * @param idx Color index
      * @param color The color
@@ -143,15 +164,29 @@ public class ColorMap {
     public Color[] getColors(int n){
         if (this.name.equalsIgnoreCase("grads_rainbow")){
             return this.gradsRainBowColors(n);
-        } 
+        }         
         
-//        if (this.colors.length < n){
-//            Color[] ncs = new Color[n];
-//            for (int i = 0; i < n; i++)
-//                ncs[i] = colors[0];
-//            
-//            return ncs;
-//        }
+        Color[] ncs = new Color[n];
+        int cn = this.colors.length;
+        float step = (float)(cn - 1) / (n - 1);       
+        float idx = 0;        
+        for (int i = 0; i < n; i++){
+            ncs[i] = this.getColor(idx);
+            idx += step;
+        }
+
+        return ncs;
+    }
+    
+    /**
+     * Get colors
+     * @param n Color number
+     * @return Colors
+     */
+    public Color[] getColors_bak(int n){
+        if (this.name.equalsIgnoreCase("grads_rainbow")){
+            return this.gradsRainBowColors(n);
+        }         
         
         Color[] ncs = new Color[n];
         int cn = this.colors.length;
@@ -165,16 +200,10 @@ public class ColorMap {
         
         for (int i = 0; i < n; i++){
             ncs[i] = this.colors[idx];
-            //System.out.println(ncs[i].getAlpha());
             idx += gap;
             if (idx >= cn)
                 idx = 0;
         }
-        
-//        if (cn > n){
-//            ncs[0] = this.colors[0];
-//            ncs[n - 1] = this.colors[cn - 1];
-//        }
 
         return ncs;
     }

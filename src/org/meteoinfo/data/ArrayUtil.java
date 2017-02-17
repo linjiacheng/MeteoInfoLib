@@ -67,12 +67,14 @@ public class ArrayUtil {
      * @param headerLines Headerline number
      * @param dataType Data type string
      * @param shape Shape
+     * @param readFirstCol Read first column data or not
      * @return Result array
      * @throws UnsupportedEncodingException
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public static Array readASCIIFile(String fileName, String delimiter, int headerLines, String dataType, List<Integer> shape) throws UnsupportedEncodingException, FileNotFoundException, IOException {
+    public static Array readASCIIFile(String fileName, String delimiter, int headerLines, String dataType, 
+            List<Integer> shape, boolean readFirstCol) throws UnsupportedEncodingException, FileNotFoundException, IOException {
         BufferedReader sr = new BufferedReader(new InputStreamReader(new FileInputStream(fileName)));
         if (headerLines > 0) {
             for (int i = 0; i < headerLines; i++) {
@@ -98,20 +100,23 @@ public class ArrayUtil {
         String[] dataArray;
         i = 0;
         String line = sr.readLine();
+        int sCol = 0;
+        if (!readFirstCol)
+            sCol = 1;
         while (line != null) {
             line = line.trim();
             if (line.isEmpty()) {
                 line = sr.readLine();
                 continue;
             }
-            dataArray = GlobalUtil.split(line, delimiter);
-            for (String dstr : dataArray) {
-                a.setDouble(i, Double.parseDouble(dstr));
+            dataArray = GlobalUtil.split(line, delimiter);            
+            for (int j = sCol; j < dataArray.length; j++){                
+                a.setDouble(i, Double.parseDouble(dataArray[j]));
                 i += 1;
                 if (i >= a.getSize()) {
                     break;
                 }
-            }
+            }            
             if (i >= a.getSize()) {
                 break;
             }
@@ -340,6 +345,15 @@ public class ArrayUtil {
         } else {
             return null;
         }
+    }
+    
+    /**
+     * Create an array
+     * @param data Array like data
+     * @return 
+     */
+    public static Array array(ArrayList data){
+        return array((List<Object>)data);
     }
 
     /**

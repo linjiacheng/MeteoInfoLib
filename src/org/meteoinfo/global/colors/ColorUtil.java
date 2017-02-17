@@ -409,6 +409,30 @@ public class ColorUtil {
     }
     
     /**
+     * Create color from start and end color
+     *
+     * @param sColor Start color
+     * @param eColor End color
+     * @param p Proportion
+     * @return Color
+     */
+    public static Color createColor(Color sColor, Color eColor, float p) {
+        int sR, sG, sB, eR, eG, eB, r, g, b;
+        
+        sR = sColor.getRed();
+        sG = sColor.getGreen();
+        sB = sColor.getBlue();
+        eR = eColor.getRed();
+        eG = eColor.getGreen();
+        eB = eColor.getBlue();
+        r = (int) (sR + (eR - sR) * p);
+        g = (int) (sG + (eG - sG) * p);
+        b = (int) (sB + (eB - sB) * p);        
+        
+        return new Color(r, g, b);
+    }
+    
+    /**
      * Create rainbow colors
      *
      * @param cNum Color number
