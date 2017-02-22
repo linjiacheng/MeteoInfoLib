@@ -12,6 +12,7 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
@@ -223,14 +224,14 @@ public abstract class XYPlot extends Plot {
         this.getAxis(Location.LEFT).setMinMaxValue(extent.minY, extent.maxY);
         this.getAxis(Location.RIGHT).setMinMaxValue(extent.minY, extent.maxY);
     }
-    
+
     /**
      * Set draw extent
      *
      * @param extent Extent
      */
     public void setDrawExtent1(Extent extent) {
-        this.drawExtent = extent;        
+        this.drawExtent = extent;
     }
 
     /**
@@ -564,20 +565,22 @@ public abstract class XYPlot extends Plot {
     public void setAspect(double value) {
         this.aspect = value;
     }
-    
+
     /**
      * Get if y axis is reverse or not
+     *
      * @return Boolean
      */
-    public boolean isYReverse(){
+    public boolean isYReverse() {
         return this.getYAxis().isInverse();
     }
-    
-     /**
+
+    /**
      * Get if x axis is reverse or not
+     *
      * @return Boolean
      */
-    public boolean isXReverse(){
+    public boolean isXReverse() {
         return this.getXAxis().isInverse();
     }
 
@@ -1136,6 +1139,19 @@ public abstract class XYPlot extends Plot {
                 x = (float) (area.getWidth() * text.getX());
                 y = (float) (area.getHeight() * (1 - text.getY()));
                 g.setFont(text.getFont());
+                Dimension dim = Draw.getStringDimension(text.getText(), g);
+                Rectangle.Double rect = new Rectangle.Double(x, y - dim.getHeight() * 0.8, dim.getWidth(), dim.getHeight());
+                if (text.isFill()) {
+                    g.setColor(text.getBackground());
+                    g.fill(rect);
+                }
+                if (text.isDrawNeatline()) {
+                    g.setColor(text.getNeatlineColor());
+                    Stroke oldStroke = g.getStroke();
+                    g.setStroke(new BasicStroke(text.getNeatlineSize()));
+                    g.draw(rect);
+                    g.setStroke(oldStroke);
+                }      
                 g.setColor(text.getColor());
                 Draw.drawString(g, text.getText(), x, y);
                 g.setTransform(oldMatrix);
@@ -1145,6 +1161,19 @@ public abstract class XYPlot extends Plot {
                 x = (float) (area.getWidth() * text.getX());
                 y = (float) (area.getHeight() * (1 - text.getY()));
                 g.setFont(text.getFont());
+                dim = Draw.getStringDimension(text.getText(), g);
+                rect = new Rectangle.Double(x, y - dim.getHeight() * 0.8, dim.getWidth(), dim.getHeight());
+                if (text.isFill()) {
+                    g.setColor(text.getBackground());
+                    g.fill(rect);
+                }
+                if (text.isDrawNeatline()) {
+                    g.setColor(text.getNeatlineColor());
+                    Stroke oldStroke = g.getStroke();
+                    g.setStroke(new BasicStroke(text.getNeatlineSize()));
+                    g.draw(rect);
+                    g.setStroke(oldStroke);
+                }      
                 g.setColor(text.getColor());
                 Draw.drawString(g, text.getText(), x, y);
                 break;
@@ -1157,6 +1186,19 @@ public abstract class XYPlot extends Plot {
                 x = (float) xy[0];
                 y = (float) xy[1];
                 g.setFont(text.getFont());
+                dim = Draw.getStringDimension(text.getText(), g);
+                rect = new Rectangle.Double(x, y - dim.getHeight() * 0.8, dim.getWidth(), dim.getHeight());
+                if (text.isFill()) {
+                    g.setColor(text.getBackground());
+                    g.fill(rect);
+                }
+                if (text.isDrawNeatline()) {
+                    g.setColor(text.getNeatlineColor());
+                    Stroke oldStroke = g.getStroke();
+                    g.setStroke(new BasicStroke(text.getNeatlineSize()));
+                    g.draw(rect);
+                    g.setStroke(oldStroke);
+                }                
                 g.setColor(text.getColor());
                 Draw.drawString(g, text.getText(), x, y);
                 g.setTransform(oldMatrix);
@@ -1242,10 +1284,10 @@ public abstract class XYPlot extends Plot {
         if (this.isLogX()) {
             screenX = (Math.log10(projX) - Math.log10(drawExtent.minX)) * scaleX;
         }
-        if (this.isYReverse()){
+        if (this.isYReverse()) {
             screenY = area.getHeight() - screenY;
         }
-        if (this.isXReverse()){
+        if (this.isXReverse()) {
             screenX = area.getWidth() - screenX;
         }
 
@@ -1293,10 +1335,10 @@ public abstract class XYPlot extends Plot {
         if (this.isLogX()) {
             width = Math.log10(drawExtent.maxX) - Math.log10(drawExtent.minX);
         }
-        if (this.isYReverse()){
+        if (this.isYReverse()) {
             screenY = area.getHeight() - screenY;
         }
-        if (this.isXReverse()){
+        if (this.isXReverse()) {
             screenX = area.getWidth() - screenX;
         }
         double scaleX = area.getWidth() / width;

@@ -27,6 +27,11 @@ public class ChartText {
     private float y;
     private int lineSpace;
     private CoordinateType coordinates;
+    private Color background;
+    private boolean drawBackground;
+    private boolean drawNeatline;
+    private Color neatLineColor;
+    private float neatLineSize;
     // </editor-fold>    
     // <editor-fold desc="Constructor">
     /**
@@ -37,6 +42,11 @@ public class ChartText {
         color = Color.black;
         lineSpace = 3;
         coordinates = CoordinateType.DATA;
+        this.background = Color.white;
+        this.drawBackground = false;
+        this.drawNeatline = false;
+        this.neatLineColor = Color.black;
+        this.neatLineSize = 1.0f;
     }
     
     /**
@@ -233,6 +243,86 @@ public class ChartText {
                 this.coordinates = CoordinateType.INCHES;
                 break;
         }
+    }
+    
+    /**
+     * Get background color
+     * @return Background color
+     */
+    public Color getBackground(){
+        return this.background;
+    }
+    
+    /**
+     * Set background color
+     * @param value Background color
+     */
+    public void setBackground(Color value){
+        this.background = value;
+    }
+    
+    /**
+     * Get if is fill background
+     * @return Boolean
+     */
+    public boolean isFill(){
+        return this.drawBackground;
+    }
+    
+    /**
+     * Set fill background or not
+     * @param value Boolean
+     */
+    public void setFill(boolean value){
+        this.drawBackground = value;
+    }
+    
+    /**
+     * Get draw neatline or not
+     * @return Boolean
+     */
+    public boolean isDrawNeatline(){
+        return this.drawNeatline;
+    }
+    
+    /**
+     * Set draw neatline or not
+     * @param value Boolean
+     */
+    public void setDrawNeatline(boolean value){
+        this.drawNeatline = value;
+    }
+    
+    /**
+     * Get neatline color
+     * @return Neatline color
+     */
+    public Color getNeatlineColor(){
+        return this.neatLineColor;
+    }
+    
+    /**
+     * Set neatline color
+     * @param value Neatline color
+     */
+    public void setNeatlineColor(Color value){
+        this.neatLineColor = value;
+    }
+    
+    /**
+     * Get neatline size
+     * @return Neatline size
+     */
+    public float getNeatlineSize(){
+        return this.neatLineSize;
+    }
+    
+    /**
+     * Set neatline size
+     * @param value Neatline size
+     */
+    public void setNeatlineSize(float value){
+        this.neatLineSize = value;
     }
     // </editor-fold>
     // <editor-fold desc="Methods">

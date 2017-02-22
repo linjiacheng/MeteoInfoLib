@@ -5,11 +5,13 @@
  */
 package org.meteoinfo.chart;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -440,6 +442,19 @@ public class Chart {
         for (ChartText text : this.texts) {
             x = (float) (area.getWidth() * text.getX());
             y = (float) (area.getHeight() * (1 - text.getY()));
+            Dimension dim = Draw.getStringDimension(text.getText(), g);
+            Rectangle.Double rect = new Rectangle.Double(x, y, dim.getWidth(), dim.getHeight());
+            if (text.isFill()){
+                g.setColor(text.getBackground());
+                g.fill(rect);
+            }
+            if (text.isDrawNeatline()){
+                g.setColor(text.getNeatlineColor());
+                Stroke oldStroke = g.getStroke();
+                g.setStroke(new BasicStroke(text.getNeatlineSize()));
+                g.draw(rect);
+                g.setStroke(oldStroke);
+            }
             g.setFont(text.getFont());
             g.setColor(text.getColor());
             Draw.drawString(g, text.getText(), x, y);
