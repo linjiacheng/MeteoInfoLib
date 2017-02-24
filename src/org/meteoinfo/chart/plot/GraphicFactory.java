@@ -940,16 +940,69 @@ public class GraphicFactory {
      * Create box graphics
      *
      * @param xdata X data array list
+     * @param positions Box position list
+     * @param widths Box width list
      * @param showmeans Show means or not
+     * @param boxBreak Box polygon break
+     * @param medianBreak Meandian line break
+     * @param whiskerBreak Whisker line break
+     * @param capBreak Whisker cap line break
+     * @param meanBreak Mean point break
+     * @param flierBreak Flier point break
      * @return GraphicCollection
      */
-    public static GraphicCollection createBox(List<Array> xdata, boolean showmeans) {
+    public static GraphicCollection createBox(List<Array> xdata, List<Number> positions, List<Number> widths, 
+            boolean showmeans, PolygonBreak boxBreak, PolylineBreak medianBreak, PolylineBreak whiskerBreak, 
+            PolylineBreak capBreak, ColorBreak meanBreak, PointBreak flierBreak) {
         GraphicCollection gc = new GraphicCollection();
         int n = xdata.size();
-        double v, width = 0.3;
+        if (positions == null){
+            positions = new ArrayList<>();
+            for (int i = 0; i < n; i++){
+                positions.add(i + 1);
+            }
+        }
+        if (widths == null){
+            widths = new ArrayList<>();
+            for (int i = 0; i < n; i++){
+                widths.add(0.5);
+            }
+        }
+        double v, width;
+        if (boxBreak == null){
+            boxBreak = new PolygonBreak();
+            boxBreak.setDrawFill(false);
+            boxBreak.setOutlineColor(Color.blue);
+        }
+        if (medianBreak == null){
+            medianBreak = new PolylineBreak();
+            medianBreak.setColor(Color.red);
+        }
+        if (whiskerBreak == null){
+            whiskerBreak = new PolylineBreak();
+            whiskerBreak.setColor(Color.black);
+            whiskerBreak.setStyle(LineStyles.Dash);
+        }
+        if (capBreak == null){
+            capBreak = new PolylineBreak();
+            capBreak.setColor(Color.black);
+        }
+        if (flierBreak == null){
+            flierBreak = new PointBreak();
+            flierBreak.setStyle(PointStyle.Plus);
+        }
+        if (meanBreak == null){
+            meanBreak = new PointBreak();
+            ((PointBreak)meanBreak).setStyle(PointStyle.Square);
+            ((PointBreak)meanBreak).setColor(Color.red);
+            ((PointBreak)meanBreak).setOutlineColor(Color.black);
+        }
+        
         for (int i = 0; i < n; i++) {
             Array a = xdata.get(i);
-            v = i + 1;
+            v = positions.get(i).doubleValue();
+            width = widths.get(i).doubleValue();
+            //Add box polygon
             double q1 = Statistics.quantile(a, 1);
             double q3 = Statistics.quantile(a, 3);
             double median = Statistics.quantile(a, 2);
@@ -957,7 +1010,6 @@ public class GraphicFactory {
             double maxd = ArrayMath.getMaximum(a);
             double mino = q1 - (q3 - q1) * 1.5;
             double maxo = q3 + (q3 - q1) * 1.5;
-            //GraphicCollection gc1 = new GraphicCollection();
             List<PointD> pList = new ArrayList<>();
             pList.add(new PointD(v - width * 0.5, q1));
             pList.add(new PointD(v - width * 0.5, q3));
@@ -966,79 +1018,62 @@ public class GraphicFactory {
             pList.add(new PointD(v - width * 0.5, q1));
             PolygonShape pgs = new PolygonShape();
             pgs.setPoints(pList);
-            PolygonBreak pgb = new PolygonBreak();
-            pgb.setDrawFill(false);
-            pgb.setOutlineColor(Color.blue);
-            //gc1.add(new Graphic(pgs, pgb));
-            gc.add(new Graphic(pgs, pgb));
+            gc.add(new Graphic(pgs, boxBreak));
 
+            //Add meadian line
             pList = new ArrayList<>();
             pList.add(new PointD(v - width * 0.5, median));
             pList.add(new PointD(v + width * 0.5, median));
             PolylineShape pls = new PolylineShape();
             pls.setPoints(pList);
-            PolylineBreak plb = new PolylineBreak();
-            plb.setColor(Color.red);
-            gc.add(new Graphic(pls, plb));
+            gc.add(new Graphic(pls, medianBreak));
 
+            //Add low whisker line
             double min = Math.max(mino, mind);
             pList = new ArrayList<>();
             pList.add(new PointD(v, q1));
             pList.add(new PointD(v, min));
             pls = new PolylineShape();
             pls.setPoints(pList);
-            plb = new PolylineBreak();
-            plb.setColor(Color.black);
-            plb.setStyle(LineStyles.Dash);
-            gc.add(new Graphic(pls, plb));
+            gc.add(new Graphic(pls, whiskerBreak));
             pList = new ArrayList<>();
             pList.add(new PointD(v - width * 0.25, min));
             pList.add(new PointD(v + width * 0.25, min));
             pls = new PolylineShape();
             pls.setPoints(pList);
-            plb = new PolylineBreak();
-            plb.setColor(Color.black);
-            plb.setStyle(LineStyles.Solid);
-            gc.add(new Graphic(pls, plb));
+            gc.add(new Graphic(pls, capBreak));
+            //Add low fliers
             if (mino > mind) {
                 for (int j = 0; j < a.getSize(); j++) {
                     if (a.getDouble(j) < mino) {
                         PointShape ps = new PointShape();
                         ps.setPoint(new PointD(v, a.getDouble(j)));
-                        PointBreak pb = new PointBreak();
-                        pb.setStyle(PointStyle.Plus);
-                        gc.add(new Graphic(ps, pb));
+                        gc.add(new Graphic(ps, flierBreak));
                     }
                 }
             }
 
+            //Add high whisker line
             double max = Math.min(maxo, maxd);
             pList = new ArrayList<>();
             pList.add(new PointD(v, q3));
             pList.add(new PointD(v, max));
             pls = new PolylineShape();
             pls.setPoints(pList);
-            plb = new PolylineBreak();
-            plb.setColor(Color.black);
-            plb.setStyle(LineStyles.Dash);
-            gc.add(new Graphic(pls, plb));
+            gc.add(new Graphic(pls, whiskerBreak));
             pList = new ArrayList<>();
             pList.add(new PointD(v - width * 0.25, max));
             pList.add(new PointD(v + width * 0.25, max));
             pls = new PolylineShape();
             pls.setPoints(pList);
-            plb = new PolylineBreak();
-            plb.setColor(Color.black);
-            plb.setStyle(LineStyles.Solid);
-            gc.add(new Graphic(pls, plb));
+            gc.add(new Graphic(pls, capBreak));
+            //Add high fliers
             if (maxo < maxd) {
                 for (int j = 0; j < a.getSize(); j++) {
                     if (a.getDouble(j) > maxo) {
                         PointShape ps = new PointShape();
                         ps.setPoint(new PointD(v, a.getDouble(j)));
-                        PointBreak pb = new PointBreak();
-                        pb.setStyle(PointStyle.Plus);
-                        gc.add(new Graphic(ps, pb));
+                        gc.add(new Graphic(ps, flierBreak));
                     }
                 }
             }
@@ -1047,11 +1082,7 @@ public class GraphicFactory {
                 double mean = ArrayMath.mean(a);
                 PointShape ps = new PointShape();
                 ps.setPoint(new PointD(v, mean));
-                PointBreak pb = new PointBreak();
-                pb.setStyle(PointStyle.Square);
-                pb.setColor(Color.red);
-                pb.setOutlineColor(Color.black);
-                gc.add(new Graphic(ps, pb));
+                gc.add(new Graphic(ps, meanBreak));
             }
         }
         gc.setSingleLegend(false);
