@@ -47,14 +47,14 @@ public class ImageShape extends PointShape {
         return ShapeTypes.Image;
     }
     
-    @Override
-    public Extent getExtent(){
-        Extent extent = new Extent();
-        extent.minX = this.getPoint().X;
-        extent.minY = this.getPoint().Y;
-        extent.maxX = extent.minX + this.image.getWidth();
-        extent.maxY = extent.minY + this.image.getHeight();
-        return extent;
-    }
+//    @Override
+//    public Extent getExtent(){
+//        Extent extent = new Extent();
+//        extent.minX = this.getPoint().X;
+//        extent.minY = this.getPoint().Y;
+//        extent.maxX = extent.minX + this.image.getWidth();
+//        extent.maxY = extent.minY + this.image.getHeight();
+//        return extent;
+//    }
     // </editor-fold>
 }

@@ -829,9 +829,13 @@ public class XY2DPlot extends XYPlot {
     private void drawImage(Graphics2D g, Graphic igraphic, Rectangle2D area) {
         ImageShape ishape = (ImageShape) igraphic.getShape();
         BufferedImage image = ishape.getImage();
-        double sx = ishape.getPoint().X, sy = ishape.getPoint().Y + image.getHeight();
+        //double sx = ishape.getPoint().X, sy = ishape.getPoint().Y + image.getHeight();
+        Extent extent = ishape.getExtent();
+        double sx = extent.minX, sy = extent.maxY;
         double[] xy1 = this.projToScreen(sx, sy, area);
-        double[] xy2 = this.projToScreen(sx + image.getWidth(), ishape.getPoint().Y, area);
+        double ex = extent.maxX, ey = extent.minY;
+        //double[] xy2 = this.projToScreen(sx + image.getWidth(), ishape.getPoint().Y, area);
+        double[] xy2 = this.projToScreen(ex, ey, area);
         int x = (int) xy1[0];
         int y = (int) xy1[1];
         int width = (int) (xy2[0] - xy1[0]);

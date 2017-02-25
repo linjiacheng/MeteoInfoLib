@@ -23,6 +23,7 @@ import org.meteoinfo.drawing.ContourDraw;
 import org.meteoinfo.drawing.Draw;
 import org.meteoinfo.drawing.PointStyle;
 import org.meteoinfo.geoprocess.GeoComputation;
+import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
 import org.meteoinfo.legend.BarBreak;
@@ -392,6 +393,8 @@ public class GraphicFactory {
         ImageShape ishape = new ImageShape();
         ishape.setPoint(new PointD(x.getDouble(0), y.getDouble(0)));
         ishape.setImage(aImage);
+        ishape.setExtent(new Extent(x.getDouble(0), x.getDouble((int)x.getSize() - 1), 
+            y.getDouble(0), y.getDouble((int)y.getSize() - 1)));
         return new Graphic(ishape, new ColorBreak());
     }
 
@@ -453,6 +456,8 @@ public class GraphicFactory {
         ImageShape ishape = new ImageShape();
         ishape.setPoint(new PointD(gdata.xArray[0], gdata.yArray[0]));
         ishape.setImage(aImage);
+        ishape.setExtent(new Extent(gdata.xArray[0], gdata.xArray[gdata.xArray.length - 1], 
+            gdata.yArray[0], gdata.yArray[gdata.yArray.length - 1]));
         return new Graphic(ishape, new ColorBreak());
     }
 
