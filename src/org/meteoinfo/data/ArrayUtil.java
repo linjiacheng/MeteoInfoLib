@@ -39,6 +39,7 @@ import org.meteoinfo.jts.geom.Geometry;
 import org.meteoinfo.jts.geom.GeometryFactory;
 import org.meteoinfo.layer.VectorLayer;
 import org.meteoinfo.legend.LegendScheme;
+import org.meteoinfo.math.ListIndexComparator;
 import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.projection.ProjectionManage;
@@ -73,7 +74,7 @@ public class ArrayUtil {
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public static Array readASCIIFile(String fileName, String delimiter, int headerLines, String dataType, 
+    public static Array readASCIIFile(String fileName, String delimiter, int headerLines, String dataType,
             List<Integer> shape, boolean readFirstCol) throws UnsupportedEncodingException, FileNotFoundException, IOException {
         BufferedReader sr = new BufferedReader(new InputStreamReader(new FileInputStream(fileName)));
         if (headerLines > 0) {
@@ -101,22 +102,23 @@ public class ArrayUtil {
         i = 0;
         String line = sr.readLine();
         int sCol = 0;
-        if (!readFirstCol)
+        if (!readFirstCol) {
             sCol = 1;
+        }
         while (line != null) {
             line = line.trim();
             if (line.isEmpty()) {
                 line = sr.readLine();
                 continue;
             }
-            dataArray = GlobalUtil.split(line, delimiter);            
-            for (int j = sCol; j < dataArray.length; j++){                
+            dataArray = GlobalUtil.split(line, delimiter);
+            for (int j = sCol; j < dataArray.length; j++) {
                 a.setDouble(i, Double.parseDouble(dataArray[j]));
                 i += 1;
                 if (i >= a.getSize()) {
                     break;
                 }
-            }            
+            }
             if (i >= a.getSize()) {
                 break;
             }
@@ -346,14 +348,15 @@ public class ArrayUtil {
             return null;
         }
     }
-    
+
     /**
      * Create an array
+     *
      * @param data Array like data
-     * @return 
+     * @return
      */
-    public static Array array(ArrayList data){
-        return array((List<Object>)data);
+    public static Array array(ArrayList data) {
+        return array((List<Object>) data);
     }
 
     /**
@@ -632,16 +635,17 @@ public class ArrayUtil {
 
         return a;
     }
-    
+
     /**
      * Extract a diagonal or construct a diagonal array.
-     * @param a If a is a 2-D array, return a copy of its k-th diagonal. If a is a 1-D array, 
-     *  return a 2-D array with a on the k-th diagonal.
+     *
+     * @param a If a is a 2-D array, return a copy of its k-th diagonal. If a is
+     * a 1-D array, return a 2-D array with a on the k-th diagonal.
      * @param k Diagonal in question.
      * @return Diagonal array
      */
-    public static Array diag(Array a, int k){
-        if (a.getRank() == 2){
+    public static Array diag(Array a, int k) {
+        if (a.getRank() == 2) {
             int m = a.getShape()[0];
             int n = a.getShape()[1];
             int len = Math.min(m, n) - Math.abs(k);
@@ -649,26 +653,26 @@ public class ArrayUtil {
             IndexIterator index = a.getIndexIterator();
             int[] current;
             int idx = 0, i, j;
-            while (index.hasNext()){
+            while (index.hasNext()) {
                 index.next();
                 current = index.getCurrentCounter();
                 i = current[0];
                 j = current[1] - k;
-                if (i == j){
+                if (i == j) {
                     r.setObject(idx, index.getObjectCurrent());
                     idx += 1;
-                    if (idx == len){
+                    if (idx == len) {
                         break;
                     }
                 }
-            }            
+            }
             return r;
         } else {
             int m = a.getShape()[0];
             Array r = Array.factory(a.getDataType(), new int[]{m, m});
-            for (int i = 0; i < m; i++){
-                for (int j = 0; j < m; j++){
-                    if (i == j - k){
+            for (int i = 0; i < m; i++) {
+                for (int j = 0; j < m; j++) {
+                    if (i == j - k) {
                         r.setObject(i * m + j, a.getObject(i));
                     } else {
                         r.setObject(i * m + j, 0);
@@ -1141,6 +1145,92 @@ public class ArrayUtil {
                 Collections.sort(tlist);
                 for (int j = 0; j < nn; j++) {
                     r.setObject(i, tlist.get(j));
+                    indexr.incr();
+                    i++;
+                }
+                i--;
+            }
+
+            return r;
+        }
+    }
+    
+    /**
+     * Get sorted array index along an axis
+     *
+     * @param a Array a
+     * @param axis The axis
+     * @return Index of sorted array
+     * @throws InvalidRangeException
+     */
+    public static Array argSort(Array a, Integer axis) throws InvalidRangeException {
+        int n = a.getRank();
+        int[] shape = a.getShape();
+        Object v;        
+        if (axis == null) {
+            int[] nshape = new int[1];
+            nshape[0] = (int) a.getSize();
+            Array r = Array.factory(DataType.INT, nshape);
+            List stlist = new ArrayList();
+            IndexIterator ii = a.getIndexIterator();
+            while (ii.hasNext()) {
+                v = ii.getObjectNext();
+                stlist.add(v);
+            }
+            //Collections.sort(stlist);
+            ListIndexComparator comparator = new ListIndexComparator(stlist);
+            Integer[] indexes = comparator.createIndexArray();
+            Arrays.sort(indexes, comparator);
+            for (int i = 0; i < r.getSize(); i++) {
+                r.setInt(i, indexes[i]);
+            }
+
+            return r;
+        } else {
+            if (axis == -1) {
+                axis = n - 1;
+            }
+            int nn = shape[axis];
+            int[] nshape = new int[n];
+            for (int i = 0; i < n; i++) {
+                if (i == axis) {
+                    nshape[i] = shape[n - 1];
+                } else if (i == n - 1) {
+                    nshape[i] = shape[axis];
+                } else {
+                    nshape[i] = shape[i];
+                }
+            }
+            Array r = Array.factory(DataType.INT, nshape);
+            Index indexr = r.getIndex();
+            int[] current;
+            int idx;
+            for (int i = 0; i < r.getSize(); i++) {
+                current = indexr.getCurrentCounter();
+                List<Range> ranges = new ArrayList<>();
+                for (int j = 0; j < n; j++) {
+                    if (j == axis) {
+                        ranges.add(new Range(0, shape[j] - 1, 1));
+                    } else {
+                        idx = j;
+                        if (idx > axis) {
+                            idx -= 1;
+                        }
+                        ranges.add(new Range(current[idx], current[idx], 1));
+                    }
+                }
+                List stlist = new ArrayList();
+                IndexIterator ii = a.getRangeIterator(ranges);
+                while (ii.hasNext()) {
+                    v = ii.getObjectNext();
+                    stlist.add(v);
+                }
+                //Collections.sort(stlist);
+                ListIndexComparator comparator = new ListIndexComparator(stlist);
+                Integer[] indexes = comparator.createIndexArray();
+                Arrays.sort(indexes, comparator);
+                for (int j = 0; j < nn; j++) {
+                    r.setInt(i, indexes[j]);
                     indexr.incr();
                     i++;
                 }
@@ -1884,9 +1974,11 @@ public class ArrayUtil {
      * @param y_s scatter Y array
      * @param X x coordinate
      * @param Y y coordinate
+     * @param pointDensity If return point density value
      * @return grid data
      */
-    public static Array interpolation_Inside_Count(List<Number> x_s, List<Number> y_s, List<Number> X, List<Number> Y) {
+    public static Object interpolation_Inside_Count(List<Number> x_s, List<Number> y_s,
+            List<Number> X, List<Number> Y, boolean pointDensity) {
         int rowNum, colNum, pNum;
         colNum = X.size();
         rowNum = Y.size();
@@ -1924,6 +2016,25 @@ public class ArrayUtil {
             for (int j = 0; j < colNum; j++) {
                 r.setInt(i * colNum + j, pNums[i][j]);
             }
+        }
+
+        if (pointDensity) {
+            Array pds = Array.factory(DataType.INT, new int[]{pNum});
+            for (int p = 0; p < pNum; p++) {
+                x = x_s.get(p).doubleValue();
+                y = y_s.get(p).doubleValue();
+                if (x < X.get(0).doubleValue() || x > X.get(colNum - 1).doubleValue()) {
+                    continue;
+                }
+                if (y < Y.get(0).doubleValue() || y > Y.get(rowNum - 1).doubleValue()) {
+                    continue;
+                }
+
+                int j = (int) ((x - X.get(0).doubleValue()) / dX);
+                int i = (int) ((y - Y.get(0).doubleValue()) / dY);
+                pds.setInt(p, pNums[i][j]);
+            }
+            return new Array[]{r, pds};
         }
 
         return r;

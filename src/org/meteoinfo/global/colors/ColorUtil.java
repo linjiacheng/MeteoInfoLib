@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.util.GlobalUtil;
 
 /**
@@ -406,6 +407,31 @@ public class ColorUtil {
         }
         
         return colors;
+    }
+    
+    /**
+     * Create colors
+     * @param cm Color map
+     * @param min Min value
+     * @param max Max value
+     * @return Colors
+     */
+    public static Color[] createColors(ColorMap cm, double min, double max){
+        double[] values = MIMath.getIntervalValues(min, max);
+        return cm.getColors(values.length + 1);
+    }
+    
+    /**
+     * Create colors
+     * @param cm Color map
+     * @param min Min value
+     * @param max Max value
+     * @param n Color number
+     * @return Colors
+     */
+    public static Color[] createColors(ColorMap cm, double min, double max, int n){
+        double[] values = MIMath.getIntervalValues(min, max, n);
+        return cm.getColors(values.length + 1);
     }
     
     /**

@@ -244,6 +244,31 @@ public class GraphicFactory {
     }
 
     /**
+     * Create graphics
+     *
+     * @param xdata X data array
+     * @param ydata Y data array
+     * @param zdata Z data array
+     * @param ls Legend scheme
+     * @return LineString graphic
+     */
+    public static GraphicCollection createPoints(Array xdata, Array ydata, Array zdata, LegendScheme ls) {
+        GraphicCollection graphics = new GraphicCollection();
+        PointShape ps;
+        double z;
+        ColorBreak cb;
+        for (int i = 0; i < xdata.getSize(); i++) {
+            ps = new PointShape();
+            ps.setPoint(new PointD(xdata.getDouble(i), ydata.getDouble(i)));
+            z = zdata.getDouble(i);
+            cb = ls.getLegenBreak(z);            
+            graphics.add(new Graphic(ps, cb));
+        }
+        graphics.setSingleLegend(false);
+        return graphics;
+    }
+
+    /**
      * Create bar graphics
      *
      * @param xdata X data array
@@ -393,8 +418,8 @@ public class GraphicFactory {
         ImageShape ishape = new ImageShape();
         ishape.setPoint(new PointD(x.getDouble(0), y.getDouble(0)));
         ishape.setImage(aImage);
-        ishape.setExtent(new Extent(x.getDouble(0), x.getDouble((int)x.getSize() - 1), 
-            y.getDouble(0), y.getDouble((int)y.getSize() - 1)));
+        ishape.setExtent(new Extent(x.getDouble(0), x.getDouble((int) x.getSize() - 1),
+                y.getDouble(0), y.getDouble((int) y.getSize() - 1)));
         return new Graphic(ishape, new ColorBreak());
     }
 
@@ -456,8 +481,8 @@ public class GraphicFactory {
         ImageShape ishape = new ImageShape();
         ishape.setPoint(new PointD(gdata.xArray[0], gdata.yArray[0]));
         ishape.setImage(aImage);
-        ishape.setExtent(new Extent(gdata.xArray[0], gdata.xArray[gdata.xArray.length - 1], 
-            gdata.yArray[0], gdata.yArray[gdata.yArray.length - 1]));
+        ishape.setExtent(new Extent(gdata.xArray[0], gdata.xArray[gdata.xArray.length - 1],
+                gdata.yArray[0], gdata.yArray[gdata.yArray.length - 1]));
         return new Graphic(ishape, new ColorBreak());
     }
 
@@ -956,53 +981,53 @@ public class GraphicFactory {
      * @param flierBreak Flier point break
      * @return GraphicCollection
      */
-    public static GraphicCollection createBox(List<Array> xdata, List<Number> positions, List<Number> widths, 
-            boolean showmeans, PolygonBreak boxBreak, PolylineBreak medianBreak, PolylineBreak whiskerBreak, 
+    public static GraphicCollection createBox(List<Array> xdata, List<Number> positions, List<Number> widths,
+            boolean showmeans, PolygonBreak boxBreak, PolylineBreak medianBreak, PolylineBreak whiskerBreak,
             PolylineBreak capBreak, ColorBreak meanBreak, PointBreak flierBreak) {
         GraphicCollection gc = new GraphicCollection();
         int n = xdata.size();
-        if (positions == null){
+        if (positions == null) {
             positions = new ArrayList<>();
-            for (int i = 0; i < n; i++){
+            for (int i = 0; i < n; i++) {
                 positions.add(i + 1);
             }
         }
-        if (widths == null){
+        if (widths == null) {
             widths = new ArrayList<>();
-            for (int i = 0; i < n; i++){
+            for (int i = 0; i < n; i++) {
                 widths.add(0.5);
             }
         }
         double v, width;
-        if (boxBreak == null){
+        if (boxBreak == null) {
             boxBreak = new PolygonBreak();
             boxBreak.setDrawFill(false);
             boxBreak.setOutlineColor(Color.blue);
         }
-        if (medianBreak == null){
+        if (medianBreak == null) {
             medianBreak = new PolylineBreak();
             medianBreak.setColor(Color.red);
         }
-        if (whiskerBreak == null){
+        if (whiskerBreak == null) {
             whiskerBreak = new PolylineBreak();
             whiskerBreak.setColor(Color.black);
             whiskerBreak.setStyle(LineStyles.Dash);
         }
-        if (capBreak == null){
+        if (capBreak == null) {
             capBreak = new PolylineBreak();
             capBreak.setColor(Color.black);
         }
-        if (flierBreak == null){
+        if (flierBreak == null) {
             flierBreak = new PointBreak();
             flierBreak.setStyle(PointStyle.Plus);
         }
-        if (meanBreak == null){
+        if (meanBreak == null) {
             meanBreak = new PointBreak();
-            ((PointBreak)meanBreak).setStyle(PointStyle.Square);
-            ((PointBreak)meanBreak).setColor(Color.red);
-            ((PointBreak)meanBreak).setOutlineColor(Color.black);
+            ((PointBreak) meanBreak).setStyle(PointStyle.Square);
+            ((PointBreak) meanBreak).setColor(Color.red);
+            ((PointBreak) meanBreak).setOutlineColor(Color.black);
         }
-        
+
         for (int i = 0; i < n; i++) {
             Array a = xdata.get(i);
             v = positions.get(i).doubleValue();
