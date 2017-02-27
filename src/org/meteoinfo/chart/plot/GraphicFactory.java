@@ -972,6 +972,8 @@ public class GraphicFactory {
      * @param xdata X data array list
      * @param positions Box position list
      * @param widths Box width list
+     * @param showcaps Show caps or not
+     * @param showfliers Show fliers or not
      * @param showmeans Show means or not
      * @param boxBreak Box polygon break
      * @param medianBreak Meandian line break
@@ -982,8 +984,9 @@ public class GraphicFactory {
      * @return GraphicCollection
      */
     public static GraphicCollection createBox(List<Array> xdata, List<Number> positions, List<Number> widths,
-            boolean showmeans, PolygonBreak boxBreak, PolylineBreak medianBreak, PolylineBreak whiskerBreak,
-            PolylineBreak capBreak, ColorBreak meanBreak, PointBreak flierBreak) {
+            boolean showcaps, boolean showfliers, boolean showmeans, PolygonBreak boxBreak, 
+            PolylineBreak medianBreak, PolylineBreak whiskerBreak, PolylineBreak capBreak, 
+            ColorBreak meanBreak, PointBreak flierBreak) {
         GraphicCollection gc = new GraphicCollection();
         int n = xdata.size();
         if (positions == null) {
@@ -1066,19 +1069,24 @@ public class GraphicFactory {
             pls = new PolylineShape();
             pls.setPoints(pList);
             gc.add(new Graphic(pls, whiskerBreak));
-            pList = new ArrayList<>();
-            pList.add(new PointD(v - width * 0.25, min));
-            pList.add(new PointD(v + width * 0.25, min));
-            pls = new PolylineShape();
-            pls.setPoints(pList);
-            gc.add(new Graphic(pls, capBreak));
+            //Add cap
+            if (showcaps){
+                pList = new ArrayList<>();
+                pList.add(new PointD(v - width * 0.25, min));
+                pList.add(new PointD(v + width * 0.25, min));            
+                pls = new PolylineShape();
+                pls.setPoints(pList);
+                gc.add(new Graphic(pls, capBreak));
+            }
             //Add low fliers
-            if (mino > mind) {
-                for (int j = 0; j < a.getSize(); j++) {
-                    if (a.getDouble(j) < mino) {
-                        PointShape ps = new PointShape();
-                        ps.setPoint(new PointD(v, a.getDouble(j)));
-                        gc.add(new Graphic(ps, flierBreak));
+            if (showfliers){
+                if (mino > mind) {
+                    for (int j = 0; j < a.getSize(); j++) {
+                        if (a.getDouble(j) < mino) {
+                            PointShape ps = new PointShape();
+                            ps.setPoint(new PointD(v, a.getDouble(j)));
+                            gc.add(new Graphic(ps, flierBreak));
+                        }
                     }
                 }
             }
@@ -1091,23 +1099,29 @@ public class GraphicFactory {
             pls = new PolylineShape();
             pls.setPoints(pList);
             gc.add(new Graphic(pls, whiskerBreak));
-            pList = new ArrayList<>();
-            pList.add(new PointD(v - width * 0.25, max));
-            pList.add(new PointD(v + width * 0.25, max));
-            pls = new PolylineShape();
-            pls.setPoints(pList);
-            gc.add(new Graphic(pls, capBreak));
+            //Add cap
+            if (showcaps){
+                pList = new ArrayList<>();
+                pList.add(new PointD(v - width * 0.25, max));
+                pList.add(new PointD(v + width * 0.25, max));
+                pls = new PolylineShape();
+                pls.setPoints(pList);
+                gc.add(new Graphic(pls, capBreak));
+            }
             //Add high fliers
-            if (maxo < maxd) {
-                for (int j = 0; j < a.getSize(); j++) {
-                    if (a.getDouble(j) > maxo) {
-                        PointShape ps = new PointShape();
-                        ps.setPoint(new PointD(v, a.getDouble(j)));
-                        gc.add(new Graphic(ps, flierBreak));
+            if (showfliers) {
+                if (maxo < maxd) {
+                    for (int j = 0; j < a.getSize(); j++) {
+                        if (a.getDouble(j) > maxo) {
+                            PointShape ps = new PointShape();
+                            ps.setPoint(new PointD(v, a.getDouble(j)));
+                            gc.add(new Graphic(ps, flierBreak));
+                        }
                     }
                 }
             }
 
+            //Add mean line
             if (showmeans) {
                 double mean = ArrayMath.mean(a);
                 PointShape ps = new PointShape();
