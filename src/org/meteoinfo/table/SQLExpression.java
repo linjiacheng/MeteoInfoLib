@@ -54,8 +54,13 @@ public class SQLExpression {
         if (this.is_flushed) {
             return;
         }
-
-        this.token_list.add(this.sb.toString());
+        
+        String token = this.sb.toString();
+        if (token.startsWith("\""))
+            token = token.substring(1);
+        if (token.endsWith("\""))
+            token = token.substring(0, token.length() - 1);
+        this.token_list.add(token);
         this.sb = new StringBuffer();
         this.is_flushed = true;
     }
@@ -83,8 +88,10 @@ public class SQLExpression {
         for (int i = 0; i < this.exp_len; i++) {
             c = exp_array[i];
             if (Character.isWhitespace(c)) {
-                this.flush();
-                continue;
+                if (!(this.sb.length() > 0 && this.sb.substring(0, 1).equals("\""))) {
+                    this.flush();
+                    continue;
+                }
             }
 
             switch (c) {
@@ -266,12 +273,18 @@ public class SQLExpression {
         if (field instanceof Number) {
             return Convert.toFloat(field) < Convert.toFloat(value);
         }
+        if (field instanceof Date) {
+            return ((Date)field).before(Convert.toDate(value));
+        }
         return Convert.toString(field).compareTo(value.substring(1, value.length() - 1)) < 0;
     }
 
     private static boolean isGreat(Object field, String value) {
         if (field instanceof Number) {
             return Convert.toFloat(field) > Convert.toFloat(value);
+        } 
+        if (field instanceof Date) {
+            return ((Date) field).after(Convert.toDate(value));
         }
         return Convert.toString(field).compareTo(value.substring(1, value.length() - 1)) > 0;
     }
@@ -287,6 +300,9 @@ public class SQLExpression {
         if (field instanceof Boolean) {
             return Convert.toBool(field) == Convert.toBool(value);
         }
+        if (field instanceof Date) {
+            return ((Date)field).equals(Convert.toDate(value));
+        }
 
         return Convert.toString(field).equals(value.substring(1, value.length() - 1));
     }
@@ -300,7 +316,10 @@ public class SQLExpression {
             return Convert.toFloat(field) != Convert.toFloat(value);
         }
         if (field instanceof Boolean) {
-            return Convert.toBool(field) == Convert.toBool(value);
+            return Convert.toBool(field) != Convert.toBool(value);
+        }
+        if (field instanceof Date) {
+            return !((Date)field).equals(Convert.toDate(value));
         }
 
         return !Convert.toString(field).equals(value.substring(1, value.length() - 1));
@@ -310,12 +329,18 @@ public class SQLExpression {
         if (field instanceof Number) {
             return Convert.toFloat(field) <= Convert.toFloat(value);
         }
+        if (field instanceof Date) {
+            return ((Date)field).before(Convert.toDate(value)) || ((Date)field).equals(Convert.toDate(value));
+        }
         return Convert.toString(field).compareTo(value.substring(1, value.length() - 1)) <= 0;
     }
 
     private static boolean isGreatEquals(Object field, String value) {
         if (field instanceof Number) {
             return Convert.toFloat(field) >= Convert.toFloat(value);
+        }
+        if (field instanceof Date) {
+            return ((Date)field).after(Convert.toDate(value)) || ((Date)field).equals(Convert.toDate(value));
         }
         return Convert.toString(field).compareTo(value.substring(1, value.length() - 1)) >= 0;
     }
@@ -413,7 +438,10 @@ class Convert {
         }
 
         try {
-            return Timestamp.valueOf(o.toString());
+            if (o.toString().contains(":"))
+                return Timestamp.valueOf(o.toString());
+            else
+                return java.sql.Date.valueOf(o.toString());
         } catch (Exception e) {
             return defValue;
         }
