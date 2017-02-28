@@ -178,7 +178,7 @@ public class SQLExpression {
 
     private boolean doAndOr(Map dr) {
         boolean result = this.doNot(dr);
-        String op = "";
+        String op;
 
         boolean result_right;
 
@@ -198,7 +198,7 @@ public class SQLExpression {
     }
 
     private boolean doNot(Map dr) {
-        String op = "";
+        String op;
 
         if ((op = this.currentToken()).equalsIgnoreCase("not")) {
             this.nextToken();
@@ -235,20 +235,23 @@ public class SQLExpression {
         String value = this.currentToken();
         this.nextToken();
 
-        if (opt.equals("like")) {
-            return isLike(field, value);
-        } else if (opt.equals(">")) {
-            return isGreat(field, value);
-        } else if (opt.equals("<")) {
-            return isLess(field, value);
-        } else if (opt.equals("=")) {
-            return isEquals(field, value);
-        } else if (opt.equals(">=")) {
-            return isGreatEquals(field, value);
-        } else if (opt.equals("<=")) {
-            return isLessEquals(field, value);
-        } else if (opt.equals("<>")) {
-            return isNotEquals(field, value);
+        switch (opt) {
+            case "like":
+                return isLike(field, value);
+            case ">":
+                return isGreat(field, value);
+            case "<":
+                return isLess(field, value);
+            case "=":
+                return isEquals(field, value);
+            case ">=":
+                return isGreatEquals(field, value);
+            case "<=":
+                return isLessEquals(field, value);
+            case "<>":
+                return isNotEquals(field, value);
+            default:
+                break;
         }
 
         return false;
@@ -369,7 +372,7 @@ class Convert {
             return defValue;
         }
         if (o instanceof Integer) {
-            return ((Integer) o).intValue();
+            return (Integer) o;
         }
 
         try {
@@ -384,7 +387,7 @@ class Convert {
             return 0L;
         }
         if (o instanceof Long) {
-            return ((Long) o).longValue();
+            return (Long) o;
         }
 
         try {
@@ -399,7 +402,7 @@ class Convert {
             return 0F;
         }
         if (o instanceof Float) {
-            return ((Float) o).floatValue();
+            return (Float) o;
         }
 
         try {
@@ -414,7 +417,7 @@ class Convert {
             return false;
         }
         if (o instanceof Boolean) {
-            return ((Boolean) o).booleanValue();
+            return (Boolean) o;
         }
 
         try {
@@ -443,7 +446,9 @@ class Convert {
             else
                 return java.sql.Date.valueOf(o.toString());
         } catch (Exception e) {
-            return defValue;
+            e.printStackTrace();
         }
+        
+        return null;
     }
 }
