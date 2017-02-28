@@ -96,7 +96,6 @@ public class SQLExpression {
 
             switch (c) {
                 case '<':
-
                     this.flush();
                     if (i + 1 < this.exp_len && exp_array[i + 1] == '=') {
                         this.token_list.add("<=");
@@ -108,9 +107,7 @@ public class SQLExpression {
                         this.token_list.add("<");
                     }
                     break;
-
                 case '>':
-
                     this.flush();
                     if (i + 1 < this.exp_len && exp_array[i + 1] == '=') {
                         this.token_list.add(">=");
@@ -119,21 +116,15 @@ public class SQLExpression {
                         this.token_list.add(">");
                     }
                     break;
-
                 case '(':
-
                     this.flush();
                     this.token_list.add("(");
                     break;
-
                 case ')':
-
                     this.flush();
                     this.token_list.add(")");
                     break;
-
                 case '=':
-
                     if (i + 1 < this.exp_len && exp_array[i + 1] == '=') {
                         this.flush();
                         //this.token_list.add("==");
@@ -142,9 +133,7 @@ public class SQLExpression {
                         this.collect();
                     }
                     break;
-
                 case '!':
-
                     if (i + 1 < this.exp_len && exp_array[i + 1] == '=') {
                         this.flush();
                         this.token_list.add("!=");
@@ -153,10 +142,14 @@ public class SQLExpression {
                         this.collect();
                     }
                     break;
-
-
+                case '"':
+                    if (this.sb.length() > 0 && this.sb.substring(0, 1).equals("\"")){
+                        this.flush();
+                    } else {
+                        this.collect();
+                    }
+                    break;
                 default:
-
                     this.collect();
                     break;
             }
