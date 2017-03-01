@@ -38,6 +38,7 @@ import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.EventListenerList;
+import org.meteoinfo.data.mapdata.webmap.TileLoadListener;
 
 /**
  *
@@ -71,6 +72,7 @@ public class LayoutMap extends LayoutElement {
     private EventListenerList _listeners = new EventListenerList();
     private MapFrame _mapFrame = null;
     private boolean _drawDegreeSymbol = false;
+    private final TileLoadListener tileLoadListener;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -78,12 +80,14 @@ public class LayoutMap extends LayoutElement {
      * Constructor
      *
      * @param mapFrame MapFrame
+     * @param tll TileLoadListener
      */
-    public LayoutMap(MapFrame mapFrame) {
+    public LayoutMap(MapFrame mapFrame, TileLoadListener tll) {
         super();
         this.setElementType(ElementType.LayoutMap);
         this.setResizeAbility(ResizeAbility.ResizeAll);
         this.setMapFrame(mapFrame);
+        this.tileLoadListener = tll;
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -643,7 +647,7 @@ public class LayoutMap extends LayoutElement {
             g.setColor(_mapFrame.getMapView().getBackground());
             g.fill(_mapFrame.getLayoutBounds());
 
-            _mapFrame.getMapView().paintGraphics(g, _mapFrame.getLayoutBounds());
+            _mapFrame.getMapView().paintGraphics(g, _mapFrame.getLayoutBounds(), this.tileLoadListener);
 
 //                //Draw lon/lat grid labels
 //                if (_mapFrame.getDrawGridLabel())
@@ -800,7 +804,7 @@ public class LayoutMap extends LayoutElement {
             //g.setColor(_mapFrame.getMapView().getBackground());
             //g.fill(rect);
 
-            _mapFrame.getMapView().paintGraphics(g, rect);
+            _mapFrame.getMapView().paintGraphics(g, rect, this.tileLoadListener);
 
             //Draw lon/lat grid labels
             if (_mapFrame.isDrawGridLabel()) {

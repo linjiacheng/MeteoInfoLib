@@ -41,13 +41,14 @@ public class Chart {
     private boolean drawLegend;
     private Rectangle2D plotArea;
     private boolean antiAlias;
+    private ChartPanel parent;
 
     // </editor-fold>
     // <editor-fold desc="Constructor">
     /**
      * Constructor
      */
-    public Chart() {
+    public Chart(){
         this.drawLegend = false;
         this.background = Color.white;
         this.drawBackground = true;
@@ -58,15 +59,42 @@ public class Chart {
         this.currentPlot = -1;
         this.texts = new ArrayList<>();
     }
+    
+    /**
+     * Constructor
+     * @param parent ChartPanel parent
+     */
+    public Chart(ChartPanel parent) {
+        this.drawLegend = false;
+        this.background = Color.white;
+        this.drawBackground = true;
+        this.antiAlias = false;
+        this.rowNum = 1;
+        this.columnNum = 1;
+        this.plots = new ArrayList<>();
+        this.currentPlot = -1;
+        this.texts = new ArrayList<>();
+        this.parent = parent;
+    }
 
+    /**
+     * Constructor
+     *
+     * @param plot Plot
+     * @param parent ChartPanel
+     */
+    public Chart(Plot plot, ChartPanel parent) {
+        this(parent);
+        this.plots.add(plot);
+    }
+    
     /**
      * Constructor
      *
      * @param plot Plot
      */
     public Chart(Plot plot) {
-        this();
-        this.plots.add(plot);
+        this(plot, null);
     }
 
     /**
@@ -74,18 +102,42 @@ public class Chart {
      *
      * @param title Title
      * @param plot Plot
+     * @param parent ChartPanel
      */
-    public Chart(String title, Plot plot) {
-        this(plot);
+    public Chart(String title, Plot plot, ChartPanel parent) {
+        this(plot, parent);
         if (title == null) {
             this.title = null;
         } else {
             this.title = new ChartText(title);
         }
     }
+    
+    /**
+     * Constructor
+     *
+     * @param title Title
+     * @param plot Plot
+     */
+    public Chart(String title, Plot plot) {
+        this(title, plot, null);
+    }
 
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
+    /**
+     * Set ChartPanel parent
+     * @param value ChartPanel
+     */
+    public void setParent(ChartPanel value){
+        this.parent = value;
+        for (Plot plot : this.plots){
+            if (plot instanceof MapPlot){
+                ((MapPlot)plot).setParent(value);
+            }
+        }
+    }
+    
     /**
      * Get plot
      *
@@ -711,7 +763,10 @@ public class Chart {
      * @param plot Plot
      */
     public void addPlot(Plot plot) {
-        this.plots.add(plot);
+        if (plot instanceof MapPlot){
+            ((MapPlot)plot).setParent(parent);
+        }
+        this.plots.add(plot);        
     }
 
     /**
@@ -720,6 +775,9 @@ public class Chart {
      * @param plot Plot
      */
     public void setPlot(Plot plot) {
+        if (plot instanceof MapPlot){
+            ((MapPlot)plot).setParent(parent);
+        }
         this.plots.clear();
         this.plots.add(plot);
     }
@@ -739,6 +797,22 @@ public class Chart {
         }
 
         return null;
+    }
+    
+    /**
+     * Check if has web map layer
+     * @return Boolean
+     */
+    public boolean hasWebMap(){
+        for (Plot plot : this.plots) {
+            if (plot instanceof MapPlot){
+                MapPlot mp = (MapPlot)plot;
+                if (mp.hasWebMapLayer())
+                    return true;
+            }
+        }
+        
+        return false;
     }
 
     /**

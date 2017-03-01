@@ -126,10 +126,13 @@ import org.freehep.graphics2d.VectorGraphics;
 import org.freehep.graphicsio.emf.EMFGraphics2D;
 import org.freehep.graphicsio.pdf.PDFGraphics2D;
 import org.freehep.graphicsio.ps.PSGraphics2D;
+import org.meteoinfo.data.mapdata.webmap.IWebMapPanel;
+import org.meteoinfo.data.mapdata.webmap.TileLoadListener;
 import org.meteoinfo.global.event.IUndoEditListener;
 import org.meteoinfo.global.event.UndoEditEvent;
 import org.meteoinfo.global.util.GlobalUtil;
 import org.meteoinfo.layer.RasterLayer;
+import org.meteoinfo.layer.WebMapLayer;
 import org.meteoinfo.legend.VectorBreak;
 import org.meteoinfo.map.FrmIdentiferGrid;
 import org.meteoinfo.map.MapView;
@@ -145,10 +148,11 @@ import org.xml.sax.SAXException;
  *
  * @author yaqiang
  */
-public class MapLayout extends JPanel {
+public class MapLayout extends JPanel implements IWebMapPanel {
 
     // <editor-fold desc="Variables">
     private EventListenerList _listeners = new EventListenerList();
+    private final TileLoadListener tileLoadListener = new TileLoadListener(this);
     private FrmIdentifer _frmIdentifer = null;
     private FrmIdentiferGrid _frmIdentiferGrid = null;
     private FrmMeasurement _frmMeasure = null;
@@ -288,7 +292,7 @@ public class MapLayout extends JPanel {
         aMF.setActive(true);
         aMF.setLayoutBounds(new Rectangle(40, 36, 606, 420));
         _mapFrames.add(aMF);
-        LayoutMap layoutMap = new LayoutMap(aMF);
+        LayoutMap layoutMap = new LayoutMap(aMF, this.tileLoadListener);
         this.addElement(layoutMap);
 
         _defPointBreak.setSize(10);
@@ -2406,6 +2410,20 @@ public class MapLayout extends JPanel {
     // <editor-fold desc="Methods">
     // <editor-fold desc="Paint methods">
     @Override
+    public int getWebMapZoom(){
+        WebMapLayer layer = this.getActiveMapFrame().getMapView().getWebMapLayer();
+        if (layer != null){
+            return layer.getZoom();
+        }
+        return 0;
+    }
+    
+    @Override
+    public void reDraw(){
+        this.paintGraphics();
+    }
+    
+    @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
@@ -2966,7 +2984,7 @@ public class MapLayout extends JPanel {
                 }
             }
             if (isNew) {
-                LayoutMap aLM = new LayoutMap(mf);
+                LayoutMap aLM = new LayoutMap(mf, this.tileLoadListener);
                 addElement(aLM);
             }
         }
@@ -3941,7 +3959,7 @@ public class MapLayout extends JPanel {
                 aMF = new MapFrame();
             }
 
-            LayoutMap aLM = new LayoutMap(aMF);
+            LayoutMap aLM = new LayoutMap(aMF, this.tileLoadListener);
             loadLayoutMapElement(elementNode, aLM);
             addElement(aLM);
         }

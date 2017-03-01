@@ -15,10 +15,13 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
+import org.meteoinfo.chart.ChartPanel;
 import org.meteoinfo.chart.ChartText;
 import org.meteoinfo.chart.Location;
 import org.meteoinfo.chart.axis.LonLatAxis;
 import org.meteoinfo.data.Dataset;
+import org.meteoinfo.data.mapdata.webmap.IWebMapPanel;
+import org.meteoinfo.data.mapdata.webmap.TileLoadListener;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
@@ -43,13 +46,15 @@ import org.meteoinfo.shape.PolylineShape;
  *
  * @author wyq
  */
-public class MapPlot extends XYPlot {
+public class MapPlot extends XYPlot implements IWebMapPanel {
 
     // <editor-fold desc="Variables">
     private MapFrame mapFrame;
     private MapView mapView;
     private boolean antialias;
     private MapLayer selectedLayer;
+    private final TileLoadListener tileLoadListener = new TileLoadListener(this);
+    private ChartPanel parent;
 
     // </editor-fold>
     // <editor-fold desc="Constructor">
@@ -92,6 +97,14 @@ public class MapPlot extends XYPlot {
 
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
+    /**
+     * ChartPanel parent
+     * @param value ChartPanel
+     */
+    public void setParent(ChartPanel value){
+        this.parent = value;
+    }
+    
     @Override
     public Dataset getDataset() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -231,11 +244,35 @@ public class MapPlot extends XYPlot {
 
     // </editor-fold>
     // <editor-fold desc="Methods">
+    /**
+     * Check if has web map layer
+     * @return Boolean
+     */
+    public boolean hasWebMapLayer(){
+        return this.mapView.hasWebMapLayer();
+    }
+    
+    /**
+     * Get web map zoom
+     * @return Web map zoom
+     */
+    @Override
+    public int getWebMapZoom(){
+        return this.mapView.getWebMapZoom();
+    }
+    
+    @Override
+    public void reDraw(){
+        if (this.parent != null)
+            this.parent.paintGraphics();
+    }
+    
     @Override
     void drawGraph(Graphics2D g, Rectangle2D area) {
         this.mapView.setAntiAlias(this.antialias);
         this.mapView.setViewExtent((Extent) this.getDrawExtent().clone());
-        this.mapView.paintGraphics(g, area);
+        this.mapView.paintGraphics(g, area, this.tileLoadListener);
+        //this.mapView.repaint();
     }
 
     /**

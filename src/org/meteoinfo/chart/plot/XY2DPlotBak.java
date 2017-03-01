@@ -132,7 +132,7 @@ public class XY2DPlotBak extends XYPlot {
     void drawGraph(Graphics2D g, Rectangle2D area) {
         this.mapView.setAntiAlias(this.antialias);
         this.mapView.setViewExtent((Extent) this.getDrawExtent().clone());
-        this.mapView.paintGraphics(g, area);
+        this.mapView.paintGraphics(g, area, null);
     }
 
     /**

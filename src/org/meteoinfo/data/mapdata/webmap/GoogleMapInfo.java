@@ -9,6 +9,7 @@ package org.meteoinfo.data.mapdata.webmap;
  * @author yaqiang
  */
 public class GoogleMapInfo extends TileFactoryInfo {
+
     // <editor-fold desc="Variables">
     private String version = "1173";
     private String clientKey = null;
@@ -30,10 +31,9 @@ public class GoogleMapInfo extends TileFactoryInfo {
     }
 //    // </editor-fold>
 //    // <editor-fold desc="Get Set Methods">
-    
+
 //    // </editor-fold>
 //    // <editor-fold desc="Methods">
-    
     @Override
     public String getTileUrl(int x, int y, int zoom) {
         zoom = this.getTotalMapZoom() - zoom;
@@ -52,34 +52,29 @@ public class GoogleMapInfo extends TileFactoryInfo {
 //        String url = String.format(this.baseURL, serverNum, key, version, language, zoom, x, y);
 //        return url;
 //    }
-    
     /// <summary>
-      /// Converts tile XY coordinates into a QuadKey at a specified level of detail.
-      /// </summary>
-      /// <param name="tileX">Tile X coordinate.</param>
-      /// <param name="tileY">Tile Y coordinate.</param>
-      /// <param name="levelOfDetail">Level of detail, from 1 (lowest detail)
-      /// to 23 (highest detail).</param>
-      /// <returns>A string containing the QuadKey.</returns>
-      private String tileXYToQuadKey(long tileX, long tileY, int levelOfDetail)
-      {
-         StringBuilder quadKey = new StringBuilder();
-         for(int i = levelOfDetail; i > 0; i--)
-         {
+    /// Converts tile XY coordinates into a QuadKey at a specified level of detail.
+    /// </summary>
+    /// <param name="tileX">Tile X coordinate.</param>
+    /// <param name="tileY">Tile Y coordinate.</param>
+    /// <param name="levelOfDetail">Level of detail, from 1 (lowest detail)
+    /// to 23 (highest detail).</param>
+    /// <returns>A string containing the QuadKey.</returns>
+    private String tileXYToQuadKey(long tileX, long tileY, int levelOfDetail) {
+        StringBuilder quadKey = new StringBuilder();
+        for (int i = levelOfDetail; i > 0; i--) {
             char digit = '0';
             int mask = 1 << (i - 1);
-            if((tileX & mask) != 0)
-            {
-               digit++;
+            if ((tileX & mask) != 0) {
+                digit++;
             }
-            if((tileY & mask) != 0)
-            {
-               digit++;
-               digit++;
+            if ((tileY & mask) != 0) {
+                digit++;
+                digit++;
             }
             quadKey.append(digit);
-         }
-         return quadKey.toString();
-      }
+        }
+        return quadKey.toString();
+    }
     // </editor-fold>
 }

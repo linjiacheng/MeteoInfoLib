@@ -24,11 +24,11 @@ import javax.imageio.ImageIO;
 * @author joshua.marinacci@sun.com
 */
 public class TileCache {
-  private Map<URI, BufferedImage> imgmap = new HashMap<URI, BufferedImage>();
-  private LinkedList<URI> imgmapAccessQueue = new LinkedList<URI>();
+  private final Map<URI, BufferedImage> imgmap = new HashMap<>();
+  private final LinkedList<URI> imgmapAccessQueue = new LinkedList<>();
   private int imagesize = 0;
-  private Map<URI, byte[]> bytemap = new HashMap<URI, byte[]>();
-  private LinkedList<URI> bytemapAccessQueue = new LinkedList<URI>();
+  private final Map<URI, byte[]> bytemap = new HashMap<>();
+  private final LinkedList<URI> bytemapAccessQueue = new LinkedList<>();
   private int bytesize = 0;
 
     

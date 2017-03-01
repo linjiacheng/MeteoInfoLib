@@ -64,7 +64,7 @@ public class Tile extends AbstractBean {
     /**
      * The image loaded for this Tile
      */
-    SoftReference<BufferedImage> image = new SoftReference<BufferedImage>(null);
+    SoftReference<BufferedImage> image = new SoftReference<>(null);
     
     /**
      * Create a new Tile at the specified tile point and zoom level
@@ -115,6 +115,7 @@ public class Tile extends AbstractBean {
     /**
      * Returns the last error in a possible chain of errors that occured during
      * the loading of the tile
+     * @return 
      */
     public Throwable getUnrecoverableError() {
         return error;
@@ -187,6 +188,7 @@ public class Tile extends AbstractBean {
     void firePropertyChangeOnEDT(final String propertyName, final Object oldValue, final Object newValue) {
         if (!EventQueue.isDispatchThread()) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     firePropertyChange(propertyName, oldValue, newValue);
                 }

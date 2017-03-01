@@ -157,8 +157,10 @@ import org.freehep.graphicsio.emf.EMFGraphics2D;
 import org.freehep.graphicsio.pdf.PDFGraphics2D;
 import org.freehep.graphicsio.ps.PSGraphics2D;
 import org.meteoinfo.data.mapdata.webmap.GeoPosition;
+import org.meteoinfo.data.mapdata.webmap.IWebMapPanel;
 import org.meteoinfo.data.mapdata.webmap.Tile;
 import org.meteoinfo.data.mapdata.webmap.TileFactoryInfo;
+import org.meteoinfo.data.mapdata.webmap.TileLoadListener;
 import org.meteoinfo.data.mapdata.webmap.WebMapProvider;
 import static org.meteoinfo.drawing.Draw.getHatchImage;
 import org.meteoinfo.global.DataConvert;
@@ -200,10 +202,12 @@ import org.w3c.dom.DOMException;
  *
  * @author Yaqiang Wang
  */
-public class MapView extends JPanel {
+public class MapView extends JPanel implements IWebMapPanel {
     // <editor-fold desc="Variables">
 
     private final EventListenerList _listeners = new EventListenerList();
+    // a property change listener which forces repaints when tiles finish loading
+    private TileLoadListener tileLoadListener = new TileLoadListener(this);
     public FrmIdentifer frmIdentifer = null;
     public FrmIdentiferGrid _frmIdentiferGrid = null;
     private FrmMeasurement _frmMeasure = null;
@@ -395,6 +399,14 @@ public class MapView extends JPanel {
     // </editor-fold>
 
     // <editor-fold desc="Get Set Methods">
+    /**
+     * Set TileLoadListner for web map plot
+     * @param value TileLoadListener
+     */
+    public void setTileLoadListener(TileLoadListener value){
+        this.tileLoadListener = value;
+    }
+    
     /**
      * Get layers
      *
@@ -3303,38 +3315,39 @@ public class MapView extends JPanel {
 
     void onKeyReleased(KeyEvent e) {
     }
-    // a property change listener which forces repaints when tiles finish loading
-    private final TileLoadListener tileLoadListener = new TileLoadListener();
+    
+//    // a property change listener which forces repaints when tiles finish loading
+//    private final TileLoadListener tileLoadListener = new TileLoadListener(this);
 
-    private final class TileLoadListener implements PropertyChangeListener {
-
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if ("loaded".equals(evt.getPropertyName())
-                    && Boolean.TRUE.equals(evt.getNewValue())) {
-                Tile t = (Tile) evt.getSource();
-                if (t.getZoom() == MapView.this.getWebMapLayer().getZoom()) {
-                    repaint();
-                    MapView.this.paintLayers();
-                    /* this optimization doesn't save much and it doesn't work if you
-                     * wrap around the world
-                     Rectangle viewportBounds = getViewportBounds();
-                     TilePoint tilePoint = t.getLocation();
-                     Point point = new Point(tilePoint.getX() * getTileFactory().getTileSize(), tilePoint.getY() * getTileFactory().getTileSize());
-                     Rectangle tileRect = new Rectangle(point, new Dimension(getTileFactory().getTileSize(), getTileFactory().getTileSize()));
-                     if (viewportBounds.intersects(tileRect)) {
-                     //convert tileRect from world space to viewport space
-                     repaint(new Rectangle(
-                     tileRect.x - viewportBounds.x,
-                     tileRect.y - viewportBounds.y,
-                     tileRect.width,
-                     tileRect.height
-                     ));
-                     }*/
-                }
-            }
-        }
-    }
+//    private final class TileLoadListener implements PropertyChangeListener {
+//
+//        @Override
+//        public void propertyChange(PropertyChangeEvent evt) {
+//            if ("loaded".equals(evt.getPropertyName())
+//                    && Boolean.TRUE.equals(evt.getNewValue())) {
+//                Tile t = (Tile) evt.getSource();
+//                if (t.getZoom() == MapView.this.getWebMapLayer().getZoom()) {
+//                    repaint();
+//                    MapView.this.paintLayers();
+//                    /* this optimization doesn't save much and it doesn't work if you
+//                     * wrap around the world
+//                     Rectangle viewportBounds = getViewportBounds();
+//                     TilePoint tilePoint = t.getLocation();
+//                     Point point = new Point(tilePoint.getX() * getTileFactory().getTileSize(), tilePoint.getY() * getTileFactory().getTileSize());
+//                     Rectangle tileRect = new Rectangle(point, new Dimension(getTileFactory().getTileSize(), getTileFactory().getTileSize()));
+//                     if (viewportBounds.intersects(tileRect)) {
+//                     //convert tileRect from world space to viewport space
+//                     repaint(new Rectangle(
+//                     tileRect.x - viewportBounds.x,
+//                     tileRect.y - viewportBounds.y,
+//                     tileRect.width,
+//                     tileRect.height
+//                     ));
+//                     }*/
+//                }
+//            }
+//        }
+//    }
 
     // </editor-fold>
     // <editor-fold desc="Methods">
@@ -3769,13 +3782,28 @@ public class MapView extends JPanel {
         int lIdx = -1;
         for (int i = layers.size() - 1; i >= 0; i--) {
             if (layers.get(i).getLayerType() == LayerTypes.ImageLayer
-                    || layers.get(i).getLayerType() == LayerTypes.RasterLayer) {
+                    || layers.get(i).getLayerType() == LayerTypes.RasterLayer
+                    || layers.get(i).getLayerType() == LayerTypes.WebMapLayer) {
                 lIdx = i;
                 break;
             }
         }
 
         return lIdx;
+    }
+
+    /**
+     * Check if web map layer is included
+     *
+     * @return Boolean
+     */
+    public boolean hasWebMapLayer() {
+        for (MapLayer layer : this.layers) {
+            if (layer.getLayerType() == LayerTypes.WebMapLayer) {
+                return true;
+            }
+        }
+        return false;
     }
     // </editor-fold>
 
@@ -3980,6 +4008,20 @@ public class MapView extends JPanel {
 
         g2.dispose();
     }
+    
+    @Override
+    public int getWebMapZoom(){
+        WebMapLayer layer = this.getWebMapLayer();
+        if (layer != null){
+            return layer.getZoom();
+        }
+        return 0;
+    }
+    
+    @Override
+    public void reDraw(){
+        this.paintLayers();
+    }
 
     public void paintLayers() {
         if (this.getWidth() < 10 || this.getHeight() < 10) {
@@ -4084,11 +4126,12 @@ public class MapView extends JPanel {
      *
      * @param g Graphics2D
      * @param area Target rectangle area
+     * @param tll TileLoadListener
      */
-    public void paintGraphics(Graphics2D g, Rectangle2D area) {
+    public void paintGraphics(Graphics2D g, Rectangle2D area, TileLoadListener tll) {
         Rectangle rect = new Rectangle((int) area.getX(), (int) area.getY(),
                 (int) area.getWidth(), (int) area.getHeight());
-        this.paintGraphics(g, rect);
+        this.paintGraphics(g, rect, tll);
     }
 
     /**
@@ -4096,8 +4139,9 @@ public class MapView extends JPanel {
      *
      * @param g Graphics2D
      * @param rect Target rectangle
+     * @param tll TileLoadListener
      */
-    public void paintGraphics(Graphics2D g, Rectangle rect) {
+    public void paintGraphics(Graphics2D g, Rectangle rect, TileLoadListener tll) {
         if (this._lockViewUpdate) {
             return;
         }
@@ -4145,7 +4189,7 @@ public class MapView extends JPanel {
             if (_projection.isLonLatMap()) {
                 drawLonLatMap(g, rect.width, rect.height);
             } else {
-                drawProjectedMap(g, rect.width, rect.height);
+                drawProjectedMap(g, rect.width, rect.height, tll);
             }
             getLonLatGridLabels();
         } else {
@@ -4200,10 +4244,14 @@ public class MapView extends JPanel {
     private void drawProjectedMap(Graphics2D g) {
         drawProjectedMap(g, this.getWidth(), this.getHeight());
     }
-
+    
     private void drawProjectedMap(Graphics2D g, int width, int heigth) {
+        this.drawProjectedMap(g, width, heigth, tileLoadListener);
+    }
+
+    private void drawProjectedMap(Graphics2D g, int width, int heigth, TileLoadListener tll) {
         //Draw layers
-        drawProjectedLayers(g, width, heigth);
+        drawProjectedLayers(g, width, heigth, tll);
 
         //Draw lon/lat
         if (_drawGridLine) {
@@ -4497,8 +4545,12 @@ public class MapView extends JPanel {
     private void drawProjectedLayers(Graphics2D g) {
         drawProjectedLayers(g, this.getWidth(), this.getHeight());
     }
-
+    
     private void drawProjectedLayers(Graphics2D g, int width, int height) {
+        this.drawProjectedMap(g, width, height, tileLoadListener);
+    }
+
+    private void drawProjectedLayers(Graphics2D g, int width, int height, TileLoadListener tll) {
         java.awt.Shape oldRegion = g.getClip();
         for (MapLayer aLayer : layers) {
             if (aLayer.isVisible()) {
@@ -4539,7 +4591,7 @@ public class MapView extends JPanel {
                         break;
                     case WebMapLayer:
                         WebMapLayer webLayer = (WebMapLayer) aLayer;
-                        this.drawWebMapLayer(webLayer, g, width, height);
+                        this.drawWebMapLayer(webLayer, g, width, height, tll);
                         break;
                 }
                 if (aLayer.isMaskout()) {
@@ -5643,8 +5695,12 @@ public class MapView extends JPanel {
 
         return rPoints;
     }
-
+    
     private void drawWebMapLayer(WebMapLayer layer, Graphics2D g, int width, int height) {
+        this.drawWebMapLayer(layer, g, width, height, tileLoadListener);
+    }
+
+    private void drawWebMapLayer(WebMapLayer layer, Graphics2D g, int width, int height, TileLoadListener tll) {
         PointD geoCenter = this.getGeoCenter();
         layer.setAddressLocation(new GeoPosition(geoCenter.Y, geoCenter.X));
         int zoom = layer.getZoom();
@@ -5668,26 +5724,20 @@ public class MapView extends JPanel {
                     break;
                 }
             }
-            if (nzoom != zoom) {
-                zoom = nzoom;
+
+            boolean addOne = false;
+            if (zoom == minZoom) {
+                addOne = true;
+            } else if (nzoom < maxZoom) {
+                addOne = true;
+            }
+            if (addOne) {
+                zoom = nzoom + 1;
+                _webMapScale = getWebMapScale(layer, zoom, width, height);
+                this.setScale(_webMapScale, width, height);
+                layer.setZoom(zoom);
             } else {
-                boolean addOne = false;
-                if (zoom == minZoom) {
-                    addOne = true;
-//                    if (_scaleX > getWebMapScale(layer, zoom, width, height)) {
-//                        addOne = true;
-//                    }
-                } else if (nzoom < maxZoom) {
-                    addOne = true;
-                }
-                if (addOne) {
-                    zoom = nzoom + 1;
-                    _webMapScale = getWebMapScale(layer, zoom, width, height);
-                    this.setScale(_webMapScale, width, height);
-                    layer.setZoom(zoom);
-                } else {
-                    zoom = nzoom;
-                }
+                zoom = nzoom;
             }
         }
 
@@ -5710,7 +5760,7 @@ public class MapView extends JPanel {
 
         //p("top tile = " + topLeftTile);
         //fetch the tiles from the factory and store them in the tiles cache
-        //attach the tileLoadListener
+        //attach the TileLoadListener
         //String language = layer.getTileFactory().getInfo().getLanguage();
         for (int x = 0; x <= numWide; x++) {
             for (int y = 0; y <= numHigh; y++) {
@@ -5721,7 +5771,7 @@ public class MapView extends JPanel {
                 //if (g.getClipBounds().intersects(new Rectangle(itpx * size - viewportBounds.x,
                 //itpy * size - viewportBounds.y, size, size))) {
                 Tile tile = layer.getTileFactory().getTile(itpx, itpy, zoom);
-                tile.addUniquePropertyChangeListener("loaded", tileLoadListener); //this is a filthy hack
+                tile.addUniquePropertyChangeListener("loaded", tll); //this is a filthy hack
                 int ox = ((itpx * layer.getTileFactory().getTileSize(zoom)) - viewportBounds.x);
                 int oy = ((itpy * layer.getTileFactory().getTileSize(zoom)) - viewportBounds.y);
 
@@ -7259,6 +7309,19 @@ public class MapView extends JPanel {
      * @param aExtent The extent
      */
     public void zoomToExtentLonLatEx(Extent aExtent) {
+        if (!_projection.isLonLatMap()) {
+            aExtent = _projection.getProjectedExtentFromLonLat(aExtent);
+        }
+
+        this.zoomToExtent(aExtent);
+    }
+
+    /**
+     * Zoom to exactly lon/lat extent
+     *
+     * @param aExtent The extent
+     */
+    public void zoomToExtentLonLatEx_back(Extent aExtent) {
         if (!_projection.isLonLatMap()) {
             aExtent = _projection.getProjectedExtentFromLonLat(aExtent);
         }

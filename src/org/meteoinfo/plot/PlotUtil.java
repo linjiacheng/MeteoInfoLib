@@ -5,6 +5,7 @@
  */
 package org.meteoinfo.plot;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,7 +69,7 @@ public class PlotUtil {
         plot.setLegendBreak(0, pb);
         plot.getXAxis().setLabel(xAxisLabel);
         plot.getYAxis().setLabel(yAxisLabel);
-        Chart chart = new Chart(plot);        
+        Chart chart = new Chart(plot, null);        
         
         return chart;
     }
@@ -79,8 +80,11 @@ public class PlotUtil {
      * @param chart The chart
      * @param width Width
      * @param height Heigth
+     * @throws java.io.FileNotFoundException
+     * @throws java.lang.InterruptedException
      */
-    public static void exportToPicture(String fileName, Chart chart, int width, int height){
+    public static void exportToPicture(String fileName, Chart chart, int width, int height) 
+            throws FileNotFoundException, InterruptedException{
         try {
             ChartPanel cp = new ChartPanel(chart);
             cp.setSize(width, height);

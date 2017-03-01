@@ -48,7 +48,7 @@ public abstract class AbstractTileFactory extends TileFactory {
     private ExecutorService service;
     //TODO the tile map should be static ALWAYS, regardless of the number
     //of GoogleTileFactories because each tile is, really, a singleton.
-    private Map<String, Tile> tileMap = new HashMap<String, Tile>();
+    private final Map<String, Tile> tileMap = new HashMap<>();
     private TileCache cache = new TileCache();
 
     /**
@@ -162,8 +162,9 @@ public abstract class AbstractTileFactory extends TileFactory {
     /**
      * Thread pool for loading the tiles
      */
-    private static BlockingQueue<Tile> tileQueue = new PriorityBlockingQueue<Tile>(5,
+    private static final BlockingQueue<Tile> tileQueue = new PriorityBlockingQueue<>(5,
             new Comparator<Tile>() {
+        @Override
         public int compare(Tile o1, Tile o2) {
             if (o1.getPriority() == Tile.Priority.Low && o2.getPriority() == Tile.Priority.High) {
                 return 1;
@@ -194,6 +195,7 @@ public abstract class AbstractTileFactory extends TileFactory {
             service = Executors.newFixedThreadPool(threadPoolSize, new ThreadFactory() {
                 private int count = 0;
 
+                @Override
                 public Thread newThread(Runnable r) {
                     Thread t = new Thread(r, "tile-pool-" + count++);
                     t.setPriority(Thread.MIN_PRIORITY);
@@ -265,7 +267,7 @@ public abstract class AbstractTileFactory extends TileFactory {
                     trys--;
                 } else {
                     final BufferedImage i = img;
-                    tile.image = new SoftReference<BufferedImage>(i);
+                    tile.image = new SoftReference<>(i);
                     tile.setLoaded(true);
                 }
             } catch (OutOfMemoryError memErr) {
@@ -404,8 +406,9 @@ public abstract class AbstractTileFactory extends TileFactory {
                     } else {
                         final BufferedImage i = img;
                         SwingUtilities.invokeAndWait(new Runnable() {
+                            @Override
                             public void run() {
-                                tile.image = new SoftReference<BufferedImage>(i);
+                                tile.image = new SoftReference<>(i);
                                 tile.setLoaded(true);
                             }
                         });

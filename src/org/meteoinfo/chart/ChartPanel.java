@@ -78,6 +78,7 @@ import org.meteoinfo.chart.plot.XY1DPlot;
 import org.meteoinfo.chart.plot.XYPlot;
 import org.meteoinfo.data.DataTypes;
 import org.meteoinfo.data.mapdata.Field;
+import org.meteoinfo.data.mapdata.webmap.TileLoadListener;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.GenericFileFilter;
 import org.meteoinfo.global.PointF;
@@ -88,7 +89,6 @@ import org.meteoinfo.layer.VectorLayer;
 import org.meteoinfo.map.FrmIdentifer;
 import org.meteoinfo.map.FrmIdentiferGrid;
 import org.meteoinfo.map.MapView;
-import org.meteoinfo.shape.Shape;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -98,10 +98,10 @@ import org.w3c.dom.NodeList;
  *
  * @author yaqiang
  */
-public class ChartPanel extends JPanel {
+public class ChartPanel extends JPanel{
 
     // <editor-fold desc="Variables">
-    private final EventListenerList listeners = new EventListenerList();
+    private final EventListenerList listeners = new EventListenerList();    
     private BufferedImage mapBitmap = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
     private BufferedImage tempImage = null;
     private Chart chart;
@@ -197,6 +197,7 @@ public class ChartPanel extends JPanel {
     public ChartPanel(Chart chart) {
         this();
         this.chart = chart;
+        this.chart.setParent(this);
     }
 
     /**
@@ -229,6 +230,7 @@ public class ChartPanel extends JPanel {
      */
     public void setChart(Chart value) {
         chart = value;
+        chart.setParent(this);
     }
 
     /**
@@ -338,7 +340,7 @@ public class ChartPanel extends JPanel {
             }
         }
         return null;
-    }
+    }        
 
     /**
      * Paint component
@@ -391,6 +393,8 @@ public class ChartPanel extends JPanel {
                 }
             }
         }
+        
+        g2.dispose();
     }
 
     /**
@@ -805,22 +809,36 @@ public class ChartPanel extends JPanel {
 
             try {
                 this.saveImage(fileName);
-            } catch (PrintException ex) {
+            } catch (PrintException | FileNotFoundException | InterruptedException ex) {
                 Logger.getLogger(ChartPanel.class.getName()).log(Level.SEVERE, null, ex);
             } catch (IOException ex) {
                 Logger.getLogger(ChartPanel.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
-
+    
     /**
      * Save image to a picture file
      *
      * @param aFile File path
      * @throws java.io.FileNotFoundException
      * @throws javax.print.PrintException
+     * @throws java.lang.InterruptedException
      */
-    public void saveImage(String aFile) throws FileNotFoundException, PrintException, IOException {
+    public void saveImage(String aFile) throws FileNotFoundException, PrintException, IOException, InterruptedException {
+        saveImage(aFile, null);
+    }
+
+    /**
+     * Save image to a picture file
+     *
+     * @param aFile File path
+     * @param sleep Sleep seconds for web map layer
+     * @throws java.io.FileNotFoundException
+     * @throws javax.print.PrintException
+     * @throws java.lang.InterruptedException
+     */
+    public void saveImage(String aFile, Integer sleep) throws FileNotFoundException, PrintException, IOException, InterruptedException {
         if (aFile.endsWith(".ps")) {
             DocFlavor flavor = DocFlavor.SERVICE_FORMATTED.PRINTABLE;
             String mimeType = "application/postscript";
@@ -911,6 +929,10 @@ public class ChartPanel extends JPanel {
             }
             Graphics2D g = aImage.createGraphics();
             paintGraphics(g, w, h);
+            
+            if (sleep != null){
+                Thread.sleep(sleep * 1000);
+            }
             ImageIO.write(aImage, extension, new File(aFile));
         }
     }
@@ -1051,15 +1073,29 @@ public class ChartPanel extends JPanel {
 
         return true;
     }
-
+    
     /**
      * Save image
      *
      * @param fileName File name
      * @param dpi DPI
      * @throws IOException
+     * @throws java.lang.InterruptedException
      */
-    public void saveImage(String fileName, float dpi) throws IOException {
+    public void saveImage(String fileName, float dpi) throws IOException, InterruptedException {
+        saveImage(fileName, dpi, null);
+    }
+
+    /**
+     * Save image
+     *
+     * @param fileName File name
+     * @param dpi DPI
+     * @param sleep Sleep seconds for web map layer
+     * @throws IOException
+     * @throws java.lang.InterruptedException
+     */
+    public void saveImage(String fileName, float dpi, Integer sleep) throws IOException, InterruptedException {
         File output = new File(fileName);
         output.delete();
 
@@ -1080,6 +1116,9 @@ public class ChartPanel extends JPanel {
 
             setDPI(metadata, dpi);
 
+            if (sleep != null){
+                Thread.sleep(sleep * 1000);
+            }
             final ImageOutputStream stream = ImageIO.createImageOutputStream(output);
             try {
                 writer.setOutput(stream);
@@ -1141,6 +1180,18 @@ public class ChartPanel extends JPanel {
         paintGraphics(g);
 
         return aImage;
+    }
+    
+    /**
+     * Check if has web map layer
+     * @return Boolean
+     */
+    public boolean hasWebMap(){
+        if (this.chart != null){
+            return this.chart.hasWebMap();
+        }
+        
+        return false;
     }
     // </editor-fold>
 }

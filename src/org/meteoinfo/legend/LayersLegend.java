@@ -63,6 +63,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollBar;
@@ -83,6 +84,8 @@ import org.meteoinfo.layer.FrmLabelSet;
 import org.meteoinfo.layer.WebMapLayer;
 import org.meteoinfo.map.MapView;
 import org.meteoinfo.map.MapViewUndoRedo;
+import org.meteoinfo.projection.ProjectionInfo;
+import org.meteoinfo.projection.ProjectionNames;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -936,6 +939,13 @@ public class LayersLegend extends JPanel {
         layer.setWebMapProvider(WebMapProvider.OpenStreetMap);
         //layer.setDefaultProvider(DefaultProviders.OpenStreetMapQuestSattelite);
         //layer.setDefaultProvider(DefaultProviders.ArcGISImage);
+        ProjectionInfo proj = this._currentMapFrame.getMapView().getProjection().getProjInfo();
+        if (proj.getProjectionName() != ProjectionNames.Mercator) {
+            if (JOptionPane.showConfirmDialog(null, "Not mercator projection! If project?", "Conform", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                ProjectionInfo toProj = new ProjectionInfo("+proj=merc");
+                this._currentMapFrame.getMapView().projectLayers(toProj);
+            }
+        }
 
         _currentMapFrame.addLayer(0, layer);
     }
