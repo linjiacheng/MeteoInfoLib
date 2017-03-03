@@ -1665,17 +1665,6 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         if (nstr.indexOf('.') < 0) {
             nstr = nstr + ".";
         }
-        if (nstr.length() > 6) {
-            nstr = nstr.substring(0, 6);
-        }
-        return GlobalUtil.padRight(nstr, n, '0');
-    }
-
-    private String padNumStr1(String str, int n) {
-        String nstr = str;
-        if (nstr.indexOf('.') < 0) {
-            nstr = nstr + ".";
-        }
         if (nstr.length() > n) {
             nstr = nstr.substring(0, n);
         }
@@ -1736,7 +1725,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         _bw.writeBytes(padNumStr(String.valueOf(aDH.SYNC_XP), 7));
         _bw.writeBytes(padNumStr(String.valueOf(aDH.SYNC_YP), 7));
         _bw.writeBytes(padNumStr(String.valueOf(aDH.SYNC_LAT), 7));
-        _bw.writeBytes(padNumStr1(String.valueOf(aDH.SYNC_LON), 7));
+        _bw.writeBytes(padNumStr(String.valueOf(aDH.SYNC_LON), 7));
         _bw.writeBytes(padNumStr(String.valueOf(aDH.DUMMY), 7));
         if (aDH.NX >= 1000){
             String str = String.valueOf(aDH.NX);
