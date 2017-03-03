@@ -25,6 +25,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.math.BigDecimal;
+import java.nio.ByteOrder;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -145,26 +146,41 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
-    
+
     /**
      * Set X
+     *
      * @param value X value
      */
-    public void setX(List<Number> value){
+    public void setX(List<Number> value) {
         this.X = new double[value.size()];
-        for (int i = 0; i < value.size(); i++){
+        for (int i = 0; i < value.size(); i++) {
             this.X[i] = value.get(i).doubleValue();
         }
     }
-    
+
     /**
      * Set X
+     *
      * @param value X value
      */
-    public void setY(List<Number> value){
+    public void setY(List<Number> value) {
         this.Y = new double[value.size()];
-        for (int i = 0; i < value.size(); i++){
+        for (int i = 0; i < value.size(); i++) {
             this.Y[i] = value.get(i).doubleValue();
+        }
+    }
+
+    /**
+     * If is large grid sizes
+     *
+     * @return Boolean
+     */
+    public boolean isLargeGrid() {
+        if (this.X.length >= 1000 || this.Y.length >= 1000) {
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -275,6 +291,12 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             br.read(bytes);
             aDH.LENH = Integer.parseInt(new String(bytes).trim());
 
+            if (aDL.XGPT) {
+                int xn = aDL.IGC.charAt(0) - 64;
+                int yn = aDL.IGC.charAt(1) - 64;
+                aDH.NX = aDH.NX + xn * 1000;
+                aDH.NY = aDH.NY + yn * 1000;
+            }
             int NXY = aDH.NX * aDH.NY;
             int LEN = NXY + 50;
             recLen = LEN;
@@ -538,7 +560,13 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             br.read(bytes);
             aDL.setLevel(Short.parseShort(new String(bytes).trim()));
             br.read(bytes);
-            aDL.setGrid(Short.parseShort(new String(bytes).trim()));
+            String gridStr = new String(bytes).trim();
+            if (MIMath.isNumeric(gridStr)) {
+                aDL.setGrid(Short.parseShort(gridStr));
+            } else {
+                aDL.XGPT = true;
+                aDL.IGC = gridStr;
+            }
             bytes = new byte[4];
             br.read(bytes);
             aDL.setVarName(new String(bytes).trim());
@@ -563,7 +591,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         ProjectionInfo fromProj = KnownCoordinateSystems.geographic.world.WGS1984;
         double sync_X, sync_Y;
         double[][] points = new double[1][];
-        points[0] = new double[]{new BigDecimal(String.valueOf(sync_Lon)).doubleValue(), 
+        points[0] = new double[]{new BigDecimal(String.valueOf(sync_Lon)).doubleValue(),
             new BigDecimal(String.valueOf(sync_Lat)).doubleValue()};
         Reproject.reprojectPoints(points, fromProj, projInfo, 0, 1);
         sync_X = points[0][0];
@@ -602,13 +630,14 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             Y[i] = ylb + i * size;
         }
     }
-    
+
     /**
      * Get global attributes
+     *
      * @return Global attributes
      */
     @Override
-    public List<Attribute> getGlobalAttributes(){
+    public List<Attribute> getGlobalAttributes() {
         return new ArrayList<>();
     }
 
@@ -692,28 +721,28 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
 
         return data;
     }
-    
+
     /**
      * Read array data of a variable
-     * 
+     *
      * @param varName Variable name
      * @return Array data
      */
     @Override
-    public Array read(String varName){
+    public Array read(String varName) {
         Variable var = this.getVariable(varName);
         int n = var.getDimNumber();
         int[] origin = new int[n];
         int[] size = new int[n];
         int[] stride = new int[n];
-        for (int i = 0; i < n; i++){
+        for (int i = 0; i < n; i++) {
             origin[i] = 0;
             size[i] = var.getDimLength(i);
             stride[i] = 1;
         }
-        
+
         Array r = read(varName, origin, size, stride);
-        
+
         return r;
     }
 
@@ -805,7 +834,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             Logger.getLogger(ARLDataInfo.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     /**
      * Get grid data
      *
@@ -814,7 +843,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
      */
     @Override
     public GridArray getGridArray(String varName) {
-        return null;    
+        return null;
     }
 
     @Override
@@ -1426,7 +1455,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
      */
     public DataHead getDataHead(ProjectionInfo projInfo, String model, int kFlag, int icx, short mn) {
         this.setIndexRecPos();
-        
+
         int i;
         DataHead aDH = new DataHead();
         aDH.MODEL = model;
@@ -1437,6 +1466,10 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         for (i = 0; i < levels.size(); i++) {
             aDH.LENH += this.LevelVarList.get(i).size() * 8 + 8;
         }
+        aDH.DUMMY = 0;
+        aDH.NX = X.length;
+        aDH.NY = Y.length;        
+        aDH.NZ = levels.size();
 
         if (projInfo.getProjectionName() == ProjectionNames.LongLat) {
             aDH.POLE_LAT = 90;
@@ -1450,10 +1483,6 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             aDH.SYNC_YP = 1;
             aDH.SYNC_LAT = (float) Y[0];
             aDH.SYNC_LON = (float) X[0];
-            aDH.DUMMY = 0;
-            aDH.NX = X.length;
-            aDH.NY = Y.length;
-            aDH.NZ = levels.size();
         } else {
             float sync_x, sync_y;
             //sync_x = 0.5f * (X.length + 1);
@@ -1496,10 +1525,6 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                     aDH.SYNC_YP = sync_y;
                     aDH.SYNC_LAT = (float) sync_lat;
                     aDH.SYNC_LON = (float) sync_lon;
-                    aDH.DUMMY = 0;
-                    aDH.NX = X.length;
-                    aDH.NY = Y.length;
-                    aDH.NZ = levels.size();
                     break;
                 case Mercator:
                     aDH.POLE_LAT = 0;
@@ -1513,10 +1538,6 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                     aDH.SYNC_YP = sync_y;
                     aDH.SYNC_LAT = (float) sync_lat;
                     aDH.SYNC_LON = (float) sync_lon;
-                    aDH.DUMMY = 0;
-                    aDH.NX = X.length;
-                    aDH.NY = Y.length;
-                    aDH.NZ = levels.size();
                     break;
                 case North_Polar_Stereographic_Azimuthal:
                     aDH.POLE_LAT = 90;
@@ -1530,10 +1551,6 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                     aDH.SYNC_YP = sync_y;
                     aDH.SYNC_LAT = (float) sync_lat;
                     aDH.SYNC_LON = (float) sync_lon;
-                    aDH.DUMMY = 0;
-                    aDH.NX = X.length;
-                    aDH.NY = Y.length;
-                    aDH.NZ = levels.size();
                     break;
                 case South_Polar_Stereographic_Azimuthal:
                     aDH.POLE_LAT = -90;
@@ -1547,10 +1564,6 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                     aDH.SYNC_YP = 1;
                     aDH.SYNC_LAT = (float) sync_lat;
                     aDH.SYNC_LON = (float) sync_lon;
-                    aDH.DUMMY = 0;
-                    aDH.NX = X.length;
-                    aDH.NY = Y.length;
-                    aDH.NZ = levels.size();
                     break;
             }
         }
@@ -1657,19 +1670,22 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         }
         return GlobalUtil.padRight(nstr, n, '0');
     }
-    
+
     private String padNumStr1(String str, int n) {
         String nstr = str;
         if (nstr.indexOf('.') < 0) {
             nstr = nstr + ".";
         }
+        if (nstr.length() > n) {
+            nstr = nstr.substring(0, n);
+        }
         return GlobalUtil.padRight(nstr, n, '0');
     }
-    
+
     /**
      * Set index record position
      */
-    public void setIndexRecPos(){
+    public void setIndexRecPos() {
         if (_bw != null) {
             try {
                 this.indexRecPos = this._bw.getFilePointer();
@@ -1696,7 +1712,12 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         _bw.writeBytes(dateStr);
         _bw.writeBytes("00");
         _bw.writeBytes("00");
-        _bw.writeBytes("11");
+        if (this.isLargeGrid()) {
+            String igc = this.getIGC();
+            _bw.writeBytes(igc);
+        } else {
+            _bw.writeBytes("99");
+        }
         _bw.writeBytes("INDX");
         _bw.writeBytes("   0");
         _bw.writeBytes(" 0.0000000E+00");
@@ -1717,8 +1738,18 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         _bw.writeBytes(padNumStr(String.valueOf(aDH.SYNC_LAT), 7));
         _bw.writeBytes(padNumStr1(String.valueOf(aDH.SYNC_LON), 7));
         _bw.writeBytes(padNumStr(String.valueOf(aDH.DUMMY), 7));
-        _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDH.NX), 3, ' '));
-        _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDH.NY), 3, ' '));
+        if (aDH.NX >= 1000){
+            String str = String.valueOf(aDH.NX);
+            str = str.substring(str.length() - 3);
+            _bw.writeBytes(str);
+        } else
+            _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDH.NX), 3, ' '));
+        if (aDH.NY >= 1000){
+            String str = String.valueOf(aDH.NY);
+            str = str.substring(str.length() - 3);
+            _bw.writeBytes(str);
+        } else
+            _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDH.NY), 3, ' '));
         _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDH.NZ), 3, ' '));
         _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDH.K_FLAG), 2, ' '));
         _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDH.LENH), 4, ' '));
@@ -1730,7 +1761,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(vNum), 2, ' '));
             for (int j = 0; j < vNum; j++) {
                 _bw.writeBytes(GlobalUtil.padRight(LevelVarList.get(i).get(j), 4, '1'));
-                if (ksums == null){
+                if (ksums == null) {
                     _bw.writeBytes("226");
                 } else {
                     ksumStr = GlobalUtil.padLeft(ksums.get(i).get(j).toString(), 3, ' ');
@@ -1759,7 +1790,10 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         _bw.writeBytes(dateStr);
         _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDL.getForecast()), 2, ' '));
         _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDL.getLevel()), 2, ' '));
-        _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDL.getGrid()), 2, ' '));
+        if (aDL.XGPT){
+            _bw.writeBytes(aDL.IGC);
+        } else
+            _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDL.getGrid()), 2, ' '));
         _bw.writeBytes(GlobalUtil.padRight(aDL.getVarName(), 4, '1'));
         _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDL.getExponent()), 4, ' '));
         DecimalFormat dformat = new DecimalFormat("0.0000000E00");
@@ -1777,7 +1811,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         //Write data
         _bw.write(dataBytes);
     }
-    
+
     /**
      * Write grid data
      *
@@ -1788,19 +1822,24 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
      */
     public int writeGridData(DataLabel aDL, Array a) throws IOException {
         Object[] r = packARLGridData(a, aDL);
-        byte[] dataBytes = (byte[])r[0];
-        int ksum = (int)r[1];       
+        byte[] dataBytes = (byte[]) r[0];
+        int ksum = (int) r[1];
 
         //write data label
         SimpleDateFormat format = new SimpleDateFormat("yyMMddHH");
         String dateStr = format.format(aDL.getTime());
         _bw.writeBytes(dateStr);
         String fcst = GlobalUtil.padLeft(String.valueOf(aDL.getForecast()), 2, ' ');
-        if (fcst.length() > 2)
+        if (fcst.length() > 2) {
             fcst = fcst.substring(fcst.length() - 2);
+        }
         _bw.writeBytes(fcst);
         _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDL.getLevel()), 2, ' '));
-        _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDL.getGrid()), 2, ' '));
+        if (aDL.XGPT){
+            _bw.writeBytes(aDL.IGC);
+        } else {
+            _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDL.getGrid()), 2, ' '));
+        }
         _bw.writeBytes(GlobalUtil.padRight(aDL.getVarName(), 4, '1'));
         _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDL.getExponent()), 4, ' '));
         DecimalFormat dformat = new DecimalFormat("0.0000000E00");
@@ -1817,7 +1856,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
 
         //Write data
         _bw.write(dataBytes);
-        
+
         return ksum;
     }
 
@@ -1837,10 +1876,14 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         aDL.setLevel(levelIdx);
         aDL.setVarName(varName);
         aDL.setGrid(grid);
+        if (this.isLargeGrid()) {
+            aDL.XGPT = true;            
+            aDL.IGC = this.getIGC();
+        }
         aDL.setForecast(forecast);
         writeGridData(aDL, gridData);
     }
-    
+
     /**
      * Write grid data
      *
@@ -1858,9 +1901,21 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         aDL.setLevel(levelIdx);
         aDL.setVarName(varName);
         aDL.setGrid(grid);
+        if (this.isLargeGrid()) {
+            aDL.XGPT = true;            
+            aDL.IGC = this.getIGC();
+        }
         aDL.setForecast(forecast);
         int ksum = writeGridData(aDL, gridData);
         return ksum;
+    }
+
+    private String getIGC() {
+        int xn = X.length / 1000;
+        int yn = Y.length / 1000;
+        char xc = (char) (xn + 64);
+        char yc = (char) (yn + 64);
+        return new String(new char[]{xc, yc});
     }
 
     private byte[] packARLGridData(GridData gridData, DataLabel aDL) {
@@ -1927,7 +1982,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
 
         return dataBytes;
     }
-    
+
     private Object[] packARLGridData(Array a, DataLabel aDL) {
         int nx = a.getShape()[1];
         int ny = a.getShape()[0];

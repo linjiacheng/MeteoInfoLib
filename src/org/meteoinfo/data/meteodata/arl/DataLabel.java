@@ -28,12 +28,20 @@ public class DataLabel {
     private int _hour;
     private int _forecast;
     private int _level;
-    private int _grid;
+    private int _grid; 
     private String _varName;
     private int _exponent;
     private double _precision;
     private double _value;
-    private Date _time = new Date();
+    private Date _time = new Date();    
+    
+    //header record does not support grids of more than 999 
+    //therefore in those situations the grid number is
+    //converted to character to represent the 1000s digit
+    //e.g. @(64)=<1000, A(65)=1000, B(66)=2000, etc
+    public String IGC = null;
+    public boolean XGPT = false;
+    
     // </editor-fold>
     // <editor-fold desc="Constructor">
 

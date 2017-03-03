@@ -97,6 +97,20 @@ public class DataConvert {
     }
 
     /**
+     * Byte array (3 bytes) convert to integer
+     * @param bytes Byte array
+     * @return Integer value
+     */
+    public static int bytes2Int3(byte[] bytes) {
+        int val = 0;
+        for (int bb = 0; bb < 3; bb++) {
+            val <<= 8;
+            val |= (int) bytes[bb] & 0xFF;
+        }
+        return val;
+    }
+
+    /**
      * Convert byte to int - byte in Java is signed
      *
      * @param b Input byte
@@ -322,7 +336,7 @@ public class DataConvert {
         }
         return bytes;
     }
-    
+
     public static byte[] toByteArray(BitSet bits) {
         byte[] bytes = new byte[bits.length() / 8 + 1];
         for (int i = 0; i < bits.length(); i++) {
