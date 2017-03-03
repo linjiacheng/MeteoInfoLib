@@ -2600,6 +2600,19 @@ public class ArrayMath {
 
         return new Array[]{r, rx, ry};
     }
+    
+     /**
+     * Maskout function
+     *
+     * @param a Array a
+     * @param x X dimension values
+     * @param y Y dimension values
+     * @param polygons PolygonShape list
+     * @return Result array with cell values of missing outside polygons
+     */
+    public static Array maskout(Array a, List<Number> x, List<Number> y, List<PolygonShape> polygons) {
+        return maskout(a, x, y, polygons, Double.NaN);
+    }
 
     /**
      * Maskout function
