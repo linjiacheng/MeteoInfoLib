@@ -1138,44 +1138,14 @@ public abstract class XYPlot extends Plot {
                 g.translate(area.getX(), area.getY());
                 x = (float) (area.getWidth() * text.getX());
                 y = (float) (area.getHeight() * (1 - text.getY()));
-                g.setFont(text.getFont());
-                Dimension dim = Draw.getStringDimension(text.getText(), g);
-                Rectangle.Double rect = new Rectangle.Double(x, y - dim.getHeight() * 0.8, dim.getWidth(), dim.getHeight());
-                if (text.isFill()) {
-                    g.setColor(text.getBackground());
-                    g.fill(rect);
-                }
-                if (text.isDrawNeatline()) {
-                    g.setColor(text.getNeatlineColor());
-                    Stroke oldStroke = g.getStroke();
-                    g.setStroke(new BasicStroke(text.getNeatlineSize()));
-                    g.draw(rect);
-                    g.setStroke(oldStroke);
-                }      
-                g.setColor(text.getColor());
-                Draw.drawString(g, text.getText(), x, y);
+                this.drawText(text, g, x, y);
                 g.setTransform(oldMatrix);
                 g.setClip(oldRegion);
                 break;
             case FIGURE:
                 x = (float) (area.getWidth() * text.getX());
                 y = (float) (area.getHeight() * (1 - text.getY()));
-                g.setFont(text.getFont());
-                dim = Draw.getStringDimension(text.getText(), g);
-                rect = new Rectangle.Double(x, y - dim.getHeight() * 0.8, dim.getWidth(), dim.getHeight());
-                if (text.isFill()) {
-                    g.setColor(text.getBackground());
-                    g.fill(rect);
-                }
-                if (text.isDrawNeatline()) {
-                    g.setColor(text.getNeatlineColor());
-                    Stroke oldStroke = g.getStroke();
-                    g.setStroke(new BasicStroke(text.getNeatlineSize()));
-                    g.draw(rect);
-                    g.setStroke(oldStroke);
-                }      
-                g.setColor(text.getColor());
-                Draw.drawString(g, text.getText(), x, y);
+                this.drawText(text, g, x, y);
                 break;
             case DATA:
                 oldMatrix = g.getTransform();
@@ -1185,26 +1155,33 @@ public abstract class XYPlot extends Plot {
                 double[] xy = this.projToScreen(text.getX(), text.getY(), area);
                 x = (float) xy[0];
                 y = (float) xy[1];
-                g.setFont(text.getFont());
-                dim = Draw.getStringDimension(text.getText(), g);
-                rect = new Rectangle.Double(x, y - dim.getHeight() * 0.8, dim.getWidth(), dim.getHeight());
-                if (text.isFill()) {
-                    g.setColor(text.getBackground());
-                    g.fill(rect);
-                }
-                if (text.isDrawNeatline()) {
-                    g.setColor(text.getNeatlineColor());
-                    Stroke oldStroke = g.getStroke();
-                    g.setStroke(new BasicStroke(text.getNeatlineSize()));
-                    g.draw(rect);
-                    g.setStroke(oldStroke);
-                }                
-                g.setColor(text.getColor());
-                Draw.drawString(g, text.getText(), x, y);
+                this.drawText(text, g, x, y);
                 g.setTransform(oldMatrix);
                 g.setClip(oldRegion);
                 break;
         }
+    }
+
+    void drawText(ChartText text, Graphics2D g, float x, float y) {
+        g.setFont(text.getFont());
+        Dimension dim = Draw.getStringDimension(text.getText(), g);
+        float gap = text.getGap();
+        Rectangle.Double rect = new Rectangle.Double(x, y - dim.getHeight() * 0.8, dim.getWidth(), dim.getHeight());
+        rect.setRect(rect.x - gap, rect.y - (gap - 3), rect.width + gap * 2, 
+                rect.height + (gap - 3) * 2);
+        if (text.isFill()) {
+            g.setColor(text.getBackground());
+            g.fill(rect);
+        }
+        if (text.isDrawNeatline()) {
+            g.setColor(text.getNeatlineColor());
+            Stroke oldStroke = g.getStroke();
+            g.setStroke(new BasicStroke(text.getNeatlineSize()));
+            g.draw(rect);
+            g.setStroke(oldStroke);
+        }
+        g.setColor(text.getColor());
+        Draw.drawString(g, text.getText(), x, y);
     }
 
     void drawLegendScheme(Graphics2D g, Rectangle2D area, float y) {

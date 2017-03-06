@@ -116,8 +116,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -401,12 +399,13 @@ public class MapView extends JPanel implements IWebMapPanel {
     // <editor-fold desc="Get Set Methods">
     /**
      * Set TileLoadListner for web map plot
+     *
      * @param value TileLoadListener
      */
-    public void setTileLoadListener(TileLoadListener value){
+    public void setTileLoadListener(TileLoadListener value) {
         this.tileLoadListener = value;
     }
-    
+
     /**
      * Get layers
      *
@@ -1507,11 +1506,23 @@ public class MapView extends JPanel implements IWebMapPanel {
                                                     case Polyline:
                                                     case PolylineZ:
                                                         _frmMeasure.setArea(false);
+                                                        double areaValue = 0.0;
                                                         if (_projection.isLonLatMap()) {
                                                             value = GeoComputation.getDistance(((PolylineShape) aShape).getPoints(), true);
+                                                            if (((PolylineShape) aShape).isClosed()) {
+                                                                areaValue = GeoComputation.sphericalPolygonArea((List<PointD>) aShape.getPoints());
+                                                            }
                                                         } else {
                                                             value = ((PolylineShape) aShape).getLength();
                                                             value *= _projection.getProjInfo().getCoordinateReferenceSystem().getProjection().getFromMetres();
+                                                            if (((PolylineShape) aShape).isClosed()) {
+                                                                areaValue = GeoComputation.getArea((List<PointD>) aShape.getPoints());
+                                                            }
+                                                        }
+                                                        if (((PolylineShape) aShape).isClosed()) {
+                                                            areaValue *= _projection.getProjInfo().getCoordinateReferenceSystem().getProjection().getFromMetres()
+                                                                * _projection.getProjInfo().getCoordinateReferenceSystem().getProjection().getFromMetres();
+                                                            _frmMeasure.setAreaValue(areaValue);
                                                         }
                                                         break;
                                                     case Polygon:
@@ -3315,10 +3326,9 @@ public class MapView extends JPanel implements IWebMapPanel {
 
     void onKeyReleased(KeyEvent e) {
     }
-    
+
 //    // a property change listener which forces repaints when tiles finish loading
 //    private final TileLoadListener tileLoadListener = new TileLoadListener(this);
-
 //    private final class TileLoadListener implements PropertyChangeListener {
 //
 //        @Override
@@ -3348,7 +3358,6 @@ public class MapView extends JPanel implements IWebMapPanel {
 //            }
 //        }
 //    }
-
     // </editor-fold>
     // <editor-fold desc="Methods">
     // <editor-fold desc="Layer">
@@ -4008,18 +4017,18 @@ public class MapView extends JPanel implements IWebMapPanel {
 
         g2.dispose();
     }
-    
+
     @Override
-    public int getWebMapZoom(){
+    public int getWebMapZoom() {
         WebMapLayer layer = this.getWebMapLayer();
-        if (layer != null){
+        if (layer != null) {
             return layer.getZoom();
         }
         return 0;
     }
-    
+
     @Override
-    public void reDraw(){
+    public void reDraw() {
         this.paintLayers();
     }
 
@@ -4244,7 +4253,7 @@ public class MapView extends JPanel implements IWebMapPanel {
     private void drawProjectedMap(Graphics2D g) {
         drawProjectedMap(g, this.getWidth(), this.getHeight());
     }
-    
+
     private void drawProjectedMap(Graphics2D g, int width, int heigth) {
         this.drawProjectedMap(g, width, heigth, tileLoadListener);
     }
@@ -4545,7 +4554,7 @@ public class MapView extends JPanel implements IWebMapPanel {
     private void drawProjectedLayers(Graphics2D g) {
         drawProjectedLayers(g, this.getWidth(), this.getHeight());
     }
-    
+
     private void drawProjectedLayers(Graphics2D g, int width, int height) {
         this.drawProjectedMap(g, width, height, tileLoadListener);
     }
@@ -5695,7 +5704,7 @@ public class MapView extends JPanel implements IWebMapPanel {
 
         return rPoints;
     }
-    
+
     private void drawWebMapLayer(WebMapLayer layer, Graphics2D g, int width, int height) {
         this.drawWebMapLayer(layer, g, width, height, tileLoadListener);
     }

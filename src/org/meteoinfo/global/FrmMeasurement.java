@@ -40,12 +40,15 @@ public class FrmMeasurement extends javax.swing.JDialog {
     private double _previousValue;
     private double _currentValue;
     private double _totalValue;
+    private Double areaValue = null;
     private String _unitStr;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
     /**
      * Creates new form FrmMeasurement
+     * @param parent Paranet form
+     * @param modal Model or not
      */
     public FrmMeasurement(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
@@ -234,6 +237,7 @@ public class FrmMeasurement extends javax.swing.JDialog {
      */
     public void setArea(boolean istrue) {
         _isArea = istrue;
+        this.areaValue = null;
     }
 
     /**
@@ -290,13 +294,33 @@ public class FrmMeasurement extends javax.swing.JDialog {
     public void setTotalValue(double value) {
         _totalValue = value;
     }
+    
+    /**
+     * Get area value
+     * @return Area value
+     */
+    public double getAreaValue(){
+        return this.areaValue;
+    }
+    
+    /**
+     * Set area value
+     * @param value Area value
+     */
+    public void setAreaValue(double value){
+        this.areaValue = value;
+    }
 
     // </editor-fold>
     // <editor-fold desc="Methods">
     private double convertValue(double aValue) {
+        return convertValue(aValue, this._isArea);
+    }
+    
+    private double convertValue(double aValue, boolean isArea) {
         double bValue = aValue;
         if (_unitStr.equals("Kilometers")) {
-            if (_isArea) {
+            if (isArea) {
                 bValue = aValue / 1000000;
             } else {
                 bValue = aValue / 1000;
@@ -309,7 +333,7 @@ public class FrmMeasurement extends javax.swing.JDialog {
     private void showValue() {
         String unitStr = _unitStr;
         String tStr = "Length";
-        String lines = "";
+        String lines;
         double currentValue = convertValue(_currentValue);
 
         if (_isArea) {
@@ -320,6 +344,11 @@ public class FrmMeasurement extends javax.swing.JDialog {
             _totalValue = _previousValue + _currentValue;
             lines = lines + "\nTotal " + tStr + ": " + String.format("%1$,f", convertValue(_totalValue))
                     + " " + unitStr;
+            if (this.areaValue != null){
+                unitStr = unitStr + "^2";
+                double area = this.convertValue(this.areaValue, true);
+                lines = lines + "\nArea: " + String.format("%1$,f", area) + " " + unitStr;
+            }
         }
         this.jTextArea_Content.setText(lines);
     }
@@ -341,19 +370,16 @@ public class FrmMeasurement extends javax.swing.JDialog {
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(FrmMeasurement.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(FrmMeasurement.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(FrmMeasurement.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(FrmMeasurement.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
+        
         //</editor-fold>
 
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 FrmMeasurement dialog = new FrmMeasurement(new javax.swing.JFrame(), true);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {

@@ -32,6 +32,7 @@ public class ChartText {
     private boolean drawNeatline;
     private Color neatLineColor;
     private float neatLineSize;
+    private float gap;
     // </editor-fold>    
     // <editor-fold desc="Constructor">
     /**
@@ -47,6 +48,7 @@ public class ChartText {
         this.drawNeatline = false;
         this.neatLineColor = Color.black;
         this.neatLineSize = 1.0f;
+        this.gap = 5.0f;
     }
     
     /**
@@ -323,6 +325,22 @@ public class ChartText {
      */
     public void setNeatlineSize(float value){
         this.neatLineSize = value;
+    }
+    
+    /**
+     * Get gap
+     * @return Gap 
+     */
+    public float getGap(){
+        return this.gap;
+    }
+    
+    /**
+     * Set gap
+     * @param value Gap
+     */
+    public void setGap(float value){
+        this.gap = value;
     }
     // </editor-fold>
     // <editor-fold desc="Methods">

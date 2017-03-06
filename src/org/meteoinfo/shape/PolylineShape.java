@@ -1,4 +1,4 @@
- /* Copyright 2012 Yaqiang Wang,
+/* Copyright 2012 Yaqiang Wang,
  * yaqiang.wang@gmail.com
  * 
  * This library is free software; you can redistribute it and/or modify it
@@ -56,36 +56,38 @@ public class PolylineShape extends Shape implements Cloneable {
         parts[0] = 0;
         _polylines = new ArrayList<>();
     }
-    
+
     /**
      * Constructor
+     *
      * @param geometry Geometry
      */
     public PolylineShape(Geometry geometry) {
         this();
         Coordinate[] cs = geometry.getCoordinates();
         List<PointD> points = new ArrayList();
-        for (Coordinate c : cs)
-            points.add(new PointD(c.x, c.y));       
+        for (Coordinate c : cs) {
+            points.add(new PointD(c.x, c.y));
+        }
         switch (geometry.getGeometryType()) {
             case "MultiLineString":
                 this._points = points;
                 List<PointD> pp;
-                int n = geometry.getNumGeometries();                
+                int n = geometry.getNumGeometries();
                 _numParts = n;
                 List<Integer> partlist = new ArrayList<>();
                 int idx = 0;
                 for (int i = 0; i < n; i++) {
-                    LineString poly = (LineString) geometry.getGeometryN(i);                   
-                    partlist.add(idx);                    
+                    LineString poly = (LineString) geometry.getGeometryN(i);
+                    partlist.add(idx);
                     Polyline polyline = new Polyline();
                     pp = new ArrayList<>();
                     for (int j = idx; j < idx + poly.getNumPoints(); j++) {
                         pp.add(points.get(j));
                     }
                     polyline.setPointList(pp);
-                    idx += poly.getNumPoints();                    
-                    ((List<Polyline>)this._polylines).add(polyline);
+                    idx += poly.getNumPoints();
+                    ((List<Polyline>) this._polylines).add(polyline);
                 }
                 parts = new int[n];
                 for (int i = 0; i < parts.length; i++) {
@@ -96,37 +98,38 @@ public class PolylineShape extends Shape implements Cloneable {
             default:
                 this.setPoints(points);
                 break;
-        }           
+        }
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
-    
+
     @Override
-    public ShapeTypes getShapeType(){
+    public ShapeTypes getShapeType() {
         return ShapeTypes.Polyline;
     }
-    
+
     /**
      * To geometry method
+     *
      * @param factory GeometryFactory
      * @return Geometry
      */
     @Override
-    public Geometry toGeometry(GeometryFactory factory){
+    public Geometry toGeometry(GeometryFactory factory) {
         PointD p;
-        if (this.getPartNum() == 1){
+        if (this.getPartNum() == 1) {
             Coordinate[] cs = new Coordinate[this.getPointNum()];
-            for (int i = 0; i < cs.length; i++){
+            for (int i = 0; i < cs.length; i++) {
                 p = this._points.get(i);
                 cs[i] = new Coordinate(p.X, p.Y);
             }
             return factory.createLineString(cs);
         } else {
             LineString[] lss = new LineString[this._polylines.size()];
-            for (int j = 0; j < lss.length; j++){
+            for (int j = 0; j < lss.length; j++) {
                 Polyline line = this._polylines.get(j);
                 Coordinate[] cs = new Coordinate[line.getPointList().size()];
-                for (int i = 0; i < cs.length; i++){
+                for (int i = 0; i < cs.length; i++) {
                     p = line.getPointList().get(i);
                     cs[i] = new Coordinate(p.X, p.Y);
                 }
@@ -135,7 +138,9 @@ public class PolylineShape extends Shape implements Cloneable {
             MultiLineString mls = factory.createMultiLineString(lss);
             return mls;
         }
-    };
+    }
+
+    ;
 
     /**
      * Get points
@@ -323,12 +328,12 @@ public class PolylineShape extends Shape implements Cloneable {
         this.setExtent(MIMath.getPointsExtent(_points));
         updatePolyLines();
     }
-    
+
     /**
      * Reverse points direction
      */
     @Override
-    public void reverse(){
+    public void reverse() {
         Collections.reverse(_points);
     }
 
@@ -336,11 +341,11 @@ public class PolylineShape extends Shape implements Cloneable {
     public Object clone_back() {
         PolylineShape o = (PolylineShape) super.clone();
         List<PointD> points = new ArrayList<>();
-        for (PointD point : (List<PointD>)_points){
-            points.add((PointD)point.clone());
+        for (PointD point : (List<PointD>) _points) {
+            points.add((PointD) point.clone());
         }
         o.setPoints(points);
-        
+
         return o;
     }
 
@@ -357,8 +362,8 @@ public class PolylineShape extends Shape implements Cloneable {
         aPLS._numParts = _numParts;
         aPLS.parts = (int[]) parts.clone();
         List<PointD> points = new ArrayList<>();
-        for (PointD point : (List<PointD>)_points){
-            points.add((PointD)point.clone());
+        for (PointD point : (List<PointD>) _points) {
+            points.add((PointD) point.clone());
         }
         aPLS.setPoints(points);
         aPLS.setVisible(this.isVisible());
@@ -382,28 +387,37 @@ public class PolylineShape extends Shape implements Cloneable {
 
         return aPLS;
     }
-    
-    
+
     /**
      * Clone value
-     * @param other Other polyline shape 
+     *
+     * @param other Other polyline shape
      */
     @Override
-    public void cloneValue(Shape other){
-        PolylineShape o = (PolylineShape)other;
+    public void cloneValue(Shape other) {
+        PolylineShape o = (PolylineShape) other;
         this.setValue(o.getValue());
         this.setExtent(o.getExtent());
         this._numParts = o._numParts;
         this.parts = (int[]) o.parts.clone();
         List<PointD> points = new ArrayList<>();
-        for (PointD point : (List<PointD>)o._points){
-            points.add((PointD)point.clone());
+        for (PointD point : (List<PointD>) o._points) {
+            points.add((PointD) point.clone());
         }
         this.setPoints(points);
         this.setVisible(o.isVisible());
         this.setSelected(o.isSelected());
         this.setLegendIndex(o.getLegendIndex());
     }
-    
+
+    /**
+     * Check if the polyline shape is closed or not
+     * @return Boolean
+     */
+    public boolean isClosed() {
+        return MIMath.doubleEquals(_points.get(0).X, _points.get(_points.size() - 1).X)
+                && MIMath.doubleEquals(_points.get(0).Y, _points.get(_points.size() - 1).Y);
+    }
+
     // </editor-fold>
 }
