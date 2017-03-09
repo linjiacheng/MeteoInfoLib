@@ -2678,6 +2678,84 @@ public class ArrayUtil {
 
         return new Object[]{indices, distances, outBounds};
     }
+    
+    /**
+     * Get indices
+     * @param index Index array
+     * @param labels Labels
+     * @return Indices
+     */
+    public static List<Integer> getIndices(List<Object> index, Array labels) {
+        return getIndices(index, ArrayMath.asList(labels));
+    }
+    
+    /**
+     * Get indices
+     * @param index Index array
+     * @param labels Labels
+     * @return Indices
+     */
+    public static List<Integer> getIndices(Array index, Array labels) {
+        return getIndices(ArrayMath.asList(index), ArrayMath.asList(labels));
+    }
+    
+    /**
+     * Get indices
+     * @param index Index array
+     * @param labels Labels
+     * @return Indices
+     */
+    public static List<Integer> getIndices(List<Object> index, List<Object> labels) {
+        List<Integer> r = new ArrayList<>();
+        int i;
+        for (Object l : labels){
+            i = index.indexOf(l);
+            if (i >= 0){
+                r.add(i);
+            }
+        }
+        
+        return r;
+    }
+    
+    /**
+     * Sub list by index
+     * @param list The list
+     * @param index The index
+     * @return Result list
+     */
+    public static List subList(List list, List<Integer> index){
+        List r = new ArrayList<>();
+        for (int i : index){
+            r.add(list.get(i));
+        }
+        
+        return r;
+    }
+    
+    /**
+     * Fill key list
+     * @param key Key list
+     * @param dkey Key list with valid data
+     * @param data Valid data array
+     * @return Result data array with same length as key list
+     */
+    public static Array fillKeyList(List key, List dkey, Array data){
+        Array kdata = Array.factory(data.getDataType(), new int[]{key.size()});
+        int idx;
+        int i = 0;
+        for (Object k : key){
+            idx = dkey.indexOf(k);
+            if (idx >= 0){
+                kdata.setObject(i, data.getObject(idx));
+            } else {
+                kdata.setObject(i, Double.NaN);
+            }
+            i += 1;
+        }
+        
+        return kdata;
+    }
 
     /**
      * Search sorted list index
