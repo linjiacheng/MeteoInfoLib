@@ -77,8 +77,9 @@ public class FittingUtil {
         }
         double r = 1 - sum1 / sum2;
         List<Double> para = new ArrayList<>();
-        for (int i = 0; i < t.coef.getRowDimension(); i++){
-            para.add(t.coef.getEntry(i, 0));
+        int n = t.coef.getRowDimension();
+        for (int i = 0; i < n; i++){
+            para.add(t.coef.getEntry(n - i - 1, 0));
         }
         return new Object[]{para, r, t};
     }
