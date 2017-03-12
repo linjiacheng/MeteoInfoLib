@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.meteoinfo.data.ArrayMath;
 import ucar.ma2.Array;
+import ucar.ma2.DataType;
 
 /**
  *
@@ -83,5 +84,28 @@ public class FittingUtil {
         }
         return new Object[]{para, r, t};
     }
+    
+    /**
+     * Predict a value
+     * @param x X value
+     * @param tl The trend line object
+     * @return Predicted value
+     */
+    public static double predict(double x, OLSTrendLine tl){
+        return tl.predict(x);
+    }
 
+    /**
+     * Predict a value
+     * @param x X value
+     * @param tl The trend line object
+     * @return Predicted value
+     */
+    public static Array predict(Array x, OLSTrendLine tl){
+        Array y = Array.factory(DataType.DOUBLE, x.getShape());
+        for (int i = 0; i < y.getSize(); i++){
+            y.setDouble(i, tl.predict(x.getDouble(i)));
+        }
+        return y;
+    }
 }
