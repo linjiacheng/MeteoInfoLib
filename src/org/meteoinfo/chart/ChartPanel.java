@@ -197,7 +197,8 @@ public class ChartPanel extends JPanel{
     public ChartPanel(Chart chart) {
         this();
         this.chart = chart;
-        this.chart.setParent(this);
+        if (this.chart != null)
+            this.chart.setParent(this);
     }
 
     /**
@@ -230,7 +231,8 @@ public class ChartPanel extends JPanel{
      */
     public void setChart(Chart value) {
         chart = value;
-        chart.setParent(this);
+        if (this.chart != null)
+            chart.setParent(this);
     }
 
     /**
