@@ -10,6 +10,7 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 import ucar.ma2.Array;
+import ucar.ma2.Index;
 
 /**
  *
@@ -32,13 +33,26 @@ public abstract class OLSTrendLine implements TrendLine {
             // the implementation determines how to produce a vector of predictors from a single x
             xData[i] = xVector(x.getDouble(i));
         }
-        double[] yy = (double[])y.copyTo1DJavaArray();
+        double[] yy = new double[(int)y.getSize()];
         if(logY()) { // in some models we are predicting ln y, so we replace each y with ln y
-            yy = Arrays.copyOf(yy, yy.length); // user might not be finished with the array we were given
-            for (int i = 0; i < x.getSize(); i++) {
-                yy[i] = Math.log(yy[i]);
+            for (int i = 0; i < yy.length; i++) {
+                if (i < x.getSize())
+                    yy[i] = Math.log(y.getDouble(i));
+                else
+                    yy[i] = y.getDouble(i);
+            }
+        } else {
+            for (int i = 0; i < yy.length; i++) {
+                yy[i] = y.getDouble(i);
             }
         }
+//        double[] yy = (double[])y.copyTo1DJavaArray();
+//        if(logY()) { // in some models we are predicting ln y, so we replace each y with ln y
+//            yy = Arrays.copyOf(yy, yy.length); // user might not be finished with the array we were given
+//            for (int i = 0; i < x.getSize(); i++) {
+//                yy[i] = Math.log(yy[i]);
+//            }
+//        }
         OLSMultipleLinearRegression ols = new OLSMultipleLinearRegression();
         ols.setNoIntercept(true); // let the implementation include a constant in xVector if desired
         ols.newSampleData(yy, xData); // provide the data to the model
