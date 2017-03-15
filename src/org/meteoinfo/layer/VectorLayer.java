@@ -2615,17 +2615,18 @@ public class VectorLayer extends MapLayer {
         aLayer.setFileName(this.getFileName());
         aLayer.setHandle(this.getHandle());
         aLayer.setLayerName(this.getLayerName());
-        aLayer.setProjInfo(this.getProjInfo());
-        aLayer.setLegendScheme((LegendScheme) this.getLegendScheme().clone());
         if (_projected) {
             for (Shape shape : _originShapes) {
                 aLayer.addShape((Shape) shape.clone());
             }
+            aLayer.setAttributeTable((AttributeTable) _originAttributeTable.clone());
         } else {
             for (Shape shape : _shapeList) {
                 aLayer.addShape((Shape) shape.clone());
             }
+            aLayer.setAttributeTable((AttributeTable) _attributeTable.clone());
         }
+        aLayer.setLegendScheme((LegendScheme) this.getLegendScheme().clone());
         aLayer.setTransparency(this.getTransparency());
         aLayer.setLayerDrawType(this.getLayerDrawType());
         aLayer.setVisible(this.isVisible());
@@ -2633,13 +2634,7 @@ public class VectorLayer extends MapLayer {
         aLayer.setExpanded(this.isExpanded());
         aLayer.setAvoidCollision(this._avoidCollision);
         aLayer.setMaskout(this.isMaskout());
-        aLayer.setTag(this.getTag());
-
-        if (_projected) {
-            aLayer.setAttributeTable((AttributeTable) _originAttributeTable.clone());
-        } else {
-            aLayer.setAttributeTable((AttributeTable) _attributeTable.clone());
-        }
+        aLayer.setTag(this.getTag());        
 
         return aLayer;
     }

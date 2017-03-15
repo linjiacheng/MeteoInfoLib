@@ -509,6 +509,9 @@ public class LayersLegend extends JPanel {
                                 mapFrame.addNode(_dragNode);
                             } else {
                                 int idx = mapFrame.getNodes().indexOf(aNode);
+                                if (idx < 0) {
+                                    idx = 0;
+                                }
                                 mapFrame.addNode(idx, _dragNode);
                             }
                         } else if (_dragNode.getNodeType() == NodeTypes.LayerNode) {
@@ -521,18 +524,25 @@ public class LayersLegend extends JPanel {
                             }
 
                             //Add to new position
-                            if (aNode.getNodeType() == NodeTypes.MapFrameNode) {
-                                mapFrame.addNode(_dragNode);
-                            } else if (aNode.getNodeType() == NodeTypes.GroupNode) {
-                                ((GroupNode) aNode).addLayer((LayerNode) _dragNode);
-                            } else if (aNode.getNodeType() == NodeTypes.LayerNode) {
-                                if (((LayerNode) aNode).getGroupHandle() >= 0) {
-                                    GroupNode dGroup = mapFrame.getGroupByHandle(((LayerNode) aNode).getGroupHandle());
-                                    dGroup.addLayer(dGroup.getLayerIndex((LayerNode) aNode), (LayerNode) _dragNode);
-                                } else {
-                                    int idx = mapFrame.getNodes().indexOf(aNode);
-                                    mapFrame.addNode(idx, _dragNode);
-                                }
+                            switch (aNode.getNodeType()) {
+                                case MapFrameNode:
+                                    mapFrame.addNode(_dragNode);
+                                    break;
+                                case GroupNode:
+                                    ((GroupNode) aNode).addLayer((LayerNode) _dragNode);
+                                    break;
+                                case LayerNode:
+                                    if (((LayerNode) aNode).getGroupHandle() >= 0) {
+                                        GroupNode dGroup = mapFrame.getGroupByHandle(((LayerNode) aNode).getGroupHandle());
+                                        dGroup.addLayer(dGroup.getLayerIndex((LayerNode) aNode), (LayerNode) _dragNode);
+                                    } else {
+                                        int idx = mapFrame.getNodes().indexOf(aNode);
+                                        if (idx < 0) {
+                                            idx = 0;
+                                        }
+                                        mapFrame.addNode(idx, _dragNode);
+                                    }
+                                    break;
                             }
                         }
 
@@ -555,19 +565,23 @@ public class LayersLegend extends JPanel {
                     } else if (_dragNode.getNodeType() == NodeTypes.LayerNode) {
                         //Add to new position
                         LayerNode aLN = (LayerNode) ((LayerNode) (_dragNode)).clone();
-                        if (aNode.getNodeType() == NodeTypes.MapFrameNode) {
-                            mapFrame.addLayerNode(aLN);
-                        } else if (aNode.getNodeType() == NodeTypes.GroupNode) {
-                            mapFrame.addLayerNode(aLN, (GroupNode) aNode);
-                        } else if (aNode.getNodeType() == NodeTypes.LayerNode) {
-                            if (((LayerNode) aNode).getGroupHandle() >= 0) {
-                                GroupNode dGroup = mapFrame.getGroupByHandle(((LayerNode) aNode).getGroupHandle());
-                                //dGroup.InsertLayer((LayerNode)_dragNode, dGroup.GetLayerIndex((LayerNode)aNode));
-                                mapFrame.addLayerNode(dGroup.getLayerIndex((LayerNode) aNode), aLN, dGroup);
-                            } else {
-                                int idx = mapFrame.getNodes().indexOf(aNode);
-                                mapFrame.addLayerNode(idx, aLN);
-                            }
+                        switch (aNode.getNodeType()) {
+                            case MapFrameNode:
+                                mapFrame.addLayerNode(aLN);
+                                break;
+                            case GroupNode:
+                                mapFrame.addLayerNode(aLN, (GroupNode) aNode);
+                                break;
+                            case LayerNode:
+                                if (((LayerNode) aNode).getGroupHandle() >= 0) {
+                                    GroupNode dGroup = mapFrame.getGroupByHandle(((LayerNode) aNode).getGroupHandle());
+                                    //dGroup.InsertLayer((LayerNode)_dragNode, dGroup.GetLayerIndex((LayerNode)aNode));
+                                    mapFrame.addLayerNode(dGroup.getLayerIndex((LayerNode) aNode), aLN, dGroup);
+                                } else {
+                                    int idx = mapFrame.getNodes().indexOf(aNode);
+                                    mapFrame.addLayerNode(idx, aLN);
+                                }
+                                break;
                         }
                     }
                 }
@@ -980,13 +994,13 @@ public class LayersLegend extends JPanel {
                 aLayer.saveFile();
             } else {
                 try {
-                    MapLayer bLayer = (MapLayer)aLayer.clone();
+                    MapLayer bLayer = (MapLayer) aLayer.clone();
                     bLayer.setProjInfo(aLN.getMapFrame().getMapView().getProjection().getProjInfo());
                     bLayer.saveFile();
                     aLayer.setFileName(bLayer.getFileName());
                 } catch (CloneNotSupportedException ex) {
                     Logger.getLogger(LayersLegend.class.getName()).log(Level.SEVERE, null, ex);
-                }                
+                }
             }
         }
     }
@@ -1735,7 +1749,7 @@ public class LayersLegend extends JPanel {
         }
         parent.appendChild(mapFrames);
     }
-    
+
     /**
      * Import project XML content
      *
@@ -1744,23 +1758,23 @@ public class LayersLegend extends JPanel {
      * @throws java.io.IOException
      * @throws javax.xml.parsers.ParserConfigurationException
      */
-    public void importProjectXML(String fileName) throws SAXException, IOException, ParserConfigurationException{
+    public void importProjectXML(String fileName) throws SAXException, IOException, ParserConfigurationException {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
         Document doc = db.parse(new File(fileName));
 
         Element root = doc.getDocumentElement();
-        
+
         Properties property = System.getProperties();
         String path = System.getProperty("user.dir");
         property.setProperty("user.dir", new File(fileName).getAbsolutePath());
-        
+
         this.getActiveMapFrame().getMapView().setLockViewUpdate(true);
         this.importProjectXML(root);
         this.getActiveMapFrame().getMapView().setLockViewUpdate(false);
         this.paintGraphics();
         this.getActiveMapFrame().getMapView().paintLayers();
-                
+
         property.setProperty("user.dir", path);
     }
 

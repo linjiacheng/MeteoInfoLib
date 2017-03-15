@@ -310,25 +310,34 @@ public class FrmLabelSet extends javax.swing.JDialog {
 
     private void jButton_FontActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_FontActionPerformed
         // TODO add your handling code here:
-        _font = JFontChooser.showDialog(this, null, _font);
-        updateLabelSet();
-        updateLabelsFontColor();
-        _mapView.paintLayers();
+        Font font = JFontChooser.showDialog(this, null, _font);
+        if (font != null) {
+            _font = font;
+            updateLabelSet();
+            updateLabelsFontColor();
+            _mapView.paintLayers();
+        }
     }//GEN-LAST:event_jButton_FontActionPerformed
 
     private void jLabel_ColorMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel_ColorMouseClicked
         // TODO add your handling code here:
-        _color = JColorChooser.showDialog(this, null, _color);
-        updateLabelSet();
-        updateLabelsFontColor();
-        _mapView.paintLayers();
+        Color color = JColorChooser.showDialog(this, null, _color);
+        if (color != null) {
+            _color = color;
+            updateLabelSet();
+            updateLabelsFontColor();
+            _mapView.paintLayers();
+        }
     }//GEN-LAST:event_jLabel_ColorMouseClicked
 
     private void jLabel_ShadowColorMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel_ShadowColorMouseClicked
         // TODO add your handling code here:
-        _shadowColor = JColorChooser.showDialog(this, null, _shadowColor);
-        this.updateLabelSet();
-        _mapView.paintLayers();
+        Color color = JColorChooser.showDialog(this, null, _shadowColor);
+        if (color != null){
+            _shadowColor = color;
+            this.updateLabelSet();
+            _mapView.paintLayers();
+        }
     }//GEN-LAST:event_jLabel_ShadowColorMouseClicked
 
     private void jCheckBox_ColorByLegendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox_ColorByLegendActionPerformed
@@ -396,6 +405,9 @@ public class FrmLabelSet extends javax.swing.JDialog {
     }//GEN-LAST:event_jCheckBox_ShadowColorActionPerformed
 
     private void updateLabelSet() {
+        if (this.jComboBox_Field.getSelectedItem() == null)
+            return;
+        
         _layer.getLabelSet().setFieldName(this.jComboBox_Field.getSelectedItem().toString());
         _layer.getLabelSet().setAvoidCollision(this.jCheckBox_AvoidCollision.isSelected());
         _layer.getLabelSet().setLabelAlignType(AlignType.valueOf(this.jComboBox_Align.getSelectedItem().toString()));
@@ -466,7 +478,7 @@ public class FrmLabelSet extends javax.swing.JDialog {
             this.jComboBox_Field.addItem(_layer.getFieldName(i));
         }
         if (this.jComboBox_Field.getItemCount() > 0) {
-            if (!"".equals(labelSet.getFieldName())) {
+            if (labelSet.getFieldName() != null && !labelSet.getFieldName().isEmpty()) {
                 this.jComboBox_Field.setSelectedItem(labelSet.getFieldName());
             } else {
                 this.jComboBox_Field.setSelectedIndex(0);
