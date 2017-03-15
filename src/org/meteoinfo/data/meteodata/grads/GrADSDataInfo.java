@@ -53,6 +53,7 @@ import org.meteoinfo.data.meteodata.StationInfoData;
 import org.meteoinfo.data.meteodata.StationModelData;
 import org.meteoinfo.data.meteodata.arl.ARLDataInfo;
 import org.meteoinfo.global.Extent;
+import org.meteoinfo.global.util.BigDecimalUtil;
 import org.meteoinfo.global.util.DateUtil;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
@@ -558,9 +559,11 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                             float xmax = Float.parseFloat(dataArray[dataArray.length - 1]);
                             XDEF.XDelt = (xmax - XDEF.XMin) / (XDEF.XNum - 1);
                         }
+                        double delta = BigDecimalUtil.toDouble(XDEF.XDelt);
+                        double min = BigDecimalUtil.toDouble(XDEF.XMin);
                         for (i = 0; i < XDEF.XNum; i++) {
-                            XDEF.X[i] = XDEF.XMin + i * XDEF.XDelt;
-                            values.add((double) XDEF.XMin + i * XDEF.XDelt);
+                            XDEF.X[i] = BigDecimalUtil.add(min, BigDecimalUtil.mul(i, delta));
+                            values.add(XDEF.X[i]);
                         }
                         if (XDEF.XMin == 0 && XDEF.X[XDEF.XNum - 1]
                                 + XDEF.XDelt == 360) {
@@ -603,8 +606,10 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                             float ymax = Float.parseFloat(dataArray[dataArray.length - 1]);
                             YDEF.YDelt = (ymax - YDEF.YMin) / (YDEF.YNum - 1);
                         }
+                        double delta = BigDecimalUtil.toDouble(YDEF.YDelt);
+                        double min = BigDecimalUtil.toDouble(YDEF.YMin);
                         for (i = 0; i < YDEF.YNum; i++) {
-                            YDEF.Y[i] = YDEF.YMin + i * YDEF.YDelt;
+                            YDEF.Y[i] = BigDecimalUtil.add(min, BigDecimalUtil.mul(i, delta));
                             values.add(YDEF.Y[i]);
                         }
                         Dimension yDim = new Dimension(DimensionType.Y);
@@ -624,7 +629,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                         ZDEF.ZDelt = Float.parseFloat(dataArray[4]);
                         for (i = 0; i < ZDEF.ZNum; i++) {
                             ZDEF.ZLevels[i] = ZDEF.SLevel + i * ZDEF.ZDelt;
-                            values.add((double) ZDEF.SLevel + i * ZDEF.ZDelt);
+                            values.add(Double.valueOf(ZDEF.ZLevels[i]));
                         }
                     } else if (dataArray.length < ZDEF.ZNum + 3) {
                         while (true) {

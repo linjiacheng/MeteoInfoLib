@@ -15,6 +15,7 @@ package org.meteoinfo.data.meteodata;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.meteoinfo.global.util.BigDecimalUtil;
 
 /**
  * Template
@@ -337,7 +338,7 @@ public class Dimension extends ucar.nc2.Dimension {
             return 1;
         }
 
-        return _dimValue.get(1) - _dimValue.get(0);
+        return BigDecimalUtil.sub(_dimValue.get(1), _dimValue.get(0));
     }
 
     /**

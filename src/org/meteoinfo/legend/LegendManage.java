@@ -1772,7 +1772,8 @@ public class LegendManage {
             cDelt = BigDecimalUtil.mul(aD, cDelt);
             cNum = 10;
             //newMin = Convert.ToInt32((min + cDelt) / Math.Pow(10, aE - 1)) * Math.Pow(10, aE - 1);
-            newMin = (int) (min / cDelt + 1) * cDelt;
+            int newDelta = (int) (min / cDelt + 1);
+            newMin = BigDecimalUtil.mul(newDelta, cDelt);
         }
 
         if (newMin + (cNum - 1) * cDelt > max) {

@@ -13,6 +13,15 @@ import java.math.MathContext;
  */
 public class BigDecimalUtil {
     /**
+     * Float to double
+     * @param v Float value
+     * @return Double value
+     */
+    public static double toDouble(float v){
+        return Double.parseDouble(Float.toString(v));
+    }
+    
+    /**
      * Add
      * @param d1 Value1
      * @param d2 Value2
@@ -21,6 +30,18 @@ public class BigDecimalUtil {
     public static double add(double d1,double d2){  
         BigDecimal b1=new BigDecimal(Double.toString(d1));  
         BigDecimal b2=new BigDecimal(Double.toString(d2));  
+        return b1.add(b2).doubleValue();            
+    }  
+    
+    /**
+     * Add
+     * @param d1 Value1
+     * @param d2 Value2
+     * @return Add result
+     */
+    public static double add(float d1,float d2){  
+        BigDecimal b1=new BigDecimal(Float.toString(d1));  
+        BigDecimal b2=new BigDecimal(Float.toString(d2));  
         return b1.add(b2).doubleValue();            
     }  
       
@@ -45,6 +66,18 @@ public class BigDecimalUtil {
     public static double mul(double d1,double d2){  
         BigDecimal b1=new BigDecimal(Double.toString(d1));  
         BigDecimal b2=new BigDecimal(Double.toString(d2));  
+        return b1.multiply(b2).doubleValue();            
+    }  
+    
+    /**
+     * Multiply
+     * @param d1 Value1
+     * @param d2 Value2
+     * @return Multiply result
+     */
+    public static double mul(float d1,float d2){  
+        BigDecimal b1=new BigDecimal(Float.toString(d1));  
+        BigDecimal b2=new BigDecimal(Float.toString(d2));  
         return b1.multiply(b2).doubleValue();            
     }  
       
