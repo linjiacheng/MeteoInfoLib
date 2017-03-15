@@ -981,6 +981,7 @@ public class LayersLegend extends JPanel {
             } else {
                 try {
                     MapLayer bLayer = (MapLayer)aLayer.clone();
+                    bLayer.setProjInfo(aLN.getMapFrame().getMapView().getProjection().getProjInfo());
                     bLayer.saveFile();
                     aLayer.setFileName(bLayer.getFileName());
                 } catch (CloneNotSupportedException ex) {

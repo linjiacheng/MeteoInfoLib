@@ -113,9 +113,9 @@ public class Registry {
         if (cls != null) {
             try {
                 Projection projection = (Projection) cls.newInstance();
-                if (projection != null) {
-                    projection.setName(name);
-                }
+//                if (projection != null) {
+//                    projection.setName(name);
+//                }
                 return projection;
             } catch (IllegalAccessException e) {
                 e.printStackTrace();

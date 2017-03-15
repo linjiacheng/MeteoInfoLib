@@ -164,6 +164,21 @@ public class MapDataManage {
                 aLayer = readMapFile_GrADS(aFile);
                 break;
         }
+        
+        if (aLayer != null){
+            switch (mdt) {
+                case BIL:
+                case ESRI_ASCII_GRID:
+                case SURFER_ASCII_GRID:
+                    String projFn = aFile.substring(0, aFile.length() - 4) + ".prj";
+                    File pFile = new File(projFn);
+                    if (pFile.isFile()){
+                        ProjectionInfo projInfo = ShapeFileManage.loadProjFile(pFile);
+                        aLayer.setProjInfo(projInfo);
+                    }
+                    break;
+            }
+        }
 
         return aLayer;
     }
@@ -674,6 +689,31 @@ public class MapDataManage {
                 }
             } catch (IOException ex) {
                 Logger.getLogger(MapDataManage.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+    
+    /**
+     * Write projection file
+     * @param projFilePath Projection file path
+     * @param projInfo Projection info
+     */
+    public static void writeProjFile(String projFilePath, ProjectionInfo projInfo) {
+        BufferedWriter sw = null;
+        try {
+            String esriString = projInfo.toEsriString();
+            sw = new BufferedWriter(new FileWriter(new File(projFilePath)));
+            sw.write(esriString);
+            sw.flush();
+            sw.close();
+        } catch (IOException ex) {
+            Logger.getLogger(ShapeFileManage.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                if (sw != null)
+                    sw.close();
+            } catch (IOException ex) {
+                Logger.getLogger(ShapeFileManage.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }

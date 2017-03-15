@@ -517,8 +517,15 @@ public class ShapeFileManage {
 
         bridx.close();
     }
-
-    private static ProjectionInfo loadProjFile(File projFile) throws FileNotFoundException, IOException {        
+    
+    /**
+     * Load projection file
+     * @param projFile Projection file
+     * @return Projection infomation
+     * @throws FileNotFoundException
+     * @throws IOException 
+     */
+    public static ProjectionInfo loadProjFile(File projFile) throws FileNotFoundException, IOException {        
         BufferedReader sr = new BufferedReader(new FileReader(projFile));
         String line;
         StringBuilder buffer = new StringBuilder();

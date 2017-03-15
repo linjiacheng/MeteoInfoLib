@@ -28,9 +28,11 @@ import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import org.meteoinfo.data.GridArray;
+import org.meteoinfo.data.mapdata.MapDataManage;
 import org.meteoinfo.global.GenericFileFilter;
 import org.meteoinfo.global.util.GlobalUtil;
 import org.meteoinfo.legend.LegendType;
+import org.meteoinfo.projection.ProjectionInfo;
 import ucar.ma2.Index;
 
 /**
@@ -367,6 +369,16 @@ public class RasterLayer extends ImageLayer {
      */
     @Override
     public void saveFile(String fileName) {        
+        this.saveFile(fileName, this.getProjInfo());
+    }
+    
+    /**
+     * Save layer as a file
+     *
+     * @param fileName File name
+     * @param projInfo Projection information
+     */
+    public void saveFile(String fileName, ProjectionInfo projInfo) {        
         File aFile = new File(fileName);
         if (aFile.exists()) {
             int n = JOptionPane.showConfirmDialog(null, "Overwirte the existing file?", "Overwrite confirm", JOptionPane.YES_NO_OPTION);
@@ -387,6 +399,12 @@ public class RasterLayer extends ImageLayer {
                 case "asc":
                     this._gridData.saveAsESRIASCIIFile(fileName);
                     break;
+                default:
+                    return;
+            }
+            if (!this.getProjInfo().isLonLat()) {
+                String projFn = fileName.substring(0, fileName.length() - 3) + "prj";
+                MapDataManage.writeProjFile(projFn, projInfo);
             }
         } catch (IOException ex) {
             Logger.getLogger(RasterLayer.class.getName()).log(Level.SEVERE, null, ex);

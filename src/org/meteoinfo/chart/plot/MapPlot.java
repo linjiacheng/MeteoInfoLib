@@ -5,6 +5,7 @@
  */
 package org.meteoinfo.chart.plot;
 
+import com.sun.javafx.font.Metrics;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -99,12 +100,13 @@ public class MapPlot extends XYPlot implements IWebMapPanel {
     // <editor-fold desc="Get Set Methods">
     /**
      * ChartPanel parent
+     *
      * @param value ChartPanel
      */
-    public void setParent(ChartPanel value){
+    public void setParent(ChartPanel value) {
         this.parent = value;
     }
-    
+
     @Override
     public Dataset getDataset() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -246,27 +248,30 @@ public class MapPlot extends XYPlot implements IWebMapPanel {
     // <editor-fold desc="Methods">
     /**
      * Check if has web map layer
+     *
      * @return Boolean
      */
-    public boolean hasWebMapLayer(){
+    public boolean hasWebMapLayer() {
         return this.mapView.hasWebMapLayer();
     }
-    
+
     /**
      * Get web map zoom
+     *
      * @return Web map zoom
      */
     @Override
-    public int getWebMapZoom(){
+    public int getWebMapZoom() {
         return this.mapView.getWebMapZoom();
     }
-    
+
     @Override
-    public void reDraw(){
-        if (this.parent != null)
+    public void reDraw() {
+        if (this.parent != null) {
             this.parent.paintGraphics();
+        }
     }
-    
+
     @Override
     void drawGraph(Graphics2D g, Rectangle2D area) {
         this.mapView.setAntiAlias(this.antialias);
@@ -358,7 +363,7 @@ public class MapPlot extends XYPlot implements IWebMapPanel {
             this.setAxisExtent(extent);
         }
     }
-    
+
     /**
      * Set axis extent
      *
@@ -370,7 +375,7 @@ public class MapPlot extends XYPlot implements IWebMapPanel {
         this.getAxis(Location.LEFT).setMinMaxValue(extent.minY, extent.maxY);
         this.getAxis(Location.RIGHT).setMinMaxValue(extent.minY, extent.maxY);
     }
-    
+
     @Override
     public void addText(ChartText text) {
         if (this.getMapView().getProjection().isLonLatMap()) {
@@ -578,7 +583,7 @@ public class MapPlot extends XYPlot implements IWebMapPanel {
                 double w = width * plotArea.getHeight() / height / scaleFactor;
                 double delta = plotArea.getWidth() - w;
                 plotArea.setRect(plotArea.getX() + delta / 2, plotArea.getY(), w, plotArea.getHeight());
-            }          
+            }
         }
         return plotArea;
     }
@@ -636,170 +641,208 @@ public class MapPlot extends XYPlot implements IWebMapPanel {
 //            super.updateDrawExtent();
 //        }
 //    }
-        @Override
-        void drawAxis
-        (Graphics2D g, Rectangle2D area
-        
-            ) {
+    @Override
+    void drawAxis(Graphics2D g, Rectangle2D area) {
         if (this.mapFrame.getMapView().getProjection().isLonLatMap()) {
-                super.drawAxis(g, area);
-                return;
+            super.drawAxis(g, area);
+            return;
+        }
+
+        //Draw lon/lat grid labels
+        if (this.mapFrame.isDrawGridLabel()) {
+            List<Extent> extentList = new ArrayList<>();
+            Extent maxExtent = new Extent();
+            Extent aExtent;
+            Dimension aSF;
+            g.setColor(this.mapFrame.getGridLineColor());
+            g.setStroke(new BasicStroke(this.mapFrame.getGridLineSize()));
+            String drawStr;
+            PointF sP = new PointF(0, 0);
+            PointF eP = new PointF(0, 0);
+            Font font = new Font(this.mapFrame.getGridFont().getFontName(), this.mapFrame.getGridFont().getStyle(), (int) (this.mapFrame.getGridFont().getSize()));
+            g.setFont(font);
+            float labX, labY;
+            int len = mapFrame.getTickLineLength();
+            int space = len + mapFrame.getGridLabelShift();
+            if (mapFrame.isInsideTickLine()) {
+                space = mapFrame.getGridLabelShift();
             }
 
-            //Draw lon/lat grid labels
-            if (this.mapFrame.isDrawGridLabel()) {
-                List<Extent> extentList = new ArrayList<>();
-                Extent maxExtent = new Extent();
-                Extent aExtent;
-                Dimension aSF;
-                g.setColor(this.mapFrame.getGridLineColor());
-                g.setStroke(new BasicStroke(this.mapFrame.getGridLineSize()));
-                String drawStr;
-                PointF sP = new PointF(0, 0);
-                PointF eP = new PointF(0, 0);
-                Font font = new Font(this.mapFrame.getGridFont().getFontName(), this.mapFrame.getGridFont().getStyle(), (int) (this.mapFrame.getGridFont().getSize()));
-                g.setFont(font);
-                float labX, labY;
-                int len = mapFrame.getTickLineLength();
-                int space = len + mapFrame.getGridLabelShift();
-                if (mapFrame.isInsideTickLine()) {
-                    space = mapFrame.getGridLabelShift();
+            for (int i = 0; i < mapFrame.getMapView().getGridLabels().size(); i++) {
+                GridLabel aGL = mapFrame.getMapView().getGridLabels().get(i);
+                switch (mapFrame.getGridLabelPosition()) {
+                    case LeftBottom:
+                        switch (aGL.getLabDirection()) {
+                            case East:
+                            case North:
+                                continue;
+                        }
+                        break;
+                    case LeftUp:
+                        switch (aGL.getLabDirection()) {
+                            case East:
+                            case South:
+                                continue;
+                        }
+                        break;
+                    case RightBottom:
+                        switch (aGL.getLabDirection()) {
+                            case Weast:
+                            case North:
+                                continue;
+                        }
+                        break;
+                    case RightUp:
+                        switch (aGL.getLabDirection()) {
+                            case Weast:
+                            case South:
+                                continue;
+                        }
+                        break;
                 }
 
-                for (int i = 0; i < mapFrame.getMapView().getGridLabels().size(); i++) {
-                    GridLabel aGL = mapFrame.getMapView().getGridLabels().get(i);
-                    switch (mapFrame.getGridLabelPosition()) {
-                        case LeftBottom:
-                            switch (aGL.getLabDirection()) {
-                                case East:
-                                case North:
-                                    continue;
-                            }
-                            break;
-                        case LeftUp:
-                            switch (aGL.getLabDirection()) {
-                                case East:
-                                case South:
-                                    continue;
-                            }
-                            break;
-                        case RightBottom:
-                            switch (aGL.getLabDirection()) {
-                                case Weast:
-                                case North:
-                                    continue;
-                            }
-                            break;
-                        case RightUp:
-                            switch (aGL.getLabDirection()) {
-                                case Weast:
-                                case South:
-                                    continue;
-                            }
-                            break;
-                    }
+                labX = (float) aGL.getLabPoint().X;
+                labY = (float) aGL.getLabPoint().Y;
+                labX = labX + (float) area.getX();
+                labY = labY + (float) area.getY();
+                sP.X = labX;
+                sP.Y = labY;
 
-                    labX = (float) aGL.getLabPoint().X;
-                    labY = (float) aGL.getLabPoint().Y;
-                    labX = labX + (float) area.getX();
-                    labY = labY + (float) area.getY();
-                    sP.X = labX;
-                    sP.Y = labY;
-
-                    drawStr = aGL.getLabString();
-                    //if (this.drawDegreeSymbol) {
-                    if (drawStr.endsWith("E") || drawStr.endsWith("W") || drawStr.endsWith("N") || drawStr.endsWith("S")) {
-                        drawStr = drawStr.substring(0, drawStr.length() - 1) + String.valueOf((char) 186) + drawStr.substring(drawStr.length() - 1);
-                    } else {
-                        drawStr = drawStr + String.valueOf((char) 186);
-                    }
-                    //}
-                    FontMetrics metrics = g.getFontMetrics(font);
-                    aSF = new Dimension(metrics.stringWidth(drawStr), metrics.getHeight());
-                    switch (aGL.getLabDirection()) {
-                        case South:
-                            labX = labX - aSF.width / 2;
-                            labY = labY + aSF.height * 3 / 4 + space;
-                            eP.X = sP.X;
-                            if (mapFrame.isInsideTickLine()) {
-                                eP.Y = sP.Y - len;
-                            } else {
-                                eP.Y = sP.Y + len;
-                            }
-                            break;
-                        case Weast:
-                            labX = labX - aSF.width - space;
-                            labY = labY + aSF.height / 3;
-                            eP.Y = sP.Y;
-                            if (mapFrame.isInsideTickLine()) {
-                                eP.X = sP.X + len;
-                            } else {
-                                eP.X = sP.X - len;
-                            }
-                            break;
-                        case North:
-                            labX = labX - aSF.width / 2;
-                            //labY = labY - aSF.height / 3 - space;
-                            labY = labY - space;
-                            eP.X = sP.X;
-                            if (mapFrame.isInsideTickLine()) {
-                                eP.Y = sP.Y + len;
-                            } else {
-                                eP.Y = sP.Y - len;
-                            }
-                            break;
-                        case East:
-                            labX = labX + space;
-                            labY = labY + aSF.height / 3;
-                            eP.Y = sP.Y;
-                            if (mapFrame.isInsideTickLine()) {
-                                eP.X = sP.X - len;
-                            } else {
-                                eP.X = sP.X + len;
-                            }
-                            break;
-                    }
-
-                    boolean ifDraw = true;
-                    aExtent = new Extent();
-                    aExtent.minX = labX;
-                    aExtent.maxX = labX + aSF.width;
-                    aExtent.minY = labY - aSF.height;
-                    aExtent.maxY = labY;
-
-                    //Judge extent                                        
-                    if (extentList.isEmpty()) {
-                        maxExtent = (Extent) aExtent.clone();
-                        extentList.add((Extent) aExtent.clone());
-                    } else if (!MIMath.isExtentCross(aExtent, maxExtent)) {
-                        extentList.add((Extent) aExtent.clone());
-                        maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
-                    } else {
-                        for (int j = 0; j < extentList.size(); j++) {
-                            if (MIMath.isExtentCross(aExtent, extentList.get(j))) {
-                                ifDraw = false;
-                                break;
-                            }
+                drawStr = aGL.getLabString();
+                //if (this.drawDegreeSymbol) {
+                if (drawStr.endsWith("E") || drawStr.endsWith("W") || drawStr.endsWith("N") || drawStr.endsWith("S")) {
+                    drawStr = drawStr.substring(0, drawStr.length() - 1) + String.valueOf((char) 186) + drawStr.substring(drawStr.length() - 1);
+                } else {
+                    drawStr = drawStr + String.valueOf((char) 186);
+                }
+                //}
+                FontMetrics metrics = g.getFontMetrics(font);
+                aSF = new Dimension(metrics.stringWidth(drawStr), metrics.getHeight());
+                switch (aGL.getLabDirection()) {
+                    case South:
+                        labX = labX - aSF.width / 2;
+                        labY = labY + aSF.height * 3 / 4 + space;
+                        eP.X = sP.X;
+                        if (mapFrame.isInsideTickLine()) {
+                            eP.Y = sP.Y - len;
+                        } else {
+                            eP.Y = sP.Y + len;
                         }
-                        if (ifDraw) {
-                            extentList.add(aExtent);
-                            maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
+                        break;
+                    case Weast:
+                        labX = labX - aSF.width - space;
+                        labY = labY + aSF.height / 3;
+                        eP.Y = sP.Y;
+                        if (mapFrame.isInsideTickLine()) {
+                            eP.X = sP.X + len;
+                        } else {
+                            eP.X = sP.X - len;
+                        }
+                        break;
+                    case North:
+                        labX = labX - aSF.width / 2;
+                        //labY = labY - aSF.height / 3 - space;
+                        labY = labY - space;
+                        eP.X = sP.X;
+                        if (mapFrame.isInsideTickLine()) {
+                            eP.Y = sP.Y + len;
+                        } else {
+                            eP.Y = sP.Y - len;
+                        }
+                        break;
+                    case East:
+                        labX = labX + space;
+                        labY = labY + aSF.height / 3;
+                        eP.Y = sP.Y;
+                        if (mapFrame.isInsideTickLine()) {
+                            eP.X = sP.X - len;
+                        } else {
+                            eP.X = sP.X + len;
+                        }
+                        break;
+                }
+
+                boolean ifDraw = true;
+                aExtent = new Extent();
+                aExtent.minX = labX;
+                aExtent.maxX = labX + aSF.width;
+                aExtent.minY = labY - aSF.height;
+                aExtent.maxY = labY;
+
+                //Judge extent                                        
+                if (extentList.isEmpty()) {
+                    maxExtent = (Extent) aExtent.clone();
+                    extentList.add((Extent) aExtent.clone());
+                } else if (!MIMath.isExtentCross(aExtent, maxExtent)) {
+                    extentList.add((Extent) aExtent.clone());
+                    maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
+                } else {
+                    for (int j = 0; j < extentList.size(); j++) {
+                        if (MIMath.isExtentCross(aExtent, extentList.get(j))) {
+                            ifDraw = false;
+                            break;
                         }
                     }
-
                     if (ifDraw) {
-                        g.setColor(mapFrame.getGridLineColor());
-                        g.draw(new Line2D.Float(sP.X, sP.Y, eP.X, eP.Y));
-                        g.setColor(this.mapFrame.getForeColor());
-                        g.drawString(drawStr, labX, labY);
+                        extentList.add(aExtent);
+                        maxExtent = MIMath.getLagerExtent(maxExtent, aExtent);
                     }
+                }
+
+                if (ifDraw) {
+                    g.setColor(mapFrame.getGridLineColor());
+                    g.draw(new Line2D.Float(sP.X, sP.Y, eP.X, eP.Y));
+                    g.setColor(this.mapFrame.getForeColor());
+                    g.drawString(drawStr, labX, labY);
                 }
             }
         }
+    }
+    
+    @Override
+    int getXAxisHeight(Graphics2D g, int space) {
+        if (this.isLonLatMap()){
+            return super.getXAxisHeight(g, space);
+        }
+        
+        if (this.mapFrame.isDrawGridLabel()) {
+            int height = space;
+            height += mapFrame.getTickLineLength() + mapFrame.getGridLabelShift();
+            FontMetrics m = g.getFontMetrics(mapFrame.getGridFont());
+            height += m.getHeight();
+            return height;
+        }
+        
+        return 0;
+    }
+    
+    @Override
+    int getYAxisWidth(Graphics2D g, int space) {
+        if (this.isLonLatMap()){
+            return super.getYAxisWidth(g, space);
+        }
+        
+        if (this.mapFrame.isDrawGridLabel()) {
+            int width = space;
+            width += mapFrame.getTickLineLength() + mapFrame.getGridLabelShift();
+            FontMetrics m = g.getFontMetrics(mapFrame.getGridFont());
+            List<GridLabel> labels = mapFrame.getMapView().getGridLabels();
+            int labWidth = 0, w;
+            for (int i = 0; i < labels.size(); i++) {
+                w = m.stringWidth(labels.get(i).getLabString());
+                if (w > labWidth)
+                    labWidth = w;
+            }
+            width += labWidth;
+            return width;
+        }
+        
+        return 0;
+    }
 
 //    @Override
 //    public void zoomToExtentScreen(double minX, double maxX, double minY, double maxY){
 //        this.mapView.zoomToExtentScreen(minX, maxX, minY, maxY, 1);
 //    }
-        // </editor-fold>
-    }
+    // </editor-fold>
+}
