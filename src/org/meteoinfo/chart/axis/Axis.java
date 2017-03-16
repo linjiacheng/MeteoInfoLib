@@ -160,9 +160,10 @@ public class Axis implements Cloneable {
         this.location = loc;
         this.drawTickLabel = drawTickLabel;
     }
-    
+
     /**
      * Constructor
+     *
      * @param axis Axis
      */
     public Axis(Axis axis) {
@@ -499,20 +500,22 @@ public class Axis implements Cloneable {
     public void setTickLabelColor(Color value) {
         tickLabelColor = value;
     }
-    
+
     /**
      * Get tick label angle
+     *
      * @return Tick label angle
      */
-    public float getTickLabelAngle(){
+    public float getTickLabelAngle() {
         return this.tickLabelAngle;
     }
-    
+
     /**
      * Set tick label angle
+     *
      * @param value Angle
      */
-    public void setTickLabelAngle(float value){
+    public void setTickLabelAngle(float value) {
         this.tickLabelAngle = value;
     }
 
@@ -1091,7 +1094,7 @@ public class Axis implements Cloneable {
 
         return max;
     }
-    
+
     /**
      * Get label string with maximum length
      *
@@ -1099,9 +1102,10 @@ public class Axis implements Cloneable {
      */
     public String getMaxLenLable() {
         List<String> tls = this.updateTickLabels();
-        if (tls.isEmpty())
+        if (tls.isEmpty()) {
             return "1";
-        
+        }
+
         String rlab = tls.get(0);
         for (String lab : tls) {
             if (lab.length() > rlab.length()) {
@@ -1192,158 +1196,163 @@ public class Axis implements Cloneable {
         }
 
         //Draw tick lines   
-        g.setColor(this.tickColor);
-        g.setStroke(this.tickStroke);
-        g.setFont(this.tickLabelFont);
-        FontMetrics metrics = g.getFontMetrics();
-        String drawStr;
-        Dimension dim;
-        //this.updateLabelGap(g, area);
-        int len = this.tickLength;
-        List<String> xTickLabels = this.updateTickLabels();
-        int n = 0;
-        while (n < this.getTickValues().length) {
-            double value = this.getTickValues()[n];
-            xy = plot.projToScreen(value, plot.getDrawExtent().minY, area);
-            x = xy[0];
+        int len = 0;
+        if (this.drawTickLine) {
+            g.setColor(this.tickColor);
+            g.setStroke(this.tickStroke);
+            g.setFont(this.tickLabelFont);
+            FontMetrics metrics = g.getFontMetrics();
+            String drawStr;
+            Dimension dim;
+            //this.updateLabelGap(g, area);
+            len = this.tickLength;
+            List<String> xTickLabels = this.updateTickLabels();
+            int n = 0;
+            while (n < this.getTickValues().length) {
+                double value = this.getTickValues()[n];
+                xy = plot.projToScreen(value, plot.getDrawExtent().minY, area);
+                x = xy[0];
 //            if (this.inverse) {
 //                x = area.getWidth() - x;
 //            }
-            x += minx;
-            if (this.location == Location.BOTTOM) {
-                if (this.insideTick) {
-                    g.draw(new Line2D.Double(x, maxy, x, maxy - len));
-                } else {
-                    g.draw(new Line2D.Double(x, maxy, x, maxy + len));
-                }
-            } else if (this.insideTick) {
-                g.draw(new Line2D.Double(x, miny, x, miny + len));
-            } else {
-                g.draw(new Line2D.Double(x, miny, x, miny - len));
-            }
-
-            //Draw tick label
-            if (this.drawTickLabel && n < xTickLabels.size()) {                
-                drawStr = xTickLabels.get(n);
-                dim = new Dimension(metrics.stringWidth(drawStr), metrics.getHeight());
-                //labx = (float) (x - dim.width / 2);
-                labx = (float)x;
+                x += minx;
                 if (this.location == Location.BOTTOM) {
-                    laby = (float) (maxy + len + dim.height * 3 / 4 + space);
+                    if (this.insideTick) {
+                        g.draw(new Line2D.Double(x, maxy, x, maxy - len));
+                    } else {
+                        g.draw(new Line2D.Double(x, maxy, x, maxy + len));
+                    }
+                } else if (this.insideTick) {
+                    g.draw(new Line2D.Double(x, miny, x, miny + len));
                 } else {
-                    laby = (float) (miny - len - space);
+                    g.draw(new Line2D.Double(x, miny, x, miny - len));
                 }
-                Draw.drawTickLabel(labx, laby, this.tickLabelFont, drawStr, this.tickLabelColor, 
-                        this.tickLabelAngle, g);
-                //g.drawString(drawStr, labx, laby);
-            }
-            n += this.getTickLabelGap();
 
-            //Draw minor tick lines
-            if (this.isMinorTickVisible()) {
-                int minorLen = len - 2;
-                double sp;
-                sp = this.tickDeltaValue * this.getTickLabelGap() / this.minorTickNum;
-                if (this instanceof LogAxis){
-                    if (n >= this.getTickValues().length)
-                        break;
-                    sp = (this.getTickValues()[n] - this.getTickValues()[n - 1]) / this.minorTickNum;
+                //Draw tick label
+                if (this.drawTickLabel && n < xTickLabels.size()) {
+                    drawStr = xTickLabels.get(n);
+                    dim = new Dimension(metrics.stringWidth(drawStr), metrics.getHeight());
+                    //labx = (float) (x - dim.width / 2);
+                    labx = (float) x;
+                    if (this.location == Location.BOTTOM) {
+                        laby = (float) (maxy + len + dim.height * 3 / 4 + space);
+                    } else {
+                        laby = (float) (miny - len - space);
+                    }
+                    Draw.drawTickLabel(labx, laby, this.tickLabelFont, drawStr, this.tickLabelColor,
+                            this.tickLabelAngle, g);
+                    //g.drawString(drawStr, labx, laby);
                 }
-                List<Double> xx = new ArrayList<>();
-                if (n == 1) {
-                    if (value > this.minValue + sp) {
-                        double value1 = value;
-                        for (int i = 0; i < this.minorTickNum - 1; i++) {
-                            value1 = value1 - sp;
-                            if (value1 <= this.minValue) {
-                                break;
-                            }
-                            xy = plot.projToScreen(value1, plot.getDrawExtent().minY, area);
-                            x = xy[0];
+                n += this.getTickLabelGap();
+
+                //Draw minor tick lines
+                if (this.isMinorTickVisible()) {
+                    int minorLen = len - 2;
+                    double sp;
+                    sp = this.tickDeltaValue * this.getTickLabelGap() / this.minorTickNum;
+                    if (this instanceof LogAxis) {
+                        if (n >= this.getTickValues().length) {
+                            break;
+                        }
+                        sp = (this.getTickValues()[n] - this.getTickValues()[n - 1]) / this.minorTickNum;
+                    }
+                    List<Double> xx = new ArrayList<>();
+                    if (n == 1) {
+                        if (value > this.minValue + sp) {
+                            double value1 = value;
+                            for (int i = 0; i < this.minorTickNum - 1; i++) {
+                                value1 = value1 - sp;
+                                if (value1 <= this.minValue) {
+                                    break;
+                                }
+                                xy = plot.projToScreen(value1, plot.getDrawExtent().minY, area);
+                                x = xy[0];
 //                            if (this.inverse) {
 //                                x = area.getWidth() - x;
 //                            }
-                            x += minx;
-                            xx.add(x);
+                                x += minx;
+                                xx.add(x);
+                            }
                         }
                     }
-                }
-                for (int i = 0; i < this.minorTickNum - 1; i++) {
-                    value = value + sp;
-                    if (value >= this.maxValue) {
-                        break;
-                    } else if (value <= this.minValue) {
-                        continue;
-                    }
-                    xy = plot.projToScreen(value, plot.getDrawExtent().minY, area);
-                    x = xy[0];
+                    for (int i = 0; i < this.minorTickNum - 1; i++) {
+                        value = value + sp;
+                        if (value >= this.maxValue) {
+                            break;
+                        } else if (value <= this.minValue) {
+                            continue;
+                        }
+                        xy = plot.projToScreen(value, plot.getDrawExtent().minY, area);
+                        x = xy[0];
 //                    if (this.inverse) {
 //                        x = area.getWidth() - x;
 //                    }
-                    x += minx;
-                    xx.add(x);
-                }
-                for (int i = 0; i < xx.size(); i++) {
-                    x = xx.get(i);
-                    if (this.location == Location.BOTTOM) {
-                        if (this.insideTick) {
-                            g.draw(new Line2D.Double(x, maxy, x, maxy - minorLen));
+                        x += minx;
+                        xx.add(x);
+                    }
+                    for (int i = 0; i < xx.size(); i++) {
+                        x = xx.get(i);
+                        if (this.location == Location.BOTTOM) {
+                            if (this.insideTick) {
+                                g.draw(new Line2D.Double(x, maxy, x, maxy - minorLen));
+                            } else {
+                                g.draw(new Line2D.Double(x, maxy, x, maxy + minorLen));
+                            }
+                        } else if (this.insideTick) {
+                            g.draw(new Line2D.Double(x, miny, x, miny + minorLen));
                         } else {
-                            g.draw(new Line2D.Double(x, maxy, x, maxy + minorLen));
+                            g.draw(new Line2D.Double(x, miny, x, miny - minorLen));
                         }
-                    } else if (this.insideTick) {
-                        g.draw(new Line2D.Double(x, miny, x, miny + minorLen));
-                    } else {
-                        g.draw(new Line2D.Double(x, miny, x, miny - minorLen));
+                    }
+                }
+            }
+            //Time label - left
+            if (this.drawTickLabel) {
+                SimpleDateFormat format;
+                if (this instanceof TimeAxis) {
+                    TimeAxis tAxis = (TimeAxis) this;
+                    if (tAxis.isVarFormat()) {
+                        drawStr = null;
+                        switch (tAxis.getTimeUnit()) {
+                            case MONTH:
+                                format = new SimpleDateFormat("yyyy");
+                                Date cdate = DateUtil.fromOADate(this.getTickValues()[0]);
+                                drawStr = format.format(cdate);
+                                break;
+                            case DAY:
+                                format = new SimpleDateFormat("yyyy-MM");
+                                cdate = DateUtil.fromOADate(this.getTickValues()[0]);
+                                drawStr = format.format(cdate);
+                                break;
+                            case HOUR:
+                            case MINUTE:
+                            case SECOND:
+                                format = new SimpleDateFormat("yyyy-MM-dd");
+                                cdate = DateUtil.fromOADate(this.getTickValues()[0]);
+                                drawStr = format.format(cdate);
+                                break;
+                        }
+                        if (drawStr != null) {
+                            labx = (float) minx;
+                            laby = (float) (maxy + metrics.getHeight() * 2 + space);
+                            if (!this.isInsideTick()) {
+                                laby += len;
+                            }
+                            g.drawString(drawStr, labx, laby);
+                        }
                     }
                 }
             }
         }
-        //Time label - left
-        if (this.drawTickLabel) {
-            SimpleDateFormat format;
-            if (this instanceof TimeAxis) {
-                TimeAxis tAxis = (TimeAxis) this;
-                if (tAxis.isVarFormat()) {
-                    drawStr = null;
-                    switch (tAxis.getTimeUnit()) {
-                        case MONTH:
-                            format = new SimpleDateFormat("yyyy");
-                            Date cdate = DateUtil.fromOADate(this.getTickValues()[0]);
-                            drawStr = format.format(cdate);
-                            break;
-                        case DAY:
-                            format = new SimpleDateFormat("yyyy-MM");
-                            cdate = DateUtil.fromOADate(this.getTickValues()[0]);
-                            drawStr = format.format(cdate);
-                            break;
-                        case HOUR:
-                        case MINUTE:
-                        case SECOND:
-                            format = new SimpleDateFormat("yyyy-MM-dd");
-                            cdate = DateUtil.fromOADate(this.getTickValues()[0]);
-                            drawStr = format.format(cdate);
-                            break;
-                    }
-                    if (drawStr != null) {
-                        labx = (float) minx;
-                        laby = (float) (maxy + metrics.getHeight() * 2 + space);
-                        if (!this.isInsideTick()) {
-                            laby += len;
-                        }
-                        g.drawString(drawStr, labx, laby);
-                    }
-                }
-            }
-        }
+
         //Draw label
         if (this.isDrawLabel()) {
             x = (maxx - minx) / 2 + minx;
             String maxLabel = this.getMaxLenLable();
             g.setFont(this.tickLabelFont);
-            dim = Draw.getStringDimension(maxLabel, g);
-            y = maxy + space + dim.getHeight() + (dim.getWidth() * 
-                    Math.sin(this.tickLabelAngle * Math.PI / 180)) + 5;
+            Dimension dim = Draw.getStringDimension(maxLabel, g);
+            y = maxy + space + dim.getHeight() + (dim.getWidth()
+                    * Math.sin(this.tickLabelAngle * Math.PI / 180)) + 5;
             g.setFont(this.getLabelFont());
             g.setColor(this.getLabelColor());
             //metrics = g.getFontMetrics(this.xAxis.getLabelFont());
@@ -1495,125 +1504,130 @@ public class Axis implements Cloneable {
         }
 
         //Draw tick lines   
-        g.setColor(this.getTickColor());
-        g.setStroke(this.getTickStroke());
-        g.setFont(this.getTickLabelFont());
-        //FontMetrics metrics = g.getFontMetrics();
-        this.updateLabelGap(g, area);
-        int len = this.getTickLength();
-        List<String> yTickLabels = this.updateTickLabels();
-        String drawStr;
-        Dimension dim;
-        int n = 0;
-        while (n < this.getTickValues().length) {
-            double value = this.getTickValues()[n];
-            xy = plot.projToScreen(plot.getDrawExtent().minX, value, area);
-            y = xy[1];
+        int len = 0;
+        if (this.drawTickLine) {
+            g.setColor(this.getTickColor());
+            g.setStroke(this.getTickStroke());
+            g.setFont(this.getTickLabelFont());
+            //FontMetrics metrics = g.getFontMetrics();
+            this.updateLabelGap(g, area);
+            len = this.getTickLength();
+            List<String> yTickLabels = this.updateTickLabels();
+            String drawStr;
+            Dimension dim;
+            int n = 0;
+            while (n < this.getTickValues().length) {
+                double value = this.getTickValues()[n];
+                xy = plot.projToScreen(plot.getDrawExtent().minX, value, area);
+                y = xy[1];
 //            if (this.isInverse()) {
 //                y = area.getHeight() - y;
 //            }
-            y += area.getY();
-            if (this.location == Location.LEFT) {
-                if (this.isInsideTick()) {
-                    g.draw(new Line2D.Double(sx, y, sx + len, y));
-                } else {
-                    g.draw(new Line2D.Double(sx, y, sx - len, y));
-                }
-            } else if (this.isInsideTick()) {
-                g.draw(new Line2D.Double(sx, y, sx - len, y));
-            } else {
-                g.draw(new Line2D.Double(sx, y, sx + len, y));
-            }
-            //Draw tick label
-            if (this.drawTickLabel && n < yTickLabels.size()) {
-                drawStr = yTickLabels.get(n);
-                //dim = new Dimension(metrics.stringWidth(drawStr), metrics.getHeight());
-                g.setFont(this.tickLabelFont);
-                dim = Draw.getStringDimension(drawStr, g);
+                y += area.getY();
                 if (this.location == Location.LEFT) {
-                    labx = (float) (sx - dim.width - space - space);
-                    if (!this.isInsideTick()) {
-                        labx -= len;
+                    if (this.isInsideTick()) {
+                        g.draw(new Line2D.Double(sx, y, sx + len, y));
+                    } else {
+                        g.draw(new Line2D.Double(sx, y, sx - len, y));
                     }
-                    laby = (float) (y + dim.height / 3);
-                    //g.drawString(drawStr, labx, laby);
+                } else if (this.isInsideTick()) {
+                    g.draw(new Line2D.Double(sx, y, sx - len, y));
                 } else {
-                    labx = (float) (sx + space + space);
-                    if (!this.isInsideTick()) {
-                        labx += len;
+                    g.draw(new Line2D.Double(sx, y, sx + len, y));
+                }
+                //Draw tick label
+                if (this.drawTickLabel && n < yTickLabels.size()) {
+                    drawStr = yTickLabels.get(n);
+                    //dim = new Dimension(metrics.stringWidth(drawStr), metrics.getHeight());
+                    g.setFont(this.tickLabelFont);
+                    dim = Draw.getStringDimension(drawStr, g);
+                    if (this.location == Location.LEFT) {
+                        labx = (float) (sx - dim.width - space - space);
+                        if (!this.isInsideTick()) {
+                            labx -= len;
+                        }
+                        laby = (float) (y + dim.height / 3);
+                        //g.drawString(drawStr, labx, laby);
+                    } else {
+                        labx = (float) (sx + space + space);
+                        if (!this.isInsideTick()) {
+                            labx += len;
+                        }
+                        laby = (float) (y + dim.height / 3);
+                        //g.drawString(drawStr, labx, laby);
                     }
-                    laby = (float) (y + dim.height / 3);
-                    //g.drawString(drawStr, labx, laby);
+                    Draw.drawTickLabel_Y(labx, laby, this.tickLabelFont, drawStr, this.tickLabelColor,
+                            this.tickLabelAngle, g);
                 }
-                Draw.drawTickLabel_Y(labx, laby, this.tickLabelFont, drawStr, this.tickLabelColor, 
-                        this.tickLabelAngle, g);
-            }
-            n += this.getTickLabelGap();
+                n += this.getTickLabelGap();
 
-            //Draw minor tick lines
-            if (this.isMinorTickVisible()) {
-                int minorLen = len - 2;
-                double sp;
-                sp = this.tickDeltaValue * this.getTickLabelGap() / this.minorTickNum;
-                if (this instanceof LogAxis){
-                    if (n >= this.getTickValues().length)
-                        break;
-                    sp = (this.getTickValues()[n] - this.getTickValues()[n - 1]) / this.minorTickNum;
-                }
-                List<Double> yy = new ArrayList<>();
-                if (n == 1) {
-                    if (value > this.minValue + sp) {
-                        double value1 = value;
-                        for (int i = 0; i < this.minorTickNum - 1; i++) {
-                            value1 = value1 - sp;
-                            if (value1 <= this.minValue) {
-                                break;
-                            }
-                            xy = plot.projToScreen(plot.getDrawExtent().minX, value1, area);
-                            y = xy[1];
+                //Draw minor tick lines
+                if (this.isMinorTickVisible()) {
+                    int minorLen = len - 2;
+                    double sp;
+                    sp = this.tickDeltaValue * this.getTickLabelGap() / this.minorTickNum;
+                    if (this instanceof LogAxis) {
+                        if (n >= this.getTickValues().length) {
+                            break;
+                        }
+                        sp = (this.getTickValues()[n] - this.getTickValues()[n - 1]) / this.minorTickNum;
+                    }
+                    List<Double> yy = new ArrayList<>();
+                    if (n == 1) {
+                        if (value > this.minValue + sp) {
+                            double value1 = value;
+                            for (int i = 0; i < this.minorTickNum - 1; i++) {
+                                value1 = value1 - sp;
+                                if (value1 <= this.minValue) {
+                                    break;
+                                }
+                                xy = plot.projToScreen(plot.getDrawExtent().minX, value1, area);
+                                y = xy[1];
 //                            if (this.inverse) {
 //                                y = area.getHeight() - y;
 //                            }
-                            y += miny;
-                            yy.add(y);
+                                y += miny;
+                                yy.add(y);
+                            }
                         }
                     }
-                }
-                for (int i = 0; i < this.minorTickNum - 1; i++) {
-                    value = value + sp;
-                    if (value >= this.maxValue) {
-                        break;
-                    } else if (value <= this.minValue) {
-                        continue;
-                    }
-                    xy = plot.projToScreen(plot.getDrawExtent().minX, value, area);
-                    y = xy[1];
+                    for (int i = 0; i < this.minorTickNum - 1; i++) {
+                        value = value + sp;
+                        if (value >= this.maxValue) {
+                            break;
+                        } else if (value <= this.minValue) {
+                            continue;
+                        }
+                        xy = plot.projToScreen(plot.getDrawExtent().minX, value, area);
+                        y = xy[1];
 //                    if (this.inverse) {
 //                        y = area.getHeight() - y;
 //                    }
-                    y += miny;
-                    yy.add(y);
-                }
-                for (int i = 0; i < yy.size(); i++) {
-                    y = yy.get(i);
-                    if (this.location == Location.LEFT) {
-                        if (this.isInsideTick()) {
-                            g.draw(new Line2D.Double(sx, y, sx + minorLen, y));
-                        } else {
+                        y += miny;
+                        yy.add(y);
+                    }
+                    for (int i = 0; i < yy.size(); i++) {
+                        y = yy.get(i);
+                        if (this.location == Location.LEFT) {
+                            if (this.isInsideTick()) {
+                                g.draw(new Line2D.Double(sx, y, sx + minorLen, y));
+                            } else {
+                                g.draw(new Line2D.Double(sx, y, sx - minorLen, y));
+                            }
+                        } else if (this.isInsideTick()) {
                             g.draw(new Line2D.Double(sx, y, sx - minorLen, y));
+                        } else {
+                            g.draw(new Line2D.Double(sx, y, sx + minorLen, y));
                         }
-                    } else if (this.isInsideTick()) {
-                        g.draw(new Line2D.Double(sx, y, sx - minorLen, y));
-                    } else {
-                        g.draw(new Line2D.Double(sx, y, sx + minorLen, y));
                     }
                 }
             }
         }
+
         //Draw label
         if (this.isDrawLabel()) {
             g.setFont(this.getLabelFont());
-            dim = Draw.getStringDimension(this.getLabel(), g);
+            Dimension dim = Draw.getStringDimension(this.getLabel(), g);
             //metrics = g.getFontMetrics(this.yAxis.getLabelFont());
             if (this.location == Location.LEFT) {
                 x = sx - space - this.getMaxLabelLength(g) - dim.height - 10;
