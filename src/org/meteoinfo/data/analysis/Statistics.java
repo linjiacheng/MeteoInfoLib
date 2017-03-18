@@ -168,8 +168,11 @@ public class Statistics {
     public static double quantile(Array a, int aNum) {
         List<Double> dlist = new ArrayList<>();
         IndexIterator ii = a.getIndexIterator();
+        double v;
         while (ii.hasNext()) {
-            dlist.add(ii.getDoubleNext());
+            v = ii.getDoubleNext();
+            if (!Double.isNaN(v))
+                dlist.add(v);
         }
         return quantile(dlist, aNum);
     }

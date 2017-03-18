@@ -7,7 +7,6 @@ package org.meteoinfo.math;
 
 import java.util.List;
 import java.util.Random;
-import org.apache.commons.math3.random.RandomGeneratorFactory;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
 
