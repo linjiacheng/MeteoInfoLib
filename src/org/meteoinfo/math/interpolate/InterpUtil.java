@@ -7,10 +7,13 @@ package org.meteoinfo.math.interpolate;
 
 import org.apache.commons.math3.analysis.BivariateFunction;
 import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.interpolation.AkimaSplineInterpolator;
 import org.apache.commons.math3.analysis.interpolation.BicubicInterpolator;
-import org.apache.commons.math3.analysis.interpolation.BicubicSplineInterpolator;
 import org.apache.commons.math3.analysis.interpolation.BivariateGridInterpolator;
+import org.apache.commons.math3.analysis.interpolation.DividedDifferenceInterpolator;
 import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
+import org.apache.commons.math3.analysis.interpolation.LoessInterpolator;
+import org.apache.commons.math3.analysis.interpolation.NevilleInterpolator;
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
@@ -55,6 +58,18 @@ public class InterpUtil {
             case "cubic":
                 li = new SplineInterpolator();
                 break;
+            case "akima":
+                li = new AkimaSplineInterpolator();
+                break;
+            case "divided":
+                li = new DividedDifferenceInterpolator();
+                break;
+            case "loess":
+                li = new LoessInterpolator();
+                break;
+            case "neville":
+                li = new NevilleInterpolator();
+                break;
             default:
                 li = new LinearInterpolator();
                 break;
@@ -65,23 +80,17 @@ public class InterpUtil {
     }
     
     /**
-     * Make interpolation function
+     * Make interpolation function for grid data
      * @param x X data
      * @param y Y data
      * @param z Z data
-     * @param kind Specifies the kind of interpolation as a string (‘linear’, 'spline').
      * @return Interpolation function
      */
-    public static BivariateFunction getInterpFunc(Array x, Array y, Array z, String kind) {
+    public static BivariateFunction getBiInterpFunc(Array x, Array y, Array z) {
         double[] xd = (double[]) ArrayUtil.copyToNDJavaArray(x);
         double[] yd = (double[]) ArrayUtil.copyToNDJavaArray(y);
         double[][] zd = (double[][]) ArrayUtil.copyToNDJavaArray(z);
-        BivariateGridInterpolator li;
-        switch (kind) {
-            default:
-                li = new BicubicInterpolator();
-                break;
-        } 
+        BivariateGridInterpolator li = new BicubicInterpolator();
         BivariateFunction func = li.interpolate(xd, yd, zd);
 
         return func;

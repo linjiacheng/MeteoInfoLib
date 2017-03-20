@@ -7,6 +7,7 @@ package org.meteoinfo.math;
 
 import java.util.List;
 import java.util.Random;
+import org.apache.commons.math3.random.RandomDataGenerator;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
 
@@ -102,6 +103,103 @@ public class RandomUtil {
         Random rd = new Random();
         for (int i = 0; i < a.getSize(); i++) {
             a.setDouble(i, rd.nextGaussian());
+        }
+
+        return a;
+    }
+    
+    /**
+     * Get random int value
+     *
+     * @param bound Highest value
+     * @return Random int value
+     */
+    public static int randint(int bound) {
+        Random r = new Random();
+        return r.nextInt(bound);
+    }
+    
+    /**
+     * Get random integer array
+     *
+     * @param bound Highest value
+     * @param n Array length
+     * @return Array Result array
+     */
+    public static Array randint(int bound, int n) {
+        Array a = Array.factory(DataType.INT, new int[]{n});
+        Random rd = new Random();
+        for (int i = 0; i < a.getSize(); i++) {
+            a.setDouble(i, rd.nextInt(bound));
+        }
+
+        return a;
+    }
+    
+    /**
+     * Get random integer array
+     *
+     * @param bound Highest value
+     * @param shape Shape
+     * @return Array Result array
+     */
+    public static Array randint(int bound, List<Integer> shape) {
+        int[] ashape = new int[shape.size()];
+        for (int i = 0; i < shape.size(); i++) {
+            ashape[i] = shape.get(i);
+        }
+        Array a = Array.factory(DataType.INT, ashape);
+        Random rd = new Random();
+        for (int i = 0; i < a.getSize(); i++) {
+            a.setDouble(i, rd.nextInt(bound));
+        }
+
+        return a;
+    }
+    
+    /**
+     * Get random data from a Poisson distribution
+     * @param mean Poisson mean
+     * @return Random value
+     */
+    public static double poisson(double mean){
+        RandomDataGenerator rdg = new RandomDataGenerator();
+        return rdg.nextPoisson(mean);
+    }
+    
+    /**
+     * Get random data from a Poisson distribution
+     *
+     * @param mean Poisson mean
+     * @param n Array length
+     * @return Array Result array
+     */
+    public static Array poisson(double mean, int n) {
+        Array a = Array.factory(DataType.INT, new int[]{n});
+        RandomDataGenerator rd = new RandomDataGenerator();
+        for (int i = 0; i < a.getSize(); i++) {
+            a.setDouble(i, rd.nextPoisson(mean));
+        }
+
+        return a;
+    }
+    
+    /**
+     * Get random data from a Poisson distribution
+     *
+     * @param mean Poisson mean
+     * @param shape Shape
+     * @return Array Result array
+     */
+    public static Array poisson(double mean, List<Integer> shape) {
+        int[] ashape = new int[shape.size()];
+        for (int i = 0; i < shape.size(); i++) {
+            ashape[i] = shape.get(i);
+        }
+        Array a = Array.factory(DataType.INT, ashape);
+        RandomDataGenerator rd = new RandomDataGenerator();
+        for (int i = 0; i < a.getSize(); i++) {
+            a.setDouble(i, rd.nextPoisson(mean));
         }
 
         return a;
