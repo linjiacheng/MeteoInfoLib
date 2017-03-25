@@ -25,6 +25,7 @@ import org.meteoinfo.drawing.PointStyle;
 import org.meteoinfo.geoprocess.GeoComputation;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
+import static org.meteoinfo.global.MIMath.polarToCartesian;
 import org.meteoinfo.global.PointD;
 import org.meteoinfo.legend.BarBreak;
 import org.meteoinfo.legend.ColorBreak;
@@ -44,6 +45,7 @@ import org.meteoinfo.shape.PointShape;
 import org.meteoinfo.shape.PolygonShape;
 import org.meteoinfo.shape.PolylineErrorShape;
 import org.meteoinfo.shape.PolylineShape;
+import org.meteoinfo.shape.Shape;
 import org.meteoinfo.shape.ShapeTypes;
 import org.meteoinfo.shape.WindArrow;
 import org.meteoinfo.shape.WindBarb;
@@ -261,10 +263,117 @@ public class GraphicFactory {
             ps = new PointShape();
             ps.setPoint(new PointD(xdata.getDouble(i), ydata.getDouble(i)));
             z = zdata.getDouble(i);
-            cb = ls.getLegenBreak(z);            
+            cb = ls.getLegenBreak(z);
             graphics.add(new Graphic(ps, cb));
         }
         graphics.setSingleLegend(false);
+        return graphics;
+    }
+
+    /**
+     * Create bar graphics
+     *
+     * @param xdata X data array
+     * @param ydata Y data array
+     * @param autoWidth Is auto width or not
+     * @param widths Width
+     * @param drawError Is draw error or not
+     * @param error Error
+     * @param drawBottom Is draw bottom or not
+     * @param bottom Bottom
+     * @param bbs Bar breaks
+     * @return Bar graphics
+     */
+    public static GraphicCollection createBars(Array xdata, Array ydata, boolean autoWidth,
+            Array widths, boolean drawError, Array error, boolean drawBottom, Array bottom,
+            List<BarBreak> bbs) {
+        GraphicCollection graphics = new GraphicCollection();
+        int n = (int) xdata.getSize();
+        double x, y;
+        BarBreak bb = bbs.get(0);
+        PolylineBreak ebreak = new PolylineBreak();
+        ebreak.setColor(bb.getErrorColor());
+        ebreak.setSize(bb.getErrorSize());
+        double width = widths.getDouble(0);
+        if (autoWidth && xdata.getSize() > 1){
+            width = (xdata.getDouble(1) - xdata.getDouble(0)) * width;
+        }
+        double bot = 0;
+        if (drawBottom){
+            bot = bottom.getDouble(0);
+        }
+        double miny = 0;
+        boolean baseLine = false;
+        for (int i = 0; i < n; i++) {
+            x = xdata.getDouble(i);
+            y = ydata.getDouble(i);
+            // Add bar
+            if (drawBottom) {
+                if (bottom.getSize() > i)
+                    bot = bottom.getDouble(i);
+                miny = bot;
+                y += miny;
+            }
+            if (y < miny) {
+                baseLine = true;
+            }
+            if (widths.getSize() > 1 && widths.getSize() > i){
+                width = widths.getDouble(i);
+            }
+            List<PointD> pList = new ArrayList<>();
+            pList.add(new PointD(x, miny));
+            pList.add(new PointD(x, y));
+            pList.add(new PointD(x + width, y));
+            pList.add(new PointD(x + width, miny));
+            pList.add(new PointD(x, miny));
+            PolygonShape pgs = new PolygonShape();
+            pgs.setPoints(pList);
+            if (bbs.size() > i) {
+                bb = bbs.get(i);
+            }
+            graphics.add(new Graphic(pgs, bb));
+
+            if (drawError) {
+                //Add error line
+                double e = error.getDouble(i);
+                pList = new ArrayList<>();
+                pList.add(new PointD(x + width * 0.5, y - e));
+                pList.add(new PointD(x + width * 0.5, y + e));
+                PolylineShape pls = new PolylineShape();
+                pls.setPoints(pList);
+                graphics.add(new Graphic(pls, ebreak));
+                //Add cap
+                pList = new ArrayList<>();
+                pList.add(new PointD(x + width * 0.25, y - e));
+                pList.add(new PointD(x + width * 0.75, y - e));
+                pls = new PolylineShape();
+                pls.setPoints(pList);
+                graphics.add(new Graphic(pls, ebreak));
+                pList = new ArrayList<>();
+                pList.add(new PointD(x + width * 0.25, y + e));
+                pList.add(new PointD(x + width * 0.75, y + e));
+                pls = new PolylineShape();
+                pls.setPoints(pList);
+                graphics.add(new Graphic(pls, ebreak));
+            }
+        }
+
+        if (baseLine) {
+            List<PointD> pList = new ArrayList<>();
+            double x1 = xdata.getDouble(0);
+            double x2 = xdata.getDouble((int) xdata.getSize() - 1);
+            x1 -= (x2 - x1);
+            x2 += (x2 - x1);
+            pList.add(new PointD(x1, miny));
+            pList.add(new PointD(x2, miny));
+            PolylineShape pls = new PolylineShape();
+            pls.setPoints(pList);
+            ebreak = new PolylineBreak();     
+            ebreak.setColor(Color.black);
+            graphics.add(new Graphic(pls, ebreak));
+        }
+        graphics.setSingleLegend(false);
+
         return graphics;
     }
 
@@ -282,7 +391,7 @@ public class GraphicFactory {
      * @param bbs Bar breaks
      * @return Bar graphics
      */
-    public static GraphicCollection createBars(Array xdata, Array ydata, boolean autoWidth,
+    public static GraphicCollection createBars_bak(Array xdata, Array ydata, boolean autoWidth,
             double width, boolean drawError, Array error, boolean drawBottom, Array bottom,
             List<BarBreak> bbs) {
         GraphicCollection graphics = new GraphicCollection();
@@ -329,8 +438,8 @@ public class GraphicFactory {
     public static GraphicCollection createHistBars(Array data, int nbin,
             List<BarBreak> bbs) {
         List<Array> r = ArrayUtil.histogram(data, nbin);
-        Array xdata = r.get(0);
-        Array ydata = r.get(1);
+        Array xdata = r.get(1);
+        Array ydata = r.get(0);
         GraphicCollection graphics = new GraphicCollection();
         int n = (int) ydata.getSize();
         double x, y, width;
@@ -984,8 +1093,8 @@ public class GraphicFactory {
      * @return GraphicCollection
      */
     public static GraphicCollection createBox(List<Array> xdata, List<Number> positions, List<Number> widths,
-            boolean showcaps, boolean showfliers, boolean showmeans, PolygonBreak boxBreak, 
-            PolylineBreak medianBreak, PolylineBreak whiskerBreak, PolylineBreak capBreak, 
+            boolean showcaps, boolean showfliers, boolean showmeans, PolygonBreak boxBreak,
+            PolylineBreak medianBreak, PolylineBreak whiskerBreak, PolylineBreak capBreak,
             ColorBreak meanBreak, PointBreak flierBreak) {
         GraphicCollection gc = new GraphicCollection();
         int n = xdata.size();
@@ -1070,16 +1179,16 @@ public class GraphicFactory {
             pls.setPoints(pList);
             gc.add(new Graphic(pls, whiskerBreak));
             //Add cap
-            if (showcaps){
+            if (showcaps) {
                 pList = new ArrayList<>();
                 pList.add(new PointD(v - width * 0.25, min));
-                pList.add(new PointD(v + width * 0.25, min));            
+                pList.add(new PointD(v + width * 0.25, min));
                 pls = new PolylineShape();
                 pls.setPoints(pList);
                 gc.add(new Graphic(pls, capBreak));
             }
             //Add low fliers
-            if (showfliers){
+            if (showfliers) {
                 if (mino > mind) {
                     for (int j = 0; j < a.getSize(); j++) {
                         if (a.getDouble(j) < mino) {
@@ -1100,7 +1209,7 @@ public class GraphicFactory {
             pls.setPoints(pList);
             gc.add(new Graphic(pls, whiskerBreak));
             //Add cap
-            if (showcaps){
+            if (showcaps) {
                 pList = new ArrayList<>();
                 pList.add(new PointD(v - width * 0.25, max));
                 pList.add(new PointD(v + width * 0.25, max));
@@ -1133,4 +1242,27 @@ public class GraphicFactory {
 
         return gc;
     }
+
+    /**
+     * Convert graphics from polar to cartesian coordinate
+     *
+     * @param graphics Graphics
+     */
+    public static void polarToCartesian(GraphicCollection graphics) {
+        for (int m = 0; m < graphics.getNumGrahics(); m++) {
+            Graphic graphic = graphics.get(m);
+            for (int i = 0; i < graphic.getNumGrahics(); i++) {
+                Graphic gg = graphic.getGraphicN(i);
+                Shape shape = gg.getShape();
+                List<PointD> points = new ArrayList<>();
+                for (PointD p : shape.getPoints()) {
+                    double[] xy = MIMath.polarToCartesian(p.X, p.Y);
+                    points.add(new PointD(xy[0], xy[1]));
+                }
+                shape.setPoints(points);
+            }
+        }
+        graphics.updateExtent();
+    }
+
 }

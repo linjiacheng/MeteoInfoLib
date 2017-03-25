@@ -74,6 +74,7 @@ public class ChartLegend {
     private float _vBarWidth;
     private float _hBarHeight;
     private int rowColNum = 1;
+    private boolean autoRowColNum = true;
     private Dimension symbolDimension;
     private boolean extendRect;
     private boolean autoExtendFrac;
@@ -485,6 +486,22 @@ public class ChartLegend {
     public void setColumnNumber(int value) {
         rowColNum = value;
     }
+    
+    /**
+     * Get if automatic set row/col number
+     * @return Boolean
+     */
+    public boolean isAutoRowColNum(){
+        return this.autoRowColNum;
+    }
+    
+    /**
+     * Set if automatic set row/col number
+     * @param value Boolean
+     */
+    public void setAutoRowColNum(boolean value){
+        this.autoRowColNum = value;
+    }
 
     /**
      * Get symbol dimension
@@ -502,6 +519,32 @@ public class ChartLegend {
      */
     public void setSymbolDimension(Dimension value) {
         this.symbolDimension = value;
+    }
+    
+    /**
+     * Set symbol width
+     * @param value Width
+     */
+    public void setSymbolWidth(int value){
+        this.symbolDimension.width = value;
+    }
+    
+    /**
+     * Set symbol height
+     * @param value height
+     */
+    public void setSymbolHeight(int value){
+        this.symbolDimension.height = value;
+    }
+    
+    /**
+     * Set symbol scale
+     * @param value Symble scale
+     */
+    public void setSymbolScale(float value){
+        double w = this.symbolDimension.getWidth() * value;
+        double h = this.symbolDimension.getHeight() * value;
+        this.symbolDimension.setSize(w, h);
     }
 
     /**
@@ -1249,25 +1292,27 @@ public class ChartLegend {
                 switch (this.orientation) {
                     case VERTICAL:
                         //Get column number
-                        int tHeight = (int) (legendScheme.getBreakNum() * (breakHeight + _breakSpace)
-                                + _breakSpace * 2 + breakHeight / 2 + 5);
-                        rowColNum = 1;
-                        if (tHeight > limitDim.height * 10 / 8) {
-                            rowColNum = tHeight / (limitDim.height * 10 / 8) + 1;
-                            if (rowColNum == 1) {
-                                rowColNum = 2;
-                            } else {
-                                int n = legendScheme.getBreakNum() / rowColNum;
-                                int m = legendScheme.getBreakNum() % rowColNum;
-                                if (m != 0) {
-                                    if (m <= n) {
-                                        rowColNum += 1;
-                                    } else {
-                                        rowColNum += 2;
-                                    }
+                        if (this.autoRowColNum){
+                            int tHeight = (int) (legendScheme.getBreakNum() * (breakHeight + _breakSpace)
+                                    + _breakSpace * 2 + breakHeight / 2 + 5);
+                            rowColNum = 1;
+                            if (tHeight > limitDim.height * 10 / 8) {
+                                rowColNum = tHeight / (limitDim.height * 10 / 8) + 1;
+                                if (rowColNum == 1) {
+                                    rowColNum = 2;
                                 } else {
-                                    if (rowColNum * (limitDim.width * 8 / 10) < tHeight) {
-                                        rowColNum += 1;
+                                    int n = legendScheme.getBreakNum() / rowColNum;
+                                    int m = legendScheme.getBreakNum() % rowColNum;
+                                    if (m != 0) {
+                                        if (m <= n) {
+                                            rowColNum += 1;
+                                        } else {
+                                            rowColNum += 2;
+                                        }
+                                    } else {
+                                        if (rowColNum * (limitDim.width * 8 / 10) < tHeight) {
+                                            rowColNum += 1;
+                                        }
                                     }
                                 }
                             }
@@ -1298,25 +1343,27 @@ public class ChartLegend {
                         break;
                     case HORIZONTAL:
                         //Get row number
-                        int breakWidth = this.symbolDimension.width + this.getMaxLabelWidth(g) + 15;
-                        int tWidth = breakWidth * legendScheme.getBreakNum();
-                        rowColNum = 1;
-                        if (tWidth > limitDim.width * 8 / 10) {
-                            rowColNum = tWidth / (limitDim.width * 8 / 10);
-                            if (rowColNum == 1) {
-                                rowColNum = 2;
-                            } else {
-                                int n = legendScheme.getBreakNum() / rowColNum;
-                                int m = legendScheme.getBreakNum() % rowColNum;
-                                if (m != 0) {
-                                    if (m <= n) {
-                                        rowColNum += 1;
-                                    } else {
-                                        rowColNum += 2;
-                                    }
+                        if (this.autoRowColNum){
+                            int breakWidth = this.symbolDimension.width + this.getMaxLabelWidth(g) + 15;
+                            int tWidth = breakWidth * legendScheme.getBreakNum();
+                            rowColNum = 1;
+                            if (tWidth > limitDim.width * 8 / 10) {
+                                rowColNum = tWidth / (limitDim.width * 8 / 10);
+                                if (rowColNum == 1) {
+                                    rowColNum = 2;
                                 } else {
-                                    if (rowColNum * (limitDim.width * 8 / 10) < tWidth) {
-                                        rowColNum += 1;
+                                    int n = legendScheme.getBreakNum() / rowColNum;
+                                    int m = legendScheme.getBreakNum() % rowColNum;
+                                    if (m != 0) {
+                                        if (m <= n) {
+                                            rowColNum += 1;
+                                        } else {
+                                            rowColNum += 2;
+                                        }
+                                    } else {
+                                        if (rowColNum * (limitDim.width * 8 / 10) < tWidth) {
+                                            rowColNum += 1;
+                                        }
                                     }
                                 }
                             }

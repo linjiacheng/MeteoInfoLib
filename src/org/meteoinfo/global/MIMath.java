@@ -1,4 +1,4 @@
- /* Copyright 2012 Yaqiang Wang,
+/* Copyright 2012 Yaqiang Wang,
  * yaqiang.wang@gmail.com
  * 
  * This library is free software; you can redistribute it and/or modify it
@@ -90,7 +90,7 @@ public class MIMath {
 
         return new double[]{min, max};
     }
-    
+
     /**
      * Get mininum and maximum values
      *
@@ -275,7 +275,7 @@ public class MIMath {
             right--;
         }
     }
-    
+
     /**
      * Array reverse
      *
@@ -296,7 +296,7 @@ public class MIMath {
             right--;
         }
     }
-    
+
     /**
      * Array reverse
      *
@@ -335,7 +335,7 @@ public class MIMath {
 
         return new double[]{min, max};
     }
-    
+
     /**
      * Get min, max of an array
      *
@@ -420,11 +420,12 @@ public class MIMath {
      */
     public static Extent getLagerExtent(Extent aET, Extent bET) {
         Extent cET = new Extent();
-        if (aET.isNaN())
+        if (aET.isNaN()) {
             return bET;
-        else if (bET.isNaN())
+        } else if (bET.isNaN()) {
             return aET;
-        
+        }
+
         cET.minX = Math.min(aET.minX, bET.minX);
         cET.minY = Math.min(aET.minY, bET.minY);
         cET.maxX = Math.max(aET.maxX, bET.maxX);
@@ -449,36 +450,41 @@ public class MIMath {
 
         return cET;
     }
-    
+
     /**
      * Get extent of the shapes
+     *
      * @param shapes
      * @return Extent
      */
-    public static Extent getExtent(List<? extends Shape> shapes){
-        Extent extent = (Extent)shapes.get(0).getExtent().clone();
+    public static Extent getExtent(List<? extends Shape> shapes) {
+        Extent extent = (Extent) shapes.get(0).getExtent().clone();
         double minx = extent.minX;
         double maxx = extent.maxX;
         double miny = extent.minY;
         double maxy = extent.maxY;
         Extent ext;
-        for (int i = 1; i < shapes.size(); i++){
+        for (int i = 1; i < shapes.size(); i++) {
             ext = shapes.get(i).getExtent();
-            if (minx > ext.minX)
+            if (minx > ext.minX) {
                 minx = ext.minX;
-            if (maxx < ext.maxX)
+            }
+            if (maxx < ext.maxX) {
                 maxx = ext.maxX;
-            if (miny > ext.minY)
+            }
+            if (miny > ext.minY) {
                 miny = ext.minY;
-            if (maxy < ext.maxY)
+            }
+            if (maxy < ext.maxY) {
                 maxy = ext.maxY;
+            }
         }
-        
+
         extent.minX = minx;
         extent.maxX = maxx;
         extent.minY = miny;
         extent.maxY = maxy;
-        
+
         return extent;
     }
 
@@ -666,7 +672,6 @@ public class MIMath {
 //        PointD aPoint = new PointD(x, y);
 //        return pointInPolygon(aPGS, aPoint);
 //    }
-
     /**
      * Judge if a rectangle include another
      *
@@ -719,7 +724,7 @@ public class MIMath {
 
         PointF aP = new PointF((float) x, (float) y);
         return aP;
-    }        
+    }
 
     /**
      * Get decimal number of a double data for ToString() format
@@ -734,16 +739,17 @@ public class MIMath {
 
         double v = aData * 10;
         int dNum = 1;
-        while (v - (int)v != 0){
-            if (dNum > 5)
+        while (v - (int) v != 0) {
+            if (dNum > 5) {
                 break;
+            }
             v = v * 10;
             dNum += 1;
         }
-        
+
         return dNum;
     }
-    
+
     /**
      * Get decimal number of a double data for ToString() format
      *
@@ -756,7 +762,7 @@ public class MIMath {
         }
 
         int dNum;
-        int aE = (int)Math.floor(Math.log10(aData));
+        int aE = (int) Math.floor(Math.log10(aData));
 
         if (aE >= 0) {
             dNum = 2;
@@ -804,30 +810,32 @@ public class MIMath {
 
         return lon;
     }
-    
+
     /**
      * Get value from one dimension double array by index
+     *
      * @param data Data
      * @param idx Index
      * @return Value
      */
-    public static double getValue(double[] data, float idx){
+    public static double getValue(double[] data, float idx) {
         double v = data[0];
-        if (idx == 0)
+        if (idx == 0) {
             return v;
-        
-        for (int i = 1; i < data.length; i++){
+        }
+
+        for (int i = 1; i < data.length; i++) {
             if (idx == i) {
                 v = data[i];
                 break;
-            } else if (idx < i){
+            } else if (idx < i) {
                 v = data[i - 1] + (data[i] - data[i - 1]) * (idx - (i - 1));
                 break;
             }
         }
         return v;
     }
-    
+
     /**
      * Create values by interval
      *
@@ -843,25 +851,26 @@ public class MIMath {
         min = BigDecimalUtil.sub(min, mod);
         int cNum = (int) ((max - min) / interval) + 1;
         int i;
-        
+
         cValues = new double[cNum];
         for (i = 0; i < cNum; i++) {
             cValues[i] = BigDecimalUtil.add(min, BigDecimalUtil.mul(i, interval));
         }
-        
+
         return cValues;
     }
-    
+
     /**
      * Get interval values
+     *
      * @param min Minimum value
      * @param max Maximum value
      * @param n Level number
      * @return Values
      */
-    public static double[] getIntervalValues(double min, double max, int n){
+    public static double[] getIntervalValues(double min, double max, int n) {
         int aD, aE;
-        double  range;
+        double range;
         String eStr;
 
         range = BigDecimalUtil.sub(max, min);
@@ -871,16 +880,16 @@ public class MIMath {
 
         eStr = String.format("%1$E", range);
         aD = Integer.parseInt(eStr.substring(0, 1));
-        aE = (int) Math.floor(Math.log10(range));        
-        while(n > aD){
+        aE = (int) Math.floor(Math.log10(range));
+        while (n > aD) {
             aD = aD * 10;
             aE = aE - 1;
         }
-        double interval = BigDecimalUtil.mul((int)(aD / n), Math.pow(10, aE));
-        
+        double interval = BigDecimalUtil.mul((int) (aD / n), Math.pow(10, aE));
+
         return getIntervalValues(min, max, interval);
     }
-    
+
     /**
      * Create contour values by minimum and maximum values
      *
@@ -889,9 +898,9 @@ public class MIMath {
      * @return Contour values
      */
     public static double[] getIntervalValues(double min, double max) {
-        return (double[])getIntervalValues(min, max, false).get(0);
+        return (double[]) getIntervalValues(min, max, false).get(0);
     }
-    
+
     /**
      * Create contour values by minimum and maximum values
      *
@@ -902,7 +911,7 @@ public class MIMath {
     public static List<Object> getIntervalValues1(double min, double max) {
         return getIntervalValues(min, max, false);
     }
-    
+
     /**
      * Create contour values by minimum and maximum values
      *
@@ -956,14 +965,13 @@ public class MIMath {
             double cd = BigDecimalUtil.pow(10, aE - 1);
             //cDelt = BigDecimalUtil.mul(aD, cDelt);
             cDelt = BigDecimalUtil.mul(5, cd);
-            cNum = (int)(range / cDelt);
-            if (cNum < 5)
-            {
+            cNum = (int) (range / cDelt);
+            if (cNum < 5) {
                 cDelt = BigDecimalUtil.mul(2, cd);
-                cNum = (int)(range / cDelt);
-                if (cNum < 5){
+                cNum = (int) (range / cDelt);
+                if (cNum < 5) {
                     cDelt = BigDecimalUtil.mul(1, cd);
-                    cNum = (int)(range / cDelt);
+                    cNum = (int) (range / cDelt);
                 }
             }
             //newMin = Convert.ToInt32((min + cDelt) / Math.Pow(10, aE - 1)) * Math.Pow(10, aE - 1);
@@ -978,35 +986,36 @@ public class MIMath {
 
         if (newMin + (cNum - 1) * cDelt > max) {
             cNum -= 1;
-        } else if (newMin + (cNum - 1) * cDelt + cDelt < max){
+        } else if (newMin + (cNum - 1) * cDelt + cDelt < max) {
             cNum += 1;
         }
-        
+
         //Get values
-        List <Double> values = new ArrayList<>();     
-        for (i = 0; i < cNum; i++){
+        List<Double> values = new ArrayList<>();
+        for (i = 0; i < cNum; i++) {
             values.add(BigDecimalUtil.add(newMin, BigDecimalUtil.mul(i, cDelt)));
         }
-        
+
         //Extend values
-        if (isExtend){
-            if (values.get(0) > min){
+        if (isExtend) {
+            if (values.get(0) > min) {
                 values.add(0, BigDecimalUtil.sub(newMin, cDelt));
             }
-            if (values.get(values.size() - 1) < max){
+            if (values.get(values.size() - 1) < max) {
                 values.add(BigDecimalUtil.add(values.get(values.size() - 1), cDelt));
             }
         }
 
         double[] cValues = new double[values.size()];
-        for (i = 0; i < values.size(); i++)
+        for (i = 0; i < values.size(); i++) {
             cValues[i] = values.get(i);
-        
+        }
+
         r.add(cValues);
         r.add(cDelt);
         return r;
     }
-    
+
     /**
      * Create log interval values by minimum and maximum values
      *
@@ -1018,10 +1027,10 @@ public class MIMath {
         int i, v;
         int minE = (int) Math.floor(Math.log10(min));
         int maxE = (int) Math.ceil(Math.log10(max));
-        if (min == 0){
+        if (min == 0) {
             minE = maxE - 2;
         }
-        if (max == 0){
+        if (max == 0) {
             maxE = minE + 2;
         }
 
@@ -1034,7 +1043,7 @@ public class MIMath {
 
         return cValues;
     }
-    
+
     /**
      * Create log interval values by minimum and maximum values
      *
@@ -1046,10 +1055,10 @@ public class MIMath {
         int i, v;
         int minE = (int) Math.floor(Math.log10(min));
         int maxE = (int) Math.ceil(Math.log10(max));
-        if (min == 0){
+        if (min == 0) {
             minE = maxE - 2;
         }
-        if (max == 0){
+        if (max == 0) {
             maxE = minE + 2;
         }
 
@@ -1057,14 +1066,54 @@ public class MIMath {
         double vv;
         for (v = minE; v <= maxE; v++) {
             vv = Math.pow(10, v);
-            if (vv >= min && vv <= max)
-            values.add(vv);
+            if (vv >= min && vv <= max) {
+                values.add(vv);
+            }
         }
         double[] cValues = new double[values.size()];
-        for (i = 0; i < values.size(); i++){
+        for (i = 0; i < values.size(); i++) {
             cValues[i] = values.get(i);
         }
 
         return cValues;
+    }
+
+    /**
+     * Convert cartesian to polar coordinate
+     *
+     * @param x X
+     * @param y Y
+     * @return Radius and angle
+     */
+    public static double[] cartesianToPolar(double x, double y) {
+        double r;     // Radius
+        double B;     // Angle in radians
+        r = Math.hypot(x, y);
+        if (y >= 0) {
+            if (x == 0) {
+                B = Math.PI / 2;// 90°
+            } else {
+                B = Math.asin(x / y);
+            }
+        } else if (x == 0) {
+            B = 3 * Math.PI / 2;// 270°
+        } else {
+            B = Math.asin(x / y);
+        }
+        return new double[]{B, r};
+    }
+
+    /**
+     * Convert poar to cartesian coordinate
+     *
+     * @param r Radius
+     * @param B Angle in radians
+     * @return Radius and angle
+     */
+    public static double[] polarToCartesian(double B, double r) {
+        double x = Math.cos(B) * r;
+        double y = Math.sin(B) * r;
+
+        return new double[]{x, y};
     }
 }

@@ -1210,38 +1210,39 @@ public class Axis implements Cloneable {
             int n = 0;
             while (n < this.getTickValues().length) {
                 double value = this.getTickValues()[n];
-                xy = plot.projToScreen(value, plot.getDrawExtent().minY, area);
-                x = xy[0];
-//            if (this.inverse) {
-//                x = area.getWidth() - x;
-//            }
-                x += minx;
-                if (this.location == Location.BOTTOM) {
-                    if (this.insideTick) {
-                        g.draw(new Line2D.Double(x, maxy, x, maxy - len));
-                    } else {
-                        g.draw(new Line2D.Double(x, maxy, x, maxy + len));
-                    }
-                } else if (this.insideTick) {
-                    g.draw(new Line2D.Double(x, miny, x, miny + len));
-                } else {
-                    g.draw(new Line2D.Double(x, miny, x, miny - len));
-                }
 
-                //Draw tick label
-                if (this.drawTickLabel && n < xTickLabels.size()) {
-                    drawStr = xTickLabels.get(n);
-                    dim = new Dimension(metrics.stringWidth(drawStr), metrics.getHeight());
-                    //labx = (float) (x - dim.width / 2);
-                    labx = (float) x;
+                if (value >= this.minValue && value <= this.maxValue) {
+                    //Draw tick line
+                    xy = plot.projToScreen(value, plot.getDrawExtent().minY, area);
+                    x = xy[0];
+                    x += minx;
                     if (this.location == Location.BOTTOM) {
-                        laby = (float) (maxy + len + dim.height * 3 / 4 + space);
+                        if (this.insideTick) {
+                            g.draw(new Line2D.Double(x, maxy, x, maxy - len));
+                        } else {
+                            g.draw(new Line2D.Double(x, maxy, x, maxy + len));
+                        }
+                    } else if (this.insideTick) {
+                        g.draw(new Line2D.Double(x, miny, x, miny + len));
                     } else {
-                        laby = (float) (miny - len - space);
+                        g.draw(new Line2D.Double(x, miny, x, miny - len));
                     }
-                    Draw.drawTickLabel(labx, laby, this.tickLabelFont, drawStr, this.tickLabelColor,
-                            this.tickLabelAngle, g);
-                    //g.drawString(drawStr, labx, laby);
+
+                    //Draw tick label
+                    if (this.drawTickLabel && n < xTickLabels.size()) {
+                        drawStr = xTickLabels.get(n);
+                        dim = new Dimension(metrics.stringWidth(drawStr), metrics.getHeight());
+                        //labx = (float) (x - dim.width / 2);
+                        labx = (float) x;
+                        if (this.location == Location.BOTTOM) {
+                            laby = (float) (maxy + len + dim.height * 3 / 4 + space);
+                        } else {
+                            laby = (float) (miny - len - space);
+                        }
+                        Draw.drawTickLabel(labx, laby, this.tickLabelFont, drawStr, this.tickLabelColor,
+                                this.tickLabelAngle, g);
+                        //g.drawString(drawStr, labx, laby);
+                    }
                 }
                 n += this.getTickLabelGap();
 

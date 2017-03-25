@@ -344,6 +344,8 @@ public class ArrayUtil {
             return a;
         } else if (data instanceof Array) {
             return (Array) data;
+        } else if (data instanceof ArrayList) {
+            return array((List<Object>)data);
         } else {
             return null;
         }
@@ -1154,7 +1156,7 @@ public class ArrayUtil {
             return r;
         }
     }
-    
+
     /**
      * Get sorted array index along an axis
      *
@@ -1166,7 +1168,7 @@ public class ArrayUtil {
     public static Array argSort(Array a, Integer axis) throws InvalidRangeException {
         int n = a.getRank();
         int[] shape = a.getShape();
-        Object v;        
+        Object v;
         if (axis == null) {
             int[] nshape = new int[1];
             nshape[0] = (int) a.getSize();
@@ -1292,6 +1294,52 @@ public class ArrayUtil {
         double min = ArrayMath.getMinimum(a);
         double max = ArrayMath.getMaximum(a);
         double[] bins = MIMath.getIntervalValues(min, max, nbins);
+        return histogram(a, bins);
+    }
+
+    /**
+     * Histogram x/y array
+     *
+     * @param a Data array
+     * @param bins bin edges
+     * @return X/Y arrays
+     */
+    public static List<Array> histogram(Array a, Array bins) {
+        int n = (int) bins.getSize();
+        Array hist = Array.factory(DataType.INT, new int[]{n - 1});
+        double v;
+        for (int i = 0; i < a.getSize(); i++) {
+            v = a.getDouble(i);
+            for (int j = 0; j < n - 1; j++) {
+                if (j == n - 2) {
+                    if (v >= bins.getDouble(j) && v <= bins.getDouble(j + 1)) {
+                        hist.setInt(j, hist.getInt(j) + 1);
+                        break;
+                    }
+                } else {
+                    if (v >= bins.getDouble(j) && v < bins.getDouble(j + 1)) {
+                        hist.setInt(j, hist.getInt(j) + 1);
+                        break;
+                    }
+                }
+            }
+        }
+
+        List<Array> r = new ArrayList<>();
+        r.add(hist);
+        r.add(bins);
+
+        return r;
+    }
+
+    /**
+     * Histogram x/y array
+     *
+     * @param a Data array
+     * @param bins bin edges
+     * @return X/Y arrays
+     */
+    public static List<Array> histogram(Array a, double[] bins) {
         int n = bins.length;
         double delta = bins[1] - bins[0];
         int[] count = new int[n + 1];
@@ -1326,8 +1374,8 @@ public class ArrayUtil {
             }
         }
         List<Array> r = new ArrayList<>();
-        r.add(x);
         r.add(y);
+        r.add(x);
 
         return r;
     }
@@ -2678,7 +2726,7 @@ public class ArrayUtil {
 
         return new Object[]{indices, distances, outBounds};
     }
-    
+
     /**
      * Search sorted list index
      *

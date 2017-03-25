@@ -356,6 +356,14 @@ public class LegendScheme {
     }
     
     /**
+     * Add a legend breaks
+     * @param lb Legend breaks
+     */
+    public void addLegendBreak(List<ColorBreak> lb){
+        this.legendBreaks.addAll(lb);
+    }
+    
+    /**
      * Get legend break by value
      * @param v Value
      * @return Legend break

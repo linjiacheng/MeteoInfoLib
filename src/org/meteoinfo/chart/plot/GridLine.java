@@ -19,6 +19,7 @@ public class GridLine {
     private LineStyles style;
     private boolean drawXLine;
     private boolean drawYLine;
+    private boolean top;
     // </editor-fold>    
     // <editor-fold desc="Constructor">
     /**
@@ -30,6 +31,7 @@ public class GridLine {
         this.style = LineStyles.Dash;
         this.drawXLine = false;
         this.drawYLine = false;
+        this.top = false;
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -111,6 +113,22 @@ public class GridLine {
      */
     public void setDrawYLine(boolean value){
         this.drawYLine = value;
+    }
+    
+    /**
+     * Return if the grid draw on the top of the graph
+     * @return Boolean
+     */
+    public boolean isTop(){
+        return this.top;
+    }
+    
+    /**
+     * Set if the grid draw on the top of the graph
+     * @param value Boolean
+     */
+    public void setTop(boolean value){
+        this.top = value;
     }
     // </editor-fold>
     // <editor-fold desc="Methods">

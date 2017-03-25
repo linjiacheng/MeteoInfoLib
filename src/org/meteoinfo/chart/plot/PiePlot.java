@@ -29,6 +29,13 @@ public class PiePlot extends XY2DPlot {
     // <editor-fold desc="Variables">
     // </editor-fold>
     // <editor-fold desc="Constructor">
+    /**
+     * Constructor
+     */
+    public PiePlot(){
+        super();
+        this.setAutoAspect(false);
+    }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
     // </editor-fold>

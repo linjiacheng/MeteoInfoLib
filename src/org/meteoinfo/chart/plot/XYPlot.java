@@ -671,25 +671,7 @@ public abstract class XYPlot extends Plot {
         this.setGraphArea(graphArea);
 
         //Draw title
-        //float y = 5;
-        float y = (float) graphArea.getY();
-        if (title != null) {
-            g.setColor(title.getColor());
-            g.setFont(title.getFont());
-            //float x = (float) area.getWidth() / 2;
-            float x = (float) (graphArea.getX() + graphArea.getWidth() / 2);
-            //FontMetrics metrics = g.getFontMetrics(title.getFont());
-            //y += metrics.getHeight();
-            y -= this.title.getHeight(g) - 5;
-            //y -= dim.height * 2 / 3;
-            //g.drawString(title.getText(), x, y);
-            for (String text : title.getTexts()) {
-                Dimension dim = Draw.getStringDimension(text, g);
-                Draw.drawString(g, text, x - dim.width / 2, y);
-                g.setFont(title.getFont());
-                y += dim.height + title.getLineSpace();
-            }
-        }
+        float y = this.drawTitle(g, graphArea);
 
 //        //Update legend scheme
 //        this.updateLegendScheme();
@@ -700,11 +682,17 @@ public abstract class XYPlot extends Plot {
             return;
         }
 
-        //Draw graph        
-        this.drawGraph(g, graphArea);
-
-        //Draw grid line
-        this.drawGridLine(g, graphArea);
+        if (this.getGridLine().isTop()){
+            //Draw graph        
+            this.drawGraph(g, graphArea);
+            //Draw grid line
+            this.drawGridLine(g, graphArea);
+        } else {
+            //Draw grid line
+            this.drawGridLine(g, graphArea);
+            //Draw graph        
+            this.drawGraph(g, graphArea);
+        }        
 
         //Draw neat line
         if (this.drawNeatLine) {
@@ -720,36 +708,7 @@ public abstract class XYPlot extends Plot {
         this.drawText(g, graphArea);
 
         //Draw legend
-        if (this.drawLegend && this.getLegend() != null) {
-            Object rendering = g.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-//            switch (this.legend.getPosition()) {
-//                case UPPER_CENTER_OUTSIDE:
-//                case LOWER_CENTER_OUTSIDE:
-//                    this.legend.setPlotOrientation(PlotOrientation.HORIZONTAL);
-//                    break;
-//                default:
-//                    this.legend.setPlotOrientation(PlotOrientation.VERTICAL);
-//                    break;
-//            }
-            if (this.legend.isColorbar()) {
-                if (this.legend.getPlotOrientation() == PlotOrientation.VERTICAL) {
-                    this.legend.setHeight((int) (graphArea.getHeight() * this.legend.getShrink()));
-                } else {
-                    this.legend.setWidth((int) (graphArea.getWidth() * this.legend.getShrink()));
-                }
-            }
-            if (this.legend.getPosition() == LegendPosition.CUSTOM) {
-                this.legend.getLegendDimension(g, new Dimension((int) area.getWidth(), (int) area.getHeight()));
-                float x = (float) (area.getWidth() * this.legend.getX());
-                y = (float) (area.getHeight() * (1 - (this.getLegend().getHeight() / area.getHeight())
-                        - this.getLegend().getY()));
-                this.legend.draw(g, new PointF(x, y));
-            } else {
-                this.drawLegendScheme(g, graphArea, y);
-            }
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, rendering);
-        }
+        this.drawLegend(g, area, graphArea, y);
 
         //Draw wind arrow - quiverkey
         if (this.getWindArrow() != null) {
@@ -1055,6 +1014,24 @@ public abstract class XYPlot extends Plot {
 
         return width;
     }
+    
+    float drawTitle(Graphics2D g, Rectangle2D graphArea){
+        float y = (float) graphArea.getY() - (float)this.getTightInset().getTop();
+        if (title != null) {
+            g.setColor(title.getColor());
+            g.setFont(title.getFont());
+            float x = (float) (graphArea.getX() + graphArea.getWidth() / 2);
+            y += 5;
+            for (String text : title.getTexts()) {
+                Dimension dim = Draw.getStringDimension(text, g);
+                y += dim.height;
+                Draw.drawString(g, text, x - dim.width / 2, y);
+                g.setFont(title.getFont());  
+                y += title.getLineSpace();
+            }
+        }
+        return y;
+    }
 
     void drawGridLine(Graphics2D g, Rectangle2D area) {
         if (!this.gridLine.isDrawXLine() && !this.gridLine.isDrawYLine()) {
@@ -1182,6 +1159,39 @@ public abstract class XYPlot extends Plot {
         }
         g.setColor(text.getColor());
         Draw.drawString(g, text.getText(), x, y);
+    }
+    
+    void drawLegend(Graphics2D g, Rectangle2D area, Rectangle2D graphArea, float y){
+        if (this.drawLegend && this.getLegend() != null) {
+            Object rendering = g.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+//            switch (this.legend.getPosition()) {
+//                case UPPER_CENTER_OUTSIDE:
+//                case LOWER_CENTER_OUTSIDE:
+//                    this.legend.setPlotOrientation(PlotOrientation.HORIZONTAL);
+//                    break;
+//                default:
+//                    this.legend.setPlotOrientation(PlotOrientation.VERTICAL);
+//                    break;
+//            }
+            if (this.legend.isColorbar()) {
+                if (this.legend.getPlotOrientation() == PlotOrientation.VERTICAL) {
+                    this.legend.setHeight((int) (graphArea.getHeight() * this.legend.getShrink()));
+                } else {
+                    this.legend.setWidth((int) (graphArea.getWidth() * this.legend.getShrink()));
+                }
+            }
+            if (this.legend.getPosition() == LegendPosition.CUSTOM) {
+                this.legend.getLegendDimension(g, new Dimension((int) area.getWidth(), (int) area.getHeight()));
+                float x = (float) (area.getWidth() * this.legend.getX());
+                y = (float) (area.getHeight() * (1 - (this.getLegend().getHeight() / area.getHeight())
+                        - this.getLegend().getY()));
+                this.legend.draw(g, new PointF(x, y));
+            } else {
+                this.drawLegendScheme(g, graphArea, y);
+            }
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, rendering);
+        }
     }
 
     void drawLegendScheme(Graphics2D g, Rectangle2D area, float y) {

@@ -5,8 +5,6 @@
  */
 package org.meteoinfo.chart.axis;
 
-import java.awt.font.TextAttribute;
-import java.text.AttributedString;
 import java.util.ArrayList;
 import java.util.List;
 import org.meteoinfo.global.DataConvert;

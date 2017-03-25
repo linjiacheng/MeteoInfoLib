@@ -1080,6 +1080,39 @@ public class ArrayMath {
 
         return r;
     }
+    
+    /**
+     * Return the indices of the elements that are non-zero.
+     * @param a Input array
+     * @return Indices
+     */
+    public static List<Array> nonzero(Array a) {
+        List<List<Integer>> r = new ArrayList<>();
+        int ndim = a.getRank();
+        for (int i = 0; i < ndim; i++){
+            r.add(new ArrayList<Integer>());
+        }
+        Index index = a.getIndex();
+        int[] counter;
+        for (int i = 0; i < a.getSize(); i++){
+            if (a.getDouble(i) != 0) {
+                counter = index.getCurrentCounter();
+                for (int j = 0; j < ndim; j++){
+                    r.get(j).add(counter[j]);
+                }
+            }
+            index.incr();
+        }
+        
+        if (r.get(0).isEmpty())
+            return null;
+        
+        List<Array> ra = new ArrayList<>();
+        for (int i = 0; i < ndim; i++){
+            ra.add(ArrayUtil.array(r.get(i)));
+        }
+        return ra;
+    }
 
     /**
      * Bit and & operation
@@ -1344,6 +1377,36 @@ public class ArrayMath {
 
     // </editor-fold>
     // <editor-fold desc="Circular function">
+    /**
+     * Convert radians to degrees function
+     *
+     * @param a Array a
+     * @return Result array
+     */
+    public static Array toDegrees(Array a) {
+        Array r = Array.factory(a.getDataType() == DataType.DOUBLE ? DataType.DOUBLE : DataType.FLOAT, a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            r.setDouble(i, Math.toDegrees(a.getDouble(i)));
+        }
+
+        return r;
+    }
+    
+    /**
+     * Convert radians to degrees function
+     *
+     * @param a Array a
+     * @return Result array
+     */
+    public static Array toRadians(Array a) {
+        Array r = Array.factory(a.getDataType() == DataType.DOUBLE ? DataType.DOUBLE : DataType.FLOAT, a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            r.setDouble(i, Math.toRadians(a.getDouble(i)));
+        }
+
+        return r;
+    }
+    
     /**
      * Sine function
      *

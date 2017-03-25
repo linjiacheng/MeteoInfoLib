@@ -567,6 +567,7 @@ public class Chart {
             Margin tightInset = plot.getTightInset(g, positionArea);
             plot.setTightInset(tightInset);
             shrink = plot.getPlotShrink();
+            //shrink = tightInset;
         }
 
         return shrink;
