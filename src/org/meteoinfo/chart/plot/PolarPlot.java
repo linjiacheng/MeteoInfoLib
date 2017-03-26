@@ -33,7 +33,8 @@ public class PolarPlot extends XY2DPlot {
 
     // <editor-fold desc="Variables">
     private double radius;
-    private Font tickFont = new Font("Arial", Font.PLAIN, 12);
+    private Font xTickFont = new Font("Arial", Font.PLAIN, 12);
+    private Font yTickFont = new Font("Aria", Font.PLAIN, 12);
     private List<Double> xTickLocations;
     private List<String> xTickLabels;
     private boolean yTickAuto = true;
@@ -79,6 +80,38 @@ public class PolarPlot extends XY2DPlot {
     public void setRadius(double value){
         this.radius = value;
         super.setDrawExtent(new Extent(-this.radius, this.radius, -this.radius, this.radius));
+    }
+    
+    /**
+     * Get x tick font
+     * @return X tick font
+     */
+    public Font getXTickFont(){
+        return this.xTickFont;
+    }
+    
+    /**
+     * Set x tick font
+     * @param value X tick font
+     */
+    public void setXTickFont(Font value){
+        this.xTickFont = value;
+    }
+    
+    /**
+     * Get y tick font
+     * @return Y tick font
+     */
+    public Font getYTickFont(){
+        return this.yTickFont;
+    }
+    
+    /**
+     * Set y tick font
+     * @param value Y tick font
+     */
+    public void setYTickFont(Font value){
+        this.yTickFont = value;
     }
     
     /**
@@ -391,14 +424,14 @@ public class PolarPlot extends XY2DPlot {
             float[] dashPattern = getDashPattern(gridLine.getStyle());
             g.setStroke(new BasicStroke(gridLine.getSize(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER,
                     10.0f, dashPattern, 0.0f));
-        }
-        g.setFont(tickFont);
+        }        
 
         xy = this.projToScreen(0, 0, area);
         double x0 = xy[0] + minx;
         double y0 = xy[1] + miny;
         //Draw straight grid lines
         if (gridLine.isDrawXLine()) {
+            g.setFont(this.xTickFont);
             float shift = 5;
             for (int i = 0; i < this.xTickLocations.size(); i++) {
                 double angle = this.xTickLocations.get(i);
@@ -456,6 +489,7 @@ public class PolarPlot extends XY2DPlot {
 
         //Draw y grid lines
         if (gridLine.isDrawYLine()) {
+            g.setFont(this.yTickFont);
             if (this.yTickAuto)
                 this.yTickLocations = this.getTickValues();
             
