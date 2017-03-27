@@ -113,6 +113,14 @@ public class LegendScheme {
                 this.shapeType = ShapeTypes.Image;
                 break;
         }
+        if (lbs.size() == 1)
+            this.legendType = LegendType.SingleSymbol;
+        else {
+            if (lbs.get(0).getStartValue() == lbs.get(0).getEndValue())
+                this.legendType = LegendType.UniqueValue;
+            else
+                this.legendType = LegendType.GraduatedColor;
+        }
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
