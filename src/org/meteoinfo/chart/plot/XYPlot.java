@@ -797,11 +797,11 @@ public abstract class XYPlot extends Plot {
         left += this.getYAxisWidth(g, space);
 
         //Set right space
-        if (this.getXAxis().isVisible()) {
-            if (this.getXAxis().isDrawTickLabel()) {
-                right += this.getXAxis().getMaxLabelLength(g) / 2;
-            }
-        }
+//        if (this.getXAxis().isVisible()) {
+//            if (this.getXAxis().isDrawTickLabel()) {
+//                right += this.getXAxis().getMaxLabelLength(g) / 2;
+//            }
+//        }
 
         return new Margin(left, right, top, bottom);
     }
@@ -1213,7 +1213,8 @@ public abstract class XYPlot extends Plot {
                 y = (float) area.getHeight() / 2 - dim.height / 2;
                 break;
             case RIGHT_OUTSIDE:
-                x = (float) area.getX() + (float) area.getWidth() + 10;
+                x = (float) area.getX() + (float) area.getWidth() + (float)this.getTightInset().getRight();
+                x = x - dim.width;
                 y = (float) area.getY() + (float) area.getHeight() / 2 - dim.height / 2;
                 break;
             case UPPER_CENTER:

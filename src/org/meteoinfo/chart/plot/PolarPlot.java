@@ -21,6 +21,7 @@ import static org.meteoinfo.drawing.Draw.getDashPattern;
 import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
+import org.meteoinfo.global.util.BigDecimalUtil;
 import org.meteoinfo.legend.LineStyles;
 import org.meteoinfo.shape.Graphic;
 import org.meteoinfo.shape.GraphicCollection;
@@ -41,6 +42,7 @@ public class PolarPlot extends XY2DPlot {
     private List<Double> yTickLocations;
     private List<String> yTickLabels;
     private float yTickLabelPos = 22.5f;
+    private String yTickFormat = "";
 
     // </editor-fold>
     // <editor-fold desc="Constructor">
@@ -195,6 +197,22 @@ public class PolarPlot extends XY2DPlot {
     public void setYTickLabelPos(float value){
         this.yTickLabelPos = value;
     }
+    
+    /**
+     * Get y tick format
+     * @return Y tick format
+     */
+    public String getYTickFormat(){
+        return this.yTickFormat;
+    }
+    
+    /**
+     * Set y tick format
+     * @param value Y tick format
+     */
+    public void setYTickFormat(String value){
+        this.yTickFormat = value;
+    }
     // </editor-fold>
     // <editor-fold desc="Methods">
     /**
@@ -285,11 +303,15 @@ public class PolarPlot extends XY2DPlot {
             }
         }
 
-        int space = 10;
-        bottom += space;
-        top += space;
-        left += space;
-        right += space;
+        int space = 5;
+        if (this.xTickLabels != null && this.xTickLabels.size() > 0) {
+            g.setFont(xTickFont);
+            Dimension dim = Draw.getStringDimension(this.xTickLabels.get(0), g);
+            bottom += dim.height;
+            top += dim.height;
+            left += dim.width + space;
+            right += dim.width + space;
+        }
 
         return new Margin(left, right, top, bottom);
     }
@@ -478,6 +500,7 @@ public class PolarPlot extends XY2DPlot {
                 } else if (angle > 225 && angle < 270) {
                     x -= w;
                     x -= shift;
+                    y += h;
                 } else if (angle > 270) {
                     x += shift;
                     y += h;
@@ -510,8 +533,12 @@ public class PolarPlot extends XY2DPlot {
                     String label;
                     if (this.yTickLabels != null)
                         label = this.yTickLabels.get(i);
-                    else
-                        label = String.valueOf(v);
+                    else {
+                        if (this.yTickFormat.equals("%"))
+                            label = DataConvert.removeTailingZeros(String.valueOf(BigDecimalUtil.mul(v, 100))) + "%";
+                        else
+                            label = DataConvert.removeTailingZeros(String.valueOf(v));
+                    }
                     g.drawString(label, (float)x, (float)y);
                 }
             }

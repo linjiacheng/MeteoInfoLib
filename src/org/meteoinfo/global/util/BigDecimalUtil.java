@@ -22,6 +22,16 @@ public class BigDecimalUtil {
     }
     
     /**
+     * Double to float
+     * @param v Double value
+     * @return Float value
+     */
+    public static float toFloat(double v) {
+        BigDecimal b = new BigDecimal(v);
+        return b.floatValue();
+    }
+    
+    /**
      * Add
      * @param d1 Value1
      * @param d2 Value2

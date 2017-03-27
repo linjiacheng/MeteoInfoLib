@@ -78,6 +78,10 @@ public class ChartLegend {
     private Dimension symbolDimension;
     private boolean extendRect;
     private boolean autoExtendFrac;
+    private boolean drawMinLabel;
+    private boolean drawMaxLabel;
+    private float xshift;
+    private float yshift;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -111,6 +115,10 @@ public class ChartLegend {
         this.symbolDimension = new Dimension(16, 10);
         this.extendRect = true;
         this.autoExtendFrac = false;
+        this.drawMinLabel = false;
+        this.drawMaxLabel = false;
+        this.xshift = 0;
+        this.yshift = 0;
     }
 
     // </editor-fold>
@@ -596,6 +604,70 @@ public class ChartLegend {
             }
         }
     }
+    
+    /**
+     * Get if draw minimum value label
+     * @return Boolean
+     */
+    public boolean isDrawMinLabel(){
+        return this.drawMinLabel;
+    }
+    
+    /**
+     * Set if draw minimum value label
+     * @param value Boolean
+     */
+    public void setDrawMinLabel(boolean value){
+        this.drawMinLabel = value;
+    }
+    
+    /**
+     * Get if draw maximum value label
+     * @return Boolean
+     */
+    public boolean isDrawMaxLabel(){
+        return this.drawMaxLabel;
+    }
+    
+    /**
+     * Set if draw maximum value label
+     * @param value Boolean
+     */
+    public void setDrawMaxLabel(boolean value){
+        this.drawMaxLabel = value;
+    }
+    
+    /**
+     * Get x shift - pixel unit
+     * @return X shift
+     */
+    public float getXShift(){
+        return this.xshift;
+    }
+    
+    /**
+     * Set x shift
+     * @param value X shift 
+     */
+    public void setXShift(float value){
+        this.xshift = value;
+    }
+    
+    /**
+     * Get y shift - pixel unit
+     * @return Y shift
+     */
+    public float getYShift(){
+        return this.yshift;
+    }
+    
+    /**
+     * Set y shift
+     * @param value Y shift 
+     */
+    public void setYShift(float value){
+        this.yshift = value;
+    }
 
     // </editor-fold>
     // <editor-fold desc="Methods">
@@ -608,7 +680,7 @@ public class ChartLegend {
     public void draw(Graphics2D g, PointF point) {
 
         AffineTransform oldMatrix = g.getTransform();
-        g.translate(point.X, point.Y);
+        g.translate(point.X + this.xshift, point.Y + this.yshift);
 
         //Draw background color
         if (this.drawBackground) {
@@ -842,11 +914,16 @@ public class ChartLegend {
         }
 
         int tickGap = this.getTickGap(g);
-        List<Integer> labelIdxs = new ArrayList<>();
-        int sIdx = (bNum % tickGap) / 2;
+        List<Integer> labelIdxs = new ArrayList<>();        
+        int sIdx = (bNum % tickGap) / 2;        
         int labNum = bNum - 1;
         if (aLS.getLegendType() == LegendType.UniqueValue) {
             labNum += 1;
+        } else {
+            if (this.drawMinLabel){
+                sIdx = 0;
+                labNum = bNum;
+            }
         }
         while (sIdx < labNum) {
             labelIdxs.add(sIdx);
@@ -976,6 +1053,7 @@ public class ChartLegend {
             if (this._vBarWidth < 5)
                 labLen = (int)this._vBarWidth;
         }
+        g.setFont(tickFont);
         for (int i = 0; i < bNum; i++) {
             idx = i;
             ColorBreak cb = aLS.getLegendBreaks().get(idx);
@@ -984,6 +1062,7 @@ public class ChartLegend {
             } else {
                 caption = DataConvert.removeTailingZeros(cb.getEndValue().toString());
             }
+            aSF = Draw.getStringDimension(caption, g);
 
             aP.X = _vBarWidth / 2;
             aP.Y = aP.Y - _hBarHeight;
@@ -991,28 +1070,27 @@ public class ChartLegend {
             if (aLS.getLegendType() == LegendType.UniqueValue) {
                 if (labelIdxs.contains(idx)) {
                     sP.X = aP.X + _vBarWidth / 2 + 5;
-                    sP.Y = aP.Y;
-                    FontMetrics metrics = g.getFontMetrics(this.tickFont);
-                    aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());
+                    sP.Y = aP.Y;                    
                     g.setColor(Color.black);
-                    g.setFont(this.tickFont);
-                    //g.drawString(caption, sP.X, sP.Y + aSF.height / 4);
                     Draw.drawString(g, caption, sP.X, sP.Y + aSF.height / 4);
                 }
             } else {
                 if (labelIdxs.contains(idx)) {
-                    //g.setColor(Color.black);
                     sP.X = aP.X + _vBarWidth / 2;
                     sP.Y = aP.Y - _hBarHeight / 2;
                     g.draw(new Line2D.Float(sP.X - labLen, sP.Y, sP.X, sP.Y));
                     sP.X = sP.X + 5;
                     if (i < bNum - 1) {
-                        FontMetrics metrics = g.getFontMetrics(this.tickFont);
-                        aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());
-                        g.setFont(this.tickFont);
-                        //g.drawString(caption, sP.X, sP.Y + aSF.height / 4);
                         Draw.drawString(g, caption, sP.X, sP.Y + aSF.height / 4);
-                    }
+                        if (this.drawMinLabel && i == 0){
+                            caption = DataConvert.removeTailingZeros(cb.getStartValue().toString());
+                            Draw.drawString(g, caption, sP.X, sP.Y + aSF.height / 4 + this._hBarHeight);
+                        }
+                    } else {
+                        if (this.drawMaxLabel){
+                            Draw.drawString(g, caption, sP.X, sP.Y + aSF.height / 4);
+                        }
+                    }                    
                 }
             }
         }
