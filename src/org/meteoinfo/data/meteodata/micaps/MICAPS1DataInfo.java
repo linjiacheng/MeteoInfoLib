@@ -42,6 +42,7 @@ import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.global.util.DateUtil;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
+import ucar.ma2.InvalidRangeException;
 import ucar.nc2.Attribute;
 
 /**
@@ -389,6 +390,11 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
                     r.setFloat(i, v);
                     break;
             }
+        }
+        try {
+            r = r.section(origin, shape, stride);
+        } catch (InvalidRangeException ex) {
+            Logger.getLogger(MICAPS1DataInfo.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         return r;

@@ -369,6 +369,8 @@ public class AWXDataInfo extends DataInfo implements IGridDataInfo, IStationData
                     variables.add(var);
                     break;
                 case 4:
+                    VarList.add("Latitude");
+                    VarList.add("Longitude");
                     VarList.add("Pressure");
                     VarList.add("WindDirection");
                     VarList.add("WindSpeed");
@@ -382,15 +384,21 @@ public class AWXDataInfo extends DataInfo implements IGridDataInfo, IStationData
                     VarList.add("LastRow");
                     VarList.add("LastCol");
                     VarList.add("BrightTemp");
+                    Dimension stdim = new Dimension(DimensionType.Other);
+                    double[] values = new double[this._numDataRecord];
+                    stdim.setValues(values);
+                    this.addDimension(stdim);
                     for (String vName : VarList) {
                         var = new Variable();
                         var.setName(vName);
                         var.setStation(true);
+                        var.setDimension(stdim);
                         variables.add(var);
                     }
 
                     FieldList = new ArrayList<>();
-                    FieldList.addAll(Arrays.asList(new String[]{"Stid", "Longitude", "Latitude"}));
+                    //FieldList.addAll(Arrays.asList(new String[]{"Stid", "Longitude", "Latitude"}));
+                    FieldList.add("Stid");
                     FieldList.addAll(VarList);
                     break;
             }
@@ -577,13 +585,14 @@ public class AWXDataInfo extends DataInfo implements IGridDataInfo, IStationData
         ydim.setValues(y);
         this.setYDimension(ydim);
     }
-    
+
     /**
      * Get global attributes
+     *
      * @return Global attributes
      */
     @Override
-    public List<Attribute> getGlobalAttributes(){
+    public List<Attribute> getGlobalAttributes() {
         return new ArrayList<>();
     }
 
@@ -607,40 +616,46 @@ public class AWXDataInfo extends DataInfo implements IGridDataInfo, IStationData
         //dataInfo += System.getProperty("line.separator") + "Start Time = " + format.format(STime);
         //dataInfo += System.getProperty("line.separator") + "End Time = " + format.format(ETime);
         dataInfo += System.getProperty("line.separator") + "Number of Variables = " + String.valueOf(this.getVariableNum());
-        for (int i = 0; i < this.getVariableNum(); i++){
+        for (int i = 0; i < this.getVariableNum(); i++) {
             dataInfo += System.getProperty("line.separator") + "\t" + this.getVariableNames().get(i);
         }
 
         return dataInfo;
     }
-    
+
     /**
      * Read array data of a variable
-     * 
+     *
      * @param varName Variable name
      * @return Array data
      */
     @Override
-    public Array read(String varName){
+    public Array read(String varName) {
         Variable var = this.getVariable(varName);
         int n = var.getDimNumber();
         int[] origin = new int[n];
         int[] size = new int[n];
         int[] stride = new int[n];
-        for (int i = 0; i < n; i++){
+        for (int i = 0; i < n; i++) {
             origin[i] = 0;
             size[i] = var.getDimLength(i);
             stride[i] = 1;
         }
-        
+
         Array r = read(varName, origin, size, stride);
-        
+
         return r;
     }
 
     @Override
     public Array read(String varName, int[] origin, int[] size, int[] stride) {
-        try {
+        try {                    
+            if (this._productType == 4){
+                Array dataArray = this.read_4(varName);
+                dataArray = dataArray.section(origin, size, stride);
+                return dataArray;
+            }
+            
             Section section = new Section(origin, size, stride);
             Array dataArray = Array.factory(DataType.FLOAT, section.getShape());
             int rangeIdx = 0;
@@ -648,22 +663,23 @@ public class AWXDataInfo extends DataInfo implements IGridDataInfo, IStationData
             Range xRange = section.getRange(rangeIdx);
             IndexIterator ii = dataArray.getIndexIterator();
             switch (_productType) {
-                case 1: {
+                case 1:
                     try {
                         this.readXY_1(yRange, xRange, ii);
                     } catch (IOException ex) {
                         Logger.getLogger(AWXDataInfo.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                }
-                break;
-                case 3: {
+                    break;
+                case 3:
                     try {
                         this.readXY_3(yRange, xRange, ii);
                     } catch (IOException ex) {
                         Logger.getLogger(AWXDataInfo.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                }
-                break;
+                    break;
+                case 4:
+
+                    break;
                 default:
                     return null;
             }
@@ -740,7 +756,56 @@ public class AWXDataInfo extends DataInfo implements IGridDataInfo, IStationData
             }
         }
     }
-    
+
+    private Array read_4(String varName) {
+        try {
+            Array a = Array.factory(DataType.FLOAT, new int[]{this._numDataRecord});
+            RandomAccessFile br = new RandomAccessFile(this.getFileName(), "r");
+            float t;
+            br.seek(_lenRecord * _numHeadRecord);
+            long bP = br.getFilePointer();
+            byte[] bytes = new byte[2];
+            int varIdx = this.VarList.indexOf(varName);
+            for (int i = 0; i < _numDataRecord; i++) {
+                br.seek(bP);
+                if (br.getFilePointer() + _lenRecord > br.length()) {
+                    break;
+                }
+                if (varIdx <= 4) {
+                    br.skipBytes(2 * varIdx);
+                } else {
+                    br.skipBytes(2 * varIdx + 2);
+                }
+                br.read(bytes);
+                t = DataConvert.bytes2Int(bytes, byteOrder);
+                switch (varIdx) {
+                    case 0:
+                    case 1:
+                    case 5:
+                    case 14:
+                        t = t / 100;
+                        break;
+                    case 6:
+                    case 7:
+                        t = t / 1000;
+                        break;
+                }
+                a.setFloat(i, t);
+
+                bP = bP + _lenRecord;
+            }            
+            br.close();
+
+            return a;
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(AWXDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        } catch (IOException ex) {
+            Logger.getLogger(AWXDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+
     /**
      * Get grid data
      *
@@ -749,7 +814,7 @@ public class AWXDataInfo extends DataInfo implements IGridDataInfo, IStationData
      */
     @Override
     public GridArray getGridArray(String varName) {
-        return null;    
+        return null;
     }
 
     @Override
@@ -960,24 +1025,34 @@ public class AWXDataInfo extends DataInfo implements IGridDataInfo, IStationData
                 lat = (float) DataConvert.bytes2Int(bytes, byteOrder) / 100;
                 br.read(bytes);
                 lon = (float) DataConvert.bytes2Int(bytes, byteOrder) / 100;
-                if (varIdx <= 2) {
-                    br.skipBytes(2 * varIdx);
-                } else {
-                    br.skipBytes(2 * varIdx + 2);
-                }
-                br.read(bytes);
-                t = DataConvert.bytes2Int(bytes, byteOrder);
                 switch (varIdx) {
-                    case 3:
-                    case 12:
-                        t = t / 100;
+                    case 0:
+                        t = lat;
                         break;
-                    case 4:
-                    case 5:
-                        t = t / 1000;
+                    case 1:
+                        t = lon;
+                        break;
+                    default:
+                        int idx = varIdx - 2;
+                        if (idx <= 2) {
+                            br.skipBytes(2 * idx);
+                        } else {
+                            br.skipBytes(2 * idx + 2);
+                        }
+                        br.read(bytes);
+                        t = DataConvert.bytes2Int(bytes, byteOrder);
+                        switch (idx) {
+                            case 3:
+                            case 12:
+                                t = t / 100;
+                                break;
+                            case 4:
+                            case 5:
+                                t = t / 1000;
+                                break;
+                        }
                         break;
                 }
-
                 disDataList.add(new double[]{lon, lat, t});
 
                 if (i == 0) {
