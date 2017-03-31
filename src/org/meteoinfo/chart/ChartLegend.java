@@ -1428,7 +1428,16 @@ public class ChartLegend {
                         this.height = (int) (Draw.getStringDimension("test", g).height + limitDim.width * this.shrink / this.aspect + 5);
                         if (this.label != null) {
                             g.setFont(this.labelFont);
-                            this.height += (int) Draw.getStringDimension(label, g).height + 5;
+                            Dimension dim = Draw.getStringDimension(label, g);
+                            switch (this.labelLocation){
+                                case "top":
+                                case "right":
+                                    this.width += dim.width + 10;
+                                    break;
+                                default:
+                                    this.height += (int) Draw.getStringDimension(label, g).height + 5;
+                                    break;
+                            }                            
                         }
                 }
             } else {

@@ -16,6 +16,7 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.meteoinfo.data.ArrayUtil;
+import org.meteoinfo.math.Complex;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
 
@@ -180,22 +181,23 @@ public class LinalgUtil {
      */
     public static Array[] eigen(Array a){
         int m = a.getShape()[0];        
-        int n = a.getShape()[1];
-        Array Wa = Array.factory(DataType.DOUBLE, new int[]{m});
-        Array Va = Array.factory(DataType.DOUBLE, new int[]{m, n});
+        Array Wa = Array.factory(DataType.OBJECT, new int[]{m});
+        Array Va = Array.factory(DataType.DOUBLE, new int[]{m, m});
         double[][] aa = (double[][])ArrayUtil.copyToNDJavaArray(a);
         RealMatrix matrix = new Array2DRowRealMatrix(aa, false);
         EigenDecomposition decomposition = new EigenDecomposition(matrix);
-        RealMatrix W = decomposition.getD();
+        RealMatrix W = decomposition.getD();        
         RealMatrix V = decomposition.getV();
+        double[] rev = decomposition.getRealEigenvalues();
+        double[] iev = decomposition.getImagEigenvalues();
         for (int i = 0; i < m; i++){
-            for (int j = 0; j < n; j++){
-                if (i == j)
-                    Wa.setDouble(m - i - 1, W.getEntry(i, j));
-                Va.setDouble((m - i - 1) * n + j, V.getEntry(i, j));
+            Wa.setObject(i, new Complex(rev[i], iev[i]));
+            RealVector v = decomposition.getEigenvector(i);
+            for (int j = 0; j < v.getDimension(); j++){
+                Va.setDouble(i * m + j, v.getEntry(j));
             }
-        }        
-        
+        }
+
         return new Array[]{Wa, Va};
     }
 }

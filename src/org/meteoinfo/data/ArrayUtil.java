@@ -39,6 +39,7 @@ import org.meteoinfo.jts.geom.Geometry;
 import org.meteoinfo.jts.geom.GeometryFactory;
 import org.meteoinfo.layer.VectorLayer;
 import org.meteoinfo.legend.LegendScheme;
+import org.meteoinfo.math.Complex;
 import org.meteoinfo.math.ListIndexComparator;
 import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
@@ -46,6 +47,7 @@ import org.meteoinfo.projection.ProjectionManage;
 import org.meteoinfo.projection.Reproject;
 import org.meteoinfo.shape.PolygonShape;
 import org.meteoinfo.shape.ShapeTypes;
+import org.python.core.PyComplex;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
 import ucar.ma2.Index;
@@ -380,6 +382,14 @@ public class ArrayUtil {
             Array a = Array.factory(DataType.STRING, new int[]{data.size()});
             for (int i = 0; i < data.size(); i++) {
                 a.setObject(i, data.get(i));
+            }
+            return a;
+        } else if (d0 instanceof PyComplex) {
+            Array a = Array.factory(DataType.OBJECT, new int[]{data.size()});
+            PyComplex d;
+            for (int i = 0; i < data.size(); i++){
+                d = (PyComplex)data.get(i);
+                a.setObject(i, new Complex(d.real, d.imag));
             }
             return a;
         } else if (d0 instanceof List) {

@@ -797,11 +797,11 @@ public abstract class XYPlot extends Plot {
         left += this.getYAxisWidth(g, space);
 
         //Set right space
-//        if (this.getXAxis().isVisible()) {
-//            if (this.getXAxis().isDrawTickLabel()) {
-//                right += this.getXAxis().getMaxLabelLength(g) / 2;
-//            }
-//        }
+        if (this.getXAxis().isVisible()) {
+            if (this.getXAxis().isDrawTickLabel()) {
+                right += this.getXAxis().getMaxLabelLength(g) / 2;
+            }
+        }
 
         return new Margin(left, right, top, bottom);
     }
