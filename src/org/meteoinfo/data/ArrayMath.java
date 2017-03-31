@@ -15,6 +15,7 @@ import org.meteoinfo.global.PointD;
 import org.meteoinfo.layer.VectorLayer;
 import org.meteoinfo.math.Complex;
 import org.meteoinfo.shape.PolygonShape;
+import org.python.core.PyComplex;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
 import ucar.ma2.Index;
@@ -590,6 +591,28 @@ public class ArrayMath {
         }
         return null;
     }
+    
+    /**
+     * Array multiply
+     *
+     * @param a Array a
+     * @param b Complex number b
+     * @return Result array
+     */
+    public static Array mul(Array a, Complex b) {
+        return ArrayMath.mulComplex(a, b);
+    }
+    
+    /**
+     * Array multiply
+     *
+     * @param a Array a
+     * @param b Complex number b
+     * @return Result array
+     */
+    public static Array mul(Array a, PyComplex b) {
+        return ArrayMath.mulComplex(a, new Complex(b.real, b.imag));
+    }
 
     private static Array mulInt(Array a, Array b) {
         Array r = Array.factory(DataType.INT, a.getShape());
@@ -710,6 +733,21 @@ public class ArrayMath {
     }
 
     private static Array mulComplex(Array a, double b) {
+        Array r = Array.factory(DataType.OBJECT, a.getShape());
+        Complex v;
+        for (int i = 0; i < a.getSize(); i++) {
+            v = (Complex)a.getObject(i);
+            if (v.isNaN()) {
+                r.setObject(i, v);
+            } else {
+                r.setObject(i, v.multiply(b));
+            }
+        }
+
+        return r;
+    }
+    
+    private static Array mulComplex(Array a, Complex b) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
         for (int i = 0; i < a.getSize(); i++) {

@@ -134,8 +134,12 @@ public class Complex extends org.apache.commons.math3.complex.Complex {
     public String toString(){
         StringBuilder sb = new StringBuilder();
         sb.append(this.getReal());
-        if (this.getImaginary() >= 0)
+        if (this.getImaginary() > 0)
             sb.append("+");
+        else if (this.getImaginary() == 0){
+            if (!String.valueOf(this.getImaginary()).startsWith("-"))
+                sb.append("+");
+        }
         sb.append(this.getImaginary());
         sb.append("j");
         return sb.toString();

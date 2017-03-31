@@ -181,20 +181,30 @@ public class LinalgUtil {
      */
     public static Array[] eigen(Array a){
         int m = a.getShape()[0];        
-        Array Wa = Array.factory(DataType.OBJECT, new int[]{m});
+        Array Wa;
         Array Va = Array.factory(DataType.DOUBLE, new int[]{m, m});
         double[][] aa = (double[][])ArrayUtil.copyToNDJavaArray(a);
         RealMatrix matrix = new Array2DRowRealMatrix(aa, false);
         EigenDecomposition decomposition = new EigenDecomposition(matrix);
-        RealMatrix W = decomposition.getD();        
-        RealMatrix V = decomposition.getV();
         double[] rev = decomposition.getRealEigenvalues();
         double[] iev = decomposition.getImagEigenvalues();
-        for (int i = 0; i < m; i++){
-            Wa.setObject(i, new Complex(rev[i], iev[i]));
-            RealVector v = decomposition.getEigenvector(i);
-            for (int j = 0; j < v.getDimension(); j++){
-                Va.setDouble(i * m + j, v.getEntry(j));
+        if (decomposition.hasComplexEigenvalues()){
+            Wa = Array.factory(DataType.OBJECT, new int[]{m});
+            for (int i = 0; i < m; i++){
+                Wa.setObject(i, new Complex(rev[i], iev[i]));
+                RealVector v = decomposition.getEigenvector(i);
+                for (int j = 0; j < v.getDimension(); j++){
+                    Va.setDouble(i * m + j, v.getEntry(j));
+                }
+            }
+        } else {
+            Wa = Array.factory(DataType.DOUBLE, new int[]{m});
+            for (int i = 0; i < m; i++){
+                Wa.setDouble(i, rev[i]);
+                RealVector v = decomposition.getEigenvector(i);
+                for (int j = 0; j < v.getDimension(); j++){
+                    Va.setDouble(i * m + j, v.getEntry(j));
+                }
             }
         }
 
