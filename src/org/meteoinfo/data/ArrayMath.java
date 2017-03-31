@@ -179,6 +179,28 @@ public class ArrayMath {
         }
         return null;
     }
+    
+    /**
+     * Array add
+     *
+     * @param a Array a
+     * @param b Complex number b
+     * @return Added array
+     */
+    public static Array add(Array a, Complex b) {
+        return addComplex(a, b);
+    }
+    
+    /**
+     * Array add
+     *
+     * @param a Array a
+     * @param b Complex number b
+     * @return Added array
+     */
+    public static Array add(Array a, PyComplex b) {
+        return addComplex(a, new Complex(b.real, b.imag));
+    }
 
     private static Array addInt(Array a, Array b) {
         Array r = Array.factory(DataType.INT, a.getShape());
@@ -312,6 +334,21 @@ public class ArrayMath {
 
         return r;
     }
+    
+    private static Array addComplex(Array a, Complex b) {
+        Array r = Array.factory(DataType.OBJECT, a.getShape());
+        Complex v;
+        for (int i = 0; i < a.getSize(); i++) {
+            v = (Complex)a.getObject(i);
+            if (v.isNaN()) {
+                r.setObject(i, v);
+            } else {
+                r.setObject(i, v.add(b));
+            }
+        }
+
+        return r;
+    }
 
     /**
      * Array subtract
@@ -363,6 +400,28 @@ public class ArrayMath {
         }
         return null;
     }
+    
+    /**
+     * Array subtract
+     *
+     * @param a Array a
+     * @param b Complex number b
+     * @return Result array
+     */
+    public static Array sub(Array a, Complex b) {
+        return subComplex(a, b);
+    }
+    
+    /**
+     * Array subtract
+     *
+     * @param a Array a
+     * @param b Complex number b
+     * @return Result array
+     */
+    public static Array sub(Array a, PyComplex b) {
+        return subComplex(a, new Complex(b.real, b.imag));
+    }
 
     /**
      * Array subtract
@@ -388,6 +447,28 @@ public class ArrayMath {
                 break;
         }
         return null;
+    }
+    
+    /**
+     * Array subtract
+     *
+     * @param a Array a
+     * @param b Complex number b
+     * @return Result array
+     */
+    public static Array sub(Complex b, Array a) {
+        return subComplex(b, a);
+    }
+    
+    /**
+     * Array subtract
+     *
+     * @param a Array a
+     * @param b Complex number b
+     * @return Result array
+     */
+    public static Array sub(PyComplex b, Array a) {
+        return subComplex(new Complex(b.real, b.imag), a);
     }
 
     private static Array subInt(Array a, Array b) {
@@ -526,6 +607,21 @@ public class ArrayMath {
         return r;
     }
     
+    private static Array subComplex(Array a, Complex b) {
+        Array r = Array.factory(DataType.OBJECT, a.getShape());
+        Complex v;
+        for (int i = 0; i < a.getSize(); i++) {
+            v = (Complex)a.getObject(i);
+            if (v.isNaN()) {
+                r.setObject(i, v);
+            } else {
+                r.setObject(i, v.subtract(b));
+            }
+        }
+
+        return r;
+    }
+    
     private static Array subComplex(double b, Array a) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
@@ -535,6 +631,21 @@ public class ArrayMath {
                 r.setObject(i, v);
             } else {
                 r.setObject(i, v.rSubtract(b));
+            }
+        }
+
+        return r;
+    }
+    
+    private static Array subComplex(Complex b, Array a) {
+        Array r = Array.factory(DataType.OBJECT, a.getShape());
+        Complex v;
+        for (int i = 0; i < a.getSize(); i++) {
+            v = (Complex)a.getObject(i);
+            if (v.isNaN()) {
+                r.setObject(i, v);
+            } else {
+                r.setObject(i, b.subtract(v));
             }
         }
 
@@ -812,6 +923,28 @@ public class ArrayMath {
         }
         return null;
     }
+    
+    /**
+     * Array divide
+     *
+     * @param a Array a
+     * @param b Complex number b
+     * @return Result array
+     */
+    public static Array div(Array a, Complex b) {
+        return divComplex(a, b);
+    }
+    
+    /**
+     * Array divide
+     *
+     * @param a Array a
+     * @param b Complex number b
+     * @return Result array
+     */
+    public static Array div(Array a, PyComplex b) {
+        return divComplex(a, new Complex(b.real, b.imag));
+    }
 
     /**
      * Array divide
@@ -837,6 +970,28 @@ public class ArrayMath {
                 break;
         }
         return null;
+    }
+    
+    /**
+     * Array divide
+     *
+     * @param a Array a
+     * @param b Complex number b
+     * @return Result array
+     */
+    public static Array div(Complex b, Array a) {
+        return divComplex(b, a);
+    }
+    
+    /**
+     * Array divide
+     *
+     * @param a Array a
+     * @param b Complex number b
+     * @return Result array
+     */
+    public static Array div(PyComplex b, Array a) {
+        return divComplex(new Complex(b.real, b.imag), a);
     }
 
     private static Array divInt(Array a, Array b) {
@@ -975,6 +1130,21 @@ public class ArrayMath {
         return r;
     }
     
+    private static Array divComplex(Array a, Complex b) {
+        Array r = Array.factory(DataType.OBJECT, a.getShape());
+        Complex v;
+        for (int i = 0; i < a.getSize(); i++) {
+            v = (Complex)a.getObject(i);
+            if (v.isNaN()) {
+                r.setObject(i, v);
+            } else {
+                r.setObject(i, v.divide(b));
+            }
+        }
+
+        return r;
+    }
+    
     private static Array divComplex(double b, Array a) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
@@ -984,6 +1154,21 @@ public class ArrayMath {
                 r.setObject(i, v);
             } else {
                 r.setObject(i, v.rDivide(b));
+            }
+        }
+
+        return r;
+    }
+    
+    private static Array divComplex(Complex b, Array a) {
+        Array r = Array.factory(DataType.OBJECT, a.getShape());
+        Complex v;
+        for (int i = 0; i < a.getSize(); i++) {
+            v = (Complex)a.getObject(i);
+            if (v.isNaN()) {
+                r.setObject(i, v);
+            } else {
+                r.setObject(i, b.divide(v));
             }
         }
 
@@ -1014,6 +1199,28 @@ public class ArrayMath {
         }
         return null;
     }
+    
+    /**
+     * Array pow function
+     *
+     * @param a Array a
+     * @param b Complex number b
+     * @return Result array
+     */
+    public static Array pow(Array a, Complex b) {
+        return powComplex(a, b);
+    }
+    
+    /**
+     * Array pow function
+     *
+     * @param a Array a
+     * @param b Complex number b
+     * @return Result array
+     */
+    public static Array pow(Array a, PyComplex b) {
+        return powComplex(a, new Complex(b.real, b.imag));
+    }
 
     /**
      * Array pow function
@@ -1038,6 +1245,28 @@ public class ArrayMath {
                 break;
         }
         return null;
+    }
+    
+    /**
+     * Array pow function
+     *
+     * @param a Array a
+     * @param b Complex number b
+     * @return Result array
+     */
+    public static Array pow(Complex b, Array a) {
+        return powComplex(b, a);
+    }
+    
+    /**
+     * Array pow function
+     *
+     * @param a Array a
+     * @param b Complex number b
+     * @return Result array
+     */
+    public static Array pow(PyComplex b, Array a) {
+        return powComplex(new Complex(b.real, b.imag), a);
     }
 
     /**
@@ -1174,6 +1403,21 @@ public class ArrayMath {
         return r;
     }
     
+    private static Array powComplex(Array a, Complex b) {
+        Array r = Array.factory(DataType.OBJECT, a.getShape());
+        Complex v;
+        for (int i = 0; i < a.getSize(); i++) {
+            v = (Complex)a.getObject(i);
+            if (v.isNaN()) {
+                r.setObject(i, v);
+            } else {
+                r.setObject(i, v.pow(b));
+            }
+        }
+
+        return r;
+    }
+    
     private static Array powComplex(double b, Array a) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
@@ -1183,6 +1427,21 @@ public class ArrayMath {
                 r.setObject(i, v);
             } else {
                 r.setObject(i, v.rPow(b));
+            }
+        }
+
+        return r;
+    }
+    
+    private static Array powComplex(Complex b, Array a) {
+        Array r = Array.factory(DataType.OBJECT, a.getShape());
+        Complex v;
+        for (int i = 0; i < a.getSize(); i++) {
+            v = (Complex)a.getObject(i);
+            if (v.isNaN()) {
+                r.setObject(i, v);
+            } else {
+                r.setObject(i, b.pow(v));
             }
         }
 
