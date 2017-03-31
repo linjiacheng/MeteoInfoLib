@@ -1213,8 +1213,9 @@ public abstract class XYPlot extends Plot {
                 y = (float) area.getHeight() / 2 - dim.height / 2;
                 break;
             case RIGHT_OUTSIDE:
-                x = (float) area.getX() + (float) area.getWidth() + (float)this.getTightInset().getRight();
-                x = x - dim.width;
+                //x = (float) area.getX() + (float) area.getWidth() + (float)this.getTightInset().getRight();
+                //x = x - dim.width;
+                x = (float) area.getX() + (float) area.getWidth() + 10;
                 y = (float) area.getY() + (float) area.getHeight() / 2 - dim.height / 2;
                 break;
             case UPPER_CENTER:
