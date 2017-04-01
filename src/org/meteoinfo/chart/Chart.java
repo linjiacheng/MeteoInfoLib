@@ -791,7 +791,7 @@ public class Chart {
      */
     public Plot getPlot(int plotIdx) {
         for (Plot plot : this.plots) {
-            int pIdx = plot.rowIndex * this.rowNum + plot.columnIndex + 1;
+            int pIdx = plot.rowIndex * this.columnNum + plot.columnIndex + 1;
             if (pIdx == plotIdx) {
                 return plot;
             }
