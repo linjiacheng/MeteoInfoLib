@@ -169,18 +169,23 @@ public class MICAPS4DataInfo extends DataInfo implements IGridDataInfo {
             values[0] = DateUtil.toOADate(time);
             tdim.setValues(values);
             this.setTimeDimension(tdim);
+            this.addDimension(tdim);
             Dimension zdim = new Dimension(DimensionType.Z);
             zdim.setValues(new double[]{_level});
+            this.addDimension(zdim);
             Dimension xdim = new Dimension(DimensionType.X);
             xdim.setValues(_xArray);
-            this.setXDimension(xdim);
+            this.setXDimension(xdim);            
             Dimension ydim = new Dimension(DimensionType.Y);
             ydim.setValues(_yArray);
             this.setYDimension(ydim);
+            this.addDimension(ydim);
+            this.addDimension(xdim);
 
             List<Variable> variables = new ArrayList<>();
             Variable var = new Variable();
             var.setName("var");
+            var.setDataType(DataType.FLOAT);
             var.setDimension(tdim);
             var.setDimension(zdim);
             var.setDimension(ydim);
@@ -202,20 +207,20 @@ public class MICAPS4DataInfo extends DataInfo implements IGridDataInfo {
         return new ArrayList<>();
     }
 
-    @Override
-    public String generateInfoText() {
-        String dataInfo;
-        dataInfo = "File Name: " + this.getFileName();
-        dataInfo += System.getProperty("line.separator") + "Description: " + _description;
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:00");
-        dataInfo += System.getProperty("line.separator") + "Time: " + format.format(this.getTimes().get(0));
-        dataInfo += System.getProperty("line.separator") + "Forecast Hours = " + String.valueOf(_preHours)
-                + "  Level = " + String.valueOf(_level);
-        dataInfo += System.getProperty("line.separator") + "Xsize = " + String.valueOf(this.getXDimension().getLength())
-                + "  Ysize = " + String.valueOf(this.getYDimension().getLength());
-
-        return dataInfo;
-    }
+//    @Override
+//    public String generateInfoText() {
+//        String dataInfo;
+//        dataInfo = "File Name: " + this.getFileName();
+//        dataInfo += System.getProperty("line.separator") + "Description: " + _description;
+//        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:00");
+//        dataInfo += System.getProperty("line.separator") + "Time: " + format.format(this.getTimes().get(0));
+//        dataInfo += System.getProperty("line.separator") + "Forecast Hours = " + String.valueOf(_preHours)
+//                + "  Level = " + String.valueOf(_level);
+//        dataInfo += System.getProperty("line.separator") + "Xsize = " + String.valueOf(this.getXDimension().getLength())
+//                + "  Ysize = " + String.valueOf(this.getYDimension().getLength());
+//
+//        return dataInfo;
+//    }
     
     /**
      * Read array data of a variable
