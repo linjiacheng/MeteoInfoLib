@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.meteoinfo.data.analysis.MeteoMath;
+import org.meteoinfo.data.analysis.Statistics;
 import org.meteoinfo.geoprocess.GeoComputation;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
@@ -2828,33 +2829,6 @@ public class ArrayMath {
     }
 
     /**
-     * Compute mean value of an array
-     *
-     * @param a Array a
-     * @param ranges Range list
-     * @return Mean value
-     * @throws ucar.ma2.InvalidRangeException
-     */
-    public static double mean(Array a, List<Range> ranges) throws InvalidRangeException {
-        double mean = 0.0, v;
-        int n = 0;
-        IndexIterator ii = a.getRangeIterator(ranges);
-        while (ii.hasNext()) {
-            v = ii.getDoubleNext();
-            if (!Double.isNaN(v)) {
-                mean += v;
-                n += 1;
-            }
-        }
-        if (n > 0) {
-            mean = mean / n;
-        } else {
-            mean = Double.NaN;
-        }
-        return mean;
-    }
-
-    /**
      * Compute the arithmetic mean arry from a list of arrays
      *
      * @param alist list of arrays
@@ -2883,6 +2857,104 @@ public class ArrayMath {
         }
 
         return r;
+    }
+    
+        /**
+     * Compute mean value of an array
+     *
+     * @param a Array a
+     * @param ranges Range list
+     * @return Mean value
+     * @throws ucar.ma2.InvalidRangeException
+     */
+    public static double mean(Array a, List<Range> ranges) throws InvalidRangeException {
+        double mean = 0.0, v;
+        int n = 0;
+        IndexIterator ii = a.getRangeIterator(ranges);
+        while (ii.hasNext()) {
+            v = ii.getDoubleNext();
+            if (!Double.isNaN(v)) {
+                mean += v;
+                n += 1;
+            }
+        }
+        if (n > 0) {
+            mean = mean / n;
+        } else {
+            mean = Double.NaN;
+        }
+        return mean;
+    }
+    
+    /**
+     * Compute median value of an array along an axis (dimension)
+     *
+     * @param a Array a
+     * @param axis Axis
+     * @return Median value array
+     * @throws ucar.ma2.InvalidRangeException
+     */
+    public static Array median(Array a, int axis) throws InvalidRangeException {
+        int[] dataShape = a.getShape();
+        int[] shape = new int[dataShape.length - 1];
+        int idx;
+        for (int i = 0; i < dataShape.length; i++) {
+            idx = i;
+            if (idx == axis) {
+                continue;
+            } else if (idx > axis) {
+                idx -= 1;
+            }
+            shape[idx] = dataShape[i];
+        }
+        Array r = Array.factory(DataType.DOUBLE, shape);
+        double mean;
+        Index indexr = r.getIndex();
+        int[] current;
+        for (int i = 0; i < r.getSize(); i++) {
+            current = indexr.getCurrentCounter();
+            List<Range> ranges = new ArrayList<>();
+            for (int j = 0; j < dataShape.length; j++) {
+                if (j == axis) {
+                    ranges.add(new Range(0, dataShape[j] - 1, 1));
+                } else {
+                    idx = j;
+                    if (idx > axis) {
+                        idx -= 1;
+                    }
+                    ranges.add(new Range(current[idx], current[idx], 1));
+                }
+            }
+            mean = median(a, ranges);
+            r.setDouble(i, mean);
+            indexr.incr();
+        }
+
+        return r;
+    }
+    
+    /**
+     * Compute median value of an array
+     *
+     * @param a Array a
+     * @param ranges Range list
+     * @return Median value
+     * @throws ucar.ma2.InvalidRangeException
+     */
+    public static double median(Array a, List<Range> ranges) throws InvalidRangeException {
+        Array b = a.section(ranges);
+        double median = Statistics.quantile(b, 2);
+        return median;
+    }
+    
+    /**
+     * Compute median value of an array
+     *
+     * @param a Array a
+     * @return Median value
+     */
+    public static double median(Array a) {
+        return Statistics.quantile(a, 2);
     }
 
     /**

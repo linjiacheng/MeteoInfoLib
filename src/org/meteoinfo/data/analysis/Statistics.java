@@ -114,7 +114,6 @@ public class Statistics {
         } else {
             return aDataList.get(aDataList.size() / 2);
         }
-
     }
 
     /**
