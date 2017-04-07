@@ -1819,8 +1819,10 @@ public class ArrayMath {
         }
         Index index = a.getIndex();
         int[] counter;
+        double v;
         for (int i = 0; i < a.getSize(); i++) {
-            if (a.getDouble(i) != 0) {
+            v = a.getDouble(i);
+            if (!Double.isNaN(v) && v != 0) {
                 counter = index.getCurrentCounter();
                 for (int j = 0; j < ndim; j++) {
                     r.get(j).add(counter[j]);

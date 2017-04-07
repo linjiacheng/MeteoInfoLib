@@ -156,8 +156,7 @@ public class Draw {
      * @param y Y
      */
     public static void drawString(Graphics2D g, String str, float x, float y) {
-        if (isLaTeX(str)) {
-            TeXFormula.registerExternalFont(Character.UnicodeBlock.BASIC_LATIN, g.getFont().getName());
+        if (isLaTeX(str)) {            
             drawLaTeX(g, str, x, y);
         } else {
             g.drawString(str, x, y);
@@ -174,8 +173,7 @@ public class Draw {
      * @param isLaTeX If is LaTeX
      */
     public static void drawString(Graphics2D g, String str, float x, float y, boolean isLaTeX) {
-        if (isLaTeX) {
-            TeXFormula.registerExternalFont(Character.UnicodeBlock.BASIC_LATIN, g.getFont().getName());
+        if (isLaTeX) {            
             drawLaTeX(g, str, x, y);
         } else {
             g.drawString(str, x, y);
@@ -205,6 +203,9 @@ public class Draw {
      * @param y Y
      */
     public static void drawLaTeX(Graphics2D g, String str, float size, float x, float y) {
+        //Set font
+        TeXFormula.registerExternalFont(Character.UnicodeBlock.BASIC_LATIN, g.getFont().getName());
+        
         // create a formula
         TeXFormula formula = new TeXFormula(str);
 
@@ -216,46 +217,7 @@ public class Draw {
         icon.setForeground(g.getColor());
         y = y - (icon.getIconHeight() * 2.0f / 3.f);
         icon.paintIcon(null, g, (int) x, (int) y);
-    }
-    
-    /**
-     * Draw LaTeX string
-     *
-     * @param g Graphics2D
-     * @param str String
-     * @param x X
-     * @param y Y
-     * @param font Font
-     */
-    public static void drawLaTeX(Graphics2D g, String str, float x, float y, Font font) {
-        float size = g.getFont().getSize2D();
-        drawLaTeX(g, str, size, x, y, font);
-    }
-    
-    /**
-     * Draw LaTeX string
-     *
-     * @param g Graphics2D
-     * @param str String
-     * @param size Size
-     * @param x X
-     * @param y Y
-     * @param font Font
-     */
-    public static void drawLaTeX(Graphics2D g, String str, float size, float x, float y, Font font) {
-        // create a formula
-        TeXFormula formula = new TeXFormula(str);
-        TeXFormula.registerExternalFont(Character.UnicodeBlock.BASIC_LATIN, font.getName());
-
-        // render the formla to an icon of the same size as the formula.
-        TeXIcon icon = formula.createTeXIcon(TeXConstants.STYLE_TEXT, size);
-
-        // insert a border 
-        icon.setInsets(new Insets(5, 5, 5, 5));
-        icon.setForeground(g.getColor());
-        y = y - (icon.getIconHeight() * 2.0f / 3.f);
-        icon.paintIcon(null, g, (int) x, (int) y);
-    }
+    }        
 
     // </editor-fold>
     // <editor-fold desc="Point">
@@ -1298,7 +1260,7 @@ public class Draw {
         y = 0;
 
         g.setColor(color);
-        g.setFont(font);
+        //g.setFont(font);
         if (Draw.isLaTeX(text)) {
             //Draw.drawLaTeX(g, text, x - labSize.width / 2, y - labSize.height);
             Draw.drawLaTeX(g, text, x - labSize.width / 2, y + labSize.height / 2);
