@@ -78,7 +78,6 @@ import org.meteoinfo.chart.plot.XY1DPlot;
 import org.meteoinfo.chart.plot.XYPlot;
 import org.meteoinfo.data.DataTypes;
 import org.meteoinfo.data.mapdata.Field;
-import org.meteoinfo.data.mapdata.webmap.TileLoadListener;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.GenericFileFilter;
 import org.meteoinfo.global.PointF;
@@ -98,10 +97,10 @@ import org.w3c.dom.NodeList;
  *
  * @author yaqiang
  */
-public class ChartPanel extends JPanel{
+public class ChartPanel extends JPanel {
 
     // <editor-fold desc="Variables">
-    private final EventListenerList listeners = new EventListenerList();    
+    private final EventListenerList listeners = new EventListenerList();
     private BufferedImage mapBitmap = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
     private BufferedImage tempImage = null;
     private Chart chart;
@@ -197,8 +196,9 @@ public class ChartPanel extends JPanel{
     public ChartPanel(Chart chart) {
         this();
         this.chart = chart;
-        if (this.chart != null)
+        if (this.chart != null) {
             this.chart.setParent(this);
+        }
     }
 
     /**
@@ -231,8 +231,9 @@ public class ChartPanel extends JPanel{
      */
     public void setChart(Chart value) {
         chart = value;
-        if (this.chart != null)
+        if (this.chart != null) {
             chart.setParent(this);
+        }
     }
 
     /**
@@ -342,7 +343,7 @@ public class ChartPanel extends JPanel{
             }
         }
         return null;
-    }        
+    }
 
     /**
      * Paint component
@@ -395,7 +396,7 @@ public class ChartPanel extends JPanel{
                 }
             }
         }
-        
+
         g2.dispose();
     }
 
@@ -433,7 +434,7 @@ public class ChartPanel extends JPanel{
             this.chart.draw(g, chartArea);
         }
     }
-    
+
     public void paintGraphics(Graphics2D g, int width, int height) {
         if (this.chart != null) {
             Rectangle2D chartArea;
@@ -761,10 +762,11 @@ public class ChartPanel extends JPanel{
      */
     public void onUndoZoomClick() {
         XYPlot xyplot;
-        if (this.currentPlot == null)
+        if (this.currentPlot == null) {
             xyplot = (XYPlot) this.chart.getPlots().get(0);
-        else
-            xyplot =(XYPlot) this.currentPlot;
+        } else {
+            xyplot = (XYPlot) this.currentPlot;
+        }
         xyplot.setDrawExtent((Extent) xyplot.getExtent().clone());
 //        if (xyplot instanceof MapPlot) {
 //            MapPlot plot = (MapPlot) xyplot;
@@ -818,7 +820,7 @@ public class ChartPanel extends JPanel{
             }
         }
     }
-    
+
     /**
      * Save image to a picture file
      *
@@ -841,6 +843,29 @@ public class ChartPanel extends JPanel{
      * @throws java.lang.InterruptedException
      */
     public void saveImage(String aFile, Integer sleep) throws FileNotFoundException, PrintException, IOException, InterruptedException {
+        int w, h;
+        if (this.chartSize == null) {
+            w = this.getWidth();
+            h = this.getHeight();
+        } else {
+            w = this.chartSize.width;
+            h = this.chartSize.height;
+        }
+        this.saveImage(aFile, w, h, sleep);
+    }
+
+    /**
+     * Save image to a picture file
+     *
+     * @param aFile File path
+     * @param width Width
+     * @param height Height
+     * @param sleep Sleep seconds for web map layer
+     * @throws java.io.FileNotFoundException
+     * @throws javax.print.PrintException
+     * @throws java.lang.InterruptedException
+     */
+    public void saveImage(String aFile, int width, int height, Integer sleep) throws FileNotFoundException, PrintException, IOException, InterruptedException {
         if (aFile.endsWith(".ps")) {
             DocFlavor flavor = DocFlavor.SERVICE_FORMATTED.PRINTABLE;
             String mimeType = "application/postscript";
@@ -872,8 +897,6 @@ public class ChartPanel extends JPanel{
                 out.close();
             }
         } else if (aFile.endsWith(".eps")) {
-            int width = this.getWidth();
-            int height = this.getHeight();
 //            EPSGraphics2D g = new EPSGraphics2D(0.0, 0.0, width, height);
 //            paintGraphics(g);
 //            FileOutputStream file = new FileOutputStream(aFile);
@@ -889,25 +912,23 @@ public class ChartPanel extends JPanel{
             VectorGraphics g = new PSGraphics2D(new File(aFile), new Dimension(width, height));
             //g.setProperties(p);
             g.startExport();
-            this.paintGraphics(g);
+            //this.paintGraphics(g);
+            this.paintGraphics(g, width, height);
             g.endExport();
             g.dispose();
         } else if (aFile.endsWith(".pdf")) {
-            int width = this.getWidth();
-            int height = this.getHeight();
             VectorGraphics g = new PDFGraphics2D(new File(aFile), new Dimension(width, height));
             //g.setProperties(p);
             g.startExport();
-            this.paintGraphics(g);
+            this.paintGraphics(g, width, height);
             g.endExport();
             g.dispose();
         } else if (aFile.endsWith(".emf")) {
-            int width = this.getWidth();
-            int height = this.getHeight();
             VectorGraphics g = new EMFGraphics2D(new File(aFile), new Dimension(width, height));
             //g.setProperties(p);
             g.startExport();
-            this.paintGraphics(g);
+            //this.paintGraphics(g);
+            this.paintGraphics(g, width, height);
             g.endExport();
             g.dispose();
         } else {
@@ -916,26 +937,24 @@ public class ChartPanel extends JPanel{
 
             String extension = aFile.substring(aFile.lastIndexOf('.') + 1);
             BufferedImage aImage;
-            int w, h;
-            if (this.chartSize == null) {
-                w = this.getWidth();
-                h = this.getHeight();
-            } else {
-                w = this.chartSize.width;
-                h = this.chartSize.height;
-            }
             if (extension.equalsIgnoreCase("bmp")) {
-                aImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+                aImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
             } else {
-                aImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                aImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             }
             Graphics2D g = aImage.createGraphics();
-            paintGraphics(g, w, h);
-            
-            if (sleep != null){
+            paintGraphics(g, width, height);
+
+            if (sleep != null) {
                 Thread.sleep(sleep * 1000);
             }
-            ImageIO.write(aImage, extension, new File(aFile));
+            
+            if (extension.equalsIgnoreCase("jpg")) {
+                BufferedImage newImage = new BufferedImage( aImage.getWidth(), aImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+                newImage.createGraphics().drawImage( aImage, 0, 0, Color.BLACK, null);    
+                ImageIO.write(newImage, extension, new File(aFile));
+            } else
+                ImageIO.write(aImage, extension, new File(aFile));
         }
     }
 
@@ -1043,7 +1062,22 @@ public class ChartPanel extends JPanel{
     }
 
     public boolean saveImage_Jpeg(String file, int dpi) {
-        BufferedImage bufferedImage = this.mapBitmap;
+        int w, h;
+        if (this.chartSize == null) {
+            w = this.getWidth();
+            h = this.getHeight();
+        } else {
+            w = this.chartSize.width;
+            h = this.chartSize.height;
+        }
+        return this.saveImage_Jpeg(file, w, h, dpi);
+    }
+    
+    public boolean saveImage_Jpeg(String file, int width, int height, int dpi) {
+        //BufferedImage bufferedImage = this.mapBitmap;
+        BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = bufferedImage.createGraphics();
+        paintGraphics(g, width, height);
 
         try {
             // Image writer 
@@ -1075,7 +1109,7 @@ public class ChartPanel extends JPanel{
 
         return true;
     }
-    
+
     /**
      * Save image
      *
@@ -1118,7 +1152,53 @@ public class ChartPanel extends JPanel{
 
             setDPI(metadata, dpi);
 
-            if (sleep != null){
+            if (sleep != null) {
+                Thread.sleep(sleep * 1000);
+            }
+            final ImageOutputStream stream = ImageIO.createImageOutputStream(output);
+            try {
+                writer.setOutput(stream);
+                writer.write(metadata, new IIOImage(image, null, metadata), writeParam);
+            } finally {
+                stream.close();
+            }
+            break;
+        }
+    }
+    
+    /**
+     * Save image
+     *
+     * @param fileName File name
+     * @param dpi DPI
+     * @param width Width
+     * @param height Height
+     * @param sleep Sleep seconds for web map layer
+     * @throws IOException
+     * @throws java.lang.InterruptedException
+     */
+    public void saveImage(String fileName, float dpi, int width, int height, Integer sleep) throws IOException, InterruptedException {
+        File output = new File(fileName);
+        output.delete();
+
+        BufferedImage image = this.mapBitmap;
+        String formatName = fileName.substring(fileName.lastIndexOf('.') + 1);
+        if (formatName.equals("jpg")) {
+            formatName = "jpeg";
+        }
+
+        for (Iterator<ImageWriter> iw = ImageIO.getImageWritersByFormatName(formatName); iw.hasNext();) {
+            ImageWriter writer = iw.next();
+            ImageWriteParam writeParam = writer.getDefaultWriteParam();
+            ImageTypeSpecifier typeSpecifier = ImageTypeSpecifier.createFromBufferedImageType(BufferedImage.TYPE_INT_RGB);
+            IIOMetadata metadata = writer.getDefaultImageMetadata(typeSpecifier, writeParam);
+            if (metadata.isReadOnly() || !metadata.isStandardMetadataFormatSupported()) {
+                continue;
+            }
+
+            setDPI(metadata, dpi);
+
+            if (sleep != null) {
                 Thread.sleep(sleep * 1000);
             }
             final ImageOutputStream stream = ImageIO.createImageOutputStream(output);
@@ -1183,16 +1263,17 @@ public class ChartPanel extends JPanel{
 
         return aImage;
     }
-    
+
     /**
      * Check if has web map layer
+     *
      * @return Boolean
      */
-    public boolean hasWebMap(){
-        if (this.chart != null){
+    public boolean hasWebMap() {
+        if (this.chart != null) {
             return this.chart.hasWebMap();
         }
-        
+
         return false;
     }
     // </editor-fold>
