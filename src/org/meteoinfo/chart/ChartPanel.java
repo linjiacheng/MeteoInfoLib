@@ -6,6 +6,7 @@
 package org.meteoinfo.chart;
 
 import java.awt.BasicStroke;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -17,6 +18,8 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
@@ -65,6 +68,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollBar;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 import javax.swing.table.DefaultTableModel;
@@ -211,6 +215,7 @@ public class ChartPanel extends JPanel {
     public ChartPanel(Chart chart, int width, int height) {
         this(chart);
         this.chartSize = new Dimension(width, height);
+        this.setPreferredSize(chartSize);
     }
 
     // </editor-fold>
@@ -361,6 +366,8 @@ public class ChartPanel extends JPanel {
         //this.setBackground(Color.white);
         Graphics2D g2 = (Graphics2D) g;
         g2.drawImage(mapBitmap, null, 0, 0);
+        //g2.drawImage(mapBitmap, null, (int)this._pageLocation.X, (int)this._pageLocation.Y);
+        //g2.drawImage(this._layoutBitmap, _xShift, _yShift, this.getBackground(), this);
 
         //Draw dynamic graphics
         if (this.dragMode) {
@@ -407,8 +414,17 @@ public class ChartPanel extends JPanel {
         if (this.getWidth() < 5 || this.getHeight() < 5) {
             return;
         }
-
-        this.mapBitmap = new BufferedImage(this.getWidth(), this.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        
+        int width, height;
+        if (this.chartSize != null) {
+            height = this.chartSize.height;
+            width = this.chartSize.width;            
+        } else {
+            width = this.getWidth();
+            height = this.getHeight();
+        }
+        
+        this.mapBitmap = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
         if (this.chart != null) {
             Graphics2D g = this.mapBitmap.createGraphics();
@@ -444,8 +460,10 @@ public class ChartPanel extends JPanel {
     }
 
     void onComponentResized(ComponentEvent e) {
-        if (this.chart != null) {
-            this.paintGraphics();
+        if (this.getWidth() > 0 && this.getHeight() > 0) {            
+            if (this.chart != null) {
+                this.paintGraphics();
+            }
         }
     }
 
@@ -948,13 +966,14 @@ public class ChartPanel extends JPanel {
             if (sleep != null) {
                 Thread.sleep(sleep * 1000);
             }
-            
+
             if (extension.equalsIgnoreCase("jpg")) {
-                BufferedImage newImage = new BufferedImage( aImage.getWidth(), aImage.getHeight(), BufferedImage.TYPE_INT_RGB);
-                newImage.createGraphics().drawImage( aImage, 0, 0, Color.BLACK, null);    
+                BufferedImage newImage = new BufferedImage(aImage.getWidth(), aImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+                newImage.createGraphics().drawImage(aImage, 0, 0, Color.BLACK, null);
                 ImageIO.write(newImage, extension, new File(aFile));
-            } else
+            } else {
                 ImageIO.write(aImage, extension, new File(aFile));
+            }
         }
     }
 
@@ -1072,7 +1091,7 @@ public class ChartPanel extends JPanel {
         }
         return this.saveImage_Jpeg(file, w, h, dpi);
     }
-    
+
     public boolean saveImage_Jpeg(String file, int width, int height, int dpi) {
         //BufferedImage bufferedImage = this.mapBitmap;
         BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -1165,7 +1184,7 @@ public class ChartPanel extends JPanel {
             break;
         }
     }
-    
+
     /**
      * Save image
      *

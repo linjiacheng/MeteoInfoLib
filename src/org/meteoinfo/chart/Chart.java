@@ -441,7 +441,8 @@ public class Chart {
             //double zoom = this.getPositionAreaZoom(g, plotArea);
             //Margin tightInset = this.getPlotsTightInset(g, plotArea);
             Margin shrink = this.getPlotsShrink(g, plotArea);
-            for (Plot plot : this.plots) {
+            for (int i = 0; i < this.plots.size(); i++) {
+                Plot plot = this.plots.get(i);
                 //plot.setPositionAreaZoom(zoom);
                 //plot.setTightInset(tightInset);
                 //plot.updatePositionArea();
@@ -574,9 +575,9 @@ public class Chart {
     }
 
     private Margin getPlotsShrink(Graphics2D g, Rectangle2D area) {
-        int i = 0;
         Margin pshrink = null, shrink;
-        for (Plot plot : this.plots) {
+        for (int i = 0; i < this.plots.size(); i++) {
+            Plot plot = this.plots.get(i);
             if (plot.isSubPlot) {
                 double rowHeight = area.getHeight() / this.rowNum;
                 double colWidth = area.getWidth() / this.columnNum;
@@ -603,7 +604,6 @@ public class Chart {
             } else if (pshrink != null) {
                 pshrink = pshrink.extend(shrink);
             }
-            i += 1;
         }
 
         return pshrink;
