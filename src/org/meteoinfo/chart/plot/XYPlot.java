@@ -1063,6 +1063,10 @@ public abstract class XYPlot extends Plot {
             int n = 0;
             while (n < this.getXAxis().getTickValues().length) {
                 double value = this.getXAxis().getTickValues()[n];
+                if (value <= this.getXAxis().getMinValue() || value >= this.getXAxis().getMaxValue()){
+                    n += this.getXAxis().getTickLabelGap();
+                    continue;
+                }
                 xy = this.projToScreen(value, this.drawExtent.minY, area);
                 x = xy[0];
                 if (this.getXAxis().isInverse()) {
@@ -1081,6 +1085,10 @@ public abstract class XYPlot extends Plot {
             int n = 0;
             while (n < this.getYAxis().getTickValues().length) {
                 double value = this.getYAxis().getTickValues()[n];
+                if (value <= this.getYAxis().getMinValue() || value >= this.getYAxis().getMaxValue()){
+                    n += this.getYAxis().getTickLabelGap();
+                    continue;
+                }
                 xy = this.projToScreen(this.drawExtent.minX, value, area);
                 y = xy[1];
                 if (this.getYAxis().isInverse()) {
