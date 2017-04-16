@@ -561,13 +561,12 @@ public class MapPlot extends XYPlot implements IWebMapPanel {
     /**
      * Get position area
      *
-     * @param g Graphic2D
      * @param area Whole area
      * @return Graphic area
      */
     @Override
-    public Rectangle2D getPositionArea(Graphics2D g, Rectangle2D area) {
-        Rectangle2D plotArea = super.getPositionArea(g, area);
+    public Rectangle2D getPositionArea(Rectangle2D area) {
+        Rectangle2D plotArea = super.getPositionArea(area);
         if (!this.isAutoAspect()) {
             MapView mv = this.mapFrame.getMapView();
             mv.setViewExtent((Extent) this.getDrawExtent().clone());

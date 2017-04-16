@@ -48,7 +48,7 @@ public class Chart {
     /**
      * Constructor
      */
-    public Chart(){
+    public Chart() {
         this.drawLegend = false;
         this.background = Color.white;
         this.drawBackground = true;
@@ -59,9 +59,10 @@ public class Chart {
         this.currentPlot = -1;
         this.texts = new ArrayList<>();
     }
-    
+
     /**
      * Constructor
+     *
      * @param parent ChartPanel parent
      */
     public Chart(ChartPanel parent) {
@@ -87,7 +88,7 @@ public class Chart {
         this(parent);
         this.plots.add(plot);
     }
-    
+
     /**
      * Constructor
      *
@@ -112,7 +113,7 @@ public class Chart {
             this.title = new ChartText(title);
         }
     }
-    
+
     /**
      * Constructor
      *
@@ -127,17 +128,18 @@ public class Chart {
     // <editor-fold desc="Get Set Methods">
     /**
      * Set ChartPanel parent
+     *
      * @param value ChartPanel
      */
-    public void setParent(ChartPanel value){
+    public void setParent(ChartPanel value) {
         this.parent = value;
-        for (Plot plot : this.plots){
-            if (plot instanceof MapPlot){
-                ((MapPlot)plot).setParent(value);
+        for (Plot plot : this.plots) {
+            if (plot instanceof MapPlot) {
+                ((MapPlot) plot).setParent(value);
             }
         }
     }
-    
+
     /**
      * Get plot
      *
@@ -446,10 +448,12 @@ public class Chart {
                 //plot.setPositionAreaZoom(zoom);
                 //plot.setTightInset(tightInset);
                 //plot.updatePositionArea();
-                if (plot.isSubPlot || plot.isSameShrink()) {
-                    plot.setPlotShrink(shrink);
-                } else {
-                    plot.setPlotShrink(this.getPlotShrink(g, area, plot));
+                if (plot.isOuterPosActive()){
+                    if (plot.isSubPlot || plot.isSameShrink()) {
+                        plot.setPlotShrink(shrink);
+                    } else {
+                        plot.setPlotShrink(this.getPlotShrink(g, area, plot));
+                    }
                 }
                 if (plot instanceof MapPlot) {
                     ((MapPlot) plot).setAntialias(this.antiAlias);
@@ -457,7 +461,7 @@ public class Chart {
                 plot.draw(g, plotArea);
             }
         }
-        
+
         //Draw text
         drawText(g, area);
 
@@ -497,11 +501,11 @@ public class Chart {
             y = (float) (area.getHeight() * (1 - text.getY()));
             Dimension dim = Draw.getStringDimension(text.getText(), g);
             Rectangle.Double rect = new Rectangle.Double(x, y, dim.getWidth(), dim.getHeight());
-            if (text.isFill()){
+            if (text.isFill()) {
                 g.setColor(text.getBackground());
                 g.fill(rect);
             }
-            if (text.isDrawNeatline()){
+            if (text.isDrawNeatline()) {
                 g.setColor(text.getNeatlineColor());
                 Stroke oldStroke = g.getStroke();
                 g.setStroke(new BasicStroke(text.getNeatlineSize()));
@@ -556,14 +560,14 @@ public class Chart {
             Rectangle2D subPlotArea = new Rectangle2D.Double(x, y, colWidth, rowHeight);
             plot.setOuterPositionArea(subPlotArea);
             plot.updatePosition(area, subPlotArea);
-            Rectangle2D positionArea = plot.getPositionAreaOrigin(g, area);
+            Rectangle2D positionArea = plot.getPositionArea(area);
             plot.setPositionArea(positionArea);
             Margin tightInset = plot.getTightInset(g, positionArea);
             plot.setTightInset(tightInset);
             shrink = plot.getPlotShrink();
         } else {
             plot.setOuterPositionArea(area);
-            Rectangle2D positionArea = plot.getPositionAreaOrigin(g, area);
+            Rectangle2D positionArea = plot.getPositionArea(area);
             plot.setPositionArea(positionArea);
             Margin tightInset = plot.getTightInset(g, positionArea);
             plot.setTightInset(tightInset);
@@ -578,6 +582,26 @@ public class Chart {
         Margin pshrink = null, shrink;
         for (int i = 0; i < this.plots.size(); i++) {
             Plot plot = this.plots.get(i);
+            plot.setOuterPositionArea(plot.getOuterPositionArea(area));
+            Rectangle2D positionArea = plot.getPositionArea(area);
+            plot.setPositionArea(positionArea);
+            Margin tightInset = plot.getTightInset(g, positionArea);
+            plot.setTightInset(tightInset);
+            shrink = plot.getPlotShrink();
+            if (i == 0) {
+                pshrink = shrink;
+            } else if (pshrink != null) {
+                pshrink = pshrink.extend(shrink);
+            }
+        }
+
+        return pshrink;
+    }
+
+    private Margin getPlotsShrink_bak(Graphics2D g, Rectangle2D area) {
+        Margin pshrink = null, shrink;
+        for (int i = 0; i < this.plots.size(); i++) {
+            Plot plot = this.plots.get(i);
             if (plot.isSubPlot) {
                 double rowHeight = area.getHeight() / this.rowNum;
                 double colWidth = area.getWidth() / this.columnNum;
@@ -586,14 +610,14 @@ public class Chart {
                 Rectangle2D subPlotArea = new Rectangle2D.Double(x, y, colWidth, rowHeight);
                 plot.setOuterPositionArea(subPlotArea);
                 plot.updatePosition(area, subPlotArea);
-                Rectangle2D positionArea = plot.getPositionAreaOrigin(g, area);
+                Rectangle2D positionArea = plot.getPositionArea(area);
                 plot.setPositionArea(positionArea);
                 Margin tightInset = plot.getTightInset(g, positionArea);
                 plot.setTightInset(tightInset);
                 shrink = plot.getPlotShrink();
             } else {
                 plot.setOuterPositionArea(area);
-                Rectangle2D positionArea = plot.getPositionAreaOrigin(g, area);
+                Rectangle2D positionArea = plot.getPositionArea(area);
                 plot.setPositionArea(positionArea);
                 Margin tightInset = plot.getTightInset(g, positionArea);
                 plot.setTightInset(tightInset);
@@ -621,12 +645,12 @@ public class Chart {
                 Rectangle2D subPlotArea = new Rectangle2D.Double(x, y, colWidth, rowHeight);
                 plot.setOuterPositionArea(subPlotArea);
                 plot.updatePosition(area, subPlotArea);
-                Rectangle2D positionArea = plot.getPositionArea(g, area);
+                Rectangle2D positionArea = plot.getPositionArea();
                 plot.setPositionArea(positionArea);
                 tightInset = plot.getTightInset(g, positionArea);
             } else {
                 plot.setOuterPositionArea(area);
-                Rectangle2D positionArea = plot.getPositionArea(g, area);
+                Rectangle2D positionArea = plot.getPositionArea();
                 plot.setPositionArea(positionArea);
                 tightInset = plot.getTightInset(g, positionArea);
             }
@@ -652,7 +676,7 @@ public class Chart {
                 Rectangle2D subPlotArea = new Rectangle2D.Double(x, y, colWidth, rowHeight);
                 plot.setOuterPositionArea(subPlotArea);
                 plot.updatePosition(area, subPlotArea);
-                Rectangle2D positionArea = plot.getPositionArea(g, area);
+                Rectangle2D positionArea = plot.getPositionArea();
                 plot.setPositionArea(positionArea);
                 Margin tightInset = plot.getTightInset(g, positionArea);
                 plot.setTightInset(tightInset);
@@ -662,7 +686,7 @@ public class Chart {
                 }
             } else {
                 plot.setOuterPositionArea(area);
-                Rectangle2D positionArea = plot.getPositionArea(g, area);
+                Rectangle2D positionArea = plot.getPositionArea();
                 plot.setPositionArea(positionArea);
                 Margin tightInset = plot.getTightInset(g, positionArea);
                 plot.setTightInset(tightInset);
@@ -685,7 +709,7 @@ public class Chart {
             Rectangle2D subPlotArea = new Rectangle2D.Double(x, y, colWidth, rowHeight);
             plot.setOuterPositionArea(subPlotArea);
             plot.updatePosition(area, subPlotArea);
-            Rectangle2D positionArea = plot.getPositionArea(g, area);
+            Rectangle2D positionArea = plot.getPositionArea();
             plot.setPositionArea(positionArea);
             Margin tightInset = plot.getTightInset(g, positionArea);
             plot.setTightInset(tightInset);
@@ -694,7 +718,7 @@ public class Chart {
             return subPlotArea;
         } else {
             plot.setOuterPositionArea(area);
-            Rectangle2D positionArea = plot.getPositionArea(g, area);
+            Rectangle2D positionArea = plot.getPositionArea();
             plot.setPositionArea(positionArea);
             Margin tightInset = plot.getTightInset(g, positionArea);
             plot.setTightInset(tightInset);
@@ -741,7 +765,7 @@ public class Chart {
     public void clearPlots() {
         this.plots.clear();
     }
-    
+
     /**
      * Clear texts
      */
@@ -764,10 +788,10 @@ public class Chart {
      * @param plot Plot
      */
     public void addPlot(Plot plot) {
-        if (plot instanceof MapPlot){
-            ((MapPlot)plot).setParent(parent);
+        if (plot instanceof MapPlot) {
+            ((MapPlot) plot).setParent(parent);
         }
-        this.plots.add(plot);        
+        this.plots.add(plot);
     }
 
     /**
@@ -776,8 +800,8 @@ public class Chart {
      * @param plot Plot
      */
     public void setPlot(Plot plot) {
-        if (plot instanceof MapPlot){
-            ((MapPlot)plot).setParent(parent);
+        if (plot instanceof MapPlot) {
+            ((MapPlot) plot).setParent(parent);
         }
         this.plots.clear();
         this.plots.add(plot);
@@ -799,20 +823,22 @@ public class Chart {
 
         return null;
     }
-    
+
     /**
      * Check if has web map layer
+     *
      * @return Boolean
      */
-    public boolean hasWebMap(){
+    public boolean hasWebMap() {
         for (Plot plot : this.plots) {
-            if (plot instanceof MapPlot){
-                MapPlot mp = (MapPlot)plot;
-                if (mp.hasWebMapLayer())
+            if (plot instanceof MapPlot) {
+                MapPlot mp = (MapPlot) plot;
+                if (mp.hasWebMapLayer()) {
                     return true;
+                }
             }
         }
-        
+
         return false;
     }
 

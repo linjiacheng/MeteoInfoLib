@@ -378,12 +378,7 @@ public class PolarPlot extends XY2DPlot {
         }
 
         Rectangle2D graphArea;
-        if (this.isAutoPosition()) {
-            graphArea = this.getGraphArea(g, area);
-        } else {
-            //graphArea = this.getPositionArea(this.getPositionAreaZoom());
-            graphArea = this.getPositionArea(g, area);
-        }
+        graphArea = this.getPositionArea();
         this.setGraphArea(graphArea);
 
         //Draw title

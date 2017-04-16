@@ -60,24 +60,24 @@ public abstract class Plot {
     
     /** Row index as a sub plot. */
     public int rowIndex = 0;
-    
-    private boolean autoPosition = false;
-    private boolean sameShrink = false;    
+
+    private boolean outerPosActive = true;
+    private boolean sameShrink = false;        
     
     /**
-     * Get if automaticly set position
+     * Get if Outer position active
      * @return Boolean
      */
-    public boolean isAutoPosition(){
-        return this.autoPosition;
+    public boolean isOuterPosActive(){
+        return this.outerPosActive;
     }
     
     /**
-     * Set if automaticly set position
+     * Set outer position active or not
      * @param value Boolean
      */
-    public void setAutoPosition(boolean value){
-        this.autoPosition = value;
+    public void setOuterPosActive(boolean value){
+        this.outerPosActive = value;
     }
   
     /**
@@ -186,6 +186,17 @@ public abstract class Plot {
         this.outerPosition = value;
     }
     
+    /**
+     * Set position
+     * @param xmin Minimum x
+     * @param ymin Minimum y
+     * @param width Width
+     * @param height Height
+     */
+    public void setOuterPosition(double xmin, double ymin, double width, double height){
+        this.outerPosition = new Rectangle2D.Double(xmin, ymin, width, height);
+    }
+    
     private Rectangle2D outerPositionArea;
     
     /**
@@ -195,6 +206,13 @@ public abstract class Plot {
     public Rectangle2D getOuterPositionArea(){
         return this.outerPositionArea;
     }
+    
+    /**
+     * Get outer position area
+     * @param area Whole area
+     * @return Outer position area
+     */
+    public abstract Rectangle2D getOuterPositionArea(Rectangle2D area);
     
     /**
      * Set outer position area
@@ -279,23 +297,14 @@ public abstract class Plot {
      */
     public void setGraphArea(Rectangle2D value){
         graphArea = value;
-    }
+    }    
     
     /**
      * Get position area
-     * @param g Graphics2D
      * @param figureArea Figure area
      * @return Position area
      */
-    public abstract Rectangle2D getPositionArea(Graphics2D g, Rectangle2D figureArea);
-    
-    /**
-     * Get position origin area
-     * @param g Graphics2D
-     * @param figureArea Figure area
-     * @return Position area
-     */
-    public abstract Rectangle2D getPositionAreaOrigin(Graphics2D g, Rectangle2D figureArea);
+    public abstract Rectangle2D getPositionArea(Rectangle2D figureArea);
     
     /**
      * Get tight inset

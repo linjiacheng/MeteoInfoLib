@@ -662,12 +662,7 @@ public abstract class XYPlot extends Plot {
         //graphArea = this.getGraphArea(g, area);
         //graphArea = this.getPositionArea(g, area);
         Rectangle2D graphArea;
-        if (this.isAutoPosition()) {
-            graphArea = this.getGraphArea(g, area);
-        } else {
-            //graphArea = this.getPositionArea(this.getPositionAreaZoom());
-            graphArea = this.getPositionArea(g, area);
-        }
+        graphArea = this.getPositionArea();
         this.setGraphArea(graphArea);
 
         //Draw title
@@ -865,17 +860,14 @@ public abstract class XYPlot extends Plot {
 
     /**
      * Get position area
-     *
-     * @param g Graphic2D
-     * @param area Whole area
      * @return Position area
      */
     @Override
-    public Rectangle2D getPositionArea(Graphics2D g, Rectangle2D area) {
+    public Rectangle2D getPositionArea() {
         if (this.autoAspect) {
-            return this.getPositionArea();
+            return super.getPositionArea();
         } else {
-            Rectangle2D plotArea = this.getPositionArea();
+            Rectangle2D plotArea = super.getPositionArea();
             double width = this.drawExtent.getWidth();
             double height = this.drawExtent.getHeight();
             if (width / height / aspect > plotArea.getWidth() / plotArea.getHeight()) {
@@ -895,16 +887,31 @@ public abstract class XYPlot extends Plot {
     /**
      * Get position area
      *
-     * @param g Graphic2D
      * @param area Whole area
      * @return Position area
      */
     @Override
-    public Rectangle2D getPositionAreaOrigin(Graphics2D g, Rectangle2D area) {
+    public Rectangle2D getPositionArea(Rectangle2D area) {
         double x = area.getWidth() * this.getPosition().getX() + area.getX();
         double y = area.getHeight() * (1 - this.getPosition().getHeight() - this.getPosition().getY()) + area.getY();
         double w = area.getWidth() * this.getPosition().getWidth();
         double h = area.getHeight() * this.getPosition().getHeight();
+        return new Rectangle2D.Double(x, y, w, h);
+    }
+    
+    /**
+     * Get outer position area
+     *
+     * @param area Whole area
+     * @return Position area
+     */
+    @Override
+    public Rectangle2D getOuterPositionArea(Rectangle2D area) {
+        Rectangle2D rect = this.getOuterPosition();
+        double x = area.getWidth() * rect.getX() + area.getX();
+        double y = area.getHeight() * (1 - rect.getHeight() - rect.getY()) + area.getY();
+        double w = area.getWidth() * rect.getWidth();
+        double h = area.getHeight() * rect.getHeight();
         return new Rectangle2D.Double(x, y, w, h);
     }
 
