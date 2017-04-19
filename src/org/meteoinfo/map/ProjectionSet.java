@@ -847,7 +847,7 @@ public class ProjectionSet {
                         newPoints.add(wPoint);
                     }
                 } catch (Exception e) {
-                    break;
+                    //break;                    
                 }
             }
 
