@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -34,6 +35,7 @@ import java.util.logging.Logger;
 import org.meteoinfo.data.GridArray;
 import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.data.meteodata.arl.ARLDataInfo;
+import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.util.DateUtil;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
@@ -52,6 +54,7 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
 
     private int _pack_flag;
     private int _loc_num;
+    private ByteOrder byteOrder = ByteOrder.BIG_ENDIAN;
     // </editor-fold>
     // <editor-fold desc="Constructor">
     /**
@@ -60,11 +63,36 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
     public HYSPLITConcDataInfo(){
         this.setDataType(MeteoDataType.HYSPLIT_Conc);
     }
+    
+    /**
+     * Constructor
+     * @param bigendian Big endian or not
+     */
+    public HYSPLITConcDataInfo(boolean bigendian){
+        this();
+        if (bigendian)
+            this.byteOrder = ByteOrder.BIG_ENDIAN;
+        else
+            this.byteOrder = ByteOrder.LITTLE_ENDIAN;
+    }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
     // </editor-fold>
     // <editor-fold desc="Methods">
 
+    /**
+     * Set if is big endian
+     *
+     * @param value Boolean
+     */
+    public void setBigEndian(boolean value) {
+        if (value) {
+            byteOrder = ByteOrder.BIG_ENDIAN;
+        } else {
+            byteOrder = ByteOrder.LITTLE_ENDIAN;
+        }
+    }
+    
     @Override
     public void readDataInfo(String fileName) {
         try {
@@ -79,25 +107,61 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
             aBytes = new byte[4];
             br.read(aBytes);
             String Ident = new String(aBytes);
-            int year = br.readInt();
-            int month = br.readInt();
-            int day = br.readInt();
-            int hour = br.readInt();
-            int forecast_hour = br.readInt();
-            _loc_num = br.readInt();
-            _pack_flag = br.readInt();
+            byte[] bytes = new byte[28];
+            br.read(bytes);
+            int start = 0;
+            System.arraycopy(bytes, start, aBytes, 0, 4);
+            //int year = br.readInt();
+            int year = DataConvert.bytes2Int(aBytes, byteOrder);
+            start += 4;
+            System.arraycopy(bytes, start, aBytes, 0, 4);
+            //int month = br.readInt();
+            int month = DataConvert.bytes2Int(aBytes, byteOrder);
+            start += 4;
+            System.arraycopy(bytes, start, aBytes, 0, 4);
+            //int day = br.readInt();
+            int day = DataConvert.bytes2Int(aBytes, byteOrder);
+            start += 4;
+            System.arraycopy(bytes, start, aBytes, 0, 4);
+            //int hour = br.readInt();
+            int hour = DataConvert.bytes2Int(aBytes, byteOrder);
+            start += 4;
+            System.arraycopy(bytes, start, aBytes, 0, 4);
+            //int forecast_hour = br.readInt();
+            int forecast_hour = DataConvert.bytes2Int(aBytes, byteOrder);
+            start += 4;
+            System.arraycopy(bytes, start, aBytes, 0, 4);
+            //_loc_num = br.readInt();
+            _loc_num = DataConvert.bytes2Int(aBytes, byteOrder);
+            start += 4;
+            System.arraycopy(bytes, start, aBytes, 0, 4);
+            //_pack_flag = br.readInt();
+            _pack_flag = DataConvert.bytes2Int(aBytes, byteOrder);
 
             //Record #2
             Object[][] locArray = new Object[8][_loc_num];
+            bytes = new byte[_loc_num * (8 + 32)];
+            br.read(bytes);
+            start = 0;
             for (i = 0; i < _loc_num; i++) {
-                br.skipBytes(8);
-                for (j = 0; j < 4; j++) {
-                    locArray[j][i] = br.readInt();
+                //br.skipBytes(8);
+                start += 8;
+                for (j = 0; j < 4; j++) {                    
+                    //locArray[j][i] = br.readInt();
+                    System.arraycopy(bytes, start, aBytes, 0, 4);
+                    locArray[j][i] = DataConvert.bytes2Int(aBytes, byteOrder);
+                    start += 4;
                 }
                 for (j = 4; j < 7; j++) {
-                    locArray[j][i] = br.readFloat();
+                    //locArray[j][i] = br.readFloat();
+                    System.arraycopy(bytes, start, aBytes, 0, 4);
+                    locArray[j][i] = DataConvert.bytes2Float(aBytes, byteOrder);
+                    start += 4;
                 }
-                locArray[7][i] = br.readInt();
+                //locArray[7][i] = br.readInt();
+                System.arraycopy(bytes, start, aBytes, 0, 4);
+                locArray[7][i] = DataConvert.bytes2Int(aBytes, byteOrder);
+                start += 4;
             }
 
             //Record #3
@@ -107,12 +171,32 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
             } else {
                 br.skipBytes(8);
             }
-            int lat_point_num = br.readInt();
-            int lon_point_num = br.readInt();
-            float lat_delta = br.readFloat();
-            float lon_delta = br.readFloat();
-            float lat_LF = br.readFloat();
-            float lon_LF = br.readFloat();
+            //int lat_point_num = br.readInt();
+            //int lon_point_num = br.readInt();
+            //float lat_delta = br.readFloat();
+            //float lon_delta = br.readFloat();
+            //float lat_LF = br.readFloat();
+            //float lon_LF = br.readFloat();
+            bytes = new byte[24];
+            br.read(bytes);
+            start = 0;
+            System.arraycopy(bytes, start, aBytes, 0, 4);
+            int lat_point_num = DataConvert.bytes2Int(aBytes, byteOrder);
+            start += 4;
+            System.arraycopy(bytes, start, aBytes, 0, 4);
+            int lon_point_num = DataConvert.bytes2Int(aBytes, byteOrder);
+            start += 4;
+            System.arraycopy(bytes, start, aBytes, 0, 4);
+            float lat_delta = DataConvert.bytes2Float(aBytes, byteOrder);
+            start += 4;
+            System.arraycopy(bytes, start, aBytes, 0, 4);
+            float lon_delta = DataConvert.bytes2Float(aBytes, byteOrder);
+            start += 4;
+            System.arraycopy(bytes, start, aBytes, 0, 4);
+            float lat_LF = DataConvert.bytes2Float(aBytes, byteOrder);
+            start += 4;
+            System.arraycopy(bytes, start, aBytes, 0, 4);
+            float lon_LF = DataConvert.bytes2Float(aBytes, byteOrder);
 
             double[] X = new double[lon_point_num];
             double[] Y = new double[lat_point_num];
@@ -135,11 +219,19 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
             this.setYDimension(yDim);
 
             //Record #4
-            br.skipBytes(8);
-            int level_num = br.readInt();
+            br.skipBytes(8);            
+            //int level_num = br.readInt();
+            br.read(aBytes);
+            int level_num = DataConvert.bytes2Int(aBytes, byteOrder);
             double[] heights = new double[level_num];
+            bytes = new byte[level_num * 4];
+            br.read(bytes);
+            start = 0;
             for (i = 0; i < level_num; i++) {
-                heights[i] = br.readInt();
+                //heights[i] = br.readInt();
+                System.arraycopy(bytes, start, aBytes, 0, 4);
+                heights[i] = DataConvert.bytes2Int(aBytes, byteOrder);
+                start += 4;
             }
             Dimension zDim = new Dimension(DimensionType.Z);
             zDim.setValues(heights);
@@ -147,7 +239,9 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
 
             //Record #5
             br.skipBytes(8);
-            int pollutant_num = br.readInt();
+            //int pollutant_num = br.readInt();
+            br.read(aBytes);
+            int pollutant_num = DataConvert.bytes2Int(aBytes, byteOrder);
             List<Variable> variables = new ArrayList<>();
             for (i = 0; i < pollutant_num; i++) {
                 br.read(aBytes);
@@ -172,8 +266,14 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
             do {
                 //Record #6
                 br.skipBytes(8);
+                bytes = new byte[24];
+                br.read(bytes);
+                start = 0;
                 for (i = 0; i < 6; i++) {
-                    sampleTimes[i] = br.readInt();
+                    //sampleTimes[i] = br.readInt();
+                    System.arraycopy(bytes, start, aBytes, 0, 4);
+                    sampleTimes[i] = DataConvert.bytes2Int(aBytes, byteOrder);
+                    start += 4;
                 }
                 year = sampleTimes[0];
                 if (year < 50) {
@@ -187,8 +287,14 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
 
                 //Record #7
                 br.skipBytes(8);
+                bytes = new byte[24];
+                br.read(bytes);
+                start = 0;
                 for (i = 0; i < 6; i++) {
-                    sampleTimes[i] = br.readInt();
+                    //sampleTimes[i] = br.readInt();
+                    System.arraycopy(bytes, start, aBytes, 0, 4);
+                    sampleTimes[i] = DataConvert.bytes2Int(aBytes, byteOrder);
+                    start += 4;
                 }
                 year = sampleTimes[0];
                 if (year < 50) {
@@ -209,26 +315,35 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
                             br.skipBytes(8);
                             br.read(aBytes);
                             aType = new String(aBytes);
-                            aLevel = br.readInt();
-                            aN = br.readInt();
-                            for (k = 0; k < aN; k++) {
-                                if (br.getFilePointer() + 8 > br.length()) {
-                                    break;
-                                }
-                                IP = br.readShort();
-                                JP = br.readShort();
-                                br.skipBytes(4);
-                            }
+                            //aLevel = br.readInt();
+                            br.read(aBytes);
+                            aLevel = DataConvert.bytes2Int(aBytes, byteOrder);
+                            //aN = br.readInt();
+                            br.read(aBytes);
+                            aN = DataConvert.bytes2Int(aBytes, byteOrder);
+//                            for (k = 0; k < aN; k++) {
+//                                if (br.getFilePointer() + 8 > br.length()) {
+//                                    break;
+//                                }
+//                                //IP = br.readShort();
+//                                //JP = br.readShort();
+//                                //br.skipBytes(4);
+//                                br.skipBytes(8);
+//                            }
+                            br.skipBytes(aN * 8);
                         } else {
                             br.skipBytes(8);
                             br.read(aBytes);
                             aType = new String(aBytes);
-                            aLevel = br.readInt();
-                            for (JP = 0; JP < lat_point_num; JP++) {
-                                for (IP = 0; IP < lon_point_num; IP++) {
-                                    br.skipBytes(4);
-                                }
-                            }
+                            //aLevel = br.readInt();
+                            br.read(aBytes);
+                            aLevel = DataConvert.bytes2Int(aBytes, byteOrder);
+//                            for (JP = 0; JP < lat_point_num; JP++) {
+//                                for (IP = 0; IP < lon_point_num; IP++) {
+//                                    br.skipBytes(4);
+//                                }
+//                            }
+                            br.skipBytes(lat_point_num * lon_point_num * 4);
                         }
                     }
                 }
@@ -397,6 +512,9 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
             int aLevel, aN, IP, JP;
             String aType;
             double aConc;
+            byte[] bytes;
+            byte[] sbytes = new byte[2];
+            int start = 0;
             for (t = 0; t < this.getTimeNum(); t++) {
                 br.skipBytes(64);
 
@@ -410,15 +528,31 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
                                 br.skipBytes(8);
                                 br.read(aBytes);
                                 aType = new String(aBytes);
-                                aLevel = br.readInt();
-                                aN = br.readInt();
+                                //aLevel = br.readInt();
+                                br.read(aBytes);
+                                aLevel = DataConvert.bytes2Int(aBytes, byteOrder);
+                                //aN = br.readInt();
+                                br.read(aBytes);
+                                aN = DataConvert.bytes2Int(aBytes, byteOrder);
+                                bytes = new byte[aN * 8];
+                                br.read(bytes);
+                                start = 0;
                                 for (k = 0; k < aN; k++) {
-                                    if (br.getFilePointer() + 8 > br.length()) {
-                                        break;
-                                    }
-                                    IP = br.readShort();
-                                    JP = br.readShort();
-                                    aConc = br.readFloat();
+//                                    if (br.getFilePointer() + 8 > br.length()) {
+//                                        break;
+//                                    }
+                                    //IP = br.readShort();
+                                    //JP = br.readShort();
+                                    //aConc = br.readFloat();
+                                    System.arraycopy(bytes, start, sbytes, 0, 2);
+                                    IP = DataConvert.bytes2Short(sbytes, byteOrder);
+                                    start += 2;
+                                    System.arraycopy(bytes, start, sbytes, 0, 2);                                    
+                                    JP = DataConvert.bytes2Short(sbytes, byteOrder);
+                                    start += 2;
+                                    System.arraycopy(bytes, start, aBytes, 0, 4);
+                                    aConc = DataConvert.bytes2Float(aBytes, byteOrder);
+                                    start += 4;
                                     if (IP >= 0 && IP < xNum && JP >= 0 && JP < yNum) {
                                         dataArray[IP][JP] = aConc;
                                     }
@@ -427,10 +561,18 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
                                 br.skipBytes(8);
                                 br.read(aBytes);
                                 aType = new String(aBytes);
-                                aLevel = br.readInt();
+                                //aLevel = br.readInt();
+                                br.read(aBytes);
+                                aLevel = DataConvert.bytes2Int(aBytes, byteOrder);
+                                bytes = new byte[yNum * xNum * 4];
+                                br.read(bytes);
+                                start = 0;
                                 for (JP = 0; JP < yNum; JP++) {
                                     for (IP = 0; IP < xNum; IP++) {
-                                        aConc = br.readFloat();
+                                        //aConc = br.readFloat();
+                                        System.arraycopy(bytes, start, aBytes, 0, 4);
+                                        aConc = DataConvert.bytes2Float(aBytes, byteOrder);
+                                        start += 4;
                                         dataArray[IP][JP] = aConc;
                                     }
                                 }
@@ -443,26 +585,34 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
                                 br.skipBytes(8);
                                 br.read(aBytes);
                                 aType = new String(aBytes);
-                                aLevel = br.readInt();
-                                aN = br.readInt();
-                                for (k = 0; k < aN; k++) {
-                                    if (br.getFilePointer() + 8 > br.length()) {
-                                        break;
-                                    }
-                                    IP = br.readShort();
-                                    JP = br.readShort();
-                                    br.skipBytes(4);
-                                }
+                                //aLevel = br.readInt();
+                                br.read(aBytes);
+                                aLevel = DataConvert.bytes2Int(aBytes, byteOrder);
+                                //aN = br.readInt();
+                                br.read(aBytes);
+                                aN = DataConvert.bytes2Int(aBytes, byteOrder);
+//                                for (k = 0; k < aN; k++) {
+//                                    if (br.getFilePointer() + 8 > br.length()) {
+//                                        break;
+//                                    }
+//                                    IP = br.readShort();
+//                                    JP = br.readShort();
+//                                    br.skipBytes(4);
+//                                }
+                                br.skipBytes(aN * 8);
                             } else {
                                 br.skipBytes(8);
                                 br.read(aBytes);
                                 aType = new String(aBytes);
-                                aLevel = br.readInt();
-                                for (JP = 0; JP < yNum; JP++) {
-                                    for (IP = 0; IP < xNum; IP++) {
-                                        br.skipBytes(4);
-                                    }
-                                }
+                                //aLevel = br.readInt();
+                                br.read(aBytes);
+                                aLevel = DataConvert.bytes2Int(aBytes, byteOrder);
+//                                for (JP = 0; JP < yNum; JP++) {
+//                                    for (IP = 0; IP < xNum; IP++) {
+//                                        br.skipBytes(4);
+//                                    }
+//                                }
+                                br.skipBytes(yNum * xNum * 4);
                             }
                         }
                     }

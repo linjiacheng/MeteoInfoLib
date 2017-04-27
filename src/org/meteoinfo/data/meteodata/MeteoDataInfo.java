@@ -622,6 +622,23 @@ public class MeteoDataInfo {
         //Get data info text
         _infoText = aDataInfo.generateInfoText();
     }
+    
+    /**
+     * Open HYSPLIT concentration grid data
+     *
+     * @param aFile File path
+     * @param bigendian Big endian or not
+     */
+    public void openHYSPLITConcData(String aFile, boolean bigendian) {
+        HYSPLITConcDataInfo aDataInfo = new HYSPLITConcDataInfo(bigendian);
+        aDataInfo.readDataInfo(aFile);
+        _dataInfo = aDataInfo;
+        //ProjInfo = aDataInfo.projInfo;
+        //IsLonLat = aDataInfo.isLatLon;
+
+        //Get data info text
+        _infoText = aDataInfo.generateInfoText();
+    }
 
     /**
      * Open HYSPLIT trajectory data
