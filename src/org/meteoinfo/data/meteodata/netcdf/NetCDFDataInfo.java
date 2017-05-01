@@ -54,6 +54,9 @@ import ucar.ma2.Section;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.NetcdfFileWriter;
 import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.grib.collection.Grib1Iosp;
+import ucar.nc2.grib.collection.Grib2Iosp;
+import ucar.nc2.iosp.IOServiceProvider;
 
 /**
  *
@@ -176,6 +179,35 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
         try {
             //ncfile = NetcdfFile.open(fileName);
             ncfile = NetcdfDataset.openFile(fileName, null);
+            readDataInfo();
+        } catch (IOException ex) {
+            Logger.getLogger(NetCDFDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    /**
+     * Read data info for mixed GRIB-1 and GRIB-2 data file
+     * @param fileName File name
+     * @param mdt Meteo data type
+     */
+    public void readDataInfo(String fileName, MeteoDataType mdt) {
+        this.setFileName(fileName);
+        String iospClassName = "ucar.nc2.grib.collection.Grib2Iosp";
+        switch (mdt){
+            case GRIB1:
+                iospClassName = "ucar.nc2.grib.collection.Grib1Iosp";
+                break;
+        }
+        try {
+            ncfile = NetcdfFile.open(fileName, iospClassName, 0, null, null);
+            readDataInfo();
+        } catch (ClassNotFoundException | IllegalAccessException | InstantiationException | IOException ex) {
+            Logger.getLogger(NetCDFDataInfo.class.getName()).log(Level.SEVERE, null, ex);
+        }        
+    }
+    
+    private void readDataInfo() {
+        try {
             _fileTypeStr = ncfile.getFileTypeDescription();
             _fileTypeId = ncfile.getFileTypeId();
 //            if (_fileTypeId.equals("GRIB2")){

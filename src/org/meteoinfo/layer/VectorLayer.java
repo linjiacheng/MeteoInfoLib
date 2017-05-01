@@ -580,13 +580,14 @@ public class VectorLayer extends MapLayer {
     // <editor-fold desc="Shape">
     /**
      * Get a shape by index
+     *
      * @param idx Shape index
      * @return Shape
      */
-    public Shape getShape(int idx){
+    public Shape getShape(int idx) {
         return this._shapeList.get(idx);
     }
-    
+
     /**
      * Add a shape
      *
@@ -1391,6 +1392,63 @@ public class VectorLayer extends MapLayer {
     }
 
     /**
+     * Get convex hull of the shapes
+     *
+     * @param onlySel If only buffer selected shapes
+     * @param isMerge If merge or not
+     * @return Result layer
+     */
+    public VectorLayer convexhull(boolean onlySel, boolean isMerge) {
+        List<Shape> shapes = new ArrayList<>();
+        if (onlySel) {
+            for (Shape aShape : this._shapeList) {
+                if (aShape.isSelected()) {
+                    shapes.add(aShape);
+                }
+            }
+        } else {
+            shapes = (List<Shape>) this._shapeList;
+        }
+
+        VectorLayer newLayer = new VectorLayer(ShapeTypes.Polygon);
+        newLayer.setProjInfo(this.getProjInfo());
+
+        if (shapes.size() == 1) {
+            Shape rshape = shapes.get(0).convexHull();
+            try {
+                newLayer.editAddShape(rshape);
+            } catch (Exception ex) {
+                Logger.getLogger(VectorLayer.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else if (isMerge) {
+            Geometry[] geos = new Geometry[shapes.size()];
+            for (int i = 0; i < geos.length; i++) {
+                geos[i] = shapes.get(i).toGeometry();
+            }
+            GeometryFactory factory = new GeometryFactory();
+            Geometry gs = factory.createGeometryCollection(geos);
+            Geometry ch = gs.convexHull();
+            Shape rshape = new PolygonShape(ch);
+            try {
+                newLayer.editAddShape(rshape);
+            } catch (Exception ex) {
+                Logger.getLogger(VectorLayer.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            for (Shape shape : shapes) {
+                Shape rshape = shape.convexHull();
+                try {
+                    newLayer.editAddShape(rshape);
+                } catch (Exception ex) {
+                    Logger.getLogger(VectorLayer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+
+        return newLayer;
+    }
+
+    /**
      * Clip the layer by a clipping layer
      *
      * @param clipLayer Clipping layer
@@ -1951,9 +2009,10 @@ public class VectorLayer extends MapLayer {
                 handler.characters(str.toCharArray(), 0, str.length());
                 handler.endElement("", "", "color");    //color
                 handler.startElement("", "", "width", atts);
-                str = String.valueOf((int)pgb.getOutlineSize());
-                if (!pgb.isDrawOutline())
+                str = String.valueOf((int) pgb.getOutlineSize());
+                if (!pgb.isDrawOutline()) {
                     str = "0";
+                }
                 handler.characters(str.toCharArray(), 0, str.length());
                 handler.endElement("", "", "width");
                 handler.endElement("", "", "LineStyle");    //LineStyle
@@ -2461,7 +2520,7 @@ public class VectorLayer extends MapLayer {
                 }
                 break;
             case GraduatedColor:
-                if (!ls.isGeometry()){
+                if (!ls.isGeometry()) {
                     shapeIdx = 0;
                     for (Shape aShape : this.getShapes()) {
                         aShape.setLegendIndex(-1);
@@ -2634,7 +2693,7 @@ public class VectorLayer extends MapLayer {
         aLayer.setExpanded(this.isExpanded());
         aLayer.setAvoidCollision(this._avoidCollision);
         aLayer.setMaskout(this.isMaskout());
-        aLayer.setTag(this.getTag());        
+        aLayer.setTag(this.getTag());
 
         return aLayer;
     }

@@ -717,6 +717,22 @@ public class MeteoDataInfo {
         _dataInfo = aDataInfo;
         _infoText = aDataInfo.generateInfoText();
     }
+    
+    /**
+     * Open GRIB data by predifined version - for mixed GRIB-1 and GRIB-2 data file.
+     *
+     * @param fileName File path
+     * @param version GRIB data version: 1 or 2.
+     */
+    public void openGRIBData(String fileName, int version) {
+        NetCDFDataInfo aDataInfo = new NetCDFDataInfo();
+        MeteoDataType mdt = MeteoDataType.GRIB2;
+        if (version == 1)
+            mdt = MeteoDataType.GRIB1;
+        aDataInfo.readDataInfo(fileName, mdt);
+        _dataInfo = aDataInfo;
+        _infoText = aDataInfo.generateInfoText();
+    }
 
     /**
      * Open Lon/Lat station data
