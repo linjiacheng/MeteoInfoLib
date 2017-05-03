@@ -1559,12 +1559,36 @@ public class VectorLayer extends MapLayer {
     }
 
     /**
+     * Intersection the layer by another layer
+     *
+     * @param ilayer Intersection layer
+     * @param onlySel Only selected shapes in this layer
+     * @param onlySelOther Only selected shapes in
+     * @return Result layer
+     */
+    public VectorLayer intersection(VectorLayer ilayer, boolean onlySel, boolean onlySelOther) {
+        List<PolygonShape> ishapes = new ArrayList<>();
+        if (onlySelOther){
+            for (Shape shape : ilayer.getSelectedShapes()){
+                ishapes.add((PolygonShape)shape);
+            }
+        } else {
+            for (Shape shape : ilayer.getShapes()){
+                ishapes.add((PolygonShape)shape);
+            }
+        }
+        
+        return intersection(ishapes, onlySel);
+    }
+
+    /**
      * Intersection the layer by polygons
      *
-     * @param clipPolys Clipping polygons
-     * @return Clipped result layer
+     * @param clipPolys Intersection polygons
+     * @param onlySel Only selected shapes
+     * @return Result layer
      */
-    public VectorLayer intersection(List<PolygonShape> clipPolys) {
+    public VectorLayer intersection(List<PolygonShape> clipPolys, boolean onlySel) {
         VectorLayer newLayer = (VectorLayer) this.cloneValue();
         DataTable aTable = new DataTable();
         for (DataColumn aDC : this.getAttributeTable().getTable().getColumns()) {
@@ -1573,28 +1597,34 @@ public class VectorLayer extends MapLayer {
         }
 
         newLayer.setShapes(new ArrayList<Shape>());
-        for (PolygonShape aPGS : clipPolys) {
-            for (int i = 0; i < this.getShapeNum(); i++) {
-                Shape bShape = this.getShapes().get(i);
+        for (int i = 0; i < this.getShapeNum(); i++) {
+            Shape bShape = this.getShapes().get(i);
+            if (onlySel) {
+                if (bShape.isSelected()) {
+                    DataRow aDR = this.getAttributeTable().getTable().getRows().get(i);
+                    for (PolygonShape aPGS : clipPolys) {
+                        Shape clipShape = bShape.intersection(aPGS);
+                        if (clipShape != null) {
+                            newLayer.addShape(clipShape);
+                            try {
+                                aTable.addRow((DataRow) aDR.clone());
+                            } catch (Exception ex) {
+                                Logger.getLogger(VectorLayer.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+                    }
+                }
+            } else {
                 DataRow aDR = this.getAttributeTable().getTable().getRows().get(i);
-//                for (Polygon aPolygon : aPGS.getPolygons()) {
-//                    Shape clipShape = GeoComputation.clipShape(bShape, aPolygon.getOutLine());
-//                    if (clipShape != null) {
-//                        newLayer.addShape(clipShape);
-//                        try {
-//                            aTable.addRow((DataRow) aDR.clone());
-//                        } catch (Exception ex) {
-//                            Logger.getLogger(VectorLayer.class.getName()).log(Level.SEVERE, null, ex);
-//                        }
-//                    }
-//                }
-                Shape clipShape = bShape.intersection(aPGS);
-                if (clipShape != null) {
-                    newLayer.addShape(clipShape);
-                    try {
-                        aTable.addRow((DataRow) aDR.clone());
-                    } catch (Exception ex) {
-                        Logger.getLogger(VectorLayer.class.getName()).log(Level.SEVERE, null, ex);
+                for (PolygonShape aPGS : clipPolys) {
+                    Shape clipShape = bShape.intersection(aPGS);
+                    if (clipShape != null) {
+                        newLayer.addShape(clipShape);
+                        try {
+                            aTable.addRow((DataRow) aDR.clone());
+                        } catch (Exception ex) {
+                            Logger.getLogger(VectorLayer.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                     }
                 }
             }
