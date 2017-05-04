@@ -25,6 +25,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.RectangularShape;
+import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,6 +59,7 @@ import org.meteoinfo.shape.PolygonShape;
 import org.meteoinfo.shape.Polyline;
 import org.meteoinfo.shape.PolylineErrorShape;
 import org.meteoinfo.shape.PolylineShape;
+import org.meteoinfo.shape.RectangleShape;
 import org.meteoinfo.shape.Shape;
 import org.meteoinfo.shape.ShapeTypes;
 import org.meteoinfo.shape.WindArrow;
@@ -223,6 +226,9 @@ public class XY2DPlot extends XYPlot {
                         for (Polygon poly : ((PolygonShape) shape).getPolygons()) {
                             drawPolygon(g, poly, (PolygonBreak) cb, false, area);
                         }
+                        break;
+                    case Rectangle:
+                        this.drawRectangle(g, (RectangleShape) shape, (PolygonBreak) cb, false, area);
                         break;
                     case ARC:
                         this.drawArc(g, (ArcShape) shape, (PolygonBreak) cb, area, 5);
@@ -616,6 +622,49 @@ public class XY2DPlot extends XYPlot {
         }
 
         return rPoints;
+    }
+    
+    private void drawRectangle(Graphics2D g, RectangleShape rs, PolygonBreak aPGB,
+            boolean isSelected, Rectangle2D area) {
+        Extent extent = rs.getExtent();
+        double[] sXY;
+        sXY = projToScreen(extent.minX, extent.minY + extent.getHeight(), area);
+        double x = sXY[0];
+        double y = sXY[1];
+        double width = this.projXLength(extent.getWidth(), area);
+        double height = this.projYLength(extent.getHeight(), area);
+        RectangularShape rshape;
+        if (rs.isRound())
+            rshape = new RoundRectangle2D.Double(x, y, width, height, width * rs.getRoundX(), height * rs.getRoundY());
+        else
+            rshape = new Rectangle2D.Double(x, y, width, height);
+        
+        if (aPGB.isDrawFill()) {
+            Color aColor = aPGB.getColor();
+            if (isSelected) {
+                aColor = this.getSelectedColor();
+            }
+            if (aPGB.isUsingHatchStyle()) {
+                int size = aPGB.getStyleSize();
+                BufferedImage bi = getHatchImage(aPGB.getStyle(), size, aPGB.getColor(), aPGB.getBackColor());
+                Rectangle2D rect = new Rectangle2D.Double(0, 0, size, size);
+                g.setPaint(new TexturePaint(bi, rect));
+                g.fill(rshape);
+            } else {
+                g.setColor(aColor);
+                g.fill(rshape);
+            }
+        } else if (isSelected) {
+            g.setColor(this.getSelectedColor());
+            g.fill(rshape);
+        }
+
+        if (aPGB.isDrawOutline()) {
+            BasicStroke pen = new BasicStroke(aPGB.getOutlineSize());
+            g.setStroke(pen);
+            g.setColor(aPGB.getOutlineColor());
+            g.draw(rshape);
+        }
     }
 
     private void drawArc(Graphics2D g, ArcShape aShape, PolygonBreak aPGB,

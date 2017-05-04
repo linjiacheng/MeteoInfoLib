@@ -54,9 +54,6 @@ import ucar.ma2.Section;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.NetcdfFileWriter;
 import ucar.nc2.dataset.NetcdfDataset;
-import ucar.nc2.grib.collection.Grib1Iosp;
-import ucar.nc2.grib.collection.Grib2Iosp;
-import ucar.nc2.iosp.IOServiceProvider;
 
 /**
  *
@@ -1038,7 +1035,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
         unitsStr = unitAtt.getStringValue();
         if (unitsStr.contains("as")) {
             if (unitsStr.contains("%")){
-                return times;
+                return null;
             }
             //Get data time
             double[] DTimes = values;
@@ -1283,11 +1280,13 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                         break;
                     case T:
                         List<Date> times = this.getTimes(var, values);
-                        List<Double> ts = new ArrayList<>();
-                        for (Date t : times) {
-                            ts.add(DateUtil.toOADate(t));
+                        if (times != null){
+                            List<Double> ts = new ArrayList<>();
+                            for (Date t : times) {
+                                ts.add(DateUtil.toOADate(t));
+                            }
+                            dim.setValues(ts);
                         }
-                        dim.setValues(ts);
                         this.setTimeDimension(dim);
                         break;
                     default:

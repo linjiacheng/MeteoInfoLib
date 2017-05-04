@@ -45,6 +45,7 @@ import org.meteoinfo.shape.PointShape;
 import org.meteoinfo.shape.PolygonShape;
 import org.meteoinfo.shape.PolylineErrorShape;
 import org.meteoinfo.shape.PolylineShape;
+import org.meteoinfo.shape.RectangleShape;
 import org.meteoinfo.shape.Shape;
 import org.meteoinfo.shape.ShapeTypes;
 import org.meteoinfo.shape.WindArrow;
@@ -270,6 +271,64 @@ public class GraphicFactory {
         return graphics;
     }
 
+    /**
+     * Add polygons
+     *
+     * @param xa X coordinate array
+     * @param ya Y coordinate array
+     * @param pgb PolygonBreak
+     * @return Graphics
+     */
+    public static GraphicCollection createPolygons(Array xa, Array ya, PolygonBreak pgb) {
+        GraphicCollection graphics = new GraphicCollection();
+        double x, y;
+        int n = (int)xa.getSize();
+        PolygonShape pgs;
+        PointD p;
+        List<PointD> points = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            x = xa.getDouble(i);
+            y = ya.getDouble(i);
+            if (Double.isNaN(x)) {
+                if (points.size() > 2) {
+                    pgs = new PolygonShape();
+                    pgs.setPoints(points);
+                    Graphic aGraphic = new Graphic(pgs, pgb);
+                    graphics.add(aGraphic);
+                }
+                points = new ArrayList<>();
+            } else {
+                p = new PointD(x, y);
+                points.add(p);
+            }
+        }
+        if (points.size() > 2) {
+            pgs = new PolygonShape();
+            pgs.setPoints(points);
+            Graphic aGraphic = new Graphic(pgs, pgb);
+            graphics.add(aGraphic);
+        }
+        return graphics;
+    }
+    
+    /**
+     * Create rectangle graphic
+     * @param pos Rectangle position
+     * @param curvature Curvature
+     * @param pgb Polygon break
+     * @return 
+     */
+    public static Graphic createRectangle(List<Number> pos, List<Number> curvature, PolygonBreak pgb){
+        RectangleShape rect = new RectangleShape(pos.get(0).doubleValue(), pos.get(1).doubleValue(), 
+                pos.get(2).doubleValue(), pos.get(3).doubleValue());
+        if (curvature != null){
+            rect.setRoundX(curvature.get(0).doubleValue());
+            rect.setRoundY(curvature.get(1).doubleValue());
+        }
+        Graphic graphic = new Graphic(rect, pgb);
+        return graphic;
+    }
+    
     /**
      * Create bar graphics
      *
