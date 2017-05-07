@@ -826,6 +826,15 @@ public class Chart {
         else
             return null;
     }
+    
+    /**
+     * Get plot index
+     * @param plot The plot
+     * @return Plot index
+     */
+    public int getPlotIndex(Plot plot){
+        return this.plots.indexOf(plot);
+    }
 
     /**
      * Check if has web map layer
