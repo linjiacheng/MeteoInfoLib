@@ -821,7 +821,10 @@ public class Chart {
             }
         }
 
-        return null;
+        if (plotIdx > 0 && plotIdx <= this.plots.size())
+            return this.plots.get(plotIdx - 1);
+        else
+            return null;
     }
 
     /**
