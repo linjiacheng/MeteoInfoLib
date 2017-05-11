@@ -5,7 +5,6 @@
  */
 package org.meteoinfo.chart.plot;
 
-import com.sun.javafx.font.Metrics;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
