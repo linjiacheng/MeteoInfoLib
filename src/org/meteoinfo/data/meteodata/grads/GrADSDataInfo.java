@@ -743,9 +743,11 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                             //goto ERROR;
                         }
                         int iNum = Integer.parseInt(TDEF.TDelt.substring(0, aPos));
+                        TDEF.DeltaValue = iNum;
                         Calendar cal = Calendar.getInstance();
                         cal.setTime(TDEF.STime);
                         String tStr = TDEF.TDelt.substring(aPos).toLowerCase();
+                        TDEF.unit = tStr;
                         switch (tStr) {
                             case "mn":
                                 for (i = 0; i < tnum; i++) {
@@ -1446,6 +1448,10 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
             Object[] result = getFilePath_Template(timeIdx);
             filePath = (String) result[0];
             tIdx = (int) result[1];
+            if (tIdx < 0)
+                tIdx = 0;
+            if (tIdx >= this.getTimeNum())
+                tIdx = this.getTimeNum() - 1;
         }
         RandomAccessFile br = new RandomAccessFile(filePath, "r");
         int i, j, lNum;

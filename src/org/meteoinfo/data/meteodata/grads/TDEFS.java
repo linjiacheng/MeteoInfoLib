@@ -46,7 +46,7 @@ public class TDEFS {
     /// <summary>
     /// Time array
     /// </summary>
-    public List<Date> times = new ArrayList<Date>();
+    public List<Date> times = new ArrayList<>();
     // </editor-fold>
     // <editor-fold desc="Constructor">
     // </editor-fold>
