@@ -43,7 +43,7 @@ public class Variable extends ucar.nc2.Variable{
     //private List<Attribute> _attributes = new ArrayList<>();
     //private int _attNumber;
     private int _varId;
-    private boolean _isCoordVar = false;
+    private boolean dimVar = false;
     private List<Integer> _levelIdxs = new ArrayList<>();
     private List<Integer> _varInLevelIdxs = new ArrayList<>();
     private double fill_value = -9999.0;
@@ -179,6 +179,7 @@ public class Variable extends ucar.nc2.Variable{
      *
      * @return Description
      */
+    @Override
     public String getDescription() {
         return _description;
     }
@@ -403,21 +404,21 @@ public class Variable extends ucar.nc2.Variable{
     }
 
     /**
-     * Get if the variable is coordinate variable
+     * Get if the variable is dimension variable
      *
      * @return Boolean
      */
-    public boolean isCoorVar() {
-        return _isCoordVar;
+    public boolean isDimVar() {
+        return dimVar;
     }
 
     /**
-     * Set if the variable is coordinate variable
+     * Set if the variable is dimension variable
      *
      * @param value Boolean
      */
-    public void setCoorVar(boolean value) {
-        _isCoordVar = value;
+    public void setDimVar(boolean value) {
+        dimVar = value;
     }
 
     /**
@@ -522,7 +523,7 @@ public class Variable extends ucar.nc2.Variable{
 
         //aPar.getAttributes().addAll(_attributes);
         aPar.getDimensions().addAll(this.getDimensions());
-        aPar.setCoorVar(_isCoordVar);
+        aPar.setDimVar(dimVar);
         aPar.getLevels().addAll(_levels);
         //aPar.NCType = _ncType;
         aPar.setVarId(_varId);

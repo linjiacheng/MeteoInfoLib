@@ -210,13 +210,19 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
             for (i = 0; i < lat_point_num; i++) {
                 Y[i] = lat_LF + i * lat_delta;
             }
-
+            
+            this.addAttribute(new Attribute("data_format", "HYSPLIT Concentration"));
             Dimension xDim = new Dimension(DimensionType.X);
+            xDim.setShortName("lon");
             xDim.setValues(X);
             this.setXDimension(xDim);
+            this.addDimension(xDim);            
             Dimension yDim = new Dimension(DimensionType.Y);
+            yDim.setShortName("lat");
             yDim.setValues(Y);
             this.setYDimension(yDim);
+            this.addDimension(yDim);
+            List<Variable> variables = new ArrayList<>();            
 
             //Record #4
             br.skipBytes(8);            
@@ -234,19 +240,24 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
                 start += 4;
             }
             Dimension zDim = new Dimension(DimensionType.Z);
+            zDim.setShortName("level");
             zDim.setValues(heights);
             this.setZDimension(zDim);
+            this.addDimension(zDim);
 
             //Record #5
             br.skipBytes(8);
             //int pollutant_num = br.readInt();
             br.read(aBytes);
-            int pollutant_num = DataConvert.bytes2Int(aBytes, byteOrder);
-            List<Variable> variables = new ArrayList<>();
+            int pollutant_num = DataConvert.bytes2Int(aBytes, byteOrder);     
+            String vName;
             for (i = 0; i < pollutant_num; i++) {
                 br.read(aBytes);
+                vName = new String(aBytes);
                 Variable var = new Variable();
-                var.setName(new String(aBytes));
+                var.setName(vName);
+                var.setDataType(DataType.FLOAT);
+                var.addAttribute("long_name", vName);
                 variables.add(var);
             }
             this.setVariables(variables);
@@ -360,15 +371,53 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
                 values.add(DateUtil.toOADate(t));
             }
             Dimension tDim = new Dimension(DimensionType.T);
+            tDim.setShortName("time");
             tDim.setValues(values);
             this.setTimeDimension(tDim);
+            this.addDimension(tDim);
 
-            for (Variable var : variables) {                                
-                var.setDimension(tDim);
-                var.setDimension(zDim);
-                var.setDimension(yDim);
-                var.setDimension(xDim);
+            for (Variable v : variables) {                                
+                v.setDimension(tDim);
+                v.setDimension(zDim);
+                v.setDimension(yDim);
+                v.setDimension(xDim);
             }
+//            Variable var = new Variable();
+//            var.setDimVar(true);
+//            var.setName("lon");
+//            var.setDataType(DataType.FLOAT);
+//            var.setDimension(xDim);
+//            var.addAttribute("units", "degrees_east");
+//            var.addAttribute("long_name", "longitude");
+//            var.addAttribute("axis", "X");
+//            variables.add(var);
+//            var = new Variable();
+//            var.setDimVar(true);
+//            var.setName("lat");
+//            var.setDataType(DataType.FLOAT);
+//            var.setDimension(yDim);
+//            var.addAttribute("units", "degrees_north");
+//            var.addAttribute("long_name", "latitude");
+//            var.addAttribute("axis", "Y");
+//            variables.add(var);
+//            var = new Variable();
+//            var.setDimVar(true);
+//            var.setName("level");
+//            var.setDataType(DataType.FLOAT);
+//            var.setDimension(zDim);
+//            var.addAttribute("units", "hPa");
+//            var.addAttribute("long_name", "level");
+//            var.addAttribute("axis", "Z");
+//            variables.add(var);
+//            var = new Variable();
+//            var.setDimVar(true);
+//            var.setName("time");
+//            var.setDataType(DataType.INT);
+//            var.setDimension(tDim);
+//            var.addAttribute("units", "hours since 1900-01-01 00:00:0.0");
+//            var.addAttribute("long_name", "time");
+//            var.addAttribute("axis", "T");
+//            variables.add(var);
             //this.setTimes(times);
             this.setVariables(variables);
 
@@ -387,21 +436,21 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
         return new ArrayList<>();
     }
 
-    @Override
-    public String generateInfoText() {
-        String dataInfo;
-        dataInfo = "File Name: " + this.getFileName();
-        dataInfo += System.getProperty("line.separator") + "Pack Flag = " + String.valueOf(_pack_flag);
-        dataInfo += System.getProperty("line.separator") + "Xsize = " + String.valueOf(this.getXDimension().getLength())
-                + "  Ysize = " + String.valueOf(this.getYDimension().getLength()) + "  Zsize = " + String.valueOf(this.getZDimension().getLength())
-                + "  Tsize = " + String.valueOf(this.getTimeDimension().getLength());
-        dataInfo += System.getProperty("line.separator") + "Number of Variables = " + String.valueOf(this.getVariableNum());
-        for (String v : this.getVariableNames()) {
-            dataInfo += System.getProperty("line.separator") + v;
-        }
-
-        return dataInfo;
-    }
+//    @Override
+//    public String generateInfoText() {
+//        String dataInfo;
+//        dataInfo = "File Name: " + this.getFileName();
+//        dataInfo += System.getProperty("line.separator") + "Pack Flag = " + String.valueOf(_pack_flag);
+//        dataInfo += System.getProperty("line.separator") + "Xsize = " + String.valueOf(this.getXDimension().getLength())
+//                + "  Ysize = " + String.valueOf(this.getYDimension().getLength()) + "  Zsize = " + String.valueOf(this.getZDimension().getLength())
+//                + "  Tsize = " + String.valueOf(this.getTimeDimension().getLength());
+//        dataInfo += System.getProperty("line.separator") + "Number of Variables = " + String.valueOf(this.getVariableNum());
+//        for (String v : this.getVariableNames()) {
+//            dataInfo += System.getProperty("line.separator") + v;
+//        }
+//
+//        return dataInfo;
+//    }
     
     /**
      * Read array data of a variable

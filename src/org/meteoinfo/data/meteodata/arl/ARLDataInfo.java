@@ -443,9 +443,11 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             Dimension xDim = new Dimension(DimensionType.X);
             xDim.setValues(X);
             this.setXDimension(xDim);
+            this.addDimension(xDim);
             Dimension yDim = new Dimension(DimensionType.Y);
             yDim.setValues(Y);
             this.setYDimension(yDim);
+            this.addDimension(yDim);
 
             //Reopen            
             byte[] dataBytes = new byte[NXY];
@@ -500,6 +502,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             Dimension tDim = new Dimension(DimensionType.T);
             tDim.setValues(values);
             this.setTimeDimension(tDim);
+            this.addDimension(tDim);
 
             recsPerTime = recNum + indexRecNum;
             Variable aVar;
@@ -513,6 +516,8 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                         vList.add(vName);
                         aVar = new Variable();
                         aVar.setName(vName);
+                        aVar.setDataType(DataType.FLOAT);
+                        aVar.addAttribute("long_name", vName);
                         aVar.getLevels().add(levels.get(i));
                         aVar.getLevelIdxs().add(i);
                         aVar.getVarInLevelIdxs().add(j);
@@ -528,11 +533,29 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                 }
             }
 
+            List<Dimension> zdims = new ArrayList<>();
+            Dimension zDim;
+            int len;
             for (Variable var : variables) {
                 var.setDimension(this.getTimeDimension());
-                Dimension zDim = new Dimension(DimensionType.Z);
-                zDim.setValues(var.getLevels());
-                var.setDimension(zDim);
+                len = var.getLevels().size();
+                if (len > 1){
+                    zDim = null;
+                    for (Dimension dim : zdims){
+                        if (dim.getLength() == len){
+                            zDim = dim;
+                            break;
+                        }
+                    }
+                    if (zDim == null){
+                        zDim = new Dimension(DimensionType.Z);
+                        zDim.setName("Z_" + String.valueOf(len));
+                        zDim.setValues(var.getLevels());
+                        zdims.add(zDim);
+                        this.addDimension(zDim);
+                    }
+                    var.setDimension(zDim);
+                }
                 var.setDimension(this.getYDimension());
                 var.setDimension(this.getXDimension());
             }
@@ -641,8 +664,8 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         return new ArrayList<>();
     }
 
-    @Override
-    public String generateInfoText() {
+    //@Override
+    public String generateInfoText_bak() {
         String dataInfo;
         dataInfo = "File Name: " + this.getFileName();
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:00");
@@ -1484,13 +1507,11 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             aDH.SYNC_LAT = (float) Y[0];
             aDH.SYNC_LON = (float) X[0];
         } else {
-            float sync_x, sync_y;
-            //sync_x = 0.5f * (X.length + 1);
-            //sync_y = 0.5f * (Y.length + 1);
-            sync_x = 1;
-            sync_y = 1;
+            float sync_x, sync_y;                     
             double sync_lon, sync_lat;
             if (Double.isNaN(projInfo.getCenterLon())) {
+                sync_x = 1;
+                sync_y = 1;
                 //double x = MIMath.getValue(X, sync_x);
                 //double y = MIMath.getValue(Y, sync_y);
                 double x = X[0];
@@ -1502,6 +1523,8 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                 sync_lon = points[0][0];
                 sync_lat = points[0][1];
             } else {
+                sync_x = 0.5f * (X.length + 1);
+                sync_y = 0.5f * (Y.length + 1);   
                 sync_lon = projInfo.getCenterLon();
                 sync_lat = projInfo.getCenterLat();
             }
@@ -1511,12 +1534,12 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             tanLat = Double.parseDouble(String.format("%.2f", tanLat));
             switch (projInfo.getProjectionName()) {
                 case Lambert_Conformal_Conic:
-                    //aDH.POLE_LAT = (float) tanLat;
-                    aDH.POLE_LAT = 90;
-                    //aDH.POLE_LON = (float) aProj.getProjectionLongitudeDegrees();
-                    aDH.POLE_LON = 0;
-                    //aDH.REF_LAT = (float) tanLat;
-                    aDH.REF_LAT = (float) aProj.getProjectionLatitudeDegrees();
+                    aDH.POLE_LAT = (float) tanLat;
+                    //aDH.POLE_LAT = 90;
+                    aDH.POLE_LON = (float) aProj.getProjectionLongitudeDegrees();
+                    //aDH.POLE_LON = 0;
+                    aDH.REF_LAT = (float) tanLat;
+                    //aDH.REF_LAT = (float) aProj.getProjectionLatitudeDegrees();
                     aDH.REF_LON = (float) aProj.getProjectionLongitudeDegrees();
                     aDH.SIZE = (float) (X[1] - X[0]) / 1000;
                     aDH.ORIENT = 0;

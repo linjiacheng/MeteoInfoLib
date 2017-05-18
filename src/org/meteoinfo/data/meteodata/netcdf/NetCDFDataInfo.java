@@ -287,7 +287,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 Variable nvar = new Variable(var);
                 //nvar.setName(var.getShortName());
                 //nvar.setCoorVar(var.isCoordinateVariable());
-                nvar.setCoorVar(var.getRank() <= 1);
+                nvar.setDimVar(var.getRank() <= 1);
                 if (_isSWATH || _isPROFILE) {
                     nvar.setStation(true);
                 }
@@ -419,7 +419,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                 Variable nvar = new Variable(var);
                 //nvar.setName(var.getShortName());
                 //nvar.setCoorVar(var.isCoordinateVariable());
-                nvar.setCoorVar(var.getRank() <= 1);
+                nvar.setDimVar(var.getRank() <= 1);
                 if (_isSWATH || _isPROFILE) {
                     nvar.setStation(true);
                 }
