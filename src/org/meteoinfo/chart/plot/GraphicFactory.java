@@ -25,7 +25,6 @@ import org.meteoinfo.drawing.PointStyle;
 import org.meteoinfo.geoprocess.GeoComputation;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
-import static org.meteoinfo.global.MIMath.polarToCartesian;
 import org.meteoinfo.global.PointD;
 import org.meteoinfo.legend.BarBreak;
 import org.meteoinfo.legend.ColorBreak;
