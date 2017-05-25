@@ -6,7 +6,6 @@
 package org.meteoinfo.shape;
 
 import java.awt.image.BufferedImage;
-import org.meteoinfo.global.Extent;
 
 /**
  *

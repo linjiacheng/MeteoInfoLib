@@ -56,8 +56,8 @@ public class ArrayMath {
         if (aType == bType) {
             return aType;
         }
-        
-        if (aType == DataType.OBJECT || bType == DataType.OBJECT){
+
+        if (aType == DataType.OBJECT || bType == DataType.OBJECT) {
             return DataType.OBJECT;
         }
 
@@ -148,8 +148,9 @@ public class ArrayMath {
             case DOUBLE:
                 return ArrayMath.addDouble(a, b);
             case OBJECT:
-                if (isComplex(a) || isComplex(b))
+                if (isComplex(a) || isComplex(b)) {
                     return ArrayMath.addComplex(a, b);
+                }
                 break;
         }
         return null;
@@ -174,13 +175,14 @@ public class ArrayMath {
             case DOUBLE:
                 return ArrayMath.addDouble(a, b.doubleValue());
             case OBJECT:
-                if (isComplex(a))
+                if (isComplex(a)) {
                     return ArrayMath.addComplex(a, b.doubleValue());
+                }
                 break;
         }
         return null;
     }
-    
+
     /**
      * Array add
      *
@@ -191,7 +193,7 @@ public class ArrayMath {
     public static Array add(Array a, Complex b) {
         return addComplex(a, b);
     }
-    
+
     /**
      * Array add
      *
@@ -325,7 +327,7 @@ public class ArrayMath {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
         for (int i = 0; i < a.getSize(); i++) {
-            v = (Complex)a.getObject(i);
+            v = (Complex) a.getObject(i);
             if (v.isNaN()) {
                 r.setObject(i, v);
             } else {
@@ -335,12 +337,12 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     private static Array addComplex(Array a, Complex b) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
         for (int i = 0; i < a.getSize(); i++) {
-            v = (Complex)a.getObject(i);
+            v = (Complex) a.getObject(i);
             if (v.isNaN()) {
                 r.setObject(i, v);
             } else {
@@ -369,8 +371,9 @@ public class ArrayMath {
             case DOUBLE:
                 return ArrayMath.subDouble(a, b);
             case OBJECT:
-                if (isComplex(a) || isComplex(b))
+                if (isComplex(a) || isComplex(b)) {
                     return ArrayMath.subComplex(a, b);
+                }
                 break;
         }
         return null;
@@ -395,13 +398,14 @@ public class ArrayMath {
             case DOUBLE:
                 return ArrayMath.subDouble(a, b.doubleValue());
             case OBJECT:
-                if (isComplex(a))
+                if (isComplex(a)) {
                     return ArrayMath.subComplex(a, b.doubleValue());
+                }
                 break;
         }
         return null;
     }
-    
+
     /**
      * Array subtract
      *
@@ -412,7 +416,7 @@ public class ArrayMath {
     public static Array sub(Array a, Complex b) {
         return subComplex(a, b);
     }
-    
+
     /**
      * Array subtract
      *
@@ -443,13 +447,14 @@ public class ArrayMath {
             case DOUBLE:
                 return ArrayMath.subDouble(b.doubleValue(), a);
             case OBJECT:
-                if (isComplex(a))
+                if (isComplex(a)) {
                     return ArrayMath.subComplex(b.doubleValue(), a);
+                }
                 break;
         }
         return null;
     }
-    
+
     /**
      * Array subtract
      *
@@ -460,7 +465,7 @@ public class ArrayMath {
     public static Array sub(Complex b, Array a) {
         return subComplex(b, a);
     }
-    
+
     /**
      * Array subtract
      *
@@ -552,7 +557,7 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     private static Array subComplex(Array a, Array b) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         if (isComplex(a)) {
@@ -597,7 +602,7 @@ public class ArrayMath {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
         for (int i = 0; i < a.getSize(); i++) {
-            v = (Complex)a.getObject(i);
+            v = (Complex) a.getObject(i);
             if (v.isNaN()) {
                 r.setObject(i, v);
             } else {
@@ -607,12 +612,12 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     private static Array subComplex(Array a, Complex b) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
         for (int i = 0; i < a.getSize(); i++) {
-            v = (Complex)a.getObject(i);
+            v = (Complex) a.getObject(i);
             if (v.isNaN()) {
                 r.setObject(i, v);
             } else {
@@ -622,12 +627,12 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     private static Array subComplex(double b, Array a) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
         for (int i = 0; i < a.getSize(); i++) {
-            v = (Complex)a.getObject(i);
+            v = (Complex) a.getObject(i);
             if (v.isNaN()) {
                 r.setObject(i, v);
             } else {
@@ -637,12 +642,12 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     private static Array subComplex(Complex b, Array a) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
         for (int i = 0; i < a.getSize(); i++) {
-            v = (Complex)a.getObject(i);
+            v = (Complex) a.getObject(i);
             if (v.isNaN()) {
                 r.setObject(i, v);
             } else {
@@ -671,8 +676,9 @@ public class ArrayMath {
             case DOUBLE:
                 return ArrayMath.mulDouble(a, b);
             case OBJECT:
-                if (isComplex(a) || isComplex(b))
+                if (isComplex(a) || isComplex(b)) {
                     return ArrayMath.mulComplex(a, b);
+                }
                 break;
         }
         return null;
@@ -697,13 +703,14 @@ public class ArrayMath {
             case DOUBLE:
                 return ArrayMath.mulDouble(a, b.doubleValue());
             case OBJECT:
-                if (isComplex(a))
+                if (isComplex(a)) {
                     return ArrayMath.mulComplex(a, b.doubleValue());
+                }
                 break;
         }
         return null;
     }
-    
+
     /**
      * Array multiply
      *
@@ -714,7 +721,7 @@ public class ArrayMath {
     public static Array mul(Array a, Complex b) {
         return ArrayMath.mulComplex(a, b);
     }
-    
+
     /**
      * Array multiply
      *
@@ -803,7 +810,7 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     private static Array mulComplex(Array a, Array b) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         if (isComplex(a)) {
@@ -848,7 +855,7 @@ public class ArrayMath {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
         for (int i = 0; i < a.getSize(); i++) {
-            v = (Complex)a.getObject(i);
+            v = (Complex) a.getObject(i);
             if (v.isNaN()) {
                 r.setObject(i, v);
             } else {
@@ -858,12 +865,12 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     private static Array mulComplex(Array a, Complex b) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
         for (int i = 0; i < a.getSize(); i++) {
-            v = (Complex)a.getObject(i);
+            v = (Complex) a.getObject(i);
             if (v.isNaN()) {
                 r.setObject(i, v);
             } else {
@@ -892,8 +899,9 @@ public class ArrayMath {
             case DOUBLE:
                 return ArrayMath.divDouble(a, b);
             case OBJECT:
-                if (isComplex(a) || isComplex(b))
+                if (isComplex(a) || isComplex(b)) {
                     return ArrayMath.divComplex(a, b);
+                }
                 break;
         }
         return null;
@@ -918,13 +926,14 @@ public class ArrayMath {
             case DOUBLE:
                 return ArrayMath.divDouble(a, b.doubleValue());
             case OBJECT:
-                if (isComplex(a))
+                if (isComplex(a)) {
                     return ArrayMath.divComplex(a, b.doubleValue());
+                }
                 break;
         }
         return null;
     }
-    
+
     /**
      * Array divide
      *
@@ -935,7 +944,7 @@ public class ArrayMath {
     public static Array div(Array a, Complex b) {
         return divComplex(a, b);
     }
-    
+
     /**
      * Array divide
      *
@@ -966,13 +975,14 @@ public class ArrayMath {
             case DOUBLE:
                 return ArrayMath.divDouble(b.doubleValue(), a);
             case OBJECT:
-                if (isComplex(a))
+                if (isComplex(a)) {
                     return ArrayMath.divComplex(b.doubleValue(), a);
+                }
                 break;
         }
         return null;
     }
-    
+
     /**
      * Array divide
      *
@@ -983,7 +993,7 @@ public class ArrayMath {
     public static Array div(Complex b, Array a) {
         return divComplex(b, a);
     }
-    
+
     /**
      * Array divide
      *
@@ -1075,7 +1085,7 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     private static Array divComplex(Array a, Array b) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         if (isComplex(a)) {
@@ -1120,7 +1130,7 @@ public class ArrayMath {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
         for (int i = 0; i < a.getSize(); i++) {
-            v = (Complex)a.getObject(i);
+            v = (Complex) a.getObject(i);
             if (v.isNaN()) {
                 r.setObject(i, v);
             } else {
@@ -1130,12 +1140,12 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     private static Array divComplex(Array a, Complex b) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
         for (int i = 0; i < a.getSize(); i++) {
-            v = (Complex)a.getObject(i);
+            v = (Complex) a.getObject(i);
             if (v.isNaN()) {
                 r.setObject(i, v);
             } else {
@@ -1145,12 +1155,12 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     private static Array divComplex(double b, Array a) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
         for (int i = 0; i < a.getSize(); i++) {
-            v = (Complex)a.getObject(i);
+            v = (Complex) a.getObject(i);
             if (v.isNaN()) {
                 r.setObject(i, v);
             } else {
@@ -1160,12 +1170,12 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     private static Array divComplex(Complex b, Array a) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
         for (int i = 0; i < a.getSize(); i++) {
-            v = (Complex)a.getObject(i);
+            v = (Complex) a.getObject(i);
             if (v.isNaN()) {
                 r.setObject(i, v);
             } else {
@@ -1194,13 +1204,14 @@ public class ArrayMath {
             case DOUBLE:
                 return ArrayMath.powDouble(a, b.doubleValue());
             case OBJECT:
-                if (isComplex(a))
+                if (isComplex(a)) {
                     return ArrayMath.powComplex(a, b.doubleValue());
+                }
                 break;
         }
         return null;
     }
-    
+
     /**
      * Array pow function
      *
@@ -1211,7 +1222,7 @@ public class ArrayMath {
     public static Array pow(Array a, Complex b) {
         return powComplex(a, b);
     }
-    
+
     /**
      * Array pow function
      *
@@ -1241,13 +1252,14 @@ public class ArrayMath {
             case DOUBLE:
                 return ArrayMath.powDouble(a.doubleValue(), b);
             case OBJECT:
-                if (isComplex(b))
+                if (isComplex(b)) {
                     return ArrayMath.powComplex(a.doubleValue(), b);
+                }
                 break;
         }
         return null;
     }
-    
+
     /**
      * Array pow function
      *
@@ -1258,7 +1270,7 @@ public class ArrayMath {
     public static Array pow(Complex b, Array a) {
         return powComplex(b, a);
     }
-    
+
     /**
      * Array pow function
      *
@@ -1288,8 +1300,9 @@ public class ArrayMath {
             case DOUBLE:
                 return ArrayMath.powDouble(a, b);
             case OBJECT:
-                if (isComplex(a) || isComplex(b))
+                if (isComplex(a) || isComplex(b)) {
                     return ArrayMath.powComplex(a, b);
+                }
                 break;
         }
         return null;
@@ -1348,7 +1361,7 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     private static Array powComplex(Array a, Array b) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         if (isComplex(a)) {
@@ -1393,7 +1406,7 @@ public class ArrayMath {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
         for (int i = 0; i < a.getSize(); i++) {
-            v = (Complex)a.getObject(i);
+            v = (Complex) a.getObject(i);
             if (v.isNaN()) {
                 r.setObject(i, v);
             } else {
@@ -1403,12 +1416,12 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     private static Array powComplex(Array a, Complex b) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
         for (int i = 0; i < a.getSize(); i++) {
-            v = (Complex)a.getObject(i);
+            v = (Complex) a.getObject(i);
             if (v.isNaN()) {
                 r.setObject(i, v);
             } else {
@@ -1418,12 +1431,12 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     private static Array powComplex(double b, Array a) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
         for (int i = 0; i < a.getSize(); i++) {
-            v = (Complex)a.getObject(i);
+            v = (Complex) a.getObject(i);
             if (v.isNaN()) {
                 r.setObject(i, v);
             } else {
@@ -1433,12 +1446,12 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     private static Array powComplex(Complex b, Array a) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
         for (int i = 0; i < a.getSize(); i++) {
-            v = (Complex)a.getObject(i);
+            v = (Complex) a.getObject(i);
             if (v.isNaN()) {
                 r.setObject(i, v);
             } else {
@@ -1467,10 +1480,10 @@ public class ArrayMath {
      */
     public static Array exp(Array a) {
         Array r;
-        if (isComplex(a)){
+        if (isComplex(a)) {
             r = Array.factory(DataType.OBJECT, a.getShape());
             for (int i = 0; i < a.getSize(); i++) {
-                r.setObject(i, ((Complex)a.getObject(i)).exp());
+                r.setObject(i, ((Complex) a.getObject(i)).exp());
             }
         } else {
             r = Array.factory(DataType.DOUBLE, a.getShape());
@@ -1490,10 +1503,10 @@ public class ArrayMath {
      */
     public static Array log(Array a) {
         Array r;
-        if (isComplex(a)){
+        if (isComplex(a)) {
             r = Array.factory(DataType.OBJECT, a.getShape());
             for (int i = 0; i < a.getSize(); i++) {
-                r.setObject(i, ((Complex)a.getObject(i)).log());
+                r.setObject(i, ((Complex) a.getObject(i)).log());
             }
         } else {
             r = Array.factory(DataType.DOUBLE, a.getShape());
@@ -1528,10 +1541,10 @@ public class ArrayMath {
      */
     public static Array abs(Array a) {
         Array r;
-        if (isComplex(a)){
+        if (isComplex(a)) {
             r = Array.factory(DataType.DOUBLE, a.getShape());
             for (int i = 0; i < a.getSize(); i++) {
-                r.setDouble(i, ((Complex)a.getObject(i)).abs());
+                r.setDouble(i, ((Complex) a.getObject(i)).abs());
             }
         } else {
             r = Array.factory(a.getDataType(), a.getShape());
@@ -2065,27 +2078,51 @@ public class ArrayMath {
      * @return Result array
      */
     public static Array dot(Array a, Array b) {
-        int[] shape = new int[2];
-        shape[0] = a.getShape()[0];
-        shape[1] = b.getShape()[1];
         DataType type = ArrayMath.commonType(a.getDataType(), b.getDataType());
-        Array r = Array.factory(type, shape);
-        Index aIndex = a.getIndex();
-        Index bIndex = b.getIndex();
-        Index rIndex = r.getIndex();
-        int n = a.getShape()[1];
-        double v;
-        for (int i = 0; i < shape[0]; i++) {
-            for (int j = 0; j < shape[1]; j++) {
-                v = 0;
-                for (int m = 0; m < n; m++) {
-                    v = v + a.getDouble(aIndex.set(i, m)) * b.getDouble(bIndex.set(m, j));
-                }
-                r.setDouble(rIndex.set(i, j), v);
+        int[] shape;
+        if (a.getRank() == 2) {
+            if (a.getShape()[1] != b.getShape()[0]) {
+                return null;
             }
-        }
+            shape = new int[2];
+            shape[0] = a.getShape()[0];
+            shape[1] = b.getShape()[1];
+            Array r = Array.factory(type, shape);
+            Index aIndex = a.getIndex();
+            Index bIndex = b.getIndex();
+            Index rIndex = r.getIndex();
+            int n = a.getShape()[1];
+            double v;
+            for (int i = 0; i < shape[0]; i++) {
+                for (int j = 0; j < shape[1]; j++) {
+                    v = 0;
+                    for (int m = 0; m < n; m++) {
+                        v = v + a.getDouble(aIndex.set(i, m)) * b.getDouble(bIndex.set(m, j));
+                    }
+                    r.setDouble(rIndex.set(i, j), v);
+                }
+            }
 
-        return r;
+            return r;
+        } else {
+            if (a.getShape()[0] != b.getShape()[0]) {
+                return null;
+            }
+            shape = new int[1];
+            shape[0] = b.getShape()[1];
+            Array r = Array.factory(type, shape);
+            double v;
+            int n = a.getShape()[0];
+            Index bIndex = b.getIndex();
+            for (int i = 0; i < shape[0]; i++) {
+                v = 0;
+                for (int j = 0; j < n; j++) {
+                    v += a.getDouble(j) * b.getDouble(bIndex.set(j, i));
+                }
+                r.setDouble(i, v);
+            }
+            return r;
+        }
     }
 
     /**
@@ -2144,10 +2181,10 @@ public class ArrayMath {
      */
     public static Array sin(Array a) {
         Array r;
-        if (isComplex(a)){
+        if (isComplex(a)) {
             r = Array.factory(DataType.OBJECT, a.getShape());
             for (int i = 0; i < a.getSize(); i++) {
-                r.setObject(i, ((Complex)a.getObject(i)).sin());
+                r.setObject(i, ((Complex) a.getObject(i)).sin());
             }
         } else {
             r = Array.factory(a.getDataType() == DataType.DOUBLE ? DataType.DOUBLE : DataType.FLOAT, a.getShape());
@@ -2167,10 +2204,10 @@ public class ArrayMath {
      */
     public static Array cos(Array a) {
         Array r;
-        if (isComplex(a)){
+        if (isComplex(a)) {
             r = Array.factory(DataType.OBJECT, a.getShape());
             for (int i = 0; i < a.getSize(); i++) {
-                r.setObject(i, ((Complex)a.getObject(i)).cos());
+                r.setObject(i, ((Complex) a.getObject(i)).cos());
             }
         } else {
             r = Array.factory(a.getDataType() == DataType.DOUBLE ? DataType.DOUBLE : DataType.FLOAT, a.getShape());
@@ -2190,10 +2227,10 @@ public class ArrayMath {
      */
     public static Array tan(Array a) {
         Array r;
-        if (isComplex(a)){
+        if (isComplex(a)) {
             r = Array.factory(DataType.OBJECT, a.getShape());
             for (int i = 0; i < a.getSize(); i++) {
-                r.setObject(i, ((Complex)a.getObject(i)).tan());
+                r.setObject(i, ((Complex) a.getObject(i)).tan());
             }
         } else {
             r = Array.factory(a.getDataType() == DataType.DOUBLE ? DataType.DOUBLE : DataType.FLOAT, a.getShape());
@@ -2213,10 +2250,10 @@ public class ArrayMath {
      */
     public static Array asin(Array a) {
         Array r;
-        if (isComplex(a)){
+        if (isComplex(a)) {
             r = Array.factory(DataType.OBJECT, a.getShape());
             for (int i = 0; i < a.getSize(); i++) {
-                r.setObject(i, ((Complex)a.getObject(i)).asin());
+                r.setObject(i, ((Complex) a.getObject(i)).asin());
             }
         } else {
             r = Array.factory(a.getDataType() == DataType.DOUBLE ? DataType.DOUBLE : DataType.FLOAT, a.getShape());
@@ -2236,10 +2273,10 @@ public class ArrayMath {
      */
     public static Array acos(Array a) {
         Array r;
-        if (isComplex(a)){
+        if (isComplex(a)) {
             r = Array.factory(DataType.OBJECT, a.getShape());
             for (int i = 0; i < a.getSize(); i++) {
-                r.setObject(i, ((Complex)a.getObject(i)).acos());
+                r.setObject(i, ((Complex) a.getObject(i)).acos());
             }
         } else {
             r = Array.factory(a.getDataType() == DataType.DOUBLE ? DataType.DOUBLE : DataType.FLOAT, a.getShape());
@@ -2259,10 +2296,10 @@ public class ArrayMath {
      */
     public static Array atan(Array a) {
         Array r;
-        if (isComplex(a)){
+        if (isComplex(a)) {
             r = Array.factory(DataType.OBJECT, a.getShape());
             for (int i = 0; i < a.getSize(); i++) {
-                r.setObject(i, ((Complex)a.getObject(i)).atan());
+                r.setObject(i, ((Complex) a.getObject(i)).atan());
             }
         } else {
             r = Array.factory(a.getDataType() == DataType.DOUBLE ? DataType.DOUBLE : DataType.FLOAT, a.getShape());
@@ -2860,8 +2897,8 @@ public class ArrayMath {
 
         return r;
     }
-    
-        /**
+
+    /**
      * Compute mean value of an array
      *
      * @param a Array a
@@ -2887,7 +2924,7 @@ public class ArrayMath {
         }
         return mean;
     }
-    
+
     /**
      * Compute median value of an array along an axis (dimension)
      *
@@ -2934,7 +2971,7 @@ public class ArrayMath {
 
         return r;
     }
-    
+
     /**
      * Compute median value of an array
      *
@@ -2948,7 +2985,7 @@ public class ArrayMath {
         double median = Statistics.quantile(b, 2);
         return median;
     }
-    
+
     /**
      * Compute median value of an array
      *

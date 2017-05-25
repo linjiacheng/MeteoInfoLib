@@ -51,6 +51,8 @@ import org.meteoinfo.shape.ShapeTypes;
 import org.meteoinfo.shape.WindArrow;
 import org.meteoinfo.shape.WindBarb;
 import ucar.ma2.Array;
+import ucar.ma2.DataType;
+import ucar.ma2.Index;
 import wContour.Global.PolyLine;
 
 /**
@@ -524,6 +526,201 @@ public class GraphicFactory {
         }
 
         return graphics;
+    }
+    
+    /**
+     * Create image
+     *
+     * @param x X data array
+     * @param y Y data array
+     * @param gdata data array
+     * @return Image graphic
+     */
+    public static Graphic createImage(Array x, Array y, Array gdata) {
+        int width, height;
+        width = (int) x.getSize();
+        height = (int) y.getSize();
+        Color undefColor = Color.white;
+        BufferedImage aImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Color color;
+        Index index = gdata.getIndex();
+        boolean isAlpha = gdata.getShape()[2] == 4;
+        if (gdata.getDataType() == DataType.FLOAT || gdata.getDataType() == DataType.DOUBLE){
+            float r, g, b;
+            if (isAlpha) {
+                float a;
+                for (int i = 0; i < height; i++) {
+                    for (int j = 0; j < width; j++) {
+                        r = gdata.getFloat(index.set(i, j, 0));
+                        g = gdata.getFloat(index.set(i, j, 1));
+                        b = gdata.getFloat(index.set(i, j, 2));
+                        a = gdata.getFloat(index.set(i, j, 3));
+                        if (Double.isNaN(r) || Double.isNaN(g) || Double.isNaN(b) || Double.isNaN(a)) {
+                            color = undefColor;
+                        } else {
+                            color = new Color(r, g, b, a);
+                        }
+                        aImage.setRGB(j, height - i - 1, color.getRGB());
+                    }
+                }
+            } else {
+                for (int i = 0; i < height; i++) {
+                    for (int j = 0; j < width; j++) {
+                        r = gdata.getFloat(index.set(i, j, 0));
+                        g = gdata.getFloat(index.set(i, j, 1));
+                        b = gdata.getFloat(index.set(i, j, 2));
+                        if (Double.isNaN(r) || Double.isNaN(g) || Double.isNaN(b)) {
+                            color = undefColor;
+                        } else {
+                            color = new Color(r, g, b);
+                        }
+                        aImage.setRGB(j, height - i - 1, color.getRGB());
+                    }
+                }
+            }
+        } else {
+            int r, g, b;
+            if (isAlpha) {
+                int a;
+                for (int i = 0; i < height; i++) {
+                    for (int j = 0; j < width; j++) {
+                        r = gdata.getInt(index.set(i, j, 0));
+                        g = gdata.getInt(index.set(i, j, 1));
+                        b = gdata.getInt(index.set(i, j, 2));
+                        a = gdata.getInt(index.set(i, j, 3));
+                        if (Double.isNaN(r) || Double.isNaN(g) || Double.isNaN(b) || Double.isNaN(a)) {
+                            color = undefColor;
+                        } else {
+                            color = new Color(r, g, b, a);
+                        }
+                        aImage.setRGB(j, height - i - 1, color.getRGB());
+                    }
+                }
+            } else {
+                for (int i = 0; i < height; i++) {
+                    for (int j = 0; j < width; j++) {
+                        r = gdata.getInt(index.set(i, j, 0));
+                        g = gdata.getInt(index.set(i, j, 1));
+                        b = gdata.getInt(index.set(i, j, 2));
+                        if (Double.isNaN(r) || Double.isNaN(g) || Double.isNaN(b)) {
+                            color = undefColor;
+                        } else {
+                            color = new Color(r, g, b);
+                        }
+                        aImage.setRGB(j, height - i - 1, color.getRGB());
+                    }
+                }
+            }
+        }
+
+        ImageShape ishape = new ImageShape();
+        ishape.setPoint(new PointD(x.getDouble(0), y.getDouble(0)));
+        ishape.setImage(aImage);
+        ishape.setExtent(new Extent(x.getDouble(0), x.getDouble((int) x.getSize() - 1),
+                y.getDouble(0), y.getDouble((int) y.getSize() - 1)));
+        return new Graphic(ishape, new ColorBreak());
+    }
+    
+    /**
+     * Create image
+     *
+     * @param x X data array
+     * @param y Y data array
+     * @param data data array
+     * @return Image graphic
+     */
+    public static Graphic createImage(Array x, Array y, List<Array> data) {
+        int width, height;
+        width = (int) x.getSize();
+        height = (int) y.getSize();
+        Color undefColor = Color.white;
+        BufferedImage aImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Color color;
+        boolean isAlpha = data.size() == 4;
+        Array rdata = data.get(0);
+        Array gdata = data.get(1);
+        Array bdata = data.get(2);
+        Index rindex = rdata.getIndex();
+        Index gindex = gdata.getIndex();
+        Index bindex = bdata.getIndex();
+        if (rdata.getDataType() == DataType.FLOAT || rdata.getDataType() == DataType.DOUBLE){
+            float r, g, b;
+            if (isAlpha) {
+                float a;
+                Array adata = data.get(3);
+                Index aindex = adata.getIndex();
+                for (int i = 0; i < height; i++) {
+                    for (int j = 0; j < width; j++) {
+                        r = rdata.getFloat(rindex.set(i, j));
+                        g = gdata.getFloat(gindex.set(i, j));
+                        b = bdata.getFloat(bindex.set(i, j));
+                        a = adata.getFloat(aindex.set(i, j));
+                        if (Double.isNaN(r) || Double.isNaN(g) || Double.isNaN(b) || Double.isNaN(a)) {
+                            color = undefColor;
+                        } else {
+                            color = new Color(r, g, b, a);
+                        }
+                        aImage.setRGB(j, height - i - 1, color.getRGB());
+                    }
+                }
+            } else {
+                for (int i = 0; i < height; i++) {
+                    for (int j = 0; j < width; j++) {
+                        r = rdata.getFloat(rindex.set(i, j));
+                        g = gdata.getFloat(gindex.set(i, j));
+                        b = bdata.getFloat(bindex.set(i, j));
+                        if (Double.isNaN(r) || Double.isNaN(g) || Double.isNaN(b)) {
+                            color = undefColor;
+                        } else {
+                            color = new Color(r, g, b);
+                        }
+                        aImage.setRGB(j, height - i - 1, color.getRGB());
+                    }
+                }
+            }
+        } else {
+            int r, g, b;
+            if (isAlpha) {
+                int a;
+                Array adata = data.get(3);
+                Index aindex = adata.getIndex();
+                for (int i = 0; i < height; i++) {
+                    for (int j = 0; j < width; j++) {
+                        r = rdata.getInt(rindex.set(i, j));
+                        g = gdata.getInt(gindex.set(i, j));
+                        b = bdata.getInt(bindex.set(i, j));
+                        a = adata.getInt(aindex.set(i, j));
+                        if (Double.isNaN(r) || Double.isNaN(g) || Double.isNaN(b) || Double.isNaN(a)) {
+                            color = undefColor;
+                        } else {
+                            color = new Color(r, g, b, a);
+                        }
+                        aImage.setRGB(j, height - i - 1, color.getRGB());
+                    }
+                }
+            } else {
+                for (int i = 0; i < height; i++) {
+                    for (int j = 0; j < width; j++) {
+                        r = rdata.getInt(rindex.set(i, j));
+                        g = gdata.getInt(gindex.set(i, j));
+                        b = bdata.getInt(bindex.set(i, j));
+                        if (Double.isNaN(r) || Double.isNaN(g) || Double.isNaN(b)) {
+                            color = undefColor;
+                        } else {
+                            color = new Color(r, g, b);
+                        }
+                        aImage.setRGB(j, height - i - 1, color.getRGB());
+                    }
+                }
+            }
+        }
+
+        ImageShape ishape = new ImageShape();
+        ishape.setPoint(new PointD(x.getDouble(0), y.getDouble(0)));
+        ishape.setImage(aImage);
+        ishape.setExtent(new Extent(x.getDouble(0), x.getDouble((int) x.getSize() - 1),
+                y.getDouble(0), y.getDouble((int) y.getSize() - 1)));
+        return new Graphic(ishape, new ColorBreak());
     }
 
     /**

@@ -35,18 +35,26 @@ import org.meteoinfo.shape.ShapeTypes;
 import org.meteoinfo.shape.WindArrow;
 import org.meteoinfo.shape.WindBarb;
 import java.awt.Color;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import org.meteoinfo.data.ArrayMath;
 import org.meteoinfo.data.GridArray;
 import org.meteoinfo.data.XYListDataset;
+import org.meteoinfo.global.Extent;
+import org.meteoinfo.layer.ImageLayer;
 import org.meteoinfo.layer.RasterLayer;
+import org.meteoinfo.layer.WorldFilePara;
 import org.meteoinfo.legend.LegendType;
 import org.meteoinfo.legend.PointBreak;
+import org.meteoinfo.shape.Graphic;
+import org.meteoinfo.shape.ImageShape;
 import org.meteoinfo.shape.StationModelShape;
 import ucar.ma2.Array;
 import wContour.Global.PolyLine;
@@ -1244,6 +1252,59 @@ public class DrawMeteoData {
         aLayer.setLayerDrawType(LayerDrawType.Streamline);
 
         return aLayer;
+    }
+    
+    /**
+     * Create image layer
+     * @param x X array
+     * @param y Y array
+     * @param graphic Image graphic
+     * @param layerName Layer name
+     * @return Image layer
+     */
+    public static ImageLayer createImageLayer(Array x, Array y, Graphic graphic, String layerName){
+        BufferedImage image = ((ImageShape)graphic.getShape()).getImage();
+        return createImageLayer(x, y, image, layerName);
+    }
+    
+    /**
+     * Create image layer
+     * @param x X array
+     * @param y Y array
+     * @param image Image
+     * @param layerName Layer name
+     * @return Image layer
+     */
+    public static ImageLayer createImageLayer(Array x, Array y, BufferedImage image, String layerName){
+        ImageLayer aImageLayer = new ImageLayer();
+        aImageLayer.setImage(image);
+        aImageLayer.setLayerName(layerName);
+        aImageLayer.setVisible(true);
+        
+        WorldFilePara aWFP = new WorldFilePara();
+        double xdelta = x.getDouble(1) - x.getDouble(0);
+        double ydelta = y.getDouble(1) - y.getDouble(0);
+        aWFP.xUL = x.getDouble(0) - xdelta / 2;
+        aWFP.yUL = y.getDouble(y.getShape()[0] - 1) + ydelta / 2;
+        aWFP.xScale = xdelta;
+        aWFP.yScale = -ydelta;
+        aWFP.xRotate = 0;
+        aWFP.yRotate = 0;
+        aImageLayer.setWorldFilePara(aWFP);
+
+        double XBR, YBR;
+        XBR = aImageLayer.getImage().getWidth() * aImageLayer.getWorldFilePara().xScale + aImageLayer.getWorldFilePara().xUL;
+        YBR = aImageLayer.getImage().getHeight() * aImageLayer.getWorldFilePara().yScale + aImageLayer.getWorldFilePara().yUL;
+        Extent aExtent = new Extent();
+        aExtent.minX = aImageLayer.getWorldFilePara().xUL;
+        aExtent.minY = YBR;
+        aExtent.maxX = XBR;
+        aExtent.maxY = aImageLayer.getWorldFilePara().yUL;
+        aImageLayer.setExtent(aExtent);
+        aImageLayer.setLayerDrawType(LayerDrawType.Image);
+        aImageLayer.setMaskout(true);
+
+        return aImageLayer;
     }
 
     /**
