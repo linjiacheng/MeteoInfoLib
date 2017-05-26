@@ -17,7 +17,6 @@ limitations under the License.
 package org.meteoinfo.image.filter;
 
 import java.awt.*;
-import com.jhlabs.math.*;
 import org.meteoinfo.image.math.Noise;
 
 /**

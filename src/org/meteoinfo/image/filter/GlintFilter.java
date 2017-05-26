@@ -17,7 +17,6 @@ limitations under the License.
 package org.meteoinfo.image.filter;
 
 import java.awt.image.*;
-import com.jhlabs.composite.*;
 
 /**
  * A filter which renders "glints" on bright parts of the image.
