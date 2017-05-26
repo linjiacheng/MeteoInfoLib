@@ -31,8 +31,13 @@ public class ImageUtil {
      * @throws org.apache.sanselan.ImageReadException
      */
     public static Array imageRead(String fileName) throws IOException, ImageReadException{
-        //BufferedImage image = ImageIO.read(new File(fileName));
-        BufferedImage image = Sanselan.getBufferedImage(new File(fileName));
+        String extension = fileName.substring(fileName.lastIndexOf('.') + 1);
+        BufferedImage image;
+        if (extension.equalsIgnoreCase("jpg") || extension.equalsIgnoreCase("jpeg")){
+            image = ImageIO.read(new File(fileName));
+        } else {
+            image = Sanselan.getBufferedImage(new File(fileName));
+        }
         return imageRead(image);
     }
     
@@ -156,8 +161,11 @@ public class ImageUtil {
         String extension = fileName.substring(fileName.lastIndexOf('.') + 1);
         BufferedImage image = createImage(data);  
         ImageFormat format = getImageFormat(extension);
-        Sanselan.writeImage(image, new File(fileName), format, null);
-        //ImageIO.write(image, extension, new File(fileName));
+        if (format == ImageFormat.IMAGE_FORMAT_JPEG){
+            ImageIO.write(image, extension, new File(fileName));
+        } else {
+            Sanselan.writeImage(image, new File(fileName), format, null);       
+        }
     }
     
     private static ImageFormat getImageFormat(String ext){
