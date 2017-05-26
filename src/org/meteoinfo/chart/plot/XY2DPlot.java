@@ -874,6 +874,17 @@ public class XY2DPlot extends XYPlot {
         }
         return idx;
     }
+    
+    private int getImageIndex() {
+        int idx = -1;
+        for (int i = 0; i < this.graphics.size(); i++) {
+            if (this.graphics.get(i).getGraphicN(0).getShape().getShapeType() == ShapeTypes.Image) {
+                idx = i;
+                break;
+            }
+        }
+        return idx;
+    }
 
     private void drawImage(Graphics2D g, Graphic igraphic, Rectangle2D area) {
         ImageShape ishape = (ImageShape) igraphic.getShape();
@@ -902,6 +913,11 @@ public class XY2DPlot extends XYPlot {
         if (extent.minY == extent.maxY) {
             extent.minY = extent.minY - Math.abs(extent.minY);
             extent.maxY = extent.maxY + Math.abs(extent.maxY);
+        }        
+        
+        int imageIdx = this.getImageIndex();
+        if (imageIdx >= 0){
+            return extent;
         }
 
         int barIdx = this.getBarIndex();
