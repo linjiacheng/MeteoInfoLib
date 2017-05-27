@@ -13,6 +13,7 @@ import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
+import java.util.List;
 import org.meteoinfo.chart.Margin;
 import org.meteoinfo.data.Dataset;
 
@@ -126,6 +127,15 @@ public abstract class Plot {
     }
     
     /**
+     * Set position
+     * @param pos Position list
+     */
+    public void setPosition(List<Number> pos){
+        this.position = new Rectangle2D.Double(pos.get(0).doubleValue(), pos.get(1).doubleValue(), 
+            pos.get(2).doubleValue(), pos.get(3).doubleValue());
+    }
+    
+    /**
      * Update position
      * @param figureArea Figure area
      * @param outerArea Outer position area
@@ -187,7 +197,7 @@ public abstract class Plot {
     }
     
     /**
-     * Set position
+     * Set outer position
      * @param xmin Minimum x
      * @param ymin Minimum y
      * @param width Width
@@ -195,6 +205,15 @@ public abstract class Plot {
      */
     public void setOuterPosition(double xmin, double ymin, double width, double height){
         this.outerPosition = new Rectangle2D.Double(xmin, ymin, width, height);
+    }
+    
+    /**
+     * Set outer position
+     * @param pos Outer position list
+     */
+    public void setOuterPosition(List<Number> pos){
+        this.position = new Rectangle2D.Double(pos.get(0).doubleValue(), pos.get(1).doubleValue(), 
+            pos.get(2).doubleValue(), pos.get(3).doubleValue());
     }
     
     private Rectangle2D outerPositionArea;
