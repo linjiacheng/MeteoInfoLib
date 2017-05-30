@@ -284,7 +284,7 @@ public class PolarPlot extends XY2DPlot {
             top += this.getTitle().getHeight(g) + 10;
         }
 
-        if (this.isDrawLegend() && this.getLegend() != null) {
+        if (!this.getLegends().isEmpty()) {
             Dimension dim = this.getLegend().getLegendDimension(g, new Dimension((int) positionArea.getWidth(),
                     (int) positionArea.getHeight()));
             switch (this.getLegend().getPosition()) {
@@ -332,7 +332,7 @@ public class PolarPlot extends XY2DPlot {
             top += this.getTitle().getHeight(g) + 10;
         }
 
-        if (this.isDrawLegend() && this.getLegend() != null) {
+        if (!this.getLegends().isEmpty()) {
             Dimension dim = this.getLegend().getLegendDimension(g, new Dimension((int) area.getWidth(), (int) area.getHeight()));
             switch (this.getLegend().getPosition()) {
                 case UPPER_CENTER_OUTSIDE:

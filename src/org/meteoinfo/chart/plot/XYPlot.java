@@ -63,8 +63,8 @@ public abstract class XYPlot extends Plot {
     private boolean drawNeatLine;
     private ChartText title;
     private ChartText subTitle;
-    private ChartLegend legend;
-    private boolean drawLegend;
+    private List<ChartLegend> legends;
+    //private boolean drawLegend;
     private List<ChartText> texts;
     private ChartWindArrow windArrow;
     private boolean autoAspect = true;
@@ -94,6 +94,7 @@ public abstract class XYPlot extends Plot {
         this.drawTopAxis = true;
         this.drawRightAxis = true;
         this.drawNeatLine = false;
+        this.legends = new ArrayList<>();
         this.texts = new ArrayList<>();
     }
     // </editor-fold>
@@ -167,12 +168,39 @@ public abstract class XYPlot extends Plot {
     }
 
     /**
+     * Get legends
+     *
+     * @return Legends
+     */
+    public List<ChartLegend> getLegends() {
+        return this.legends;
+    }
+
+    /**
+     * Get chart legend
+     *
+     * @param idx Index
+     * @return Chart legend
+     */
+    public ChartLegend getLegend(int idx) {
+        if (this.legends.isEmpty()) {
+            return null;
+        } else {
+            return this.legends.get(idx);
+        }
+    }
+
+    /**
      * Get chart legend
      *
      * @return Chart legend
      */
     public ChartLegend getLegend() {
-        return this.legend;
+        if (this.legends.isEmpty()) {
+            return null;
+        } else {
+            return this.legends.get(this.legends.size() - 1);
+        }
     }
 
     /**
@@ -181,25 +209,35 @@ public abstract class XYPlot extends Plot {
      * @param value Legend
      */
     public void setLegend(ChartLegend value) {
-        this.legend = value;
+        this.legends.clear();
+        this.legends.add(value);
     }
 
     /**
-     * Get if draw legend
+     * Set legends
      *
-     * @return If draw legend
+     * @param value Legends
      */
-    public boolean isDrawLegend() {
-        return this.drawLegend;
+    public void setLegends(List<ChartLegend> value) {
+        this.legends = value;
     }
 
+//    /**
+//     * Get if draw legend
+//     *
+//     * @return If draw legend
+//     */
+//    public boolean isDrawLegend() {
+//        return this.drawLegend;
+//    }
+//
     /**
      * Set if draw legend
      *
      * @param value Boolean
      */
     public void setDrawLegend(boolean value) {
-        this.drawLegend = value;
+        //this.drawLegend = value;
         //this.updateLegendScheme();
     }
 
@@ -587,6 +625,33 @@ public abstract class XYPlot extends Plot {
     // </editor-fold>
     // <editor-fold desc="Method">
     /**
+     * Add a legend
+     *
+     * @param legend The legend
+     */
+    public void addLegend(ChartLegend legend) {
+        this.legends.add(legend);
+    }
+
+    /**
+     * Remove a legend
+     *
+     * @param legend The legend
+     */
+    public void removeLegend(ChartLegend legend) {
+        this.legends.remove(legend);
+    }
+
+    /**
+     * Remove a legend by index
+     *
+     * @param idx The legend index
+     */
+    public void removeLegend(int idx) {
+        this.legends.remove(idx);
+    }
+
+    /**
      * Set axis
      *
      * @param axis The axis
@@ -677,7 +742,7 @@ public abstract class XYPlot extends Plot {
             return;
         }
 
-        if (this.getGridLine().isTop()){
+        if (this.getGridLine().isTop()) {
             //Draw graph        
             this.drawGraph(g, graphArea);
             //Draw grid line
@@ -687,7 +752,7 @@ public abstract class XYPlot extends Plot {
             this.drawGridLine(g, graphArea);
             //Draw graph        
             this.drawGraph(g, graphArea);
-        }        
+        }
 
         //Draw neat line
         if (this.drawNeatLine) {
@@ -766,10 +831,11 @@ public abstract class XYPlot extends Plot {
             top += this.title.getHeight(g) + 10;
         }
 
-        if (this.drawLegend && this.getLegend() != null) {
-            Dimension dim = this.legend.getLegendDimension(g, new Dimension((int) positionArea.getWidth(),
+        if (!this.legends.isEmpty()) {
+            ChartLegend legend = this.getLegend();
+            Dimension dim = legend.getLegendDimension(g, new Dimension((int) positionArea.getWidth(),
                     (int) positionArea.getHeight()));
-            switch (this.legend.getPosition()) {
+            switch (legend.getPosition()) {
                 case UPPER_CENTER_OUTSIDE:
                     top += dim.height + 10;
                     break;
@@ -818,10 +884,11 @@ public abstract class XYPlot extends Plot {
             top += dim.getHeight() + 10;
         }
 
-        if (this.drawLegend && this.getLegend() != null) {
-            Dimension dim = this.legend.getLegendDimension(g, new Dimension((int) positionArea.getWidth(),
+        if (!this.legends.isEmpty()) {
+            ChartLegend legend = this.getLegend();
+            Dimension dim = legend.getLegendDimension(g, new Dimension((int) positionArea.getWidth(),
                     (int) positionArea.getHeight()));
-            switch (this.legend.getPosition()) {
+            switch (legend.getPosition()) {
                 case UPPER_CENTER_OUTSIDE:
                     top += dim.height + 10;
                     break;
@@ -860,6 +927,7 @@ public abstract class XYPlot extends Plot {
 
     /**
      * Get position area
+     *
      * @return Position area
      */
     @Override
@@ -898,7 +966,7 @@ public abstract class XYPlot extends Plot {
         double h = area.getHeight() * this.getPosition().getHeight();
         return new Rectangle2D.Double(x, y, w, h);
     }
-    
+
     /**
      * Get outer position area
      *
@@ -930,9 +998,10 @@ public abstract class XYPlot extends Plot {
             top += this.title.getHeight(g) + 10;
         }
 
-        if (this.drawLegend && this.getLegend() != null) {
-            Dimension dim = this.legend.getLegendDimension(g, new Dimension((int) area.getWidth(), (int) area.getHeight()));
-            switch (this.legend.getPosition()) {
+        if (!this.legends.isEmpty()) {
+            ChartLegend legend = this.getLegend();
+            Dimension dim = legend.getLegendDimension(g, new Dimension((int) area.getWidth(), (int) area.getHeight()));
+            switch (legend.getPosition()) {
                 case UPPER_CENTER_OUTSIDE:
                     top += dim.height + 10;
                     break;
@@ -1021,9 +1090,9 @@ public abstract class XYPlot extends Plot {
 
         return width;
     }
-    
-    float drawTitle(Graphics2D g, Rectangle2D graphArea){
-        float y = (float) graphArea.getY() - (float)this.getTightInset().getTop();
+
+    float drawTitle(Graphics2D g, Rectangle2D graphArea) {
+        float y = (float) graphArea.getY() - (float) this.getTightInset().getTop();
         if (title != null) {
             g.setColor(title.getColor());
             g.setFont(title.getFont());
@@ -1033,7 +1102,7 @@ public abstract class XYPlot extends Plot {
                 Dimension dim = Draw.getStringDimension(text, g);
                 y += dim.height;
                 Draw.drawString(g, text, x - dim.width / 2, y);
-                g.setFont(title.getFont());  
+                g.setFont(title.getFont());
                 y += title.getLineSpace();
             }
         }
@@ -1063,7 +1132,7 @@ public abstract class XYPlot extends Plot {
             int n = 0;
             while (n < this.getXAxis().getTickValues().length) {
                 double value = this.getXAxis().getTickValues()[n];
-                if (value <= this.getXAxis().getMinValue() || value >= this.getXAxis().getMaxValue()){
+                if (value <= this.getXAxis().getMinValue() || value >= this.getXAxis().getMaxValue()) {
                     n += this.getXAxis().getTickLabelGap();
                     continue;
                 }
@@ -1085,7 +1154,7 @@ public abstract class XYPlot extends Plot {
             int n = 0;
             while (n < this.getYAxis().getTickValues().length) {
                 double value = this.getYAxis().getTickValues()[n];
-                if (value <= this.getYAxis().getMinValue() || value >= this.getYAxis().getMaxValue()){
+                if (value <= this.getYAxis().getMinValue() || value >= this.getYAxis().getMaxValue()) {
                     n += this.getYAxis().getTickLabelGap();
                     continue;
                 }
@@ -1159,7 +1228,7 @@ public abstract class XYPlot extends Plot {
         Dimension dim = Draw.getStringDimension(text.getText(), g);
         float gap = text.getGap();
         Rectangle.Double rect = new Rectangle.Double(x, y - dim.getHeight() * 0.8, dim.getWidth(), dim.getHeight());
-        rect.setRect(rect.x - gap, rect.y - (gap - 3), rect.width + gap * 2, 
+        rect.setRect(rect.x - gap, rect.y - (gap - 3), rect.width + gap * 2,
                 rect.height + (gap - 3) * 2);
         if (text.isFill()) {
             g.setColor(text.getBackground());
@@ -1175,9 +1244,9 @@ public abstract class XYPlot extends Plot {
         g.setColor(text.getColor());
         Draw.drawString(g, text.getText(), x, y);
     }
-    
-    void drawLegend(Graphics2D g, Rectangle2D area, Rectangle2D graphArea, float y){
-        if (this.drawLegend && this.getLegend() != null) {
+
+    void drawLegend(Graphics2D g, Rectangle2D area, Rectangle2D graphArea, float y) {
+        if (!this.legends.isEmpty()) {
             Object rendering = g.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 //            switch (this.legend.getPosition()) {
@@ -1189,32 +1258,34 @@ public abstract class XYPlot extends Plot {
 //                    this.legend.setPlotOrientation(PlotOrientation.VERTICAL);
 //                    break;
 //            }
-            if (this.legend.isColorbar()) {
-                if (this.legend.getPlotOrientation() == PlotOrientation.VERTICAL) {
-                    this.legend.setHeight((int) (graphArea.getHeight() * this.legend.getShrink()));
-                } else {
-                    this.legend.setWidth((int) (graphArea.getWidth() * this.legend.getShrink()));
+            for (ChartLegend legend : this.legends) {
+                if (legend.isColorbar()) {
+                    if (legend.getPlotOrientation() == PlotOrientation.VERTICAL) {
+                        legend.setHeight((int) (graphArea.getHeight() * legend.getShrink()));
+                    } else {
+                        legend.setWidth((int) (graphArea.getWidth() * legend.getShrink()));
+                    }
                 }
-            }
-            if (this.legend.getPosition() == LegendPosition.CUSTOM) {
-                this.legend.getLegendDimension(g, new Dimension((int) area.getWidth(), (int) area.getHeight()));
-                float x = (float) (area.getWidth() * this.legend.getX());
-                y = (float) (area.getHeight() * (1 - (this.getLegend().getHeight() / area.getHeight())
-                        - this.getLegend().getY()));
-                this.legend.draw(g, new PointF(x, y));
-            } else {
-                this.drawLegendScheme(g, graphArea, y);
+                if (legend.getPosition() == LegendPosition.CUSTOM) {
+                    legend.getLegendDimension(g, new Dimension((int) area.getWidth(), (int) area.getHeight()));
+                    float x = (float) (area.getWidth() * legend.getX());
+                    y = (float) (area.getHeight() * (1 - (this.getLegend().getHeight() / area.getHeight())
+                            - this.getLegend().getY()));
+                    legend.draw(g, new PointF(x, y));
+                } else {
+                    this.drawLegendScheme(legend, g, graphArea, y);
+                }
             }
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, rendering);
         }
     }
 
-    void drawLegendScheme(Graphics2D g, Rectangle2D area, float y) {
-        g.setFont(this.legend.getTickFont());
-        Dimension dim = this.legend.getLegendDimension(g, new Dimension((int) area.getWidth(), (int) area.getHeight()));
+    void drawLegendScheme(ChartLegend legend, Graphics2D g, Rectangle2D area, float y) {
+        g.setFont(legend.getTickFont());
+        Dimension dim = legend.getLegendDimension(g, new Dimension((int) area.getWidth(), (int) area.getHeight()));
         float x = 0;
         //Rectangle2D graphArea = this.getPositionArea();
-        switch (this.legend.getPosition()) {
+        switch (legend.getPosition()) {
             case UPPER_CENTER_OUTSIDE:
                 x = (float) (area.getX() + area.getWidth() / 2 - dim.width / 2);
                 y += 5;
@@ -1228,8 +1299,8 @@ public abstract class XYPlot extends Plot {
                 y = (float) area.getHeight() / 2 - dim.height / 2;
                 break;
             case RIGHT_OUTSIDE:
-                if (this.getAxis(Location.RIGHT).isDrawTickLabel() || this instanceof PolarPlot){
-                    x = (float) area.getX() + (float) area.getWidth() + (float)this.getTightInset().getRight();
+                if (this.getAxis(Location.RIGHT).isDrawTickLabel() || this instanceof PolarPlot) {
+                    x = (float) area.getX() + (float) area.getWidth() + (float) this.getTightInset().getRight();
                     x = x - dim.width;
                 } else {
                     x = (float) area.getX() + (float) area.getWidth() + 10;
@@ -1261,7 +1332,7 @@ public abstract class XYPlot extends Plot {
                 y = (float) (area.getY() + area.getHeight()) - dim.height - 10;
                 break;
         }
-        this.legend.draw(g, new PointF(x, y));
+        legend.draw(g, new PointF(x, y));
     }
 
     /**

@@ -57,6 +57,30 @@ public class ShapeUtil {
         }
         return shapes;
     }
+    
+    /**
+     * Create PointZ shapes
+     *
+     * @param x X coordinates
+     * @param y Y coordinates
+     * @param z Z coordinates
+     * @param m M coordinates
+     * @return PointZ shapes
+     */
+    public static List<PointZShape> createPointShapes(Array x, Array y, Array z, Array m) {
+        double xx, yy;
+        PointZShape ps;
+        List<PointZShape> shapes = new ArrayList<>();
+        for (int i = 0; i < x.getSize(); i++) {
+            ps = new PointZShape();
+            xx = x.getDouble(i);
+            yy = y.getDouble(i);
+            
+            ps.setPoint(new PointZ(xx, yy, z.getDouble(i), m.getDouble(i)));
+            shapes.add(ps);
+        }
+        return shapes;
+    }
 
     /**
      * Create polyline shapes
@@ -121,6 +145,43 @@ public class ShapeUtil {
         }
         if (points.size() >= 2) {
             pls = new PolylineShape();
+            pls.setPoints(points);
+            shapes.add(pls);
+        }
+
+        return shapes;
+    }
+    
+    /**
+     * Create polylineZ shapes
+     *
+     * @param x X coordinates
+     * @param y Y coordinates
+     * @param z Z coordinates
+     * @param m M coordinates
+     * @return PolylineZ shapes
+     */
+    public static List<PolylineZShape> createPolylineShapes(Array x, Array y, Array z, Array m) {
+        double xx, yy;
+        List<PointD> points = new ArrayList<>();
+        PolylineZShape pls;
+        List<PolylineZShape> shapes = new ArrayList<>();
+        for (int i = 0; i < x.getSize(); i++) {
+            xx = x.getDouble(i);
+            yy = y.getDouble(i);
+            if (Double.isNaN(xx)) {
+                if (points.size() >= 2) {
+                    pls = new PolylineZShape();
+                    pls.setPoints(points);
+                    shapes.add(pls);
+                }
+                points = new ArrayList<>();
+            } else {
+                points.add(new PointZ(xx, yy, z.getDouble(i), m.getDouble(i)));
+            }
+        }
+        if (points.size() >= 2) {
+            pls = new PolylineZShape();
             pls.setPoints(points);
             shapes.add(pls);
         }
@@ -197,7 +258,7 @@ public class ShapeUtil {
 
         return shapes;
     }
-
+    
     /**
      * Create polygon shape
      *
