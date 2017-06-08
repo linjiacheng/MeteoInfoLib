@@ -29,6 +29,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.meteoinfo.data.ArrayMath;
 import org.meteoinfo.data.GridArray;
+import org.meteoinfo.data.mapdata.geotiff.compression.CompressionDecoder;
+import org.meteoinfo.data.mapdata.geotiff.compression.LZWCompression;
 import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
@@ -948,6 +950,18 @@ public class GeoTiff {
                 break;
         }
         Array r = Array.factory(dataType, shape);
+        IFDEntry compressionTag = findTag(Tag.Compression);
+        CompressionDecoder cDecoder = null;
+        if (compressionTag != null){
+            int compression = compressionTag.value[0];
+            if (compression > 1){
+                switch (compression) {
+                    case 5:
+                        cDecoder = new LZWCompression();
+                        break;
+                }                        
+            }
+        }
         IFDEntry tileOffsetTag = findTag(Tag.TileOffsets);
         ByteBuffer buffer;
         if (tileOffsetTag != null) {
@@ -1115,7 +1129,12 @@ public class GeoTiff {
                     case 32:
                         for (int i = 0; i < stripNum; i++) {
                             stripOffset = stripOffsetTag.value[i];
+                            stripSize = stripSizeTag.value[i];
                             buffer = testReadData(stripOffset, stripSize);
+                            if (cDecoder != null){
+                                buffer = ByteBuffer.wrap(cDecoder.decode(buffer.array(), byteOrder));
+                                buffer.order(byteOrder);
+                            }
                             for (int j = 0; j < width * rowNum; j++) {
                                 for (int k = 0; k < samplesPerPixel; k++) {
                                     r.setFloat(idx, buffer.getFloat());

@@ -25,7 +25,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.math.BigDecimal;
-import java.nio.ByteOrder;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -1461,6 +1460,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
     public void closeDataFile() {
         try {
             _bw.close();
+            _bw = null;
         } catch (IOException ex) {
             Logger.getLogger(ARLDataInfo.class.getName()).log(Level.SEVERE, null, ex);
         }
