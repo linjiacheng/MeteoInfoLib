@@ -552,7 +552,7 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                             aLayer.editCellValue("Date", shapeNum, format.format((Date) PointList.get(i).get(j).get(1)));
                             aLayer.editCellValue("Lat", shapeNum, aPS.getPoint().Y);
                             aLayer.editCellValue("Lon", shapeNum, aPS.getPoint().X);
-                            aLayer.editCellValue("Height", shapeNum, PointList.get(i).get(j).get(2));
+                            aLayer.editCellValue("Altitude", shapeNum, PointList.get(i).get(j).get(2));
                             aLayer.editCellValue("Pressure", shapeNum, PointList.get(i).get(j).get(3));
                             if (isMultiVar) {
                                 for (int v = 1; v < varNums.get(0); v++) {
