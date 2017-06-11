@@ -1521,7 +1521,7 @@ public class MapView extends JPanel implements IWebMapPanel {
                                                         }
                                                         if (((PolylineShape) aShape).isClosed()) {
                                                             areaValue *= _projection.getProjInfo().getCoordinateReferenceSystem().getProjection().getFromMetres()
-                                                                * _projection.getProjInfo().getCoordinateReferenceSystem().getProjection().getFromMetres();
+                                                                    * _projection.getProjInfo().getCoordinateReferenceSystem().getProjection().getFromMetres();
                                                             _frmMeasure.setAreaValue(areaValue);
                                                         }
                                                         break;
@@ -4563,7 +4563,7 @@ public class MapView extends JPanel implements IWebMapPanel {
         java.awt.Shape oldRegion = g.getClip();
         for (MapLayer aLayer : layers) {
             if (aLayer.isVisible()) {
-                if (aLayer.isMaskout()) {
+                if (aLayer.isMaskout() && aLayer.getLayerType() != LayerTypes.WebMapLayer) {
                     setClipRegion(g);
                     if (oldRegion != null) {
                         g.clip(oldRegion);
@@ -5750,6 +5750,13 @@ public class MapView extends JPanel implements IWebMapPanel {
             }
         }
 
+        if (layer.isMaskout()) {
+            java.awt.Shape oldRegion = g.getClip();
+            setClipRegion(g);
+            if (oldRegion != null)
+                g.clip(oldRegion);
+        }
+
         //layer.setZoom(zoom);
         //layer.drawMapTiles(g, zoom, width, height);        
         Rectangle viewportBounds = layer.calculateViewportBounds(g, width, height);
@@ -5961,6 +5968,10 @@ public class MapView extends JPanel implements IWebMapPanel {
             if (aLayerHandle > 0) {
                 getMaskOutGraphicsPath(g);
                 g.setClip(this._maskOutGraphicsPath);
+//                java.awt.Shape oldRegion = g.getClip();
+//                if (oldRegion != null){
+//                    g.clip(oldRegion);
+//                }
             }
         }
     }
