@@ -1400,12 +1400,50 @@ public class ArrayUtil {
      * @return Result array
      */
     public static Array broadcast(Array a, int[] shape) {
+        int[] bshape = a.getShape();
+        if (bshape.length > shape.length){
+            return null;
+        }
+        
+        if (bshape.length < shape.length){
+            int miss = shape.length - a.getRank();
+            bshape = new int[shape.length];
+            for (int i = 0; i < shape.length; i++){
+                if (i < miss){
+                    bshape[i] = 1;
+                } else {
+                    bshape[i] = a.getShape()[i - miss];
+                }
+            }
+            a = a.reshape(bshape);
+        }
+                
+        //Check
+        boolean pass = true;
+        for (int i = 0; i < shape.length; i++){
+            if (shape[i] != bshape[i] && bshape[i] != 1){
+                pass = false;
+                break;
+            }
+        }
+        if (!pass){
+            return null;
+        }
+        
+        //Broadcast
+        Index aindex = a.getIndex();
         Array r = Array.factory(a.getDataType(), shape);
         Index index = r.getIndex();
-        int last = r.getRank() - 1;
+        int[] current;
         for (int i = 0; i < r.getSize(); i++) {
-            int[] current = index.getCurrentCounter();
-            r.setObject(index, a.getObject(current[last]));
+            current = index.getCurrentCounter();
+            for (int j = 0; j < shape.length; j++){
+                if (bshape[j] == 1)
+                    aindex.setDim(j, 0);
+                else
+                    aindex.setDim(j, current[j]);
+            }
+            r.setObject(index, a.getObject(aindex));
             index.incr();
         }
 

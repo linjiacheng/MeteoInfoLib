@@ -131,6 +131,144 @@ public class ArrayMath {
     // </editor-fold>
     // <editor-fold desc="Arithmetic">
     /**
+     * Broadcast check for two arrays.
+     *
+     * @param a Array a
+     * @param b Array b
+     * @return Can broadcast (1), can not broadcast (-1), same dimensions (0)
+     */
+    public static int broadcastCheck(Array a, Array b) {
+        int[] ashape = a.getShape();
+        int[] bshape = b.getShape();
+        int n = ashape.length;
+        int m = bshape.length;
+        if (n != m) {
+            int len = Math.min(n, m);
+            int na, nb;
+            for (int i = 0; i < len; i++) {
+                na = ashape[n - i - 1];
+                nb = bshape[m - i - 1];
+                if (na != nb && na != 1 && nb != 1) {
+                    return -1;
+                }
+            }
+            return 1;
+        } else {
+            boolean sameDim = true;
+            for (int i = 0; i < n; i++) {
+                if (ashape[i] != bshape[i]) {
+                    sameDim = false;
+                    break;
+                }
+            }
+            if (sameDim) {
+                return 0;
+            } else {
+                for (int i = 0; i < n; i++) {
+                    if (ashape[i] != bshape[i] && ashape[i] != 1 && bshape[i] != 1) {
+                        return -1;
+                    }
+                }
+                return 1;
+            }
+        }
+    }
+
+    /**
+     * Get broadcast shape from two arrays
+     *
+     * @param a Array a
+     * @param b Array b
+     * @return Broadcast shape
+     */
+    public static int[] broadcast(Array a, Array b) {
+        int[] ashape = a.getShape();
+        int[] bshape = b.getShape();
+        int n = ashape.length;
+        int m = bshape.length;
+        if (n == m) {
+            int[] shape = new int[n];
+            for (int i = 0; i < n; i++) {
+                shape[i] = Math.max(ashape[i], bshape[i]);
+            }
+            return shape;
+        } else {
+            int len = Math.max(n, m);
+            int[] shape = new int[len];
+            int na, nb;
+            for (int i = 0; i < len; i++) {
+                if (m < n) {
+                    na = ashape[n - i - 1];
+                    if (m - i - 1 >= 0) {
+                        nb = bshape[m - i - 1];
+                        shape[n - i - 1] = Math.max(na, nb);
+                    } else {
+                        shape[n - i - 1] = na;
+                    }
+                } else {
+                    nb = bshape[m - i - 1];
+                    if (n - i - 1 >= 0) {
+                        na = ashape[n - i - 1];
+                        shape[m - i - 1] = Math.max(na, nb);
+                    } else {
+                        shape[m - i - 1] = nb;
+                    }
+                }
+            }
+            return shape;
+        }
+    }
+
+    private static void setIndex(int broadcast, Index aindex, Index bindex, int[] current, int n, int na, int nb) {
+        if (broadcast == 0) {
+            aindex.set(current);
+            bindex.set(current);
+        } else {
+            int ia, ib;
+            for (int j = 0; j < n; j++) {
+                ia = na - j - 1;
+                if (ia >= 0) {
+                    if (aindex.getShape(ia) == 1) {
+                        aindex.setDim(ia, 0);
+                    } else {
+                        aindex.setDim(ia, current[n - j - 1]);
+                    }
+                }
+                ib = nb - j - 1;
+                if (ib >= 0) {
+                    if (bindex.getShape(ib) == 1) {
+                        bindex.setDim(ib, 0);
+                    } else {
+                        bindex.setDim(ib, current[n - j - 1]);
+                    }
+                }
+            }
+        }
+    }
+
+    private static void setIndex(Index aindex, Index bindex, int[] current, int n, int na, int nb) {
+        int ia, ib;
+        for (int j = 0; j < n; j++) {
+            ia = na - j - 1;
+            if (ia >= 0) {
+                if (aindex.getShape(ia) == 1) {
+                    aindex.setDim(ia, 0);
+                } else {
+                    aindex.setDim(ia, current[n - j - 1]);
+                }
+            }
+            ib = nb - j - 1;
+            if (ib >= 0) {
+                if (bindex.getShape(ib) == 1) {
+                    bindex.setDim(ib, 0);
+                } else {
+                    bindex.setDim(ib, current[n - j - 1]);
+                }
+            }
+        }
+    }
+
+    /**
      * Array add
      *
      * @param a Array a
@@ -205,17 +343,76 @@ public class ArrayMath {
         return addComplex(a, new Complex(b.real, b.imag));
     }
 
-    private static Array addInt(Array a, Array b) {
-        Array r = Array.factory(DataType.INT, a.getShape());
-        for (int i = 0; i < a.getSize(); i++) {
-            if (a.getInt(i) == Integer.MIN_VALUE || b.getInt(i) == Integer.MIN_VALUE) {
-                r.setInt(i, Integer.MIN_VALUE);
+    private static Array addInt_bak(Array a, Array b) {
+        int broadcast = broadcastCheck(a, b);
+        if (broadcast != -1) {
+            int[] shape;
+            if (broadcast == 0) {
+                shape = a.getShape();
             } else {
-                r.setInt(i, a.getInt(i) + b.getInt(i));
+                shape = broadcast(a, b);
             }
+            Array r = Array.factory(DataType.INT, shape);
+            Index index = r.getIndex();
+            Index aindex = a.getIndex();
+            Index bindex = b.getIndex();
+            int n = r.getRank();
+            int na = a.getRank();
+            int nb = b.getRank();
+            int[] current;
+            for (int i = 0; i < r.getSize(); i++) {
+                current = index.getCurrentCounter();
+                setIndex(broadcast, aindex, bindex, current, n, na, nb);
+                if (a.getInt(aindex) == Integer.MIN_VALUE || b.getInt(bindex) == Integer.MIN_VALUE) {
+                    r.setInt(i, Integer.MIN_VALUE);
+                } else {
+                    r.setInt(i, a.getInt(aindex) + b.getInt(bindex));
+                }
+                index.incr();
+            }
+            return r;
+        } else {
+            return null;
         }
+    }
 
-        return r;
+    private static Array addInt(Array a, Array b) {
+        int broadcast = broadcastCheck(a, b);
+        switch (broadcast) {
+            case 0:
+                Array r = Array.factory(DataType.INT, a.getShape());
+                for (int i = 0; i < a.getSize(); i++) {
+                    if (a.getInt(i) == Integer.MIN_VALUE || b.getInt(i) == Integer.MIN_VALUE) {
+                        r.setInt(i, Integer.MIN_VALUE);
+                    } else {
+                        r.setInt(i, a.getInt(i) + b.getInt(i));
+                    }
+                }
+                return r;
+            case 1:
+                int[] shape = broadcast(a, b);
+                r = Array.factory(DataType.INT, shape);
+                Index index = r.getIndex();
+                Index aindex = a.getIndex();
+                Index bindex = b.getIndex();
+                int n = r.getRank();
+                int na = a.getRank();
+                int nb = b.getRank();
+                int[] current;
+                for (int i = 0; i < r.getSize(); i++) {
+                    current = index.getCurrentCounter();
+                    setIndex(aindex, bindex, current, n, na, nb);
+                    if (a.getInt(aindex) == Integer.MIN_VALUE || b.getInt(bindex) == Integer.MIN_VALUE) {
+                        r.setInt(i, Integer.MIN_VALUE);
+                    } else {
+                        r.setInt(i, a.getInt(aindex) + b.getInt(bindex));
+                    }
+                    index.incr();
+                }
+                return r;
+            default:
+                return null;
+        }
     }
 
     private static Array addInt(Array a, int b) {
@@ -232,16 +429,42 @@ public class ArrayMath {
     }
 
     private static Array addFloat(Array a, Array b) {
-        Array r = Array.factory(DataType.FLOAT, a.getShape());
-        for (int i = 0; i < a.getSize(); i++) {
-            if (Float.isNaN(a.getFloat(i)) || Float.isNaN(b.getFloat(i))) {
-                r.setFloat(i, Float.NaN);
-            } else {
-                r.setFloat(i, a.getFloat(i) + b.getFloat(i));
-            }
+        int broadcast = broadcastCheck(a, b);
+        switch (broadcast) {
+            case 0:
+                Array r = Array.factory(DataType.FLOAT, a.getShape());
+                for (int i = 0; i < a.getSize(); i++) {
+                    if (Float.isNaN(a.getFloat(i)) || Float.isNaN(b.getFloat(i))) {
+                        r.setFloat(i, Float.NaN);
+                    } else {
+                        r.setFloat(i, a.getFloat(i) + b.getFloat(i));
+                    }
+                }
+                return r;
+            case 1:
+                int[] shape = broadcast(a, b);
+                r = Array.factory(DataType.FLOAT, shape);
+                Index index = r.getIndex();
+                Index aindex = a.getIndex();
+                Index bindex = b.getIndex();
+                int n = r.getRank();
+                int na = a.getRank();
+                int nb = b.getRank();
+                int[] current;
+                for (int i = 0; i < r.getSize(); i++) {
+                    current = index.getCurrentCounter();
+                    setIndex(aindex, bindex, current, n, na, nb);
+                    if (Float.isNaN(a.getFloat(aindex)) || Float.isNaN(b.getFloat(bindex))) {
+                        r.setFloat(i, Float.NaN);
+                    } else {
+                        r.setFloat(i, a.getFloat(aindex) + b.getFloat(bindex));
+                    }
+                    index.incr();
+                }
+                return r;
+            default:
+                return null;
         }
-
-        return r;
     }
 
     private static Array addFloat(Array a, float b) {
@@ -258,16 +481,42 @@ public class ArrayMath {
     }
 
     private static Array addDouble(Array a, Array b) {
-        Array r = Array.factory(DataType.DOUBLE, a.getShape());
-        for (int i = 0; i < a.getSize(); i++) {
-            if (Double.isNaN(a.getDouble(i)) || Double.isNaN(b.getDouble(i))) {
-                r.setDouble(i, Double.NaN);
-            } else {
-                r.setDouble(i, a.getDouble(i) + b.getDouble(i));
-            }
-        }
-
-        return r;
+        int broadcast = broadcastCheck(a, b);
+        switch (broadcast) {
+            case 0:
+                Array r = Array.factory(DataType.DOUBLE, a.getShape());
+                for (int i = 0; i < a.getSize(); i++) {
+                    if (Double.isNaN(a.getDouble(i)) || Double.isNaN(b.getDouble(i))) {
+                        r.setDouble(i, Double.NaN);
+                    } else {
+                        r.setDouble(i, a.getDouble(i) + b.getDouble(i));
+                    }
+                }
+                return r;
+            case 1:
+                int[] shape = broadcast(a, b);
+                r = Array.factory(DataType.DOUBLE, shape);
+                Index index = r.getIndex();
+                Index aindex = a.getIndex();
+                Index bindex = b.getIndex();
+                int n = r.getRank();
+                int na = a.getRank();
+                int nb = b.getRank();
+                int[] current;
+                for (int i = 0; i < r.getSize(); i++) {
+                    current = index.getCurrentCounter();
+                    setIndex(aindex, bindex, current, n, na, nb);
+                    if (Double.isNaN(a.getDouble(aindex)) || Double.isNaN(b.getDouble(bindex))) {
+                        r.setDouble(i, Double.NaN);
+                    } else {
+                        r.setDouble(i, a.getDouble(aindex) + b.getDouble(bindex));
+                    }
+                    index.incr();
+                }
+                return r;
+            default:
+                return null;
+        }        
     }
 
     private static Array addDouble(Array a, double b) {
@@ -284,43 +533,101 @@ public class ArrayMath {
     }
 
     private static Array addComplex(Array a, Array b) {
-        Array r = Array.factory(DataType.OBJECT, a.getShape());
-        if (isComplex(a)) {
-            if (isComplex(b)) {
-                Complex v1, v2;
-                for (int i = 0; i < a.getSize(); i++) {
-                    v1 = (Complex) a.getObject(i);
-                    v2 = (Complex) b.getObject(i);
-                    if (v1.isNaN() || v2.isNaN()) {
-                        r.setObject(i, v1);
+        int broadcast = broadcastCheck(a, b);
+        switch (broadcast) {
+            case 0:
+                Array r = Array.factory(DataType.OBJECT, a.getShape());
+                if (isComplex(a)) {
+                    if (isComplex(b)) {
+                        Complex v1, v2;
+                        for (int i = 0; i < a.getSize(); i++) {
+                            v1 = (Complex) a.getObject(i);
+                            v2 = (Complex) b.getObject(i);
+                            if (v1.isNaN() || v2.isNaN()) {
+                                r.setObject(i, v1);
+                            } else {
+                                r.setObject(i, v1.add(v2));
+                            }
+                        }
                     } else {
-                        r.setObject(i, v1.add(v2));
+                        Complex v;
+                        for (int i = 0; i < a.getSize(); i++) {
+                            v = (Complex) a.getObject(i);
+                            if (v.isNaN() || Double.isNaN(b.getDouble(i))) {
+                                r.setObject(i, new Complex(Double.NaN));
+                            } else {
+                                r.setObject(i, v.add(b.getDouble(i)));
+                            }
+                        }
                     }
-                }
-            } else {
-                Complex v;
-                for (int i = 0; i < a.getSize(); i++) {
-                    v = (Complex) a.getObject(i);
-                    if (v.isNaN() || Double.isNaN(b.getDouble(i))) {
-                        r.setObject(i, new Complex(Double.NaN));
-                    } else {
-                        r.setObject(i, v.add(b.getDouble(i)));
-                    }
-                }
-            }
-        } else {
-            Complex v;
-            for (int i = 0; i < a.getSize(); i++) {
-                v = (Complex) b.getObject(i);
-                if (v.isNaN() || Double.isNaN(a.getDouble(i))) {
-                    r.setObject(i, new Complex(Double.NaN));
                 } else {
-                    r.setObject(i, v.add(a.getDouble(i)));
+                    Complex v;
+                    for (int i = 0; i < a.getSize(); i++) {
+                        v = (Complex) b.getObject(i);
+                        if (v.isNaN() || Double.isNaN(a.getDouble(i))) {
+                            r.setObject(i, new Complex(Double.NaN));
+                        } else {
+                            r.setObject(i, v.add(a.getDouble(i)));
+                        }
+                    }
                 }
-            }
-        }
-
-        return r;
+                return r;
+            case 1:
+                int[] shape = broadcast(a, b);
+                r = Array.factory(DataType.OBJECT, shape);
+                Index index = r.getIndex();
+                Index aindex = a.getIndex();
+                Index bindex = b.getIndex();
+                int n = r.getRank();
+                int na = a.getRank();
+                int nb = b.getRank();
+                int[] current;                
+                if (isComplex(a)) {
+                    if (isComplex(b)) {
+                        Complex v1, v2;
+                        for (int i = 0; i < r.getSize(); i++) {
+                            current = index.getCurrentCounter();
+                            setIndex(aindex, bindex, current, n, na, nb);
+                            v1 = (Complex) a.getObject(aindex);
+                            v2 = (Complex) b.getObject(bindex);
+                            if (v1.isNaN() || v2.isNaN()) {
+                                r.setObject(i, v1);
+                            } else {
+                                r.setObject(i, v1.add(v2));
+                            }
+                            index.incr();
+                        }
+                    } else {
+                        Complex v;
+                        for (int i = 0; i < r.getSize(); i++) {
+                            current = index.getCurrentCounter();
+                            setIndex(aindex, bindex, current, n, na, nb);
+                            v = (Complex) a.getObject(aindex);
+                            if (v.isNaN() || Double.isNaN(b.getDouble(bindex))) {
+                                r.setObject(i, new Complex(Double.NaN));
+                            } else {
+                                r.setObject(i, v.add(b.getDouble(bindex)));
+                            }
+                            index.incr();
+                        }
+                    }
+                } else {
+                    Complex v;
+                    for (int i = 0; i < a.getSize(); i++) {
+                        current = index.getCurrentCounter();
+                        setIndex(aindex, bindex, current, n, na, nb);
+                        v = (Complex) b.getObject(bindex);
+                        if (v.isNaN() || Double.isNaN(a.getDouble(aindex))) {
+                            r.setObject(i, new Complex(Double.NaN));
+                        } else {
+                            r.setObject(i, v.add(a.getDouble(aindex)));
+                        }
+                    }
+                }
+                return r;
+            default:
+                return null;
+        }                
     }
 
     private static Array addComplex(Array a, double b) {
@@ -478,12 +785,34 @@ public class ArrayMath {
     }
 
     private static Array subInt(Array a, Array b) {
-        Array r = Array.factory(DataType.INT, a.getShape());
-        for (int i = 0; i < a.getSize(); i++) {
-            r.setInt(i, a.getInt(i) - b.getInt(i));
-        }
-
-        return r;
+        int broadcast = broadcastCheck(a, b);
+        switch (broadcast) {
+            case 0:
+                Array r = Array.factory(DataType.INT, a.getShape());
+                for (int i = 0; i < a.getSize(); i++) {
+                    r.setInt(i, a.getInt(i) - b.getInt(i));
+                }
+                return r;
+            case 1:
+                int[] shape = broadcast(a, b);
+                r = Array.factory(DataType.INT, shape);
+                Index index = r.getIndex();
+                Index aindex = a.getIndex();
+                Index bindex = b.getIndex();
+                int n = r.getRank();
+                int na = a.getRank();
+                int nb = b.getRank();
+                int[] current;
+                for (int i = 0; i < r.getSize(); i++) {
+                    current = index.getCurrentCounter();
+                    setIndex(aindex, bindex, current, n, na, nb);
+                    r.setInt(i, a.getInt(aindex) - b.getInt(bindex));
+                    index.incr();
+                }
+                return r;
+            default:
+                return null;
+        }        
     }
 
     private static Array subInt(Array a, int b) {
@@ -505,12 +834,42 @@ public class ArrayMath {
     }
 
     private static Array subFloat(Array a, Array b) {
-        Array r = Array.factory(DataType.FLOAT, a.getShape());
-        for (int i = 0; i < a.getSize(); i++) {
-            r.setFloat(i, a.getFloat(i) - b.getFloat(i));
+        int broadcast = broadcastCheck(a, b);
+        switch (broadcast) {
+            case 0:
+                Array r = Array.factory(DataType.FLOAT, a.getShape());
+                for (int i = 0; i < a.getSize(); i++) {
+                    if (Float.isNaN(a.getFloat(i)) || Float.isNaN(b.getFloat(i))) {
+                        r.setFloat(i, Float.NaN);
+                    } else {
+                        r.setFloat(i, a.getFloat(i) - b.getFloat(i));
+                    }
+                }
+                return r;
+            case 1:
+                int[] shape = broadcast(a, b);
+                r = Array.factory(DataType.FLOAT, shape);
+                Index index = r.getIndex();
+                Index aindex = a.getIndex();
+                Index bindex = b.getIndex();
+                int n = r.getRank();
+                int na = a.getRank();
+                int nb = b.getRank();
+                int[] current;
+                for (int i = 0; i < r.getSize(); i++) {
+                    current = index.getCurrentCounter();
+                    setIndex(aindex, bindex, current, n, na, nb);
+                    if (Float.isNaN(a.getFloat(aindex)) || Float.isNaN(b.getFloat(bindex))) {
+                        r.setFloat(i, Float.NaN);
+                    } else {
+                        r.setFloat(i, a.getFloat(aindex) - b.getFloat(bindex));
+                    }
+                    index.incr();
+                }
+                return r;
+            default:
+                return null;
         }
-
-        return r;
     }
 
     private static Array subFloat(Array a, float b) {
@@ -532,12 +891,42 @@ public class ArrayMath {
     }
 
     private static Array subDouble(Array a, Array b) {
-        Array r = Array.factory(DataType.DOUBLE, a.getShape());
-        for (int i = 0; i < a.getSize(); i++) {
-            r.setDouble(i, a.getDouble(i) - b.getDouble(i));
-        }
-
-        return r;
+        int broadcast = broadcastCheck(a, b);
+        switch (broadcast) {
+            case 0:
+                Array r = Array.factory(DataType.DOUBLE, a.getShape());
+                for (int i = 0; i < a.getSize(); i++) {
+                    if (Double.isNaN(a.getDouble(i)) || Double.isNaN(b.getDouble(i))) {
+                        r.setDouble(i, Double.NaN);
+                    } else {
+                        r.setDouble(i, a.getDouble(i) - b.getDouble(i));
+                    }
+                }
+                return r;
+            case 1:
+                int[] shape = broadcast(a, b);
+                r = Array.factory(DataType.DOUBLE, shape);
+                Index index = r.getIndex();
+                Index aindex = a.getIndex();
+                Index bindex = b.getIndex();
+                int n = r.getRank();
+                int na = a.getRank();
+                int nb = b.getRank();
+                int[] current;
+                for (int i = 0; i < r.getSize(); i++) {
+                    current = index.getCurrentCounter();
+                    setIndex(aindex, bindex, current, n, na, nb);
+                    if (Double.isNaN(a.getDouble(aindex)) || Double.isNaN(b.getDouble(bindex))) {
+                        r.setDouble(i, Double.NaN);
+                    } else {
+                        r.setDouble(i, a.getDouble(aindex) - b.getDouble(bindex));
+                    }
+                    index.incr();
+                }
+                return r;
+            default:
+                return null;
+        }                
     }
 
     private static Array subDouble(Array a, double b) {
@@ -559,43 +948,101 @@ public class ArrayMath {
     }
 
     private static Array subComplex(Array a, Array b) {
-        Array r = Array.factory(DataType.OBJECT, a.getShape());
-        if (isComplex(a)) {
-            if (isComplex(b)) {
-                Complex v1, v2;
-                for (int i = 0; i < a.getSize(); i++) {
-                    v1 = (Complex) a.getObject(i);
-                    v2 = (Complex) b.getObject(i);
-                    if (v1.isNaN() || v2.isNaN()) {
-                        r.setObject(i, v1);
+        int broadcast = broadcastCheck(a, b);
+        switch (broadcast) {
+            case 0:
+                Array r = Array.factory(DataType.OBJECT, a.getShape());
+                if (isComplex(a)) {
+                    if (isComplex(b)) {
+                        Complex v1, v2;
+                        for (int i = 0; i < a.getSize(); i++) {
+                            v1 = (Complex) a.getObject(i);
+                            v2 = (Complex) b.getObject(i);
+                            if (v1.isNaN() || v2.isNaN()) {
+                                r.setObject(i, v1);
+                            } else {
+                                r.setObject(i, v1.subtract(v2));
+                            }
+                        }
                     } else {
-                        r.setObject(i, v1.subtract(v2));
+                        Complex v;
+                        for (int i = 0; i < a.getSize(); i++) {
+                            v = (Complex) a.getObject(i);
+                            if (v.isNaN() || Double.isNaN(b.getDouble(i))) {
+                                r.setObject(i, new Complex(Double.NaN));
+                            } else {
+                                r.setObject(i, v.subtract(b.getDouble(i)));
+                            }
+                        }
                     }
-                }
-            } else {
-                Complex v;
-                for (int i = 0; i < a.getSize(); i++) {
-                    v = (Complex) a.getObject(i);
-                    if (v.isNaN() || Double.isNaN(b.getDouble(i))) {
-                        r.setObject(i, new Complex(Double.NaN));
-                    } else {
-                        r.setObject(i, v.subtract(b.getDouble(i)));
-                    }
-                }
-            }
-        } else {
-            Complex v;
-            for (int i = 0; i < a.getSize(); i++) {
-                v = (Complex) b.getObject(i);
-                if (v.isNaN() || Double.isNaN(a.getDouble(i))) {
-                    r.setObject(i, new Complex(Double.NaN));
                 } else {
-                    r.setObject(i, v.rSubtract(a.getDouble(i)));
+                    Complex v;
+                    for (int i = 0; i < a.getSize(); i++) {
+                        v = (Complex) b.getObject(i);
+                        if (v.isNaN() || Double.isNaN(a.getDouble(i))) {
+                            r.setObject(i, new Complex(Double.NaN));
+                        } else {
+                            r.setObject(i, v.subtract(a.getDouble(i)));
+                        }
+                    }
                 }
-            }
-        }
-
-        return r;
+                return r;
+            case 1:
+                int[] shape = broadcast(a, b);
+                r = Array.factory(DataType.OBJECT, shape);
+                Index index = r.getIndex();
+                Index aindex = a.getIndex();
+                Index bindex = b.getIndex();
+                int n = r.getRank();
+                int na = a.getRank();
+                int nb = b.getRank();
+                int[] current;                
+                if (isComplex(a)) {
+                    if (isComplex(b)) {
+                        Complex v1, v2;
+                        for (int i = 0; i < r.getSize(); i++) {
+                            current = index.getCurrentCounter();
+                            setIndex(aindex, bindex, current, n, na, nb);
+                            v1 = (Complex) a.getObject(aindex);
+                            v2 = (Complex) b.getObject(bindex);
+                            if (v1.isNaN() || v2.isNaN()) {
+                                r.setObject(i, v1);
+                            } else {
+                                r.setObject(i, v1.subtract(v2));
+                            }
+                            index.incr();
+                        }
+                    } else {
+                        Complex v;
+                        for (int i = 0; i < r.getSize(); i++) {
+                            current = index.getCurrentCounter();
+                            setIndex(aindex, bindex, current, n, na, nb);
+                            v = (Complex) a.getObject(aindex);
+                            if (v.isNaN() || Double.isNaN(b.getDouble(bindex))) {
+                                r.setObject(i, new Complex(Double.NaN));
+                            } else {
+                                r.setObject(i, v.subtract(b.getDouble(bindex)));
+                            }
+                            index.incr();
+                        }
+                    }
+                } else {
+                    Complex v;
+                    for (int i = 0; i < a.getSize(); i++) {
+                        current = index.getCurrentCounter();
+                        setIndex(aindex, bindex, current, n, na, nb);
+                        v = (Complex) b.getObject(bindex);
+                        if (v.isNaN() || Double.isNaN(a.getDouble(aindex))) {
+                            r.setObject(i, new Complex(Double.NaN));
+                        } else {
+                            r.setObject(i, v.subtract(a.getDouble(aindex)));
+                        }
+                    }
+                }
+                return r;
+            default:
+                return null;
+        }                   
     }
 
     private static Array subComplex(Array a, double b) {
@@ -734,16 +1181,42 @@ public class ArrayMath {
     }
 
     private static Array mulInt(Array a, Array b) {
-        Array r = Array.factory(DataType.INT, a.getShape());
-        for (int i = 0; i < a.getSize(); i++) {
-            if (a.getInt(i) == Integer.MIN_VALUE || b.getInt(i) == Integer.MIN_VALUE) {
-                r.setInt(i, Integer.MIN_VALUE);
-            } else {
-                r.setInt(i, a.getInt(i) * b.getInt(i));
-            }
-        }
-
-        return r;
+        int broadcast = broadcastCheck(a, b);
+        switch (broadcast) {
+            case 0:
+                Array r = Array.factory(DataType.INT, a.getShape());
+                for (int i = 0; i < a.getSize(); i++) {
+                    if (a.getInt(i) == Integer.MIN_VALUE || b.getInt(i) == Integer.MIN_VALUE) {
+                        r.setInt(i, Integer.MIN_VALUE);
+                    } else {
+                        r.setInt(i, a.getInt(i) * b.getInt(i));
+                    }
+                }
+                return r;
+            case 1:
+                int[] shape = broadcast(a, b);
+                r = Array.factory(DataType.INT, shape);
+                Index index = r.getIndex();
+                Index aindex = a.getIndex();
+                Index bindex = b.getIndex();
+                int n = r.getRank();
+                int na = a.getRank();
+                int nb = b.getRank();
+                int[] current;
+                for (int i = 0; i < r.getSize(); i++) {
+                    current = index.getCurrentCounter();
+                    setIndex(aindex, bindex, current, n, na, nb);
+                    if (a.getInt(aindex) == Integer.MIN_VALUE || b.getInt(bindex) == Integer.MIN_VALUE) {
+                        r.setInt(i, Integer.MIN_VALUE);
+                    } else {
+                        r.setInt(i, a.getInt(aindex) * b.getInt(bindex));
+                    }
+                    index.incr();
+                }
+                return r;
+            default:
+                return null;
+        }        
     }
 
     private static Array mulInt(Array a, int b) {
@@ -760,16 +1233,42 @@ public class ArrayMath {
     }
 
     private static Array mulFloat(Array a, Array b) {
-        Array r = Array.factory(DataType.FLOAT, a.getShape());
-        for (int i = 0; i < a.getSize(); i++) {
-            if (Float.isNaN(a.getFloat(i)) || Float.isNaN(b.getFloat(i))) {
-                r.setFloat(i, Float.NaN);
-            } else {
-                r.setFloat(i, a.getFloat(i) * b.getFloat(i));
-            }
-        }
-
-        return r;
+        int broadcast = broadcastCheck(a, b);
+        switch (broadcast) {
+            case 0:
+                Array r = Array.factory(DataType.FLOAT, a.getShape());
+                for (int i = 0; i < a.getSize(); i++) {
+                    if (Float.isNaN(a.getFloat(i)) || Float.isNaN(b.getFloat(i))) {
+                        r.setFloat(i, Float.NaN);
+                    } else {
+                        r.setFloat(i, a.getFloat(i) * b.getFloat(i));
+                    }
+                }
+                return r;
+            case 1:
+                int[] shape = broadcast(a, b);
+                r = Array.factory(DataType.FLOAT, shape);
+                Index index = r.getIndex();
+                Index aindex = a.getIndex();
+                Index bindex = b.getIndex();
+                int n = r.getRank();
+                int na = a.getRank();
+                int nb = b.getRank();
+                int[] current;
+                for (int i = 0; i < r.getSize(); i++) {
+                    current = index.getCurrentCounter();
+                    setIndex(aindex, bindex, current, n, na, nb);
+                    if (Float.isNaN(a.getFloat(aindex)) || Float.isNaN(b.getFloat(bindex))) {
+                        r.setFloat(i, Float.NaN);
+                    } else {
+                        r.setFloat(i, a.getFloat(aindex) * b.getFloat(bindex));
+                    }
+                    index.incr();
+                }
+                return r;
+            default:
+                return null;
+        }        
     }
 
     private static Array mulFloat(Array a, float b) {
@@ -786,16 +1285,42 @@ public class ArrayMath {
     }
 
     private static Array mulDouble(Array a, Array b) {
-        Array r = Array.factory(DataType.DOUBLE, a.getShape());
-        for (int i = 0; i < a.getSize(); i++) {
-            if (Double.isNaN(a.getDouble(i)) || Double.isNaN(b.getDouble(i))) {
-                r.setDouble(i, Double.NaN);
-            } else {
-                r.setDouble(i, a.getDouble(i) * b.getDouble(i));
-            }
-        }
-
-        return r;
+        int broadcast = broadcastCheck(a, b);
+        switch (broadcast) {
+            case 0:
+                Array r = Array.factory(DataType.DOUBLE, a.getShape());
+                for (int i = 0; i < a.getSize(); i++) {
+                    if (Double.isNaN(a.getDouble(i)) || Double.isNaN(b.getDouble(i))) {
+                        r.setDouble(i, Double.NaN);
+                    } else {
+                        r.setDouble(i, a.getDouble(i) * b.getDouble(i));
+                    }
+                }
+                return r;
+            case 1:
+                int[] shape = broadcast(a, b);
+                r = Array.factory(DataType.DOUBLE, shape);
+                Index index = r.getIndex();
+                Index aindex = a.getIndex();
+                Index bindex = b.getIndex();
+                int n = r.getRank();
+                int na = a.getRank();
+                int nb = b.getRank();
+                int[] current;
+                for (int i = 0; i < r.getSize(); i++) {
+                    current = index.getCurrentCounter();
+                    setIndex(aindex, bindex, current, n, na, nb);
+                    if (Double.isNaN(a.getDouble(aindex)) || Double.isNaN(b.getDouble(bindex))) {
+                        r.setDouble(i, Double.NaN);
+                    } else {
+                        r.setDouble(i, a.getDouble(aindex) * b.getDouble(bindex));
+                    }
+                    index.incr();
+                }
+                return r;
+            default:
+                return null;
+        }          
     }
 
     private static Array mulDouble(Array a, double b) {
@@ -812,43 +1337,101 @@ public class ArrayMath {
     }
 
     private static Array mulComplex(Array a, Array b) {
-        Array r = Array.factory(DataType.OBJECT, a.getShape());
-        if (isComplex(a)) {
-            if (isComplex(b)) {
-                Complex v1, v2;
-                for (int i = 0; i < a.getSize(); i++) {
-                    v1 = (Complex) a.getObject(i);
-                    v2 = (Complex) b.getObject(i);
-                    if (v1.isNaN() || v2.isNaN()) {
-                        r.setObject(i, v1);
+        int broadcast = broadcastCheck(a, b);
+        switch (broadcast) {
+            case 0:
+                Array r = Array.factory(DataType.OBJECT, a.getShape());
+                if (isComplex(a)) {
+                    if (isComplex(b)) {
+                        Complex v1, v2;
+                        for (int i = 0; i < a.getSize(); i++) {
+                            v1 = (Complex) a.getObject(i);
+                            v2 = (Complex) b.getObject(i);
+                            if (v1.isNaN() || v2.isNaN()) {
+                                r.setObject(i, v1);
+                            } else {
+                                r.setObject(i, v1.multiply(v2));
+                            }
+                        }
                     } else {
-                        r.setObject(i, v1.multiply(v2));
+                        Complex v;
+                        for (int i = 0; i < a.getSize(); i++) {
+                            v = (Complex) a.getObject(i);
+                            if (v.isNaN() || Double.isNaN(b.getDouble(i))) {
+                                r.setObject(i, new Complex(Double.NaN));
+                            } else {
+                                r.setObject(i, v.multiply(b.getDouble(i)));
+                            }
+                        }
                     }
-                }
-            } else {
-                Complex v;
-                for (int i = 0; i < a.getSize(); i++) {
-                    v = (Complex) a.getObject(i);
-                    if (v.isNaN() || Double.isNaN(b.getDouble(i))) {
-                        r.setObject(i, new Complex(Double.NaN));
-                    } else {
-                        r.setObject(i, v.multiply(b.getDouble(i)));
-                    }
-                }
-            }
-        } else {
-            Complex v;
-            for (int i = 0; i < a.getSize(); i++) {
-                v = (Complex) b.getObject(i);
-                if (v.isNaN() || Double.isNaN(a.getDouble(i))) {
-                    r.setObject(i, new Complex(Double.NaN));
                 } else {
-                    r.setObject(i, v.multiply(a.getDouble(i)));
+                    Complex v;
+                    for (int i = 0; i < a.getSize(); i++) {
+                        v = (Complex) b.getObject(i);
+                        if (v.isNaN() || Double.isNaN(a.getDouble(i))) {
+                            r.setObject(i, new Complex(Double.NaN));
+                        } else {
+                            r.setObject(i, v.multiply(a.getDouble(i)));
+                        }
+                    }
                 }
-            }
-        }
-
-        return r;
+                return r;
+            case 1:
+                int[] shape = broadcast(a, b);
+                r = Array.factory(DataType.OBJECT, shape);
+                Index index = r.getIndex();
+                Index aindex = a.getIndex();
+                Index bindex = b.getIndex();
+                int n = r.getRank();
+                int na = a.getRank();
+                int nb = b.getRank();
+                int[] current;                
+                if (isComplex(a)) {
+                    if (isComplex(b)) {
+                        Complex v1, v2;
+                        for (int i = 0; i < r.getSize(); i++) {
+                            current = index.getCurrentCounter();
+                            setIndex(aindex, bindex, current, n, na, nb);
+                            v1 = (Complex) a.getObject(aindex);
+                            v2 = (Complex) b.getObject(bindex);
+                            if (v1.isNaN() || v2.isNaN()) {
+                                r.setObject(i, v1);
+                            } else {
+                                r.setObject(i, v1.multiply(v2));
+                            }
+                            index.incr();
+                        }
+                    } else {
+                        Complex v;
+                        for (int i = 0; i < r.getSize(); i++) {
+                            current = index.getCurrentCounter();
+                            setIndex(aindex, bindex, current, n, na, nb);
+                            v = (Complex) a.getObject(aindex);
+                            if (v.isNaN() || Double.isNaN(b.getDouble(bindex))) {
+                                r.setObject(i, new Complex(Double.NaN));
+                            } else {
+                                r.setObject(i, v.multiply(b.getDouble(bindex)));
+                            }
+                            index.incr();
+                        }
+                    }
+                } else {
+                    Complex v;
+                    for (int i = 0; i < a.getSize(); i++) {
+                        current = index.getCurrentCounter();
+                        setIndex(aindex, bindex, current, n, na, nb);
+                        v = (Complex) b.getObject(bindex);
+                        if (v.isNaN() || Double.isNaN(a.getDouble(aindex))) {
+                            r.setObject(i, new Complex(Double.NaN));
+                        } else {
+                            r.setObject(i, v.multiply(a.getDouble(aindex)));
+                        }
+                    }
+                }
+                return r;
+            default:
+                return null;
+        }               
     }
 
     private static Array mulComplex(Array a, double b) {
@@ -1006,12 +1589,42 @@ public class ArrayMath {
     }
 
     private static Array divInt(Array a, Array b) {
-        Array r = Array.factory(DataType.INT, a.getShape());
-        for (int i = 0; i < a.getSize(); i++) {
-            r.setInt(i, a.getInt(i) / b.getInt(i));
+        int broadcast = broadcastCheck(a, b);
+        switch (broadcast) {
+            case 0:
+                Array r = Array.factory(DataType.INT, a.getShape());
+                for (int i = 0; i < a.getSize(); i++) {
+                    if (a.getInt(i) == Integer.MIN_VALUE || b.getInt(i) == Integer.MIN_VALUE) {
+                        r.setInt(i, Integer.MIN_VALUE);
+                    } else {
+                        r.setInt(i, a.getInt(i) / b.getInt(i));
+                    }
+                }
+                return r;
+            case 1:
+                int[] shape = broadcast(a, b);
+                r = Array.factory(DataType.INT, shape);
+                Index index = r.getIndex();
+                Index aindex = a.getIndex();
+                Index bindex = b.getIndex();
+                int n = r.getRank();
+                int na = a.getRank();
+                int nb = b.getRank();
+                int[] current;
+                for (int i = 0; i < r.getSize(); i++) {
+                    current = index.getCurrentCounter();
+                    setIndex(aindex, bindex, current, n, na, nb);
+                    if (a.getInt(aindex) == Integer.MIN_VALUE || b.getInt(bindex) == Integer.MIN_VALUE) {
+                        r.setInt(i, Integer.MIN_VALUE);
+                    } else {
+                        r.setInt(i, a.getInt(aindex) / b.getInt(bindex));
+                    }
+                    index.incr();
+                }
+                return r;
+            default:
+                return null;
         }
-
-        return r;
     }
 
     private static Array divInt(Array a, int b) {
@@ -1033,12 +1646,42 @@ public class ArrayMath {
     }
 
     private static Array divFloat(Array a, Array b) {
-        Array r = Array.factory(DataType.FLOAT, a.getShape());
-        for (int i = 0; i < a.getSize(); i++) {
-            r.setFloat(i, a.getFloat(i) / b.getFloat(i));
+        int broadcast = broadcastCheck(a, b);
+        switch (broadcast) {
+            case 0:
+                Array r = Array.factory(DataType.FLOAT, a.getShape());
+                for (int i = 0; i < a.getSize(); i++) {
+                    if (Float.isNaN(a.getFloat(i)) || Float.isNaN(b.getFloat(i))) {
+                        r.setFloat(i, Float.NaN);
+                    } else {
+                        r.setFloat(i, a.getFloat(i) / b.getFloat(i));
+                    }
+                }
+                return r;
+            case 1:
+                int[] shape = broadcast(a, b);
+                r = Array.factory(DataType.FLOAT, shape);
+                Index index = r.getIndex();
+                Index aindex = a.getIndex();
+                Index bindex = b.getIndex();
+                int n = r.getRank();
+                int na = a.getRank();
+                int nb = b.getRank();
+                int[] current;
+                for (int i = 0; i < r.getSize(); i++) {
+                    current = index.getCurrentCounter();
+                    setIndex(aindex, bindex, current, n, na, nb);
+                    if (Float.isNaN(a.getFloat(aindex)) || Float.isNaN(b.getFloat(bindex))) {
+                        r.setFloat(i, Float.NaN);
+                    } else {
+                        r.setFloat(i, a.getFloat(aindex) / b.getFloat(bindex));
+                    }
+                    index.incr();
+                }
+                return r;
+            default:
+                return null;
         }
-
-        return r;
     }
 
     private static Array divFloat(Array a, float b) {
@@ -1060,12 +1703,42 @@ public class ArrayMath {
     }
 
     private static Array divDouble(Array a, Array b) {
-        Array r = Array.factory(DataType.DOUBLE, a.getShape());
-        for (int i = 0; i < a.getSize(); i++) {
-            r.setDouble(i, a.getDouble(i) / b.getDouble(i));
-        }
-
-        return r;
+        int broadcast = broadcastCheck(a, b);
+        switch (broadcast) {
+            case 0:
+                Array r = Array.factory(DataType.DOUBLE, a.getShape());
+                for (int i = 0; i < a.getSize(); i++) {
+                    if (Double.isNaN(a.getDouble(i)) || Double.isNaN(b.getDouble(i))) {
+                        r.setDouble(i, Double.NaN);
+                    } else {
+                        r.setDouble(i, a.getDouble(i) / b.getDouble(i));
+                    }
+                }
+                return r;
+            case 1:
+                int[] shape = broadcast(a, b);
+                r = Array.factory(DataType.DOUBLE, shape);
+                Index index = r.getIndex();
+                Index aindex = a.getIndex();
+                Index bindex = b.getIndex();
+                int n = r.getRank();
+                int na = a.getRank();
+                int nb = b.getRank();
+                int[] current;
+                for (int i = 0; i < r.getSize(); i++) {
+                    current = index.getCurrentCounter();
+                    setIndex(aindex, bindex, current, n, na, nb);
+                    if (Double.isNaN(a.getDouble(aindex)) || Double.isNaN(b.getDouble(bindex))) {
+                        r.setDouble(i, Double.NaN);
+                    } else {
+                        r.setDouble(i, a.getDouble(aindex) / b.getDouble(bindex));
+                    }
+                    index.incr();
+                }
+                return r;
+            default:
+                return null;
+        }             
     }
 
     private static Array divDouble(Array a, double b) {
@@ -1087,43 +1760,101 @@ public class ArrayMath {
     }
 
     private static Array divComplex(Array a, Array b) {
-        Array r = Array.factory(DataType.OBJECT, a.getShape());
-        if (isComplex(a)) {
-            if (isComplex(b)) {
-                Complex v1, v2;
-                for (int i = 0; i < a.getSize(); i++) {
-                    v1 = (Complex) a.getObject(i);
-                    v2 = (Complex) b.getObject(i);
-                    if (v1.isNaN() || v2.isNaN()) {
-                        r.setObject(i, v1);
+        int broadcast = broadcastCheck(a, b);
+        switch (broadcast) {
+            case 0:
+                Array r = Array.factory(DataType.OBJECT, a.getShape());
+                if (isComplex(a)) {
+                    if (isComplex(b)) {
+                        Complex v1, v2;
+                        for (int i = 0; i < a.getSize(); i++) {
+                            v1 = (Complex) a.getObject(i);
+                            v2 = (Complex) b.getObject(i);
+                            if (v1.isNaN() || v2.isNaN()) {
+                                r.setObject(i, v1);
+                            } else {
+                                r.setObject(i, v1.divide(v2));
+                            }
+                        }
                     } else {
-                        r.setObject(i, v1.divide(v2));
+                        Complex v;
+                        for (int i = 0; i < a.getSize(); i++) {
+                            v = (Complex) a.getObject(i);
+                            if (v.isNaN() || Double.isNaN(b.getDouble(i))) {
+                                r.setObject(i, new Complex(Double.NaN));
+                            } else {
+                                r.setObject(i, v.divide(b.getDouble(i)));
+                            }
+                        }
                     }
-                }
-            } else {
-                Complex v;
-                for (int i = 0; i < a.getSize(); i++) {
-                    v = (Complex) a.getObject(i);
-                    if (v.isNaN() || Double.isNaN(b.getDouble(i))) {
-                        r.setObject(i, new Complex(Double.NaN));
-                    } else {
-                        r.setObject(i, v.divide(b.getDouble(i)));
-                    }
-                }
-            }
-        } else {
-            Complex v;
-            for (int i = 0; i < a.getSize(); i++) {
-                v = (Complex) b.getObject(i);
-                if (v.isNaN() || Double.isNaN(a.getDouble(i))) {
-                    r.setObject(i, new Complex(Double.NaN));
                 } else {
-                    r.setObject(i, v.rDivide(a.getDouble(i)));
+                    Complex v;
+                    for (int i = 0; i < a.getSize(); i++) {
+                        v = (Complex) b.getObject(i);
+                        if (v.isNaN() || Double.isNaN(a.getDouble(i))) {
+                            r.setObject(i, new Complex(Double.NaN));
+                        } else {
+                            r.setObject(i, v.divide(a.getDouble(i)));
+                        }
+                    }
                 }
-            }
-        }
-
-        return r;
+                return r;
+            case 1:
+                int[] shape = broadcast(a, b);
+                r = Array.factory(DataType.OBJECT, shape);
+                Index index = r.getIndex();
+                Index aindex = a.getIndex();
+                Index bindex = b.getIndex();
+                int n = r.getRank();
+                int na = a.getRank();
+                int nb = b.getRank();
+                int[] current;                
+                if (isComplex(a)) {
+                    if (isComplex(b)) {
+                        Complex v1, v2;
+                        for (int i = 0; i < r.getSize(); i++) {
+                            current = index.getCurrentCounter();
+                            setIndex(aindex, bindex, current, n, na, nb);
+                            v1 = (Complex) a.getObject(aindex);
+                            v2 = (Complex) b.getObject(bindex);
+                            if (v1.isNaN() || v2.isNaN()) {
+                                r.setObject(i, v1);
+                            } else {
+                                r.setObject(i, v1.divide(v2));
+                            }
+                            index.incr();
+                        }
+                    } else {
+                        Complex v;
+                        for (int i = 0; i < r.getSize(); i++) {
+                            current = index.getCurrentCounter();
+                            setIndex(aindex, bindex, current, n, na, nb);
+                            v = (Complex) a.getObject(aindex);
+                            if (v.isNaN() || Double.isNaN(b.getDouble(bindex))) {
+                                r.setObject(i, new Complex(Double.NaN));
+                            } else {
+                                r.setObject(i, v.divide(b.getDouble(bindex)));
+                            }
+                            index.incr();
+                        }
+                    }
+                } else {
+                    Complex v;
+                    for (int i = 0; i < a.getSize(); i++) {
+                        current = index.getCurrentCounter();
+                        setIndex(aindex, bindex, current, n, na, nb);
+                        v = (Complex) b.getObject(bindex);
+                        if (v.isNaN() || Double.isNaN(a.getDouble(aindex))) {
+                            r.setObject(i, new Complex(Double.NaN));
+                        } else {
+                            r.setObject(i, v.divide(a.getDouble(aindex)));
+                        }
+                    }
+                }
+                return r;
+            default:
+                return null;
+        }             
     }
 
     private static Array divComplex(Array a, double b) {
@@ -1290,8 +2021,7 @@ public class ArrayMath {
      * @return Result array
      */
     public static Array pow(Array a, Array b) {
-        DataType bType = ArrayMath.getDataType(a);
-        DataType type = ArrayMath.commonType(b.getDataType(), bType);
+        DataType type = ArrayMath.commonType(a.getDataType(), b.getDataType());
         switch (type) {
             case SHORT:
             case INT:
@@ -1327,12 +2057,34 @@ public class ArrayMath {
     }
 
     private static Array powInt(Array a, Array b) {
-        Array r = Array.factory(DataType.INT, b.getShape());
-        for (int i = 0; i < b.getSize(); i++) {
-            r.setInt(i, (int) Math.pow(a.getInt(i), b.getInt(i)));
+        int broadcast = broadcastCheck(a, b);
+        switch (broadcast) {
+            case 0:
+                Array r = Array.factory(DataType.INT, a.getShape());
+                for (int i = 0; i < a.getSize(); i++) {
+                    r.setInt(i, (int) Math.pow(a.getInt(i), b.getInt(i)));
+                }
+                return r;
+            case 1:
+                int[] shape = broadcast(a, b);
+                r = Array.factory(DataType.INT, shape);
+                Index index = r.getIndex();
+                Index aindex = a.getIndex();
+                Index bindex = b.getIndex();
+                int n = r.getRank();
+                int na = a.getRank();
+                int nb = b.getRank();
+                int[] current;
+                for (int i = 0; i < r.getSize(); i++) {
+                    current = index.getCurrentCounter();
+                    setIndex(aindex, bindex, current, n, na, nb);
+                    r.setInt(i, (int) Math.pow(a.getInt(aindex), b.getInt(bindex)));
+                    index.incr();
+                }
+                return r;
+            default:
+                return null;
         }
-
-        return r;
     }
 
     private static Array powDouble(Array a, double b) {
@@ -1354,52 +2106,140 @@ public class ArrayMath {
     }
 
     private static Array powDouble(Array a, Array b) {
-        Array r = Array.factory(DataType.DOUBLE, b.getShape());
-        for (int i = 0; i < b.getSize(); i++) {
-            r.setDouble(i, Math.pow(a.getDouble(i), b.getDouble(i)));
+        int broadcast = broadcastCheck(a, b);
+        switch (broadcast) {
+            case 0:
+                Array r = Array.factory(DataType.DOUBLE, a.getShape());
+                for (int i = 0; i < a.getSize(); i++) {
+                    if (Double.isNaN(a.getDouble(i)) || Double.isNaN(b.getDouble(i))) {
+                        r.setDouble(i, Double.NaN);
+                    } else {
+                        r.setDouble(i, Math.pow(a.getDouble(i), b.getDouble(i)));
+                    }
+                }
+                return r;
+            case 1:
+                int[] shape = broadcast(a, b);
+                r = Array.factory(DataType.DOUBLE, shape);
+                Index index = r.getIndex();
+                Index aindex = a.getIndex();
+                Index bindex = b.getIndex();
+                int n = r.getRank();
+                int na = a.getRank();
+                int nb = b.getRank();
+                int[] current;
+                for (int i = 0; i < r.getSize(); i++) {
+                    current = index.getCurrentCounter();
+                    setIndex(aindex, bindex, current, n, na, nb);
+                    if (Double.isNaN(a.getDouble(aindex)) || Double.isNaN(b.getDouble(bindex))) {
+                        r.setDouble(i, Double.NaN);
+                    } else {
+                        r.setDouble(i, Math.pow(a.getDouble(aindex), b.getDouble(bindex)));
+                    }
+                    index.incr();
+                }
+                return r;
+            default:
+                return null;
         }
-
-        return r;
     }
 
     private static Array powComplex(Array a, Array b) {
-        Array r = Array.factory(DataType.OBJECT, a.getShape());
-        if (isComplex(a)) {
-            if (isComplex(b)) {
-                Complex v1, v2;
-                for (int i = 0; i < a.getSize(); i++) {
-                    v1 = (Complex) a.getObject(i);
-                    v2 = (Complex) b.getObject(i);
-                    if (v1.isNaN() || v2.isNaN()) {
-                        r.setObject(i, v1);
+        int broadcast = broadcastCheck(a, b);
+        switch (broadcast) {
+            case 0:
+                Array r = Array.factory(DataType.OBJECT, a.getShape());
+                if (isComplex(a)) {
+                    if (isComplex(b)) {
+                        Complex v1, v2;
+                        for (int i = 0; i < a.getSize(); i++) {
+                            v1 = (Complex) a.getObject(i);
+                            v2 = (Complex) b.getObject(i);
+                            if (v1.isNaN() || v2.isNaN()) {
+                                r.setObject(i, v1);
+                            } else {
+                                r.setObject(i, v1.pow(v2));
+                            }
+                        }
                     } else {
-                        r.setObject(i, v1.pow(v2));
+                        Complex v;
+                        for (int i = 0; i < a.getSize(); i++) {
+                            v = (Complex) a.getObject(i);
+                            if (v.isNaN() || Double.isNaN(b.getDouble(i))) {
+                                r.setObject(i, new Complex(Double.NaN));
+                            } else {
+                                r.setObject(i, v.pow(b.getDouble(i)));
+                            }
+                        }
                     }
-                }
-            } else {
-                Complex v;
-                for (int i = 0; i < a.getSize(); i++) {
-                    v = (Complex) a.getObject(i);
-                    if (v.isNaN() || Double.isNaN(b.getDouble(i))) {
-                        r.setObject(i, new Complex(Double.NaN));
-                    } else {
-                        r.setObject(i, v.pow(b.getDouble(i)));
-                    }
-                }
-            }
-        } else {
-            Complex v;
-            for (int i = 0; i < a.getSize(); i++) {
-                v = (Complex) b.getObject(i);
-                if (v.isNaN() || Double.isNaN(a.getDouble(i))) {
-                    r.setObject(i, new Complex(Double.NaN));
                 } else {
-                    r.setObject(i, v.rPow(a.getDouble(i)));
+                    Complex v;
+                    for (int i = 0; i < a.getSize(); i++) {
+                        v = (Complex) b.getObject(i);
+                        if (v.isNaN() || Double.isNaN(a.getDouble(i))) {
+                            r.setObject(i, new Complex(Double.NaN));
+                        } else {
+                            r.setObject(i, v.pow(a.getDouble(i)));
+                        }
+                    }
                 }
-            }
-        }
-
-        return r;
+                return r;
+            case 1:
+                int[] shape = broadcast(a, b);
+                r = Array.factory(DataType.OBJECT, shape);
+                Index index = r.getIndex();
+                Index aindex = a.getIndex();
+                Index bindex = b.getIndex();
+                int n = r.getRank();
+                int na = a.getRank();
+                int nb = b.getRank();
+                int[] current;                
+                if (isComplex(a)) {
+                    if (isComplex(b)) {
+                        Complex v1, v2;
+                        for (int i = 0; i < r.getSize(); i++) {
+                            current = index.getCurrentCounter();
+                            setIndex(aindex, bindex, current, n, na, nb);
+                            v1 = (Complex) a.getObject(aindex);
+                            v2 = (Complex) b.getObject(bindex);
+                            if (v1.isNaN() || v2.isNaN()) {
+                                r.setObject(i, v1);
+                            } else {
+                                r.setObject(i, v1.pow(v2));
+                            }
+                            index.incr();
+                        }
+                    } else {
+                        Complex v;
+                        for (int i = 0; i < r.getSize(); i++) {
+                            current = index.getCurrentCounter();
+                            setIndex(aindex, bindex, current, n, na, nb);
+                            v = (Complex) a.getObject(aindex);
+                            if (v.isNaN() || Double.isNaN(b.getDouble(bindex))) {
+                                r.setObject(i, new Complex(Double.NaN));
+                            } else {
+                                r.setObject(i, v.pow(b.getDouble(bindex)));
+                            }
+                            index.incr();
+                        }
+                    }
+                } else {
+                    Complex v;
+                    for (int i = 0; i < a.getSize(); i++) {
+                        current = index.getCurrentCounter();
+                        setIndex(aindex, bindex, current, n, na, nb);
+                        v = (Complex) b.getObject(bindex);
+                        if (v.isNaN() || Double.isNaN(a.getDouble(aindex))) {
+                            r.setObject(i, new Complex(Double.NaN));
+                        } else {
+                            r.setObject(i, v.pow(a.getDouble(aindex)));
+                        }
+                    }
+                }
+                return r;
+            default:
+                return null;
+        }           
     }
 
     private static Array powComplex(Array a, double b) {
@@ -2438,13 +3278,14 @@ public class ArrayMath {
     public static Array setSection(Array a, List<Range> ranges, Array v) throws InvalidRangeException {
         Array r = a.section(ranges);
         IndexIterator iter = r.getIndexIterator();
-        int[] current;
+        //int[] current;
         Index index = v.getIndex();
         while (iter.hasNext()) {
             iter.next();
-            current = iter.getCurrentCounter();
-            index.set(current);
+            //current = iter.getCurrentCounter();
+            //index.set(current);
             iter.setObjectCurrent(v.getObject(index));
+            index.incr();
         }
         r = Array.factory(a.getDataType(), a.getShape(), r.getStorage());
         return r;
