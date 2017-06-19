@@ -733,6 +733,7 @@ public class ChartLegend {
         }
 
         //Draw legend
+        g.setStroke(new BasicStroke(1));
         if (this.colorBar) {
             switch (this.orientation) {
                 case HORIZONTAL:
