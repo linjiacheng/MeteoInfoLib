@@ -202,5 +202,32 @@ public class DateUtil {
         else
             return false;
     }
+    
+    /**
+     * Get day of year
+     * @param year Year
+     * @param month Month
+     * @param day Day
+     * @return Day of year
+     */
+    public static int dayOfYear(int year, int month, int day){
+        Calendar cal = Calendar.getInstance();
+        cal.set(year, month, day);
+        int doy = cal.get(Calendar.DAY_OF_YEAR);
+        return doy;
+    }
+    
+    /**
+     * Convert day of year to date
+     * @param year Year
+     * @param doy Day of year
+     * @return The date
+     */
+    public static Date doy2date(int year, int doy){
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.YEAR, year);
+        cal.set(Calendar.DAY_OF_YEAR, doy);
+        return cal.getTime();
+    }
     // </editor-fold>
 }
