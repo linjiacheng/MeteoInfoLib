@@ -215,13 +215,19 @@ public class Popup extends JWindow {
         if (index < max){
             index += 1;
             this.setSelected(index);
+        } else if (index == max){
+            index = 0;
+            this.setSelected(index);
         }
     }
     
     private void up(){
         int index = this.list.getSelectedIndex();
         
-        if (index > 0){
+        if (index == 0){
+            index = this.getListSize() - 1;
+            this.setSelected(index);
+        } else if (index > 0){
             index -= 1;
             this.setSelected(index);
         }

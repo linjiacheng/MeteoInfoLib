@@ -2873,7 +2873,13 @@ public class MapLayout extends JPanel implements IWebMapPanel {
                 aImage = new BufferedImage(_pageBounds.width, _pageBounds.height, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g = aImage.createGraphics();
             paintGraphics(g);            
-            ImageIO.write(aImage, extension, new File(aFile));
+            if (extension.equalsIgnoreCase("jpg")) {
+                BufferedImage newImage = new BufferedImage(aImage.getWidth(), aImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+                newImage.createGraphics().drawImage(aImage, 0, 0, Color.BLACK, null);
+                ImageIO.write(newImage, extension, new File(aFile));
+            } else {
+                ImageIO.write(aImage, extension, new File(aFile));
+            }
         }
     }
     // </editor-fold>

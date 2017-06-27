@@ -6474,11 +6474,23 @@ public class MapView extends JPanel implements IWebMapPanel {
             g.dispose();
         } else {
             String extension = aFile.substring(aFile.lastIndexOf('.') + 1);
-            if (extension.equalsIgnoreCase("bmp")) {
-                BufferedImage bi = new BufferedImage(this.getWidth(), this.getHeight(), BufferedImage.TYPE_INT_RGB);
+            if (extension.equalsIgnoreCase("bmp") || extension.equalsIgnoreCase("jpg")) {
+                BufferedImage bi;
+                if (extension.equalsIgnoreCase("bmp"))
+                    bi = new BufferedImage(this.getWidth(), this.getHeight(), BufferedImage.TYPE_INT_RGB);
+                else
+                    bi = new BufferedImage(this.getWidth(), this.getHeight(), BufferedImage.TYPE_INT_ARGB);
                 Graphics2D g = bi.createGraphics();
+                g.setColor(this.getBackground());
+                g.fillRect(0, 0, bi.getWidth(), bi.getHeight());
                 paintGraphics(g);
-                ImageIO.write(bi, extension, new File(aFile));
+                if (extension.equalsIgnoreCase("jpg")){
+                    BufferedImage newImage = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_INT_RGB);
+                    newImage.createGraphics().drawImage(bi, 0, 0, Color.BLACK, null);
+                    ImageIO.write(newImage, extension, new File(aFile));
+                } else {
+                    ImageIO.write(bi, extension, new File(aFile));
+                }
             } else {
                 ImageIO.write(this._mapBitmap, extension, new File(aFile));
             }
