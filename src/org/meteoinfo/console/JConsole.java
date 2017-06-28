@@ -48,6 +48,7 @@ import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.Icon;
+import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -176,6 +177,7 @@ public class JConsole extends JScrollPane
         // make sure popup menu follows Look & Feel
         UIManager.addPropertyChangeListener(this);
         
+        //JFrame frame = (JFrame)javax.swing.SwingUtilities.getWindowAncestor(this);
         popup = new Popup(null, this.text);
         tip = new Tip(null);
         FontMetrics metrics = this.text.getFontMetrics(this.text.getFont());
@@ -521,8 +523,8 @@ public class JConsole extends JScrollPane
      * @return Point
      */
     public Point getDisplayPoint(){
-        //Get the point where the popup window should be displayed
-        Point screenPoint = this.text.getLocationOnScreen();
+        //Get the point where the popup window should be displayed        
+        Point screenPoint = this.getLocationOnScreen();
         Point caretPoint = this.text.getCaret().getMagicCaretPosition();
         if (caretPoint == null){
             caretPoint = new Point(0, 0);
@@ -568,8 +570,13 @@ public class JConsole extends JScrollPane
         String[] callTip = nameCompletion.getTip(part);
         String tipstr = callTip[2];
         if (!tipstr.isEmpty()){
+            this.tip.setText(tipstr);
             Point displayPoint = this.getDisplayPoint();
-            this.tip.showTip(tipstr, displayPoint);
+            if (this.text.getCaret().getMagicCaretPosition() == null){
+                if (Tip.MAX_HEIGHT - this.tip.getPreferredSize().height < 20)
+                    displayPoint.y -= 120;
+            }
+            this.tip.showTip(displayPoint);
         }
     }
     

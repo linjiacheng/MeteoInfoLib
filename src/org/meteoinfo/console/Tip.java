@@ -19,7 +19,7 @@ import javax.swing.JWindow;
  */
 public class Tip extends JWindow {
     // <editor-fold desc="Variables">
-    private final static int MAX_HEIGHT = 300;
+    public final static int MAX_HEIGHT = 300;
     private final static int MAX_WIDTH = 400;
     private final JTextArea textarea;
     // </editor-fold>
@@ -66,12 +66,10 @@ public class Tip extends JWindow {
     
     /**
      * Show tip window
-     * @param tip Tip text
      * @param displayPoint Display point 
      */
-    public void showTip(String tip, Point displayPoint){
-        this.setLocation(displayPoint);
-        this.setText(tip);
+    public void showTip(Point displayPoint){      
+        this.setLocation(displayPoint);        
         this.setVisible(true);
         //this.show();
     }
