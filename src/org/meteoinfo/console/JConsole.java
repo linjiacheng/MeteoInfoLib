@@ -573,7 +573,7 @@ public class JConsole extends JScrollPane
             this.tip.setText(tipstr);
             Point displayPoint = this.getDisplayPoint();
             if (this.text.getCaret().getMagicCaretPosition() == null){
-                if (Tip.MAX_HEIGHT - this.tip.getPreferredSize().height < 20)
+                if (Tip.MAX_HEIGHT - this.tip.getPreferredSize().height < 100)
                     displayPoint.y -= 120;
             }
             this.tip.showTip(displayPoint);
