@@ -2661,6 +2661,38 @@ public class ArrayUtil {
 
         return r;
     }
+    
+    /**
+     * Resample grid array with neighbor method
+     *
+     * @param a The sample array
+     * @param X X coordinate of the sample array
+     * @param Y Y coordinate of the sample array
+     * @param newX X coordinate of the query points
+     * @param newY Y coordinate of the query points
+     * @return Resampled array
+     */
+    public static Array resample_Neighbor(Array a, Array X, Array Y, Array newX, Array newY) {
+        int i;
+        int n = (int) newX.getSize();
+        double x, y, v;
+        Array r = Array.factory(DataType.DOUBLE, newX.getShape());
+
+        for (i = 0; i < n; i++) {
+            x = newX.getDouble(i);
+            y = newY.getDouble(i);
+            if (x < X.getDouble(0) || x > X.getDouble((int) X.getSize() - 1)) {
+                r.setDouble(i, Double.NaN);
+            } else if (y < Y.getDouble(0) || y > Y.getDouble((int) Y.getSize() - 1)) {
+                r.setDouble(i, Double.NaN);
+            } else {
+                v = toStation_Neighbor(a, X, Y, x, y);
+                r.setDouble(i, v);
+            }
+        }
+
+        return r;
+    }
 
     /**
      * Interpolate array data
@@ -3187,13 +3219,13 @@ public class ArrayUtil {
         double c = data.getDouble(index.set(i2, j1));
         double d = data.getDouble(index.set(i2, j2));
 
-        if (Math.abs(x - xArray.get(j1).doubleValue()) > Math.abs(xArray.get(j2).doubleValue() - x)) {
-            if (Math.abs(y - yArray.get(i1).doubleValue()) > Math.abs(yArray.get(i2).doubleValue() - y)) {
+        if (Math.abs(x - xArray.get(j1).doubleValue()) < Math.abs(xArray.get(j2).doubleValue() - x)) {
+            if (Math.abs(y - yArray.get(i1).doubleValue()) < Math.abs(yArray.get(i2).doubleValue() - y)) {
                 iValue = a;
             } else {
                 iValue = c;
             }
-        } else if (Math.abs(y - yArray.get(i1).doubleValue()) > Math.abs(yArray.get(i2).doubleValue() - y)) {
+        } else if (Math.abs(y - yArray.get(i1).doubleValue()) < Math.abs(yArray.get(i2).doubleValue() - y)) {
             iValue = b;
         } else {
             iValue = d;
@@ -3258,13 +3290,84 @@ public class ArrayUtil {
         double d = data.getDouble(index.set(i2, j2));
 
         double iValue;
-        if (Math.abs(x - xArray.get(j1).doubleValue()) > Math.abs(xArray.get(j2).doubleValue() - x)) {
-            if (Math.abs(y - yArray.get(i1).doubleValue()) > Math.abs(yArray.get(i2).doubleValue() - y)) {
+        if (Math.abs(x - xArray.get(j1).doubleValue()) < Math.abs(xArray.get(j2).doubleValue() - x)) {
+            if (Math.abs(y - yArray.get(i1).doubleValue()) < Math.abs(yArray.get(i2).doubleValue() - y)) {
                 iValue = a;
             } else {
                 iValue = c;
             }
-        } else if (Math.abs(y - yArray.get(i1).doubleValue()) > Math.abs(yArray.get(i2).doubleValue() - y)) {
+        } else if (Math.abs(y - yArray.get(i1).doubleValue()) < Math.abs(yArray.get(i2).doubleValue() - y)) {
+            iValue = b;
+        } else {
+            iValue = d;
+        }
+
+        return iValue;
+    }
+    
+    /**
+     * Interpolate data to a station point
+     *
+     * @param data Data array
+     * @param xArray X array
+     * @param yArray Y array
+     * @param x X coordinate of the station
+     * @param y Y coordinate of the station
+     * @return Interpolated value
+     */
+    public static double toStation_Neighbor(Array data, Array xArray, Array yArray, double x, double y) {
+        //ouble iValue = Double.NaN;
+        int nx = (int)xArray.getSize();
+        int ny = (int)yArray.getSize();
+        if (x < xArray.getDouble(0) || x > xArray.getDouble(nx - 1)
+                || y < yArray.getDouble(0) || y > yArray.getDouble(ny - 1)) {
+            return Double.NaN;
+        }
+
+        //Get x/y index
+        int xIdx = 0, yIdx = 0;
+        int i;
+        boolean isIn = false;
+        for (i = 1; i < nx; i++) {
+            if (x < xArray.getDouble(i)) {
+                xIdx = i - 1;
+                isIn = true;
+                break;
+            }
+        }
+        if (!isIn) {
+            xIdx = nx - 2;
+        }
+        isIn = false;
+        for (i = 1; i < ny; i++) {
+            if (y < yArray.getDouble(i)) {
+                yIdx = i - 1;
+                isIn = true;
+                break;
+            }
+        }
+        if (!isIn) {
+            yIdx = ny - 2;
+        }
+
+        int i1 = yIdx;
+        int j1 = xIdx;
+        int i2 = i1 + 1;
+        int j2 = j1 + 1;
+        Index index = data.getIndex();
+        double a = data.getDouble(index.set(i1, j1));
+        double b = data.getDouble(index.set(i1, j2));
+        double c = data.getDouble(index.set(i2, j1));
+        double d = data.getDouble(index.set(i2, j2));
+
+        double iValue;
+        if (Math.abs(x - xArray.getDouble(j1)) < Math.abs(xArray.getDouble(j2) - x)) {
+            if (Math.abs(y - yArray.getDouble(i1)) < Math.abs(yArray.getDouble(i2) - y)) {
+                iValue = a;
+            } else {
+                iValue = c;
+            }
+        } else if (Math.abs(y - yArray.getDouble(i1)) < Math.abs(yArray.getDouble(i2) - y)) {
             iValue = b;
         } else {
             iValue = d;

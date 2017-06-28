@@ -227,7 +227,7 @@ public class ColorUtil {
         boolean isDebug = java.lang.management.ManagementFactory.getRuntimeMXBean().
                 getInputArguments().toString().contains("jdwp");
         if (isDebug) {
-            fn = "D:/MyProgram/java/MeteoInfoDev/MeteoInfo/";
+            fn = "D:/MyProgram/java/MeteoInfoDev/MeteoInfoMap/";
         }     
         fn = fn.substring(0, fn.lastIndexOf("/"));
         String path = fn + File.separator + "colormaps";
@@ -270,7 +270,7 @@ public class ColorUtil {
         boolean isDebug = java.lang.management.ManagementFactory.getRuntimeMXBean().
                 getInputArguments().toString().contains("jdwp");
         if (isDebug) {
-            fn = "D:/MyProgram/java/MeteoInfoDev/MeteoInfo/";
+            fn = "D:/MyProgram/java/MeteoInfoDev/MeteoInfoMap/";
         }     
         fn = fn.substring(0, fn.lastIndexOf("/"));
         String path = fn + File.separator + "colormaps";
@@ -302,7 +302,7 @@ public class ColorUtil {
         boolean isDebug = java.lang.management.ManagementFactory.getRuntimeMXBean().
                 getInputArguments().toString().contains("jdwp");
         if (isDebug) {
-            fn = "D:/MyProgram/java/MeteoInfoDev/MeteoInfo/";
+            fn = "D:/MyProgram/java/MeteoInfoDev/MeteoInfoMap/";
         }     
         fn = fn.substring(0, fn.lastIndexOf("/"));
         String path = fn + File.separator + "colormaps";
