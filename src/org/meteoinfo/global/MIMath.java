@@ -1083,7 +1083,7 @@ public class MIMath {
      *
      * @param x X
      * @param y Y
-     * @return Radius and angle
+     * @return Angle and radius
      */
     public static double[] cartesianToPolar(double x, double y) {
         double r;     // Radius
@@ -1108,7 +1108,7 @@ public class MIMath {
      *
      * @param r Radius
      * @param B Angle in radians
-     * @return Radius and angle
+     * @return X and y in cartesian coordinate
      */
     public static double[] polarToCartesian(double B, double r) {
         double x = Math.cos(B) * r;

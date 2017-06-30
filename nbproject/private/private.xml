@@ -4,13 +4,10 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
+            <file>file:/D:/MyProgram/java/MeteoInfoDev/MeteoInfoLib/src/org/meteoinfo/console/JConsole.java</file>
             <file>file:/D:/MyProgram/java/MeteoInfoDev/MeteoInfoLib/src/org/meteoinfo/console/Popup.java</file>
-            <file>file:/D:/MyProgram/java/MeteoInfoDev/MeteoInfoLib/src/org/meteoinfo/math/astro/Sun2000.java</file>
-            <file>file:/D:/MyProgram/java/MeteoInfoDev/MeteoInfoLib/src/org/meteoinfo/chart/ChartPanel.java</file>
-            <file>file:/D:/MyProgram/java/MeteoInfoDev/MeteoInfoLib/src/org/meteoinfo/map/MapView.java</file>
-            <file>file:/D:/MyProgram/java/MeteoInfoDev/MeteoInfoLib/src/org/meteoinfo/math/astro/AstroUtil.java</file>
-            <file>file:/D:/MyProgram/java/MeteoInfoDev/MeteoInfoLib/src/org/meteoinfo/layout/MapLayout.java</file>
-            <file>file:/D:/MyProgram/java/MeteoInfoDev/MeteoInfoLib/src/org/meteoinfo/image/ImageUtil.java</file>
+            <file>file:/D:/MyProgram/java/MeteoInfoDev/MeteoInfoLib/src/org/meteoinfo/data/ArrayUtil.java</file>
+            <file>file:/D:/MyProgram/java/MeteoInfoDev/MeteoInfoLib/src/org/meteoinfo/global/colors/ColorUtil.java</file>
         </group>
     </open-files>
 </project-private>

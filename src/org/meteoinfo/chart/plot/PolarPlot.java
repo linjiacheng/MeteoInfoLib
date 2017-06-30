@@ -128,8 +128,10 @@ public class PolarPlot extends XY2DPlot {
      * Set x tick locations
      * @param value X tick locations
      */
-    public void setXTickLocations(List<Double> value){
-        this.xTickLocations = value;
+    public void setXTickLocations(List<Number> value){
+        this.xTickLocations = new ArrayList<>();
+        for (Number v : value)
+            this.xTickLocations.add(v.doubleValue());
     }
     
     /**
@@ -160,8 +162,10 @@ public class PolarPlot extends XY2DPlot {
      * Set y tick locations
      * @param value Y tick locations
      */
-    public void setYTickLocations(List<Double> value){
-        this.yTickLocations = value;
+    public void setYTickLocations(List<Number> value){
+        this.yTickLocations = new ArrayList<>();
+        for (Number v : value)
+            this.yTickLocations.add(v.doubleValue());
         this.yTickAuto = false;
     }
     

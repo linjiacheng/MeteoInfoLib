@@ -237,11 +237,21 @@ public class GraphicFactory {
                 graphics.add(new Graphic(ps, cbs.get(i)));
             }
             graphics.setSingleLegend(false);
+            LegendScheme ls = new LegendScheme();
+            ls.setLegendBreaks(cbs);
+            ls.setLegendType(LegendType.UniqueValue);
+            ls.setShapeType(ShapeTypes.Point);
+            graphics.setLegendScheme(ls);
         } else {
             for (int i = 0; i < xdata.getSize(); i++) {
                 ps = new PointShape();
                 ps.setPoint(new PointD(xdata.getDouble(i), ydata.getDouble(i)));
                 graphics.add(new Graphic(ps, cbs.get(0)));
+                LegendScheme ls = new LegendScheme();
+                ls.setLegendBreaks(cbs);
+                ls.setLegendType(LegendType.SingleSymbol);
+                ls.setShapeType(ShapeTypes.Point);
+                graphics.setLegendScheme(ls);
             }
         }
         return graphics;
@@ -269,6 +279,7 @@ public class GraphicFactory {
             graphics.add(new Graphic(ps, cb));
         }
         graphics.setSingleLegend(false);
+        graphics.setLegendScheme(ls);
         return graphics;
     }
 

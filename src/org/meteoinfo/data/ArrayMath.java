@@ -3166,6 +3166,85 @@ public class ArrayMath {
 
         return r;
     }
+    
+    /**
+     * Convert cartesian to polar coordinate
+     *
+     * @param x X array
+     * @param y Y array
+     * @return Angle and radius
+     */
+    public static Array[] cartesianToPolar(Array x, Array y) {
+        Array r = Array.factory(DataType.DOUBLE, x.getShape());
+        Array B = Array.factory(DataType.DOUBLE, x.getShape());
+        double[] rr;
+        for (int i = 0; i < x.getSize(); i++){
+            rr = cartesianToPolar(x.getDouble(i), y.getDouble(i));
+            r.setDouble(i, rr[1]);
+            B.setDouble(i, rr[0]);
+        }
+        
+        return new Array[]{B, r};
+    }
+    
+    /**
+     * Convert poar to cartesian coordinate
+     *
+     * @param r Radius
+     * @param B Angle in radians
+     * @return X and y in cartesian coordinate
+     */
+    public static Array[] polarToCartesian(Array B, Array r) {
+        Array x = Array.factory(DataType.DOUBLE, r.getShape());
+        Array y = Array.factory(DataType.DOUBLE, r.getShape());
+        double[] rr;
+        for (int i = 0; i < r.getSize(); i++){
+            rr = polarToCartesian(B.getDouble(i), r.getDouble(i));
+            x.setDouble(i, rr[0]);
+            y.setDouble(i, rr[1]);
+        }
+
+        return new Array[]{x, y};
+    }
+    
+    /**
+     * Convert cartesian to polar coordinate
+     *
+     * @param x X
+     * @param y Y
+     * @return Angle and radius
+     */
+    public static double[] cartesianToPolar(double x, double y) {
+        double r;     // Radius
+        double B;     // Angle in radians
+        r = Math.hypot(x, y);
+        if (y >= 0) {
+            if (x == 0) {
+                B = Math.PI / 2;// 90°
+            } else {
+                B = Math.asin(x / y);
+            }
+        } else if (x == 0) {
+            B = 3 * Math.PI / 2;// 270°
+        } else {
+            B = Math.asin(x / y);
+        }
+        return new double[]{B, r};
+    }
+
+    /**
+     * Convert poar to cartesian coordinate
+     *
+     * @param r Radius
+     * @param B Angle in radians
+     * @return X and y in cartesian coordinate
+     */
+    public static double[] polarToCartesian(double B, double r) {
+        double x = Math.cos(B) * r;
+        double y = Math.sin(B) * r;
+
+        return new double[]{x, y};
+    }
 
     // </editor-fold>
     // <editor-fold desc="Section/Flip/Transpos...">

@@ -330,12 +330,12 @@ public class GraphicCollection extends Graphic implements Iterator {
         return this.graphics.get(0).getLegend();
     }
 
-    /// <summary>
-    /// Select graphics by an extent
-    /// </summary>
-    /// <param name="aExtent">extent</param>
-    /// <param name="selectedGraphics">ref selected graphics</param>
-    /// <returns>if selected</returns>
+
+    /**
+     * Select graphics by an extent
+     * @param aExtent The extent
+     * @return Selected graphics
+     */
     public GraphicCollection selectGraphics(Extent aExtent) {
         GraphicCollection selectedGraphics = new GraphicCollection();
         int i, j;
@@ -541,6 +541,28 @@ public class GraphicCollection extends Graphic implements Iterator {
         }
         
         return 1.0f;
+    }
+    
+    /**
+     * Clip
+     * @param clipPolys Clipping polygons
+     * @return Clipped graphics
+     */
+    public GraphicCollection clip(List<PolygonShape> clipPolys) {
+        GraphicCollection cgraphics = new GraphicCollection();
+        for (PolygonShape aPGS : clipPolys) {
+            for (int i = 0; i < this.graphics.size(); i++) {
+                Shape bShape = this.graphics.get(i).getShape();
+                Shape clipShape = bShape.intersection(aPGS);
+                if (clipShape != null) {
+                    cgraphics.add(new Graphic(clipShape, this.graphics.get(i).getLegend()));
+                }
+            }
+        }
+        cgraphics.setSingleLegend(this.singleLegend);
+        cgraphics.setLegendScheme((LegendScheme) this.getLegendScheme().clone());
+
+        return cgraphics;
     }
     // </editor-fold>
 }
