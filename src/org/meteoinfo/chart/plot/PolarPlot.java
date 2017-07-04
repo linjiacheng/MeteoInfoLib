@@ -30,7 +30,7 @@ import org.meteoinfo.shape.GraphicCollection;
  *
  * @author Yaqiang Wang
  */
-public class PolarPlot extends XY2DPlot {
+public class PolarPlot extends Plot2D {
 
     // <editor-fold desc="Variables">
     private double radius;

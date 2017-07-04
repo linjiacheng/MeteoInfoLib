@@ -38,7 +38,7 @@ import org.meteoinfo.shape.ShapeTypes;
  *
  * @author yaqiang
  */
-public class XY1DPlot extends XYPlot {
+public class XY1DPlot extends AbstractPlot2D {
 
     // <editor-fold desc="Variables">
     private XYListDataset dataset;

@@ -24,7 +24,7 @@ import org.meteoinfo.shape.Shape;
  *
  * @author Yaqiang Wang
  */
-public class PiePlot extends XY2DPlot {
+public class PiePlot extends Plot2D {
 
     // <editor-fold desc="Variables">
     // </editor-fold>

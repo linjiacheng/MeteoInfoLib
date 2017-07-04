@@ -43,7 +43,7 @@ import org.meteoinfo.shape.WindArrow;
  *
  * @author wyq
  */
-public abstract class XYPlot extends Plot {
+public abstract class AbstractPlot2D extends Plot {
 
     // <editor-fold desc="Variables">
     private Color background;
@@ -75,7 +75,7 @@ public abstract class XYPlot extends Plot {
     /**
      * Constructor
      */
-    public XYPlot() {
+    public AbstractPlot2D() {
         super();
         this.background = Color.white;
         this.drawBackground = false;

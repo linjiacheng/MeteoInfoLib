@@ -75,7 +75,7 @@ import org.freehep.graphicsio.ps.PSGraphics2D;
 import org.meteoinfo.chart.plot.MapPlot;
 import org.meteoinfo.chart.plot.Plot;
 import org.meteoinfo.chart.plot.XY1DPlot;
-import org.meteoinfo.chart.plot.XYPlot;
+import org.meteoinfo.chart.plot.AbstractPlot2D;
 import org.meteoinfo.data.DataTypes;
 import org.meteoinfo.data.mapdata.Field;
 import org.meteoinfo.global.Extent;
@@ -490,7 +490,7 @@ public class ChartPanel extends JPanel {
 
     void onMouseReleased(MouseEvent e) {
         this.dragMode = false;
-        XYPlot xyplot = (XYPlot) this.chart.findPlot(mouseDownPoint.x, mouseDownPoint.y);
+        AbstractPlot2D xyplot = (AbstractPlot2D) this.chart.findPlot(mouseDownPoint.x, mouseDownPoint.y);
         this.currentPlot = xyplot;
         switch (this.mouseMode) {
             case ZOOM_IN:
@@ -775,11 +775,11 @@ public class ChartPanel extends JPanel {
      * Zoom back to full extent
      */
     public void onUndoZoomClick() {
-        XYPlot xyplot;
+        AbstractPlot2D xyplot;
         if (this.currentPlot == null) {
-            xyplot = (XYPlot) this.chart.getPlots().get(0);
+            xyplot = (AbstractPlot2D) this.chart.getPlots().get(0);
         } else {
-            xyplot = (XYPlot) this.currentPlot;
+            xyplot = (AbstractPlot2D) this.currentPlot;
         }
         xyplot.setDrawExtent((Extent) xyplot.getExtent().clone());
 //        if (xyplot instanceof MapPlot) {

@@ -69,7 +69,7 @@ import org.meteoinfo.shape.WindBarb;
  *
  * @author Yaqiang Wang
  */
-public class XY2DPlot extends XYPlot {
+public class Plot2D extends AbstractPlot2D {
 
     // <editor-fold desc="Variables">
     private GraphicCollection graphics;    
@@ -77,7 +77,7 @@ public class XY2DPlot extends XYPlot {
 
     // </editor-fold>
     // <editor-fold desc="Constructor">
-    public XY2DPlot() {
+    public Plot2D() {
         super();
         this.graphics = new GraphicCollection();
     }

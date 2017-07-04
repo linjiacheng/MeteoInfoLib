@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import org.meteoinfo.chart.Location;
-import org.meteoinfo.chart.plot.XYPlot;
+import org.meteoinfo.chart.plot.AbstractPlot2D;
 import org.meteoinfo.drawing.Draw;
 import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.MIMath;
@@ -1164,7 +1164,7 @@ public class Axis implements Cloneable {
      * @param area Area
      * @param plot XYPlot
      */
-    public void draw(Graphics2D g, Rectangle2D area, XYPlot plot) {
+    public void draw(Graphics2D g, Rectangle2D area, AbstractPlot2D plot) {
         if (plot.getDrawExtent() == null) {
             return;
         }
@@ -1175,7 +1175,7 @@ public class Axis implements Cloneable {
         }
     }
 
-    private void drawXAxis(Graphics2D g, Rectangle2D area, XYPlot plot) {
+    private void drawXAxis(Graphics2D g, Rectangle2D area, AbstractPlot2D plot) {
         double[] xy;
         double x, y;
         double miny = area.getY();
@@ -1369,7 +1369,7 @@ public class Axis implements Cloneable {
         }
     }
 
-    private void drawXAxis_Bar(Graphics2D g, Rectangle2D area, XYPlot plot) {
+    private void drawXAxis_Bar(Graphics2D g, Rectangle2D area, AbstractPlot2D plot) {
         double[] xy;
         double x, y;
         double miny = area.getY();
@@ -1482,7 +1482,7 @@ public class Axis implements Cloneable {
         }
     }
 
-    private void drawYAxis(Graphics2D g, Rectangle2D area, XYPlot plot) {
+    private void drawYAxis(Graphics2D g, Rectangle2D area, AbstractPlot2D plot) {
         double[] xy;
         double x, y, sx;
         double miny = area.getY();

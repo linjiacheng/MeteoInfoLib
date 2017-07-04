@@ -46,7 +46,7 @@ import org.meteoinfo.shape.PolylineShape;
  *
  * @author wyq
  */
-public class MapPlot extends XYPlot implements IWebMapPanel {
+public class MapPlot extends AbstractPlot2D implements IWebMapPanel {
 
     // <editor-fold desc="Variables">
     private MapFrame mapFrame;
