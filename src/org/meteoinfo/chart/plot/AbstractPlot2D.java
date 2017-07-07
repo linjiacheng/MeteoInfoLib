@@ -51,7 +51,7 @@ public abstract class AbstractPlot2D extends Plot {
     private Color selectColor = Color.yellow;
     private Extent extent;
     private Extent drawExtent;
-    private final Map<Location, Axis> axises;
+    private final Map<Location, Axis> axis;
     //private Axis xAxis;
     //private Axis yAxis;
     private Location xAxisLocation;
@@ -82,11 +82,11 @@ public abstract class AbstractPlot2D extends Plot {
         this.drawExtent = new Extent(0, 1, 0, 1);
         //this.xAxis = new Axis("X", true);
         //this.yAxis = new Axis("Y", false);
-        this.axises = new HashMap<>();
-        this.axises.put(Location.BOTTOM, new Axis("X", true, Location.BOTTOM));
-        this.axises.put(Location.LEFT, new Axis("Y", false, Location.LEFT));
-        this.axises.put(Location.TOP, new Axis("X", true, Location.TOP, false));
-        this.axises.put(Location.RIGHT, new Axis("Y", false, Location.RIGHT, false));
+        this.axis = new HashMap<>();
+        this.axis.put(Location.BOTTOM, new Axis("X", true, Location.BOTTOM));
+        this.axis.put(Location.LEFT, new Axis("Y", false, Location.LEFT));
+        this.axis.put(Location.TOP, new Axis("X", true, Location.TOP, false));
+        this.axis.put(Location.RIGHT, new Axis("Y", false, Location.RIGHT, false));
         this.xAxisLocation = Location.BOTTOM;
         this.yAxisLocation = Location.RIGHT;
         this.orientation = PlotOrientation.VERTICAL;
@@ -347,7 +347,7 @@ public abstract class AbstractPlot2D extends Plot {
      * @return Bottom x aixs
      */
     public Axis getXAxis() {
-        return this.axises.get(Location.BOTTOM);
+        return this.axis.get(Location.BOTTOM);
     }
 
     /**
@@ -357,10 +357,10 @@ public abstract class AbstractPlot2D extends Plot {
      */
     public void setXAxis(Axis axis) {
         axis.setLocation(Location.BOTTOM);
-        this.axises.put(Location.BOTTOM, axis);
+        this.axis.put(Location.BOTTOM, axis);
         Axis topAxis = (Axis) axis.clone();
         topAxis.setLocation(Location.TOP);
-        this.axises.put(Location.TOP, topAxis);
+        this.axis.put(Location.TOP, topAxis);
     }
 
     /**
@@ -369,7 +369,7 @@ public abstract class AbstractPlot2D extends Plot {
      * @return Left y axis
      */
     public Axis getYAxis() {
-        return this.axises.get(Location.LEFT);
+        return this.axis.get(Location.LEFT);
     }
 
     /**
@@ -379,10 +379,10 @@ public abstract class AbstractPlot2D extends Plot {
      */
     public void setYAxis(Axis axis) {
         axis.setLocation(Location.LEFT);
-        this.axises.put(Location.LEFT, axis);
+        this.axis.put(Location.LEFT, axis);
         Axis rightAxis = (Axis) axis.clone();
         rightAxis.setLocation(Location.RIGHT);
-        this.axises.put(Location.RIGHT, rightAxis);
+        this.axis.put(Location.RIGHT, rightAxis);
     }
 
     /**
@@ -392,7 +392,7 @@ public abstract class AbstractPlot2D extends Plot {
      * @return Axis
      */
     public Axis getAxis(Location loc) {
-        return this.axises.get(loc);
+        return this.axis.get(loc);
     }
 
     /**
@@ -658,7 +658,7 @@ public abstract class AbstractPlot2D extends Plot {
      * @param loc Axis location
      */
     public void setAxis(Axis axis, Location loc) {
-        this.axises.put(loc, axis);
+        this.axis.put(loc, axis);
     }
 
     /**
@@ -667,7 +667,7 @@ public abstract class AbstractPlot2D extends Plot {
      * @param font Font
      */
     public void setAxisLabelFont(Font font) {
-        for (Axis axis : this.axises.values()) {
+        for (Axis axis : this.axis.values()) {
             axis.setTickLabelFont(font);
         }
     }
@@ -678,7 +678,7 @@ public abstract class AbstractPlot2D extends Plot {
      * @param value Boolean
      */
     public void setAxisOn(boolean value) {
-        for (Axis axis : this.axises.values()) {
+        for (Axis axis : this.axis.values()) {
             axis.setVisible(value);
         }
     }
@@ -1174,11 +1174,11 @@ public abstract class AbstractPlot2D extends Plot {
     abstract void drawGraph(Graphics2D g, Rectangle2D area);
 
     void drawAxis(Graphics2D g, Rectangle2D area) {
-        for (Location loc : this.axises.keySet()) {
-            Axis axis = this.axises.get(loc);
-            if (axis.isVisible()) {
-                axis.updateLabelGap(g, area);
-                axis.draw(g, area, this);
+        for (Location loc : this.axis.keySet()) {
+            Axis ax = this.axis.get(loc);
+            if (ax.isVisible()) {
+                ax.updateLabelGap(g, area);
+                ax.draw(g, area, this);
             }
         }
     }
