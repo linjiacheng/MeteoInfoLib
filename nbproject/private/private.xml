@@ -15,6 +15,7 @@
             <file>file:/D:/MyProgram/java/MeteoInfoDev/MeteoInfoLib/src/org/meteoinfo/chart/plot/MapPlot.java</file>
             <file>file:/D:/MyProgram/java/MeteoInfoDev/MeteoInfoLib/src/org/meteoinfo/chart/plot/PiePlot.java</file>
             <file>file:/D:/MyProgram/java/MeteoInfoDev/MeteoInfoLib/src/org/meteoinfo/chart/plot/GraphicFactory.java</file>
+            <file>file:/D:/MyProgram/java/MeteoInfoDev/MeteoInfoLib/src/org/meteoinfo/data/meteodata/netcdf/NetCDFDataInfo.java</file>
         </group>
     </open-files>
 </project-private>
