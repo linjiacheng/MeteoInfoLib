@@ -1405,7 +1405,7 @@ public class GraphicFactory {
             List<String> labels, float startAngle, List<Number> explode, Font labelFont,
             Color labelColor, String autopct) {
         GraphicCollection gc = new GraphicCollection();
-        double sum = ArrayMath.sumDouble(xdata);
+        double sum = ArrayMath.sum(xdata);
         double v;
         int n = (int) xdata.getSize();
         float sweepAngle;

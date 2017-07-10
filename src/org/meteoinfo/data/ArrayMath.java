@@ -3612,6 +3612,107 @@ public class ArrayMath {
         }
         return max;
     }
+    
+    /**
+     * Compute sum value of an array along an axis (dimension)
+     *
+     * @param a Array a
+     * @param axis Axis
+     * @return Sum value array
+     * @throws ucar.ma2.InvalidRangeException
+     */
+    public static Array sum(Array a, int axis) throws InvalidRangeException {
+        int[] dataShape = a.getShape();
+        int[] shape = new int[dataShape.length - 1];
+        int idx;
+        for (int i = 0; i < dataShape.length; i++) {
+            idx = i;
+            if (idx == axis) {
+                continue;
+            } else if (idx > axis) {
+                idx -= 1;
+            }
+            shape[idx] = dataShape[i];
+        }
+        Array r = Array.factory(DataType.DOUBLE, shape);
+        double s;
+        Index indexr = r.getIndex();
+        int[] current;
+        for (int i = 0; i < r.getSize(); i++) {
+            current = indexr.getCurrentCounter();
+            List<Range> ranges = new ArrayList<>();
+            for (int j = 0; j < dataShape.length; j++) {
+                if (j == axis) {
+                    ranges.add(new Range(0, dataShape[j] - 1, 1));
+                } else {
+                    idx = j;
+                    if (idx > axis) {
+                        idx -= 1;
+                    }
+                    ranges.add(new Range(current[idx], current[idx], 1));
+                }
+            }
+            s = sum(a, ranges);
+            r.setDouble(i, s);
+            indexr.incr();
+        }
+
+        return r;
+    }
+    
+    /**
+     * Compute sum value of an array
+     *
+     * @param a Array a
+     * @param ranges Range list
+     * @return Sum value
+     * @throws ucar.ma2.InvalidRangeException
+     */
+    public static double sum(Array a, List<Range> ranges) throws InvalidRangeException {
+        double s = 0.0, v;
+        int n = 0;
+        IndexIterator ii = a.getRangeIterator(ranges);
+        while (ii.hasNext()) {
+            v = ii.getDoubleNext();
+            if (!Double.isNaN(v)) {
+                s += v;
+                n += 1;
+            }
+        }
+        if (n == 0) {            
+            s = Double.NaN;
+        }
+        return s;
+    }
+    
+    /**
+     * Compute the sum arry from a list of arrays
+     *
+     * @param alist list of arrays
+     * @return Sum array
+     */
+    public static Array sum(List<Array> alist) {
+        Array r = Array.factory(DataType.DOUBLE, alist.get(0).getShape());
+        double sum, v;
+        int n;
+        for (int i = 0; i < r.getSize(); i++) {
+            sum = 0.0;
+            n = 0;
+            for (Array a : alist) {
+                v = a.getDouble(i);
+                if (!Double.isNaN(v)) {
+                    sum += v;
+                    n += 1;
+                }
+            }
+            if (n == 0) {
+                sum = Double.NaN;
+            }
+            r.setDouble(i, sum);
+        }
+
+        return r;
+    }
 
     /**
      * Summarize array
@@ -3619,7 +3720,7 @@ public class ArrayMath {
      * @param a Array a
      * @return Summarize value
      */
-    public static double sumDouble(Array a) {
+    public static double sum(Array a) {
         double sum = 0.0D;
         double v;
         IndexIterator iterA = a.getIndexIterator();
@@ -3639,7 +3740,7 @@ public class ArrayMath {
      * @param missingValue Missing value
      * @return Summarize value
      */
-    public static double sumDouble(Array a, double missingValue) {
+    public static double sum(Array a, double missingValue) {
         double sum = 0.0D;
         IndexIterator iterA = a.getIndexIterator();
         while (iterA.hasNext()) {

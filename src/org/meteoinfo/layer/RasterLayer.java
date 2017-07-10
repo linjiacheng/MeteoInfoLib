@@ -191,14 +191,18 @@ public class RasterLayer extends ImageLayer {
         double[] breakValue = new double[breakNum];
         Color[] breakColor = new Color[breakNum];
         Color undefColor = Color.white;
+        Color defaultColor = als.getLegendBreaks().get(breakNum - 1).getColor();
+        Color color;
         for (int i = 0; i < breakNum; i++) {
             breakValue[i] = Double.parseDouble(als.getLegendBreaks().get(i).getEndValue().toString());
-            breakColor[i] = als.getLegendBreaks().get(i).getColor();
+            color = als.getLegendBreaks().get(i).getColor();
+            breakColor[i] = color;
             if (als.getLegendBreaks().get(i).isNoData()) {
-                undefColor = als.getLegendBreaks().get(i).getColor();
+                undefColor = color;
+            } else {
+                defaultColor = color;
             }
         }
-        Color defaultColor = breakColor[breakNum - 1];    //默认颜色为最后一个颜色
         BufferedImage aImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         double oneValue;
         Color oneColor;
