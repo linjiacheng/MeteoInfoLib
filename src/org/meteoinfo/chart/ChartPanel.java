@@ -1133,7 +1133,7 @@ public class ChartPanel extends JPanel {
      * @throws IOException
      * @throws java.lang.InterruptedException
      */
-    public void saveImage(String fileName, float dpi) throws IOException, InterruptedException {
+    public void saveImage(String fileName, int dpi) throws IOException, InterruptedException {
         saveImage(fileName, dpi, null);
     }
 
@@ -1146,7 +1146,7 @@ public class ChartPanel extends JPanel {
      * @throws IOException
      * @throws java.lang.InterruptedException
      */
-    public void saveImage(String fileName, float dpi, Integer sleep) throws IOException, InterruptedException {
+    public void saveImage(String fileName, int dpi, Integer sleep) throws IOException, InterruptedException {
         File output = new File(fileName);
         output.delete();
 
@@ -1154,6 +1154,8 @@ public class ChartPanel extends JPanel {
         String formatName = fileName.substring(fileName.lastIndexOf('.') + 1);
         if (formatName.equals("jpg")) {
             formatName = "jpeg";
+            saveImage_Jpeg(fileName, dpi);
+            return;
         }
 
         for (Iterator<ImageWriter> iw = ImageIO.getImageWritersByFormatName(formatName); iw.hasNext();) {
@@ -1192,7 +1194,7 @@ public class ChartPanel extends JPanel {
      * @throws IOException
      * @throws java.lang.InterruptedException
      */
-    public void saveImage(String fileName, float dpi, int width, int height, Integer sleep) throws IOException, InterruptedException {
+    public void saveImage(String fileName, int dpi, int width, int height, Integer sleep) throws IOException, InterruptedException {
         File output = new File(fileName);
         output.delete();
 
@@ -1200,6 +1202,8 @@ public class ChartPanel extends JPanel {
         String formatName = fileName.substring(fileName.lastIndexOf('.') + 1);
         if (formatName.equals("jpg")) {
             formatName = "jpeg";
+            saveImage_Jpeg(fileName, width, height, dpi);
+            return;
         }
 
         for (Iterator<ImageWriter> iw = ImageIO.getImageWritersByFormatName(formatName); iw.hasNext();) {
