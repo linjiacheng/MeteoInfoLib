@@ -48,7 +48,6 @@ import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.Icon;
-import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -436,11 +435,14 @@ public class JConsole extends JScrollPane
         // Found one completion (possibly what we already have)
         if (complete.length == 1 && !complete.equals(part)) {
             String append = complete[0].substring(part.length());
-            append(append);
+            int dp = this.text.getCaretPosition();
+            this.text.select(dp, dp);
+            this.text.replaceSelection(append);
+            //append(append);
             return;
         }
 
-                // Found ambiguous, show (some of) them
+        // Found ambiguous, show (some of) them
         String line = text.getText();
         String command = line.substring(cmdStart);
         // Find prompt
