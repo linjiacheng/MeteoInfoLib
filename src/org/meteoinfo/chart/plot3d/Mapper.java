@@ -1,0 +1,14 @@
+package org.meteoinfo.chart.plot3d;
+
+/**
+ * Implements a Mapper to pass to a plotter.
+ * 
+ * @author eric
+ */
+public interface Mapper {
+
+	public float f1(float x, float y);
+
+	public float f2(float x, float y);
+
+}

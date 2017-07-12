@@ -1,0 +1,1 @@
+ERROR main org.jzy3d.chart.factories.ChartComponentFactory - No default frame could be found for the given Chart canvas: class org.jzy3d.plot3d.rendering.canvas.VoidCanvas
