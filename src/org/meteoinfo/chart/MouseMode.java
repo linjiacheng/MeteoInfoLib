@@ -14,5 +14,6 @@ public enum MouseMode {
     ZOOM_OUT,
     SELECT,
     PAN,
-    IDENTIFER
+    IDENTIFER,
+    ROTATE
 }

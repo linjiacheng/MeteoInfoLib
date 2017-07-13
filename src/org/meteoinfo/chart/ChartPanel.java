@@ -76,6 +76,9 @@ import org.meteoinfo.chart.plot.MapPlot;
 import org.meteoinfo.chart.plot.Plot;
 import org.meteoinfo.chart.plot.XY1DPlot;
 import org.meteoinfo.chart.plot.AbstractPlot2D;
+import org.meteoinfo.chart.plot.Plot3D;
+import org.meteoinfo.chart.plot.PlotType;
+import org.meteoinfo.chart.plot3d.surface.Projector;
 import org.meteoinfo.data.DataTypes;
 import org.meteoinfo.data.mapdata.Field;
 import org.meteoinfo.global.Extent;
@@ -285,6 +288,10 @@ public class ChartPanel extends JPanel {
                 image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/resources/identifer_32x32x32.png"));
                 customCursor = toolkit.createCustomCursor(image, new Point(8, 8), "Identifer");
                 break;
+            case ROTATE:
+                image = toolkit.getImage(this.getClass().getResource("/org/meteoinfo/resources/rotate.png"));
+                customCursor = toolkit.createCustomCursor(image, new Point(8, 8), "Identifer");
+                break;
         }
         this.setCursor(customCursor);
     }
@@ -490,7 +497,12 @@ public class ChartPanel extends JPanel {
 
     void onMouseReleased(MouseEvent e) {
         this.dragMode = false;
-        AbstractPlot2D xyplot = (AbstractPlot2D) this.chart.findPlot(mouseDownPoint.x, mouseDownPoint.y);
+        Plot plt = this.chart.findPlot(mouseDownPoint.x, mouseDownPoint.y);
+        if (!(plt instanceof AbstractPlot2D)){
+            return;
+        }
+        
+        AbstractPlot2D xyplot = (AbstractPlot2D) plt;
         this.currentPlot = xyplot;
         switch (this.mouseMode) {
             case ZOOM_IN:
@@ -606,8 +618,8 @@ public class ChartPanel extends JPanel {
 
     void onMouseDragged(MouseEvent e) {
         this.dragMode = true;
-        mouseLastPos.x = e.getX();
-        mouseLastPos.y = e.getY();
+        int x = e.getX();
+        int y = e.getY();        
         switch (this.mouseMode) {
             case ZOOM_IN:
             case SELECT:
@@ -651,7 +663,59 @@ public class ChartPanel extends JPanel {
                     g.draw(mapRect);
                 }
                 break;
+            case ROTATE:
+                plot = selPlot(this.mouseDownPoint.x, this.mouseDownPoint.y);
+                if (plot != null && plot.getPlotType() == PlotType.XYZ) {
+                    Plot3D plot3d = (Plot3D)plot;
+                    Projector projector = plot3d.getProjector();
+                    float new_value = 0.0f;
+                    // if (!thread.isAlive() || !data_available) {
+                    if (e.isControlDown()) {
+                        projector.set2D_xTranslation(projector.get2D_xTranslation() + (x - this.mouseLastPos.x));
+                        projector.set2D_yTranslation(projector.get2D_yTranslation() + (y - this.mouseLastPos.y));
+                    } else if (e.isShiftDown()) {
+                        new_value = projector.get2DScaling() + (y - this.mouseLastPos.y) * 0.5f;
+                        if (new_value > 60.0f) {
+                            new_value = 60.0f;
+                        }
+                        if (new_value < 2.0f) {
+                            new_value = 2.0f;
+                        }
+                        projector.set2DScaling(new_value);
+                    } else {
+                        new_value = projector.getRotationAngle() + (x - this.mouseLastPos.x);
+                        while (new_value > 360) {
+                            new_value -= 360;
+                        }
+                        while (new_value < 0) {
+                            new_value += 360;
+                        }
+                        projector.setRotationAngle(new_value);
+                        new_value = projector.getElevationAngle() + (y - this.mouseLastPos.y);
+                        if (new_value > 90) {
+                            new_value = 90;
+                        } else if (new_value < 0) {
+                            new_value = 0;
+                        }
+                        projector.setElevationAngle(new_value);
+                    }
+                    //repaint();
+                    this.paintGraphics();
+//                    if (!model.isExpectDelay()) {
+//                        repaint();
+//                    } else {
+//                        if (!dragged) {
+//                            is_data_available = data_available;
+//                            dragged = true;
+//                        }
+//                        data_available = false;
+//                        repaint();
+//                    }
+                }
+                break;
         }
+        mouseLastPos.x = x;
+        mouseLastPos.y = y;
     }
 
     void onMouseClicked(MouseEvent e) {

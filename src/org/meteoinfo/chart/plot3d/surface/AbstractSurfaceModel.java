@@ -406,7 +406,7 @@ public abstract class AbstractSurfaceModel implements SurfaceModel {
             projector = new Projector();
             projector.setDistance(70);
             projector.set2DScaling(15);
-            projector.setRotationAngle(125);
+            projector.setRotationAngle(225);
             projector.setElevationAngle(10);
         }
         return projector;

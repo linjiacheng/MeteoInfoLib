@@ -18,7 +18,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -172,6 +171,14 @@ public class Plot3D extends Plot {
         model.addPropertyChangeListener(surfaceChangesListener);
         model.addChangeListener(surfaceChangesListener);
         init(); // fill all availables properties
+    }
+    
+    /**
+     * Get projector
+     * @return The Projector
+     */
+    public Projector getProjector(){
+        return this.projector;
     }
     
     /**
@@ -407,7 +414,23 @@ public class Plot3D extends Plot {
 
     @Override
     public void draw(Graphics2D g2, Rectangle2D area) {
-        plotSurface(g2, area);
+        // backing buffer creation
+        Rectangle parea = this.getPositionArea(area).getBounds();
+        if ((parea.width != prevwidth) || (parea.height != prevheight)) {
+            // model.setMessage("New image size: " + getBounds().width + "x" +
+            // getBounds().height);            
+            // if (Buffer != null) Buffer.flush();
+            // Buffer = createImage(getBounds().width, getBounds().height);
+            // if (graphics != null) graphics.dispose();
+            // graphics = Buffer.getGraphics();
+            prevwidth = parea.width;
+            prevheight = parea.height;
+        }
+        projector.setProjectionArea(parea);
+        
+        SurfaceVertex.invalidate();
+        this.setGraphArea(this.getPositionArea());
+        plotSurface(g2, parea);
     }
     
     /**
@@ -439,15 +462,11 @@ public class Plot3D extends Plot {
         zmin = zi;
         zmax = zx;
         color_factor = 1f / (zmax - zmin);
-
-        AffineTransform oldMatrix = g2.getTransform();
-        Rectangle oldRegion = g2.getClipBounds();
-        g2.setClip(area);
-        g2.translate(area.getX(), area.getY());
         
         if (!printing) {
             g2.setColor(colors.getBackgroundColor());
-            g2.fillRect(0, 0, (int)area.getWidth(), (int)area.getHeight());
+            //g2.setColor(Color.cyan);
+            g2.fill(area);
         }
 
         drawBoxGridsTicksLabels(g2, false);
@@ -518,9 +537,6 @@ public class Plot3D extends Plot {
         if (isBoxed) {
             drawBoundingBox(g2);
         }
-        
-        g2.setTransform(oldMatrix);
-        g2.setClip(oldRegion);
     }
     
     /**
@@ -531,18 +547,18 @@ public class Plot3D extends Plot {
      * @param y used to retrieve y coordinates of drawn plane from this method.
      */
     private void drawBase(Graphics g, int[] x, int[] y) {
-        Point projection = projector.project(-10, -10, -10);
-        x[0] = projection.x;
-        y[0] = projection.y;
-        projection = projector.project(-10, 10, -10);
-        x[1] = projection.x;
-        y[1] = projection.y;
-        projection = projector.project(10, 10, -10);
-        x[2] = projection.x;
-        y[2] = projection.y;
-        projection = projector.project(10, -10, -10);
-        x[3] = projection.x;
-        y[3] = projection.y;
+        Point p = projector.project(-10, -10, -10);
+        x[0] = p.x;
+        y[0] = p.y;
+        p = projector.project(-10, 10, -10);
+        x[1] = p.x;
+        y[1] = p.y;
+        p = projector.project(10, 10, -10);
+        x[2] = p.x;
+        y[2] = p.y;
+        p = projector.project(10, -10, -10);
+        x[3] = p.x;
+        y[3] = p.y;
         x[4] = x[0];
         y[4] = y[0];
 
