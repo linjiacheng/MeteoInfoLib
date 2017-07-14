@@ -32,6 +32,7 @@ import org.meteoinfo.chart.plot3d.surface.SurfaceColor;
 import org.meteoinfo.chart.plot3d.surface.SurfaceModel;
 import org.meteoinfo.chart.plot3d.surface.SurfaceVertex;
 import org.meteoinfo.data.Dataset;
+import org.meteoinfo.drawing.Draw;
 
 /**
  *
@@ -426,11 +427,31 @@ public class Plot3D extends Plot {
             prevwidth = parea.width;
             prevheight = parea.height;
         }
-        projector.setProjectionArea(parea);
+        projector.setProjectionArea(parea);                
         
         SurfaceVertex.invalidate();
         this.setGraphArea(this.getPositionArea());
+        //Draw title
+        float y = this.drawTitle(g2, this.getGraphArea());
         plotSurface(g2, parea);
+    }
+    
+    float drawTitle(Graphics2D g, Rectangle2D graphArea) {
+        float y = (float) graphArea.getY() - (float) this.getTightInset().getTop();
+        if (title != null) {
+            g.setColor(title.getColor());
+            g.setFont(title.getFont());
+            float x = (float) (graphArea.getX() + graphArea.getWidth() / 2);
+            y += 5;
+            for (String text : title.getTexts()) {
+                Dimension dim = Draw.getStringDimension(text, g);
+                y += dim.height;
+                Draw.drawString(g, text, x - dim.width / 2, y);
+                g.setFont(title.getFont());
+                y += title.getLineSpace();
+            }
+        }
+        return y;
     }
     
     /**
