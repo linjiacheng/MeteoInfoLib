@@ -15,6 +15,7 @@ import org.meteoinfo.chart.plot3d.surface.SurfaceModel;
 import org.meteoinfo.chart.plot3d.surface.SurfaceVertex;
 import org.meteoinfo.chart.plot3d.surface.SurfaceModel.PlotColor;
 import org.meteoinfo.chart.plot3d.surface.SurfaceModel.PlotType;
+import org.meteoinfo.legend.LegendScheme;
 
 /**
  * {@link AbstractSurfaceModel} provides a writable implementation of the
@@ -339,6 +340,8 @@ public class AbstractSurfaceModel implements SurfaceModel {
     protected float zMax;
 
     protected float zMin;
+    
+    protected LegendScheme legend;
 
     /**
      * Empty Surface Model
@@ -999,6 +1002,23 @@ public class AbstractSurfaceModel implements SurfaceModel {
 
     public void toggleScaleBox() {
         setScaleBox(!isScaleBox());
+    }
+    
+    /**
+     * Get legend
+     * @return Legend
+     */
+    @Override
+    public LegendScheme getLegend(){
+        return this.legend;
+    }
+    
+    /**
+     * Set legend
+     * @param value Legend 
+     */
+    public void setLegend(LegendScheme value){
+        this.legend = value;
     }
 
 }// end of class

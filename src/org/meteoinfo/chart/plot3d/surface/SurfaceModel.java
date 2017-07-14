@@ -27,6 +27,8 @@ Modified : Eric : remove every graphical stuff to get rid of Frame
  *----------------------------------------------------------------------------------------*/
 package org.meteoinfo.chart.plot3d.surface;
 
+import org.meteoinfo.legend.LegendScheme;
+
 /**
  * The model used to display any surface in JSurface
  */
@@ -190,7 +192,14 @@ public interface SurfaceModel {
 
     /**
      * Sets data availability flag
+     * @return 
      */
     public boolean isDataAvailable();
+    
+    /**
+     * Get legend
+     * @return The legend
+     */
+    public LegendScheme getLegend();
 
 }

@@ -11,6 +11,7 @@ import java.awt.Graphics2D;
 import java.awt.Label;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
@@ -25,6 +26,8 @@ import java.util.List;
 import javax.swing.JPanel;
 import org.meteoinfo.chart.ChartLegend;
 import org.meteoinfo.chart.ChartText;
+import org.meteoinfo.chart.LegendPosition;
+import org.meteoinfo.chart.Location;
 import org.meteoinfo.chart.Margin;
 import org.meteoinfo.chart.plot3d.DefaultSurfaceModel;
 import org.meteoinfo.chart.plot3d.surface.Projector;
@@ -33,6 +36,10 @@ import org.meteoinfo.chart.plot3d.surface.SurfaceModel;
 import org.meteoinfo.chart.plot3d.surface.SurfaceVertex;
 import org.meteoinfo.data.Dataset;
 import org.meteoinfo.drawing.Draw;
+import org.meteoinfo.global.PointF;
+import static org.meteoinfo.legend.BreakTypes.PolygonBreak;
+import org.meteoinfo.legend.LegendScheme;
+import org.meteoinfo.legend.PolygonBreak;
 
 /**
  *
@@ -433,7 +440,13 @@ public class Plot3D extends Plot {
         this.setGraphArea(this.getPositionArea());
         //Draw title
         float y = this.drawTitle(g2, this.getGraphArea());
+        
+        //Draw 3D surface
         plotSurface(g2, parea);
+        
+        //Draw legend
+        Rectangle2D rect = this.projector.getBounds();
+        this.drawLegend(g2, area, rect, y);
     }
     
     float drawTitle(Graphics2D g, Rectangle2D graphArea) {
@@ -1145,10 +1158,13 @@ public class Plot3D extends Plot {
             low1 = low2;
         }
         if (count > 0) {
-            z = (z / count - zmin) * color_factor;
-            g2.setColor(colors.getPolygonColor(curve, z));
+            //z = (z / count - zmin) * color_factor;
+            PolygonBreak brk = getLegendBreak(vertex[0].z);
+            g2.setColor(brk.getColor());
+            //g2.setColor(colors.getPolygonColor(curve, z));
             g2.fillPolygon(poly_x, poly_y, count);
-            g2.setColor(colors.getLineColor(1, z));
+            g2.setColor(brk.getOutlineColor());
+            //g2.setColor(colors.getLineColor(1, z));
             if (isMesh) {
 
                 poly_x[count] = poly_x[0];
@@ -1157,6 +1173,12 @@ public class Plot3D extends Plot {
                 g2.drawPolygon(poly_x, poly_y, count);
             }
         }
+    }
+    
+    private PolygonBreak getLegendBreak(float z){
+        LegendScheme ls = this.model.getLegend();
+        PolygonBreak brk = (PolygonBreak)ls.getLegenBreak(z);
+        return brk;
     }
     
     /**
@@ -1425,6 +1447,82 @@ public class Plot3D extends Plot {
 //        }
 
         return new Margin(left, right, top, bottom);
+    }
+    
+    void drawLegend(Graphics2D g, Rectangle2D area, Rectangle2D graphArea, float y) {
+        if (!this.legends.isEmpty()) {
+            Object rendering = g.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            for (ChartLegend legend : this.legends) {
+                if (legend.isColorbar()) {
+                    if (legend.getPlotOrientation() == PlotOrientation.VERTICAL) {
+                        legend.setHeight((int) (graphArea.getHeight() * legend.getShrink()));
+                    } else {
+                        legend.setWidth((int) (graphArea.getWidth() * legend.getShrink()));
+                    }
+                }
+                if (legend.getPosition() == LegendPosition.CUSTOM) {
+                    legend.getLegendDimension(g, new Dimension((int) area.getWidth(), (int) area.getHeight()));
+                    float x = (float) (area.getWidth() * legend.getX());
+                    y = (float) (area.getHeight() * (1 - (this.getLegend().getHeight() / area.getHeight())
+                            - this.getLegend().getY()));
+                    legend.draw(g, new PointF(x, y));
+                } else {
+                    this.drawLegendScheme(legend, g, graphArea, y);
+                }
+            }
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, rendering);
+        }
+    }
+
+    void drawLegendScheme(ChartLegend legend, Graphics2D g, Rectangle2D area, float y) {
+        g.setFont(legend.getTickFont());
+        Dimension dim = legend.getLegendDimension(g, new Dimension((int) area.getWidth(), (int) area.getHeight()));
+        float x = 0;
+        //Rectangle2D graphArea = this.getPositionArea();
+        switch (legend.getPosition()) {
+            case UPPER_CENTER_OUTSIDE:
+                x = (float) (area.getX() + area.getWidth() / 2 - dim.width / 2);
+                y += 5;
+                break;
+            case LOWER_CENTER_OUTSIDE:
+                x = (float) (area.getX() + area.getWidth() / 2 - dim.width / 2);
+                y = (float) (area.getY() + area.getHeight() + 10);
+                break;
+            case LEFT_OUTSIDE:
+                x = 10;
+                y = (float) area.getHeight() / 2 - dim.height / 2;
+                break;
+            case RIGHT_OUTSIDE:
+                x = (float) area.getX() + (float) area.getWidth() + 10 + 40;
+                y = (float) area.getY() + (float) area.getHeight() / 2 - dim.height / 2;
+                break;
+            case UPPER_CENTER:
+                x = (float) (area.getX() + area.getWidth() / 2 - dim.width / 2);
+                y = (float) area.getY() + 10;
+                break;
+            case UPPER_RIGHT:
+                x = (float) (area.getX() + area.getWidth()) - dim.width - 10;
+                y = (float) area.getY() + 10;
+                break;
+            case LOWER_CENTER:
+                x = (float) (area.getX() + area.getWidth() / 2 - dim.width / 2);
+                y = (float) (area.getY() + area.getHeight()) - dim.height - 10;
+                break;
+            case LOWER_RIGHT:
+                x = (float) (area.getX() + area.getWidth()) - dim.width - 10;
+                y = (float) (area.getY() + area.getHeight()) - dim.height - 10;
+                break;
+            case UPPER_LEFT:
+                x = (float) area.getX() + 10;
+                y = (float) area.getY() + 10;
+                break;
+            case LOWER_LEFT:
+                x = (float) area.getX() + 10;
+                y = (float) (area.getY() + area.getHeight()) - dim.height - 10;
+                break;
+        }
+        legend.draw(g, new PointF(x, y));
     }
     
     // </editor-fold>

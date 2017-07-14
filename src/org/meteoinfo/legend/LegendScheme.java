@@ -383,7 +383,10 @@ public class LegendScheme {
                 return cb;
             }
         }
-        return this.legendBreaks.get(0);
+        if (v >= this.getMaxValue())
+            return this.legendBreaks.get(this.getBreakNum() - 1);
+        else
+            return this.legendBreaks.get(0);
     }
 
     /**

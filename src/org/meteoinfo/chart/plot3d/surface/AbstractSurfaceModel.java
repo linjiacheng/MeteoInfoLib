@@ -8,6 +8,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.SwingPropertyChangeSupport;
+import org.meteoinfo.legend.LegendScheme;
 
 /**
  * Abstract implementation that handles everything but the surfaceVertex array
@@ -160,6 +161,8 @@ public abstract class AbstractSurfaceModel implements SurfaceModel {
     protected float zMax;
 
     protected float zMin;
+    
+    protected LegendScheme legend;
 
     /**
      * Empty Surface Model
@@ -813,6 +816,23 @@ public abstract class AbstractSurfaceModel implements SurfaceModel {
 
     public void toggleScaleBox() {
         setScaleBox(!isScaleBox());
+    }
+    
+    /**
+     * Get legend
+     * @return Legend
+     */
+    @Override
+    public LegendScheme getLegend(){
+        return this.legend;
+    }
+    
+    /**
+     * Set legend
+     * @param ls Legend
+     */
+    public void setLegend(LegendScheme ls){
+        this.legend = ls;
     }
 
 }
