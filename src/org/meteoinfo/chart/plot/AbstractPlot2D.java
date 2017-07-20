@@ -18,6 +18,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.meteoinfo.chart.ChartLegend;
@@ -1184,9 +1185,13 @@ public abstract class AbstractPlot2D extends Plot {
     }
 
     void drawText(Graphics2D g, Rectangle2D area) {
-        for (ChartText text : this.getTexts()) {
-            drawText(text, g, area);
+        Iterator<ChartText> iter = this.getTexts().iterator();
+        while (iter.hasNext()){
+            drawText(iter.next(), g, area);
         }
+//        for (ChartText text : this.getTexts()) {
+//            drawText(text, g, area);
+//        }
     }
 
     void drawText(ChartText text, Graphics2D g, Rectangle2D area) {

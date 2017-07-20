@@ -27,7 +27,6 @@ import javax.swing.JPanel;
 import org.meteoinfo.chart.ChartLegend;
 import org.meteoinfo.chart.ChartText;
 import org.meteoinfo.chart.LegendPosition;
-import org.meteoinfo.chart.Location;
 import org.meteoinfo.chart.Margin;
 import org.meteoinfo.chart.plot3d.DefaultSurfaceModel;
 import org.meteoinfo.chart.plot3d.surface.Projector;
@@ -37,7 +36,6 @@ import org.meteoinfo.chart.plot3d.surface.SurfaceVertex;
 import org.meteoinfo.data.Dataset;
 import org.meteoinfo.drawing.Draw;
 import org.meteoinfo.global.PointF;
-import static org.meteoinfo.legend.BreakTypes.PolygonBreak;
 import org.meteoinfo.legend.LegendScheme;
 import org.meteoinfo.legend.PolygonBreak;
 
