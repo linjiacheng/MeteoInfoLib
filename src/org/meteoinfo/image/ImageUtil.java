@@ -188,4 +188,100 @@ public class ImageUtil {
         }
         return format;
     }
+    
+    /**
+     * Count none-zero points with window size
+     * @param data Input data
+     * @param size Window size
+     * @return Count array
+     */
+    public static Array count(Array data, int size){
+        int ny = data.getShape()[0];
+        int nx = data.getShape()[1];
+        int skip = size / 2;
+        int ii, jj, n;
+        Array r = Array.factory(DataType.INT, data.getShape());
+        for (int i = 0; i < ny; i++){
+            if (i < skip || i >= ny - skip){
+                for (int j = 0; j < nx; j++){
+                    r.setInt(i * nx + j, 0);
+                }
+            } else {
+                for (int j = 0; j < nx; j++){
+                    if (j < skip || j >=  nx - skip){
+                        r.setInt(i * nx + j, 0);
+                    } else {
+                        n = 0;
+                        for (ii = i - skip; ii <= i + skip; ii++){
+                            for (jj = j - skip; jj <= j + skip; jj++){
+                                if (data.getDouble(ii * nx + jj) > 0){
+                                    n += 1;
+                                }
+                            }
+                        }
+                        r.setInt(i * nx + j, n);
+                    }
+                }
+            }
+        }
+        
+        return r;
+    }
+    
+    /**
+     * Calculate mean value with window size
+     * @param data Input data
+     * @param size Window size
+     * @param positive Only calculate the positive value or not.
+     * @return Mean array
+     */
+    public static Array mean(Array data, int size, boolean positive){
+        int ny = data.getShape()[0];
+        int nx = data.getShape()[1];
+        int skip = size / 2;
+        double sum;
+        int ii, jj, n;
+        Array r = Array.factory(data.getDataType(), data.getShape());
+        for (int i = 0; i < ny; i++){
+            if (i < skip || i >= ny - skip){
+                for (int j = 0; j < nx; j++){
+                    r.setObject(i * nx + j, 0);
+                }
+            } else {
+                for (int j = 0; j < nx; j++){
+                    if (j < skip || j >=  nx - skip){
+                        r.setObject(i * nx + j, 0);
+                    } else {
+                        n = 0;
+                        sum = 0;
+                        if (positive){
+                            for (ii = i - skip; ii <= i + skip; ii++){
+                                for (jj = j - skip; jj <= j + skip; jj++){
+                                    if (data.getDouble(ii * nx + jj) > 0){
+                                        sum += data.getDouble(ii * nx + jj);
+                                        n += 1;
+                                    }
+                                }
+                            }
+                        } else {
+                            for (ii = i - skip; ii <= i + skip; ii++){
+                                for (jj = j - skip; jj <= j + skip; jj++){
+                                    if (!Double.isNaN(data.getDouble(ii * nx + jj))){
+                                        sum += data.getDouble(ii * nx + jj);
+                                        n += 1;
+                                    }
+                                }
+                            }
+                        }
+                        if (n > 0)
+                            r.setObject(i * nx + j, sum / n);
+                        else
+                            r.setObject(i * nx + j, 0);
+                    }
+                }
+            }
+        }
+        
+        return r;
+    }
 }
