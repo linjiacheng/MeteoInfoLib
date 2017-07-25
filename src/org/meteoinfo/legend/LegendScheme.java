@@ -377,10 +377,17 @@ public class LegendScheme {
      * @return Legend break
      */
     public ColorBreak getLegenBreak(double v){
+        double sv, ev;
         for (ColorBreak cb : this.legendBreaks){
-            if (v >= Double.parseDouble(cb.getStartValue().toString()) && v <
-                    Double.parseDouble(cb.getEndValue().toString())){
-                return cb;
+            sv = Double.parseDouble(cb.getStartValue().toString());
+            ev = Double.parseDouble(cb.getEndValue().toString());
+            if (sv == ev){
+                if (v == sv)
+                    return cb;
+            } else {
+                if (v >= sv && v < ev){
+                    return cb;
+                }
             }
         }
         if (v >= this.getMaxValue())

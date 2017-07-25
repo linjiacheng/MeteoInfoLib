@@ -2454,5 +2454,34 @@ public class DrawMeteoData {
 
         return weatherList;
     }
+    
+    /**
+     * Create could amount legend scheme
+     *
+     * @param size Size
+     * @param color Color
+     * @return Cloud amount legend scheme
+     */
+    public static LegendScheme createCloudLegendScheme(int size, Color color) {
+        LegendScheme aLS = new LegendScheme(ShapeTypes.Point);
+        aLS.setLegendType(LegendType.UniqueValue);
+        int[] clouds = new int[]{0,1,2,3,4,5,6,7,8,9};
+        for (int w : clouds) {
+            PointBreak aPB = new PointBreak();
+            aPB.setMarkerType(MarkerType.Character);
+            aPB.setSize(size);
+            aPB.setColor(color);
+            aPB.setFontName("Weather");
+            aPB.setStartValue(w);
+            aPB.setEndValue(w);
+            int charIdx = w + 197;
+            aPB.setCharIndex(charIdx);
+            aPB.setCaption(String.valueOf(w));
+
+            aLS.getLegendBreaks().add(aPB);
+        }
+
+        return aLS;
+    }
     // </editor-fold>
 }
