@@ -2615,7 +2615,7 @@ public class MapView extends JPanel implements IWebMapPanel {
                                 PolygonShape selShape = (PolygonShape) selObj[0];
                                 int polyIdx = (int) selObj[1];
                                 int holeIdx = (int) selObj[2];
-                                List<PointD> hole = selShape.getPolygons().get(polyIdx).getHoleLines().get(holeIdx);
+                                List<PointD> hole = (List<PointD>)selShape.getPolygons().get(polyIdx).getHoleLines().get(holeIdx);
                                 selShape.getPolygons().get(polyIdx).removeHole(holeIdx);
                                 UndoableEdit edit = (new MapViewUndoRedo()).new RemoveRingEdit(this, selShape,
                                         hole, polyIdx, holeIdx);
@@ -5659,7 +5659,7 @@ public class MapView extends JPanel implements IWebMapPanel {
         List<PointD> newPList;
         if (aPG.hasHole()) {
             for (int h = 0; h < aPG.getHoleLines().size(); h++) {
-                newPList = aPG.getHoleLines().get(h);
+                newPList = (List<PointD>)aPG.getHoleLines().get(h);
                 for (int j = 0; j < newPList.size(); j++) {
                     wPoint = newPList.get(j);
                     sXY = projToScreen(wPoint.X, wPoint.Y, LonShift);
@@ -8068,8 +8068,8 @@ public class MapView extends JPanel implements IWebMapPanel {
                 case Polygon:
                     PolygonShape pShape = (PolygonShape) aShape;
                     for (Polygon polygon : pShape.getPolygons()) {
-                        for (List<PointD> points : polygon.getRings()) {
-                            Object sel = GeoComputation.selectPolyline(bPoint, points, aExtent.getWidth() / 2);
+                        for (List<? extends PointD> points : polygon.getRings()) {
+                            Object sel = GeoComputation.selectPolyline(bPoint, (List<PointD>)points, aExtent.getWidth() / 2);
                             if (sel != null) {
                                 return (Integer) ((Object[]) sel)[0];
                             }

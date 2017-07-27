@@ -1607,7 +1607,7 @@ public class Draw {
         List<PointD> newPList;
         if (aPG.hasHole()) {
             for (int h = 0; h < aPG.getHoleLines().size(); h++) {
-                newPList = aPG.getHoleLines().get(h);
+                newPList = (List<PointD>)aPG.getHoleLines().get(h);
                 for (int j = 0; j < newPList.size(); j++) {
                     wPoint = newPList.get(j);
                     if (j == 0) {

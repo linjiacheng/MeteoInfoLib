@@ -53,7 +53,7 @@ public class GeoComputation {
      * @param pointList point list
      * @return boolean
      */
-    public static boolean isClockwise(List<PointD> pointList) {
+    public static boolean isClockwise(List<? extends PointD> pointList) {
         int i;
         PointD aPoint;
         double yMax = 0;
@@ -104,7 +104,7 @@ public class GeoComputation {
      * @param aPoint The point
      * @return If the point is in the polygon
      */
-    public static boolean pointInPolygon(List<PointD> poly, PointD aPoint) {
+    public static boolean pointInPolygon(List<? extends PointD> poly, PointD aPoint) {
         double xNew, yNew, xOld, yOld;
         double x1, y1, x2, y2;
         int i;
@@ -163,7 +163,7 @@ public class GeoComputation {
             isIn = pointInPolygon(aPRing.getOutLine(), aPoint);
             if (isIn) {
                 if (aPRing.hasHole()) {
-                    for (List<PointD> aLine : aPRing.getHoleLines()) {
+                    for (List<? extends PointD> aLine : aPRing.getHoleLines()) {
                         if (pointInPolygon(aLine, aPoint)) {
                             isIn = false;
                             break;
@@ -207,7 +207,7 @@ public class GeoComputation {
         if (aPolygon.hasHole()) {
             boolean isIn = pointInPolygon(aPolygon.getOutLine(), aPoint);
             if (isIn) {
-                for (List<PointD> aLine : aPolygon.getHoleLines()) {
+                for (List<? extends PointD> aLine : aPolygon.getHoleLines()) {
                     if (pointInPolygon(aLine, aPoint)) {
                         isIn = false;
                         break;
@@ -411,7 +411,7 @@ public class GeoComputation {
      * @param isLonLat if is lon/lat
      * @return area
      */
-    public static double getArea(List<PointD> points, boolean isLonLat) {
+    public static double getArea(List<? extends PointD> points, boolean isLonLat) {
 
         int Count = points.size();
         if (Count > 2) {
@@ -451,7 +451,7 @@ public class GeoComputation {
      * @param points point list
      * @return area
      */
-    public static double getArea(List<PointD> points) {
+    public static double getArea(List<? extends PointD> points) {
         return getArea(points, false);
     }
 
@@ -483,7 +483,7 @@ public class GeoComputation {
      * @param points lon/lat point list
      * @return area
      */
-    public static double sphericalPolygonArea(List<PointD> points) {
+    public static double sphericalPolygonArea(List<? extends PointD> points) {
         return sphericalPolygonArea(points, EARTH_RADIUS * 1000);
     }
 
@@ -494,7 +494,7 @@ public class GeoComputation {
      * @param r spherical radius
      * @return area
      */
-    public static double sphericalPolygonArea(List<PointD> points, double r) {
+    public static double sphericalPolygonArea(List<? extends PointD> points, double r) {
         double[] lat = new double[points.size()];
         double[] lon = new double[points.size()];
         for (int i = 0; i < points.size(); i++) {
@@ -1148,7 +1148,7 @@ public class GeoComputation {
      * @param clipObj Clipping object
      * @return Clipped polygons
      */
-    private static List<Polygon> clipPolygons(List<Polygon> polygons, Object clipObj) {
+    private static List<Polygon> clipPolygons(List<? extends Polygon> polygons, Object clipObj) {
         List<Polygon> newPolygons = new ArrayList<>();
         for (int i = 0; i < polygons.size(); i++) {
             Polygon aPolygon = polygons.get(i);
@@ -1165,7 +1165,7 @@ public class GeoComputation {
     private static List<Polygon> clipPolygon(Polygon inPolygon, Object clipObj) {
         List<Polygon> newPolygons = new ArrayList<>();
         List<Polyline> newPolylines = new ArrayList<>();
-        List<PointD> aPList = inPolygon.getOutLine();
+        List<PointD> aPList = (List<PointD>)inPolygon.getOutLine();
 
         if (!isExtentCross(inPolygon.getExtent(), clipObj)) {
             return newPolygons;
@@ -1217,7 +1217,7 @@ public class GeoComputation {
         List<List<PointD>> holeLines = new ArrayList<>();
         if (inPolygon.hasHole()) {
             for (int h = 0; h < inPolygon.getHoleLines().size(); h++) {
-                List<PointD> holePList = inPolygon.getHoleLines().get(h);
+                List<PointD> holePList = (List<PointD>)inPolygon.getHoleLines().get(h);
                 Extent plExtent = MIMath.getPointsExtent(holePList);
                 if (!isExtentCross(plExtent, clipObj)) {
                     continue;
@@ -1243,7 +1243,7 @@ public class GeoComputation {
                         newLines.add(bPList);
                     } else //the hole is inside the cut polygon
                     {
-                        holeLines.add(inPolygon.getHoleLines().get(h));
+                        holeLines.add((List<PointD>)inPolygon.getHoleLines().get(h));
                     }
                 } else {
                     newLines.add(holePList);
@@ -1393,7 +1393,7 @@ public class GeoComputation {
     private static List<Polygon> clipPolygon_Extent(Polygon inPolygon, Extent extent) {
         List<Polygon> newPolygons = new ArrayList<>();
         List<Polyline> newPolylines = new ArrayList<>();
-        List<PointD> aPList = inPolygon.getOutLine();
+        List<PointD> aPList = (List<PointD>)inPolygon.getOutLine();
 
         if (!isExtentCross(inPolygon.getExtent(), extent)) {
             return newPolygons;
@@ -1433,7 +1433,7 @@ public class GeoComputation {
         List<List<PointD>> holeLines = new ArrayList<>();
         if (inPolygon.hasHole()) {
             for (int h = 0; h < inPolygon.getHoleLines().size(); h++) {
-                List<PointD> holePList = inPolygon.getHoleLines().get(h);
+                List<PointD> holePList = (List<PointD>)inPolygon.getHoleLines().get(h);
                 Extent plExtent = MIMath.getPointsExtent(holePList);
                 if (!isExtentCross(plExtent, extent)) {
                     continue;
@@ -1459,7 +1459,7 @@ public class GeoComputation {
                         newLines.add(bPList);
                     } else //the hole is inside the cut polygon
                     {
-                        holeLines.add(inPolygon.getHoleLines().get(h));
+                        holeLines.add((List<PointD>)inPolygon.getHoleLines().get(h));
                     }
                 } else {
                     newLines.add(holePList);

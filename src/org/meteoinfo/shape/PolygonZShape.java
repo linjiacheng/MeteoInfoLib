@@ -5,7 +5,12 @@
  */
 package org.meteoinfo.shape;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.meteoinfo.geoprocess.GeoComputation;
 import org.meteoinfo.global.MIMath;
+import org.meteoinfo.global.PointD;
 
 /**
  *
@@ -61,5 +66,48 @@ public class PolygonZShape extends PolygonShape{
      */
     public double[] getMRange() {
         return MIMath.arrayMinMax(getMArray());
+    }
+    
+    @Override
+    protected void updatePolygons() {
+        _polygons = new ArrayList<>();
+        if (_numParts == 1) {
+            PolygonZ aPolygon = new PolygonZ();
+            aPolygon.setOutLine(_points);
+            ((List<PolygonZ>)_polygons).add(aPolygon);
+        } else {
+            PointZ[] Pointps;
+            PolygonZ aPolygon = null;
+            int numPoints = this.getPointNum();
+            for (int p = 0; p < _numParts; p++) {
+                if (p == _numParts - 1) {
+                    Pointps = new PointZ[numPoints - parts[p]];
+                    for (int pp = parts[p]; pp < numPoints; pp++) {
+                        Pointps[pp - parts[p]] = (PointZ)_points.get(pp);
+                    }
+                } else {
+                    Pointps = new PointZ[parts[p + 1] - parts[p]];
+                    for (int pp = parts[p]; pp < parts[p + 1]; pp++) {
+                        Pointps[pp - parts[p]] = (PointZ)_points.get(pp);
+                    }
+                }
+                
+                if (GeoComputation.isClockwise(Pointps)) {
+                    if (p > 0) {
+                        ((List<PolygonZ>)_polygons).add(aPolygon);
+                    }
+                    
+                    aPolygon = new PolygonZ();
+                    aPolygon.setOutLine(Arrays.asList(Pointps));
+                } else if (aPolygon == null) {
+                    MIMath.arrayReverse(Pointps);
+                    aPolygon = new PolygonZ();
+                    aPolygon.setOutLine(Arrays.asList(Pointps));
+                } else {
+                    aPolygon.addHole(Arrays.asList(Pointps));
+                }
+            }
+            ((List<PolygonZ>)_polygons).add(aPolygon);
+        }
     }
 }

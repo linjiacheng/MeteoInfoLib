@@ -822,7 +822,7 @@ public class VectorLayer extends MapLayer {
                 if (poly.hasHole()) {
                     if (GeoComputation.pointInPolygon(poly.getOutLine(), p)) {
                         int j = 0;
-                        for (List<PointD> hole : poly.getHoleLines()) {
+                        for (List<? extends PointD> hole : poly.getHoleLines()) {
                             if (GeoComputation.pointInPolygon(hole, p)) {
                                 return new Object[]{shape, i, j};
                             }
@@ -2137,7 +2137,7 @@ public class VectorLayer extends MapLayer {
                     // If Fill=true then add innerBoundaryIs for the contour 'holes'
                     if (((PolygonBreak) this.getLegendScheme().getLegendBreaks().get(levelNum)).isDrawFill()) {
                         if (polygon.hasHole()) {
-                            for (List<PointD> hole : polygon.getHoleLines()) {
+                            for (List<? extends PointD> hole : polygon.getHoleLines()) {
                                 handler.startElement("", "", "innerBoundaryIs", atts);
                                 handler.startElement("", "", "LinearRing", atts);
                                 handler.startElement("", "", "coordinates", atts);

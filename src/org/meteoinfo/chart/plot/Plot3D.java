@@ -15,7 +15,10 @@ import java.awt.Label;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.TexturePaint;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import org.meteoinfo.chart.ChartLegend;
@@ -35,6 +38,7 @@ import org.meteoinfo.shape.Graphic;
 import org.meteoinfo.shape.GraphicCollection;
 import org.meteoinfo.shape.PointZ;
 import org.meteoinfo.shape.PointZShape;
+import org.meteoinfo.shape.PolygonZ;
 import org.meteoinfo.shape.PolygonZShape;
 import org.meteoinfo.shape.PolylineZShape;
 import org.meteoinfo.shape.Shape;
@@ -558,9 +562,10 @@ public class Plot3D extends Plot {
             PolylineBreak pb = (PolylineBreak)gg.getLegend();
             List<PointZ> ps = (List<PointZ>)shape.getPoints();
             PointF[] points = new PointF[ps.size()];
+            PointZ p, pp;
             for (int i = 0; i < ps.size(); i++) {
-                PointZ p = ps.get(i);
-                PointZ pp = new PointZ((p.X - xmin) * xfactor - 10, (p.Y - ymin) * yfactor - 10,
+                p = ps.get(i);
+                pp = new PointZ((p.X - xmin) * xfactor - 10, (p.Y - ymin) * yfactor - 10,
                     (p.Z - this.zmin) * zfactor - 10);
                 projection = projector.project((float) pp.X, (float) pp.Y, (float) pp.Z);
                 points[i] = new PointF(projection.x, projection.y);
@@ -619,18 +624,19 @@ public class Plot3D extends Plot {
                 }
             }
 
+            PointZ pp;
             for (int i : order) {
                 Graphic gg = graphic.getGraphicN(i);
                 PolylineZShape shape = (PolylineZShape)gg.getShape();
-                PolylineBreak pb = (PolylineBreak)graphic.getLegend();
+                PolylineBreak pb = (PolylineBreak)gg.getLegend();
                 List<PointZ> ps = (List<PointZ>)shape.getPoints();
                 PointF[] points = new PointF[ps.size()];
                 for (int j = 0; j < ps.size(); j++) {
                     p = ps.get(j);
-                    PointZ pp = new PointZ((p.X - xmin) * xfactor - 10, (p.Y - ymin) * yfactor - 10,
+                    pp = new PointZ((p.X - xmin) * xfactor - 10, (p.Y - ymin) * yfactor - 10,
                         (p.Z - this.zmin) * zfactor - 10);
                     projection = projector.project((float) pp.X, (float) pp.Y, (float) pp.Z);
-                    points[i] = new PointF(projection.x, projection.y);
+                    points[j] = new PointF(projection.x, projection.y);
                 }
                 Draw.drawPolyline(points, pb, g);
             }
@@ -693,14 +699,75 @@ public class Plot3D extends Plot {
         for (int i : order) {
             Graphic gg = graphic.getGraphicN(i);
             Shape shape = gg.getShape();
-            this.drawPolygon(g, (PolygonZShape) shape, (PolygonBreak) gg.getLegend());
+            this.drawPolygonShape(g, (PolygonZShape) shape, (PolygonBreak) gg.getLegend());
+        }
+    }
+    
+    private void drawPolygonShape(Graphics2D g, PolygonZShape shape, PolygonBreak pb) {
+        for (PolygonZ poly : (List<PolygonZ>)shape.getPolygons()) {
+            drawPolygon(g, poly, pb);
+        }
+    }
+    
+    private List<PointF> drawPolygon(Graphics2D g, PolygonZ aPG, PolygonBreak aPGB) {
+        int len = aPG.getOutLine().size();
+        GeneralPath path = new GeneralPath(GeneralPath.WIND_EVEN_ODD, len);
+        PointZ p, pp;
+        List<PointF> rPoints = new ArrayList<>();
+        for (int i = 0; i < aPG.getOutLine().size(); i++) {
+            p = ((List<PointZ>)aPG.getOutLine()).get(i);
+            pp = new PointZ((p.X - xmin) * xfactor - 10, (p.Y - ymin) * yfactor - 10,
+                    (p.Z - this.zmin) * zfactor - 10);
+            projection = projector.project((float) pp.X, (float) pp.Y, (float) pp.Z);
+            if (i == 0) {
+                path.moveTo(projection.x, projection.y);
+            } else {
+                path.lineTo(projection.x, projection.y);
+            }
+            rPoints.add(new PointF(projection.x, projection.y));
         }
 
-//        for (int i = 0; i < graphic.getNumGrahics(); i++) {
-//            Graphic gg = graphic.getGraphicN(i);
-//            Shape shape = gg.getShape();
-//            this.drawPolygon(g, (PolygonZShape) shape, (PolygonBreak) gg.getLegend());
-//        }
+        List<PointZ> newPList;
+        if (aPG.hasHole()) {
+            for (int h = 0; h < aPG.getHoleLines().size(); h++) {
+                newPList = (List<PointZ>)aPG.getHoleLines().get(h);
+                for (int j = 0; j < newPList.size(); j++) {
+                    p = newPList.get(j);
+                    pp = new PointZ((p.X - xmin) * xfactor - 10, (p.Y - ymin) * yfactor - 10,
+                        (p.Z - this.zmin) * zfactor - 10);
+                    projection = projector.project((float) pp.X, (float) pp.Y, (float) pp.Z);
+                    if (j == 0) {
+                        path.moveTo(projection.x, projection.y);
+                    } else {
+                        path.lineTo(projection.x, projection.y);
+                    }
+                }
+            }
+        }
+        path.closePath();
+
+        if (aPGB.isDrawFill()) {
+            Color aColor = aPGB.getColor();
+            if (aPGB.isUsingHatchStyle()) {
+                int size = aPGB.getStyleSize();
+                BufferedImage bi = Draw.getHatchImage(aPGB.getStyle(), size, aPGB.getColor(), aPGB.getBackColor());
+                Rectangle2D rect = new Rectangle2D.Double(0, 0, size, size);
+                g.setPaint(new TexturePaint(bi, rect));
+                g.fill(path);
+            } else {
+                g.setColor(aColor);
+                g.fill(path);
+            }
+        }
+        
+        if (aPGB.isDrawOutline()) {
+            BasicStroke pen = new BasicStroke(aPGB.getOutlineSize());
+            g.setStroke(pen);
+            g.setColor(aPGB.getOutlineColor());
+            g.draw(path);
+        }
+
+        return rPoints;
     }
 
     private void drawPolygon(Graphics2D g, PolygonZShape shape, PolygonBreak pb) {

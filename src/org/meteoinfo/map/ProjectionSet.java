@@ -920,7 +920,7 @@ public class ProjectionSet {
             Polygon aPG = aPGS.getPolygons().get(i);
             Polygon bPG = null;
             for (int r = 0; r < aPG.getRingNumber(); r++) {
-                List<PointD> pList = aPG.getRings().get(r);
+                List<PointD> pList = (List<PointD>)aPG.getRings().get(r);
                 List<PointD> newPoints = new ArrayList<>();
                 for (int j = 0; j < pList.size(); j++) {
                     double[][] points = new double[1][];
@@ -971,7 +971,7 @@ public class ProjectionSet {
             Polygon aPG = aPGS.getPolygons().get(i);
             Polygon bPG = null;
             for (int r = 0; r < aPG.getRingNumber(); r++) {
-                List<PointD> pList = aPG.getRings().get(r);
+                List<PointD> pList = (List<PointD>)aPG.getRings().get(r);
                 List<PointD> newPoints = new ArrayList<>();
                 for (int j = 0; j < pList.size(); j++) {
                     double[][] points = new double[1][];

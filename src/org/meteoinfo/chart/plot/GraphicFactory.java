@@ -26,6 +26,8 @@ import org.meteoinfo.geoprocess.GeoComputation;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
+import static org.meteoinfo.layer.LayerTypes.VectorLayer;
+import org.meteoinfo.layer.VectorLayer;
 import org.meteoinfo.legend.BarBreak;
 import org.meteoinfo.legend.ColorBreak;
 import org.meteoinfo.legend.LegendManage;
@@ -45,6 +47,7 @@ import org.meteoinfo.shape.PointZ;
 import org.meteoinfo.shape.PointZShape;
 import org.meteoinfo.shape.PolygonShape;
 import org.meteoinfo.shape.PolygonZShape;
+import org.meteoinfo.shape.Polyline;
 import org.meteoinfo.shape.PolylineErrorShape;
 import org.meteoinfo.shape.PolylineShape;
 import org.meteoinfo.shape.PolylineZShape;
@@ -132,7 +135,7 @@ public class GraphicFactory {
 
         return gc;
     }
-    
+
     /**
      * Create 3D LineString graphic
      *
@@ -147,11 +150,18 @@ public class GraphicFactory {
         gc.set3D(true);
         PolylineShape pls;
         List<PointZ> points = new ArrayList<>();
-        double x, y, z;
+        double x, y, z = 0;
+        boolean fixZ = false;
+        if (zdata.getSize() == 1 && xdata.getSize() > 1) {
+            fixZ = true;
+            z = zdata.getDouble(0);
+        }
         for (int i = 0; i < xdata.getSize(); i++) {
             x = xdata.getDouble(i);
             y = ydata.getDouble(i);
-            z = zdata.getDouble(i);
+            if (!fixZ) {
+                z = zdata.getDouble(i);
+            }
             if (Double.isNaN(y) || Double.isNaN(x)) {
                 if (points.isEmpty()) {
                     continue;
@@ -330,7 +340,7 @@ public class GraphicFactory {
         graphics.setLegendScheme(ls);
         return graphics;
     }
-    
+
     /**
      * Create graphics
      *
@@ -344,10 +354,20 @@ public class GraphicFactory {
         GraphicCollection graphics = new GraphicCollection();
         graphics.set3D(true);
         PointShape ps;
+        boolean fixZ = false;
+        double z = 0;
+        if (zdata.getSize() == 1 && xdata.getSize() > 1) {
+            fixZ = true;
+            z = zdata.getDouble(0);
+        }
         if (cbs.size() == xdata.getSize()) {
             for (int i = 0; i < xdata.getSize(); i++) {
                 ps = new PointZShape();
-                ps.setPoint(new PointZ(xdata.getDouble(i), ydata.getDouble(i), zdata.getDouble(i)));
+                if (fixZ) {
+                    ps.setPoint(new PointZ(xdata.getDouble(i), ydata.getDouble(i), z));
+                } else {
+                    ps.setPoint(new PointZ(xdata.getDouble(i), ydata.getDouble(i), zdata.getDouble(i)));
+                }
                 graphics.add(new Graphic(ps, cbs.get(i)));
             }
             graphics.setSingleLegend(false);
@@ -359,7 +379,11 @@ public class GraphicFactory {
         } else {
             for (int i = 0; i < xdata.getSize(); i++) {
                 ps = new PointZShape();
-                ps.setPoint(new PointZ(xdata.getDouble(i), ydata.getDouble(i), zdata.getDouble(i)));
+                if (fixZ) {
+                    ps.setPoint(new PointZ(xdata.getDouble(i), ydata.getDouble(i), z));
+                } else {
+                    ps.setPoint(new PointZ(xdata.getDouble(i), ydata.getDouble(i), zdata.getDouble(i)));
+                }
                 graphics.add(new Graphic(ps, cbs.get(0)));
                 LegendScheme ls = new LegendScheme();
                 ls.setLegendBreaks(cbs);
@@ -370,7 +394,7 @@ public class GraphicFactory {
         }
         return graphics;
     }
-    
+
     /**
      * Create 3D point graphics
      *
@@ -387,9 +411,19 @@ public class GraphicFactory {
         PointShape ps;
         double c;
         ColorBreak cb;
+        boolean fixZ = false;
+        double z = 0;
+        if (zdata.getSize() == 1 && xdata.getSize() > 1) {
+            fixZ = true;
+            z = zdata.getDouble(0);
+        }
         for (int i = 0; i < xdata.getSize(); i++) {
             ps = new PointZShape();
-            ps.setPoint(new PointZ(xdata.getDouble(i), ydata.getDouble(i), zdata.getDouble(i)));
+            if (fixZ) {
+                ps.setPoint(new PointZ(xdata.getDouble(i), ydata.getDouble(i), z));
+            } else {
+                ps.setPoint(new PointZ(xdata.getDouble(i), ydata.getDouble(i), zdata.getDouble(i)));
+            }
             c = cdata.getDouble(i);
             cb = ls.getLegenBreak(c);
             graphics.add(new Graphic(ps, cb));
@@ -410,7 +444,7 @@ public class GraphicFactory {
     public static GraphicCollection createPolygons(Array xa, Array ya, PolygonBreak pgb) {
         GraphicCollection graphics = new GraphicCollection();
         double x, y;
-        int n = (int)xa.getSize();
+        int n = (int) xa.getSize();
         PolygonShape pgs;
         PointD p;
         List<PointD> points = new ArrayList<>();
@@ -438,7 +472,51 @@ public class GraphicFactory {
         }
         return graphics;
     }
-    
+
+    /**
+     * Add wireframe polylines
+     *
+     * @param xa X coordinate array
+     * @param ya Y coordinate array
+     * @param za Z coordinate array
+     * @param pb Polyline break
+     * @return Graphics
+     */
+    public static GraphicCollection createWireframe(Array xa, Array ya, Array za, PolylineBreak pb) {
+        GraphicCollection graphics = new GraphicCollection();
+        graphics.set3D(true);
+        int[] shape = xa.getShape();
+        int colNum = shape[1];
+        int rowNum = shape[0];
+        double z1, z2, z3, z4, z;
+        int idx1, idx2, idx3, idx4;
+        for (int i = 0; i < rowNum - 1; i++) {
+            for (int j = 0; j < colNum - 1; j++) {
+                idx1 = i * colNum + j;
+                idx2 = i * colNum + j + 1;
+                idx3 = (i + 1) * colNum + j;
+                idx4 = (i + 1) * colNum + j + 1;
+                z1 = za.getDouble(idx1);
+                z2 = za.getDouble(idx2);
+                z3 = za.getDouble(idx3);
+                z4 = za.getDouble(idx4);
+                z = (z1 + z2 + z3 + z4) / 4.0;
+                PolylineZShape ps = new PolylineZShape();
+                List<PointZ> points = new ArrayList<>();
+                points.add(new PointZ(xa.getDouble(idx1), ya.getDouble(idx1), z1));
+                points.add(new PointZ(xa.getDouble(idx3), ya.getDouble(idx3), z3));
+                points.add(new PointZ(xa.getDouble(idx4), ya.getDouble(idx4), z4));
+                points.add(new PointZ(xa.getDouble(idx2), ya.getDouble(idx2), z2));
+                points.add((PointZ) points.get(0).clone());
+                ps.setPoints(points);
+                Graphic graphic = new Graphic(ps, pb);
+                graphics.add(graphic);
+            }
+        }
+
+        return graphics;
+    }
+
     /**
      * Add mesh polygons
      *
@@ -456,6 +534,7 @@ public class GraphicFactory {
         int rowNum = shape[0];
         double z1, z2, z3, z4, z;
         int idx1, idx2, idx3, idx4;
+        PolygonBreak pb;
         for (int i = 0; i < rowNum - 1; i++) {
             for (int j = 0; j < colNum - 1; j++) {
                 idx1 = i * colNum + j;
@@ -477,7 +556,9 @@ public class GraphicFactory {
                 ps.setPoints(points);
                 ps.lowValue = z;
                 ps.highValue = ps.lowValue;
-                Graphic graphic = new Graphic(ps, ls.getLegenBreak(z));
+                pb = (PolygonBreak)ls.getLegenBreak(z);
+                //pb.setDrawOutline(true);
+                Graphic graphic = new Graphic(ps, pb);
                 graphics.add(graphic);
             }
         }
@@ -486,23 +567,84 @@ public class GraphicFactory {
     }
     
     /**
+     * Create 3D graphics from a VectorLayer.
+     * @param layer The layer
+     * @param offset Offset of z axis.
+     * @return Graphics
+     */
+    public static GraphicCollection createGraphicsFromLayer(VectorLayer layer, double offset){
+        GraphicCollection graphics = new GraphicCollection();
+        graphics.set3D(true);
+        ShapeTypes shapeType = layer.getShapeType();
+        LegendScheme ls = layer.getLegendScheme();
+        PointZ pz;
+        ColorBreak cb;
+        switch (shapeType){
+            case Point:
+                for (PointShape shape : (List<PointShape>)layer.getShapes()){
+                    PointZShape s = new PointZShape();
+                    PointD pd = shape.getPoint();
+                    pz = new PointZ(pd.X, pd.Y, offset);
+                    s.setPoint(pz);
+                    cb = ls.getLegendBreaks().get(shape.getLegendIndex());
+                    graphics.add(new Graphic(s, cb));
+                }
+                break;
+            case Polyline:
+                for (PolylineShape shape : (List<PolylineShape>)layer.getShapes()){
+                    cb = ls.getLegendBreaks().get(shape.getLegendIndex());
+                    for (Polyline pl : (List<Polyline>)shape.getPolylines()){
+                        PolylineZShape s = new PolylineZShape();
+                        List<PointZ> plist = new ArrayList<>();
+                        for (PointD pd : pl.getPointList()){
+                            pz = new PointZ(pd.X, pd.Y, offset);
+                            plist.add(pz);
+                        }                    
+                        s.setPoints(plist);                    
+                        graphics.add(new Graphic(s, cb));
+                    }
+                }
+                break;
+            case Polygon:
+                for (PolygonShape shape : (List<PolygonShape>)layer.getShapes()){
+                    PolygonZShape s = new PolygonZShape();
+                    List<PointZ> plist = new ArrayList<>();
+                    for (PointD pd : shape.getPoints()){
+                        pz = new PointZ(pd.X, pd.Y, offset);
+                        plist.add(pz);
+                    }                 
+                    s.setPartNum(shape.getPartNum());
+                    s.setParts(shape.getParts());
+                    s.setPoints(plist);
+                    cb = ls.getLegendBreaks().get(shape.getLegendIndex());
+                    graphics.add(new Graphic(s, cb));
+                }
+                break;
+        }
+        graphics.setLegendScheme(ls);
+        
+        return graphics;
+    }
+
+    /**
      * Create rectangle graphic
+     *
      * @param pos Rectangle position
      * @param curvature Curvature
      * @param pgb Polygon break
-     * @return 
+     * @return
      */
-    public static Graphic createRectangle(List<Number> pos, List<Number> curvature, PolygonBreak pgb){
-        RectangleShape rect = new RectangleShape(pos.get(0).doubleValue(), pos.get(1).doubleValue(), 
+    public static Graphic createRectangle(List<Number> pos, List<Number> curvature, PolygonBreak pgb) {
+        RectangleShape rect = new RectangleShape(pos.get(0).doubleValue(), pos.get(1).doubleValue(),
                 pos.get(2).doubleValue(), pos.get(3).doubleValue());
-        if (curvature != null){
+        if (curvature != null) {
             rect.setRoundX(curvature.get(0).doubleValue());
             rect.setRoundY(curvature.get(1).doubleValue());
         }
         Graphic graphic = new Graphic(rect, pgb);
         return graphic;
     }
-    
+
     /**
      * Create bar graphics
      *
@@ -528,11 +670,11 @@ public class GraphicFactory {
         ebreak.setColor(bb.getErrorColor());
         ebreak.setSize(bb.getErrorSize());
         double width = widths.getDouble(0);
-        if (autoWidth && xdata.getSize() > 1){
+        if (autoWidth && xdata.getSize() > 1) {
             width = (xdata.getDouble(1) - xdata.getDouble(0)) * width;
         }
         double bot = 0;
-        if (drawBottom){
+        if (drawBottom) {
             bot = bottom.getDouble(0);
         }
         double miny = 0;
@@ -542,15 +684,16 @@ public class GraphicFactory {
             y = ydata.getDouble(i);
             // Add bar
             if (drawBottom) {
-                if (bottom.getSize() > i)
+                if (bottom.getSize() > i) {
                     bot = bottom.getDouble(i);
+                }
                 miny = bot;
                 y += miny;
             }
             if (y < miny) {
                 baseLine = true;
             }
-            if (widths.getSize() > 1 && widths.getSize() > i){
+            if (widths.getSize() > 1 && widths.getSize() > i) {
                 width = widths.getDouble(i);
             }
             List<PointD> pList = new ArrayList<>();
@@ -601,7 +744,7 @@ public class GraphicFactory {
             pList.add(new PointD(x2, miny));
             PolylineShape pls = new PolylineShape();
             pls.setPoints(pList);
-            ebreak = new PolylineBreak();     
+            ebreak = new PolylineBreak();
             ebreak.setColor(Color.black);
             graphics.add(new Graphic(pls, ebreak));
         }
@@ -609,7 +752,7 @@ public class GraphicFactory {
 
         return graphics;
     }
-    
+
     /**
      * Create bar graphics
      *
@@ -635,11 +778,11 @@ public class GraphicFactory {
         ebreak.setColor(bb.getErrorColor());
         ebreak.setSize(bb.getErrorSize());
         double width = widths.getDouble(0);
-        if (autoWidth && xdata.getSize() > 1){
+        if (autoWidth && xdata.getSize() > 1) {
             width = (xdata.getDouble(1) - xdata.getDouble(0)) * width;
         }
         double bot = 0;
-        if (drawBottom){
+        if (drawBottom) {
             bot = bottom.getDouble(0);
         }
         double miny = 0;
@@ -649,24 +792,25 @@ public class GraphicFactory {
             y = ydata.getDouble(i);
             // Add bar
             if (drawBottom) {
-                if (bottom.getSize() > i)
+                if (bottom.getSize() > i) {
                     bot = bottom.getDouble(i);
+                }
                 miny = bot;
                 y += miny;
             }
             if (y < miny) {
                 baseLine = true;
             }
-            if (widths.getSize() > 1 && widths.getSize() > i){
+            if (widths.getSize() > 1 && widths.getSize() > i) {
                 width = widths.getDouble(i);
             }
             List<PointD> pList = new ArrayList<>();
             pList.add(new PointD(x, miny));
-            for (double x1 = x; x1 < x + width; x1 += width / 100){
+            for (double x1 = x; x1 < x + width; x1 += width / 100) {
                 pList.add(new PointD(x1, y));
             }
             pList.add(new PointD(x + width, y));
-            for (double x1 = x + width; x1 > x; x1 -= width / 20){
+            for (double x1 = x + width; x1 > x; x1 -= width / 20) {
                 pList.add(new PointD(x1, miny));
             }
             pList.add(new PointD(x, miny));
@@ -712,7 +856,7 @@ public class GraphicFactory {
             pList.add(new PointD(x2, miny));
             PolylineShape pls = new PolylineShape();
             pls.setPoints(pList);
-            ebreak = new PolylineBreak();     
+            ebreak = new PolylineBreak();
             ebreak.setColor(Color.black);
             graphics.add(new Graphic(pls, ebreak));
         }
@@ -810,7 +954,7 @@ public class GraphicFactory {
 
         return graphics;
     }
-    
+
     /**
      * Create image
      *
@@ -828,7 +972,7 @@ public class GraphicFactory {
         Color color;
         Index index = gdata.getIndex();
         boolean isAlpha = gdata.getShape()[2] == 4;
-        if (gdata.getDataType() == DataType.FLOAT || gdata.getDataType() == DataType.DOUBLE){
+        if (gdata.getDataType() == DataType.FLOAT || gdata.getDataType() == DataType.DOUBLE) {
             float r, g, b;
             if (isAlpha) {
                 float a;
@@ -903,7 +1047,7 @@ public class GraphicFactory {
                 y.getDouble(0), y.getDouble((int) y.getSize() - 1)));
         return new Graphic(ishape, new ColorBreak());
     }
-    
+
     /**
      * Create image
      *
@@ -926,7 +1070,7 @@ public class GraphicFactory {
         Index rindex = rdata.getIndex();
         Index gindex = gdata.getIndex();
         Index bindex = bdata.getIndex();
-        if (rdata.getDataType() == DataType.FLOAT || rdata.getDataType() == DataType.DOUBLE){
+        if (rdata.getDataType() == DataType.FLOAT || rdata.getDataType() == DataType.DOUBLE) {
             float r, g, b;
             if (isAlpha) {
                 float a;
@@ -1215,6 +1359,64 @@ public class GraphicFactory {
     }
 
     /**
+     * Create contour lines
+     *
+     * @param gridData Grid data
+     * @param offset Offset in z direction
+     * @param ls Legend scheme
+     * @param isSmooth Is smooth or not
+     * @return Contour lines
+     */
+    public static GraphicCollection createContourLines(GridData gridData, double offset, LegendScheme ls, boolean isSmooth) {
+        ls = ls.convertTo(ShapeTypes.Polyline);
+        Object[] ccs = LegendManage.getContoursAndColors(ls);
+        double[] cValues = (double[]) ccs[0];
+
+        int[][] S1 = new int[gridData.data.length][gridData.data[0].length];
+        Object[] cbs = ContourDraw.tracingContourLines(gridData.data,
+                cValues, gridData.xArray, gridData.yArray, gridData.missingValue, S1);
+        List<wContour.Global.PolyLine> ContourLines = (List<wContour.Global.PolyLine>) cbs[0];
+
+        if (ContourLines.isEmpty()) {
+            return null;
+        }
+
+        if (isSmooth) {
+            ContourLines = wContour.Contour.smoothLines(ContourLines);
+        }
+
+        wContour.Global.PolyLine aLine;
+        double v;
+        ColorBreak cbb;
+        GraphicCollection graphics = new GraphicCollection();
+        graphics.set3D(true);
+        for (int i = 0; i < ContourLines.size(); i++) {
+            aLine = ContourLines.get(i);
+            v = aLine.Value;
+
+            PolylineZShape aPolyline = new PolylineZShape();
+            PointZ aPoint;
+            List<PointZ> pList = new ArrayList<>();
+            for (int j = 0; j < aLine.PointList.size(); j++) {
+                aPoint = new PointZ();
+                aPoint.X = aLine.PointList.get(j).X;
+                aPoint.Y = aLine.PointList.get(j).Y;
+                aPoint.Z = offset;
+                pList.add(aPoint);
+            }
+            aPolyline.setPoints(pList);
+            aPolyline.setValue(v);
+            aPolyline.setExtent(MIMath.getPointsExtent(pList));
+            cbb = ls.getLegenBreak(v);
+            graphics.add(new Graphic(aPolyline, cbb));
+        }
+        graphics.setSingleLegend(false);
+        graphics.setLegendScheme(ls);
+
+        return graphics;
+    }
+
+    /**
      * Create contour polygons
      *
      * @param gridData Grid data
@@ -1330,6 +1532,100 @@ public class GraphicFactory {
                     }
                     break;
             }
+            graphics.add(new Graphic(aPolygonShape, cbb));
+        }
+        graphics.setSingleLegend(false);
+        graphics.setLegendScheme(ls);
+
+        return graphics;
+    }
+    
+    /**
+     * Create 3D contour polygons
+     *
+     * @param gridData Grid data
+     * @param offset Offset of z axis
+     * @param ls Legend scheme
+     * @param isSmooth Is smooth or not
+     * @return Contour polygons
+     */
+    public static GraphicCollection createContourPolygons(GridData gridData, double offset, LegendScheme ls, boolean isSmooth) {
+        ls = ls.convertTo(ShapeTypes.Polygon);
+        Object[] ccs = LegendManage.getContoursAndColors(ls);
+        double[] cValues = (double[]) ccs[0];
+
+        double minData;
+        double maxData;
+        double[] maxmin = new double[2];
+        gridData.getMaxMinValue(maxmin);
+        maxData = maxmin[0];
+        minData = maxmin[1];
+
+        int[][] S1 = new int[gridData.data.length][gridData.data[0].length];
+        Object[] cbs = ContourDraw.tracingContourLines(gridData.data,
+                cValues, gridData.xArray, gridData.yArray, gridData.missingValue, S1);
+        List<wContour.Global.PolyLine> contourLines = (List<wContour.Global.PolyLine>) cbs[0];
+        List<wContour.Global.Border> borders = (List<wContour.Global.Border>) cbs[1];
+
+        if (isSmooth) {
+            contourLines = wContour.Contour.smoothLines(contourLines);
+        }
+        List<wContour.Global.Polygon> contourPolygons = ContourDraw.tracingPolygons(gridData.data, contourLines, borders, cValues);
+
+        double v;
+        ColorBreak cbb;
+        GraphicCollection graphics = new GraphicCollection();
+        graphics.set3D(true);
+        for (int i = 0; i < contourPolygons.size(); i++) {
+            wContour.Global.Polygon poly = contourPolygons.get(i);
+            v = poly.LowValue;
+            PointZ aPoint;
+            List<PointZ> pList = new ArrayList<>();
+            for (wContour.Global.PointD pointList : poly.OutLine.PointList) {
+                aPoint = new PointZ();
+                aPoint.X = pointList.X;
+                aPoint.Y = pointList.Y;
+                aPoint.Z = offset;
+                pList.add(aPoint);
+            }
+            if (!GeoComputation.isClockwise(pList)) {
+                Collections.reverse(pList);
+            }
+            PolygonZShape aPolygonShape = new PolygonZShape();
+            aPolygonShape.setPoints(pList);
+            aPolygonShape.setExtent(MIMath.getPointsExtent(pList));
+            aPolygonShape.lowValue = v;
+            if (poly.HasHoles()) {
+                for (PolyLine holeLine : poly.HoleLines) {
+                    pList = new ArrayList<>();
+                    for (wContour.Global.PointD pointList : holeLine.PointList) {
+                        aPoint = new PointZ();
+                        aPoint.X = pointList.X;
+                        aPoint.Y = pointList.Y;
+                        aPoint.Z = offset;
+                        pList.add(aPoint);
+                    }
+                    aPolygonShape.addHole(pList, 0);
+                }
+            }
+            int valueIdx = Arrays.binarySearch(cValues, v);
+            //valueIdx = Arrays.asList(cValues).indexOf(aValue);            
+            if (valueIdx == cValues.length - 1) {
+                aPolygonShape.highValue = maxData;
+            } else {
+                aPolygonShape.highValue = cValues[valueIdx + 1];
+            }
+            if (!poly.IsHighCenter && poly.HighValue == poly.LowValue) {
+                aPolygonShape.highValue = v;
+                if (valueIdx == 0) {
+                    aPolygonShape.lowValue = minData;
+                } else {
+                    aPolygonShape.lowValue = cValues[valueIdx - 1];
+                }
+            }
+
+            v = aPolygonShape.lowValue;
+            cbb = ls.getLegenBreak(v);            
             graphics.add(new Graphic(aPolygonShape, cbb));
         }
         graphics.setSingleLegend(false);
