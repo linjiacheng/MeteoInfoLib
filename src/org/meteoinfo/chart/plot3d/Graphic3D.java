@@ -9,7 +9,7 @@ import org.meteoinfo.legend.LegendScheme;
 
 /**
  *
- * @author wyq
+ * @author Yaqiang Wang
  */
 public class Graphic3D {
     private Object graphic;

@@ -34,8 +34,8 @@ import org.meteoinfo.jts.geom.LinearRing;
 public class Polygon {
     // <editor-fold desc="Variables">
 
-    private List<PointD> _outLine;
-    private List<List<PointD>> _holeLines;
+    private List<? extends PointD> _outLine;
+    private List<List<? extends PointD>> _holeLines;
     private Extent _extent;
     // </editor-fold>
     // <editor-fold desc="Constructor">
@@ -53,7 +53,7 @@ public class Polygon {
      * @return outLine point list
      */
     public List<PointD> getOutLine() {
-        return _outLine;
+        return (List<PointD>)_outLine;
     }
 
     /**
@@ -61,7 +61,7 @@ public class Polygon {
      *
      * @param outLine outLine point list
      */
-    public void setOutLine(List<PointD> outLine) {
+    public void setOutLine(List<? extends PointD> outLine) {
         _outLine = outLine;
         _extent = MIMath.getPointsExtent(outLine);
     }
@@ -72,7 +72,11 @@ public class Polygon {
      * @return hole lines
      */
     public List<List<PointD>> getHoleLines() {
-        return _holeLines;
+        List<List<PointD>> hlines = new ArrayList<>();
+        for (List<? extends PointD> hline : _holeLines){
+            hlines.add((List<PointD>)hline);
+        }
+        return hlines;
     }
 
     /**
@@ -80,7 +84,7 @@ public class Polygon {
      *
      * @param holeLines hole lines list
      */
-    public void setHoleLines(List<List<PointD>> holeLines) {
+    public void setHoleLines(List<List<? extends PointD>> holeLines) {
         _holeLines = holeLines;
     }
 
@@ -100,9 +104,9 @@ public class Polygon {
      */
     public List<List<PointD>> getRings() {
         List<List<PointD>> rings = new ArrayList<>();
-        rings.add(_outLine);
+        rings.add((List<PointD>)_outLine);
         if (hasHole()) {
-            rings.addAll(_holeLines);
+            rings.addAll(getHoleLines());
         }
 
         return rings;
@@ -170,7 +174,7 @@ public class Polygon {
         int n;
         boolean isclose;
         for (int j = 0; j < holes.length; j++) {
-            List<PointD> hole = this._holeLines.get(j);
+            List<? extends PointD> hole = this._holeLines.get(j);
             n = hole.size();
             isclose = true;
             if (n == 3) {

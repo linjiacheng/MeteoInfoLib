@@ -19,6 +19,7 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 import org.meteoinfo.global.util.BigDecimalUtil;
+import org.meteoinfo.shape.PointZ;
 import org.meteoinfo.shape.Shape;
 
 /**
@@ -163,30 +164,64 @@ public class MIMath {
      * @return extent
      */
     public static Extent getPointsExtent(List<? extends PointD> PList) {
-        Extent cET = new Extent();
-        for (int i = 0; i < PList.size(); i++) {
-            PointD aP = PList.get(i);
-            if (i == 0) {
-                cET.minX = aP.X;
-                cET.maxX = aP.X;
-                cET.minY = aP.Y;
-                cET.maxY = aP.Y;
-            } else {
-                if (cET.minX > aP.X) {
+        if (PList.get(0) instanceof PointZ){
+            Extent3D cET = new Extent3D();
+            for (int i = 0; i < PList.size(); i++) {
+                PointZ aP = (PointZ)PList.get(i);
+                if (i == 0) {
                     cET.minX = aP.X;
-                } else if (cET.maxX < aP.X) {
                     cET.maxX = aP.X;
-                }
-
-                if (cET.minY > aP.Y) {
                     cET.minY = aP.Y;
-                } else if (cET.maxY < aP.Y) {
                     cET.maxY = aP.Y;
+                    cET.minZ = aP.Z;
+                } else {
+                    if (cET.minX > aP.X) {
+                        cET.minX = aP.X;
+                    } else if (cET.maxX < aP.X) {
+                        cET.maxX = aP.X;
+                    }
+
+                    if (cET.minY > aP.Y) {
+                        cET.minY = aP.Y;
+                    } else if (cET.maxY < aP.Y) {
+                        cET.maxY = aP.Y;
+                    }
+                    
+                    if (cET.minZ > aP.Z) {
+                        cET.minZ = aP.Z;
+                    } else if (cET.maxZ < aP.Z) {
+                        cET.maxZ = aP.Z;
+                    }
                 }
             }
-        }
 
-        return cET;
+            return cET;            
+        } else {
+            Extent cET = new Extent();
+            for (int i = 0; i < PList.size(); i++) {
+                PointD aP = PList.get(i);
+                if (i == 0) {
+                    cET.minX = aP.X;
+                    cET.maxX = aP.X;
+                    cET.minY = aP.Y;
+                    cET.maxY = aP.Y;
+                } else {
+                    if (cET.minX > aP.X) {
+                        cET.minX = aP.X;
+                    } else if (cET.maxX < aP.X) {
+                        cET.maxX = aP.X;
+                    }
+
+                    if (cET.minY > aP.Y) {
+                        cET.minY = aP.Y;
+                    } else if (cET.maxY < aP.Y) {
+                        cET.maxY = aP.Y;
+                    }
+                }
+            }
+
+            return cET;
+        }
     }
 
     /**
@@ -419,19 +454,37 @@ public class MIMath {
      * @return Maximum extent
      */
     public static Extent getLagerExtent(Extent aET, Extent bET) {
-        Extent cET = new Extent();
-        if (aET.isNaN()) {
-            return bET;
-        } else if (bET.isNaN()) {
-            return aET;
+        if (aET.is3D() && bET.is3D()){
+            Extent3D cET = new Extent3D();
+            if (aET.isNaN()) {
+                return bET;
+            } else if (bET.isNaN()) {
+                return aET;
+            }
+
+            cET.minX = Math.min(aET.minX, bET.minX);
+            cET.minY = Math.min(aET.minY, bET.minY);
+            cET.maxX = Math.max(aET.maxX, bET.maxX);
+            cET.maxY = Math.max(aET.maxY, bET.maxY);
+            cET.minZ = Math.min(((Extent3D)aET).minZ, ((Extent3D)bET).minZ);
+            cET.maxZ = Math.max(((Extent3D)aET).maxZ, ((Extent3D)bET).maxZ);
+
+            return cET;
+        } else {
+            Extent cET = new Extent();
+            if (aET.isNaN()) {
+                return bET;
+            } else if (bET.isNaN()) {
+                return aET;
+            }
+
+            cET.minX = Math.min(aET.minX, bET.minX);
+            cET.minY = Math.min(aET.minY, bET.minY);
+            cET.maxX = Math.max(aET.maxX, bET.maxX);
+            cET.maxY = Math.max(aET.maxY, bET.maxY);
+
+            return cET;
         }
-
-        cET.minX = Math.min(aET.minX, bET.minX);
-        cET.minY = Math.min(aET.minY, bET.minY);
-        cET.maxX = Math.max(aET.maxX, bET.maxX);
-        cET.maxY = Math.max(aET.maxY, bET.maxY);
-
-        return cET;
     }
 
     /**

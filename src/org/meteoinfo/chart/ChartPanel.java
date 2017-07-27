@@ -674,7 +674,7 @@ public class ChartPanel extends JPanel {
                         projector.set2D_xTranslation(projector.get2D_xTranslation() + (x - this.mouseLastPos.x));
                         projector.set2D_yTranslation(projector.get2D_yTranslation() + (y - this.mouseLastPos.y));
                     } else if (e.isShiftDown()) {
-                        new_value = projector.get2DScaling() + (y - this.mouseLastPos.y) * 0.5f;
+                        new_value = projector.getY2DScaling() + (y - this.mouseLastPos.y) * 0.5f;
                         if (new_value > 60.0f) {
                             new_value = 60.0f;
                         }

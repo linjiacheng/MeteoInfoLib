@@ -1376,7 +1376,7 @@ public class GeoComputation {
 
                     Polygon aPolygon = new Polygon();
                     aPolygon.setOutLine(new ArrayList<>(clipPList));
-                    aPolygon.setHoleLines(new ArrayList<List<PointD>>());
+                    //aPolygon.setHoleLines(new ArrayList<List<PointD>>());
 
                     newPolygons.add(aPolygon);
                 }
@@ -1687,7 +1687,7 @@ public class GeoComputation {
 
                 Polygon aPolygon = new Polygon();
                 aPolygon.setOutLine(new ArrayList<>(clipPList));
-                aPolygon.setHoleLines(new ArrayList<List<PointD>>());
+                //aPolygon.setHoleLines(new ArrayList<List<PointD>>());
 
                 newPolygons.add(aPolygon);
             }
@@ -1795,7 +1795,7 @@ public class GeoComputation {
                             if (aPList.size() > 0) {
                                 aPolygon = new Polygon();
                                 aPolygon.setOutLine(new ArrayList<>(aPList));
-                                aPolygon.setHoleLines(new ArrayList<List<PointD>>());
+                                //aPolygon.setHoleLines(new ArrayList<List<PointD>>());
                                 aPolygonList.add(aPolygon);
                             }
                             break;
@@ -1867,7 +1867,7 @@ public class GeoComputation {
                                 aPolygon = new Polygon();
                                 Collections.reverse(aPList);
                                 aPolygon.setOutLine(new ArrayList<>(aPList));
-                                aPolygon.setHoleLines(new ArrayList<List<PointD>>());
+                                //aPolygon.setHoleLines(new ArrayList<List<PointD>>());
                                 aPolygonList.add(aPolygon);
                             }
                             break;

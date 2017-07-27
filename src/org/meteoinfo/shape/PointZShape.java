@@ -14,6 +14,8 @@
  */
 package org.meteoinfo.shape;
 
+import org.meteoinfo.global.Extent3D;
+import org.meteoinfo.global.PointD;
 import org.meteoinfo.jts.geom.Coordinate;
 import org.meteoinfo.jts.geom.Geometry;
 
@@ -73,6 +75,25 @@ public class PointZShape extends PointShape {
 
     // </editor-fold>
     // <editor-fold desc="Methods">
+    /**
+     * Set point
+     * 
+     * @param aPoint point
+     */
+    @Override
+    public void setPoint(PointD aPoint) {
+        super.setPoint(aPoint);
+        PointZ p = (PointZ)aPoint;
+        Extent3D aExtent = new Extent3D();
+        aExtent.minX = p.X;
+        aExtent.maxX = p.X;
+        aExtent.minY = p.Y;
+        aExtent.maxY = p.Y;
+        aExtent.minZ = p.Z;
+        aExtent.maxZ = p.Z;
+        this.setExtent(aExtent);
+    }
+    
     /**
      * Get M value
      * @return M value

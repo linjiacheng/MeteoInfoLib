@@ -42,6 +42,7 @@ public class GraphicCollection extends Graphic implements Iterator {
     private LabelSet labelSet;
     private List<Graphic> labelPoints;
     private LegendScheme legendScheme;
+    private boolean is3D;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -52,6 +53,7 @@ public class GraphicCollection extends Graphic implements Iterator {
         this.index = 0;
         labelSet = new LabelSet();
         labelPoints = new ArrayList<>();
+        this.is3D = false;
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -149,6 +151,22 @@ public class GraphicCollection extends Graphic implements Iterator {
      */
     public void setLegendScheme(LegendScheme value){
         this.legendScheme = value;
+    }
+    
+    /**
+     * Get is 3D or not
+     * @return Boolean
+     */
+    public boolean is3D(){
+        return this.is3D;
+    }
+    
+    /**
+     * Set is 3D or not
+     * @param value Boolean
+     */
+    public void set3D(boolean value){
+        this.is3D = value;
     }
     // </editor-fold>
     // <editor-fold desc="Methods">
@@ -368,7 +386,7 @@ public class GraphicCollection extends Graphic implements Iterator {
                 case Rectangle:
                     PolygonShape aPGS = (PolygonShape) aGraphic.getShape();
                     if (!(aPGS.getPartNum() > 1)) {
-                        if (GeoComputation.pointInPolygon(aPGS.getPoints(), aPoint)) {
+                        if (GeoComputation.pointInPolygon((List<PointD>)aPGS.getPoints(), aPoint)) {
                             selectedGraphics.add(aGraphic);
                         }
                     } else {

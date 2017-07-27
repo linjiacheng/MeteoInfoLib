@@ -180,7 +180,7 @@ public class JSurface extends javax.swing.JComponent {
         @Override
         public void mouseWheelMoved(MouseWheelEvent e) {
             float new_value = 0.0f;
-            float old_value = projector.get2DScaling();
+            float old_value = projector.getX2DScaling();
             new_value = old_value * (1 - e.getScrollAmount() * e.getWheelRotation() / 10f);
             if (new_value > 60.0f) {
                 new_value = 60.0f;
@@ -258,7 +258,7 @@ public class JSurface extends javax.swing.JComponent {
                 projector.set2D_xTranslation(projector.get2D_xTranslation() + (x - click_x));
                 projector.set2D_yTranslation(projector.get2D_yTranslation() + (y - click_y));
             } else if (e.isShiftDown()) {
-                new_value = projector.get2DScaling() + (y - click_y) * 0.5f;
+                new_value = projector.getX2DScaling() + (y - click_y) * 0.5f;
                 if (new_value > 60.0f) {
                     new_value = 60.0f;
                 }
@@ -502,7 +502,7 @@ public class JSurface extends javax.swing.JComponent {
             printwidth = prevwidth * printheight / prevheight;
         }
 
-        float savedscalingfactor = projector.get2DScaling();
+        float savedscalingfactor = projector.getX2DScaling();
         projector.setProjectionArea(new Rectangle(0, 0, printwidth, printheight));
         projector.set2DScaling(savedscalingfactor * printwidth / prevwidth);
 
@@ -561,7 +561,7 @@ public class JSurface extends javax.swing.JComponent {
     private synchronized void draw(Graphics graphics) {
         this.graphics = graphics;
         // System.out.println("filling graphics "+ graphics);
-        int fontsize = (int) (Math.round(projector.get2DScaling() * 0.5));
+        int fontsize = (int) (Math.round(projector.getX2DScaling() * 0.5));
         // graphics.setFont(new Font("Helvetica",Font.PLAIN,fontsize));
 
         SurfaceVertex.invalidate();

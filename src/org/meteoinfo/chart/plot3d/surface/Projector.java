@@ -35,7 +35,7 @@ public final class Projector {
 
     private float scale_x, scale_y, scale_z;       // 3D scaling factor
     private float distance;                        // distance to object
-    private float _2D_scale;                       // 2D scaling factor
+    private float _2D_scale_x, _2D_scale_y;        // 2D scaling factor
     private float rotation, elevation;             // rotation and elevation angle
     private float sin_rotation, cos_rotation;      // sin and cos of rotation angle
     private float sin_elevation, cos_elevation;    // sin and cos of elevation angle
@@ -44,7 +44,7 @@ public final class Projector {
     private int center_x, center_y;              // center of projection area           
 
     private int trans_x, trans_y;
-    private float factor;
+    private float factor_x, factor_y;
     private float sx_cos, sy_cos, sz_cos;
     private float sx_sin, sy_sin, sz_sin;
 
@@ -175,7 +175,7 @@ public final class Projector {
      */
     public void setDistance(float new_distance) {
         distance = new_distance;
-        factor = distance * _2D_scale;
+        factor_x = distance * _2D_scale_x;
     }
 
     /**
@@ -289,17 +289,48 @@ public final class Projector {
      * @param scaling the scaling factor
      */
     public void set2DScaling(float scaling) {
-        _2D_scale = scaling;
-        factor = distance * _2D_scale;
+        _2D_scale_x = scaling;
+        _2D_scale_y = scaling;
+        factor_x = distance * _2D_scale_x;
+        factor_y = distance * _2D_scale_y;
+    }
+    
+    /**
+     * Sets the x 2D scaling factor.
+     *
+     * @param scaling the x scaling factor
+     */
+    public void setX2DScaling(float scaling) {
+        _2D_scale_x = scaling;
+        factor_x = distance * _2D_scale_x;
+    }
+    
+    /**
+     * Sets the 2D scaling factor.
+     *
+     * @param scaling the scaling factor
+     */
+    public void setY2DScaling(float scaling) {
+        _2D_scale_y = scaling;
+        factor_y = distance * _2D_scale_y;
     }
 
     /**
-     * Gets the 2D scaling factor.
+     * Gets the x 2D scaling factor.
      *
-     * @return the scaling factor
+     * @return the x scaling factor
      */
-    public float get2DScaling() {
-        return _2D_scale;
+    public float getX2DScaling() {
+        return _2D_scale_x;
+    }
+    
+    /**
+     * Gets the x 2D scaling factor.
+     *
+     * @return the x scaling factor
+     */
+    public float getY2DScaling() {
+        return _2D_scale_y;
     }
 
     /**
@@ -371,9 +402,32 @@ public final class Projector {
         y = temp * sx_sin + y * sy_cos;
 
         // elevates and projects
-        temp = factor / (y * cos_elevation - z * sz_sin + distance);
-        return new Point((int) (Math.round(x * temp) + trans_x),
-                (int) (Math.round((y * sin_elevation + z * sz_cos) * -temp) + trans_y));
+        //float temp_x = factor_x / (x * sin_elevation - z * sz_sin + distance);
+        float temp_x = factor_x / (y * cos_elevation - z * sz_sin + distance);
+        float temp_y = factor_y / (y * cos_elevation - z * sz_sin + distance);
+        return new Point((int) (Math.round(x * temp_x) + trans_x),
+                (int) (Math.round((y * sin_elevation + z * sz_cos) * -temp_y) + trans_y));
+    }
+    
+    /**
+     * Projects 3D points without scaling.
+     *
+     * @param x the x coordinate
+     * @param y the y coordinate
+     * @param z the z coordinate
+     * @return Projected point
+     */
+    public final Point project_noScale(float x, float y, float z) {
+        float temp;
+
+        // rotates
+        temp = x;
+        x = x * sx_cos + y * sy_sin;
+        y = temp * sx_sin + y * sy_cos;
+
+        // elevates and projects
+        return new Point((int) (Math.round(x) + trans_x),
+                (int) (Math.round((y * sin_elevation + z * sz_cos)) + trans_y));
     }
 
     public void setZRange(float zmin, float zmax) {
@@ -421,14 +475,54 @@ public final class Projector {
     }
     
     /**
+     * Get bounds without scale
+     * @return Bounds rectangle
+     */
+    public Rectangle getBounds_noScale(){
+        List<Point> ps = new ArrayList<>();
+        ps.add(this.project_noScale(10, 10, 10));        
+        ps.add(this.project_noScale(-10, 10, 10));
+        ps.add(this.project_noScale(10, -10, 10));
+        ps.add(this.project_noScale(-10, -10, 10));
+        ps.add(this.project_noScale(10, 10, -10));
+        ps.add(this.project_noScale(-10, -10, -10));
+        ps.add(this.project_noScale(-10, 10, -10));
+        ps.add(this.project_noScale(10, -10, -10));
+        int i = 0;
+        int minx =0, miny = 0, maxx = 0, maxy = 0;
+        for (Point p : ps){
+            if (i == 0){
+                minx = p.x;
+                maxx = p.x;
+                miny = p.y;
+                maxy = p.y;
+            } else {
+                if (minx > p.x)
+                    minx = p.x;
+                else if (maxx < p.x)
+                    maxx = p.x;
+                if (miny > p.y)
+                    miny = p.y;
+                else if (maxy < p.y)
+                    maxy = p.y;
+            }
+            i += 1;
+        }
+        
+        return new Rectangle(minx, miny, maxx - minx, maxy - miny);
+    }
+    
+    /**
      * Update 2D scaling
      */
     public void update2DScaling(){
         Rectangle rect = this.getBounds();
         float s1 = (float)((x2 - x1) / rect.getWidth());
         float s2 = (float)((y2 - y1) / rect.getHeight());
-        float s = Math.min(s1, s2) * this._2D_scale;
-        this.set2DScaling(s);
+        s1 = s1 * this._2D_scale_x;
+        s2 = s2 * this._2D_scale_y;
+        this.setX2DScaling(s1);
+        this.setY2DScaling(s2);
     }
 
 }

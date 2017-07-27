@@ -147,6 +147,14 @@ public class Extent implements Cloneable{
     public boolean isNaN(){
         return Double.isNaN(minX) || Double.isNaN(maxX) || Double.isNaN(minY) || Double.isNaN(maxY);
     }
+    
+    /**
+     * Get is 3D or not
+     * @return false
+     */
+    public boolean is3D(){
+        return false;
+    }
 
     /**
      * Clone

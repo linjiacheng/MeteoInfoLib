@@ -38,6 +38,19 @@ public class PointZ extends PointD implements Cloneable{
      */
     public PointZ() {
     }
+    
+    /**
+     * Constructor
+     *
+     * @param x X
+     * @param y Y
+     * @param z Z
+     */
+    public PointZ(double x, double y, double z) {
+        X = x;
+        Y = y;
+        Z = z;
+    }
 
     /**
      * Constructor

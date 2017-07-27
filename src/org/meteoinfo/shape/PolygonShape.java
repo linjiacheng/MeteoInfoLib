@@ -34,7 +34,7 @@ import org.meteoinfo.jts.geom.MultiPolygon;
 public class PolygonShape extends Shape implements Cloneable {
     // <editor-fold desc="Variables">
 
-    private List<PointD> _points;
+    private List<? extends PointD> _points;
     private List<Polygon> _polygons;
     /**
      * Start value
@@ -167,14 +167,12 @@ public class PolygonShape extends Shape implements Cloneable {
         }
     }
 
-    ;
-
     /**
      * Get points
      * @return point list
      */
     @Override
-    public List<PointD> getPoints() {
+    public List<? extends PointD> getPoints() {
         return _points;
     }
 
@@ -185,7 +183,7 @@ public class PolygonShape extends Shape implements Cloneable {
      */
     @Override
     public void setPoints(List<? extends PointD> points) {
-        _points = (List<PointD>) points;
+        _points = points;
         this.setExtent(MIMath.getPointsExtent(_points));
         updatePolygons();
     }
@@ -334,7 +332,7 @@ public class PolygonShape extends Shape implements Cloneable {
             _numParts += _polygons.get(i).getRingNumber();
             for (int j = 0; j < _polygons.get(i).getRingNumber(); j++) {
                 partList.add(_points.size());
-                _points.addAll(_polygons.get(i).getRings().get(j));                
+                ((List<PointD>)_points).addAll(_polygons.get(i).getRings().get(j));                
             }
         }
         parts = new int[partList.size()];

@@ -340,7 +340,7 @@ public class MapViewUndoRedo {
         public void redo(){
             super.redo();
             try {
-                shape.addHole(hole.getPoints(), polyIdx);
+                shape.addHole((List<PointD>)hole.getPoints(), polyIdx);
                 layer.editAddShape(hole);
                 mapView.paintLayers();
                 System.out.println("Redo Fill a hole");
