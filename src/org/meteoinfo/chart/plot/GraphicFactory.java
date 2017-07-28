@@ -1049,11 +1049,11 @@ public class GraphicFactory {
     }
 
     /**
-     * Create image
+     * Create image by RGB data array
      *
      * @param x X data array
      * @param y Y data array
-     * @param data data array
+     * @param data RGB data array list
      * @return Image graphic
      */
     public static Graphic createImage(Array x, Array y, List<Array> data) {

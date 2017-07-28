@@ -25,11 +25,11 @@ import org.meteoinfo.chart.ChartLegend;
 import org.meteoinfo.chart.ChartText;
 import org.meteoinfo.chart.LegendPosition;
 import org.meteoinfo.chart.Margin;
+import org.meteoinfo.chart.axis.Axis;
 import org.meteoinfo.chart.plot3d.surface.Projector;
 import org.meteoinfo.data.Dataset;
 import org.meteoinfo.drawing.Draw;
 import org.meteoinfo.global.Extent3D;
-import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointF;
 import org.meteoinfo.legend.PointBreak;
 import org.meteoinfo.legend.PolygonBreak;
@@ -50,20 +50,24 @@ import org.meteoinfo.shape.Shape;
 public class Plot3D extends Plot {
 
     // <editor-fold desc="Variables">
-    private GraphicCollection graphics;
+    private final GraphicCollection graphics;
     private ChartText title;
     private List<ChartLegend> legends;
+    private final Axis xAxis;
+    private final Axis yAxis;
+    private final Axis zAxis;
 
     private final Projector projector; // the projector, controls the point of view
     private int prevwidth, prevheight; // canvas size
 
     private boolean isBoxed, isMesh, isScaleBox, isDisplayXY, isDisplayZ,
-            isDisplayGrids;
+            isDisplayGrids, drawBoundingBox;
+    private boolean hideOnDrag;
     private float xmin, xmax, ymin;
     private float ymax, zmin, zmax;
 
     private Color boxColor = Color.getHSBColor(0f, 0f, 0.95f);
-    private Color lineboxColor = Color.getHSBColor(0f, 0f, 0.5f);
+    private Color lineboxColor = Color.getHSBColor(0f, 0f, 0.8f);
 
     private String xLabel = "X";
     private String yLabel = "Y";
@@ -87,13 +91,25 @@ public class Plot3D extends Plot {
      */
     public Plot3D() {
         this.legends = new ArrayList<>();
+        this.xAxis = new Axis();
+        this.xAxis.setLabel("X");
+        this.yAxis = new Axis();
+        this.yAxis.setLabel("Y");
+        this.zAxis = new Axis();
+        this.zAxis.setLabel("Z");
         projector = new Projector();
-        projector.setDistance(70);
+        projector.setDistance(10000);
         projector.set2DScaling(15);
         projector.setRotationAngle(225);
-        projector.setElevationAngle(10);
+        projector.setElevationAngle(30);
         this.graphics = new GraphicCollection();
         this.graphics.set3D(true);
+        this.hideOnDrag = false;
+        this.isBoxed = true;
+        this.isDisplayGrids = true;
+        this.isDisplayXY = true;
+        this.isDisplayZ = true;
+        this.drawBoundingBox = false;
     }
 
     // </editor-fold>
@@ -200,6 +216,7 @@ public class Plot3D extends Plot {
      */
     public void setXMin(float value) {
         this.xmin = value;
+        this.xAxis.setMinMaxValue(xmin, xmax);
     }
 
     /**
@@ -209,6 +226,19 @@ public class Plot3D extends Plot {
      */
     public void setXMax(float value) {
         this.xmax = value;
+        this.xAxis.setMinMaxValue(xmin, xmax);
+    }
+
+    /**
+     * Set x minimum and maximum values
+     *
+     * @param min Minimum value
+     * @param max Maximum value
+     */
+    public void setXMinMax(float min, float max) {
+        this.xmin = min;
+        this.xmax = max;
+        this.xAxis.setMinMaxValue(min, max);
     }
 
     /**
@@ -218,6 +248,7 @@ public class Plot3D extends Plot {
      */
     public void setYMin(float value) {
         this.ymin = value;
+        this.yAxis.setMinMaxValue(ymin, ymax);
     }
 
     /**
@@ -227,6 +258,19 @@ public class Plot3D extends Plot {
      */
     public void setYMax(float value) {
         this.ymax = value;
+        this.yAxis.setMinMaxValue(ymin, ymax);
+    }
+
+    /**
+     * Set y minimum and maximum values
+     *
+     * @param min Minimum value
+     * @param max Maximum value
+     */
+    public void setYMinMax(float min, float max) {
+        this.ymin = min;
+        this.ymax = max;
+        this.yAxis.setMinMaxValue(min, max);
     }
 
     /**
@@ -236,6 +280,7 @@ public class Plot3D extends Plot {
      */
     public void setZMin(float value) {
         this.zmin = value;
+        this.zAxis.setMinMaxValue(zmin, zmax);
     }
 
     /**
@@ -245,6 +290,19 @@ public class Plot3D extends Plot {
      */
     public void setZMax(float value) {
         this.zmax = value;
+        this.zAxis.setMinMaxValue(zmin, zmax);
+    }
+
+    /**
+     * Set z minimum and maximum values
+     *
+     * @param min Minimum value
+     * @param max Maximum value
+     */
+    public void setZMinMax(float min, float max) {
+        this.zmin = min;
+        this.zmax = max;
+        this.zAxis.setMinMaxValue(min, max);
     }
 
     /**
@@ -290,6 +348,22 @@ public class Plot3D extends Plot {
      */
     public void setMesh(boolean value) {
         this.isMesh = value;
+    }
+    
+    /**
+     * Get if draw bounding box or not
+     * @return Boolean
+     */
+    public boolean getDrawBoundingBox(){
+        return this.drawBoundingBox;
+    }
+    
+    /**
+     * Set if draw bounding box or not
+     * @param value Boolean
+     */
+    public void setDrawBoundingBox(boolean value){
+        this.drawBoundingBox = value;
     }
 
     // </editor-fold>
@@ -337,15 +411,24 @@ public class Plot3D extends Plot {
     public void addGraphic(Graphic g) {
         this.graphics.add(g);
         Extent3D extent = (Extent3D) this.graphics.getExtent();
-        double[] values = (double[]) (MIMath.getIntervalValues(extent.minX, extent.maxX, true).get(0));
-        xmin = (float) values[0];
-        xmax = (float) values[values.length - 1];
-        values = (double[]) (MIMath.getIntervalValues(extent.minY, extent.maxY, true).get(0));
-        ymin = (float) values[0];
-        ymax = (float) values[values.length - 1];
-        values = (double[]) (MIMath.getIntervalValues(extent.minZ, extent.maxZ, true).get(0));
-        zmin = (float) values[0];
-        zmax = (float) values[values.length - 1];
+        xmin = (float) extent.minX;
+        xmax = (float) extent.maxX;
+        ymin = (float) extent.minY;
+        ymax = (float) extent.maxY;
+        zmin = (float) extent.minZ;
+        zmax = (float) extent.maxZ;
+        xAxis.setMinMaxValue(xmin, xmax);
+        yAxis.setMinMaxValue(ymin, ymax);
+        zAxis.setMinMaxValue(zmin, zmax);
+//        double[] values = (double[]) (MIMath.getIntervalValues(extent.minX, extent.maxX, true).get(0));
+//        xmin = (float) values[0];
+//        xmax = (float) values[values.length - 1];
+//        values = (double[]) (MIMath.getIntervalValues(extent.minY, extent.maxY, true).get(0));
+//        ymin = (float) values[0];
+//        ymax = (float) values[values.length - 1];
+//        values = (double[]) (MIMath.getIntervalValues(extent.minZ, extent.maxZ, true).get(0));
+//        zmin = (float) values[0];
+//        zmax = (float) values[values.length - 1];
         this.projector.setZRange(zmin, zmax);
     }
 
@@ -434,13 +517,14 @@ public class Plot3D extends Plot {
         }
         projector.setProjectionArea(parea);
 
-        //Draw box
-        drawBoxGridsTicksLabels(g2, false);
-
-        //Draw 3D graphics
         xfactor = 20f / (this.xmax - this.xmin); // 20 aint magic: surface vertex requires a value in [-10 ; 10]
         yfactor = 20f / (this.ymax - this.ymin);
         zfactor = 20f / (this.zmax - this.zmin);
+
+        //Draw box
+        drawBoxGridsTicksLabels(g2);
+
+        //Draw 3D graphics        
         for (int m = 0; m < this.graphics.getNumGrahics(); m++) {
             Graphic graphic = this.graphics.get(m);
             Shape shape = graphic.getGraphicN(0).getShape();
@@ -461,10 +545,10 @@ public class Plot3D extends Plot {
         }
 
         //Draw bounding box
-        if (isBoxed) {
+        if (this.drawBoundingBox) {
             drawBoundingBox(g2);
         }
-
+        
         //Draw legend
         Rectangle2D rect = this.projector.getBounds();
         this.drawLegend(g2, area, rect, y);
@@ -558,15 +642,15 @@ public class Plot3D extends Plot {
     private void drawLineStrings(Graphics2D g, Graphic graphic) {
         if (graphic.getNumGrahics() == 1) {
             Graphic gg = graphic.getGraphicN(0);
-            PolylineZShape shape = (PolylineZShape)gg.getShape();
-            PolylineBreak pb = (PolylineBreak)gg.getLegend();
-            List<PointZ> ps = (List<PointZ>)shape.getPoints();
+            PolylineZShape shape = (PolylineZShape) gg.getShape();
+            PolylineBreak pb = (PolylineBreak) gg.getLegend();
+            List<PointZ> ps = (List<PointZ>) shape.getPoints();
             PointF[] points = new PointF[ps.size()];
             PointZ p, pp;
             for (int i = 0; i < ps.size(); i++) {
                 p = ps.get(i);
                 pp = new PointZ((p.X - xmin) * xfactor - 10, (p.Y - ymin) * yfactor - 10,
-                    (p.Z - this.zmin) * zfactor - 10);
+                        (p.Z - this.zmin) * zfactor - 10);
                 projection = projector.project((float) pp.X, (float) pp.Y, (float) pp.Z);
                 points[i] = new PointF(projection.x, projection.y);
             }
@@ -627,14 +711,14 @@ public class Plot3D extends Plot {
             PointZ pp;
             for (int i : order) {
                 Graphic gg = graphic.getGraphicN(i);
-                PolylineZShape shape = (PolylineZShape)gg.getShape();
-                PolylineBreak pb = (PolylineBreak)gg.getLegend();
-                List<PointZ> ps = (List<PointZ>)shape.getPoints();
+                PolylineZShape shape = (PolylineZShape) gg.getShape();
+                PolylineBreak pb = (PolylineBreak) gg.getLegend();
+                List<PointZ> ps = (List<PointZ>) shape.getPoints();
                 PointF[] points = new PointF[ps.size()];
                 for (int j = 0; j < ps.size(); j++) {
                     p = ps.get(j);
                     pp = new PointZ((p.X - xmin) * xfactor - 10, (p.Y - ymin) * yfactor - 10,
-                        (p.Z - this.zmin) * zfactor - 10);
+                            (p.Z - this.zmin) * zfactor - 10);
                     projection = projector.project((float) pp.X, (float) pp.Y, (float) pp.Z);
                     points[j] = new PointF(projection.x, projection.y);
                 }
@@ -702,20 +786,20 @@ public class Plot3D extends Plot {
             this.drawPolygonShape(g, (PolygonZShape) shape, (PolygonBreak) gg.getLegend());
         }
     }
-    
+
     private void drawPolygonShape(Graphics2D g, PolygonZShape shape, PolygonBreak pb) {
-        for (PolygonZ poly : (List<PolygonZ>)shape.getPolygons()) {
+        for (PolygonZ poly : (List<PolygonZ>) shape.getPolygons()) {
             drawPolygon(g, poly, pb);
         }
     }
-    
+
     private List<PointF> drawPolygon(Graphics2D g, PolygonZ aPG, PolygonBreak aPGB) {
         int len = aPG.getOutLine().size();
         GeneralPath path = new GeneralPath(GeneralPath.WIND_EVEN_ODD, len);
         PointZ p, pp;
         List<PointF> rPoints = new ArrayList<>();
         for (int i = 0; i < aPG.getOutLine().size(); i++) {
-            p = ((List<PointZ>)aPG.getOutLine()).get(i);
+            p = ((List<PointZ>) aPG.getOutLine()).get(i);
             pp = new PointZ((p.X - xmin) * xfactor - 10, (p.Y - ymin) * yfactor - 10,
                     (p.Z - this.zmin) * zfactor - 10);
             projection = projector.project((float) pp.X, (float) pp.Y, (float) pp.Z);
@@ -730,11 +814,11 @@ public class Plot3D extends Plot {
         List<PointZ> newPList;
         if (aPG.hasHole()) {
             for (int h = 0; h < aPG.getHoleLines().size(); h++) {
-                newPList = (List<PointZ>)aPG.getHoleLines().get(h);
+                newPList = (List<PointZ>) aPG.getHoleLines().get(h);
                 for (int j = 0; j < newPList.size(); j++) {
                     p = newPList.get(j);
                     pp = new PointZ((p.X - xmin) * xfactor - 10, (p.Y - ymin) * yfactor - 10,
-                        (p.Z - this.zmin) * zfactor - 10);
+                            (p.Z - this.zmin) * zfactor - 10);
                     projection = projector.project((float) pp.X, (float) pp.Y, (float) pp.Z);
                     if (j == 0) {
                         path.moveTo(projection.x, projection.y);
@@ -759,7 +843,7 @@ public class Plot3D extends Plot {
                 g.fill(path);
             }
         }
-        
+
         if (aPGB.isDrawOutline()) {
             BasicStroke pen = new BasicStroke(aPGB.getOutlineSize());
             g.setStroke(pen);
@@ -1048,6 +1132,271 @@ public class Plot3D extends Plot {
         return String.format("%.3G", f);
     }
 
+    private void drawAxes(Graphics2D g) {
+        int x[], y[], i;
+        x = new int[5];
+        y = new int[5];
+        drawBase(g, x, y);
+        projection = projector.project(0, 0, -10);
+        x[0] = projection.x;
+        y[0] = projection.y;
+        projection = projector.project(10.5f, 0, -10);
+        g.drawLine(x[0], y[0], projection.x, projection.y);
+        if (projection.x < x[0]) {
+            outString(g, (int) (1.05 * (projection.x - x[0])) + x[0], (int) (1.05 * (projection.y - y[0])) + y[0], "x", Label.RIGHT, TOP);
+        } else {
+            outString(g, (int) (1.05 * (projection.x - x[0])) + x[0], (int) (1.05 * (projection.y - y[0])) + y[0], "x", Label.LEFT, TOP);
+        }
+        projection = projector.project(0, 11.5f, -10);
+        g.drawLine(x[0], y[0], projection.x, projection.y);
+        if (projection.x < x[0]) {
+            outString(g, (int) (1.05 * (projection.x - x[0])) + x[0], (int) (1.05 * (projection.y - y[0])) + y[0], "y", Label.RIGHT, TOP);
+        } else {
+            outString(g, (int) (1.05 * (projection.x - x[0])) + x[0], (int) (1.05 * (projection.y - y[0])) + y[0], "y", Label.LEFT, TOP);
+        }
+        projection = projector.project(0, 0, 10.5f);
+        g.drawLine(x[0], y[0], projection.x, projection.y);
+        outString(g, (int) (1.05 * (projection.x - x[0])) + x[0], (int) (1.05 * (projection.y - y[0])) + y[0], "z", Label.CENTER, CENTER);
+    }
+
+    /**
+     * Draws non-surface parts, i.e: bounding box, axis grids, axis ticks, axis
+     * labels, base plane.
+     *
+     * @param g the graphics context to draw
+     */
+    private void drawBoxGridsTicksLabels(Graphics2D g) {
+        Point tickpos;
+        boolean x_left, y_left;
+        int x[], y[], i;
+
+        x = new int[5];
+        y = new int[5];
+        if (projector == null) {
+            return;
+        }
+
+        factor_x = factor_y = 1;
+        projection = projector.project(0, 0, -10);
+        x[0] = projection.x;
+        projection = projector.project(10.5f, 0, -10);
+        y_left = projection.x > x[0];
+        i = projection.y;
+        projection = projector.project(-10.5f, 0, -10);
+        if (projection.y > i) {
+            factor_x = -1;
+            y_left = projection.x > x[0];
+        }
+        projection = projector.project(0, 10.5f, -10);
+        x_left = projection.x > x[0];
+        i = projection.y;
+        projection = projector.project(0, -10.5f, -10);
+        if (projection.y > i) {
+            factor_y = -1;
+            x_left = projection.x > x[0];
+        }
+        setAxesScale();
+        drawBase(g, x, y);
+
+        //Draw box
+        if (isBoxed) {
+            projection = projector.project(-factor_x * 10, -factor_y * 10, -10);
+            x[0] = projection.x;
+            y[0] = projection.y;
+            projection = projector.project(-factor_x * 10, -factor_y * 10, 10);
+            x[1] = projection.x;
+            y[1] = projection.y;
+            projection = projector.project(factor_x * 10, -factor_y * 10, 10);
+            x[2] = projection.x;
+            y[2] = projection.y;
+            projection = projector.project(factor_x * 10, -factor_y * 10, -10);
+            x[3] = projection.x;
+            y[3] = projection.y;
+            x[4] = x[0];
+            y[4] = y[0];
+
+            g.setColor(this.boxColor);
+            g.fillPolygon(x, y, 4);
+
+            g.setColor(this.lineboxColor);
+            g.drawPolygon(x, y, 5);
+
+            projection = projector.project(-factor_x * 10, factor_y * 10, 10);
+            x[2] = projection.x;
+            y[2] = projection.y;
+            projection = projector.project(-factor_x * 10, factor_y * 10, -10);
+            x[3] = projection.x;
+            y[3] = projection.y;
+            x[4] = x[0];
+            y[4] = y[0];
+
+            g.setColor(this.boxColor);
+            g.fillPolygon(x, y, 4);
+
+            g.setColor(this.lineboxColor);
+            g.drawPolygon(x, y, 5);
+        } else if (isDisplayZ) {
+            projection = projector.project(factor_x * 10, -factor_y * 10, -10);
+            x[0] = projection.x;
+            y[0] = projection.y;
+            projection = projector.project(factor_x * 10, -factor_y * 10, 10);
+            g.drawLine(x[0], y[0], projection.x, projection.y);
+
+            projection = projector.project(-factor_x * 10, factor_y * 10, -10);
+            x[0] = projection.x;
+            y[0] = projection.y;
+            projection = projector.project(-factor_x * 10, factor_y * 10, 10);
+            g.drawLine(x[0], y[0], projection.x, projection.y);
+        }
+
+        //Draw axis
+        float v, vi;
+        String s;
+        if (this.isDisplayXY) {
+            //Draw x axis
+            projection = projector.project(-10, factor_y * 10, -10);
+            x[0] = projection.x;
+            y[0] = projection.y;
+            projection = projector.project(10, factor_y * 10, -10);
+            g.setColor(this.xAxis.getLineColor());
+            g.drawLine(x[0], y[0], projection.x, projection.y);
+            List<String> tlabs = this.xAxis.updateTickLabels();
+            for (i = 0; i < this.xAxis.getTickValues().length; i++) {
+                v = (float) this.xAxis.getTickValues()[i];
+                s = tlabs.get(i);
+                if (v < xmin || v > xmax) {
+                    continue;
+                }
+                vi = (v - xmin) * xfactor - 10;
+                tickpos = projector.project(vi, factor_y * 10, -10);
+                if (this.isDisplayGrids && (v != xmin && v != xmax)) {
+                    projection = projector.project(vi, -factor_y * 10, -10);
+                    g.setColor(this.lineboxColor);
+                    g.drawLine(projection.x, projection.y, tickpos.x, tickpos.y);
+                    if (this.isDisplayZ && this.isBoxed){
+                        x[0] = projection.x;
+                        y[0] = projection.y;
+                        projection = projector.project(vi, -factor_y * 10, 10);
+                        g.drawLine(x[0], y[0], projection.x, projection.y);
+                    }
+                }
+                projection = projector.project(vi, factor_y * 10.5f, -10);
+                g.setColor(this.xAxis.getLineColor());
+                g.drawLine(projection.x, projection.y, tickpos.x, tickpos.y);
+                tickpos = projector.project(vi, factor_y * 11.f, -10);
+                if (x_left) {
+                    outString(g, tickpos.x, tickpos.y, s, Label.LEFT, TOP);
+                } else {
+                    outString(g, tickpos.x, tickpos.y, s, Label.RIGHT, TOP);
+                }
+            }
+            String label = this.xAxis.getLabel();
+            if (label != null) {
+                tickpos = projector.project(0, factor_y * 13.f, -10);
+                if (x_left) {
+                    outString(g, tickpos.x, tickpos.y, label, Label.LEFT, TOP);
+                } else {
+                    outString(g, tickpos.x, tickpos.y, label, Label.RIGHT, TOP);
+                }
+            }
+
+            //Draw y axis
+            projection = projector.project(factor_x * 10, -10, -10);
+            x[0] = projection.x;
+            y[0] = projection.y;
+            projection = projector.project(factor_x * 10, 10, -10);
+            g.setColor(this.yAxis.getLineColor());
+            g.drawLine(x[0], y[0], projection.x, projection.y);
+            tlabs = this.yAxis.updateTickLabels();
+            for (i = 0; i < this.yAxis.getTickValues().length; i++) {
+                v = (float) this.yAxis.getTickValues()[i];
+                s = tlabs.get(i);
+                if (v < ymin || v > ymax) {
+                    continue;
+                }
+                vi = (v - ymin) * yfactor - 10;
+                tickpos = projector.project(factor_x * 10, vi, -10);
+                if (this.isDisplayGrids && (v != ymin && v != ymax)) {
+                    projection = projector.project(-factor_x * 10, vi, -10);
+                    g.setColor(this.lineboxColor);
+                    g.drawLine(projection.x, projection.y, tickpos.x, tickpos.y);
+                    if (this.isDisplayZ && this.isBoxed){
+                        x[0] = projection.x;
+                        y[0] = projection.y;
+                        projection = projector.project(-factor_x * 10, vi, 10);
+                        g.drawLine(x[0], y[0], projection.x, projection.y);
+                    }
+                }
+                projection = projector.project(factor_x * 10.5f, vi, -10);
+                g.setColor(this.yAxis.getLineColor());
+                g.drawLine(projection.x, projection.y, tickpos.x, tickpos.y);
+                tickpos = projector.project(factor_x * 11.f, vi, -10);
+                if (y_left) {
+                    outString(g, tickpos.x, tickpos.y, s, Label.LEFT, TOP);
+                } else {
+                    outString(g, tickpos.x, tickpos.y, s, Label.RIGHT, TOP);
+                }
+            }
+            label = this.yAxis.getLabel();
+            if (label != null) {
+                tickpos = projector.project(factor_x * 13.f, 0, -10);
+                if (y_left) {
+                    outString(g, tickpos.x, tickpos.y, label, Label.LEFT, TOP);
+                } else {
+                    outString(g, tickpos.x, tickpos.y, label, Label.RIGHT, TOP);
+                }
+            }
+        }
+
+        //Draw z axis
+        if (this.isDisplayZ) {
+            float lf = 1;
+            if (y_left) {
+                lf = -1;
+            }
+            projection = projector.project(factor_x * 10 * lf, -factor_y * 10 * lf, -10);
+            x[0] = projection.x;
+            y[0] = projection.y;
+            projection = projector.project(factor_x * 10 * lf, -factor_y * 10 * lf, 10);
+            g.setColor(this.zAxis.getLineColor());
+            g.drawLine(x[0], y[0], projection.x, projection.y);
+            List<String> tlabs = this.zAxis.updateTickLabels();
+            int strWidth = 0, w;
+            for (i = 0; i < this.zAxis.getTickValues().length; i++) {
+                v = (float) this.zAxis.getTickValues()[i];
+                s = tlabs.get(i);
+                if (v < zmin || v > zmax) {
+                    continue;
+                }
+                vi = (v - zmin) * zfactor - 10;
+                tickpos = projector.project(factor_x * 10 * lf, -factor_y * 10 * lf, vi);
+                if (this.isDisplayGrids && this.isBoxed && (v != zmin && v != zmax)) {
+                    projection = projector.project(-factor_x * 10, -factor_y * 10, vi);
+                    g.setColor(this.lineboxColor);
+                    g.drawLine(projection.x, projection.y, tickpos.x, tickpos.y);
+                    x[0] = projection.x;
+                    y[0] = projection.y;
+                    projection = projector.project(-factor_x * 10 * lf, factor_y * 10 * lf, vi);
+                    g.drawLine(x[0], y[0], projection.x, projection.y);
+                }
+                //projection = projector.project(factor_x * 10.2f * lf, -factor_y * 10.2f * lf, vi);
+                g.setColor(this.zAxis.getLineColor());
+                //g.drawLine(projection.x, projection.y, tickpos.x, tickpos.y);
+                g.drawLine(tickpos.x, tickpos.y, tickpos.x - this.xAxis.getTickLength(), tickpos.y);
+                //tickpos = projector.project(factor_x * 10.5f * lf, -factor_y * 10.5f * lf, vi);
+                outString(g, tickpos.x - this.xAxis.getTickLength() - 5, tickpos.y, s, Label.RIGHT, CENTER);
+                w = g.getFontMetrics().stringWidth(s);
+                if (strWidth < w)
+                    strWidth = w;
+            }
+            String label = this.zAxis.getLabel();
+            if (label != null) {
+                tickpos = projector.project(factor_x * 10 * lf, -factor_y * 10 * lf, 0);
+                outString(g, tickpos.x - this.xAxis.getTickLength() - 15 - strWidth, tickpos.y, label, Label.RIGHT, CENTER);
+            }
+        }
+    }
+
     /**
      * Draws non-surface parts, i.e: bounding box, axis grids, axis ticks, axis
      * labels, base plane.
@@ -1055,8 +1404,8 @@ public class Plot3D extends Plot {
      * @param g the graphics context to draw
      * @param draw_axes if <code>true</code>, only draws base plane and z axis
      */
-    private void drawBoxGridsTicksLabels(Graphics g, boolean draw_axes) {
-        Point projection, tickpos;
+    private void drawBoxGridsTicksLabels_bak(Graphics g, boolean draw_axes) {
+        Point tickpos;
         boolean x_left = false, y_left = false;
         int x[], y[], i;
 
@@ -1279,7 +1628,7 @@ public class Plot3D extends Plot {
      * Draws the bounding box of surface.
      */
     private void drawBoundingBox(Graphics2D g2) {
-        Point startingpoint, projection;
+        Point startingpoint;
 
         startingpoint = projector.project(factor_x * 10, factor_y * 10, 10);
         g2.setColor(this.lineboxColor);
