@@ -28,6 +28,7 @@ import org.meteoinfo.global.PointD;
 import org.meteoinfo.global.PointF;
 import org.meteoinfo.layer.MapLayer;
 import org.meteoinfo.legend.LabelBreak;
+import org.meteoinfo.legend.LegendScheme;
 import org.meteoinfo.legend.MapFrame;
 import org.meteoinfo.legend.PointBreak;
 import org.meteoinfo.legend.PolygonBreak;
@@ -836,6 +837,15 @@ public class MapPlot extends AbstractPlot2D implements IWebMapPanel {
         }
         
         return 0;
+    }
+    
+    /**
+     * Get legend scheme
+     *
+     * @return Legend scheme
+     */
+    public LegendScheme getLegendScheme() {
+        return null;
     }
 
 //    @Override

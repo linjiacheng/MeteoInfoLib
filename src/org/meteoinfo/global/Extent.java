@@ -100,6 +100,15 @@ public class Extent implements Cloneable{
             return false;
         }
     }
+    
+    /**
+     * Tests whether this extent intersects the second extent.
+     * @param bET The second extent
+     * @return Boolean
+     */
+    public boolean intersects(Extent bET) {
+        return !(maxX < bET.minX || maxY < bET.minY || bET.maxX < minX || bET.maxY < minY);
+    }
 
     /**
      * Convert to rectangle

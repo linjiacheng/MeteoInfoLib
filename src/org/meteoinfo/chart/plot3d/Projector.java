@@ -19,12 +19,13 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA                                  *
  *                                                                                        *
  *----------------------------------------------------------------------------------------*/
-package org.meteoinfo.chart.plot3d.surface;
+package org.meteoinfo.chart.plot3d;
 
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
+import org.meteoinfo.data.DataMath;
 
 /**
  * The class <code>Projector</code> projects points in 3D space to 2D space.
@@ -407,6 +408,24 @@ public final class Projector {
         float temp_y = factor_y / (y * cos_elevation - z * sz_sin + distance);
         return new Point((int) (Math.round(x * temp_x) + trans_x),
                 (int) (Math.round((y * sin_elevation + z * sz_cos) * -temp_y) + trans_y));
+    }
+    
+    /**
+     * Project angle and length from two points
+     * @param x1 Point 1 x
+     * @param y1 Point 1 y
+     * @param z1 Point 1 z
+     * @param x2 Point 2 x
+     * @param y2 Point 2 y
+     * @param z2 Point 2 z
+     * @return Angle and length
+     */
+    public double[] projectAL(float x1, float y1, float z1, float x2, float y2, float z2){
+        Point p1 = project(x1, y1, z1);
+        Point p2 = project(x2, y2, z2);
+        float u = p2.x - p1.x;
+        float v = p2.y - p1.y;
+        return DataMath.getDSFromUV(u, v);
     }
     
     /**

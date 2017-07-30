@@ -132,6 +132,14 @@ public class Graphic {
     public boolean isSingleLegend(){
         return true;
     }
+    
+    /**
+     * Get if is GraphicCollection
+     * @return Boolean
+     */
+    public boolean isCollection(){
+        return false;
+    }
 
     // </editor-fold>
     // <editor-fold desc="Methods">
@@ -139,7 +147,7 @@ public class Graphic {
      * Get graphics number
      * @return 1
      */
-    public int getNumGrahics(){
+    public int getNumGraphics(){
         return 1;
     }
     

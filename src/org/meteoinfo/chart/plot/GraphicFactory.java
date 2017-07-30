@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.meteoinfo.chart.plot3d.GraphicCollection3D;
 import org.meteoinfo.data.ArrayMath;
 import org.meteoinfo.data.ArrayUtil;
 import org.meteoinfo.data.GridArray;
@@ -146,8 +147,7 @@ public class GraphicFactory {
      * @return LineString graphic
      */
     public static GraphicCollection createLineString(Array xdata, Array ydata, Array zdata, ColorBreak cb) {
-        GraphicCollection gc = new GraphicCollection();
-        gc.set3D(true);
+        GraphicCollection3D gc = new GraphicCollection3D();
         PolylineShape pls;
         List<PointZ> points = new ArrayList<>();
         double x, y, z = 0;
@@ -351,8 +351,7 @@ public class GraphicFactory {
      * @return LineString graphic
      */
     public static GraphicCollection createPoints3D(Array xdata, Array ydata, Array zdata, List<ColorBreak> cbs) {
-        GraphicCollection graphics = new GraphicCollection();
-        graphics.set3D(true);
+        GraphicCollection3D graphics = new GraphicCollection3D();
         PointShape ps;
         boolean fixZ = false;
         double z = 0;
@@ -406,8 +405,7 @@ public class GraphicFactory {
      * @return 3D point graphics
      */
     public static GraphicCollection createPoints3D(Array xdata, Array ydata, Array zdata, Array cdata, LegendScheme ls) {
-        GraphicCollection graphics = new GraphicCollection();
-        graphics.set3D(true);
+        GraphicCollection3D graphics = new GraphicCollection3D();
         PointShape ps;
         double c;
         ColorBreak cb;
@@ -483,8 +481,7 @@ public class GraphicFactory {
      * @return Graphics
      */
     public static GraphicCollection createWireframe(Array xa, Array ya, Array za, PolylineBreak pb) {
-        GraphicCollection graphics = new GraphicCollection();
-        graphics.set3D(true);
+        GraphicCollection3D graphics = new GraphicCollection3D();
         int[] shape = xa.getShape();
         int colNum = shape[1];
         int rowNum = shape[0];
@@ -527,8 +524,7 @@ public class GraphicFactory {
      * @return Graphics
      */
     public static GraphicCollection createMeshPolygons(Array xa, Array ya, Array za, LegendScheme ls) {
-        GraphicCollection graphics = new GraphicCollection();
-        graphics.set3D(true);
+        GraphicCollection3D graphics = new GraphicCollection3D();
         int[] shape = xa.getShape();
         int colNum = shape[1];
         int rowNum = shape[0];
@@ -562,7 +558,8 @@ public class GraphicFactory {
                 graphics.add(graphic);
             }
         }
-
+        graphics.setSingleLegend(false);
+        graphics.setLegendScheme(ls);
         return graphics;
     }
     
@@ -573,8 +570,9 @@ public class GraphicFactory {
      * @return Graphics
      */
     public static GraphicCollection createGraphicsFromLayer(VectorLayer layer, double offset){
-        GraphicCollection graphics = new GraphicCollection();
-        graphics.set3D(true);
+        GraphicCollection3D graphics = new GraphicCollection3D();
+        graphics.setFixZ(true);
+        graphics.setZValue(offset);
         ShapeTypes shapeType = layer.getShapeType();
         LegendScheme ls = layer.getLegendScheme();
         PointZ pz;
@@ -618,6 +616,15 @@ public class GraphicFactory {
                     s.setPoints(plist);
                     cb = ls.getLegendBreaks().get(shape.getLegendIndex());
                     graphics.add(new Graphic(s, cb));
+                }
+                break;
+            case PointZ:
+            case PolylineZ:
+            case PolygonZ:
+                graphics.setFixZ(false);
+                for (Shape shape : layer.getShapes()){
+                    cb = ls.getLegendBreaks().get(shape.getLegendIndex());
+                    graphics.add(new Graphic(shape, cb));
                 }
                 break;
         }
@@ -1388,8 +1395,9 @@ public class GraphicFactory {
         wContour.Global.PolyLine aLine;
         double v;
         ColorBreak cbb;
-        GraphicCollection graphics = new GraphicCollection();
-        graphics.set3D(true);
+        GraphicCollection3D graphics = new GraphicCollection3D();
+        graphics.setFixZ(true);
+        graphics.setZValue(offset);
         for (int i = 0; i < ContourLines.size(); i++) {
             aLine = ContourLines.get(i);
             v = aLine.Value;
@@ -1574,8 +1582,9 @@ public class GraphicFactory {
 
         double v;
         ColorBreak cbb;
-        GraphicCollection graphics = new GraphicCollection();
-        graphics.set3D(true);
+        GraphicCollection3D graphics = new GraphicCollection3D();
+        graphics.setFixZ(true);
+        graphics.setZValue(offset);
         for (int i = 0; i < contourPolygons.size(); i++) {
             wContour.Global.Polygon poly = contourPolygons.get(i);
             v = poly.LowValue;
@@ -2084,9 +2093,9 @@ public class GraphicFactory {
      * @param graphics Graphics
      */
     public static void polarToCartesian(GraphicCollection graphics) {
-        for (int m = 0; m < graphics.getNumGrahics(); m++) {
+        for (int m = 0; m < graphics.getNumGraphics(); m++) {
             Graphic graphic = graphics.get(m);
-            for (int i = 0; i < graphic.getNumGrahics(); i++) {
+            for (int i = 0; i < graphic.getNumGraphics(); i++) {
                 Graphic gg = graphic.getGraphicN(i);
                 Shape shape = gg.getShape();
                 List<PointD> points = new ArrayList<>();

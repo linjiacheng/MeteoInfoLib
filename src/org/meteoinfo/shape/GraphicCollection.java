@@ -42,7 +42,6 @@ public class GraphicCollection extends Graphic implements Iterator {
     private LabelSet labelSet;
     private List<Graphic> labelPoints;
     private LegendScheme legendScheme;
-    private boolean is3D;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -53,7 +52,6 @@ public class GraphicCollection extends Graphic implements Iterator {
         this.index = 0;
         labelSet = new LabelSet();
         labelPoints = new ArrayList<>();
-        this.is3D = false;
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -158,16 +156,18 @@ public class GraphicCollection extends Graphic implements Iterator {
      * @return Boolean
      */
     public boolean is3D(){
-        return this.is3D;
+        return false;
     }
     
     /**
-     * Set is 3D or not
-     * @param value Boolean
+     * Get if is GraphicCollection
+     * @return Boolean
      */
-    public void set3D(boolean value){
-        this.is3D = value;
+    @Override
+    public boolean isCollection(){
+        return true;
     }
+
     // </editor-fold>
     // <editor-fold desc="Methods">
 
@@ -276,7 +276,7 @@ public class GraphicCollection extends Graphic implements Iterator {
      * @return 1
      */
     @Override
-    public int getNumGrahics(){
+    public int getNumGraphics(){
         return this.size();
     }
     
@@ -329,6 +329,26 @@ public class GraphicCollection extends Graphic implements Iterator {
      */
     public void addAll(List<Graphic> gs){
         this.graphics.addAll(gs);
+    }
+    
+    /**
+     * Join this graphics with other graphics
+     * @param graphic Other graphics
+     */
+    public void join(Graphic graphic){
+        if (graphic.isCollection()){
+            //Update extent
+            if (this.isEmpty()) {
+                _extent = graphic.getExtent();
+            } else {
+                _extent = MIMath.getLagerExtent(_extent, graphic.getExtent());
+            }
+            for (int i = 0; i < graphic.getNumGraphics(); i++){
+                this.graphics.add(graphic.getGraphicN(i));
+            }
+        } else {
+            this.add(graphic);
+        }
     }
     
     /**

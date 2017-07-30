@@ -1144,6 +1144,28 @@ public class Axis implements Cloneable {
         }
         this.tickLabelGap = n / nn + 1;
     }
+    
+    /**
+     * Update lable gap
+     *
+     * @param g Graphics2D
+     * @param len Length
+     * @return Label gap
+     */
+    public int getLabelGap(Graphics2D g, double len) {
+        if (this.getTickValues() == null) {
+            return 1;
+        }
+
+        int n = this.getTickValues().length;
+        int nn;
+        FontMetrics metrics = g.getFontMetrics(labelFont);
+        nn = (int) (len / metrics.getHeight());
+        if (nn == 0) {
+            nn = 1;
+        }
+        return n / nn + 1;
+    }
 
     /**
      * Set color to all elements

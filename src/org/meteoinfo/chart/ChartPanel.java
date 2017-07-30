@@ -78,7 +78,7 @@ import org.meteoinfo.chart.plot.XY1DPlot;
 import org.meteoinfo.chart.plot.AbstractPlot2D;
 import org.meteoinfo.chart.plot.Plot3D;
 import org.meteoinfo.chart.plot.PlotType;
-import org.meteoinfo.chart.plot3d.surface.Projector;
+import org.meteoinfo.chart.plot3d.Projector;
 import org.meteoinfo.data.DataTypes;
 import org.meteoinfo.data.mapdata.Field;
 import org.meteoinfo.global.Extent;

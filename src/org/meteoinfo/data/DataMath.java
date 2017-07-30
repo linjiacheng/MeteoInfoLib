@@ -353,7 +353,7 @@ public abstract class DataMath {
 
         return new double[]{windDir, windSpeed};
     }
-
+    
     /**
      * Get wind direction/speed grid data from wind U/V grid data
      *
@@ -406,6 +406,21 @@ public abstract class DataMath {
         }
 
         return new StationData[]{windDirData, windSpeedData};
+    }
+    
+    /**
+     * Get end point by start point, angle and length
+     * @param x Start point x
+     * @param y Start point y
+     * @param angle Angle
+     * @param len Length
+     * @return End point x/y values;
+     */
+    public static double[] getEndPoint(double x, double y, double angle, double len){
+        double[] r = getUVFromDS(angle, len);
+        r[0] += x;
+        r[1] += y;
+        return r;
     }
     // </editor-fold>
     // <editor-fold desc="Fitting">

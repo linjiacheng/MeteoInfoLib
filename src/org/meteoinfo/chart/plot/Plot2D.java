@@ -187,14 +187,14 @@ public class Plot2D extends AbstractPlot2D {
         }
 
         int barIdx = 0;
-        for (int m = 0; m < this.graphics.getNumGrahics(); m++) {
+        for (int m = 0; m < this.graphics.getNumGraphics(); m++) {
             Graphic graphic = this.graphics.get(m);
             ColorBreak cb = graphic.getLegend();
             if (graphic.getGraphicN(0).getShape().getShapeType() == ShapeTypes.Bar) {
                 this.drawBars(g, (GraphicCollection) graphic, barIdx, area);
                 barIdx += 1;
             }
-            for (int i = 0; i < graphic.getNumGrahics(); i++) {
+            for (int i = 0; i < graphic.getNumGraphics(); i++) {
                 Graphic gg = graphic.getGraphicN(i);
                 if (!graphic.isSingleLegend()) {
                     cb = gg.getLegend();
@@ -762,7 +762,7 @@ public class Plot2D extends AbstractPlot2D {
         double[] xy;
         xy = this.projToScreen(0, 0, area);
         float y0 = (float) xy[1];
-        int len = bars.getNumGrahics();
+        int len = bars.getNumGraphics();
         PointF[] points = new PointF[len];
         for (int i = 0; i < len; i++) {
             BarShape bs = (BarShape) bars.getGraphicN(i).getShape();
@@ -852,7 +852,7 @@ public class Plot2D extends AbstractPlot2D {
 
     private double getBarXInterval(int idx) {
         Graphic gg = this.graphics.get(idx);
-        if (gg.getNumGrahics() == 1) {
+        if (gg.getNumGraphics() == 1) {
             if (gg.getGraphicN(0).getShape().getPoints().get(0).X == 0) {
                 return 1;
             } else {

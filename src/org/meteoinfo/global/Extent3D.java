@@ -44,5 +44,17 @@ public class Extent3D extends Extent{
     public boolean is3D(){
         return true;
     }
+    
+    /**
+     * Tests whether this extent intersects the second extent.
+     * @param extent The second extent
+     * @return Boolean
+     */
+    @Override
+    public boolean intersects(Extent extent) {
+        Extent3D bET = (Extent3D)extent;
+        return !(maxX < bET.minX || maxY < bET.minY || maxZ < bET.maxZ ||
+                bET.maxX < minX || bET.maxY < minY || bET.maxZ < minZ);
+    }
 
 }

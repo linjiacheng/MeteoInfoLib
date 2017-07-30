@@ -53,14 +53,14 @@ public class PiePlot extends Plot2D {
             g.fill(new Rectangle2D.Double(0, 0, area.getWidth(), area.getHeight()));
         }
 
-        for (int m = 0; m < this.getGraphics().getNumGrahics(); m++) {
+        for (int m = 0; m < this.getGraphics().getNumGraphics(); m++) {
             Graphic graphic = this.getGraphics().get(m);
             ColorBreak cb = graphic.getLegend();
             float dist = 5;
             float ex = this.getExplode();
             Font labelFont = ((GraphicCollection)graphic).getLabelSet().getLabelFont();
             Color labelColor = ((GraphicCollection)graphic).getLabelSet().getLabelColor();
-            for (int i = 0; i < graphic.getNumGrahics(); i++) {
+            for (int i = 0; i < graphic.getNumGraphics(); i++) {
                 Graphic gg = graphic.getGraphicN(i);
                 if (!graphic.isSingleLegend()) {
                     cb = gg.getLegend();
@@ -78,7 +78,7 @@ public class PiePlot extends Plot2D {
     private float getExplode() {
         Graphic graphic = this.getGraphics().get(0);
         float ex = 0;
-        for (int i = 0; i < graphic.getNumGrahics(); i++) {
+        for (int i = 0; i < graphic.getNumGraphics(); i++) {
             Graphic gg = graphic.getGraphicN(i);
             ArcShape shape = (ArcShape) gg.getShape();
             if (shape.getExplode() > 0) {

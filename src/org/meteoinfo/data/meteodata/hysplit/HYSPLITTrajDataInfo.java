@@ -47,8 +47,8 @@ import org.meteoinfo.legend.LegendManage;
 import org.meteoinfo.legend.LegendScheme;
 import org.meteoinfo.legend.LegendType;
 import org.meteoinfo.legend.PolylineBreak;
-import org.meteoinfo.shape.PointShape;
 import org.meteoinfo.shape.PointZ;
+import org.meteoinfo.shape.PointZShape;
 import org.meteoinfo.shape.PolylineZShape;
 import org.meteoinfo.shape.ShapeTypes;
 import ucar.ma2.Array;
@@ -295,6 +295,10 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
 
     @Override
     public VectorLayer createTrajLineLayer() {
+        return createTrajLineLayer(false);
+    }
+    
+    public VectorLayer createTrajLineLayer(boolean zPres) {
         VectorLayer aLayer = new VectorLayer(ShapeTypes.PolylineZ);
         aLayer.editAddField("ID", DataTypes.Integer);
         aLayer.editAddField("Date", DataTypes.Date);
@@ -363,8 +367,13 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                     aPoint = new PointZ();
                     aPoint.X = Double.parseDouble(dataArray[10]);
                     aPoint.Y = Double.parseDouble(dataArray[9]);
-                    aPoint.M = Double.parseDouble(dataArray[11]);
-                    aPoint.Z = Double.parseDouble(dataArray[12]);
+                    if (zPres){
+                        aPoint.M = Double.parseDouble(dataArray[11]);
+                        aPoint.Z = Double.parseDouble(dataArray[12]);
+                    } else {
+                        aPoint.M = Double.parseDouble(dataArray[12]);
+                        aPoint.Z = Double.parseDouble(dataArray[11]);
+                    }
 
                     if (PointList.get(TrajIdx).size() > 1) {
                         PointZ oldPoint = PointList.get(TrajIdx).get(PointList.get(TrajIdx).size() - 1);
@@ -489,7 +498,7 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                     pList = new ArrayList<>();
                     PointList.add(pList);
                 }
-                PointD aPoint;
+                PointZ aPoint;
                 double Height, Press;
                 int dn = 12 + this.varNums.get(t);
                 while (true) {
@@ -522,11 +531,13 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                     }
                     Calendar cal = new GregorianCalendar(y, Integer.parseInt(dataArray[3]) - 1,
                             Integer.parseInt(dataArray[4]), Integer.parseInt(dataArray[5]), 0, 0);
-                    aPoint = new PointD();
+                    aPoint = new PointZ();
                     aPoint.X = Double.parseDouble(dataArray[10]);
                     aPoint.Y = Double.parseDouble(dataArray[9]);
                     Height = Double.parseDouble(dataArray[11]);
                     Press = Double.parseDouble(dataArray[12]);
+                    aPoint.Z = Height;
+                    aPoint.M = Press;
                     dList.add(aPoint);
                     dList.add(cal.getTime());
                     dList.add(Height);
@@ -543,7 +554,7 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                 for (i = 0; i < trajeoryNums.get(t); i++) {
                     TrajNum += 1;
                     for (int j = 0; j < PointList.get(i).size(); j++) {
-                        PointShape aPS = new PointShape();
+                        PointZShape aPS = new PointZShape();
                         aPS.setValue(TrajNum);
                         aPS.setPoint((PointD) PointList.get(i).get(j).get(0));
                         int shapeNum = aLayer.getShapeNum();
@@ -584,7 +595,7 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
 
     @Override
     public VectorLayer createTrajStartPointLayer() {
-        VectorLayer aLayer = new VectorLayer(ShapeTypes.Point);
+        VectorLayer aLayer = new VectorLayer(ShapeTypes.PointZ);
         aLayer.editAddField(new Field("TrajID", DataTypes.Integer));
         aLayer.editAddField(new Field("StartDate", DataTypes.String));
         aLayer.editAddField(new Field("StartLon", DataTypes.Double));
@@ -621,9 +632,8 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
 
                 //Record #6
                 int TrajIdx;
-                List<Object> pList = new ArrayList<>();
-                List<PointD> PointList = new ArrayList<>();
-                PointD aPoint = new PointD();
+                List<PointZ> PointList = new ArrayList<>();
+                PointZ aPoint = new PointZ();
                 for (i = 0; i < trajeoryNums.get(t); i++) {
                     PointList.add(aPoint);
                 }
@@ -645,16 +655,18 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                     }
                     if (Float.parseFloat(dataArray[8]) == 0) {
                         TrajIdx = Integer.parseInt(dataArray[0]) - 1;
-                        aPoint = new PointD();
+                        aPoint = new PointZ();
                         aPoint.X = Double.parseDouble(dataArray[10]);
                         aPoint.Y = Double.parseDouble(dataArray[9]);
+                        aPoint.Z = Double.parseDouble(dataArray[11]);
+                        aPoint.M = Double.parseDouble(dataArray[12]);
                         PointList.set(TrajIdx, aPoint);
                     }
                 }
 
                 SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHH");
                 for (i = 0; i < trajeoryNums.get(t); i++) {
-                    PointShape aPS = new PointShape();
+                    PointZShape aPS = new PointZShape();
                     TrajNum += 1;
                     aPS.setValue(TrajNum);
                     aPS.setPoint(PointList.get(i));
