@@ -1142,17 +1142,18 @@ public class MIMath {
         double r;     // Radius
         double B;     // Angle in radians
         r = Math.hypot(x, y);
-        if (y >= 0) {
-            if (x == 0) {
-                B = Math.PI / 2;// 90°
-            } else {
-                B = Math.asin(x / y);
-            }
-        } else if (x == 0) {
-            B = 3 * Math.PI / 2;// 270°
-        } else {
-            B = Math.asin(x / y);
-        }
+        B = Math.atan2(y, x);
+//        if (y >= 0) {
+//            if (x == 0) {
+//                B = Math.PI / 2;// 90°
+//            } else {
+//                B = Math.atan(y / x);
+//            }
+//        } else if (x == 0) {
+//            B = 3 * Math.PI / 2;// 270°
+//        } else {
+//            B = Math.atan(y / x);
+//        }
         return new double[]{B, r};
     }
 

@@ -5,50 +5,23 @@
  */
 package org.meteoinfo.chart.plot3d;
 
-import org.meteoinfo.shape.GraphicCollection;
+import org.meteoinfo.shape.ImageShape;
 
 /**
  *
  * @author Yaqiang Wang
  */
-public class GraphicCollection3D extends GraphicCollection{
-    
-    private boolean fixZ;
+public class ImageShape3D extends ImageShape {
     private double zValue;
     private String zdir;
     
     /**
      * Constructor
      */
-    public GraphicCollection3D(){
+    public ImageShape3D(){
         super();
-        fixZ = false;
-        zdir = "z";
-    }
-    
-    /**
-     * Get if is 3D
-     * @return Boolean
-     */
-    @Override
-    public boolean is3D(){
-        return true;
-    }
-    
-    /**
-     * Get if is fixed z graphics
-     * @return Boolean
-     */
-    public boolean isFixZ(){
-        return this.fixZ;
-    }
-    
-    /**
-     * Set if is fixed z graphics
-     * @param value Boolean
-     */
-    public void setFixZ(boolean value){
-        this.fixZ = value;
+        this.zValue = 0;
+        this.zdir = "z";
     }
     
     /**

@@ -25,9 +25,9 @@ import org.meteoinfo.drawing.Draw;
 import org.meteoinfo.drawing.PointStyle;
 import org.meteoinfo.geoprocess.GeoComputation;
 import org.meteoinfo.global.Extent;
+import org.meteoinfo.global.Extent3D;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
-import static org.meteoinfo.layer.LayerTypes.VectorLayer;
 import org.meteoinfo.layer.VectorLayer;
 import org.meteoinfo.legend.BarBreak;
 import org.meteoinfo.legend.ColorBreak;
@@ -552,7 +552,7 @@ public class GraphicFactory {
                 ps.setPoints(points);
                 ps.lowValue = z;
                 ps.highValue = ps.lowValue;
-                pb = (PolygonBreak)ls.getLegenBreak(z);
+                pb = (PolygonBreak) ls.getLegenBreak(z);
                 //pb.setDrawOutline(true);
                 Graphic graphic = new Graphic(ps, pb);
                 graphics.add(graphic);
@@ -562,14 +562,15 @@ public class GraphicFactory {
         graphics.setLegendScheme(ls);
         return graphics;
     }
-    
+
     /**
      * Create 3D graphics from a VectorLayer.
+     *
      * @param layer The layer
      * @param offset Offset of z axis.
      * @return Graphics
      */
-    public static GraphicCollection createGraphicsFromLayer(VectorLayer layer, double offset){
+    public static GraphicCollection createGraphicsFromLayer(VectorLayer layer, double offset) {
         GraphicCollection3D graphics = new GraphicCollection3D();
         graphics.setFixZ(true);
         graphics.setZValue(offset);
@@ -577,9 +578,9 @@ public class GraphicFactory {
         LegendScheme ls = layer.getLegendScheme();
         PointZ pz;
         ColorBreak cb;
-        switch (shapeType){
+        switch (shapeType) {
             case Point:
-                for (PointShape shape : (List<PointShape>)layer.getShapes()){
+                for (PointShape shape : (List<PointShape>) layer.getShapes()) {
                     PointZShape s = new PointZShape();
                     PointD pd = shape.getPoint();
                     pz = new PointZ(pd.X, pd.Y, offset);
@@ -589,28 +590,28 @@ public class GraphicFactory {
                 }
                 break;
             case Polyline:
-                for (PolylineShape shape : (List<PolylineShape>)layer.getShapes()){
+                for (PolylineShape shape : (List<PolylineShape>) layer.getShapes()) {
                     cb = ls.getLegendBreaks().get(shape.getLegendIndex());
-                    for (Polyline pl : (List<Polyline>)shape.getPolylines()){
+                    for (Polyline pl : (List<Polyline>) shape.getPolylines()) {
                         PolylineZShape s = new PolylineZShape();
                         List<PointZ> plist = new ArrayList<>();
-                        for (PointD pd : pl.getPointList()){
+                        for (PointD pd : pl.getPointList()) {
                             pz = new PointZ(pd.X, pd.Y, offset);
                             plist.add(pz);
-                        }                    
-                        s.setPoints(plist);                    
+                        }
+                        s.setPoints(plist);
                         graphics.add(new Graphic(s, cb));
                     }
                 }
                 break;
             case Polygon:
-                for (PolygonShape shape : (List<PolygonShape>)layer.getShapes()){
+                for (PolygonShape shape : (List<PolygonShape>) layer.getShapes()) {
                     PolygonZShape s = new PolygonZShape();
                     List<PointZ> plist = new ArrayList<>();
-                    for (PointD pd : shape.getPoints()){
+                    for (PointD pd : shape.getPoints()) {
                         pz = new PointZ(pd.X, pd.Y, offset);
                         plist.add(pz);
-                    }                 
+                    }
                     s.setPartNum(shape.getPartNum());
                     s.setParts(shape.getParts());
                     s.setPoints(plist);
@@ -622,14 +623,14 @@ public class GraphicFactory {
             case PolylineZ:
             case PolygonZ:
                 graphics.setFixZ(false);
-                for (Shape shape : layer.getShapes()){
+                for (Shape shape : layer.getShapes()) {
                     cb = ls.getLegendBreaks().get(shape.getLegendIndex());
                     graphics.add(new Graphic(shape, cb));
                 }
                 break;
         }
         graphics.setLegendScheme(ls);
-        
+
         return graphics;
     }
 
@@ -1156,6 +1157,42 @@ public class GraphicFactory {
                 y.getDouble(0), y.getDouble((int) y.getSize() - 1)));
         return new Graphic(ishape, new ColorBreak());
     }
+    
+    /**
+     * Create image by RGB data array
+     *
+     * @param x X data array
+     * @param y Y data array
+     * @param data RGB data array list
+     * @param offset Offset in z axis
+     * @param zdir Z direction - x, y or z
+     * @return Graphics
+     */
+    public static GraphicCollection createImage(Array x, Array y, List<Array> data, double offset,
+            String zdir) {
+        Graphic gg = createImage(x, y, data);
+        Shape shape = gg.getShape();
+        Extent extent = shape.getExtent();
+        Extent3D ex3 = new Extent3D();
+        switch(zdir.toLowerCase()){
+            case "x":
+                ex3 = new Extent3D(offset, offset, extent.minX, extent.maxX, extent.minY, extent.maxY);
+                break;
+            case "y":
+                ex3 = new Extent3D(extent.minX, extent.maxX, offset, offset, extent.minY, extent.maxY);
+                break;
+            case "z":
+                ex3 = new Extent3D(extent.minX, extent.maxX, extent.minY, extent.maxY, offset, offset);
+                break;
+        }
+        shape.setExtent(ex3);
+        GraphicCollection3D graphics = new GraphicCollection3D();
+        graphics.setFixZ(true);
+        graphics.setZDir(zdir);
+        graphics.setZValue(offset);
+        graphics.add(gg);
+        return graphics;
+    }
 
     /**
      * Create image
@@ -1284,6 +1321,43 @@ public class GraphicFactory {
                 gdata.yArray[0], gdata.yArray[gdata.yArray.length - 1]));
         return new Graphic(ishape, new ColorBreak());
     }
+    
+    /**
+     * Create image
+     *
+     * @param gdata Grid data array
+     * @param ls Legend scheme
+     * @param offset Offset of z axis
+     * @param zdir Z direction - x, y or z
+     * @return Graphics
+     */
+    public static GraphicCollection createImage(GridArray gdata, LegendScheme ls, double offset, 
+            String zdir) {
+        Graphic gg = createImage(gdata, ls);
+        Shape shape = gg.getShape();
+        Extent extent = shape.getExtent();
+        Extent3D ex3 = new Extent3D();
+        switch(zdir.toLowerCase()){
+            case "x":
+                ex3 = new Extent3D(offset, offset, extent.minX, extent.maxX, extent.minY, extent.maxY);
+                break;
+            case "y":
+                ex3 = new Extent3D(extent.minX, extent.maxX, offset, offset, extent.minY, extent.maxY);
+                break;
+            case "z":
+                ex3 = new Extent3D(extent.minX, extent.maxX, extent.minY, extent.maxY, offset, offset);
+                break;
+        }
+        shape.setExtent(ex3);
+        GraphicCollection3D graphics = new GraphicCollection3D();
+        graphics.setFixZ(true);
+        graphics.setZDir(zdir);
+        graphics.setZValue(offset);
+        graphics.add(gg);
+        graphics.setLegendScheme(ls);
+        graphics.setSingleLegend(false);
+        return graphics;
+    }
 
     /**
      * Create contour lines
@@ -1370,11 +1444,13 @@ public class GraphicFactory {
      *
      * @param gridData Grid data
      * @param offset Offset in z direction
+     * @param zdir Z direction - x, y or z
      * @param ls Legend scheme
      * @param isSmooth Is smooth or not
      * @return Contour lines
      */
-    public static GraphicCollection createContourLines(GridData gridData, double offset, LegendScheme ls, boolean isSmooth) {
+    public static GraphicCollection createContourLines(GridData gridData, double offset,
+            String zdir, LegendScheme ls, boolean isSmooth) {
         ls = ls.convertTo(ShapeTypes.Polyline);
         Object[] ccs = LegendManage.getContoursAndColors(ls);
         double[] cValues = (double[]) ccs[0];
@@ -1398,6 +1474,8 @@ public class GraphicFactory {
         GraphicCollection3D graphics = new GraphicCollection3D();
         graphics.setFixZ(true);
         graphics.setZValue(offset);
+        zdir = zdir.toLowerCase();
+        graphics.setZDir(zdir);
         for (int i = 0; i < ContourLines.size(); i++) {
             aLine = ContourLines.get(i);
             v = aLine.Value;
@@ -1405,12 +1483,34 @@ public class GraphicFactory {
             PolylineZShape aPolyline = new PolylineZShape();
             PointZ aPoint;
             List<PointZ> pList = new ArrayList<>();
-            for (int j = 0; j < aLine.PointList.size(); j++) {
-                aPoint = new PointZ();
-                aPoint.X = aLine.PointList.get(j).X;
-                aPoint.Y = aLine.PointList.get(j).Y;
-                aPoint.Z = offset;
-                pList.add(aPoint);
+            switch (zdir) {
+                case "x":
+                    for (int j = 0; j < aLine.PointList.size(); j++) {
+                        aPoint = new PointZ();
+                        aPoint.X = offset;
+                        aPoint.Y = aLine.PointList.get(j).X;
+                        aPoint.Z = aLine.PointList.get(j).Y;
+                        pList.add(aPoint);
+                    }
+                    break;
+                case "y":
+                    for (int j = 0; j < aLine.PointList.size(); j++) {
+                        aPoint = new PointZ();
+                        aPoint.Y = offset;
+                        aPoint.X = aLine.PointList.get(j).X;
+                        aPoint.Z = aLine.PointList.get(j).Y;
+                        pList.add(aPoint);
+                    }
+                    break;
+                case "z":
+                    for (int j = 0; j < aLine.PointList.size(); j++) {
+                        aPoint = new PointZ();
+                        aPoint.X = aLine.PointList.get(j).X;
+                        aPoint.Y = aLine.PointList.get(j).Y;
+                        aPoint.Z = offset;
+                        pList.add(aPoint);
+                    }
+                    break;
             }
             aPolyline.setPoints(pList);
             aPolyline.setValue(v);
@@ -1547,17 +1647,19 @@ public class GraphicFactory {
 
         return graphics;
     }
-    
+
     /**
      * Create 3D contour polygons
      *
      * @param gridData Grid data
      * @param offset Offset of z axis
+     * @param zdir Z direction - x, y or z
      * @param ls Legend scheme
      * @param isSmooth Is smooth or not
      * @return Contour polygons
      */
-    public static GraphicCollection createContourPolygons(GridData gridData, double offset, LegendScheme ls, boolean isSmooth) {
+    public static GraphicCollection createContourPolygons(GridData gridData, double offset,
+            String zdir, LegendScheme ls, boolean isSmooth) {
         ls = ls.convertTo(ShapeTypes.Polygon);
         Object[] ccs = LegendManage.getContoursAndColors(ls);
         double[] cValues = (double[]) ccs[0];
@@ -1585,18 +1687,43 @@ public class GraphicFactory {
         GraphicCollection3D graphics = new GraphicCollection3D();
         graphics.setFixZ(true);
         graphics.setZValue(offset);
+        zdir = zdir.toLowerCase();
+        graphics.setZDir(zdir);
         for (int i = 0; i < contourPolygons.size(); i++) {
             wContour.Global.Polygon poly = contourPolygons.get(i);
             v = poly.LowValue;
             PointZ aPoint;
             List<PointZ> pList = new ArrayList<>();
-            for (wContour.Global.PointD pointList : poly.OutLine.PointList) {
-                aPoint = new PointZ();
-                aPoint.X = pointList.X;
-                aPoint.Y = pointList.Y;
-                aPoint.Z = offset;
-                pList.add(aPoint);
+            switch (zdir) {
+                case "x":
+                    for (wContour.Global.PointD pointList : poly.OutLine.PointList) {
+                        aPoint = new PointZ();
+                        aPoint.Y = pointList.X;
+                        aPoint.Z = pointList.Y;
+                        aPoint.X = offset;
+                        pList.add(aPoint);
+                    }
+                    break;
+                case "y":
+                    for (wContour.Global.PointD pointList : poly.OutLine.PointList) {
+                        aPoint = new PointZ();
+                        aPoint.X = pointList.X;
+                        aPoint.Z = pointList.Y;
+                        aPoint.Y = offset;
+                        pList.add(aPoint);
+                    }
+                    break;
+                case "z":
+                    for (wContour.Global.PointD pointList : poly.OutLine.PointList) {
+                        aPoint = new PointZ();
+                        aPoint.X = pointList.X;
+                        aPoint.Y = pointList.Y;
+                        aPoint.Z = offset;
+                        pList.add(aPoint);
+                    }
+                    break;
             }
+
             if (!GeoComputation.isClockwise(pList)) {
                 Collections.reverse(pList);
             }
@@ -1605,16 +1732,46 @@ public class GraphicFactory {
             aPolygonShape.setExtent(MIMath.getPointsExtent(pList));
             aPolygonShape.lowValue = v;
             if (poly.HasHoles()) {
-                for (PolyLine holeLine : poly.HoleLines) {
-                    pList = new ArrayList<>();
-                    for (wContour.Global.PointD pointList : holeLine.PointList) {
-                        aPoint = new PointZ();
-                        aPoint.X = pointList.X;
-                        aPoint.Y = pointList.Y;
-                        aPoint.Z = offset;
-                        pList.add(aPoint);
-                    }
-                    aPolygonShape.addHole(pList, 0);
+                switch (zdir) {
+                    case "x":
+                        for (PolyLine holeLine : poly.HoleLines) {
+                            pList = new ArrayList<>();
+                            for (wContour.Global.PointD pointList : holeLine.PointList) {
+                                aPoint = new PointZ();
+                                aPoint.Y = pointList.X;
+                                aPoint.Z = pointList.Y;
+                                aPoint.X = offset;
+                                pList.add(aPoint);
+                            }
+                            aPolygonShape.addHole(pList, 0);
+                        }
+                        break;
+                    case "y":
+                        for (PolyLine holeLine : poly.HoleLines) {
+                            pList = new ArrayList<>();
+                            for (wContour.Global.PointD pointList : holeLine.PointList) {
+                                aPoint = new PointZ();
+                                aPoint.X = pointList.X;
+                                aPoint.Z = pointList.Y;
+                                aPoint.Y = offset;
+                                pList.add(aPoint);
+                            }
+                            aPolygonShape.addHole(pList, 0);
+                        }
+                        break;
+                    case "z":
+                        for (PolyLine holeLine : poly.HoleLines) {
+                            pList = new ArrayList<>();
+                            for (wContour.Global.PointD pointList : holeLine.PointList) {
+                                aPoint = new PointZ();
+                                aPoint.X = pointList.X;
+                                aPoint.Y = pointList.Y;
+                                aPoint.Z = offset;
+                                pList.add(aPoint);
+                            }
+                            aPolygonShape.addHole(pList, 0);
+                        }
+                        break;
                 }
             }
             int valueIdx = Arrays.binarySearch(cValues, v);
@@ -1634,7 +1791,7 @@ public class GraphicFactory {
             }
 
             v = aPolygonShape.lowValue;
-            cbb = ls.getLegenBreak(v);            
+            cbb = ls.getLegenBreak(v);
             graphics.add(new Graphic(aPolygonShape, cbb));
         }
         graphics.setSingleLegend(false);
