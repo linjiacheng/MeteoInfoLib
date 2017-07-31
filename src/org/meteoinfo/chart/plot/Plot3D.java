@@ -677,7 +677,7 @@ public class Plot3D extends Plot {
             Graphic gg = graphic.getGraphicN(i);
             if (gg.getShape().getShapeType() == ShapeTypes.Image){
                 g.setClip(oldRegion);
-                this.drawImage(g, gg, zdir, (float)((GraphicCollection3D) graphic).getZValue(), points);
+                this.drawImage(g, gg, zdir, (float)((GraphicCollection3D) graphic).getZValue());
             } else {
                 this.drawGrahic(g, gg);
             }
@@ -1040,13 +1040,11 @@ public class Plot3D extends Plot {
         return rPoints;
     }
     
-    private void drawImage(Graphics2D g, Graphic igraphic, String zdir, float zValue,
-            List<Point> border) {
+    private void drawImage(Graphics2D g, Graphic igraphic, String zdir, float zValue) {
         ImageShape ishape = (ImageShape) igraphic.getShape();
         BufferedImage image = ishape.getImage();
         Extent3D ext = (Extent3D)ishape.getExtent();
         Point p1, p2, p3, p4;
-        //AffineTransform oldMatrix = g.getTransform();
         AffineTransform transform = new AffineTransform();
         transform.setToIdentity();
         float minx, miny, maxx, maxy, minz, maxz;
