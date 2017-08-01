@@ -201,8 +201,10 @@ public class PolylineShape extends Shape implements Cloneable {
     }
 
     public void setPolylines(List<? extends Polyline> polylines) {
-        _polylines = polylines;
-        updatePartsPoints();
+        if (!polylines.isEmpty()){
+            _polylines = polylines;
+            updatePartsPoints();
+        }
     }
 
     /**
