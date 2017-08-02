@@ -63,7 +63,34 @@ public abstract class Plot {
     public int rowIndex = 0;
 
     private boolean outerPosActive = true;
-    private boolean sameShrink = false;        
+    private boolean sameShrink = false;      
+    
+    //units - normalized or pixels
+    protected AxesUnits units = AxesUnits.NORMALIZED;
+    
+    /**
+     * Get units
+     * @return Units
+     */
+    public AxesUnits getUnits(){
+        return this.units;
+    }
+    
+    /**
+     * Set units
+     * @param value Units
+     */
+    public void setUnits(AxesUnits value){
+        this.units = value;
+    }
+    
+    /**
+     * Set units
+     * @param value Units
+     */
+    public void setUnits(String value){
+        this.units = AxesUnits.valueOf(value.toUpperCase());
+    }
     
     /**
      * Get if Outer position active
@@ -97,7 +124,7 @@ public abstract class Plot {
         this.sameShrink = value;
     }    
     
-    private Rectangle2D position = new Rectangle2D.Double(0.13, 0.11, 0.775, 0.815);
+    protected Rectangle2D position = new Rectangle2D.Double(0.13, 0.11, 0.775, 0.815);
     
     /**
      * Get position
@@ -178,7 +205,7 @@ public abstract class Plot {
         this.tightInset = value;
     }
     
-    private Rectangle2D outerPosition = new Rectangle2D.Double(0, 0, 1, 1);
+    protected Rectangle2D outerPosition = new Rectangle2D.Double(0, 0, 1, 1);
     
     /**
      * Get outer position

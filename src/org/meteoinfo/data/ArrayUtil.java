@@ -1548,6 +1548,58 @@ public class ArrayUtil {
 
         return layer;
     }
+    
+    /**
+     * Create mesh polygon layer
+     *
+     * @param x_s scatter X array
+     * @param y_s scatter Y array
+     * @param a scatter value array
+     * @param ls Legend scheme
+     * @return Mesh polygon layer
+     */
+    public static VectorLayer meshLayer(Array x_s, Array y_s, Array a, LegendScheme ls) {
+        VectorLayer layer = new VectorLayer(ShapeTypes.Polygon);
+        String fieldName = "Data";
+        Field aDC = new Field(fieldName, DataTypes.Double);
+        layer.editAddField(aDC);
+
+        int[] shape = x_s.getShape();
+        int colNum = shape[1];
+        int rowNum = shape[0];
+        double x1, x2, x3, x4;
+        for (int i = 0; i < rowNum - 1; i++) {
+            for (int j = 0; j < colNum - 1; j++) {
+                x1 = x_s.getDouble(i * colNum + j);
+                x2 = x_s.getDouble(i * colNum + j + 1);
+                x3 = x_s.getDouble((i + 1) * colNum + j);
+                x4 = x_s.getDouble((i + 1) * colNum + j + 1);
+                PolygonShape ps = new PolygonShape();
+                List<PointD> points = new ArrayList<>();
+                points.add(new PointD(x1, y_s.getDouble(i * colNum + j)));
+                points.add(new PointD(x3, y_s.getDouble((i + 1) * colNum + j)));
+                points.add(new PointD(x4, y_s.getDouble((i + 1) * colNum + j + 1)));
+                points.add(new PointD(x2, y_s.getDouble(i * colNum + j + 1)));
+                points.add((PointD) points.get(0).clone());
+                ps.setPoints(points);
+                ps.lowValue = a.getDouble(i * colNum + j);
+                ps.highValue = ps.lowValue;
+                int shapeNum = layer.getShapeNum();
+                try {
+                    if (layer.editInsertShape(ps, shapeNum)) {
+                        layer.editCellValue(fieldName, shapeNum, ps.lowValue);
+                    }
+                } catch (Exception ex) {
+
+                }
+            }
+        }
+        layer.setLayerName("Mesh_Layer");
+        ls.setFieldName(fieldName);
+        layer.setLegendScheme(ls.convertTo(ShapeTypes.Polygon));
+
+        return layer;
+    }
 
     /**
      * Smooth with 5 points
@@ -1874,6 +1926,36 @@ public class ArrayUtil {
 
         return rdata;
     }
+    
+    /**
+     * Extend the grid to half cell, so the grid points are the centers of the cells
+     * @param x Input x coordinate
+     * @param y Input y coordinate
+     * @return Result x and y coordinates
+     */
+    public static Array[] extendHalfCell(Array x, Array y){
+        double dX = x.getDouble(1) - x.getDouble(0);
+        double dY = y.getDouble(1) - y.getDouble(0);
+        int nx = (int)x.getSize() + 1;
+        int ny = (int)y.getSize() + 1;
+        Array rx = Array.factory(DataType.DOUBLE, new int[]{nx});
+        Array ry = Array.factory(DataType.DOUBLE, new int[]{ny});
+        for (int i = 0; i < rx.getSize(); i++){
+            if (i == rx.getSize() - 1)
+                rx.setDouble(i, x.getDouble(i - 1) + dX * 0.5);
+            else
+                rx.setDouble(i, x.getDouble(i) - dX * 0.5);            
+        }
+        
+        for (int i = 0; i < ry.getSize(); i++){
+            if (i == ry.getSize() - 1)
+                ry.setDouble(i, y.getDouble(i - 1) + dY * 0.5);
+            else
+                ry.setDouble(i, y.getDouble(i) - dY * 0.5);            
+        }
+        
+        return new Array[]{rx, ry};
+    }
 
     /**
      * Interpolate with inside method - The grid cell value is the average value
@@ -1921,6 +2003,81 @@ public class ArrayUtil {
 
             int j = (int) ((x - X.get(0).doubleValue()) / dX);
             int i = (int) ((y - Y.get(0).doubleValue()) / dY);
+            pNums[i][j] += 1;
+            r.setDouble(i * colNum + j, r.getDouble(i * colNum + j) + v);
+        }
+
+        for (int i = 0; i < rowNum; i++) {
+            for (int j = 0; j < colNum; j++) {
+                if (pNums[i][j] == 0) {
+                    r.setDouble(i * colNum + j, Double.NaN);
+                } else {
+                    r.setDouble(i * colNum + j, r.getDouble(i * colNum + j) / pNums[i][j]);
+                }
+            }
+        }
+
+        return r;
+    }
+    
+    /**
+     * Interpolate with inside method - The grid cell value is the average value
+     * of the inside points or fill value if no inside point.
+     *
+     * @param x_s scatter X array
+     * @param y_s scatter Y array
+     * @param a scatter value array
+     * @param X x coordinate
+     * @param Y y coordinate
+     * @param center If the grid point is center or border
+     * @return grid data
+     */
+    public static Array interpolation_Inside(Array x_s, Array y_s, Array a, Array X, Array Y, boolean center) {
+        int rowNum, colNum, pNum;
+        
+        if (center){
+            Array[] xy = extendHalfCell(X, Y);
+            X = xy[0];
+            Y = xy[1];
+        }
+        
+        colNum = (int)X.getSize();
+        rowNum = (int)Y.getSize();
+        if (center){
+            colNum -= 1;
+            rowNum -= 1;
+        }
+        pNum = (int)x_s.getSize();
+        Array r = Array.factory(DataType.DOUBLE, new int[]{rowNum, colNum});
+        double dX = X.getDouble(1) - X.getDouble(0);
+        double dY = Y.getDouble(1) - Y.getDouble(0);
+        int[][] pNums = new int[rowNum][colNum];
+        double x, y, v;                
+
+        for (int i = 0; i < rowNum; i++) {
+            for (int j = 0; j < colNum; j++) {
+                pNums[i][j] = 0;
+                r.setDouble(i * colNum + j, 0.0);
+            }
+        }
+
+        for (int p = 0; p < pNum; p++) {
+            v = a.getDouble(p);
+            if (Double.isNaN(v)) {
+                continue;
+            }
+
+            x = x_s.getDouble(p);
+            y = y_s.getDouble(p);
+            if (x < X.getDouble(0) || x > X.getDouble(colNum - 1)) {
+                continue;
+            }
+            if (y < Y.getDouble(0) || y > Y.getDouble(rowNum - 1)) {
+                continue;
+            }
+
+            int j = (int) ((x - X.getDouble(0)) / dX);
+            int i = (int) ((y - Y.getDouble(0)) / dY);
             pNums[i][j] += 1;
             r.setDouble(i * colNum + j, r.getDouble(i * colNum + j) + v);
         }
