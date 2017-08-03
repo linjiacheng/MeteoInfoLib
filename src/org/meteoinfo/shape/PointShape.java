@@ -30,7 +30,7 @@ import org.meteoinfo.jts.geom.GeometryFactory;
 public class PointShape extends Shape implements Cloneable{
     // <editor-fold desc="Variables">
 
-    private PointD _point = new PointD();
+    protected PointD point = new PointD();
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -64,7 +64,7 @@ public class PointShape extends Shape implements Cloneable{
      */
     @Override
     public Geometry toGeometry(GeometryFactory factory){
-        Coordinate c = new Coordinate(_point.X, _point.Y);        
+        Coordinate c = new Coordinate(point.X, point.Y);        
         return factory.createPoint(c);
     };
 
@@ -74,7 +74,7 @@ public class PointShape extends Shape implements Cloneable{
      * @return point
      */
     public PointD getPoint() {
-        return _point;
+        return point;
     }
 
     /**
@@ -83,12 +83,12 @@ public class PointShape extends Shape implements Cloneable{
      * @param aPoint point
      */
     public void setPoint(PointD aPoint) {
-        _point = aPoint;
+        point = aPoint;
         Extent aExtent = new Extent();
-        aExtent.minX = _point.X;
-        aExtent.maxX = _point.X;
-        aExtent.minY = _point.Y;
-        aExtent.maxY = _point.Y;
+        aExtent.minX = point.X;
+        aExtent.maxX = point.X;
+        aExtent.minY = point.Y;
+        aExtent.maxY = point.Y;
         this.setExtent(aExtent);
     }
 
@@ -103,7 +103,7 @@ public class PointShape extends Shape implements Cloneable{
     @Override
     public List<PointD> getPoints() {
         List<PointD> pList = new ArrayList<>();
-        pList.add(_point);
+        pList.add(point);
 
         return pList;
     }
@@ -137,7 +137,7 @@ public class PointShape extends Shape implements Cloneable{
     public Object clone() {
         PointShape ps = new PointShape();
         ps.setValue(this.getValue());
-        ps.setPoint((PointD)_point.clone());
+        ps.setPoint((PointD)point.clone());
         ps.setVisible(this.isVisible());
         ps.setSelected(this.isSelected());
         ps.setLegendIndex(this.getLegendIndex());

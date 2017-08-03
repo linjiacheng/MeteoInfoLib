@@ -13,18 +13,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.meteoinfo.drawing.Draw;
+import org.meteoinfo.shape.PointShape;
 
 /**
  *
  * @author yaqiang
  */
-public class ChartText {
+public class ChartText extends PointShape {
     // <editor-fold desc="Variables">
     private Font font;
     private List<String> text;
     private Color color;
-    private float x;
-    private float y;
+    //private float x;
+    //private float y;
     private int lineSpace;
     private CoordinateType coordinates;
     private Color background;
@@ -38,7 +39,7 @@ public class ChartText {
     /**
      * Constructor
      */
-    public ChartText(){
+    public ChartText() {
         font = new Font("Arial", Font.BOLD, 14);
         color = Color.black;
         lineSpace = 3;
@@ -166,32 +167,32 @@ public class ChartText {
      * Get x
      * @return X
      */
-    public float getX(){
-        return this.x;
+    public double getX(){
+        return this.point.X;
     }
     
     /**
      * Set x
      * @param value X
      */
-    public void setX(float value){
-        this.x = value;
+    public void setX(double value){
+        this.point.X = value;
     }
     
     /**
      * Get y
      * @return Y
      */
-    public float getY(){
-        return this.y;
+    public double getY(){
+        return this.point.Y;
     }
     
     /**
      * Set y
      * @param value Y
      */
-    public void setY(float value) {
-        this.y = value;
+    public void setY(double value) {
+        this.point.Y = value;
     }
     
     /**

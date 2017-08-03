@@ -23,11 +23,11 @@ import java.util.List;
  *
  * @author yaqiang
  */
-public class PolylineZ {
+public class PolylineZ extends Polyline{
     // <editor-fold desc="Variables">
 
-    private Extent _extent;
-    private List<PointZ> _pointList;
+    //private Extent _extent;
+    //private List<PointZ> _pointList;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -35,64 +35,65 @@ public class PolylineZ {
      * Constructor
      */
     public PolylineZ() {
-        _extent = new Extent();
-        _pointList = new ArrayList<>();
+        super();
+        //_extent = new Extent();
+        //_pointList = new ArrayList<>();
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
 
-    /**
-     * Get points
-     *
-     * @return Point list
-     */
-    public List<PointZ> getPoints() {
-        return _pointList;
-    }
+//    /**
+//     * Get points
+//     *
+//     * @return Point list
+//     */
+//    public List<PointZ> getPoints() {
+//        return _pointList;
+//    }
+//
+//    /**
+//     * Set points
+//     *
+//     * @param points Point list
+//     */
+//    public void setPoints(List<PointZ> points) {
+//        _pointList = points;
+//        _extent = MIMath.getPointsExtent((getPointDList()));
+//    }
+//
+//    /**
+//     * Get extent
+//     *
+//     * @return Extent
+//     */
+//    public Extent getExtent() {
+//        return _extent;
+//    }
+//
+//    // </editor-fold>
+//    // <editor-fold desc="Methods">
+//    private List<PointD> getPointDList() {
+//        List<PointD> pList = new ArrayList<>();
+//        for (PointZ aP : _pointList) {
+//            pList.add(aP.toPointD());
+//        }
+//
+//        return pList;
+//    }
 
-    /**
-     * Set points
-     *
-     * @param points Point list
-     */
-    public void setPoints(List<PointZ> points) {
-        _pointList = points;
-        _extent = MIMath.getPointsExtent((getPointDList()));
-    }
-
-    /**
-     * Get extent
-     *
-     * @return Extent
-     */
-    public Extent getExtent() {
-        return _extent;
-    }
-
-    // </editor-fold>
-    // <editor-fold desc="Methods">
-    private List<PointD> getPointDList() {
-        List<PointD> pList = new ArrayList<>();
-        for (PointZ aP : _pointList) {
-            pList.add(aP.toPointD());
-        }
-
-        return pList;
-    }
-
-    /**
-     * Determine if the polyline is closed
-     *
-     * @return Boolean
-     */
-    public boolean isClosed() {
-        PointZ sPoint = _pointList.get(0);
-        PointZ ePoint = _pointList.get(_pointList.size() - 1);
-        if (MIMath.doubleEquals(sPoint.X, ePoint.X) && MIMath.doubleEquals(sPoint.Y, ePoint.Y)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+//    /**
+//     * Determine if the polyline is closed
+//     *
+//     * @return Boolean
+//     */
+//    public boolean isClosed() {
+//        PointZ sPoint = _pointList.get(0);
+//        PointZ ePoint = _pointList.get(_pointList.size() - 1);
+//        if (MIMath.doubleEquals(sPoint.X, ePoint.X) && MIMath.doubleEquals(sPoint.Y, ePoint.Y)) {
+//            return true;
+//        } else {
+//            return false;
+//        }
+//    }
     // </editor-fold>
 }

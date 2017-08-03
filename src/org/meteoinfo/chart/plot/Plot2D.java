@@ -190,10 +190,16 @@ public class Plot2D extends AbstractPlot2D {
         for (int m = 0; m < this.graphics.getNumGraphics(); m++) {
             Graphic graphic = this.graphics.get(m);
             ColorBreak cb = graphic.getLegend();
-            if (graphic.getGraphicN(0).getShape().getShapeType() == ShapeTypes.Bar) {
-                this.drawBars(g, (GraphicCollection) graphic, barIdx, area);
-                barIdx += 1;
+            ShapeTypes shapeType = graphic.getGraphicN(0).getShape().getShapeType();
+            switch(shapeType){
+                case Bar:
+                    this.drawBars(g, (GraphicCollection) graphic, barIdx, area);
+                    barIdx += 1;
+                    break;
             }
+
+            Font labelFont = ((GraphicCollection)graphic).getLabelSet().getLabelFont();
+            Color labelColor = ((GraphicCollection)graphic).getLabelSet().getLabelColor();
             for (int i = 0; i < graphic.getNumGraphics(); i++) {
                 Graphic gg = graphic.getGraphicN(i);
                 if (!graphic.isSingleLegend()) {
@@ -231,7 +237,7 @@ public class Plot2D extends AbstractPlot2D {
                         this.drawRectangle(g, (RectangleShape) shape, (PolygonBreak) cb, false, area);
                         break;
                     case ARC:
-                        this.drawArc(g, (ArcShape) shape, (PolygonBreak) cb, area, 5);
+                        this.drawArc(g, (ArcShape) shape, (PolygonBreak) cb, area, 5, labelFont, labelColor);
                         break;
                     case WindBarb:
                         this.drawWindBarb(g, (WindBarb) shape, (PointBreak) cb, area);
@@ -666,23 +672,81 @@ public class Plot2D extends AbstractPlot2D {
             g.draw(rshape);
         }
     }
-
+    
     private void drawArc(Graphics2D g, ArcShape aShape, PolygonBreak aPGB,
-            Rectangle2D area, float dis) {
+            Rectangle2D area, float dist, float ex, Font labelFont, Color labelColor) {
         float startAngle = aShape.getStartAngle();
         float sweepAngle = aShape.getSweepAngle();
         float angle = startAngle + sweepAngle / 2;
-        double ex = 10;
-        Rectangle2D rect = new Rectangle2D.Double(area.getX(), area.getY(), area.getWidth() - ex, 
-            area.getHeight() - ex);
+        float space = 20;
+        Rectangle2D rect = new Rectangle2D.Double(area.getX() + ex + space, area.getY() + ex + space, area.getWidth() - ex - space,
+                area.getHeight() - ex - space);
         double dx = 0, dy = 0;
-        if (aShape.getExplode() > 0){
-            dx = ex * Math.cos(angle * Math.PI / 180);
-            dy = ex * Math.sin(angle * Math.PI / 180);
+        if (aShape.getExplode() > 0) {
+            dx = ex * Math.cos((360 - angle) * Math.PI / 180);
+            dy = ex * Math.sin((360 - angle) * Math.PI / 180);
             rect.setRect(rect.getX() + dx, rect.getY() + dy, rect.getWidth(), rect.getHeight());
         }
-        Draw.drawPie(new PointF((float)dx, (float)dy),
-                (float) rect.getWidth(), (float) rect.getHeight(), startAngle, sweepAngle, aPGB, g);
+        float sx = (float) (rect.getX() - area.getX());
+        float sy = (float) (rect.getY() - area.getY());
+        Draw.drawPie(new PointF(sx, sy), (float) rect.getWidth(), (float) rect.getHeight(), 
+                startAngle, sweepAngle, aPGB, g);
+
+        float x, y, w, h;
+        PointF sPoint = new PointF((float) (rect.getWidth() * 0.5 + sx), (float) (rect.getHeight() * 0.5 + sy));
+        String label = aPGB.getCaption();
+        if (angle > 360) {
+            angle = angle - 360;
+        }
+        float r = (float) (rect.getWidth() * 0.5) + dist;
+        PointF lPoint = Draw.getPieLabelPoint(sPoint, r, angle);
+        x = lPoint.X;
+        y = lPoint.Y;
+        Dimension dim = Draw.getStringDimension(label, g);
+        h = dim.height;
+        w = dim.width;
+        if ((angle >= 0 && angle < 45)) {
+            //x = x + dis;
+            y = y - h;
+        } else if (angle >= 45 && angle < 90) {
+            //y = y - dis;
+        } else if (angle >= 90 && angle < 135) {
+            x = x - w;
+            //y = y - dis;
+        } else if (angle >= 135 && angle < 225) {
+            x = x - w - 3;
+            y = y + h / 2;
+        } else if (angle >= 225 && angle < 270) {
+            x = x - w / 2;
+            y = y + h;
+        } else if (angle >= 270 && angle < 315) {
+            //x = x + dis;
+            y = y + h;
+        } else {
+            //x = x + dis;
+            y = y + h / 2;
+        }
+        g.setFont(labelFont);
+        g.setColor(labelColor);
+        //g.drawOval((int)(x - 3), (int)(y - 3), 6, 6);
+        g.drawString(label, x, y);
+    }
+
+    private void drawArc(Graphics2D g, ArcShape aShape, PolygonBreak aPGB,
+            Rectangle2D area, float dis, Font labelFont, Color labelColor) {
+        float startAngle = aShape.getStartAngle();
+        float sweepAngle = aShape.getSweepAngle();
+        float angle = startAngle + sweepAngle / 2;
+        Extent extent = aShape.getExtent();
+        double[] sXY;
+        sXY = projToScreen(extent.minX, extent.minY + extent.getHeight(), area);
+        double x = sXY[0];
+        double y = sXY[1];
+        double width = this.projXLength(extent.getWidth(), area);
+        double height = this.projYLength(extent.getHeight(), area);
+        
+        Draw.drawPie(new PointF((float)x, (float)y),
+                (float) width, (float) height, startAngle, sweepAngle, aPGB, g);
         
         //Draw label
         Rectangle clip = g.getClipBounds();
@@ -690,12 +754,12 @@ public class Plot2D extends AbstractPlot2D {
             g.setClip(null);
         }
         
-        float x, y, w, h;
-        PointF sPoint = new PointF((float) (rect.getWidth() * 0.5 + dx), (float) (rect.getHeight() * 0.5 + dy));
+        float w, h;
+        PointF sPoint = new PointF((float) (width * 0.5 + x), (float) (height * 0.5 + y));
         String label = aPGB.getCaption();        
         if (angle > 360)
             angle = angle - 360;
-        float r = sPoint.X + dis;
+        float r = (float)(width * 0.5) + dis;
         PointF lPoint = Draw.getPieLabelPoint(sPoint, r, angle);
         x = lPoint.X;
         y = lPoint.Y;
@@ -724,7 +788,9 @@ public class Plot2D extends AbstractPlot2D {
             y = y + h / 2;
         }
         //g.drawOval((int)(x - 3), (int)(y - 3), 6, 6);
-        g.drawString(label, x, y);
+        g.setFont(labelFont);
+        g.setColor(labelColor);
+        g.drawString(label, (float)x, (float)y);
         
         if (clip != null) {
             g.setClip(clip);

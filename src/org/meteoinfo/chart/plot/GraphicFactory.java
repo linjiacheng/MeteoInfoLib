@@ -51,6 +51,7 @@ import org.meteoinfo.shape.PolygonZShape;
 import org.meteoinfo.shape.Polyline;
 import org.meteoinfo.shape.PolylineErrorShape;
 import org.meteoinfo.shape.PolylineShape;
+import org.meteoinfo.shape.PolylineZ;
 import org.meteoinfo.shape.PolylineZShape;
 import org.meteoinfo.shape.RectangleShape;
 import org.meteoinfo.shape.Shape;
@@ -568,9 +569,11 @@ public class GraphicFactory {
      *
      * @param layer The layer
      * @param offset Offset of z axis.
+     * @param xshift X shift - to shift the grahpics in x direction, normally
+     * for map in 180 - 360 degree east
      * @return Graphics
      */
-    public static GraphicCollection createGraphicsFromLayer(VectorLayer layer, double offset) {
+    public static GraphicCollection createGraphicsFromLayer(VectorLayer layer, double offset, double xshift) {
         GraphicCollection3D graphics = new GraphicCollection3D();
         graphics.setFixZ(true);
         graphics.setZValue(offset);
@@ -583,7 +586,7 @@ public class GraphicFactory {
                 for (PointShape shape : (List<PointShape>) layer.getShapes()) {
                     PointZShape s = new PointZShape();
                     PointD pd = shape.getPoint();
-                    pz = new PointZ(pd.X, pd.Y, offset);
+                    pz = new PointZ(pd.X + xshift, pd.Y, offset);
                     s.setPoint(pz);
                     cb = ls.getLegendBreaks().get(shape.getLegendIndex());
                     graphics.add(new Graphic(s, cb));
@@ -596,7 +599,7 @@ public class GraphicFactory {
                         PolylineZShape s = new PolylineZShape();
                         List<PointZ> plist = new ArrayList<>();
                         for (PointD pd : pl.getPointList()) {
-                            pz = new PointZ(pd.X, pd.Y, offset);
+                            pz = new PointZ(pd.X + xshift, pd.Y, offset);
                             plist.add(pz);
                         }
                         s.setPoints(plist);
@@ -609,7 +612,7 @@ public class GraphicFactory {
                     PolygonZShape s = new PolygonZShape();
                     List<PointZ> plist = new ArrayList<>();
                     for (PointD pd : shape.getPoints()) {
-                        pz = new PointZ(pd.X, pd.Y, offset);
+                        pz = new PointZ(pd.X + xshift, pd.Y, offset);
                         plist.add(pz);
                     }
                     s.setPartNum(shape.getPartNum());
@@ -623,9 +626,55 @@ public class GraphicFactory {
             case PolylineZ:
             case PolygonZ:
                 graphics.setFixZ(false);
-                for (Shape shape : layer.getShapes()) {
-                    cb = ls.getLegendBreaks().get(shape.getLegendIndex());
-                    graphics.add(new Graphic(shape, cb));
+                if (xshift == 0) {
+                    for (Shape shape : layer.getShapes()) {
+
+                        cb = ls.getLegendBreaks().get(shape.getLegendIndex());
+                        graphics.add(new Graphic(shape, cb));
+                    }
+                } else {
+                    switch (shapeType) {
+                        case PointZ:
+                            for (PointZShape shape : (List<PointZShape>) layer.getShapes()) {
+                                PointZShape s = new PointZShape();
+                                PointZ pd = (PointZ) shape.getPoint();
+                                pz = new PointZ(pd.X + xshift, pd.Y, pd.Z, pd.M);
+                                s.setPoint(pz);
+                                cb = ls.getLegendBreaks().get(shape.getLegendIndex());
+                                graphics.add(new Graphic(s, cb));
+                            }
+                            break;
+                        case PolylineZ:
+                            for (PolylineZShape shape : (List<PolylineZShape>) layer.getShapes()) {
+                                cb = ls.getLegendBreaks().get(shape.getLegendIndex());
+                                for (PolylineZ pl : (List<PolylineZ>) shape.getPolylines()) {
+                                    PolylineZShape s = new PolylineZShape();
+                                    List<PointZ> plist = new ArrayList<>();
+                                    for (PointZ pd : (List<PointZ>) pl.getPointList()) {
+                                        pz = new PointZ(pd.X + xshift, pd.Y, pd.Z, pd.M);
+                                        plist.add(pz);
+                                    }
+                                    s.setPoints(plist);
+                                    graphics.add(new Graphic(s, cb));
+                                }
+                            }
+                            break;
+                        case PolygonZ:
+                            for (PolygonZShape shape : (List<PolygonZShape>) layer.getShapes()) {
+                                PolygonZShape s = new PolygonZShape();
+                                List<PointZ> plist = new ArrayList<>();
+                                for (PointZ pd : (List<PointZ>)shape.getPoints()) {
+                                    pz = new PointZ(pd.X + xshift, pd.Y, pd.Z, pd.M);
+                                    plist.add(pz);
+                                }
+                                s.setPartNum(shape.getPartNum());
+                                s.setParts(shape.getParts());
+                                s.setPoints(plist);
+                                cb = ls.getLegendBreaks().get(shape.getLegendIndex());
+                                graphics.add(new Graphic(s, cb));
+                            }
+                            break;
+                    }
                 }
                 break;
         }
@@ -1157,7 +1206,7 @@ public class GraphicFactory {
                 y.getDouble(0), y.getDouble((int) y.getSize() - 1)));
         return new Graphic(ishape, new ColorBreak());
     }
-    
+
     /**
      * Create image by RGB data array
      *
@@ -1174,7 +1223,7 @@ public class GraphicFactory {
         Shape shape = gg.getShape();
         Extent extent = shape.getExtent();
         Extent3D ex3 = new Extent3D();
-        switch(zdir.toLowerCase()){
+        switch (zdir.toLowerCase()) {
             case "x":
                 ex3 = new Extent3D(offset, offset, extent.minX, extent.maxX, extent.minY, extent.maxY);
                 break;
@@ -1321,7 +1370,7 @@ public class GraphicFactory {
                 gdata.yArray[0], gdata.yArray[gdata.yArray.length - 1]));
         return new Graphic(ishape, new ColorBreak());
     }
-    
+
     /**
      * Create image
      *
@@ -1331,13 +1380,13 @@ public class GraphicFactory {
      * @param zdir Z direction - x, y or z
      * @return Graphics
      */
-    public static GraphicCollection createImage(GridArray gdata, LegendScheme ls, double offset, 
+    public static GraphicCollection createImage(GridArray gdata, LegendScheme ls, double offset,
             String zdir) {
         Graphic gg = createImage(gdata, ls);
         Shape shape = gg.getShape();
         Extent extent = shape.getExtent();
         Extent3D ex3 = new Extent3D();
-        switch(zdir.toLowerCase()){
+        switch (zdir.toLowerCase()) {
             case "x":
                 ex3 = new Extent3D(offset, offset, extent.minX, extent.maxX, extent.minY, extent.maxY);
                 break;
@@ -2032,9 +2081,11 @@ public class GraphicFactory {
         double sum = ArrayMath.sum(xdata);
         double v;
         int n = (int) xdata.getSize();
-        float sweepAngle;
+        float sweepAngle, angle;
         NumberFormat nf = NumberFormat.getPercentInstance();
         // nf.setMinimumFractionDigits(2);
+        float ex;
+        double dx, dy, r = 1;
         for (int i = 0; i < n; i++) {
             v = xdata.getDouble(i);
             if (sum > 1) {
@@ -2044,21 +2095,29 @@ public class GraphicFactory {
             ArcShape aShape = new ArcShape();
             aShape.setStartAngle(startAngle);
             aShape.setSweepAngle(sweepAngle);
-            List<PointD> points = new ArrayList<>();
-            points.add(new PointD(0, 0));
-            points.add(new PointD(0, 1));
-            points.add(new PointD(1, 1));
-            points.add(new PointD(1, 0));
-            points.add(new PointD(0, 0));
-            aShape.setPoints(points);
-            if (explode != null) {
-                aShape.setExplode(explode.get(i).floatValue());
+            angle = startAngle + sweepAngle / 2;
+            if (explode == null){
+                dx = 0;
+                dy = 0;
+            } else {
+                ex = explode.get(i).floatValue();
+                aShape.setExplode(ex);
+                dx = ex * Math.cos(angle * Math.PI / 180);
+                dy = ex * Math.sin(angle * Math.PI / 180);
             }
+            List<PointD> points = new ArrayList<>();
+            points.add(new PointD(dx, dy));
+            points.add(new PointD(dx, r + dy));
+            points.add(new PointD(r + dx, r + dy));
+            points.add(new PointD(r + dx, dy));
+            points.add(new PointD(dx, dy));
+            aShape.setPoints(points);
             PolygonBreak pgb = new PolygonBreak();
             pgb.setColor(colors.get(i));
             if (labels == null) {
                 if (autopct == null) {
-                    pgb.setCaption(nf.format(v));
+                    //pgb.setCaption(nf.format(v));
+                    pgb.setCaption("");
                 } else {
                     pgb.setCaption(String.format(autopct, v * 100));
                 }
@@ -2072,6 +2131,7 @@ public class GraphicFactory {
         gc.setSingleLegend(false);
         gc.getLabelSet().setLabelFont(labelFont);
         gc.getLabelSet().setLabelColor(labelColor);
+        gc.getExtent().maxY += r * 0.001;
 
         return gc;
     }

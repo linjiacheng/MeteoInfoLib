@@ -952,26 +952,7 @@ public abstract class AbstractPlot2D extends Plot {
             return plotArea;
         }
     }
-
-    /**
-     * Get position area
-     *
-     * @param area Whole area
-     * @return Position area
-     */
-    @Override
-    public Rectangle2D getPositionArea(Rectangle2D area) {
-        if (this.units == AxesUnits.NORMALIZED) {
-            double x = area.getWidth() * this.getPosition().getX() + area.getX();
-            double y = area.getHeight() * (1 - this.getPosition().getHeight() - this.getPosition().getY()) + area.getY();
-            double w = area.getWidth() * this.getPosition().getWidth();
-            double h = area.getHeight() * this.getPosition().getHeight();
-            return new Rectangle2D.Double(x, y, w, h);
-        } else {
-            return this.position;
-        }
-    }
-
+    
     /**
      * Get outer position area
      *
