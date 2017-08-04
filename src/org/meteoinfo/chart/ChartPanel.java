@@ -331,6 +331,36 @@ public class ChartPanel extends JPanel {
 
     // <editor-fold desc="Method">
     /**
+     * Get figure width
+     * @return Figure width
+     */
+    public int getFigureWidth(){
+        int width;
+        if (this.chartSize != null) {
+            width = this.chartSize.width;            
+        } else {
+            width = this.getWidth();
+        }
+        
+        return width;
+    }
+    
+    /**
+     * Get Figure height
+     * @return Figure height
+     */
+    public int getFigureHeight(){
+        int height;
+        if (this.chartSize != null) {
+            height = this.chartSize.height;           
+        } else {
+            height = this.getHeight();
+        }
+        
+        return height;
+    }
+    
+    /**
      * Select a plot by point
      *
      * @param x X

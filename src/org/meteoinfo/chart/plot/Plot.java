@@ -359,7 +359,7 @@ public abstract class Plot {
             return new Rectangle2D.Double(x, y, w, h);
         } else {
             double x = this.position.getX() + area.getX();
-            double y = area.getHeight() - this.position.getY();
+            double y = area.getHeight() - this.position.getY() - this.position.getHeight();
             double w = this.position.getWidth();
             double h = this.position.getHeight();
             return new Rectangle2D.Double(x, y, w, h);

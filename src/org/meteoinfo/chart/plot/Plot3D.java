@@ -814,6 +814,18 @@ public class Plot3D extends Plot {
             }
         }
     }
+    
+    /**
+     * Project 3D point
+     * @param x X
+     * @param y Y 
+     * @param z Z
+     * @return Projected 2D point
+     */
+    public Point project(float x, float y, float z){
+        return this.projector.project((x - xmin) * xfactor - 10, 
+                (y - ymin) * yfactor - 10, (z - zmin) * zfactor - 10);
+    }
 
     private void drawPoint(Graphics2D g, Graphic graphic) {
         if (extent.intersects(graphic.getExtent())) {

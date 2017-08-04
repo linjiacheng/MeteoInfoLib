@@ -432,7 +432,8 @@ public class Chart {
         }
 
         //Draw plot
-        plotArea = this.getPlotArea(g, area);
+        //plotArea = this.getPlotArea(g, area);
+        plotArea = area;
         if (plotArea.getWidth() < 20 || plotArea.getHeight() < 20) {
             g.setTransform(oldMatrix);
             g.setClip(oldRegion);

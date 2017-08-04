@@ -2131,7 +2131,8 @@ public class GraphicFactory {
         gc.setSingleLegend(false);
         gc.getLabelSet().setLabelFont(labelFont);
         gc.getLabelSet().setLabelColor(labelColor);
-        gc.getExtent().maxY += r * 0.001;
+        if (labels != null|| autopct != null)
+            gc.getExtent().maxY += r * 0.001;
 
         return gc;
     }
