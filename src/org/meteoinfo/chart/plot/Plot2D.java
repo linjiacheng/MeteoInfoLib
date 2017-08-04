@@ -197,9 +197,12 @@ public class Plot2D extends AbstractPlot2D {
                     barIdx += 1;
                     break;
             }
-
-            Font labelFont = ((GraphicCollection)graphic).getLabelSet().getLabelFont();
-            Color labelColor = ((GraphicCollection)graphic).getLabelSet().getLabelColor();
+            Font labelFont = new Font("Arial", Font.PLAIN, 14);
+            Color labelColor = Color.black;
+            if (graphic.isCollection()){
+                labelFont = ((GraphicCollection)graphic).getLabelSet().getLabelFont();
+                labelColor = ((GraphicCollection)graphic).getLabelSet().getLabelColor();
+            }
             for (int i = 0; i < graphic.getNumGraphics(); i++) {
                 Graphic gg = graphic.getGraphicN(i);
                 if (!graphic.isSingleLegend()) {
