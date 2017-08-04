@@ -3702,6 +3702,7 @@ public class MapLayout extends JPanel implements IWebMapPanel {
         Attr FontSize = doc.createAttribute("FontSize");
         Attr colNum = doc.createAttribute("ColumnNumber");
         Attr drawBackColor = doc.createAttribute("DrawBackColor");
+        Attr forceDrawOutline = doc.createAttribute("ForceDrawOutline");
 
         elementType.setValue(aLegend.getElementType().toString());
         layoutMapIndex.setValue(String.valueOf(getLayoutMapIndex(aLegend.getLayoutMap())));
@@ -3721,6 +3722,7 @@ public class MapLayout extends JPanel implements IWebMapPanel {
         FontSize.setValue(String.valueOf(aLegend.getFont().getSize()));
         colNum.setValue(String.valueOf(aLegend.getColumnNumber()));
         drawBackColor.setValue(String.valueOf(aLegend.isDrawBackColor()));
+        forceDrawOutline.setValue(String.valueOf(aLegend.isForceDrawOutline()));
 
         Legend.setAttributeNode(elementType);
         Legend.setAttributeNode(layoutMapIndex);
@@ -3740,6 +3742,7 @@ public class MapLayout extends JPanel implements IWebMapPanel {
         Legend.setAttributeNode(FontSize);
         Legend.setAttributeNode(colNum);
         Legend.setAttributeNode(drawBackColor);
+        Legend.setAttributeNode(forceDrawOutline);
 
         parent.appendChild(Legend);
     }
@@ -4066,6 +4069,7 @@ public class MapLayout extends JPanel implements IWebMapPanel {
             aLL.setColumnNumber(Integer.parseInt(layoutLegend.getAttributes().getNamedItem("ColumnNumber").getNodeValue()));
             aLL.setDrawBackColor(Boolean.parseBoolean(layoutLegend.getAttributes().getNamedItem("DrawBackColor").getNodeValue()));
             aLL.setDrawChartBreaks(Boolean.parseBoolean(layoutLegend.getAttributes().getNamedItem("DrawChartBreaks").getNodeValue()));
+            aLL.setForceDrawOutline(Boolean.parseBoolean(layoutLegend.getAttributes().getNamedItem("ForceDrawOutline").getNodeValue()));
         } catch (Exception e) {
         }
 
