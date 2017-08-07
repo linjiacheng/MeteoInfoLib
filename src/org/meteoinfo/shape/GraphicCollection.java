@@ -436,7 +436,7 @@ public class GraphicCollection extends Graphic implements Iterator {
     
     @Override
     public boolean hasNext() {
-        return index < this.size() - 1;
+        return index <= this.size() - 1;
     }
 
     @Override

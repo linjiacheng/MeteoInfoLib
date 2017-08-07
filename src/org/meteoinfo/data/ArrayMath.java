@@ -2710,6 +2710,165 @@ public class ArrayMath {
 
         return r;
     }
+    
+    /**
+     * Bit and & operation
+     *
+     * @param a Array a
+     * @param b Array b
+     * @return Result array
+     */
+    public static Array bitAnd(Array a, Array b) {
+        Array r = Array.factory(a.getDataType(), a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            r.setObject(i, a.getInt(i) & b.getInt(i));
+        }
+
+        return r;
+    }
+    
+    /**
+     * Bit or | operation
+     *
+     * @param a Array a
+     * @param b Number b
+     * @return Result array
+     */
+    public static Array bitOr(Array a, Number b) {
+        Array r = Array.factory(a.getDataType(), a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            r.setObject(i, a.getInt(i) | b.intValue());
+        }
+
+        return r;
+    }
+    
+    /**
+     * Bit or | operation
+     *
+     * @param a Array a
+     * @param b Array b
+     * @return Result array
+     */
+    public static Array bitOr(Array a, Array b) {
+        Array r = Array.factory(a.getDataType(), a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            r.setObject(i, a.getInt(i) | b.getInt(i));
+        }
+
+        return r;
+    }
+    
+    /**
+     * Bit exclusive or ^ operation
+     *
+     * @param a Array a
+     * @param b Number b
+     * @return Result array
+     */
+    public static Array bitXor(Array a, Number b) {
+        Array r = Array.factory(a.getDataType(), a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            r.setObject(i, a.getInt(i) ^ b.intValue());
+        }
+
+        return r;
+    }
+    
+    /**
+     * Bit exclusive or | operation
+     *
+     * @param a Array a
+     * @param b Array b
+     * @return Result array
+     */
+    public static Array bitXor(Array a, Array b) {
+        Array r = Array.factory(a.getDataType(), a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            r.setObject(i, a.getInt(i) ^ b.getInt(i));
+        }
+
+        return r;
+    }
+    
+    /**
+     * Bit inversion ~ operation
+     *
+     * @param a Array a
+     * @return Result array
+     */
+    public static Array bitInvert(Array a) {
+        Array r = Array.factory(a.getDataType(), a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            r.setObject(i, ~a.getInt(i));
+        }
+
+        return r;
+    }    
+    
+    /**
+     * Bit left shift << operation
+     *
+     * @param a Array a
+     * @param b Number b
+     * @return Result array
+     */
+    public static Array leftShift(Array a, Number b) {
+        Array r = Array.factory(a.getDataType(), a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            r.setObject(i, a.getInt(i) << b.intValue());
+        }
+
+        return r;
+    }
+    
+    /**
+     * Bit left shift << operation
+     *
+     * @param a Array a
+     * @param b Array b
+     * @return Result array
+     */
+    public static Array leftShift(Array a, Array b) {
+        Array r = Array.factory(a.getDataType(), a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            r.setObject(i, a.getInt(i) << b.getInt(i));
+        }
+
+        return r;
+    }
+    
+    /**
+     * Bit right shift >> operation
+     *
+     * @param a Array a
+     * @param b Number b
+     * @return Result array
+     */
+    public static Array rightShift(Array a, Number b) {
+        Array r = Array.factory(a.getDataType(), a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            r.setObject(i, a.getInt(i) >> b.intValue());
+        }
+
+        return r;
+    }
+    
+    /**
+     * Bit right shift >> operation
+     *
+     * @param a Array a
+     * @param b Array b
+     * @return Result array
+     */
+    public static Array rightShift(Array a, Array b) {
+        Array r = Array.factory(a.getDataType(), a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            r.setObject(i, a.getInt(i) >> b.getInt(i));
+        }
+
+        return r;
+    }
 
     /**
      * Integrate vector array using the composite trapezoidal rule.

@@ -358,7 +358,8 @@ public class MapView extends JPanel implements IWebMapPanel {
             }
         });
 
-        this.setBackground(Color.white);
+        //this.setBackground(Color.white);
+        this.setBackground(new Color(255,255,255,0));
         _maskOut = new MaskOut(this);
         _mouseTool = MouseTools.None;
 
@@ -4157,8 +4158,11 @@ public class MapView extends JPanel implements IWebMapPanel {
 
         refreshXYScale(rect.width, rect.height);
 
-        g.setColor(this.getBackground());
-        g.fill(rect);
+        Color background = this.getBackground();
+        if (background.getAlpha() > 0){
+            g.setColor(this.getBackground());
+            g.fill(rect);
+        }
 
         AffineTransform oldMatrix = g.getTransform();
         Rectangle oldRegion = g.getClipBounds();
