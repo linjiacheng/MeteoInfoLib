@@ -974,7 +974,7 @@ public class Plot2D extends AbstractPlot2D {
 
     @Override
     Extent getAutoExtent() {
-        Extent extent = this.graphics.getExtent();
+        Extent extent = (Extent)this.graphics.getExtent().clone();
         if (extent.minX == extent.maxX) {
             extent.minX = extent.minX - Math.abs(extent.minX);
             extent.maxX = extent.maxX + Math.abs(extent.minX);
