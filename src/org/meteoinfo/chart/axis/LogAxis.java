@@ -7,6 +7,7 @@ package org.meteoinfo.chart.axis;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.meteoinfo.chart.ChartText;
 import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.MIMath;
 
@@ -40,8 +41,8 @@ public class LogAxis extends Axis {
     }
     
     @Override
-    public List<String> updateTickLabels(){
-        List<String> tls = new ArrayList<>();
+    public List<ChartText> updateTickLabels(){
+        List<ChartText> tls = new ArrayList<>();
         String lab;
         if (this.isAutoTick()) {
             if (this.getTickValues() == null) {
@@ -50,7 +51,7 @@ public class LogAxis extends Axis {
             for (double value : this.getTickValues()) {
                 lab = String.valueOf(value);
                 lab = DataConvert.removeTailingZeros(lab);
-                tls.add(lab);
+                tls.add(new ChartText(lab));
             }
         } else {
             for (int i = 0; i < this.getTickLocations().size(); i++) {
@@ -65,14 +66,14 @@ public class LogAxis extends Axis {
         }
         
         List<Double> values = new ArrayList<>();
-        for (String tl : tls){
-            values.add(Double.parseDouble(tl));
+        for (ChartText tl : tls){
+            values.add(Double.parseDouble(tl.getText()));
         }
         tls.clear();
         int e;
         for (Double v : values){
             e = (int) Math.floor(Math.log10(v));
-            tls.add("$10^{" + String.valueOf(e) + "}$");
+            tls.add(new ChartText("$10^{" + String.valueOf(e) + "}$"));
         }
 
         return tls;

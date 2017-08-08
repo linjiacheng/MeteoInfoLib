@@ -7,6 +7,7 @@ package org.meteoinfo.chart.axis;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.meteoinfo.chart.ChartText;
 import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.projection.KnownCoordinateSystems;
@@ -124,8 +125,8 @@ public class ProjLonLatAxis extends LonLatAxis{
      * @return Tick labels
      */
     @Override
-    public List<String> updateTickLabels() {
-        List<String> tls = new ArrayList<>();
+    public List<ChartText> updateTickLabels() {
+        List<ChartText> tls = new ArrayList<>();
         String lab;
         for (double v : this.getTickValues()) {
             double value = v;
@@ -160,7 +161,7 @@ public class ProjLonLatAxis extends LonLatAxis{
                     lab = lab + String.valueOf((char) 186);
                 }
             }
-            tls.add(lab);
+            tls.add(new ChartText(lab));
         }
 
         return tls;

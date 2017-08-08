@@ -1383,7 +1383,7 @@ public class Plot3D extends Plot {
         outString(g, (int) (1.05 * (projection.x - x[0])) + x[0], (int) (1.05 * (projection.y - y[0])) + y[0], "z", Label.CENTER, CENTER);
     }
 
-    private int getLabelGap(Graphics2D g, List<String> labels, double len) {
+    private int getLabelGap(Graphics2D g, List<ChartText> labels, double len) {
         int n = labels.size();
         int nn;
         FontMetrics metrics = g.getFontMetrics();
@@ -1560,14 +1560,14 @@ public class Plot3D extends Plot {
                     angle -= 360;
                 }
             }
-            List<String> tlabs = this.xAxis.updateTickLabels();
+            List<ChartText> tlabs = this.xAxis.updateTickLabels();
             skip = getLabelGap(g, tlabs, Math.abs(xlen));
             int strWidth = 0, w;
             for (i = 0; i < this.xAxis.getTickValues().length; i += skip) {
                 v = (float) this.xAxis.getTickValues()[i];
                 if (i == tlabs.size())
                     break;
-                s = tlabs.get(i);
+                s = tlabs.get(i).getText();
                 if (v < xmin || v > xmax) {
                     continue;
                 }
@@ -1633,7 +1633,7 @@ public class Plot3D extends Plot {
             strWidth = 0;
             for (i = 0; i < this.yAxis.getTickValues().length; i += skip) {
                 v = (float) this.yAxis.getTickValues()[i];
-                s = tlabs.get(i);
+                s = tlabs.get(i).getText();
                 if (v < ymin || v > ymax) {
                     continue;
                 }
@@ -1696,13 +1696,13 @@ public class Plot3D extends Plot {
             projection = projector.project(factor_x * 10 * lf, -factor_y * 10 * lf, 10);
             g.setColor(this.zAxis.getLineColor());
             g.drawLine(x[0], y[0], projection.x, projection.y);
-            List<String> tlabs = this.zAxis.updateTickLabels();
+            List<ChartText> tlabs = this.zAxis.updateTickLabels();
             int len = Math.abs(y[0] - projection.y);
             skip = getLabelGap(g, tlabs, len);
             int strWidth = 0, w;
             for (i = 0; i < this.zAxis.getTickValues().length; i += skip) {
                 v = (float) this.zAxis.getTickValues()[i];
-                s = tlabs.get(i);
+                s = tlabs.get(i).getText();
                 if (v < zmin || v > zmax) {
                     continue;
                 }

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import org.meteoinfo.chart.ChartText;
 import org.meteoinfo.global.util.DateUtil;
 
 /**
@@ -136,9 +137,9 @@ public class TimeAxis extends Axis implements Cloneable {
      * @return Tick labels
      */
     @Override
-    public List<String> updateTickLabels() {
+    public List<ChartText> updateTickLabels() {
         //this.updateTimeTickValues();
-        List<String> tls = new ArrayList<>();
+        List<ChartText> tls = new ArrayList<>();
         String lab;
         SimpleDateFormat format = new SimpleDateFormat(this.timeFormat);
         Date date;
@@ -147,7 +148,7 @@ public class TimeAxis extends Axis implements Cloneable {
             for (double value : this.getTickValues()) {
                 date = DateUtil.fromOADate(value);
                 lab = format.format(date);
-                tls.add(lab);
+                tls.add(new ChartText(lab));
             }
         }
 

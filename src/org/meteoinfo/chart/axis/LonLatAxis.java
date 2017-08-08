@@ -7,6 +7,7 @@ package org.meteoinfo.chart.axis;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.meteoinfo.chart.ChartText;
 import org.meteoinfo.global.DataConvert;
 
 /**
@@ -106,8 +107,8 @@ public class LonLatAxis extends Axis implements Cloneable {
      * @return Tick labels
      */
     @Override
-    public List<String> updateTickLabels() {
-        List<String> tls = new ArrayList<>();
+    public List<ChartText> updateTickLabels() {
+        List<ChartText> tls = new ArrayList<>();
         String lab;
         for (double v : this.getTickValues()) {
             double value = v;
@@ -142,7 +143,7 @@ public class LonLatAxis extends Axis implements Cloneable {
                     lab = lab + String.valueOf((char) 186);
                 }
             }
-            tls.add(lab);
+            tls.add(new ChartText(lab));
         }
 
         return tls;
