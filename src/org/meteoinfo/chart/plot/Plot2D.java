@@ -31,6 +31,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import org.meteoinfo.chart.ChartLegend;
+import org.meteoinfo.chart.ChartText;
 import org.meteoinfo.chart.axis.LogAxis;
 import org.meteoinfo.chart.axis.TimeAxis;
 import org.meteoinfo.data.Dataset;
@@ -175,8 +176,101 @@ public class Plot2D extends AbstractPlot2D {
 
     @Override
     void drawGraph(Graphics2D g, Rectangle2D area) {
+        if (isPiePlot()){
+            plotPie(g, area);
+        } else
+            plotGraphics(g, area);
+    }
+    
+    private boolean isPiePlot(){
+        boolean isPie = false;
+        int n = 0;
+        for (int m = 0; m < this.graphics.getNumGraphics(); m++) {
+            Graphic graphic = this.graphics.get(m).getGraphicN(0);
+            ShapeTypes st = graphic.getShape().getShapeType();
+            switch (st){
+                case ARC:
+                    isPie = true;
+                    n += 1;
+                    break;
+            }
+        }
+        return isPie && n == 1;
+    }
+    
+    void plotPie(Graphics2D g, Rectangle2D area){
         AffineTransform oldMatrix = g.getTransform();
-        Rectangle oldRegion = g.getClipBounds();
+        g.translate(area.getX(), area.getY());
+
+        //Draw background
+        if (this.isDrawBackground()) {
+            g.setColor(this.getBackground());
+            g.fill(new Rectangle2D.Double(0, 0, area.getWidth(), area.getHeight()));
+        }
+
+        for (int m = 0; m < this.graphics.getNumGraphics(); m++) {
+            Graphic graphic = this.graphics.get(m);
+            ColorBreak cb = graphic.getLegend();
+            for (int i = 0; i < graphic.getNumGraphics(); i++) {
+                Graphic gg = graphic.getGraphicN(i);
+                if (!graphic.isSingleLegend()) {
+                    cb = gg.getLegend();
+                }
+                Shape shape = gg.getShape();
+                switch (shape.getShapeType()) {
+                    case Point:
+                    case PointM:
+                    case PointZ:
+                        this.drawPoint(g, (PointShape) shape, (PointBreak) cb, area);
+                        break;
+                    case TEXT:
+                        this.drawText((ChartText)shape, g, area);
+                        break;
+                    case Polyline:
+                    case PolylineZ:
+                        if (cb instanceof PointBreak) {
+                            this.drawPolyline(g, (PolylineShape) shape, (PointBreak) cb, area);
+                        } else {
+                            this.drawPolyline(g, (PolylineShape) shape, (PolylineBreak) cb, area);
+                        }
+                        break;
+                    case Polygon:
+                    case PolygonZ:
+                        for (Polygon poly : ((PolygonShape) shape).getPolygons()) {
+                            drawPolygon(g, poly, (PolygonBreak) cb, false, area);
+                        }
+                        break;
+                    case Rectangle:
+                        this.drawRectangle(g, (RectangleShape) shape, (PolygonBreak) cb, false, area);
+                        break;
+                    case ARC:
+                        this.drawArc(g, (ArcShape) shape, (PolygonBreak) cb, area);
+                        break;
+                    case WindBarb:
+                        this.drawWindBarb(g, (WindBarb) shape, (PointBreak) cb, area);
+                        break;
+                    case WindArraw:
+                        this.drawWindArrow(g, (WindArrow) shape, (PointBreak) cb, area);
+                        break;
+                    case Image:
+                        this.drawImage(g, gg, area);
+                        break;
+                }
+            }
+            if (graphic instanceof GraphicCollection) {
+                GraphicCollection gc = (GraphicCollection) graphic;
+                if (gc.getLabelSet().isDrawLabels()) {
+                    this.drawLabels(g, gc, area);
+                }
+            }
+        }
+
+        g.setTransform(oldMatrix);
+    }
+    
+    void plotGraphics(Graphics2D g, Rectangle2D area) {
+        AffineTransform oldMatrix = g.getTransform();
+        java.awt.Shape oldRegion = g.getClip();
         g.setClip(area);
         g.translate(area.getX(), area.getY());
 
@@ -197,12 +291,6 @@ public class Plot2D extends AbstractPlot2D {
                     barIdx += 1;
                     break;
             }
-            Font labelFont = new Font("Arial", Font.PLAIN, 14);
-            Color labelColor = Color.black;
-            if (graphic.isCollection()){
-                labelFont = ((GraphicCollection)graphic).getLabelSet().getLabelFont();
-                labelColor = ((GraphicCollection)graphic).getLabelSet().getLabelColor();
-            }
             for (int i = 0; i < graphic.getNumGraphics(); i++) {
                 Graphic gg = graphic.getGraphicN(i);
                 if (!graphic.isSingleLegend()) {
@@ -214,6 +302,9 @@ public class Plot2D extends AbstractPlot2D {
                     case PointM:
                     case PointZ:
                         this.drawPoint(g, (PointShape) shape, (PointBreak) cb, area);
+                        break;
+                    case TEXT:
+                        this.drawText((ChartText)shape, g, area);
                         break;
                     case Polyline:
                     case PolylineZ:
@@ -240,7 +331,7 @@ public class Plot2D extends AbstractPlot2D {
                         this.drawRectangle(g, (RectangleShape) shape, (PolygonBreak) cb, false, area);
                         break;
                     case ARC:
-                        this.drawArc(g, (ArcShape) shape, (PolygonBreak) cb, area, 5, labelFont, labelColor);
+                        this.drawArc(g, (ArcShape) shape, (PolygonBreak) cb, area);
                         break;
                     case WindBarb:
                         this.drawWindBarb(g, (WindBarb) shape, (PointBreak) cb, area);
@@ -270,6 +361,54 @@ public class Plot2D extends AbstractPlot2D {
         double[] sXY = projToScreen(p.X, p.Y, area);
         PointF pf = new PointF((float) sXY[0], (float) sXY[1]);
         Draw.drawPoint(pf, aPB, g);
+    }
+    
+    @Override
+    void drawText(ChartText text, Graphics2D g, Rectangle2D area) {
+        float x, y;
+        switch (text.getCoordinates()) {
+            case AXES:
+                x = (float) (area.getWidth() * text.getX());
+                y = (float) (area.getHeight() * (1 - text.getY()));
+                this.drawText(g, text, x, y);
+                break;
+            case FIGURE:
+                x = (float) (area.getWidth() * text.getX());
+                y = (float) (area.getHeight() * (1 - text.getY()));
+                this.drawText(g, text, x, y);
+                break;
+            case DATA:
+                double[] xy = this.projToScreen(text.getX(), text.getY(), area);
+                x = (float) xy[0];
+                y = (float) xy[1];
+                this.drawText(g, text, x, y);
+                break;
+        }
+    }
+    
+    private void drawText(Graphics2D g, ChartText text, float x, float y) {
+        g.setFont(text.getFont());
+        g.setColor(text.getColor());
+        switch (text.getYAlign()) {
+            case TOP:
+                y += g.getFontMetrics(g.getFont()).getAscent();
+                break;
+            case CENTER:
+                y += g.getFontMetrics(g.getFont()).getAscent() / 2;
+                break;
+        }
+        String s = text.getText();
+        switch (text.getXAlign()) {
+            case LEFT:
+                g.drawString(s, x, y);
+                break;
+            case RIGHT:
+                g.drawString(s, x - g.getFontMetrics(g.getFont()).stringWidth(s), y);
+                break;
+            case CENTER:
+                g.drawString(s, x - g.getFontMetrics(g.getFont()).stringWidth(s) / 2, y);
+                break;
+        }
     }
 
     private void drawWindBarb(Graphics2D g, WindBarb aPS, PointBreak aPB, Rectangle2D area) {
@@ -736,10 +875,9 @@ public class Plot2D extends AbstractPlot2D {
     }
 
     private void drawArc(Graphics2D g, ArcShape aShape, PolygonBreak aPGB,
-            Rectangle2D area, float dis, Font labelFont, Color labelColor) {
+            Rectangle2D area) {
         float startAngle = aShape.getStartAngle();
         float sweepAngle = aShape.getSweepAngle();
-        float angle = startAngle + sweepAngle / 2;
         Extent extent = aShape.getExtent();
         double[] sXY;
         sXY = projToScreen(extent.minX, extent.minY + extent.getHeight(), area);
@@ -750,54 +888,6 @@ public class Plot2D extends AbstractPlot2D {
         
         Draw.drawPie(new PointF((float)x, (float)y),
                 (float) width, (float) height, startAngle, sweepAngle, aPGB, g);
-        
-        //Draw label
-        Rectangle clip = g.getClipBounds();
-        if (clip != null) {
-            g.setClip(null);
-        }
-        
-        float w, h;
-        PointF sPoint = new PointF((float) (width * 0.5 + x), (float) (height * 0.5 + y));
-        String label = aPGB.getCaption();        
-        if (angle > 360)
-            angle = angle - 360;
-        float r = (float)(width * 0.5) + dis;
-        PointF lPoint = Draw.getPieLabelPoint(sPoint, r, angle);
-        x = lPoint.X;
-        y = lPoint.Y;
-        Dimension dim = Draw.getStringDimension(label, g);
-        h = dim.height;
-        w = dim.width;
-        if ((angle >= 0 && angle < 45)) {
-            //x = x + dis;
-            y = y - h;
-        } else if (angle >= 45 && angle < 90) {
-            //y = y - dis;
-        } else if (angle >= 90 && angle < 135) {
-            x = x - w;
-            //y = y - dis;
-        } else if (angle >= 135 && angle < 225) {
-            x = x - w - 3;
-            y = y + h / 2;
-        } else if (angle >= 225 && angle < 270) {
-            x = x - w / 2;
-            y = y + h;
-        } else if (angle >= 270 && angle < 315) {
-            //x = x + dis;
-            y = y + h;
-        } else {
-            //x = x + dis;
-            y = y + h / 2;
-        }
-        //g.drawOval((int)(x - 3), (int)(y - 3), 6, 6);
-        g.setFont(labelFont);
-        g.setColor(labelColor);
-        g.drawString(label, (float)x, (float)y);
-        
-        if (clip != null) {
-            g.setClip(clip);
-        }
     }
 
     private void drawBar(Graphics2D g, BarShape bar, BarBreak bb, float width, Rectangle2D area) {

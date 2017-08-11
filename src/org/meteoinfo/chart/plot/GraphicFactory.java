@@ -8,11 +8,11 @@ package org.meteoinfo.chart.plot;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.image.BufferedImage;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.meteoinfo.chart.ChartText;
 import org.meteoinfo.chart.plot3d.GraphicCollection3D;
 import org.meteoinfo.data.ArrayMath;
 import org.meteoinfo.data.ArrayUtil;
@@ -2071,21 +2071,22 @@ public class GraphicFactory {
      * @param explode Explode
      * @param labelFont Label font
      * @param labelColor Label color
+     * @param labelDis Label distance
      * @param autopct
      * @return GraphicCollection
      */
-    public static GraphicCollection createPieArcs(Array xdata, List<Color> colors,
+    public static GraphicCollection[] createPieArcs(Array xdata, List<Color> colors,
             List<String> labels, float startAngle, List<Number> explode, Font labelFont,
-            Color labelColor, String autopct) {
+            Color labelColor, float labelDis, String autopct) {
         GraphicCollection gc = new GraphicCollection();
+        GraphicCollection lgc = new GraphicCollection();
         double sum = ArrayMath.sum(xdata);
         double v;
         int n = (int) xdata.getSize();
         float sweepAngle, angle;
-        NumberFormat nf = NumberFormat.getPercentInstance();
-        // nf.setMinimumFractionDigits(2);
         float ex;
         double dx, dy, r = 1;
+        String label;
         for (int i = 0; i < n; i++) {
             v = xdata.getDouble(i);
             if (sum > 1) {
@@ -2102,39 +2103,64 @@ public class GraphicFactory {
             } else {
                 ex = explode.get(i).floatValue();
                 aShape.setExplode(ex);
-                dx = ex * Math.cos(angle * Math.PI / 180);
-                dy = ex * Math.sin(angle * Math.PI / 180);
+                dx = r * ex * Math.cos(angle * Math.PI / 180);
+                dy = r * ex * Math.sin(angle * Math.PI / 180);
             }
             List<PointD> points = new ArrayList<>();
-            points.add(new PointD(dx, dy));
-            points.add(new PointD(dx, r + dy));
+            points.add(new PointD(-r + dx, -r + dy));
+            points.add(new PointD(-r + dx, r + dy));
             points.add(new PointD(r + dx, r + dy));
-            points.add(new PointD(r + dx, dy));
+            points.add(new PointD(r + dx, -r + dy));
             points.add(new PointD(dx, dy));
             aShape.setPoints(points);
             PolygonBreak pgb = new PolygonBreak();
             pgb.setColor(colors.get(i));
             if (labels == null) {
                 if (autopct == null) {
-                    //pgb.setCaption(nf.format(v));
-                    pgb.setCaption("");
+                    label = "";
                 } else {
-                    pgb.setCaption(String.format(autopct, v * 100));
+                    label = String.format(autopct, v * 100);
                 }
             } else {
-                pgb.setCaption(labels.get(i));
+                label = labels.get(i);
             }
+            pgb.setCaption(label);
             Graphic graphic = new Graphic(aShape, pgb);
             gc.add(graphic);
+            
+            //pct text
+            ChartText ps = new ChartText();
+            dx += r * labelDis * Math.cos(angle * Math.PI / 180);
+            dy += r * labelDis * Math.sin(angle * Math.PI / 180);
+            ps.setPoint(new PointD(dx, dy));
+            ps.setText(label);
+            ps.setFont(labelFont);
+            ps.setColor(labelColor);            
+            if (angle > 90 && angle < 270) {
+                ps.setXAlign(XAlign.RIGHT);
+            }
+            if (angle > 180 && angle < 360) {
+                ps.setYAlign(YAlign.TOP);
+            }
+            if (angle == 0 || angle == 180) {
+                ps.setYAlign(YAlign.CENTER);
+            } else if (angle == 90 || angle == 270) {
+                ps.setXAlign(XAlign.CENTER);
+            } 
+            lgc.add(new Graphic(ps, new ColorBreak()));
+            
             startAngle += sweepAngle;
         }
         gc.setSingleLegend(false);
         gc.getLabelSet().setLabelFont(labelFont);
         gc.getLabelSet().setLabelColor(labelColor);
-        if (labels != null|| autopct != null)
-            gc.getExtent().maxY += r * 0.001;
+        dx = r * 0.1;
+        if (labels != null|| autopct != null){
+            Extent ext = gc.getExtent().extend(dx, dx);
+            gc.setExtent(ext);
+        }
 
-        return gc;
+        return new GraphicCollection[]{gc, lgc};
     }
 
     /**

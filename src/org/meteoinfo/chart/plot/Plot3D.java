@@ -12,7 +12,6 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Label;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -33,7 +32,6 @@ import org.meteoinfo.chart.plot3d.Projector;
 import org.meteoinfo.data.DataMath;
 import org.meteoinfo.data.Dataset;
 import org.meteoinfo.drawing.Draw;
-import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.Extent3D;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointF;
@@ -78,16 +76,11 @@ public class Plot3D extends Plot {
     private Color boxColor = Color.getHSBColor(0f, 0f, 0.95f);
     private Color lineboxColor = Color.getHSBColor(0f, 0f, 0.8f);
 
-    private String xLabel = "X";
-    private String yLabel = "Y";
-
-    // constants
-    private static final int TOP = 0;
-    private static final int CENTER = 1;
+    // Projection parameters
     private int factor_x, factor_y; // conversion factors
     private int t_x, t_y, t_z; // determines ticks density
-    private final int poly_x[] = new int[9];
-    private final int poly_y[] = new int[9];
+    //private final int poly_x[] = new int[9];
+    //private final int poly_y[] = new int[9];
     private Point projection;
     float xfactor;
     float yfactor;
@@ -1180,7 +1173,7 @@ public class Plot3D extends Plot {
      * @param x_align the alignment in x direction
      * @param y_align the alignment in y direction
      */
-    private void outString(Graphics g, int x, int y, String s, int x_align, int y_align) {
+    private void outString(Graphics g, int x, int y, String s, XAlign x_align, YAlign y_align) {
         switch (y_align) {
             case TOP:
                 y += g.getFontMetrics(g.getFont()).getAscent();
@@ -1190,19 +1183,19 @@ public class Plot3D extends Plot {
                 break;
         }
         switch (x_align) {
-            case Label.LEFT:
+            case LEFT:
                 g.drawString(s, x, y);
                 break;
-            case Label.RIGHT:
+            case RIGHT:
                 g.drawString(s, x - g.getFontMetrics(g.getFont()).stringWidth(s), y);
                 break;
-            case Label.CENTER:
+            case CENTER:
                 g.drawString(s, x - g.getFontMetrics(g.getFont()).stringWidth(s) / 2, y);
                 break;
         }
     }
 
-    private void outString(Graphics2D g, int x, int y, String s, int x_align, int y_align, float angle) {
+    private void outString(Graphics2D g, int x, int y, String s, XAlign x_align, YAlign y_align, float angle) {
         switch (y_align) {
             case TOP:
                 y += g.getFontMetrics(g.getFont()).getAscent();
@@ -1213,10 +1206,10 @@ public class Plot3D extends Plot {
         }
         Dimension labSize = Draw.getStringDimension(s, g);
         switch (x_align) {
-            case Label.RIGHT:
+            case RIGHT:
                 x = x - labSize.width;
                 break;
-            case Label.CENTER:
+            case CENTER:
                 x = x - labSize.width / 2;
                 break;
         }
@@ -1346,7 +1339,7 @@ public class Plot3D extends Plot {
      * @param x_align the alignment in x direction
      * @param y_align the alignment in y direction
      */
-    private void outFloat(Graphics g, int x, int y, float f, int x_align, int y_align) {
+    private void outFloat(Graphics g, int x, int y, float f, XAlign x_align, YAlign y_align) {
         // String s = Float.toString(f);
         String s = format(f);
         outString(g, x, y, s, x_align, y_align);
@@ -1367,20 +1360,20 @@ public class Plot3D extends Plot {
         projection = projector.project(10.5f, 0, -10);
         g.drawLine(x[0], y[0], projection.x, projection.y);
         if (projection.x < x[0]) {
-            outString(g, (int) (1.05 * (projection.x - x[0])) + x[0], (int) (1.05 * (projection.y - y[0])) + y[0], "x", Label.RIGHT, TOP);
+            outString(g, (int) (1.05 * (projection.x - x[0])) + x[0], (int) (1.05 * (projection.y - y[0])) + y[0], "x", XAlign.RIGHT, YAlign.TOP);
         } else {
-            outString(g, (int) (1.05 * (projection.x - x[0])) + x[0], (int) (1.05 * (projection.y - y[0])) + y[0], "x", Label.LEFT, TOP);
+            outString(g, (int) (1.05 * (projection.x - x[0])) + x[0], (int) (1.05 * (projection.y - y[0])) + y[0], "x", XAlign.LEFT, YAlign.TOP);
         }
         projection = projector.project(0, 11.5f, -10);
         g.drawLine(x[0], y[0], projection.x, projection.y);
         if (projection.x < x[0]) {
-            outString(g, (int) (1.05 * (projection.x - x[0])) + x[0], (int) (1.05 * (projection.y - y[0])) + y[0], "y", Label.RIGHT, TOP);
+            outString(g, (int) (1.05 * (projection.x - x[0])) + x[0], (int) (1.05 * (projection.y - y[0])) + y[0], "y", XAlign.RIGHT, YAlign.TOP);
         } else {
-            outString(g, (int) (1.05 * (projection.x - x[0])) + x[0], (int) (1.05 * (projection.y - y[0])) + y[0], "y", Label.LEFT, TOP);
+            outString(g, (int) (1.05 * (projection.x - x[0])) + x[0], (int) (1.05 * (projection.y - y[0])) + y[0], "y", XAlign.LEFT, YAlign.TOP);
         }
         projection = projector.project(0, 0, 10.5f);
         g.drawLine(x[0], y[0], projection.x, projection.y);
-        outString(g, (int) (1.05 * (projection.x - x[0])) + x[0], (int) (1.05 * (projection.y - y[0])) + y[0], "z", Label.CENTER, CENTER);
+        outString(g, (int) (1.05 * (projection.x - x[0])) + x[0], (int) (1.05 * (projection.y - y[0])) + y[0], "z", XAlign.CENTER, YAlign.CENTER);
     }
 
     private int getLabelGap(Graphics2D g, List<ChartText> labels, double len) {
@@ -1592,9 +1585,9 @@ public class Plot3D extends Plot {
                 value = DataMath.getEndPoint(tickpos.x, tickpos.y, angle, this.xAxis.getTickLength() + 5);
                 tickpos = new Point((int) value[0], (int) value[1]);
                 if (x_left) {
-                    outString(g, tickpos.x, tickpos.y, s, Label.LEFT, TOP);
+                    outString(g, tickpos.x, tickpos.y, s, XAlign.LEFT, YAlign.TOP);
                 } else {
-                    outString(g, tickpos.x, tickpos.y, s, Label.RIGHT, TOP);
+                    outString(g, tickpos.x, tickpos.y, s, XAlign.RIGHT, YAlign.TOP);
                 }
                 w = g.getFontMetrics().stringWidth(s);
                 if (strWidth < w) {
@@ -1613,9 +1606,9 @@ public class Plot3D extends Plot {
                     tickpos.y += g.getFontMetrics().getHeight();
                 }
                 if (x_left) {
-                    outString(g, tickpos.x, tickpos.y, label, Label.LEFT, TOP, xangle + 90);
+                    outString(g, tickpos.x, tickpos.y, label, XAlign.LEFT, YAlign.TOP, xangle + 90);
                 } else {
-                    outString(g, tickpos.x, tickpos.y, label, Label.LEFT, TOP, xangle + 90);
+                    outString(g, tickpos.x, tickpos.y, label, XAlign.LEFT, YAlign.TOP, xangle + 90);
                 }
             }
 
@@ -1656,9 +1649,9 @@ public class Plot3D extends Plot {
                 value = DataMath.getEndPoint(tickpos.x, tickpos.y, angle, this.xAxis.getTickLength() + 5);
                 tickpos = new Point((int) value[0], (int) value[1]);
                 if (y_left) {
-                    outString(g, tickpos.x, tickpos.y, s, Label.LEFT, TOP);
+                    outString(g, tickpos.x, tickpos.y, s, XAlign.LEFT, YAlign.TOP);
                 } else {
-                    outString(g, tickpos.x, tickpos.y, s, Label.RIGHT, TOP);
+                    outString(g, tickpos.x, tickpos.y, s, XAlign.RIGHT, YAlign.TOP);
                 }
                 w = g.getFontMetrics().stringWidth(s);
                 if (strWidth < w) {
@@ -1677,9 +1670,9 @@ public class Plot3D extends Plot {
                     tickpos.y += g.getFontMetrics().getHeight();
                 }
                 if (y_left) {
-                    outString(g, tickpos.x, tickpos.y, label, Label.LEFT, TOP, yangle + 90);
+                    outString(g, tickpos.x, tickpos.y, label, XAlign.LEFT, YAlign.TOP, yangle + 90);
                 } else {
-                    outString(g, tickpos.x, tickpos.y, label, Label.LEFT, TOP, yangle + 90);
+                    outString(g, tickpos.x, tickpos.y, label, XAlign.LEFT, YAlign.TOP, yangle + 90);
                 }
             }
         }
@@ -1722,7 +1715,7 @@ public class Plot3D extends Plot {
                 //g.drawLine(projection.x, projection.y, tickpos.x, tickpos.y);
                 g.drawLine(tickpos.x, tickpos.y, tickpos.x - this.zAxis.getTickLength(), tickpos.y);
                 //tickpos = projector.project(factor_x * 10.5f * lf, -factor_y * 10.5f * lf, vi);
-                outString(g, tickpos.x - this.zAxis.getTickLength() - 5, tickpos.y, s, Label.RIGHT, CENTER);
+                outString(g, tickpos.x - this.zAxis.getTickLength() - 5, tickpos.y, s, XAlign.RIGHT, YAlign.CENTER);
                 w = g.getFontMetrics().stringWidth(s);
                 if (strWidth < w) {
                     strWidth = w;
@@ -1736,233 +1729,6 @@ public class Plot3D extends Plot {
                 Draw.drawLabelPoint_270(tickpos.x, tickpos.y, this.zAxis.getLabelFont(), label,
                         this.zAxis.getLabelColor(), g, null);
                 //outString(g, tickpos.x, tickpos.y, label, Label.RIGHT, CENTER);
-            }
-        }
-    }
-
-    /**
-     * Draws non-surface parts, i.e: bounding box, axis grids, axis ticks, axis
-     * labels, base plane.
-     *
-     * @param g the graphics context to draw
-     * @param draw_axes if <code>true</code>, only draws base plane and z axis
-     */
-    private void drawBoxGridsTicksLabels_bak(Graphics g, boolean draw_axes) {
-        Point tickpos;
-        boolean x_left = false, y_left = false;
-        int x[], y[], i;
-
-        x = new int[5];
-        y = new int[5];
-        if (projector == null) {
-            return;
-        }
-
-        if (draw_axes) {
-            drawBase(g, x, y);
-            projection = projector.project(0, 0, -10);
-            x[0] = projection.x;
-            y[0] = projection.y;
-            projection = projector.project(10.5f, 0, -10);
-            g.drawLine(x[0], y[0], projection.x, projection.y);
-            if (projection.x < x[0]) {
-                outString(g, (int) (1.05 * (projection.x - x[0])) + x[0], (int) (1.05 * (projection.y - y[0])) + y[0], "x", Label.RIGHT, TOP);
-            } else {
-                outString(g, (int) (1.05 * (projection.x - x[0])) + x[0], (int) (1.05 * (projection.y - y[0])) + y[0], "x", Label.LEFT, TOP);
-            }
-            projection = projector.project(0, 11.5f, -10);
-            g.drawLine(x[0], y[0], projection.x, projection.y);
-            if (projection.x < x[0]) {
-                outString(g, (int) (1.05 * (projection.x - x[0])) + x[0], (int) (1.05 * (projection.y - y[0])) + y[0], "y", Label.RIGHT, TOP);
-            } else {
-                outString(g, (int) (1.05 * (projection.x - x[0])) + x[0], (int) (1.05 * (projection.y - y[0])) + y[0], "y", Label.LEFT, TOP);
-            }
-            projection = projector.project(0, 0, 10.5f);
-            g.drawLine(x[0], y[0], projection.x, projection.y);
-            outString(g, (int) (1.05 * (projection.x - x[0])) + x[0], (int) (1.05 * (projection.y - y[0])) + y[0], "z", Label.CENTER, CENTER);
-        } else {
-            factor_x = factor_y = 1;
-            projection = projector.project(0, 0, -10);
-            x[0] = projection.x;
-            projection = projector.project(10.5f, 0, -10);
-            y_left = projection.x > x[0];
-            i = projection.y;
-            projection = projector.project(-10.5f, 0, -10);
-            if (projection.y > i) {
-                factor_x = -1;
-                y_left = projection.x > x[0];
-            }
-            projection = projector.project(0, 10.5f, -10);
-            x_left = projection.x > x[0];
-            i = projection.y;
-            projection = projector.project(0, -10.5f, -10);
-            if (projection.y > i) {
-                factor_y = -1;
-                x_left = projection.x > x[0];
-            }
-            setAxesScale();
-            drawBase(g, x, y);
-
-            if (isBoxed) {
-                projection = projector.project(-factor_x * 10, -factor_y * 10, -10);
-                x[0] = projection.x;
-                y[0] = projection.y;
-                projection = projector.project(-factor_x * 10, -factor_y * 10, 10);
-                x[1] = projection.x;
-                y[1] = projection.y;
-                projection = projector.project(factor_x * 10, -factor_y * 10, 10);
-                x[2] = projection.x;
-                y[2] = projection.y;
-                projection = projector.project(factor_x * 10, -factor_y * 10, -10);
-                x[3] = projection.x;
-                y[3] = projection.y;
-                x[4] = x[0];
-                y[4] = y[0];
-
-                g.setColor(this.boxColor);
-                g.fillPolygon(x, y, 4);
-
-                g.setColor(this.lineboxColor);
-                g.drawPolygon(x, y, 5);
-
-                projection = projector.project(-factor_x * 10, factor_y * 10, 10);
-                x[2] = projection.x;
-                y[2] = projection.y;
-                projection = projector.project(-factor_x * 10, factor_y * 10, -10);
-                x[3] = projection.x;
-                y[3] = projection.y;
-                x[4] = x[0];
-                y[4] = y[0];
-
-                g.setColor(this.boxColor);
-                g.fillPolygon(x, y, 4);
-
-                g.setColor(this.lineboxColor);
-                g.drawPolygon(x, y, 5);
-            } else if (isDisplayZ) {
-                projection = projector.project(factor_x * 10, -factor_y * 10, -10);
-                x[0] = projection.x;
-                y[0] = projection.y;
-                projection = projector.project(factor_x * 10, -factor_y * 10, 10);
-                g.drawLine(x[0], y[0], projection.x, projection.y);
-
-                projection = projector.project(-factor_x * 10, factor_y * 10, -10);
-                x[0] = projection.x;
-                y[0] = projection.y;
-                projection = projector.project(-factor_x * 10, factor_y * 10, 10);
-                g.drawLine(x[0], y[0], projection.x, projection.y);
-            }
-
-            for (i = -9; i <= 9; i++) {
-                if (isDisplayXY || isDisplayGrids) {
-                    if (!isDisplayGrids || (i % (t_y / 2) == 0) || isDisplayXY) {
-                        if (isDisplayGrids && (i % t_y == 0)) {
-                            projection = projector.project(-factor_x * 10, i, -10);
-                        } else if (i % t_y != 0) {
-                            projection = projector.project(factor_x * 9.8f, i, -10);
-                        } else {
-                            projection = projector.project(factor_x * 9.5f, i, -10);
-                        }
-                        tickpos = projector.project(factor_x * 10, i, -10);
-                        g.drawLine(projection.x, projection.y, tickpos.x, tickpos.y);
-                        if ((i % t_y == 0) && isDisplayXY) {
-                            tickpos = projector.project(factor_x * 10.5f, i, -10);
-                            if (y_left) {
-                                outFloat(g, tickpos.x, tickpos.y, (float) ((double) (i + 10) / 20 * (ymax - ymin) + ymin), Label.LEFT, TOP);
-                            } else {
-                                outFloat(g, tickpos.x, tickpos.y, (float) ((double) (i + 10) / 20 * (ymax - ymin) + ymin), Label.RIGHT, TOP);
-                            }
-                        }
-                    }
-                    if (!isDisplayGrids || (i % (t_x / 2) == 0) || isDisplayXY) {
-                        if (isDisplayGrids && (i % t_x == 0)) {
-                            projection = projector.project(i, -factor_y * 10, -10);
-                        } else if (i % t_x != 0) {
-                            projection = projector.project(i, factor_y * 9.8f, -10);
-                        } else {
-                            projection = projector.project(i, factor_y * 9.5f, -10);
-                        }
-                        tickpos = projector.project(i, factor_y * 10, -10);
-                        g.drawLine(projection.x, projection.y, tickpos.x, tickpos.y);
-                        if ((i % t_x == 0) && isDisplayXY) {
-                            tickpos = projector.project(i, factor_y * 10.5f, -10);
-                            if (x_left) {
-                                outFloat(g, tickpos.x, tickpos.y, (float) ((double) (i + 10) / 20 * (xmax - xmin) + xmin), Label.LEFT, TOP);
-                            } else {
-                                outFloat(g, tickpos.x, tickpos.y, (float) ((double) (i + 10) / 20 * (xmax - xmin) + xmin), Label.RIGHT, TOP);
-                            }
-                        }
-                    }
-                }
-
-                if (isDisplayXY) {
-                    tickpos = projector.project(0, factor_y * 14, -10);
-                    outString(g, tickpos.x, tickpos.y, xLabel, Label.CENTER, TOP);
-                    tickpos = projector.project(factor_x * 14, 0, -10);
-                    outString(g, tickpos.x, tickpos.y, yLabel, Label.CENTER, TOP);
-                }
-
-                // z grids and ticks
-                if (isDisplayZ || (isDisplayGrids && isBoxed)) {
-                    if (!isDisplayGrids || (i % (t_z / 2) == 0) || isDisplayZ) {
-                        if (isBoxed && isDisplayGrids && (i % t_z == 0)) {
-                            projection = projector.project(-factor_x * 10, -factor_y * 10, i);
-                            tickpos = projector.project(-factor_x * 10, factor_y * 10, i);
-                        } else {
-                            if (i % t_z == 0) {
-                                projection = projector.project(-factor_x * 10, factor_y * 9.5f, i);
-                            } else {
-                                projection = projector.project(-factor_x * 10, factor_y * 9.8f, i);
-                            }
-                            tickpos = projector.project(-factor_x * 10, factor_y * 10, i);
-                        }
-                        g.drawLine(projection.x, projection.y, tickpos.x, tickpos.y);
-                        if (isDisplayZ) {
-                            tickpos = projector.project(-factor_x * 10, factor_y * 10.5f, i);
-                            if (i % t_z == 0) {
-                                if (x_left) {
-                                    outFloat(g, tickpos.x, tickpos.y, (float) ((double) (i + 10) / 20 * (zmax - zmin) + zmin), Label.LEFT, CENTER);
-                                } else {
-                                    outFloat(g, tickpos.x, tickpos.y, (float) ((double) (i + 10) / 20 * (zmax - zmin) + zmin), Label.RIGHT, CENTER);
-                                }
-                            }
-                        }
-                        if (isDisplayGrids && isBoxed && (i % t_z == 0)) {
-                            projection = projector.project(-factor_x * 10, -factor_y * 10, i);
-                            tickpos = projector.project(factor_x * 10, -factor_y * 10, i);
-                        } else {
-                            if (i % t_z == 0) {
-                                projection = projector.project(factor_x * 9.5f, -factor_y * 10, i);
-                            } else {
-                                projection = projector.project(factor_x * 9.8f, -factor_y * 10, i);
-                            }
-                            tickpos = projector.project(factor_x * 10, -factor_y * 10, i);
-                        }
-                        g.drawLine(projection.x, projection.y, tickpos.x, tickpos.y);
-                        if (isDisplayZ) {
-                            tickpos = projector.project(factor_x * 10.5f, -factor_y * 10, i);
-                            if (i % t_z == 0) {
-                                if (y_left) {
-                                    outFloat(g, tickpos.x, tickpos.y, (float) ((double) (i + 10) / 20 * (zmax - zmin) + zmin), Label.LEFT, CENTER);
-                                } else {
-                                    outFloat(g, tickpos.x, tickpos.y, (float) ((double) (i + 10) / 20 * (zmax - zmin) + zmin), Label.RIGHT, CENTER);
-                                }
-                            }
-                        }
-                        if (isDisplayGrids && isBoxed) {
-                            if (i % t_y == 0) {
-                                projection = projector.project(-factor_x * 10, i, -10);
-                                tickpos = projector.project(-factor_x * 10, i, 10);
-                                g.drawLine(projection.x, projection.y, tickpos.x, tickpos.y);
-                            }
-                            if (i % t_x == 0) {
-                                projection = projector.project(i, -factor_y * 10, -10);
-                                tickpos = projector.project(i, -factor_y * 10, 10);
-                                g.drawLine(projection.x, projection.y, tickpos.x, tickpos.y);
-                            }
-                        }
-                    }
-                }
             }
         }
     }

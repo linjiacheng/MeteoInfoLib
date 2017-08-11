@@ -83,6 +83,15 @@ public class GraphicCollection extends Graphic implements Iterator {
     }
     
     /**
+     * Set extent
+     * @param value Extent
+     */
+    @Override
+    public void setExtent(Extent value) {
+        this._extent = value;
+    }
+    
+    /**
      * Get is single legend or not
      * @return Boolean
      */

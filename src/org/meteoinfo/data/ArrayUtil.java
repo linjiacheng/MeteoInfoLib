@@ -6,12 +6,14 @@
 package org.meteoinfo.data;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -228,6 +230,44 @@ public class ArrayUtil {
         } catch (IOException ex) {
             Logger.getLogger(ArrayUtil.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    /**
+     * Save an array data to a ASCII file
+     *
+     * @param fn File path
+     * @param a Array
+     * @param colNum Column number of each line
+     * @param format String format
+     * @param delimiter Delimiter
+     * @throws java.io.IOException
+     */
+    public static void saveASCIIFile(String fn, Array a, int colNum, 
+            String format, String delimiter) throws IOException {
+        BufferedWriter sw = new BufferedWriter(new FileWriter(new File(fn)));
+        String line = "";
+        int j = 0;
+        for (int i = 0; i < a.getSize(); i++){
+            j += 1;
+            if (format == null)
+                line = line + a.getFloat(i);
+            else
+                line = line + String.format(format, a.getFloat(i));
+            if (j < colNum && i < a.getSize() - 1){
+                if (delimiter == null){
+                    line = line + " ";
+                } else {
+                    line = line + delimiter;
+                }
+            } else {
+                sw.write(line);
+                sw.newLine();
+                line = "";
+                j = 0;
+            }            
+        }
+        sw.flush();
+        sw.close();
     }
 
     /**

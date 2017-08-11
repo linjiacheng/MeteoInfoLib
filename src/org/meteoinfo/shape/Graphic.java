@@ -126,6 +126,14 @@ public class Graphic {
     }
     
     /**
+     * Set extent
+     * @param value The extent 
+     */
+    public void setExtent(Extent value){
+        this._shape.setExtent(value);
+    }
+    
+    /**
      * Get is single legend or not
      * @return Boolean
      */

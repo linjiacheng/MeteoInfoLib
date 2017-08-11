@@ -12,8 +12,11 @@ import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.meteoinfo.chart.plot.XAlign;
+import org.meteoinfo.chart.plot.YAlign;
 import org.meteoinfo.drawing.Draw;
 import org.meteoinfo.shape.PointShape;
+import org.meteoinfo.shape.ShapeTypes;
 
 /**
  *
@@ -24,8 +27,6 @@ public class ChartText extends PointShape {
     private Font font;
     private List<String> text;
     private Color color;
-    //private float x;
-    //private float y;
     private int lineSpace;
     private CoordinateType coordinates;
     private Color background;
@@ -34,6 +35,9 @@ public class ChartText extends PointShape {
     private Color neatLineColor;
     private float neatLineSize;
     private float gap;
+    private float angle;
+    private XAlign xAlign;
+    private YAlign yAlign;
     // </editor-fold>    
     // <editor-fold desc="Constructor">
     /**
@@ -50,6 +54,9 @@ public class ChartText extends PointShape {
         this.neatLineColor = Color.black;
         this.neatLineSize = 1.0f;
         this.gap = 5.0f;
+        this.angle = 0.0f;
+        this.xAlign = XAlign.LEFT;
+        this.yAlign = YAlign.BOTTOM;
     }
     
     /**
@@ -97,6 +104,7 @@ public class ChartText extends PointShape {
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
+   
     /**
      * Get text
      * @return Text
@@ -343,8 +351,77 @@ public class ChartText extends PointShape {
     public void setGap(float value){
         this.gap = value;
     }
+    
+    /**
+     * Get angle
+     * @return Angle
+     */
+    public float getAngle(){
+        return this.angle;
+    }
+    
+    /**
+     * Set angle
+     * @param value Angle
+     */
+    public void setAngle(float value){
+        this.angle = value;
+    }
+    
+    /**
+     * Get x align
+     * @return X align
+     */
+    public XAlign getXAlign(){
+        return this.xAlign;
+    }
+    
+    /**
+     * Set x align
+     * @param value X align 
+     */
+    public void setXAlign(XAlign value){
+        this.xAlign = value;
+    }
+    
+    /**
+     * Set x align
+     * @param value X align string
+     */
+    public void setXAlign(String value){
+        this.xAlign = XAlign.valueOf(value.toUpperCase());
+    }
+    
+    /**
+     * Get y align
+     * @return Y align
+     */
+    public YAlign getYAlign(){
+        return this.yAlign;
+    }
+    
+    /**
+     * Set y align
+     * @param value Y align 
+     */
+    public void setYAlign(YAlign value){
+        this.yAlign = value;
+    }
+    
+    /**
+     * Set y align
+     * @param value Y align string
+     */
+    public void setYAlign(String value){
+        this.yAlign = YAlign.valueOf(value.toUpperCase());
+    }
     // </editor-fold>
     // <editor-fold desc="Methods">
+     @Override
+    public ShapeTypes getShapeType(){
+        return ShapeTypes.TEXT;
+    }    
+    
     /**
      * Get text line number
      * @return Text line number
