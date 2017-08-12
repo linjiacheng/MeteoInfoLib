@@ -100,12 +100,14 @@ public class GraphicFactory {
                 points.add(new PointD(x, y));
             }
         }
-        if (points.size() == 1) {
-            points.add((PointD) points.get(0).clone());
+        if (!points.isEmpty()){
+            if (points.size() == 1) {
+                points.add((PointD) points.get(0).clone());
+            }
+            pls = new PolylineShape();
+            pls.setPoints(points);
+            gc.add(new Graphic(pls, cb));
         }
-        pls = new PolylineShape();
-        pls.setPoints(points);
-        gc.add(new Graphic(pls, cb));
 
         return gc;
     }
@@ -2072,21 +2074,23 @@ public class GraphicFactory {
      * @param labelFont Label font
      * @param labelColor Label color
      * @param labelDis Label distance
-     * @param autopct
+     * @param autopct pct format
+     * @param pctDis pct distance
      * @return GraphicCollection
      */
     public static GraphicCollection[] createPieArcs(Array xdata, List<Color> colors,
             List<String> labels, float startAngle, List<Number> explode, Font labelFont,
-            Color labelColor, float labelDis, String autopct) {
+            Color labelColor, float labelDis, String autopct, float pctDis) {
         GraphicCollection gc = new GraphicCollection();
         GraphicCollection lgc = new GraphicCollection();
+        GraphicCollection pgc = new GraphicCollection();
         double sum = ArrayMath.sum(xdata);
         double v;
         int n = (int) xdata.getSize();
         float sweepAngle, angle;
         float ex;
-        double dx, dy, r = 1;
-        String label;
+        double dx, dy, ldx, ldy, r = 1;
+        String label, pct = null;
         for (int i = 0; i < n; i++) {
             v = xdata.getDouble(i);
             if (sum > 1) {
@@ -2123,16 +2127,19 @@ public class GraphicFactory {
                 }
             } else {
                 label = labels.get(i);
+                if (autopct != null){
+                    pct = String.format(autopct, v * 100);
+                }
             }
             pgb.setCaption(label);
             Graphic graphic = new Graphic(aShape, pgb);
             gc.add(graphic);
             
-            //pct text
+            //Label text
             ChartText ps = new ChartText();
-            dx += r * labelDis * Math.cos(angle * Math.PI / 180);
-            dy += r * labelDis * Math.sin(angle * Math.PI / 180);
-            ps.setPoint(new PointD(dx, dy));
+            ldx = dx + r * labelDis * Math.cos(angle * Math.PI / 180);
+            ldy = dy + r * labelDis * Math.sin(angle * Math.PI / 180);
+            ps.setPoint(new PointD(ldx, ldy));
             ps.setText(label);
             ps.setFont(labelFont);
             ps.setColor(labelColor);            
@@ -2149,6 +2156,20 @@ public class GraphicFactory {
             } 
             lgc.add(new Graphic(ps, new ColorBreak()));
             
+            //pct text
+            if (pct != null){
+                ps = new ChartText();
+                ldx = dx + r * pctDis * Math.cos(angle * Math.PI / 180);
+                ldy = dy + r * pctDis * Math.sin(angle * Math.PI / 180);
+                ps.setPoint(new PointD(ldx, ldy));
+                ps.setText(pct);
+                ps.setFont(labelFont);
+                ps.setColor(labelColor);            
+                ps.setXAlign(XAlign.CENTER);
+                ps.setYAlign(YAlign.CENTER);
+                pgc.add(new Graphic(ps, new ColorBreak()));
+            }
+            
             startAngle += sweepAngle;
         }
         gc.setSingleLegend(false);
@@ -2160,7 +2181,10 @@ public class GraphicFactory {
             gc.setExtent(ext);
         }
 
-        return new GraphicCollection[]{gc, lgc};
+        if (pct == null)
+            return new GraphicCollection[]{gc, lgc};
+        else
+            return new GraphicCollection[]{gc, lgc, pgc};
     }
 
     /**
