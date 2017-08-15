@@ -1514,6 +1514,9 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
         double orgLon, orgLat, orgX, orgY;
         Dimension xDim = this.findDimension("west_east");
         Dimension yDim = this.findDimension("south_north");
+        if (xDim == null || yDim == null){
+            return;
+        }
         xDim.setDimType(DimensionType.X);
         yDim.setDimType(DimensionType.Y);
         int xNum = xDim.getLength();
