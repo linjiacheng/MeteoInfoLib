@@ -6,6 +6,7 @@
         <group>
             <file>file:/D:/MyProgram/java/MeteoInfoDev/MeteoInfoLib/src/org/meteoinfo/chart/ChartText.java</file>
             <file>file:/D:/MyProgram/java/MeteoInfoDev/MeteoInfoLib/src/org/meteoinfo/chart/plot/Plot2D.java</file>
+            <file>file:/D:/MyProgram/java/MeteoInfoDev/MeteoInfoLib/src/org/meteoinfo/chart/ChartText3D.java</file>
             <file>file:/D:/MyProgram/java/MeteoInfoDev/MeteoInfoLib/src/org/meteoinfo/chart/plot/GraphicFactory.java</file>
             <file>file:/D:/MyProgram/java/MeteoInfoDev/MeteoInfoLib/src/org/meteoinfo/chart/plot/Plot3D.java</file>
         </group>

@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.meteoinfo.chart.ChartLegend;
 import org.meteoinfo.chart.ChartText;
+import org.meteoinfo.chart.ChartText3D;
 import org.meteoinfo.chart.LegendPosition;
 import org.meteoinfo.chart.Margin;
 import org.meteoinfo.chart.axis.Axis;
@@ -433,7 +434,7 @@ public class Plot3D extends Plot {
 
     // </editor-fold>
     // <editor-fold desc="Methods">    
-    private void updateExtent(){
+    private void updateExtent() {
         this.extent = new Extent3D(xmin, xmax, ymin, ymax, zmin, zmax);
     }
 
@@ -592,7 +593,7 @@ public class Plot3D extends Plot {
                 this.drawGraphics_FixZ(g2, graphic);
             } else {
                 this.drawGrahpics(g2, graphic);
-            }            
+            }
         }
     }
 
@@ -603,6 +604,9 @@ public class Plot3D extends Plot {
             case PointZ:
                 this.drawPoint(g, graphic);
                 break;
+            case TEXT:
+                this.drawText((ChartText3D) shape, g);
+                break;
             case Polyline:
             case PolylineZ:
                 this.drawLineString(g, graphic);
@@ -612,7 +616,7 @@ public class Plot3D extends Plot {
                 this.drawPolygonShape(g, graphic);
                 break;
             case Image:
-                
+
                 break;
         }
     }
@@ -624,12 +628,12 @@ public class Plot3D extends Plot {
         java.awt.Polygon polygon = new java.awt.Polygon();
         Point p;
         List<Point> points = new ArrayList<>();
-        switch (zdir){
+        switch (zdir) {
             case "x":
-                zValue = (zValue - this.xmin) * xfactor - 10;                
+                zValue = (zValue - this.xmin) * xfactor - 10;
                 p = projector.project(zValue, -10, -10);
                 points.add(p);
-                p = projector.project( zValue, -10, 10);
+                p = projector.project(zValue, -10, 10);
                 points.add(p);
                 p = projector.project(zValue, 10, 10);
                 points.add(p);
@@ -637,7 +641,7 @@ public class Plot3D extends Plot {
                 points.add(p);
                 break;
             case "y":
-                zValue = (zValue - this.ymin) * yfactor - 10;                
+                zValue = (zValue - this.ymin) * yfactor - 10;
                 p = projector.project(-10, zValue, -10);
                 points.add(p);
                 p = projector.project(-10, zValue, 10);
@@ -648,7 +652,7 @@ public class Plot3D extends Plot {
                 points.add(p);
                 break;
             case "z":
-                zValue = (zValue - this.zmin) * zfactor - 10;                
+                zValue = (zValue - this.zmin) * zfactor - 10;
                 p = projector.project(-10, -10, zValue);
                 points.add(p);
                 p = projector.project(-10, 10, zValue);
@@ -658,8 +662,8 @@ public class Plot3D extends Plot {
                 p = projector.project(10, -10, zValue);
                 points.add(p);
                 break;
-        }      
-        for (Point pp : points){
+        }
+        for (Point pp : points) {
             polygon.addPoint(pp.x, pp.y);
         }
         java.awt.Shape oldRegion = g.getClip();
@@ -668,9 +672,9 @@ public class Plot3D extends Plot {
         //Draw graphics
         for (int i = 0; i < graphic.getNumGraphics(); i++) {
             Graphic gg = graphic.getGraphicN(i);
-            if (gg.getShape().getShapeType() == ShapeTypes.Image){
+            if (gg.getShape().getShapeType() == ShapeTypes.Image) {
                 g.setClip(oldRegion);
-                this.drawImage(g, gg, zdir, (float)((GraphicCollection3D) graphic).getZValue());
+                this.drawImage(g, gg, zdir, (float) ((GraphicCollection3D) graphic).getZValue());
             } else {
                 this.drawGrahic(g, gg);
             }
@@ -807,17 +811,62 @@ public class Plot3D extends Plot {
             }
         }
     }
-    
+
     /**
      * Project 3D point
+     *
      * @param x X
-     * @param y Y 
+     * @param y Y
      * @param z Z
      * @return Projected 2D point
      */
-    public Point project(float x, float y, float z){
-        return this.projector.project((x - xmin) * xfactor - 10, 
+    public Point project(float x, float y, float z) {
+        return this.projector.project((x - xmin) * xfactor - 10,
                 (y - ymin) * yfactor - 10, (z - zmin) * zfactor - 10);
+    }
+
+    void drawText(ChartText3D text, Graphics2D g) {
+        float x, y;
+        Point p = this.project((float) text.getX(), (float) text.getY(), (float) text.getZ());
+        x = p.x;
+        y = p.y;
+        this.drawText(g, text, x, y);
+    }
+
+    private void drawText(Graphics2D g, ChartText3D text, float x, float y) {
+        AffineTransform tempTrans = g.getTransform();
+        AffineTransform myTrans = new AffineTransform();
+        myTrans.translate(x, y);
+        if (text.getZDir() != null) {
+            text.updateAngle(projector);
+            float angle = text.getAngle() + 90;
+            myTrans.rotate(-angle * Math.PI / 180);
+        }
+        g.setTransform(myTrans);
+        g.setFont(text.getFont());
+        g.setColor(text.getColor());
+        x = 0;
+        y = 0;
+        switch (text.getYAlign()) {
+            case TOP:
+                y += g.getFontMetrics(g.getFont()).getAscent();
+                break;
+            case CENTER:
+                y += g.getFontMetrics(g.getFont()).getAscent() / 2;
+                break;
+        }
+        String s = text.getText();
+        Dimension labSize = Draw.getStringDimension(s, g);
+        switch (text.getXAlign()) {
+            case RIGHT:
+                x = x - labSize.width;
+                break;
+            case CENTER:
+                x = x - labSize.width / 2;
+                break;
+        }
+        Draw.drawString(g, s, x, y);
+        g.setTransform(tempTrans);
     }
 
     private void drawPoint(Graphics2D g, Graphic graphic) {
@@ -1044,82 +1093,82 @@ public class Plot3D extends Plot {
 
         return rPoints;
     }
-    
+
     private void drawImage(Graphics2D g, Graphic igraphic, String zdir, float zValue) {
         ImageShape ishape = (ImageShape) igraphic.getShape();
         BufferedImage image = ishape.getImage();
-        Extent3D ext = (Extent3D)ishape.getExtent();
+        Extent3D ext = (Extent3D) ishape.getExtent();
         Point p1, p2, p3, p4;
         AffineTransform transform = new AffineTransform();
         transform.setToIdentity();
         float minx, miny, maxx, maxy, minz, maxz;
         double angle, xscale, yscale, xtran, ytran;
-        switch(zdir){
+        switch (zdir) {
             case "x":
                 zValue = (zValue - this.xmin) * xfactor - 10;
-                miny = ((float)ext.minY - ymin) * yfactor - 10;
-                maxy = ((float)ext.maxY - ymin) * yfactor - 10;
-                minz = ((float)ext.minZ - zmin) * zfactor - 10;
-                maxz = ((float)ext.maxZ - zmin) * zfactor - 10;
+                miny = ((float) ext.minY - ymin) * yfactor - 10;
+                maxy = ((float) ext.maxY - ymin) * yfactor - 10;
+                minz = ((float) ext.minZ - zmin) * zfactor - 10;
+                maxz = ((float) ext.maxZ - zmin) * zfactor - 10;
                 p1 = this.projector.project(zValue, miny, maxz);
                 p2 = this.projector.project(zValue, maxy, maxz);
                 p3 = this.projector.project(zValue, maxy, minz);
                 p4 = this.projector.project(zValue, miny, minz);
-                xscale = (double)Math.abs(p2.x - p1.x) / image.getWidth();
-                yscale = (double)Math.abs(p1.y - p4.y) / image.getHeight();
+                xscale = (double) Math.abs(p2.x - p1.x) / image.getWidth();
+                yscale = (double) Math.abs(p1.y - p4.y) / image.getHeight();
                 xtran = p1.x;
                 ytran = p1.y;
-                if (p2.x > p1.x){
-                    angle = MIMath.cartesianToPolar(p2.x - p1.x, p1.y - p2.y)[0];                                           
-                } else {
-                    angle = MIMath.cartesianToPolar(p1.x - p2.x, p2.y - p1.y)[0];
-                    xscale = - xscale;
-                }
-                angle = -angle;
-                transform.setTransform(Math.cos(angle), Math.sin(angle), 0, 1, xtran, ytran);
-                transform.scale(xscale / Math.cos(angle), yscale);                
-                break;
-            case "y":
-                zValue = (zValue - this.ymin) * yfactor - 10;
-                minx = ((float)ext.minX - xmin) * xfactor - 10;
-                maxx = ((float)ext.maxX - xmin) * xfactor - 10;
-                minz = ((float)ext.minZ - zmin) * zfactor - 10;
-                maxz = ((float)ext.maxZ - zmin) * zfactor - 10;
-                p1 = this.projector.project(minx, zValue, maxz);
-                p2 = this.projector.project(maxx, zValue, maxz);
-                p3 = this.projector.project(maxx, zValue, minz);
-                p4 = this.projector.project(minx, zValue, minz);
-                xscale = (double)Math.abs(p2.x - p1.x) / image.getWidth();
-                yscale = (double)Math.abs(p1.y - p4.y) / image.getHeight();
-                xtran = p1.x;
-                ytran = p1.y;  
-                if (p2.x > p1.x){
-                    angle = MIMath.cartesianToPolar(p2.x - p1.x, p1.y - p2.y)[0];                     
+                if (p2.x > p1.x) {
+                    angle = MIMath.cartesianToPolar(p2.x - p1.x, p1.y - p2.y)[0];
                 } else {
                     angle = MIMath.cartesianToPolar(p1.x - p2.x, p2.y - p1.y)[0];
                     xscale = -xscale;
                 }
                 angle = -angle;
                 transform.setTransform(Math.cos(angle), Math.sin(angle), 0, 1, xtran, ytran);
-                transform.scale(xscale / Math.cos(angle), yscale);                
+                transform.scale(xscale / Math.cos(angle), yscale);
+                break;
+            case "y":
+                zValue = (zValue - this.ymin) * yfactor - 10;
+                minx = ((float) ext.minX - xmin) * xfactor - 10;
+                maxx = ((float) ext.maxX - xmin) * xfactor - 10;
+                minz = ((float) ext.minZ - zmin) * zfactor - 10;
+                maxz = ((float) ext.maxZ - zmin) * zfactor - 10;
+                p1 = this.projector.project(minx, zValue, maxz);
+                p2 = this.projector.project(maxx, zValue, maxz);
+                p3 = this.projector.project(maxx, zValue, minz);
+                p4 = this.projector.project(minx, zValue, minz);
+                xscale = (double) Math.abs(p2.x - p1.x) / image.getWidth();
+                yscale = (double) Math.abs(p1.y - p4.y) / image.getHeight();
+                xtran = p1.x;
+                ytran = p1.y;
+                if (p2.x > p1.x) {
+                    angle = MIMath.cartesianToPolar(p2.x - p1.x, p1.y - p2.y)[0];
+                } else {
+                    angle = MIMath.cartesianToPolar(p1.x - p2.x, p2.y - p1.y)[0];
+                    xscale = -xscale;
+                }
+                angle = -angle;
+                transform.setTransform(Math.cos(angle), Math.sin(angle), 0, 1, xtran, ytran);
+                transform.scale(xscale / Math.cos(angle), yscale);
                 break;
             case "z":
                 zValue = (zValue - this.zmin) * zfactor - 10;
-                minx = ((float)ext.minX - xmin) * xfactor - 10;
-                maxx = ((float)ext.maxX - xmin) * xfactor - 10;
-                miny = ((float)ext.minY - ymin) * yfactor - 10;
-                maxy = ((float)ext.maxY - ymin) * yfactor - 10;
+                minx = ((float) ext.minX - xmin) * xfactor - 10;
+                maxx = ((float) ext.maxX - xmin) * xfactor - 10;
+                miny = ((float) ext.minY - ymin) * yfactor - 10;
+                maxy = ((float) ext.maxY - ymin) * yfactor - 10;
                 p1 = this.projector.project(minx, maxy, zValue);
                 p2 = this.projector.project(maxx, maxy, zValue);
                 p3 = this.projector.project(maxx, miny, zValue);
                 p4 = this.projector.project(minx, miny, zValue);
-                xscale = (double)Math.abs(p2.x - p1.x) / image.getWidth();
-                yscale = (double)Math.abs(p1.y - p4.y) / image.getHeight();
+                xscale = (double) Math.abs(p2.x - p1.x) / image.getWidth();
+                yscale = (double) Math.abs(p1.y - p4.y) / image.getHeight();
                 xtran = p1.x;
                 ytran = p1.y;
                 angle = MIMath.cartesianToPolar(p2.x - p1.x, p1.y - p2.y)[0];
-                double angle_y = MIMath.cartesianToPolar(p4.x - p1.x, p4.y - p1.y)[0]; 
-                if (p2.x < p1.x){
+                double angle_y = MIMath.cartesianToPolar(p4.x - p1.x, p4.y - p1.y)[0];
+                if (p2.x < p1.x) {
                     xscale = -xscale;
                     yscale = -yscale;
                 }
@@ -1417,8 +1466,7 @@ public class Plot3D extends Plot {
     }
 
     /**
-     * Draws non-surface parts, i.e: bounding box, axis grids, axis ticks, axis
-     * labels, base plane.
+     * Draws bounding box, axis grids, axis ticks, axis labels, base plane.
      *
      * @param g the graphics context to draw
      */
@@ -1558,8 +1606,9 @@ public class Plot3D extends Plot {
             int strWidth = 0, w;
             for (i = 0; i < this.xAxis.getTickValues().length; i += skip) {
                 v = (float) this.xAxis.getTickValues()[i];
-                if (i == tlabs.size())
+                if (i == tlabs.size()) {
                     break;
+                }
                 s = tlabs.get(i).getText();
                 if (v < xmin || v > xmax) {
                     continue;
@@ -1748,7 +1797,7 @@ public class Plot3D extends Plot {
         projection = projector.project(factor_x * 10, factor_y * 10, -10);
         g2.drawLine(startingpoint.x, startingpoint.y, projection.x, projection.y);
     }
-    
+
     /**
      * Get tight inset area
      *

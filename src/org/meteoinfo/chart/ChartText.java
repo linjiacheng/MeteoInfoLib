@@ -15,15 +15,20 @@ import java.util.List;
 import org.meteoinfo.chart.plot.XAlign;
 import org.meteoinfo.chart.plot.YAlign;
 import org.meteoinfo.drawing.Draw;
-import org.meteoinfo.shape.PointShape;
+import org.meteoinfo.global.Extent;
+import org.meteoinfo.jts.geom.Geometry;
+import org.meteoinfo.jts.geom.GeometryFactory;
+import org.meteoinfo.shape.Shape;
 import org.meteoinfo.shape.ShapeTypes;
 
 /**
  *
  * @author yaqiang
  */
-public class ChartText extends PointShape {
+public class ChartText extends Shape {
     // <editor-fold desc="Variables">
+    protected double x;
+    protected double y;
     private Font font;
     private List<String> text;
     private Color color;
@@ -35,7 +40,7 @@ public class ChartText extends PointShape {
     private Color neatLineColor;
     private float neatLineSize;
     private float gap;
-    private float angle;
+    protected float angle;
     private XAlign xAlign;
     private YAlign yAlign;
     // </editor-fold>    
@@ -176,7 +181,7 @@ public class ChartText extends PointShape {
      * @return X
      */
     public double getX(){
-        return this.point.X;
+        return this.x;
     }
     
     /**
@@ -184,7 +189,7 @@ public class ChartText extends PointShape {
      * @param value X
      */
     public void setX(double value){
-        this.point.X = value;
+        this.x = value;
     }
     
     /**
@@ -192,7 +197,7 @@ public class ChartText extends PointShape {
      * @return Y
      */
     public double getY(){
-        return this.point.Y;
+        return this.y;
     }
     
     /**
@@ -200,7 +205,7 @@ public class ChartText extends PointShape {
      * @param value Y
      */
     public void setY(double value) {
-        this.point.Y = value;
+        this.y = value;
     }
     
     /**
@@ -443,6 +448,33 @@ public class ChartText extends PointShape {
             h += dim.height + this.lineSpace;
         }
         return h - this.lineSpace;
+    }
+    
+    /**
+     * To geometry method
+     * @param factory GeometryFactory
+     * @return Geometry
+     */
+    @Override
+    public Geometry toGeometry(GeometryFactory factory){
+        return null;
+    }
+    
+    /**
+     * Set point
+     * 
+     * @param x X
+     * @param y Y
+     */
+    public void setPoint(double x, double y) {
+        this.x = x;
+        this.y = y;
+        Extent aExtent = new Extent();
+        aExtent.minX = x;
+        aExtent.maxX = x;
+        aExtent.minY = y;
+        aExtent.maxY = y;
+        this.setExtent(aExtent);
     }
     // </editor-fold>
 }

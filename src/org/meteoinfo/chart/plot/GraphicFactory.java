@@ -2139,7 +2139,7 @@ public class GraphicFactory {
             ChartText ps = new ChartText();
             ldx = dx + r * labelDis * Math.cos(angle * Math.PI / 180);
             ldy = dy + r * labelDis * Math.sin(angle * Math.PI / 180);
-            ps.setPoint(new PointD(ldx, ldy));
+            ps.setPoint(ldx, ldy);
             ps.setText(label);
             ps.setFont(labelFont);
             ps.setColor(labelColor);            
@@ -2161,7 +2161,7 @@ public class GraphicFactory {
                 ps = new ChartText();
                 ldx = dx + r * pctDis * Math.cos(angle * Math.PI / 180);
                 ldy = dy + r * pctDis * Math.sin(angle * Math.PI / 180);
-                ps.setPoint(new PointD(ldx, ldy));
+                ps.setPoint(ldx, ldy);
                 ps.setText(pct);
                 ps.setFont(labelFont);
                 ps.setColor(labelColor);            
