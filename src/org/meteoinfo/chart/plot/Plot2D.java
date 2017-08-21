@@ -399,16 +399,14 @@ public class Plot2D extends AbstractPlot2D {
         }
         String s = text.getText();
         switch (text.getXAlign()) {
-            case LEFT:
-                g.drawString(s, x, y);
-                break;
             case RIGHT:
-                g.drawString(s, x - g.getFontMetrics(g.getFont()).stringWidth(s), y);
+                x = x - g.getFontMetrics(g.getFont()).stringWidth(s);
                 break;
             case CENTER:
-                g.drawString(s, x - g.getFontMetrics(g.getFont()).stringWidth(s) / 2, y);
+                x = x - g.getFontMetrics(g.getFont()).stringWidth(s) * 0.5f;
                 break;
         }
+        Draw.drawString(g, s, x, y);
     }
 
     private void drawWindBarb(Graphics2D g, WindBarb aPS, PointBreak aPB, Rectangle2D area) {
