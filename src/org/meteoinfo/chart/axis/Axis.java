@@ -36,7 +36,7 @@ public class Axis implements Cloneable {
     // <editor-fold desc="Variables">
     private boolean xAxis;
     private Location location;
-    private String label;
+    private ChartText label;
     private boolean visible;
     private boolean drawTickLine;
     private boolean drawTickLabel;
@@ -47,8 +47,6 @@ public class Axis implements Cloneable {
     private Stroke tickStroke;
     private int tickLength;
     private boolean insideTick;
-    private Font labelFont;
-    private Color labelColor;
     private Font tickLabelFont;
     private Color tickLabelColor;
     private float tickLabelAngle;
@@ -77,7 +75,7 @@ public class Axis implements Cloneable {
      */
     public Axis() {
         this.xAxis = true;
-        this.label = "";
+        this.label = null;
         this.visible = true;
         this.drawTickLine = true;
         this.drawTickLabel = true;
@@ -88,8 +86,6 @@ public class Axis implements Cloneable {
         this.tickStroke = new BasicStroke(1.0f);
         this.tickLength = 5;
         this.insideTick = true;
-        this.labelFont = new Font("Arial", Font.PLAIN, 14);
-        this.labelColor = Color.darkGray;
         this.tickLabelFont = new Font("Arial", Font.PLAIN, 14);
         this.tickLabelColor = Color.darkGray;
         this.tickLabelAngle = 0;
@@ -114,9 +110,19 @@ public class Axis implements Cloneable {
      *
      * @param label Axis label
      */
-    public Axis(String label) {
+    public Axis(ChartText label) {
         this();
         this.label = label;
+    }
+    
+    /**
+     * Constructor
+     *
+     * @param label Axis label
+     */
+    public Axis(String label) {
+        this();
+        this.label = new ChartText(label);
     }
 
     /**
@@ -126,6 +132,22 @@ public class Axis implements Cloneable {
      * @param xAxis If is x axis
      */
     public Axis(String label, boolean xAxis) {
+        this(label);
+        this.xAxis = xAxis;
+        if (this.xAxis) {
+            this.location = Location.BOTTOM;
+        } else {
+            this.location = Location.LEFT;
+        }
+    }
+    
+    /**
+     * Constructor
+     *
+     * @param label Axis label
+     * @param xAxis If is x axis
+     */
+    public Axis(ChartText label, boolean xAxis) {
         this(label);
         this.xAxis = xAxis;
         if (this.xAxis) {
@@ -235,7 +257,7 @@ public class Axis implements Cloneable {
      *
      * @return Axis label
      */
-    public String getLabel() {
+    public ChartText getLabel() {
         return label;
     }
 
@@ -244,11 +266,21 @@ public class Axis implements Cloneable {
      *
      * @param value Axis label
      */
-    public void setLabel(String value) {
+    public void setLabel(ChartText value) {
         label = value;
-        if (!label.isEmpty() && (this.location == Location.BOTTOM || this.location == Location.LEFT)) {
+        if (label != null && (this.location == Location.BOTTOM || this.location == Location.LEFT)) {
             this.drawLabel = true;
         }
+    }
+    
+    /**
+     * Set axis label
+     *
+     * @param value Axis label
+     */
+    public void setLabel(String value) {
+        ChartText text = new ChartText(value);
+        setLabel(text);
     }
 
     /**
@@ -437,7 +469,7 @@ public class Axis implements Cloneable {
      * @return Label font
      */
     public Font getLabelFont() {
-        return labelFont;
+        return this.label.getFont();
     }
 
     /**
@@ -446,7 +478,7 @@ public class Axis implements Cloneable {
      * @param value Lable font
      */
     public void setLabelFont(Font value) {
-        labelFont = value;
+        this.label.setFont(value);
     }
 
     /**
@@ -455,7 +487,7 @@ public class Axis implements Cloneable {
      * @return Label color
      */
     public Color getLabelColor() {
-        return labelColor;
+        return this.label.getColor();
     }
 
     /**
@@ -464,7 +496,7 @@ public class Axis implements Cloneable {
      * @param value Label color
      */
     public void setLabelColor(Color value) {
-        labelColor = value;
+        this.label.setColor(value);
     }
 
     /**
@@ -1140,7 +1172,7 @@ public class Axis implements Cloneable {
             nn = (int) ((len * 0.8) / labLen);
         } else {
             len = rect.getHeight();
-            FontMetrics metrics = g.getFontMetrics(labelFont);
+            FontMetrics metrics = g.getFontMetrics(this.label.getFont());
             nn = (int) (len / metrics.getHeight());
         }
         if (nn == 0) {
@@ -1163,7 +1195,7 @@ public class Axis implements Cloneable {
 
         int n = this.getTickValues().length;
         int nn;
-        FontMetrics metrics = g.getFontMetrics(labelFont);
+        FontMetrics metrics = g.getFontMetrics(this.label.getFont());
         nn = (int) (len / metrics.getHeight());
         if (nn == 0) {
             nn = 1;
@@ -1180,7 +1212,7 @@ public class Axis implements Cloneable {
         this.lineColor = c;
         this.tickColor = c;
         this.tickLabelColor = c;
-        this.labelColor = c;
+        this.label.setColor(c);
     }
 
     /**
@@ -1397,14 +1429,14 @@ public class Axis implements Cloneable {
             g.setColor(this.getLabelColor());
             //metrics = g.getFontMetrics(this.xAxis.getLabelFont());
             //dim = new Dimension(metrics.stringWidth(this.xAxis.getLabel()), metrics.getHeight());
-            dim = Draw.getStringDimension(this.getLabel(), g);
+            dim = Draw.getStringDimension(this.label.getText(), g);
             labx = (float) (x - dim.width / 2);
             laby = (float) (y + dim.height * 3 / 4);
             if (!this.isInsideTick()) {
                 laby += len;
             }
             //g.drawString(this.xAxis.getLabel(), labx, laby);
-            Draw.drawString(g, this.getLabel(), labx, laby);
+            Draw.drawString(g, this.label.getText(), labx, laby, this.label.isUseExternalFont());
         }
     }
 
@@ -1515,14 +1547,14 @@ public class Axis implements Cloneable {
             g.setColor(this.getLabelColor());
             //metrics = g.getFontMetrics(this.xAxis.getLabelFont());
             //dim = new Dimension(metrics.stringWidth(this.xAxis.getLabel()), metrics.getHeight());
-            dim = Draw.getStringDimension(this.getLabel(), g);
+            dim = Draw.getStringDimension(this.label.getText(), g);
             labx = (float) (x - dim.width / 2);
             laby = (float) (y + dim.height * 3 / 4);
             if (!this.isInsideTick()) {
                 laby += len;
             }
             //g.drawString(this.xAxis.getLabel(), labx, laby);
-            Draw.drawString(g, this.getLabel(), labx, laby);
+            Draw.drawString(g, this.label.getText(), labx, laby, this.label.isUseExternalFont());
         }
     }
 
@@ -1672,7 +1704,7 @@ public class Axis implements Cloneable {
         //Draw label
         if (this.isDrawLabel()) {
             g.setFont(this.getLabelFont());
-            Dimension dim = Draw.getStringDimension(this.getLabel(), g);
+            Dimension dim = Draw.getStringDimension(this.label.getText(), g);
             //metrics = g.getFontMetrics(this.yAxis.getLabelFont());
             if (this.location == Location.LEFT) {
                 x = sx - space - this.getMaxLabelLength(g) - dim.height - 10;
@@ -1684,8 +1716,8 @@ public class Axis implements Cloneable {
                 //y = g.getTransform().getTranslateY() + y;
                 //Draw.drawLabelPoint((float)x, (float)y, this.yAxis.getLabelFont(), this.yAxis.getLabel(), 
                 //        this.yAxis.getLabelColor(), -90, g, null);
-                Draw.drawLabelPoint_270((float) x, (float) y, this.getLabelFont(), this.getLabel(),
-                        this.getLabelColor(), g, null);
+                Draw.drawLabelPoint_270((float) x, (float) y, this.getLabelFont(), this.label.getText(),
+                        this.getLabelColor(), g, null, this.label.isUseExternalFont());
             } else {
                 x = sx + space + this.getMaxLabelLength(g) + 10;
                 if (!this.isInsideTick()) {
@@ -1696,8 +1728,8 @@ public class Axis implements Cloneable {
                 //y = g.getTransform().getTranslateY() + y;
                 //Draw.drawLabelPoint((float)x, (float)y, this.yAxis.getLabelFont(), this.yAxis.getLabel(), 
                 //        this.yAxis.getLabelColor(), -90, g, null);
-                Draw.drawLabelPoint_270((float) x, (float) y, this.getLabelFont(), this.getLabel(),
-                        this.getLabelColor(), g, null);
+                Draw.drawLabelPoint_270((float) x, (float) y, this.getLabelFont(), this.label.getText(),
+                        this.getLabelColor(), g, null, this.label.isUseExternalFont());
             }
         }
     }

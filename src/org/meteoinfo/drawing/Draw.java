@@ -157,12 +157,12 @@ public class Draw {
      */
     public static void drawString(Graphics2D g, String str, float x, float y) {
         if (isLaTeX(str)) {            
-            drawLaTeX(g, str, x, y);
+            drawLaTeX(g, str, x, y, true);
         } else {
             g.drawString(str, x, y);
         }
     }
-
+    
     /**
      * Draw string
      *
@@ -170,15 +170,32 @@ public class Draw {
      * @param str String
      * @param x X
      * @param y Y
-     * @param isLaTeX If is LaTeX
+     * @param useExternalFont If use external font
      */
-    public static void drawString(Graphics2D g, String str, float x, float y, boolean isLaTeX) {
-        if (isLaTeX) {            
-            drawLaTeX(g, str, x, y);
+    public static void drawString(Graphics2D g, String str, float x, float y, boolean useExternalFont) {
+        if (isLaTeX(str)) {            
+            drawLaTeX(g, str, x, y, useExternalFont);
         } else {
             g.drawString(str, x, y);
         }
     }
+
+//    /**
+//     * Draw string
+//     *
+//     * @param g Graphics2D
+//     * @param str String
+//     * @param x X
+//     * @param y Y
+//     * @param isLaTeX If is LaTeX
+//     */
+//    public static void drawString(Graphics2D g, String str, float x, float y, boolean isLaTeX) {
+//        if (isLaTeX) {            
+//            drawLaTeX(g, str, x, y);
+//        } else {
+//            g.drawString(str, x, y);
+//        }
+//    }
 
     /**
      * Draw LaTeX string
@@ -187,10 +204,11 @@ public class Draw {
      * @param str String
      * @param x X
      * @param y Y
+     * @param useExternalFont If use external font
      */
-    public static void drawLaTeX(Graphics2D g, String str, float x, float y) {
+    public static void drawLaTeX(Graphics2D g, String str, float x, float y, boolean useExternalFont) {
         float size = g.getFont().getSize2D();
-        drawLaTeX(g, str, size, x, y);
+        drawLaTeX(g, str, size, x, y, useExternalFont);
     }
 
     /**
@@ -201,10 +219,15 @@ public class Draw {
      * @param size Size
      * @param x X
      * @param y Y
+     * @param useExternalFont If use external font
      */
-    public static void drawLaTeX(Graphics2D g, String str, float size, float x, float y) {
-        //Set font
-        TeXFormula.registerExternalFont(Character.UnicodeBlock.BASIC_LATIN, g.getFont().getName());
+    public static void drawLaTeX(Graphics2D g, String str, float size, float x, float y, boolean useExternalFont) {
+        if (useExternalFont){
+            //Set font
+            TeXFormula.registerExternalFont(Character.UnicodeBlock.BASIC_LATIN, g.getFont().getName());
+        } else {
+            TeXFormula.registerExternalFont(Character.UnicodeBlock.BASIC_LATIN, null, null);
+        }
         
         // create a formula
         TeXFormula formula = new TeXFormula(str);
@@ -1157,6 +1180,61 @@ public class Draw {
             }
         }
     }
+    
+    /**
+     * Draw label point
+     *
+     * @param x X
+     * @param y Y
+     * @param font Font
+     * @param text Text
+     * @param color Color
+     * @param g Graphics2D
+     * @param rect The extent rectangle
+     * @param angle Angle
+     * @param useExternalFont If use external font
+     */
+    public static void drawLabelPoint(float x, float y, Font font, String text, Color color, float angle, 
+            Graphics2D g, Rectangle rect, boolean useExternalFont) {
+        g.setColor(color);
+        g.setFont(font);
+        Dimension labSize = Draw.getStringDimension(text, g);
+        //FontMetrics metrics = g.getFontMetrics(font);
+        //Dimension labSize = new Dimension(metrics.stringWidth(text), metrics.getHeight());
+        x = x - (float) labSize.getWidth() / 2;
+        y -= (float) labSize.getHeight() / 2;
+
+        float inx = x;
+        float iny = y;
+
+        AffineTransform tempTrans = g.getTransform();
+        if (angle != 0) {
+            AffineTransform myTrans = new AffineTransform();
+            myTrans.translate(x, y);
+            myTrans.rotate(angle * Math.PI / 180);
+            g.setTransform(myTrans);
+            x = 0;
+            y = 0;
+        }
+
+        //g.drawString(text, x, y + metrics.getHeight() / 2);
+        Draw.drawString(g, text, x, y + labSize.height / 2, useExternalFont);
+
+        if (rect != null) {
+            rect.x = (int) x;
+            rect.y = (int) y - labSize.height / 2;
+            rect.width = (int) labSize.getWidth();
+            rect.height = (int) labSize.getHeight();
+        }
+
+        if (angle != 0) {
+            g.setTransform(tempTrans);
+            if (rect != null) {
+                rect.x = (int) inx;
+                rect.y = (int) iny;
+            }
+        }
+    }
 
     /**
      * Draw label point
@@ -1263,7 +1341,59 @@ public class Draw {
         //g.setFont(font);
         if (Draw.isLaTeX(text)) {
             //Draw.drawLaTeX(g, text, x - labSize.width / 2, y - labSize.height);
-            Draw.drawLaTeX(g, text, x - labSize.width / 2, y + labSize.height / 2);
+            Draw.drawLaTeX(g, text, x - labSize.width / 2, y + labSize.height / 2, true);
+        } else {
+            g.drawString(text, x - labSize.width / 2, y + labSize.height * 3 / 4);
+        }
+
+        if (rect != null) {
+            rect.x = (int) x;
+            rect.y = (int) y - labSize.height / 2;
+            rect.width = (int) labSize.getWidth();
+            rect.height = (int) labSize.getHeight();
+        }
+
+        g.setTransform(tempTrans);
+        if (rect != null) {
+            rect.x = (int) inx;
+            rect.y = (int) iny;
+        }
+    }
+    
+    /**
+     * Draw label point (270 degress)
+     *
+     * @param x X
+     * @param y Y
+     * @param font Font
+     * @param text Text
+     * @param color Color
+     * @param g Graphics2D
+     * @param rect The extent rectangle
+     * @param useExternalFont If use external font
+     */
+    public static void drawLabelPoint_270(float x, float y, Font font, String text, Color color, 
+            Graphics2D g, Rectangle rect, boolean useExternalFont) {
+        //FontMetrics metrics = g.getFontMetrics(font);
+        //Dimension labSize = new Dimension(metrics.stringWidth(text), metrics.getHeight());
+        g.setFont(font);
+        Dimension labSize = Draw.getStringDimension(text, g);
+
+        float inx = x;
+        float iny = y;
+
+        AffineTransform tempTrans = g.getTransform();
+        float angle = 270;
+        g.translate(x, y);
+        g.rotate(angle * Math.PI / 180);
+        x = 0;
+        y = 0;
+
+        g.setColor(color);
+        //g.setFont(font);
+        if (Draw.isLaTeX(text)) {
+            //Draw.drawLaTeX(g, text, x - labSize.width / 2, y - labSize.height);
+            Draw.drawLaTeX(g, text, x - labSize.width / 2, y + labSize.height / 2, useExternalFont);
         } else {
             g.drawString(text, x - labSize.width / 2, y + labSize.height * 3 / 4);
         }

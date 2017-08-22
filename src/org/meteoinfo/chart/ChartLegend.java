@@ -60,9 +60,7 @@ public class ChartLegend {
     private boolean drawBackground;
     private int width;
     private int height;
-    private String label;
-    private Font labelFont;
-    private Color labelColor;
+    private ChartText label;
     private String labelLocation;
     private Font tickFont;
     private Color tickColor;
@@ -109,8 +107,6 @@ public class ChartLegend {
         _leftSpace = 5;
         _vBarWidth = 10;
         _hBarHeight = 10;
-        this.labelFont = new Font("Arial", Font.PLAIN, 14);
-        this.labelColor = Color.black;
         this.labelLocation = "out";
         tickFont = new Font("Arial", Font.PLAIN, 14);
         this.tickColor = Color.black;
@@ -402,7 +398,7 @@ public class ChartLegend {
      *
      * @return Label
      */
-    public String getLabel() {
+    public ChartText getLabel() {
         return this.label;
     }
 
@@ -411,7 +407,7 @@ public class ChartLegend {
      *
      * @param value Label
      */
-    public void setLabel(String value) {
+    public void setLabel(ChartText value) {
         this.label = value;
     }
 
@@ -421,7 +417,7 @@ public class ChartLegend {
      * @return Label font
      */
     public Font getLabelFont() {
-        return this.labelFont;
+        return this.label.getFont();
     }
 
     /**
@@ -430,7 +426,7 @@ public class ChartLegend {
      * @param value Label font
      */
     public void setLabelFont(Font value) {
-        this.labelFont = value;
+        this.label.setFont(value);
     }
 
     /**
@@ -439,7 +435,7 @@ public class ChartLegend {
      * @return Label color
      */
     public Color getLabelColor() {
-        return this.labelColor;
+        return this.label.getColor();
     }
 
     /**
@@ -448,7 +444,7 @@ public class ChartLegend {
      * @param value Label color
      */
     public void setLabelColor(Color value) {
-        this.labelColor = value;
+        this.label.setColor(value);
     }
 
     /**
@@ -849,8 +845,8 @@ public class ChartLegend {
                 sP.Y = y;
                 //FontMetrics metrics = g.getFontMetrics(lFont);
                 //aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());                
-                g.setColor(this.labelColor);
-                g.setFont(this.labelFont);
+                g.setColor(this.label.getColor());
+                g.setFont(this.label.getFont());
                 aSF = Draw.getStringDimension(caption, g);
                 //g.drawString(caption, sP.X + 5, sP.Y + aSF.height / 3);
                 //g.drawString(caption, sP.X + 5, sP.Y + aSF.height / 4);
@@ -867,7 +863,7 @@ public class ChartLegend {
         float breakHeight = this.getBreakHeight(g);
         float symbolHeight = this.symbolDimension.height;
         float symbolWidth = this.symbolDimension.width;
-        FontMetrics metrics = g.getFontMetrics(labelFont);
+        FontMetrics metrics = g.getFontMetrics(this.label.getFont());
 
         //Set columns
         int[] colNums = new int[rowColNum];
@@ -932,8 +928,8 @@ public class ChartLegend {
                 PointF sP = new PointF(0, 0);
                 sP.X = x + symbolWidth / 2;
                 sP.Y = y;
-                g.setColor(this.labelColor);
-                g.setFont(this.labelFont);
+                g.setColor(this.label.getColor());
+                g.setFont(this.label.getFont());
                 //g.drawString(caption, sP.X + 5, sP.Y + aSF.height / 3);
                 //g.drawString(caption, sP.X + 5, sP.Y + metrics.getHeight() / 4);
                 Draw.drawString(g, caption, sP.X + 5, sP.Y + metrics.getHeight() / 4);
@@ -1132,26 +1128,28 @@ public class ChartLegend {
         }
         //Draw label
         if (this.label != null) {
-            g.setFont(this.labelFont);
-            Dimension dim = Draw.getStringDimension(this.getLabel(), g);
+            g.setFont(this.label.getFont());
+            Dimension dim = Draw.getStringDimension(this.label.getText(), g);
             switch (this.labelLocation) {
                 case "top":
                 case "right":
                     x = dim.width * 0.5f;
                     y = -(dim.height * 0.5f + 5);
-                    Draw.drawLabelPoint(x, y, this.getLabelFont(), label, this.getLabelColor(), 0, g, null);
+                    Draw.drawLabelPoint(x, y, this.getLabelFont(), label.getText(), this.getLabelColor(), 0, 
+                            g, null, this.label.isUseExternalFont());
                     break;
                 case "bottom":
                 case "left":
                     x = dim.width * 0.5f;
                     y = this.height + dim.height + 5;
-                    Draw.drawLabelPoint(x, y, this.getLabelFont(), label, this.getLabelColor(), 0, g, null);
+                    Draw.drawLabelPoint(x, y, this.getLabelFont(), label.getText(), this.getLabelColor(), 0, 
+                            g, null, this.label.isUseExternalFont());
                     break;
                 default:
                     x = this.width - dim.height * 0.5f - 2;
                     y = this.height * 0.5f;
-                    Draw.drawLabelPoint_270((float) x, (float) y, this.getLabelFont(), this.label,
-                            this.getLabelColor(), g, null);
+                    Draw.drawLabelPoint_270((float) x, (float) y, this.getLabelFont(), this.label.getText(),
+                            this.getLabelColor(), g, null, this.label.isUseExternalFont());
                     break;
             }
         }
@@ -1355,9 +1353,9 @@ public class ChartLegend {
 
         //Draw label
         if (this.label != null) {
-            g.setFont(this.labelFont);
-            g.setColor(this.labelColor);
-            Dimension dim = Draw.getStringDimension(this.getLabel(), g);
+            g.setFont(this.label.getFont());
+            g.setColor(this.label.getColor());
+            Dimension dim = Draw.getStringDimension(this.label.getText(), g);
             switch(this.labelLocation){
                 case "top":
                 case "right":
@@ -1374,7 +1372,7 @@ public class ChartLegend {
                     y = this.height - dim.height * 0.25f - 2;
                     break;
             }            
-            Draw.drawString(g, label, x, y);
+            Draw.drawString(g, label.getText(), x, y, label.isUseExternalFont());
         }
     }
 
@@ -1389,7 +1387,7 @@ public class ChartLegend {
             caption = legendScheme.getLegendBreaks().get(i).getCaption();
             boolean isValid = true;
             if (isValid) {
-                g.setFont(this.labelFont);
+                g.setFont(this.label.getFont());
                 aSF = Draw.getStringDimension(caption, g);
                 int labwidth = aSF.width;
                 if (labWidth < labwidth) {
@@ -1420,23 +1418,23 @@ public class ChartLegend {
                     case VERTICAL:
                         this.width = (int) (this.getTickWidth(g) + limitDim.height * this.shrink / this.aspect + 5);
                         if (this.label != null) {
-                            g.setFont(this.labelFont);
-                            this.width += (int) Draw.getStringDimension(label, g).height + 5;
+                            g.setFont(this.label.getFont());
+                            this.width += (int) Draw.getStringDimension(label.getText(), g).height + 5;
                         }
                         break;
                     default:
                         g.setFont(this.tickFont);
                         this.height = (int) (Draw.getStringDimension("test", g).height + limitDim.width * this.shrink / this.aspect + 5);
                         if (this.label != null) {
-                            g.setFont(this.labelFont);
-                            Dimension dim = Draw.getStringDimension(label, g);
+                            g.setFont(this.label.getFont());
+                            Dimension dim = Draw.getStringDimension(label.getText(), g);
                             switch (this.labelLocation){
                                 case "top":
                                 case "right":
                                     this.width += dim.width + 10;
                                     break;
                                 default:
-                                    this.height += (int) Draw.getStringDimension(label, g).height + 5;
+                                    this.height += (int) Draw.getStringDimension(label.getText(), g).height + 5;
                                     break;
                             }                            
                         }

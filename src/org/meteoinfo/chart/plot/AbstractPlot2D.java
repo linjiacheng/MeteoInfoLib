@@ -1048,7 +1048,7 @@ public abstract class AbstractPlot2D extends Plot {
         }
         if (xAxis.isDrawLabel()) {
             g.setFont(xAxis.getLabelFont());
-            Dimension dim = Draw.getStringDimension(xAxis.getLabel(), g);
+            Dimension dim = Draw.getStringDimension(xAxis.getLabel().getText(), g);
             height += dim.height + space;
         }
 
@@ -1070,7 +1070,7 @@ public abstract class AbstractPlot2D extends Plot {
         }
         if (yAxis.isDrawLabel()) {
             g.setFont(yAxis.getLabelFont());
-            Dimension dim = Draw.getStringDimension(yAxis.getLabel(), g);
+            Dimension dim = Draw.getStringDimension(yAxis.getLabel().getText(), g);
             width += dim.height + 10 - space;
         }
 
@@ -1087,7 +1087,7 @@ public abstract class AbstractPlot2D extends Plot {
             for (String text : title.getTexts()) {
                 Dimension dim = Draw.getStringDimension(text, g);
                 y += dim.height;
-                Draw.drawString(g, text, x - dim.width / 2, y);
+                Draw.drawString(g, text, x - dim.width / 2, y, title.isUseExternalFont());
                 g.setFont(title.getFont());
                 y += title.getLineSpace();
             }
@@ -1232,7 +1232,7 @@ public abstract class AbstractPlot2D extends Plot {
             g.setStroke(oldStroke);
         }
         g.setColor(text.getColor());
-        Draw.drawString(g, text.getText(), x, y);
+        Draw.drawString(g, text.getText(), x, y, text.isUseExternalFont());
     }
 
     void drawLegend(Graphics2D g, Rectangle2D area, Rectangle2D graphArea, float y) {

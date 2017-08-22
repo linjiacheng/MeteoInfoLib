@@ -1643,7 +1643,7 @@ public class Plot3D extends Plot {
                     strWidth = w;
                 }
             }
-            String label = this.xAxis.getLabel();
+            String label = this.xAxis.getLabel().getText();
             if (label != null) {
                 tickpos = projector.project(0, factor_y * 10.f, -10);
                 Dimension dim = Draw.getStringDimension(label, g);
@@ -1707,7 +1707,7 @@ public class Plot3D extends Plot {
                     strWidth = w;
                 }
             }
-            label = this.yAxis.getLabel();
+            label = this.yAxis.getLabel().getText();
             if (label != null) {
                 tickpos = projector.project(factor_x * 10.f, 0, -10);
                 Dimension dim = Draw.getStringDimension(label, g);
@@ -1770,13 +1770,13 @@ public class Plot3D extends Plot {
                     strWidth = w;
                 }
             }
-            String label = this.zAxis.getLabel();
+            String label = this.zAxis.getLabel().getText();
             if (label != null) {
                 Dimension dim = Draw.getStringDimension(label, g);
                 tickpos = projector.project(factor_x * 10 * lf, -factor_y * 10 * lf, 0);
                 tickpos.x = tickpos.x - this.xAxis.getTickLength() - 15 - strWidth - dim.height;
                 Draw.drawLabelPoint_270(tickpos.x, tickpos.y, this.zAxis.getLabelFont(), label,
-                        this.zAxis.getLabelColor(), g, null);
+                        this.zAxis.getLabelColor(), g, null, this.zAxis.getLabel().isUseExternalFont());
                 //outString(g, tickpos.x, tickpos.y, label, Label.RIGHT, CENTER);
             }
         }

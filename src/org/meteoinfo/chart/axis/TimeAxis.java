@@ -42,7 +42,7 @@ public class TimeAxis extends Axis implements Cloneable {
      * @param axis Axis
      */
     public TimeAxis(Axis axis) {
-        this(axis.getLabel(), axis.isXAxis());
+        this(axis.getLabel().getText(), axis.isXAxis());
         this.setAutoTick(axis.isAutoTick());
         this.setDrawLabel(axis.isDrawLabel());
         this.setDrawTickLabel(axis.isDrawTickLabel());

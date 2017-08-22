@@ -43,13 +43,14 @@ public class ChartText extends Shape {
     protected float angle;
     private XAlign xAlign;
     private YAlign yAlign;
+    private boolean useExternalFont;
     // </editor-fold>    
     // <editor-fold desc="Constructor">
     /**
      * Constructor
      */
     public ChartText() {
-        font = new Font("Arial", Font.BOLD, 14);
+        font = new Font("Arial", Font.PLAIN, 14);
         color = Color.black;
         lineSpace = 3;
         coordinates = CoordinateType.DATA;
@@ -62,6 +63,7 @@ public class ChartText extends Shape {
         this.angle = 0.0f;
         this.xAlign = XAlign.LEFT;
         this.yAlign = YAlign.BOTTOM;
+        this.useExternalFont = false;
     }
     
     /**
@@ -419,6 +421,22 @@ public class ChartText extends Shape {
      */
     public void setYAlign(String value){
         this.yAlign = YAlign.valueOf(value.toUpperCase());
+    }
+    
+    /**
+     * Get if use external font - only for LaTeX string
+     * @return Boolean
+     */
+    public boolean isUseExternalFont(){
+        return this.useExternalFont;
+    }
+    
+    /**
+     * Set if use external font - only for LaTeX string
+     * @param value Boolean
+     */
+    public void setUseExternalFont(boolean value){
+        this.useExternalFont = value;
     }
     // </editor-fold>
     // <editor-fold desc="Methods">

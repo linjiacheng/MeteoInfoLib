@@ -406,7 +406,7 @@ public class Plot2D extends AbstractPlot2D {
                 x = x - g.getFontMetrics(g.getFont()).stringWidth(s) * 0.5f;
                 break;
         }
-        Draw.drawString(g, s, x, y);
+        Draw.drawString(g, s, x, y, text.isUseExternalFont());
     }
 
     private void drawWindBarb(Graphics2D g, WindBarb aPS, PointBreak aPB, Rectangle2D area) {
