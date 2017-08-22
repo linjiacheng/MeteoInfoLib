@@ -256,6 +256,122 @@ public class GraphicFactory {
 
         return gc;
     }
+    
+    /**
+     * Create step LineString graphic
+     *
+     * @param xdata X data array
+     * @param ydata Y data array
+     * @param cb Color break
+     * @param where Where - pre, post, mid
+     * @return LineString graphic
+     */
+    public static GraphicCollection createStepLineString(Array xdata, Array ydata, ColorBreak cb, String where) {
+        GraphicCollection gc = new GraphicCollection();
+        PolylineShape pls;
+        List<PointD> points = new ArrayList<>();
+        double x, x1, x2, y, y1, y2;
+        switch(where){
+            case "mid":
+                for (int i = 0; i < xdata.getSize() - 1; i++) {
+                    x1 = xdata.getDouble(i);
+                    x2 = xdata.getDouble(i+1);
+                    y1 = ydata.getDouble(i);
+                    y2 = ydata.getDouble(i+1);
+                    if (Double.isNaN(y1) || Double.isNaN(x1) || Double.isNaN(x2)) {
+                        if (points.isEmpty()) {
+                            continue;
+                        }
+                        if (points.size() > 1) {
+                            pls = new PolylineShape();
+                            pls.setPoints(points);
+                            gc.add(new Graphic(pls, cb));
+                            points = new ArrayList<>();
+                        }                        
+                    } else {
+                        x = x1 + (x2 - x1) * 0.5;
+                        if (i == 0){
+                            points.add(new PointD(x1, y1));
+                            points.add(new PointD(x, y1));
+                            points.add(new PointD(x, y2));
+                        } else if (i == xdata.getSize() - 2){
+                            points.add(new PointD(x, y1));
+                            points.add(new PointD(x, y2));
+                            points.add(new PointD(x2, y2));
+                        } else {
+                            points.add(new PointD(x, y1));
+                            points.add(new PointD(x, y2));
+                        }
+                    }
+                }
+                if (points.size() > 1) {
+                    pls = new PolylineShape();
+                    pls.setPoints(points);
+                    gc.add(new Graphic(pls, cb));
+                }       
+                break;
+            case "post":
+                for (int i = 0; i < xdata.getSize() - 1; i++) {
+                    x1 = xdata.getDouble(i);
+                    x2 = xdata.getDouble(i+1);
+                    y = ydata.getDouble(i);                    
+                    if (Double.isNaN(y) || Double.isNaN(x1) || Double.isNaN(x2)) {
+                        if (points.isEmpty()) {
+                            continue;
+                        }
+                        if (points.size() > 1) {
+                            pls = new PolylineShape();
+                            pls.setPoints(points);
+                            gc.add(new Graphic(pls, cb));
+                            points = new ArrayList<>();
+                        }                        
+                    } else {
+                        points.add(new PointD(x1, y));
+                        points.add(new PointD(x2, y));
+                        if (i == xdata.getSize() - 2){
+                            points.add(new PointD(x2, ydata.getDouble(i+1)));
+                        } 
+                    }
+                }
+                if (points.size() > 1) {
+                    pls = new PolylineShape();
+                    pls.setPoints(points);
+                    gc.add(new Graphic(pls, cb));
+                }       
+                break;
+            default:
+                for (int i = 0; i < xdata.getSize() - 1; i++) {
+                    x1 = xdata.getDouble(i);
+                    x2 = xdata.getDouble(i+1);
+                    y = ydata.getDouble(i+1);                                        
+                    if (Double.isNaN(y) || Double.isNaN(x1) || Double.isNaN(x2)) {
+                        if (points.isEmpty()) {
+                            continue;
+                        }
+                        if (points.size() > 1) {
+                            pls = new PolylineShape();
+                            pls.setPoints(points);
+                            gc.add(new Graphic(pls, cb));
+                            points = new ArrayList<>();
+                        }                        
+                    } else {
+                        if (i == 0){
+                            points.add(new PointD(x1, ydata.getDouble(i)));
+                        }
+                        points.add(new PointD(x1, y));
+                        points.add(new PointD(x2, y));
+                    }
+                }
+                if (points.size() > 1) {
+                    pls = new PolylineShape();
+                    pls.setPoints(points);
+                    gc.add(new Graphic(pls, cb));
+                }                
+                break;
+        }
+        
+        return gc;
+    }
 
     /**
      * Create graphics
