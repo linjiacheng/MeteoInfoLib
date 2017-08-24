@@ -36,6 +36,7 @@ import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
 import org.meteoinfo.global.util.BigDecimalUtil;
 import org.meteoinfo.global.util.GlobalUtil;
+import org.meteoinfo.io.EndianDataOutputStream;
 import org.meteoinfo.jts.geom.Coordinate;
 import org.meteoinfo.jts.geom.Geometry;
 import org.meteoinfo.jts.geom.GeometryFactory;
@@ -185,15 +186,28 @@ public class ArrayUtil {
      * @param fn File path
      * @param a Array
      * @param byteOrder Byte order
-     * @param append
+     * @param append If append to existing file
+     * @param sequential If write as sequential binary file - Fortran
      */
-    public static void saveBinFile(String fn, Array a, String byteOrder, boolean append) {
-        try (DataOutputStream outs = new DataOutputStream(new FileOutputStream(new File(fn), append))) {
+    public static void saveBinFile(String fn, Array a, String byteOrder, boolean append,
+            boolean sequential) {
+        try (DataOutputStream out = new DataOutputStream(new FileOutputStream(new File(fn), append))) {
+            EndianDataOutputStream outs = new EndianDataOutputStream(out);
             ByteBuffer bb = a.getDataAsByteBuffer();
+            int n = (int)a.getSize();
             ByteOrder bOrder = ByteOrder.LITTLE_ENDIAN;
             if (byteOrder.equalsIgnoreCase("big_endian")) {
                 bOrder = ByteOrder.BIG_ENDIAN;
+            }            
+            
+            if (sequential){
+                if (bOrder == ByteOrder.BIG_ENDIAN){
+                    outs.writeIntBE(n * 4);
+                } else {
+                    outs.writeIntLE(n * 4);
+                }
             }
+            
             if (bOrder == ByteOrder.BIG_ENDIAN) {
                 outs.write(bb.array());
             } else if (a.getDataType() == DataType.BYTE) {
@@ -222,6 +236,14 @@ public class ArrayUtil {
                         nbb.put(bb);
                 }
                 outs.write(nbb.array());
+            }
+            
+            if (sequential){
+                if (bOrder == ByteOrder.BIG_ENDIAN){
+                    outs.writeIntBE(n * 4);
+                } else {
+                    outs.writeIntLE(n * 4);
+                }
             }
 
             outs.close();

@@ -39,6 +39,15 @@ public class EndianDataOutputStream {
     public void close() throws IOException {
         outputStream.close();
     }
+    
+    /**
+     * Write bytes
+     * @param b bytes
+     * @throws IOException 
+     */
+    public void write(byte[] b) throws IOException{
+        outputStream.write(b);
+    }
 
     /**
      * write bytes
