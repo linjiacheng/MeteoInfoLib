@@ -581,7 +581,7 @@ public class LegendScheme {
         Attr drawShape;
         Attr size;
         Attr style;
-        Attr outlineColor;
+        Attr outlineColor, outlineSize;
         Attr drawOutline;
         Attr drawFill;
         Attr tagAttr;
@@ -598,6 +598,7 @@ public class LegendScheme {
                     color = doc.createAttribute("Color");
                     drawShape = doc.createAttribute("DrawShape");
                     outlineColor = doc.createAttribute("OutlineColor");
+                    outlineSize = doc.createAttribute("OutlineSize");
                     size = doc.createAttribute("Size");
                     style = doc.createAttribute("Style");
                     drawOutline = doc.createAttribute("DrawOutline");
@@ -616,6 +617,7 @@ public class LegendScheme {
                     color.setValue(ColorUtil.toHexEncoding(aPB.getColor()));
                     drawShape.setValue(String.valueOf(aPB.isDrawShape()));
                     outlineColor.setValue(ColorUtil.toHexEncoding(aPB.getOutlineColor()));
+                    outlineSize.setValue(String.valueOf(aPB.getOutlineSize()));
                     size.setValue(String.valueOf(aPB.getSize()));
                     style.setValue(aPB.getStyle().toString());
                     drawOutline.setValue(String.valueOf(aPB.getDrawOutline()));
@@ -634,6 +636,7 @@ public class LegendScheme {
                     brk.setAttributeNode(color);
                     brk.setAttributeNode(drawShape);
                     brk.setAttributeNode(outlineColor);
+                    brk.setAttributeNode(outlineSize);
                     brk.setAttributeNode(size);
                     brk.setAttributeNode(style);
                     brk.setAttributeNode(drawOutline);
@@ -700,7 +703,6 @@ public class LegendScheme {
                 }
                 break;
             case Polygon:
-                Attr outlineSize;
                 for (ColorBreak aCB : this.legendBreaks) {
                     PolygonBreak aPGB = (PolygonBreak) aCB;
                     brk = doc.createElement("Break");
@@ -886,6 +888,7 @@ public class LegendScheme {
                             aPB.setAngle(Float.parseFloat(brk.getAttributes().getNamedItem("Angle").getNodeValue()));
                             if (brk.getAttributes().getNamedItem("Tag") != null)
                                 aPB.setTag(brk.getAttributes().getNamedItem("Tag").getNodeValue());
+                            aPB.setOutlineSize(Float.parseFloat(brk.getAttributes().getNamedItem("OutlineSize").getNodeValue()));
                         } catch (DOMException | NumberFormatException e) {
                         } finally {
                             legendBreaks.add(aPB);

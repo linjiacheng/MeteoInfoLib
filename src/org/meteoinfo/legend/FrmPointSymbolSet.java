@@ -157,6 +157,8 @@ public class FrmPointSymbolSet extends javax.swing.JDialog {
         jLabel7 = new javax.swing.JLabel();
         jLabel_OutlineColor = new javax.swing.JLabel();
         jCheckBox_DrawOutline = new javax.swing.JCheckBox();
+        jLabel_OutlineSize = new javax.swing.JLabel();
+        jSpinner_OutlineSize = new javax.swing.JSpinner();
         jButton_OK = new javax.swing.JButton();
         jButton_Apply = new javax.swing.JButton();
         symbolControl1 = new org.meteoinfo.legend.SymbolControl();
@@ -238,10 +240,19 @@ public class FrmPointSymbolSet extends javax.swing.JDialog {
             }
         });
 
-        jCheckBox_DrawOutline.setText("Draw Outline");
+        jCheckBox_DrawOutline.setText("Draw");
         jCheckBox_DrawOutline.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jCheckBox_DrawOutlineActionPerformed(evt);
+            }
+        });
+
+        jLabel_OutlineSize.setText("Size:");
+
+        jSpinner_OutlineSize.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(1.0f), Float.valueOf(1.0f), Float.valueOf(100.0f), Float.valueOf(0.5f)));
+        jSpinner_OutlineSize.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                jSpinner_OutlineSizeStateChanged(evt);
             }
         });
 
@@ -250,24 +261,31 @@ public class FrmPointSymbolSet extends javax.swing.JDialog {
         jPanel_OutlineLayout.setHorizontalGroup(
             jPanel_OutlineLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel_OutlineLayout.createSequentialGroup()
-                .addGap(18, 18, 18)
+                .addContainerGap()
                 .addComponent(jCheckBox_DrawOutline)
-                .addGap(45, 45, 45)
+                .addGap(18, 18, 18)
                 .addComponent(jLabel7)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel_OutlineColor, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(16, Short.MAX_VALUE))
+                .addComponent(jLabel_OutlineColor, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel_OutlineSize)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSpinner_OutlineSize, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
         jPanel_OutlineLayout.setVerticalGroup(
             jPanel_OutlineLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel_OutlineLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel_OutlineLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel_OutlineLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel_OutlineSize)
+                        .addComponent(jSpinner_OutlineSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jLabel_OutlineColor, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel_OutlineLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel7)
                         .addComponent(jCheckBox_DrawOutline)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(11, Short.MAX_VALUE))
         );
 
         jButton_OK.setText("OK");
@@ -326,7 +344,7 @@ public class FrmPointSymbolSet extends javax.swing.JDialog {
                                 .addComponent(jLabel_FillColor)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(jLabel_Color, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(24, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jButton_OK, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -526,6 +544,19 @@ public class FrmPointSymbolSet extends javax.swing.JDialog {
         this.dispose();
     }//GEN-LAST:event_jButton_OKActionPerformed
 
+    private void jSpinner_OutlineSizeStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSpinner_OutlineSizeStateChanged
+        // TODO add your handling code here:
+        if (isLoading) {
+            return;
+        } 
+        
+        float size = Float.parseFloat(this.jSpinner_OutlineSize.getValue().toString());
+        _pointBreak.setOutlineSize(size);
+        if (_parent.getClass() == LegendView.class) {
+            ((LegendView) _parent).setLegendBreak_OutlineSize(size);
+        }
+    }//GEN-LAST:event_jSpinner_OutlineSizeStateChanged
+
     public void setPointBreak(PointBreak pb) {
         _pointBreak = pb;
 
@@ -539,6 +570,7 @@ public class FrmPointSymbolSet extends javax.swing.JDialog {
         this.jSpinner_Size.setValue(_pointBreak.getSize());
         this.jCheckBox_DrawOutline.setSelected(_pointBreak.getDrawOutline());
         this.jLabel_OutlineColor.setBackground(_pointBreak.getOutlineColor());
+        this.jSpinner_OutlineSize.setValue(_pointBreak.getOutlineSize());
         this.jCheckBox_DrawShape.setSelected(_pointBreak.isDrawShape());
         this.jCheckBox_DrawFill.setSelected(_pointBreak.getDrawFill());
         this.jSpinner_Angle.setValue(_pointBreak.getAngle());
@@ -558,6 +590,7 @@ public class FrmPointSymbolSet extends javax.swing.JDialog {
         this.jComboBox_FontFamily.removeAllItems();
         this.jComboBox_FontFamily.setEditable(false);
         this.jPanel_Outline.setEnabled(true);
+        this.jSpinner_OutlineSize.setEnabled(true);
         this.jLabel_FillColor.setEnabled(true);
         this.jLabel_Color.setEnabled(true);
         this.jCheckBox_DrawFill.setEnabled(true);
@@ -569,6 +602,7 @@ public class FrmPointSymbolSet extends javax.swing.JDialog {
         this.jLabel_FontFamily.setEnabled(true);
         this.jComboBox_FontFamily.setEditable(true);
         this.jPanel_Outline.setEnabled(false);
+        this.jSpinner_OutlineSize.setEnabled(false);
         this.jLabel_FillColor.setEnabled(true);
         this.jLabel_Color.setEnabled(true);
         this.jCheckBox_DrawFill.setEnabled(false);
@@ -592,6 +626,7 @@ public class FrmPointSymbolSet extends javax.swing.JDialog {
         this.jComboBox_FontFamily.removeAllItems();
         this.jComboBox_FontFamily.setEditable(false);
         this.jPanel_Outline.setEnabled(false);
+        this.jSpinner_OutlineSize.setEnabled(false);
         this.jLabel_FillColor.setEnabled(false);
         this.jLabel_Color.setEnabled(false);
         this.jCheckBox_DrawFill.setEnabled(false);
@@ -607,7 +642,7 @@ public class FrmPointSymbolSet extends javax.swing.JDialog {
 
             File[] files = pathDir.listFiles();
             _imagePaths = new String[files.length];
-            List<Image> imageList = new ArrayList<Image>();
+            List<Image> imageList = new ArrayList<>();
             int i = 0;
             for (File aFile : files) {
                 _imagePaths[i] = aFile.getAbsolutePath();
@@ -682,8 +717,10 @@ public class FrmPointSymbolSet extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel_FillColor;
     private javax.swing.JLabel jLabel_FontFamily;
     private javax.swing.JLabel jLabel_OutlineColor;
+    private javax.swing.JLabel jLabel_OutlineSize;
     private javax.swing.JPanel jPanel_Outline;
     private javax.swing.JSpinner jSpinner_Angle;
+    private javax.swing.JSpinner jSpinner_OutlineSize;
     private javax.swing.JSpinner jSpinner_Size;
     private org.meteoinfo.legend.SymbolControl symbolControl1;
     // End of variables declaration//GEN-END:variables

@@ -31,6 +31,7 @@ public class PointBreak extends ColorBreak {
 
     private MarkerType _markerType;
     private Color _outlineColor;
+    private float outlineSize;
     private float _size;
     private PointStyle _style;
     private boolean _drawOutline;
@@ -52,6 +53,7 @@ public class PointBreak extends ColorBreak {
         _fontName = "Arial";
         _charIndex = 0;
         _outlineColor = Color.black;
+        outlineSize = 1.0f;
         _size = 6.0f;
         _style = PointStyle.Circle;
         _drawOutline = true;
@@ -149,6 +151,22 @@ public class PointBreak extends ColorBreak {
      */
     public void setOutlineColor(Color c) {
         _outlineColor = c;
+    }
+    
+    /**
+     * Get outline size
+     * @return Outline size
+     */
+    public float getOutlineSize(){
+        return this.outlineSize;
+    }
+    
+    /**
+     * Set outline size
+     * @param value Outline size
+     */
+    public void setOutlineSize(float value){
+        this.outlineSize = value;
     }
 
     /**
@@ -254,6 +272,7 @@ public class PointBreak extends ColorBreak {
         HashMap objAttr = new HashMap();
         objAttr.put("Color", "Color");
         objAttr.put("OutlineColor", "OutlineColor");
+        objAttr.put("OutlineSize", "OutlineSize");
         objAttr.put("Size", "Size");
         objAttr.put("Style", "Style");
         objAttr.put("DrawOutline", "DrawOutline");
@@ -282,6 +301,7 @@ public class PointBreak extends ColorBreak {
         aCB.setCharIndex(_charIndex);
         aCB.setImagePath(_imagePath);
         aCB.setOutlineColor(_outlineColor);
+        aCB.setOutlineSize(this.outlineSize);
         aCB.setSize(_size);
         aCB.setDrawOutline(_drawOutline);
         aCB.setDrawFill(_drawFill);

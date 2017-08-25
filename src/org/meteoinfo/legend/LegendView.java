@@ -527,6 +527,10 @@ public class LegendView extends JPanel {
             {                
                 switch (_legendScheme.getBreakType())
                 {
+                    case PointBreak:
+                        PointBreak pb = (PointBreak)_legendScheme.getLegendBreaks().get(rowIdx);
+                        pb.setOutlineSize(outlineSize);
+                        break;
                     case PolygonBreak:
                         PolygonBreak aPGB = (PolygonBreak)_legendScheme.getLegendBreaks().get(rowIdx);
                         aPGB.setOutlineSize(outlineSize);

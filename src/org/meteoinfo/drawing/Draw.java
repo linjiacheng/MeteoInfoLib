@@ -689,6 +689,7 @@ public class Draw {
         boolean drawOutline = aPB.getDrawOutline();
         Color color = aPB.getColor();
         Color outlineColor = aPB.getOutlineColor();
+        float outlineSize = aPB.getOutlineSize();
 
         GeneralPath path = new GeneralPath();
 
@@ -702,6 +703,7 @@ public class Draw {
                 }
                 if (drawOutline) {
                     g.setColor(outlineColor);
+                    g.setStroke(new BasicStroke(outlineSize));
                     g.drawOval((int) aP.X, (int) aP.Y, (int) aSize, (int) aSize);
                 }
                 break;
@@ -714,6 +716,7 @@ public class Draw {
                 }
                 if (drawOutline) {
                     g.setColor(outlineColor);
+                    g.setStroke(new BasicStroke(outlineSize));
                     g.drawRect((int) aP.X, (int) aP.Y, (int) aSize, (int) aSize);
                 }
                 break;
@@ -734,6 +737,7 @@ public class Draw {
                 }
                 if (drawOutline) {
                     g.setColor(outlineColor);
+                    g.setStroke(new BasicStroke(outlineSize));
                     g.drawPolygon(xPoints, yPoints, xPoints.length);
                 }
                 break;
@@ -752,6 +756,7 @@ public class Draw {
                 }
                 if (drawOutline) {
                     g.setColor(outlineColor);
+                    g.setStroke(new BasicStroke(outlineSize));
                     g.drawPolygon(xPoints, yPoints, xPoints.length);
                 }
                 break;
@@ -770,6 +775,7 @@ public class Draw {
                 }
                 if (drawOutline) {
                     g.setColor(outlineColor);
+                    g.setStroke(new BasicStroke(outlineSize));
                     g.drawPolygon(xPoints, yPoints, xPoints.length);
                 }
                 break;
@@ -781,6 +787,7 @@ public class Draw {
                 path.closePath();
                 if (drawFill || drawOutline) {
                     g.setColor(color);
+                    g.setStroke(new BasicStroke(outlineSize));
                     g.draw(path);
                 }
                 break;
@@ -792,6 +799,7 @@ public class Draw {
                 path.closePath();
                 if (drawFill || drawOutline) {
                     g.setColor(color);
+                    g.setStroke(new BasicStroke(outlineSize));
                     g.draw(path);
                 }
                 break;
@@ -801,6 +809,7 @@ public class Draw {
                 path.closePath();
                 if (drawFill || drawOutline) {
                     g.setColor(color);
+                    g.setStroke(new BasicStroke(outlineSize));
                     g.draw(path);
                 }
                 break;
@@ -816,6 +825,7 @@ public class Draw {
                 path.closePath();
                 if (drawFill || drawOutline) {
                     g.setColor(color);
+                    g.setStroke(new BasicStroke(outlineSize));
                     g.draw(path);
                 }
                 break;
@@ -852,6 +862,7 @@ public class Draw {
                 }
                 if (drawOutline) {
                     g.setColor(outlineColor);
+                    g.setStroke(new BasicStroke(outlineSize));
                     g.drawPolygon(xPoints, yPoints, xPoints.length);
                 }
                 break;
@@ -872,6 +883,7 @@ public class Draw {
                 }
                 if (drawOutline) {
                     g.setColor(outlineColor);
+                    g.setStroke(new BasicStroke(outlineSize));
                     g.drawPolygon(xPoints, yPoints, xPoints.length);
                 }
                 break;
@@ -884,6 +896,7 @@ public class Draw {
                 }
                 if (drawOutline) {
                     g.setColor(outlineColor);
+                    g.setStroke(new BasicStroke(outlineSize));
                     g.draw(new Arc2D.Float(aP.X, aP.Y, aSize, aSize, 180, 180, Arc2D.CHORD));
                 }
                 break;
@@ -896,6 +909,7 @@ public class Draw {
                 }
                 if (drawOutline) {
                     g.setColor(outlineColor);
+                    g.setStroke(new BasicStroke(outlineSize));
                     g.draw(new Arc2D.Float(aP.X, aP.Y, aSize, aSize, 0, 180, Arc2D.CHORD));
                 }
                 break;
@@ -924,6 +938,7 @@ public class Draw {
         boolean drawOutline = aPB.getDrawOutline();
         Color color = aPB.getColor();
         Color outlineColor = aPB.getOutlineColor();
+        float outlineSize = aPB.getOutlineSize();
 
         GeneralPath path = new GeneralPath();
 
@@ -938,6 +953,7 @@ public class Draw {
                 }
                 if (drawOutline) {
                     g.setColor(outlineColor);
+                    g.setStroke(new BasicStroke(outlineSize));
                     g.drawOval((int) aP.X, (int) aP.Y, (int) aSize, (int) aSize);
                 }
                 break;
@@ -951,6 +967,7 @@ public class Draw {
                 }
                 if (drawOutline) {
                     g.setColor(outlineColor);
+                    g.setStroke(new BasicStroke(outlineSize));
                     g.drawRect((int) aP.X, (int) aP.Y, (int) aSize, (int) aSize);
                 }
                 break;
@@ -971,6 +988,7 @@ public class Draw {
                 }
                 if (drawOutline) {
                     g.setColor(outlineColor);
+                    g.setStroke(new BasicStroke(outlineSize));
                     g.drawPolygon(xPoints, yPoints, xPoints.length);
                 }
             case UpTriangle:
@@ -988,6 +1006,7 @@ public class Draw {
                 }
                 if (drawOutline) {
                     g.setColor(outlineColor);
+                    g.setStroke(new BasicStroke(outlineSize));
                     g.drawPolygon(xPoints, yPoints, xPoints.length);
                 }
                 break;
