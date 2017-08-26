@@ -834,6 +834,10 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
                     int vNum = Integer.parseInt(dataArray[1]);
                     for (i = 0; i < vNum; i++) {
                         aLine = sr.readLine().trim();
+                        if (aLine.isEmpty()){
+                            i -= 1;
+                            continue;
+                        }
                         dataArray = aLine.split("\\s+");
                         Variable aVar = new Variable();
                         aVar.setName(dataArray[0]);
