@@ -1687,6 +1687,7 @@ public class Plot3D extends Plot {
             String label = this.xAxis.getLabel().getText();
             if (label != null) {
                 g.setFont(this.xAxis.getLabelFont());
+                g.setColor(this.xAxis.getLabelColor());
                 tickpos = projector.project(0, factor_y * 10.f, -10);
                 Dimension dim = Draw.getStringDimension(label, g);
                 strWidth = (int) Math.abs((strWidth * Math.sin(Math.toRadians(angle))));
@@ -1753,6 +1754,7 @@ public class Plot3D extends Plot {
             label = this.yAxis.getLabel().getText();
             if (label != null) {
                 g.setFont(this.yAxis.getLabelFont());
+                g.setColor(this.yAxis.getLabelColor());
                 tickpos = projector.project(factor_x * 10.f, 0, -10);
                 Dimension dim = Draw.getStringDimension(label, g);
                 strWidth = (int) Math.abs((strWidth * Math.sin(Math.toRadians(angle))));
