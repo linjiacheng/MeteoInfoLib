@@ -437,6 +437,17 @@ public class Plot3D extends Plot {
     private void updateExtent() {
         this.extent = new Extent3D(xmin, xmax, ymin, ymax, zmin, zmax);
     }
+    
+    /**
+     * Set axis tick font
+     *
+     * @param font Font
+     */
+    public void setAxisTickFont(Font font) {
+        this.xAxis.setTickLabelFont(font);
+        this.yAxis.setTickLabelFont(font);
+        this.zAxis.setTickLabelFont(font);
+    }
 
     /**
      * Add a graphic
@@ -1630,7 +1641,8 @@ public class Plot3D extends Plot {
                     angle -= 360;
                 }
             }
-            List<ChartText> tlabs = this.xAxis.updateTickLabels();
+            g.setFont(this.xAxis.getTickLabelFont());
+            List<ChartText> tlabs = this.xAxis.updateTickLabels();            
             skip = getLabelGap(g, tlabs, Math.abs(xlen));
             int strWidth = 0, w;
             for (i = 0; i < this.xAxis.getTickValues().length; i += skip) {
@@ -1661,7 +1673,7 @@ public class Plot3D extends Plot {
                 //g.drawLine(projection.x, projection.y, tickpos.x, tickpos.y);
                 g.drawLine(tickpos.x, tickpos.y, (int) value[0], (int) value[1]);
                 value = DataMath.getEndPoint(tickpos.x, tickpos.y, angle, this.xAxis.getTickLength() + 5);
-                tickpos = new Point((int) value[0], (int) value[1]);
+                tickpos = new Point((int) value[0], (int) value[1]);                
                 if (x_left) {
                     outString(g, tickpos.x, tickpos.y, s, XAlign.LEFT, YAlign.TOP);
                 } else {
@@ -1674,6 +1686,7 @@ public class Plot3D extends Plot {
             }
             String label = this.xAxis.getLabel().getText();
             if (label != null) {
+                g.setFont(this.xAxis.getLabelFont());
                 tickpos = projector.project(0, factor_y * 10.f, -10);
                 Dimension dim = Draw.getStringDimension(label, g);
                 strWidth = (int) Math.abs((strWidth * Math.sin(Math.toRadians(angle))));
@@ -1699,6 +1712,7 @@ public class Plot3D extends Plot {
                     angle -= 360;
                 }
             }
+            g.setFont(this.yAxis.getTickLabelFont());
             tlabs = this.yAxis.updateTickLabels();
             skip = getLabelGap(g, tlabs, Math.abs(ylen));
             strWidth = 0;
@@ -1738,6 +1752,7 @@ public class Plot3D extends Plot {
             }
             label = this.yAxis.getLabel().getText();
             if (label != null) {
+                g.setFont(this.yAxis.getLabelFont());
                 tickpos = projector.project(factor_x * 10.f, 0, -10);
                 Dimension dim = Draw.getStringDimension(label, g);
                 strWidth = (int) Math.abs((strWidth * Math.sin(Math.toRadians(angle))));
@@ -1765,6 +1780,7 @@ public class Plot3D extends Plot {
             x[0] = projection.x;
             y[0] = projection.y;
             projection = projector.project(factor_x * 10 * lf, -factor_y * 10 * lf, 10);
+            g.setFont(this.zAxis.getTickLabelFont());
             g.setColor(this.zAxis.getLineColor());
             g.drawLine(x[0], y[0], projection.x, projection.y);
             List<ChartText> tlabs = this.zAxis.updateTickLabels();
@@ -1801,6 +1817,7 @@ public class Plot3D extends Plot {
             }
             String label = this.zAxis.getLabel().getText();
             if (label != null) {
+                g.setFont(this.zAxis.getLabelFont());
                 Dimension dim = Draw.getStringDimension(label, g);
                 tickpos = projector.project(factor_x * 10 * lf, -factor_y * 10 * lf, 0);
                 tickpos.x = tickpos.x - this.xAxis.getTickLength() - 15 - strWidth - dim.height;
