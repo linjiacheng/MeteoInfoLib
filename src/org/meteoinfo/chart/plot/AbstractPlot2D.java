@@ -1172,14 +1172,14 @@ public abstract class AbstractPlot2D extends Plot {
     void drawText(Graphics2D g, Rectangle2D area) {
         Iterator<ChartText> iter = this.getTexts().iterator();
         while (iter.hasNext()){
-            drawText(iter.next(), g, area);
+            drawPlotText(iter.next(), g, area);
         }
 //        for (ChartText text : this.getTexts()) {
 //            drawText(text, g, area);
 //        }
     }
 
-    void drawText(ChartText text, Graphics2D g, Rectangle2D area) {
+    void drawPlotText(ChartText text, Graphics2D g, Rectangle2D area) {
         float x, y;
         switch (text.getCoordinates()) {
             case AXES:

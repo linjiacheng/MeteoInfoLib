@@ -2031,6 +2031,120 @@ public class GraphicFactory {
 
         return gc;
     }
+    
+    /**
+     * Create fill between polygons
+     *
+     * @param xdata X data array
+     * @param y1data Y1 data array
+     * @param y2data Y2 data array
+     * @param where Where data array
+     * @param pb Polygon break
+     * @param offset Offset
+     * @param zdir Zdir
+     * @return GraphicCollection
+     */
+    public static GraphicCollection createFillBetweenPolygons(Array xdata, Array y1data,
+            Array y2data, Array where, PolygonBreak pb, double offset, String zdir) {
+        GraphicCollection3D gc = new GraphicCollection3D();
+        gc.setFixZ(true);
+        gc.setZValue(offset);
+        gc.setZDir(zdir);
+        int len = (int) xdata.getSize();
+        if (where == null) {
+            PolygonZShape pgs = new PolygonZShape();
+            List<PointZ> points = new ArrayList<>();
+            switch (zdir){
+                case "x":
+                    for (int i = 0; i < len; i++) {
+                        points.add(new PointZ(offset, xdata.getDouble(i), y1data.getDouble(i)));
+                    }
+                    for (int i = len - 1; i >= 0; i--) {
+                        points.add(new PointZ(offset, xdata.getDouble(i), y2data.getDouble(i)));
+                    }
+                    break;
+                case "y":
+                    for (int i = 0; i < len; i++) {
+                        points.add(new PointZ(xdata.getDouble(i), offset, y1data.getDouble(i)));
+                    }
+                    for (int i = len - 1; i >= 0; i--) {
+                        points.add(new PointZ(xdata.getDouble(i), offset, y2data.getDouble(i)));
+                    }
+                    break;
+                case "z":
+                    for (int i = 0; i < len; i++) {
+                        points.add(new PointZ(xdata.getDouble(i), y1data.getDouble(i), offset));
+                    }
+                    for (int i = len - 1; i >= 0; i--) {
+                        points.add(new PointZ(xdata.getDouble(i), y2data.getDouble(i), offset));
+                    }
+                    break;
+            }            
+            pgs.setPoints(points);
+            Graphic graphic = new Graphic(pgs, pb);
+            gc.add(graphic);
+        } else {
+            boolean ob = false;
+            List<List<Integer>> idxs = new ArrayList<>();
+            List<Integer> idx = new ArrayList<>();
+            for (int j = 0; j < len; j++) {
+                if (where.getInt(j) == 1) {
+                    if (!ob) {
+                        idx = new ArrayList<>();
+                    }
+                    idx.add(j);
+                } else if (ob) {
+                    idxs.add(idx);
+                }
+                ob = where.getInt(j) == 1;
+            }
+            for (List<Integer> index : idxs) {
+                int nn = index.size();
+                if (nn >= 2) {
+                    PolygonZShape pgs = new PolygonZShape();
+                    List<PointZ> points = new ArrayList<>();
+                    int ii;
+                    switch (zdir){
+                        case "x":
+                            for (int j = 0; j < nn; j++) {
+                                ii = index.get(j);
+                                points.add(new PointZ(offset, xdata.getDouble(ii), y1data.getDouble(ii)));
+                            }
+                            for (int j = 0; j < nn; j++) {
+                                ii = index.get(nn - j - 1);
+                                points.add(new PointZ(offset, xdata.getDouble(ii), y2data.getDouble(ii)));
+                            }
+                            break;
+                        case "y":
+                            for (int j = 0; j < nn; j++) {
+                                ii = index.get(j);
+                                points.add(new PointZ(xdata.getDouble(ii), offset, y1data.getDouble(ii)));
+                            }
+                            for (int j = 0; j < nn; j++) {
+                                ii = index.get(nn - j - 1);
+                                points.add(new PointZ(xdata.getDouble(ii), offset, y2data.getDouble(ii)));
+                            }
+                            break;
+                        case "z":
+                            for (int j = 0; j < nn; j++) {
+                                ii = index.get(j);
+                                points.add(new PointZ(xdata.getDouble(ii), y1data.getDouble(ii), offset));
+                            }
+                            for (int j = 0; j < nn; j++) {
+                                ii = index.get(nn - j - 1);
+                                points.add(new PointZ(xdata.getDouble(ii), y2data.getDouble(ii), offset));
+                            }
+                            break;
+                    }                    
+                    pgs.setPoints(points);
+                    Graphic graphic = new Graphic(pgs, pb);
+                    gc.add(graphic);
+                }
+            }
+        }
+
+        return gc;
+    }
 
     /**
      * Create wind barbs

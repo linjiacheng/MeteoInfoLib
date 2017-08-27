@@ -53,7 +53,7 @@ public class Extent3D extends Extent{
     @Override
     public boolean intersects(Extent extent) {
         Extent3D bET = (Extent3D)extent;
-        return !(maxX < bET.minX || maxY < bET.minY || maxZ < bET.maxZ ||
+        return !(maxX < bET.minX || maxY < bET.minY || maxZ < bET.minZ ||
                 bET.maxX < minX || bET.maxY < minY || bET.maxZ < minZ);
     }
 

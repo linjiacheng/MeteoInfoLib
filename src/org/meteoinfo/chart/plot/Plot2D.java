@@ -363,7 +363,6 @@ public class Plot2D extends AbstractPlot2D {
         Draw.drawPoint(pf, aPB, g);
     }
     
-    @Override
     void drawText(ChartText text, Graphics2D g, Rectangle2D area) {
         float x, y;
         switch (text.getCoordinates()) {

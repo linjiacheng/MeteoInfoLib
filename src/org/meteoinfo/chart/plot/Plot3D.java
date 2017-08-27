@@ -1245,6 +1245,34 @@ public class Plot3D extends Plot {
     }
 
     private void outString(Graphics2D g, int x, int y, String s, XAlign x_align, YAlign y_align, float angle) {
+        AffineTransform tempTrans = g.getTransform();
+        AffineTransform myTrans = new AffineTransform();
+        myTrans.translate(x, y);
+        myTrans.rotate(-angle * Math.PI / 180);
+        g.setTransform(myTrans);
+        x = 0; y = 0;
+        switch (y_align) {
+            case TOP:
+                y += g.getFontMetrics(g.getFont()).getAscent();
+                break;
+            case CENTER:
+                y += g.getFontMetrics(g.getFont()).getAscent() / 2;
+                break;
+        }
+        Dimension labSize = Draw.getStringDimension(s, g);
+        switch (x_align) {
+            case RIGHT:
+                x = x - labSize.width;
+                break;
+            case CENTER:
+                x = x - labSize.width / 2;
+                break;
+        }
+        Draw.drawString(g, s, x, y);
+        g.setTransform(tempTrans);
+    }
+    
+    private void outString_bak(Graphics2D g, int x, int y, String s, XAlign x_align, YAlign y_align, float angle) {
         switch (y_align) {
             case TOP:
                 y += g.getFontMetrics(g.getFont()).getAscent();
@@ -1268,13 +1296,14 @@ public class Plot3D extends Plot {
         myTrans.translate(x, y);
         myTrans.rotate(-angle * Math.PI / 180);
         g.setTransform(myTrans);
-        if (angle == 90) {
-            x = -(int) (labSize.getWidth() - 10);
-            y = (int) (labSize.getHeight() / 3);
-        } else {
-            x = -(int) (labSize.getWidth() - 5);
-            y = 0;
-        }
+        x = 0; y = 0;
+//        if (angle == 90) {
+//            x = -(int) (labSize.getWidth() - 10);
+//            y = (int) (labSize.getHeight() / 3);
+//        } else {
+//            x = -(int) (labSize.getWidth() - 5);
+//            y = 0;
+//        }
         Draw.drawString(g, s, x, y);
         g.setTransform(tempTrans);
     }
@@ -1655,9 +1684,9 @@ public class Plot3D extends Plot {
                     tickpos.y += g.getFontMetrics().getHeight();
                 }
                 if (x_left) {
-                    outString(g, tickpos.x, tickpos.y, label, XAlign.LEFT, YAlign.TOP, xangle + 90);
+                    outString(g, tickpos.x, tickpos.y, label, XAlign.CENTER, YAlign.TOP, xangle + 90);
                 } else {
-                    outString(g, tickpos.x, tickpos.y, label, XAlign.LEFT, YAlign.TOP, xangle + 90);
+                    outString(g, tickpos.x, tickpos.y, label, XAlign.CENTER, YAlign.TOP, xangle + 90);
                 }
             }
 
@@ -1719,9 +1748,9 @@ public class Plot3D extends Plot {
                     tickpos.y += g.getFontMetrics().getHeight();
                 }
                 if (y_left) {
-                    outString(g, tickpos.x, tickpos.y, label, XAlign.LEFT, YAlign.TOP, yangle + 90);
+                    outString(g, tickpos.x, tickpos.y, label, XAlign.CENTER, YAlign.TOP, yangle + 90);
                 } else {
-                    outString(g, tickpos.x, tickpos.y, label, XAlign.LEFT, YAlign.TOP, yangle + 90);
+                    outString(g, tickpos.x, tickpos.y, label, XAlign.CENTER, YAlign.TOP, yangle + 90);
                 }
             }
         }
