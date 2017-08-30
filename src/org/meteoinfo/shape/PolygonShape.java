@@ -355,7 +355,8 @@ public class PolygonShape extends Shape implements Cloneable {
         for (int i = 0; i < partList.size(); i++) {
             parts[i] = partList.get(i);
         }
-        this.setExtent(MIMath.getPointsExtent(_points));
+        if (_points.size() > 0)
+            this.setExtent(MIMath.getPointsExtent(_points));
     }
     
     /**
