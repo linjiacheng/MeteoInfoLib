@@ -40,6 +40,7 @@ import org.meteoinfo.legend.PolygonBreak;
 import org.meteoinfo.legend.PolylineBreak;
 import org.meteoinfo.shape.ArcShape;
 import org.meteoinfo.shape.BarShape;
+import org.meteoinfo.shape.CurveLineShape;
 import org.meteoinfo.shape.Graphic;
 import org.meteoinfo.shape.GraphicCollection;
 import org.meteoinfo.shape.ImageShape;
@@ -100,11 +101,63 @@ public class GraphicFactory {
                 points.add(new PointD(x, y));
             }
         }
-        if (!points.isEmpty()){
+        if (!points.isEmpty()) {
             if (points.size() == 1) {
                 points.add((PointD) points.get(0).clone());
             }
             pls = new PolylineShape();
+            pls.setPoints(points);
+            gc.add(new Graphic(pls, cb));
+        }
+
+        return gc;
+    }
+
+    /**
+     * Create LineString graphic
+     *
+     * @param xdata X data array
+     * @param ydata Y data array
+     * @param cb Color break
+     * @param iscurve Is curve line or not
+     * @return LineString graphic
+     */
+    public static GraphicCollection createLineString(Array xdata, Array ydata, ColorBreak cb, boolean iscurve) {
+        GraphicCollection gc = new GraphicCollection();
+        PolylineShape pls;
+        List<PointD> points = new ArrayList<>();
+        double x, y;
+        for (int i = 0; i < xdata.getSize(); i++) {
+            x = xdata.getDouble(i);
+            y = ydata.getDouble(i);
+            if (Double.isNaN(y) || Double.isNaN(x)) {
+                if (points.isEmpty()) {
+                    continue;
+                }
+                if (points.size() == 1) {
+                    points.add((PointD) points.get(0).clone());
+                }
+                if (iscurve) {
+                    pls = new CurveLineShape();
+                } else {
+                    pls = new PolylineShape();
+                }
+                pls.setPoints(points);
+                gc.add(new Graphic(pls, cb));
+                points = new ArrayList<>();
+            } else {
+                points.add(new PointD(x, y));
+            }
+        }
+        if (!points.isEmpty()) {
+            if (points.size() == 1) {
+                points.add((PointD) points.get(0).clone());
+            }
+            if (iscurve) {
+                pls = new CurveLineShape();
+            } else {
+                pls = new PolylineShape();
+            }
             pls.setPoints(points);
             gc.add(new Graphic(pls, cb));
         }
@@ -256,7 +309,7 @@ public class GraphicFactory {
 
         return gc;
     }
-    
+
     /**
      * Create step LineString graphic
      *
@@ -271,13 +324,13 @@ public class GraphicFactory {
         PolylineShape pls;
         List<PointD> points = new ArrayList<>();
         double x, x1, x2, y, y1, y2;
-        switch(where){
+        switch (where) {
             case "mid":
                 for (int i = 0; i < xdata.getSize() - 1; i++) {
                     x1 = xdata.getDouble(i);
-                    x2 = xdata.getDouble(i+1);
+                    x2 = xdata.getDouble(i + 1);
                     y1 = ydata.getDouble(i);
-                    y2 = ydata.getDouble(i+1);
+                    y2 = ydata.getDouble(i + 1);
                     if (Double.isNaN(y1) || Double.isNaN(x1) || Double.isNaN(x2)) {
                         if (points.isEmpty()) {
                             continue;
@@ -287,14 +340,14 @@ public class GraphicFactory {
                             pls.setPoints(points);
                             gc.add(new Graphic(pls, cb));
                             points = new ArrayList<>();
-                        }                        
+                        }
                     } else {
                         x = x1 + (x2 - x1) * 0.5;
-                        if (i == 0){
+                        if (i == 0) {
                             points.add(new PointD(x1, y1));
                             points.add(new PointD(x, y1));
                             points.add(new PointD(x, y2));
-                        } else if (i == xdata.getSize() - 2){
+                        } else if (i == xdata.getSize() - 2) {
                             points.add(new PointD(x, y1));
                             points.add(new PointD(x, y2));
                             points.add(new PointD(x2, y2));
@@ -308,13 +361,13 @@ public class GraphicFactory {
                     pls = new PolylineShape();
                     pls.setPoints(points);
                     gc.add(new Graphic(pls, cb));
-                }       
+                }
                 break;
             case "post":
                 for (int i = 0; i < xdata.getSize() - 1; i++) {
                     x1 = xdata.getDouble(i);
-                    x2 = xdata.getDouble(i+1);
-                    y = ydata.getDouble(i);                    
+                    x2 = xdata.getDouble(i + 1);
+                    y = ydata.getDouble(i);
                     if (Double.isNaN(y) || Double.isNaN(x1) || Double.isNaN(x2)) {
                         if (points.isEmpty()) {
                             continue;
@@ -324,26 +377,26 @@ public class GraphicFactory {
                             pls.setPoints(points);
                             gc.add(new Graphic(pls, cb));
                             points = new ArrayList<>();
-                        }                        
+                        }
                     } else {
                         points.add(new PointD(x1, y));
                         points.add(new PointD(x2, y));
-                        if (i == xdata.getSize() - 2){
-                            points.add(new PointD(x2, ydata.getDouble(i+1)));
-                        } 
+                        if (i == xdata.getSize() - 2) {
+                            points.add(new PointD(x2, ydata.getDouble(i + 1)));
+                        }
                     }
                 }
                 if (points.size() > 1) {
                     pls = new PolylineShape();
                     pls.setPoints(points);
                     gc.add(new Graphic(pls, cb));
-                }       
+                }
                 break;
             default:
                 for (int i = 0; i < xdata.getSize() - 1; i++) {
                     x1 = xdata.getDouble(i);
-                    x2 = xdata.getDouble(i+1);
-                    y = ydata.getDouble(i+1);                                        
+                    x2 = xdata.getDouble(i + 1);
+                    y = ydata.getDouble(i + 1);
                     if (Double.isNaN(y) || Double.isNaN(x1) || Double.isNaN(x2)) {
                         if (points.isEmpty()) {
                             continue;
@@ -353,9 +406,9 @@ public class GraphicFactory {
                             pls.setPoints(points);
                             gc.add(new Graphic(pls, cb));
                             points = new ArrayList<>();
-                        }                        
+                        }
                     } else {
-                        if (i == 0){
+                        if (i == 0) {
                             points.add(new PointD(x1, ydata.getDouble(i)));
                         }
                         points.add(new PointD(x1, y));
@@ -366,10 +419,10 @@ public class GraphicFactory {
                     pls = new PolylineShape();
                     pls.setPoints(points);
                     gc.add(new Graphic(pls, cb));
-                }                
+                }
                 break;
         }
-        
+
         return gc;
     }
 
@@ -781,7 +834,7 @@ public class GraphicFactory {
                             for (PolygonZShape shape : (List<PolygonZShape>) layer.getShapes()) {
                                 PolygonZShape s = new PolygonZShape();
                                 List<PointZ> plist = new ArrayList<>();
-                                for (PointZ pd : (List<PointZ>)shape.getPoints()) {
+                                for (PointZ pd : (List<PointZ>) shape.getPoints()) {
                                     pz = new PointZ(pd.X + xshift, pd.Y, pd.Z, pd.M);
                                     plist.add(pz);
                                 }
@@ -2031,7 +2084,7 @@ public class GraphicFactory {
 
         return gc;
     }
-    
+
     /**
      * Create fill between polygons
      *
@@ -2054,7 +2107,7 @@ public class GraphicFactory {
         if (where == null) {
             PolygonZShape pgs = new PolygonZShape();
             List<PointZ> points = new ArrayList<>();
-            switch (zdir){
+            switch (zdir) {
                 case "x":
                     for (int i = 0; i < len; i++) {
                         points.add(new PointZ(offset, xdata.getDouble(i), y1data.getDouble(i)));
@@ -2079,7 +2132,7 @@ public class GraphicFactory {
                         points.add(new PointZ(xdata.getDouble(i), y2data.getDouble(i), offset));
                     }
                     break;
-            }            
+            }
             pgs.setPoints(points);
             Graphic graphic = new Graphic(pgs, pb);
             gc.add(graphic);
@@ -2104,7 +2157,7 @@ public class GraphicFactory {
                     PolygonZShape pgs = new PolygonZShape();
                     List<PointZ> points = new ArrayList<>();
                     int ii;
-                    switch (zdir){
+                    switch (zdir) {
                         case "x":
                             for (int j = 0; j < nn; j++) {
                                 ii = index.get(j);
@@ -2135,7 +2188,7 @@ public class GraphicFactory {
                                 points.add(new PointZ(xdata.getDouble(ii), y2data.getDouble(ii), offset));
                             }
                             break;
-                    }                    
+                    }
                     pgs.setPoints(points);
                     Graphic graphic = new Graphic(pgs, pb);
                     gc.add(graphic);
@@ -2331,7 +2384,7 @@ public class GraphicFactory {
             aShape.setStartAngle(startAngle);
             aShape.setSweepAngle(sweepAngle);
             angle = startAngle + sweepAngle / 2;
-            if (explode == null){
+            if (explode == null) {
                 dx = 0;
                 dy = 0;
             } else {
@@ -2357,14 +2410,14 @@ public class GraphicFactory {
                 }
             } else {
                 label = labels.get(i);
-                if (autopct != null){
+                if (autopct != null) {
                     pct = String.format(autopct, v * 100);
                 }
             }
             pgb.setCaption(label);
             Graphic graphic = new Graphic(aShape, pgb);
             gc.add(graphic);
-            
+
             //Label text
             ChartText ps = new ChartText();
             ldx = dx + r * labelDis * Math.cos(angle * Math.PI / 180);
@@ -2372,7 +2425,7 @@ public class GraphicFactory {
             ps.setPoint(ldx, ldy);
             ps.setText(label);
             ps.setFont(labelFont);
-            ps.setColor(labelColor);            
+            ps.setColor(labelColor);
             if (angle > 90 && angle < 270) {
                 ps.setXAlign(XAlign.RIGHT);
             }
@@ -2383,38 +2436,39 @@ public class GraphicFactory {
                 ps.setYAlign(YAlign.CENTER);
             } else if (angle == 90 || angle == 270) {
                 ps.setXAlign(XAlign.CENTER);
-            } 
+            }
             lgc.add(new Graphic(ps, new ColorBreak()));
-            
+
             //pct text
-            if (pct != null){
+            if (pct != null) {
                 ps = new ChartText();
                 ldx = dx + r * pctDis * Math.cos(angle * Math.PI / 180);
                 ldy = dy + r * pctDis * Math.sin(angle * Math.PI / 180);
                 ps.setPoint(ldx, ldy);
                 ps.setText(pct);
                 ps.setFont(labelFont);
-                ps.setColor(labelColor);            
+                ps.setColor(labelColor);
                 ps.setXAlign(XAlign.CENTER);
                 ps.setYAlign(YAlign.CENTER);
                 pgc.add(new Graphic(ps, new ColorBreak()));
             }
-            
+
             startAngle += sweepAngle;
         }
         gc.setSingleLegend(false);
         gc.getLabelSet().setLabelFont(labelFont);
         gc.getLabelSet().setLabelColor(labelColor);
         dx = r * 0.1;
-        if (labels != null|| autopct != null){
+        if (labels != null || autopct != null) {
             Extent ext = gc.getExtent().extend(dx, dx);
             gc.setExtent(ext);
         }
 
-        if (pct == null)
+        if (pct == null) {
             return new GraphicCollection[]{gc, lgc};
-        else
+        } else {
             return new GraphicCollection[]{gc, lgc, pgc};
+        }
     }
 
     /**

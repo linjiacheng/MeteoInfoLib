@@ -51,6 +51,7 @@ import org.meteoinfo.legend.PolygonBreak;
 import org.meteoinfo.legend.PolylineBreak;
 import org.meteoinfo.shape.ArcShape;
 import org.meteoinfo.shape.BarShape;
+import org.meteoinfo.shape.CurveLineShape;
 import org.meteoinfo.shape.Graphic;
 import org.meteoinfo.shape.GraphicCollection;
 import org.meteoinfo.shape.ImageShape;
@@ -314,6 +315,9 @@ public class Plot2D extends AbstractPlot2D {
                             this.drawPolyline(g, (PolylineShape) shape, (PolylineBreak) cb, area);
                         }
                         break;
+                    case CurveLine:
+                        this.drawCurveline(g, (CurveLineShape) shape, (PolylineBreak) cb, area);
+                        break;
                     case PolylineError:
                         if (cb instanceof PointBreak) {
                             this.drawPolylineError(g, (PolylineErrorShape) shape, (PointBreak) cb, area);
@@ -448,6 +452,19 @@ public class Plot2D extends AbstractPlot2D {
                 points[i] = new PointF((float) sXY[0], (float) sXY[1]);
             }
             Draw.drawPolyline(points, aPLB, g);
+        }
+    }
+    
+    private void drawCurveline(Graphics2D g, CurveLineShape aPLS, PolylineBreak aPLB, Rectangle2D area) {
+        for (Polyline aline : aPLS.getPolylines()) {
+            double[] sXY;
+            PointF[] points = new PointF[aline.getPointList().size()];
+            for (int i = 0; i < aline.getPointList().size(); i++) {
+                PointD wPoint = aline.getPointList().get(i);
+                sXY = projToScreen(wPoint.X, wPoint.Y, area);
+                points[i] = new PointF((float) sXY[0], (float) sXY[1]);
+            }
+            Draw.drawCurveLine(points, aPLB, g);
         }
     }
 

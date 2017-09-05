@@ -38,6 +38,7 @@ import org.meteoinfo.map.MapView;
 import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.projection.Reproject;
+import org.meteoinfo.shape.CurveLineShape;
 import org.meteoinfo.shape.Graphic;
 import org.meteoinfo.shape.PointShape;
 import org.meteoinfo.shape.PolygonShape;
@@ -483,6 +484,56 @@ public class MapPlot extends AbstractPlot2D implements IWebMapPanel {
         }
         if (points.size() >= 2) {
             pls = new PolylineShape();
+            pls.setPoints(points);
+            Graphic aGraphic = new Graphic(pls, plb);
+            this.getMapView().addGraphic(aGraphic);
+            return aGraphic;
+        }
+        return null;
+    }
+    
+    /**
+     * Add polyline
+     *
+     * @param lat Latitude
+     * @param lon Longitude
+     * @param plb PolylineBreak
+     * @param iscurve Is curve line or not
+     * @return Graphic
+     */
+    public Graphic addPolyline(List<Number> lat, List<Number> lon, PolylineBreak plb, boolean iscurve) {
+        double x, y;
+        PolylineShape pls;
+        PointD lonlatp;
+        List<PointD> points = new ArrayList<>();
+        for (int i = 0; i < lat.size(); i++) {
+            x = lon.get(i).doubleValue();
+            y = lat.get(i).doubleValue();
+            if (Double.isNaN(x)) {
+                if (points.size() >= 2) {
+                    if (iscurve)
+                        pls = new CurveLineShape();
+                    else
+                        pls = new PolylineShape();
+                    pls.setPoints(points);
+                    Graphic aGraphic = new Graphic(pls, plb);
+                    this.getMapView().addGraphic(aGraphic);
+                }
+                points = new ArrayList<>();
+            } else {
+                lonlatp = new PointD(x, y);
+                if (!this.getMapView().getProjection().isLonLatMap()) {
+                    lonlatp = Reproject.reprojectPoint(lonlatp, KnownCoordinateSystems.geographic.world.WGS1984,
+                            this.getMapView().getProjection().getProjInfo());
+                }
+                points.add(lonlatp);
+            }
+        }
+        if (points.size() >= 2) {
+            if (iscurve)
+                pls = new CurveLineShape();
+            else
+                pls = new PolylineShape();
             pls.setPoints(points);
             Graphic aGraphic = new Graphic(pls, plb);
             this.getMapView().addGraphic(aGraphic);
