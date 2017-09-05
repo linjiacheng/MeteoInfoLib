@@ -439,7 +439,7 @@ public class PolarPlot extends Plot2D {
         double miny = area.getY();
         double minx = area.getX();
 
-        if (gridLine.getStyle() == LineStyles.Solid) {
+        if (gridLine.getStyle() == LineStyles.SOLID) {
             g.setStroke(new BasicStroke(gridLine.getSize()));
         } else {
             float[] dashPattern = getDashPattern(gridLine.getStyle());

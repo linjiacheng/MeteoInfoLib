@@ -20,14 +20,14 @@ package org.meteoinfo.legend;
  */
 public enum LineStyles {
 
-    Solid,
-    Dash,
-    Dot,
-    DashDot,
-    DashDotDot,
-    ArrowLine,
-    ColdFront,
-    WarmFront,
-    OccludedFront,
-    StationaryFront
+    SOLID,
+    DASH,
+    DOT,
+    DASHDOT,
+    DASHDOTDOT,
+    ARROWLINE,
+    COLDFRONT,
+    WARMFRONT,
+    OCCLUDEDFRONT,
+    STATIONARYFRONT
 }

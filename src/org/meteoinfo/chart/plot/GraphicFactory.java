@@ -2465,7 +2465,7 @@ public class GraphicFactory {
         if (whiskerBreak == null) {
             whiskerBreak = new PolylineBreak();
             whiskerBreak.setColor(Color.black);
-            whiskerBreak.setStyle(LineStyles.Dash);
+            whiskerBreak.setStyle(LineStyles.DASH);
         }
         if (capBreak == null) {
             capBreak = new PolylineBreak();

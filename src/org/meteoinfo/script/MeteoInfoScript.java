@@ -12,13 +12,10 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.WindowConstants;
-import org.meteoinfo.chart.Chart;
 import org.meteoinfo.chart.ChartPanel;
 import org.meteoinfo.chart.ChartText;
-import org.meteoinfo.chart.plot.ChartPlotMethod;
 import org.meteoinfo.chart.plot.XY1DPlot;
 import org.meteoinfo.data.GridData;
-import org.meteoinfo.data.XYArrayDataset;
 import org.meteoinfo.data.mapdata.MapDataManage;
 import org.meteoinfo.data.meteodata.DimensionSet;
 import org.meteoinfo.data.meteodata.DrawMeteoData;
@@ -31,9 +28,7 @@ import org.meteoinfo.layer.MapLayer;
 import org.meteoinfo.layout.MapLayout;
 import org.meteoinfo.legend.LineStyles;
 import org.meteoinfo.legend.MapFrame;
-import org.meteoinfo.legend.PointBreak;
 import org.meteoinfo.legend.PolygonBreak;
-import org.meteoinfo.legend.PolylineBreak;
 import org.meteoinfo.map.MapView;
 
 /**
@@ -432,13 +427,13 @@ public class MeteoInfoScript {
     private LineStyles getLineStyle(String style){
         LineStyles ls = null;
         if (style.contains("--")){
-            ls = LineStyles.Dash;
+            ls = LineStyles.DASH;
         } else if (style.contains(":")){
-            ls = LineStyles.Dot;
+            ls = LineStyles.DOT;
         } else if (style.contains("-.")) {
-            ls = LineStyles.DashDot;
+            ls = LineStyles.DASHDOT;
         } else if (style.contains("-")) {
-            ls = LineStyles.Solid;
+            ls = LineStyles.SOLID;
         }
         
         return ls;

@@ -269,7 +269,7 @@ public class MapView extends JPanel implements IWebMapPanel {
     private boolean _drawGridTickLine = false;
     private Color _gridLineColor = Color.gray;
     private float _gridLineSize = 1;
-    private LineStyles _gridLineStyle = LineStyles.Dash;
+    private LineStyles _gridLineStyle = LineStyles.DASH;
     private boolean _drawGridLine = false;
     private double _gridXDelt = 10;
     private double _gridYDelt = 10;
@@ -5334,19 +5334,19 @@ public class MapView extends JPanel implements IWebMapPanel {
     private static float[] getDashPattern(LineStyles style) {
         float[] dashPattern = {4.0f};
         switch (style) {
-            case Solid:
+            case SOLID:
                 dashPattern = null;
                 break;
-            case Dash:
+            case DASH:
                 dashPattern = new float[]{4.0f};
                 break;
-            case Dot:
+            case DOT:
                 dashPattern = new float[]{2.0f};
                 break;
-            case DashDot:
+            case DASHDOT:
                 dashPattern = new float[]{10, 6, 2, 6};
                 break;
-            case DashDotDot:
+            case DASHDOTDOT:
                 dashPattern = new float[]{10, 6, 2, 6, 2, 6};
                 break;
         }
@@ -6330,7 +6330,7 @@ public class MapView extends JPanel implements IWebMapPanel {
         if (!_drawGridLine) {
 
             lineColor = this.getForeground();
-            dashPattern = getDashPattern(LineStyles.Solid);
+            dashPattern = getDashPattern(LineStyles.SOLID);
             pen = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dashPattern, 0.0f);
         }
         g.setColor(lineColor);
@@ -6720,7 +6720,7 @@ public class MapView extends JPanel implements IWebMapPanel {
         aLayer.setLayerDrawType(LayerDrawType.Map);
         aLayer.setLegendScheme(LegendManage.createSingleSymbolLegendScheme(ShapeTypes.Polyline, Color.darkGray, 1.0F));
         PolylineBreak aPLB = (PolylineBreak) aLayer.getLegendScheme().getLegendBreaks().get(0);
-        aPLB.setStyle(LineStyles.Dash);
+        aPLB.setStyle(LineStyles.DASH);
         aLayer.setVisible(true);
 
         //Get projected lon/lat layer   

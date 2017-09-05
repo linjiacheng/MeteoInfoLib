@@ -9,16 +9,11 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.WindowConstants;
-import org.meteoinfo.chart.Chart;
 import org.meteoinfo.chart.ChartPanel;
-import org.meteoinfo.chart.plot.ChartPlotMethod;
 import org.meteoinfo.chart.plot.XY1DPlot;
-import org.meteoinfo.data.XYArrayDataset;
 import org.meteoinfo.drawing.PointStyle;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.legend.LineStyles;
-import org.meteoinfo.legend.PointBreak;
-import org.meteoinfo.legend.PolylineBreak;
 
 /**
  *
@@ -132,13 +127,13 @@ public class MeteoInfoPlot {
     private LineStyles getLineStyle(String style){
         LineStyles ls = null;
         if (style.contains("--")){
-            ls = LineStyles.Dash;
+            ls = LineStyles.DASH;
         } else if (style.contains(":")){
-            ls = LineStyles.Dot;
+            ls = LineStyles.DOT;
         } else if (style.contains("-.")) {
-            ls = LineStyles.DashDot;
+            ls = LineStyles.DASHDOT;
         } else if (style.contains("-")) {
-            ls = LineStyles.Solid;
+            ls = LineStyles.SOLID;
         }
         
         return ls;

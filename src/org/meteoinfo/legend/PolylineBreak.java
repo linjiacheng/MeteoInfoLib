@@ -42,7 +42,7 @@ public class PolylineBreak extends ColorBreak {
         super();
         this.setBreakType(BreakTypes.PolylineBreak);
         _size = 1.0f;
-        _style = LineStyles.Solid;
+        _style = LineStyles.SOLID;
         _drawPolyline = true;
         _drawSymbol = false;
         _symbolSize = 8.0f;
@@ -240,11 +240,11 @@ public class PolylineBreak extends ColorBreak {
      */
     public boolean isUsingDashStyle() {
         switch (_style) {
-            case Solid:
-            case Dash:
-            case Dot:
-            case DashDot:
-            case DashDotDot:
+            case SOLID:
+            case DASH:
+            case DOT:
+            case DASHDOT:
+            case DASHDOTDOT:
                 return true;
             default:
                 return false;

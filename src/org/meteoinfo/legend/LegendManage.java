@@ -208,7 +208,7 @@ public class LegendManage {
             aPLB.setColor(aColor);
             aPLB.setDrawPolyline(true);
             aPLB.setSize(size);
-            aPLB.setStyle(LineStyles.Solid);
+            aPLB.setStyle(LineStyles.SOLID);
             aPLB.setStartValue(0);
             aPLB.setEndValue(0);
             aPLB.setCaption("");
@@ -289,7 +289,7 @@ public class LegendManage {
                     aPLB.setStartValue(CValues.get(i - 1));
                     aPLB.setEndValue(aPLB.getStartValue());
                     aPLB.setSize(1.0F);
-                    aPLB.setStyle(LineStyles.Solid);
+                    aPLB.setStyle(LineStyles.SOLID);
                     aPLB.setDrawPolyline(true);
                     aPLB.setCaption(captions.get(i - 1));
                     aPLB.setSymbolColor(aPLB.getColor());
@@ -375,7 +375,7 @@ public class LegendManage {
                     aPLB.setStartValue(CValues.get(i - 1));
                     aPLB.setEndValue(aPLB.getStartValue());
                     aPLB.setSize(1.0F);
-                    aPLB.setStyle(LineStyles.Solid);
+                    aPLB.setStyle(LineStyles.SOLID);
                     aPLB.setDrawPolyline(true);
                     aPLB.setCaption(captions.get(i - 1));
                     aPLB.setSymbolColor(aPLB.getColor());
@@ -459,7 +459,7 @@ public class LegendManage {
                     aPLB.setStartValue(i);
                     aPLB.setEndValue(i);
                     aPLB.setSize(1.0F);
-                    aPLB.setStyle(LineStyles.Solid);
+                    aPLB.setStyle(LineStyles.SOLID);
                     aPLB.setDrawPolyline(true);
                     aPLB.setCaption(String.valueOf(i));
                     aPLB.setSymbolColor(aPLB.getColor());
@@ -573,7 +573,7 @@ public class LegendManage {
                     aPLB.setStartValue(values.get(i));
                     aPLB.setEndValue(values.get(i));
                     aPLB.setSize(1.0F);
-                    aPLB.setStyle(LineStyles.Solid);
+                    aPLB.setStyle(LineStyles.SOLID);
                     aPLB.setDrawPolyline(true);
                     aPLB.setCaption(String.valueOf(values.get(i)));
                     aPLB.setSymbolColor(aPLB.getColor());
@@ -838,7 +838,7 @@ public class LegendManage {
                     PolylineBreak aPLB = new PolylineBreak();
                     aPLB.setColor(colors[i]);
                     aPLB.setSize(1.0F);
-                    aPLB.setStyle(LineStyles.Solid);
+                    aPLB.setStyle(LineStyles.SOLID);
                     aPLB.setDrawPolyline(true);
                     if (i == 0) {
                         aPLB.setStartValue(min);

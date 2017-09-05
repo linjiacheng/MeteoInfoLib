@@ -1890,19 +1890,19 @@ public class Draw {
     public static float[] getDashPattern(LineStyles style) {
         float[] dashPattern = {4.0f};
         switch (style) {
-            case Solid:
+            case SOLID:
                 dashPattern = null;
                 break;
-            case Dash:
+            case DASH:
                 dashPattern = new float[]{4.0f};
                 break;
-            case Dot:
+            case DOT:
                 dashPattern = new float[]{2.0f};
                 break;
-            case DashDot:
+            case DASHDOT:
                 dashPattern = new float[]{10, 6, 2, 6};
                 break;
-            case DashDotDot:
+            case DASHDOTDOT:
                 dashPattern = new float[]{10, 6, 2, 6, 2, 6};
                 break;
         }
@@ -1960,7 +1960,7 @@ public class Draw {
             float aSize = 16;
             int i;
             switch (aPLB.getStyle()) {
-                case ColdFront:
+                case COLDFRONT:
                     if (pos != null) {
                         PointBreak aPB = new PointBreak();
                         aPB.setSize(aSize);
@@ -1979,7 +1979,7 @@ public class Draw {
                     g.setStroke(new BasicStroke(aPLB.getSize()));
                     drawPolyline(points, g);
                     break;
-                case WarmFront:
+                case WARMFRONT:
                     if (pos != null) {
                         PointBreak aPB = new PointBreak();
                         aPB.setSize(aSize);
@@ -1998,7 +1998,7 @@ public class Draw {
                     g.setStroke(new BasicStroke(aPLB.getSize()));
                     drawPolyline(points, g);
                     break;
-                case OccludedFront:
+                case OCCLUDEDFRONT:
                     Color aColor = new Color(255, 0, 255);
                     if (pos != null) {
                         PointBreak aPB = new PointBreak();
@@ -2030,7 +2030,7 @@ public class Draw {
                     g.setStroke(new BasicStroke(aPLB.getSize()));
                     drawPolyline(points, g);
                     break;
-                case StationaryFront:
+                case STATIONARYFRONT:
                     if (pos != null) {
                         PointBreak aPB = new PointBreak();
                         aPB.setSize(aSize);
@@ -2061,7 +2061,7 @@ public class Draw {
                     g.setStroke(new BasicStroke(aPLB.getSize()));
                     drawPolyline(points, g);
                     break;
-                case ArrowLine:
+                case ARROWLINE:
                     g.setColor(aPLB.getColor());
                     g.setStroke(new BasicStroke(aPLB.getSize()));
                     //float[] dashPattern = getDashPattern(aPLB.getStyle());
@@ -2152,7 +2152,7 @@ public class Draw {
             float aSize = 16;
             int i;
             switch (aPLB.getStyle()) {
-                case ColdFront:
+                case COLDFRONT:
                     if (pos != null) {
                         PointBreak aPB = new PointBreak();
                         aPB.setSize(aSize);
@@ -2171,7 +2171,7 @@ public class Draw {
                     g.setStroke(new BasicStroke(aPLB.getSize()));
                     drawPolyline(points, g);
                     break;
-                case WarmFront:
+                case WARMFRONT:
                     if (pos != null) {
                         PointBreak aPB = new PointBreak();
                         aPB.setSize(aSize);
@@ -2190,7 +2190,7 @@ public class Draw {
                     g.setStroke(new BasicStroke(aPLB.getSize()));
                     drawPolyline(points, g);
                     break;
-                case OccludedFront:
+                case OCCLUDEDFRONT:
                     Color aColor = new Color(255, 0, 255);
                     if (pos != null) {
                         PointBreak aPB = new PointBreak();
@@ -2222,7 +2222,7 @@ public class Draw {
                     g.setStroke(new BasicStroke(aPLB.getSize()));
                     drawPolyline(points, g);
                     break;
-                case StationaryFront:
+                case STATIONARYFRONT:
                     if (pos != null) {
                         PointBreak aPB = new PointBreak();
                         aPB.setSize(aSize);
@@ -2312,7 +2312,7 @@ public class Draw {
             points[1] = aPoint;
             float lineWidth = 2.0f;
             switch (aPLB.getStyle()) {
-                case ColdFront:
+                case COLDFRONT:
                     PointBreak aPB = new PointBreak();
                     aPB.setSize(14);
                     aPB.setColor(Color.blue);
@@ -2327,7 +2327,7 @@ public class Draw {
                     g.setStroke(new BasicStroke(lineWidth));
                     drawPolyline(points, g);
                     break;
-                case WarmFront:
+                case WARMFRONT:
                     aPB = new PointBreak();
                     aPB.setSize(14);
                     aPB.setColor(Color.red);
@@ -2342,7 +2342,7 @@ public class Draw {
                     g.setStroke(new BasicStroke(lineWidth));
                     drawPolyline(points, g);
                     break;
-                case OccludedFront:
+                case OCCLUDEDFRONT:
                     Color aColor = new Color(255, 0, 255);
                     aPB = new PointBreak();
                     aPB.setSize(14);
@@ -2365,7 +2365,7 @@ public class Draw {
                     g.setStroke(new BasicStroke(lineWidth));
                     drawPolyline(points, g);
                     break;
-                case StationaryFront:
+                case STATIONARYFRONT:
                     aPB = new PointBreak();
                     aPB.setSize(14);
                     aPB.setColor(Color.blue);
@@ -2387,7 +2387,7 @@ public class Draw {
                     g.setStroke(new BasicStroke(lineWidth));
                     drawPolyline(points, g);
                     break;
-                case ArrowLine:
+                case ARROWLINE:
                     g.setColor(aPLB.getColor());
                     g.setStroke(new BasicStroke(lineWidth));
                     //float[] dashPattern = getDashPattern(aPLB.getStyle());
@@ -2461,7 +2461,7 @@ public class Draw {
             points[1] = aPoint;
             float lineWidth = 2.0f;
             switch (aPLB.getStyle()) {
-                case ColdFront:
+                case COLDFRONT:
                     PointBreak aPB = new PointBreak();
                     aPB.setSize(14);
                     aPB.setColor(Color.blue);
@@ -2476,7 +2476,7 @@ public class Draw {
                     g.setStroke(new BasicStroke(lineWidth));
                     drawPolyline(points, g);
                     break;
-                case WarmFront:
+                case WARMFRONT:
                     aPB = new PointBreak();
                     aPB.setSize(14);
                     aPB.setColor(Color.red);
@@ -2491,7 +2491,7 @@ public class Draw {
                     g.setStroke(new BasicStroke(lineWidth));
                     drawPolyline(points, g);
                     break;
-                case OccludedFront:
+                case OCCLUDEDFRONT:
                     Color aColor = new Color(255, 0, 255);
                     aPB = new PointBreak();
                     aPB.setSize(14);
@@ -2514,7 +2514,7 @@ public class Draw {
                     g.setStroke(new BasicStroke(lineWidth));
                     drawPolyline(points, g);
                     break;
-                case StationaryFront:
+                case STATIONARYFRONT:
                     aPB = new PointBreak();
                     aPB.setSize(14);
                     aPB.setColor(Color.blue);
@@ -2536,7 +2536,7 @@ public class Draw {
                     g.setStroke(new BasicStroke(lineWidth));
                     drawPolyline(points, g);
                     break;
-                case ArrowLine:
+                case ARROWLINE:
                     g.setColor(aPLB.getColor());
                     g.setStroke(new BasicStroke(lineWidth));
                     //float[] dashPattern = getDashPattern(aPLB.getStyle());
