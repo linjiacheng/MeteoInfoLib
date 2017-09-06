@@ -1528,6 +1528,7 @@ public class MapView extends JPanel implements IWebMapPanel {
                                                         break;
                                                     case Polygon:
                                                     case PolygonM:
+                                                    case PolygonZ:
                                                         _frmMeasure.setArea(true);
                                                         if (_projection.isLonLatMap()) {
                                                             value = ((PolygonShape) aShape).getSphericalArea();
@@ -3737,6 +3738,7 @@ public class MapView extends JPanel implements IWebMapPanel {
                     case PolylineZ:
                     case Polygon:
                     case PolygonM:
+                    case PolygonZ:
                         lIdx = i;
                         break;
                 }
@@ -3767,6 +3769,7 @@ public class MapView extends JPanel implements IWebMapPanel {
                 switch (bLayer.getShapeType()) {
                     case Polygon:
                     case PolygonM:
+                    case PolygonZ:
                         lIdx = i;
                         break;
                 }
@@ -6097,6 +6100,7 @@ public class MapView extends JPanel implements IWebMapPanel {
                     break;
                 case Polygon:
                 case PolygonM:
+                case PolygonZ:
                     PolygonShape aPGS = (PolygonShape) aShape;
                     PolygonBreak aPGB = new PolygonBreak();
                     aPGB.setOutlineColor(Color.red);
@@ -7213,6 +7217,7 @@ public class MapView extends JPanel implements IWebMapPanel {
             case CurveLine:
             case Polygon:
             case PolygonM:
+            case PolygonZ:
             case Circle:
             case CurvePolygon:
                 moveShape(aShape, newExtent.minX - aExtent.minX, newExtent.minY - aExtent.minY);

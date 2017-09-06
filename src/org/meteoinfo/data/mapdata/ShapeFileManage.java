@@ -50,6 +50,7 @@ import org.meteoinfo.projection.proj4j.CRSFactory;
 import org.meteoinfo.projection.proj4j.CoordinateReferenceSystem;
 import org.meteoinfo.shape.PointM;
 import org.meteoinfo.shape.PolygonMShape;
+import org.meteoinfo.shape.PolygonZShape;
 
 /**
  * Shape file read and write
@@ -139,7 +140,11 @@ public class ShapeFileManage {
             case PolygonM:
                 aLayer = readPolygonMShapes(br, shapeNum);
                 break;
+            case PolygonZ:
+                aLayer = readPolygonZShapes(br, shapeNum);
+                break;
             default:
+                System.out.println("The shape type is not supported: " + aST.toString());
                 return null;
         }        
         br.close();
@@ -430,7 +435,7 @@ public class ShapeFileManage {
     }
     
     private static VectorLayer readPolygonMShapes(DataInputStream br, int shapeNum) throws IOException {
-        VectorLayer aLayer = new VectorLayer(ShapeTypes.Polygon);
+        VectorLayer aLayer = new VectorLayer(ShapeTypes.PolygonM);
         int RecordNum, ContentLength, aShapeType;
         double x, y;
         byte[] bytes;
@@ -494,6 +499,88 @@ public class ShapeFileManage {
             }
             
             aSPG.setPoints(pointMs);
+            aLayer.addShape(aSPG);
+        }
+
+        //Create legend scheme            
+        aLayer.setLegendScheme(LegendManage.createSingleSymbolLegendScheme(ShapeTypes.Polygon, new Color(255, 251, 195), 1.0F));
+
+        return aLayer;
+    }
+    
+    private static VectorLayer readPolygonZShapes(DataInputStream br, int shapeNum) throws IOException {
+        VectorLayer aLayer = new VectorLayer(ShapeTypes.PolygonZ);
+        int RecordNum, ContentLength, aShapeType;
+        double x, y;
+        byte[] bytes;
+        ByteBuffer buffer;
+
+        for (int i = 0; i < shapeNum; i++) {            
+            //br.skipBytes(12);
+            bytes = new byte[8];
+            br.read(bytes);
+            buffer = ByteBuffer.wrap(bytes);
+            //br.skipBytes(12); 
+            buffer.order(ByteOrder.BIG_ENDIAN);
+            RecordNum = buffer.getInt();
+            ContentLength = buffer.getInt();
+            
+            bytes = new byte[ContentLength * 2];
+            br.read(bytes);
+            buffer = ByteBuffer.wrap(bytes);
+            buffer.order(ByteOrder.LITTLE_ENDIAN);
+            aShapeType = buffer.getInt();
+
+            PolygonZShape aSPG = new PolygonZShape();
+            Extent extent = new Extent();
+            extent.minX = buffer.getDouble();
+            extent.minY = buffer.getDouble();
+            extent.maxX = buffer.getDouble();
+            extent.maxY = buffer.getDouble();
+            aSPG.setExtent(extent);
+            aSPG.setPartNum(buffer.getInt());
+            int numPoints = buffer.getInt();
+            aSPG.parts = new int[aSPG.getPartNum()];
+            List<PointD> points = new ArrayList<>();
+
+            //firstly read out parts begin pos in file 
+            for (int j = 0; j < aSPG.getPartNum(); j++) {
+                aSPG.parts[j] = buffer.getInt();
+            }
+
+            //read out coordinates 
+            for (int j = 0; j < numPoints; j++) {
+                x = buffer.getDouble();
+                y = buffer.getDouble();
+                PointD aPoint = new PointD();
+                aPoint.X = x;
+                aPoint.Y = y;
+                points.add(aPoint);
+            }
+            
+            //Read Z
+            double zmin = buffer.getDouble();
+            double zmax = buffer.getDouble();
+            double[] zArray = new double[numPoints];
+            for (int j = 0; j < numPoints; j++) {
+                zArray[j] = buffer.getDouble();
+            }
+            
+            //Read measure
+            double mmin = buffer.getDouble();
+            double mmax = buffer.getDouble();
+            double[] mArray = new double[numPoints];
+            for (int j = 0; j < numPoints; j++) {
+                mArray[j] = buffer.getDouble();
+            }
+            
+            //Get pointZ list
+            List<PointZ> pointZs = new ArrayList<>();
+            for (int j = 0; j < numPoints; j++) {
+                pointZs.add(new PointZ(points.get(j).X, points.get(j).Y, zArray[j], mArray[j]));
+            }
+            
+            aSPG.setPoints(pointZs);
             aLayer.addShape(aSPG);
         }
 

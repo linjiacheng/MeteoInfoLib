@@ -610,6 +610,8 @@ public class MapLayout extends JPanel implements IWebMapPanel {
                                                         }
                                                         break;
                                                     case Polygon:
+                                                    case PolygonM:
+                                                    case PolygonZ:
                                                         _frmMeasure.setArea(true);
                                                         if (_currentLayoutMap.getMapFrame().getMapView().getProjection().isLonLatMap()) {
                                                             value = ((PolygonShape) aShape).getSphericalArea();

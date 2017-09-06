@@ -241,6 +241,8 @@ public class VectorLayer extends MapLayer {
         super.setTransparency(trans);
         switch (this.getShapeType()) {
             case Polygon:
+            case PolygonM:
+            case PolygonZ:
                 for (int i = 0; i < this.getLegendScheme().getBreakNum(); i++) {
                     PolygonBreak aPGB = (PolygonBreak) this.getLegendScheme().getLegendBreaks().get(i);
                     int alpha = (int) ((1 - (double) trans / 100.0) * 255);
@@ -494,6 +496,7 @@ public class VectorLayer extends MapLayer {
                     break;
                 case Polygon:
                 case PolygonM:
+                case PolygonZ:
                     Extent aExtent = aShape.getExtent();
                     aPoint.X = (aExtent.minX + aExtent.maxX) / 2;
                     aPoint.Y = (aExtent.minY + aExtent.maxY) / 2;
@@ -741,6 +744,7 @@ public class VectorLayer extends MapLayer {
                 break;
             case Polygon:
             case PolygonM:
+            case PolygonZ:
                 for (i = shapes.size() - 1; i >= 0; i--) {
                     PolygonShape aPGS = (PolygonShape) shapes.get(i);
                     if (isSingleSel) {
@@ -1768,6 +1772,7 @@ public class VectorLayer extends MapLayer {
                     break;
                 case Polygon:
                 case PolygonM:
+                case PolygonZ:
                     Extent aExtent = aShape.getExtent();
                     aPoint = new PointD();
                     aPoint.X = ((aExtent.minX + aExtent.maxX) / 2);
@@ -2611,6 +2616,7 @@ public class VectorLayer extends MapLayer {
                         break;
                     case Polygon:
                     case PolygonM:
+                    case PolygonZ:
                     case Image:
                         aColor = new Color(255, 251, 195);
                         break;
