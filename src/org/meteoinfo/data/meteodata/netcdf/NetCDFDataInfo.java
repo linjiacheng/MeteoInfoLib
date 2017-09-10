@@ -966,10 +966,13 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
         }
 
         int mapProj = Integer.parseInt(pstr);
+        String lon_0 = getGlobalAttStr("STAND_LON");
+        if (lon_0.isEmpty())
+            lon_0 = getGlobalAttStr("CEN_LON");
         switch (mapProj) {
             case 1:    //Lambert conformal
                 projStr = "+proj=lcc"
-                        + "+lon_0=" + getGlobalAttStr("STAND_LON")
+                        + "+lon_0=" + lon_0
                         + "+lat_0=" + getGlobalAttStr("CEN_LAT")
                         + "+lat_1=" + getGlobalAttStr("TRUELAT1")
                         + "+lat_2=" + getGlobalAttStr("TRUELAT2");
@@ -980,7 +983,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                     lat0 = "-90";
                 }
                 projStr = "+proj=stere"
-                        + "+lon_0=" + getGlobalAttStr("STAND_LON")
+                        + "+lon_0=" + lon_0
                         + "+lat_0=" + lat0;
                 String stPs = getGlobalAttStr("CEN_LAT");
                 //projStr += "+lat_ts=" + stPs;                                    
@@ -990,7 +993,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
             case 3:    //Mercator
                 projStr = "+proj=merc"
                         + "+lat_ts=" + getGlobalAttStr("CEN_LAT")
-                        + "+lon_0=" + getGlobalAttStr("STAND_LON");
+                        + "+lon_0=" + lon_0;
                 break;
         }
 

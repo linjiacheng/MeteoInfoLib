@@ -3975,6 +3975,148 @@ public class ArrayMath {
         }
         return sum / n;
     }
+    
+    /**
+     * Get the index of the minimum value into the flattened array.
+     *
+     * @param a Array a
+     * @return Minimum value index
+     * @throws ucar.ma2.InvalidRangeException
+     */
+    public static int argMin(Array a) throws InvalidRangeException {
+        double min = Double.MAX_VALUE, v;
+        int idx = 0;
+        IndexIterator iterator = a.getIndexIterator();
+        int i = 0;
+        while (iterator.hasNext()){
+            v = iterator.getDoubleNext();
+            if (!Double.isNaN(v)){
+                if (min > v){
+                    min = v;
+                    idx = i;
+                }
+            }
+            i += 1;
+        }
+        return idx;
+    }
+    
+    /**
+     * Get the indices of the minimum values along an axis.
+     *
+     * @param a Array a
+     * @param axis Axis
+     * @return Indices
+     * @throws ucar.ma2.InvalidRangeException
+     */
+    public static Array argMin(Array a, int axis) throws InvalidRangeException {        
+        int[] dataShape = a.getShape();
+        int[] shape = new int[dataShape.length - 1];
+        int idx;
+        for (int i = 0; i < dataShape.length; i++) {
+            idx = i;
+            if (idx == axis) {
+                continue;
+            } else if (idx > axis) {
+                idx -= 1;
+            }
+            shape[idx] = dataShape[i];
+        }
+        Array r = Array.factory(DataType.INT, shape);
+        Index indexr = r.getIndex();
+        int[] current;
+        for (int i = 0; i < r.getSize(); i++) {
+            current = indexr.getCurrentCounter();
+            List<Range> ranges = new ArrayList<>();
+            for (int j = 0; j < dataShape.length; j++) {
+                if (j == axis) {
+                    ranges.add(new Range(0, dataShape[j] - 1, 1));
+                } else {
+                    idx = j;
+                    if (idx > axis) {
+                        idx -= 1;
+                    }
+                    ranges.add(new Range(current[idx], current[idx], 1));
+                }
+            }
+            idx = argMin(a.section(ranges));
+            r.setInt(i, idx);
+            indexr.incr();
+        }
+
+        return r;
+    }
+    
+    /**
+     * Get the index of the maximum value into the flattened array.
+     *
+     * @param a Array a
+     * @return Maximum value index
+     * @throws ucar.ma2.InvalidRangeException
+     */
+    public static int argMax(Array a) throws InvalidRangeException {
+        double max = Double.MIN_VALUE, v;
+        int idx = 0;
+        IndexIterator iterator = a.getIndexIterator();
+        int i = 0;
+        while (iterator.hasNext()){
+            v = iterator.getDoubleNext();
+            if (!Double.isNaN(v)){
+                if (max < v){
+                    max = v;
+                    idx = i;
+                }
+            }
+            i += 1;
+        }
+        return idx;
+    }
+    
+    /**
+     * Get the indices of the maximum values along an axis.
+     *
+     * @param a Array a
+     * @param axis Axis
+     * @return Indices
+     * @throws ucar.ma2.InvalidRangeException
+     */
+    public static Array argMax(Array a, int axis) throws InvalidRangeException {        
+        int[] dataShape = a.getShape();
+        int[] shape = new int[dataShape.length - 1];
+        int idx;
+        for (int i = 0; i < dataShape.length; i++) {
+            idx = i;
+            if (idx == axis) {
+                continue;
+            } else if (idx > axis) {
+                idx -= 1;
+            }
+            shape[idx] = dataShape[i];
+        }
+        Array r = Array.factory(DataType.INT, shape);
+        Index indexr = r.getIndex();
+        int[] current;
+        for (int i = 0; i < r.getSize(); i++) {
+            current = indexr.getCurrentCounter();
+            List<Range> ranges = new ArrayList<>();
+            for (int j = 0; j < dataShape.length; j++) {
+                if (j == axis) {
+                    ranges.add(new Range(0, dataShape[j] - 1, 1));
+                } else {
+                    idx = j;
+                    if (idx > axis) {
+                        idx -= 1;
+                    }
+                    ranges.add(new Range(current[idx], current[idx], 1));
+                }
+            }
+            idx = argMax(a.section(ranges));
+            r.setInt(i, idx);
+            indexr.incr();
+        }
+
+        return r;
+    }
 
     /**
      * Compute mean value of an array along an axis (dimension)
