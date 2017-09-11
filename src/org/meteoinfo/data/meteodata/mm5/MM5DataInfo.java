@@ -161,6 +161,10 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
                 ydim.setValues(Y);
                 this.setXDimension(xdim);
                 this.setYDimension(ydim);
+                this.setZDimension(zdim);
+                this.addDimension(xdim);
+                this.addDimension(ydim);
+                this.addDimension(zdim);
             }
 
             List<Date> times = new ArrayList<>();
@@ -189,6 +193,7 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
                             values[i] = i + 1;
                         }
                         zdim.setValues(values);
+                        this.setZDimension(zdim);
                         String projStr = this.getProjectionInfo().toProj4String();
                         int mapProj = bh.getMapProj();
                         switch (mapProj) {
@@ -222,6 +227,9 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
                         ydim.setValues(Y);
                         this.setXDimension(xdim);
                         this.setYDimension(ydim);
+                        this.addDimension(xdim);
+                        this.addDimension(ydim);
+                        this.addDimension(zdim);
                     }
                 } else if (flag == 1) {    //Read sub header
                     long pos = br.getFilePointer();
@@ -262,6 +270,7 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
                     if (isNewVar) {
                         Variable var = new Variable();
                         var.setName(sh.name);
+                        var.setDataType(DataType.FLOAT);
                         //var.addLevel(dh.level);
                         var.setUnits(sh.unit);
                         var.setDescription(sh.description);
@@ -304,6 +313,7 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
             tDim.setShortName("time");
             tDim.setValues(values);
             this.setTimeDimension(tDim);
+            this.addDimension(tDim);
 
             for (Variable var : variables) {
                 var.addDimension(0, tDim);
@@ -523,85 +533,85 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
 
         return this._subHeaders.get(0);
     }
-    
+
     /**
      * Get global attributes
+     *
      * @return Global attributes
      */
     @Override
-    public List<Attribute> getGlobalAttributes(){
+    public List<Attribute> getGlobalAttributes() {
         return new ArrayList<>();
     }
-    
-    @Override
-    public String generateInfoText() {
-        String dataInfo;
-        int i, j;
-        Attribute aAttS;
-        dataInfo = "File Name: " + this.getFileName();
-        dataInfo += System.getProperty("line.separator") + "Dimensions: " + this.getDimensions().size();
-        for (i = 0; i < this.getDimensions().size(); i++) {
-            dataInfo += System.getProperty("line.separator") + "\t" + this.getDimensions().get(i).getShortName()+ " = "
-                    + String.valueOf(this.getDimensions().get(i).getLength()) + ";";
-        }
-        
-        Dimension tdim = this.getTimeDimension();
-        if (tdim != null) {
-            dataInfo += System.getProperty("line.separator") + "T Dimension: Tmin = " + String.valueOf(tdim.getMinValue())
-                    + "; Tmax = " + String.valueOf(tdim.getMaxValue()) + "; Tsize = "
-                    + String.valueOf(tdim.getLength()) + "; Tdelta = " + String.valueOf(tdim.getDeltaValue());
-        }
 
-        Dimension zdim = this.getZDimension();
-        if (zdim != null) {
-            dataInfo += System.getProperty("line.separator") + "Z Dimension: Zmin = " + String.valueOf(zdim.getMinValue())
-                    + "; Zmax = " + String.valueOf(zdim.getMaxValue()) + "; Zsize = "
-                    + String.valueOf(zdim.getLength()) + "; Zdelta = " + String.valueOf(zdim.getDeltaValue());
-        }
-        
-        Dimension xdim = this.getXDimension();
-        if (xdim != null) {
-            dataInfo += System.getProperty("line.separator") + "X Dimension: Xmin = " + String.valueOf(xdim.getMinValue())
-                    + "; Xmax = " + String.valueOf(xdim.getMaxValue()) + "; Xsize = "
-                    + String.valueOf(xdim.getLength()) + "; Xdelta = " + String.valueOf(xdim.getDeltaValue());
-        }
-        Dimension ydim = this.getYDimension();
-        if (ydim != null) {
-            dataInfo += System.getProperty("line.separator") + "Y Dimension: Ymin = " + String.valueOf(ydim.getMinValue())
-                    + "; Ymax = " + String.valueOf(ydim.getMaxValue()) + "; Ysize = "
-                    + String.valueOf(ydim.getLength()) + "; Ydelta = " + String.valueOf(ydim.getDeltaValue());
-        }
-
-        dataInfo += System.getProperty("line.separator") + "Global Attributes: ";
-        dataInfo += System.getProperty("line.separator") + "\t: " + "Data type: MM5 output";
-
-        dataInfo += System.getProperty("line.separator") + "Variations: " + this.getVariables().size();
-        for (i = 0; i < this.getVariables().size(); i++) {
-            dataInfo += System.getProperty("line.separator") + "\t" + this.getVariables().get(i).getName()+ "(";
-            List<ucar.nc2.Dimension> dims = this.getVariables().get(i).getDimensions();
-            for (j = 0; j < dims.size(); j++) {
-                dataInfo += dims.get(j).getShortName()+ ",";
-            }
-            dataInfo = dataInfo.substring(0, dataInfo.length() - 1);
-            dataInfo += ");";
-            List<Attribute> atts = this.getVariables().get(i).getAttributes();
-            for (j = 0; j < atts.size(); j++) {
-                aAttS = atts.get(j);
-                dataInfo += System.getProperty("line.separator") + "\t" + "\t" + this.getVariables().get(i).getName()
-                        + ": " + aAttS.toString();
-            }
-        }
-
-        for (Dimension dim : this.getDimensions()) {
-            if (dim.isUnlimited()) {
-                dataInfo += System.getProperty("line.separator") + "Unlimited dimension: " + dim.getShortName();
-            }
-            break;
-        }
-
-        return dataInfo;
-    }
-
+//    @Override
+//    public String generateInfoText() {
+//        String dataInfo;
+//        int i, j;
+//        Attribute aAttS;
+//        dataInfo = "File Name: " + this.getFileName();
+//        dataInfo += System.getProperty("line.separator") + "Dimensions: " + this.getDimensions().size();
+//        for (i = 0; i < this.getDimensions().size(); i++) {
+//            dataInfo += System.getProperty("line.separator") + "\t" + this.getDimensions().get(i).getShortName()+ " = "
+//                    + String.valueOf(this.getDimensions().get(i).getLength()) + ";";
+//        }
+//        
+//        Dimension tdim = this.getTimeDimension();
+//        if (tdim != null) {
+//            dataInfo += System.getProperty("line.separator") + "T Dimension: Tmin = " + String.valueOf(tdim.getMinValue())
+//                    + "; Tmax = " + String.valueOf(tdim.getMaxValue()) + "; Tsize = "
+//                    + String.valueOf(tdim.getLength()) + "; Tdelta = " + String.valueOf(tdim.getDeltaValue());
+//        }
+//
+//        Dimension zdim = this.getZDimension();
+//        if (zdim != null) {
+//            dataInfo += System.getProperty("line.separator") + "Z Dimension: Zmin = " + String.valueOf(zdim.getMinValue())
+//                    + "; Zmax = " + String.valueOf(zdim.getMaxValue()) + "; Zsize = "
+//                    + String.valueOf(zdim.getLength()) + "; Zdelta = " + String.valueOf(zdim.getDeltaValue());
+//        }
+//        
+//        Dimension xdim = this.getXDimension();
+//        if (xdim != null) {
+//            dataInfo += System.getProperty("line.separator") + "X Dimension: Xmin = " + String.valueOf(xdim.getMinValue())
+//                    + "; Xmax = " + String.valueOf(xdim.getMaxValue()) + "; Xsize = "
+//                    + String.valueOf(xdim.getLength()) + "; Xdelta = " + String.valueOf(xdim.getDeltaValue());
+//        }
+//        Dimension ydim = this.getYDimension();
+//        if (ydim != null) {
+//            dataInfo += System.getProperty("line.separator") + "Y Dimension: Ymin = " + String.valueOf(ydim.getMinValue())
+//                    + "; Ymax = " + String.valueOf(ydim.getMaxValue()) + "; Ysize = "
+//                    + String.valueOf(ydim.getLength()) + "; Ydelta = " + String.valueOf(ydim.getDeltaValue());
+//        }
+//
+//        dataInfo += System.getProperty("line.separator") + "Global Attributes: ";
+//        dataInfo += System.getProperty("line.separator") + "\t: " + "Data type: MM5 output";
+//
+//        dataInfo += System.getProperty("line.separator") + "Variations: " + this.getVariables().size();
+//        for (i = 0; i < this.getVariables().size(); i++) {
+//            dataInfo += System.getProperty("line.separator") + "\t" + this.getVariables().get(i).getName()+ "(";
+//            List<ucar.nc2.Dimension> dims = this.getVariables().get(i).getDimensions();
+//            for (j = 0; j < dims.size(); j++) {
+//                dataInfo += dims.get(j).getShortName()+ ",";
+//            }
+//            dataInfo = dataInfo.substring(0, dataInfo.length() - 1);
+//            dataInfo += ");";
+//            List<Attribute> atts = this.getVariables().get(i).getAttributes();
+//            for (j = 0; j < atts.size(); j++) {
+//                aAttS = atts.get(j);
+//                dataInfo += System.getProperty("line.separator") + "\t" + "\t" + this.getVariables().get(i).getName()
+//                        + ": " + aAttS.toString();
+//            }
+//        }
+//
+//        for (Dimension dim : this.getDimensions()) {
+//            if (dim.isUnlimited()) {
+//                dataInfo += System.getProperty("line.separator") + "Unlimited dimension: " + dim.getShortName();
+//            }
+//            break;
+//        }
+//
+//        return dataInfo;
+//    }
     public String generateInfoText_bak() {
         String dataInfo;
         dataInfo = "File Name: " + this.getFileName();
@@ -627,28 +637,28 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
 
         return dataInfo;
     }
-    
+
     /**
      * Read array data of a variable
-     * 
+     *
      * @param varName Variable name
      * @return Array data
      */
     @Override
-    public Array read(String varName){
+    public Array read(String varName) {
         Variable var = this.getVariable(varName);
         int n = var.getDimNumber();
         int[] origin = new int[n];
         int[] size = new int[n];
         int[] stride = new int[n];
-        for (int i = 0; i < n; i++){
+        for (int i = 0; i < n; i++) {
             origin[i] = 0;
             size[i] = var.getDimLength(i);
             stride[i] = 1;
         }
-        
+
         Array r = read(varName, origin, size, stride);
-        
+
         return r;
     }
 
@@ -743,7 +753,7 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
             Logger.getLogger(MM5DataInfo.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     /**
      * Get grid data
      *
@@ -752,7 +762,7 @@ public class MM5DataInfo extends DataInfo implements IGridDataInfo {
      */
     @Override
     public GridArray getGridArray(String varName) {
-        return null;    
+        return null;
     }
 
     @Override
