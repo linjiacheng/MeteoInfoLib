@@ -1034,8 +1034,14 @@ public class ArrayUtil {
      */
     public static Array toInteger(Array a) {
         Array r = Array.factory(DataType.INT, a.getShape());
-        for (int i = 0; i < r.getSize(); i++) {
-            r.setInt(i, a.getInt(i));
+        if (a.getDataType().isNumeric()){
+            for (int i = 0; i < r.getSize(); i++) {
+                r.setInt(i, a.getInt(i));
+            }
+        } else {
+            for (int i = 0; i < r.getSize(); i++) {
+                r.setInt(i, Integer.valueOf(a.getObject(i).toString()));
+            }
         }
 
         return r;
@@ -1049,10 +1055,16 @@ public class ArrayUtil {
      */
     public static Array toFloat(Array a) {
         Array r = Array.factory(DataType.FLOAT, a.getShape());
-        for (int i = 0; i < r.getSize(); i++) {
-            r.setFloat(i, a.getFloat(i));
+        if (a.getDataType().isNumeric()){
+            for (int i = 0; i < r.getSize(); i++) {
+                r.setFloat(i, a.getFloat(i));
+            }
+        } else {
+            for (int i = 0; i < r.getSize(); i++) {
+                r.setFloat(i, Float.valueOf(a.getObject(i).toString()));
+            }
         }
-
+        
         return r;
     }
 

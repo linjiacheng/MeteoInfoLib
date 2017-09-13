@@ -19,7 +19,7 @@ public class ColumnData {
 
     // <editor-fold desc="Variables">
     private DataColumn dataColumn;
-    private List<? extends Object> data;
+    private List data;
 
     // </editor-fold>
     // <editor-fold desc="Constructor">
@@ -87,7 +87,7 @@ public class ColumnData {
      *
      * @return Data list
      */
-    public List<? extends Object> getData() {
+    public List getData() {
         return data;
     }
 
@@ -96,7 +96,7 @@ public class ColumnData {
      *
      * @param value Data list
      */
-    public void setData(List<? extends Object> value) {
+    public void setData(List value) {
         data = value;
     }
 
