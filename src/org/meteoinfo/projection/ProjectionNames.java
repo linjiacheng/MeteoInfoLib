@@ -80,5 +80,6 @@ public enum ProjectionNames {
         /// </summary>
         //Universal_Transverse_Mercator
         Sinusoidal,
-        Cylindrical_Equal_Area
+        Cylindrical_Equal_Area,
+        Hammer_Eckert;
 }

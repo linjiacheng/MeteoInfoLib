@@ -88,6 +88,6 @@ public class HammerProjection extends PseudoCylindricalProjection {
 
     @Override
     public String toString() {
-        return "Hammer & Eckert-Greifendorff";
+        return "Hammer Eckert";
     }
 }
