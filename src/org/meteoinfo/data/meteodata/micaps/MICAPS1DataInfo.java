@@ -93,6 +93,7 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
             List<String> aList;
             int n, dataNum;
 
+            this.addAttribute(new Attribute("data_format", "MICAPS 1"));
             //Read file head            
             aLine = sr.readLine().trim();
             _description = aLine;
@@ -122,6 +123,7 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
 
             _stNum = Integer.parseInt(dataArray[4]);
             Dimension stdim = new Dimension(DimensionType.Other);
+            stdim.setShortName("stations");
             values = new double[_stNum];
             stdim.setValues(values);
             this.addDimension(stdim);
@@ -129,6 +131,22 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
             for (String vName : _fieldList) {
                 Variable var = new Variable();
                 var.setName(vName);
+                DataType dt = DataType.FLOAT;
+                switch (vName) {
+                    case "Stid":
+                        dt = DataType.STRING;
+                        break;
+                    case "Grade":
+                    case "CloudCover":
+                    case "WeatherPast1":
+                    case "WeatherPast2":
+                    case "WeatherNow":
+                    case "MiddleCloudShape":
+                    case "HighCloudShape":
+                        dt = DataType.INT;
+                        break;
+                }
+                var.setDataType(dt);
                 var.setStation(true);
                 //var.setDimension(tdim);
                 var.setDimension(stdim);
@@ -289,15 +307,10 @@ public class MICAPS1DataInfo extends DataInfo implements IStationDataInfo {
     @Override
     public String generateInfoText() {
         String dataInfo;
-        dataInfo = "File Name: " + this.getFileName();
-        dataInfo += System.getProperty("line.separator") + "Description: " + _description;
+        dataInfo = "Description: " + _description;
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:00");
         dataInfo += System.getProperty("line.separator") + "Time: " + format.format(this.getTimes().get(0));
-        dataInfo += System.getProperty("line.separator") + "Station Number: " + _stNum;
-        dataInfo += System.getProperty("line.separator") + "Number of Variables = " + String.valueOf(this.getVariableNum());
-        for (int i = 0; i < this.getVariableNum(); i++) {
-            dataInfo += System.getProperty("line.separator") + "\t" + this.getVariableNames().get(i);
-        }
+        dataInfo += System.getProperty("line.separator") + super.generateInfoText();
 
         return dataInfo;
     }

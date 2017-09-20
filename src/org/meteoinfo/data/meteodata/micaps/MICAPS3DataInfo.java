@@ -39,6 +39,7 @@ import java.util.logging.Logger;
 import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.global.util.DateUtil;
 import ucar.ma2.Array;
+import ucar.ma2.DataType;
 import ucar.nc2.Attribute;
 
 /**
@@ -52,6 +53,7 @@ public class MICAPS3DataInfo extends DataInfo implements IStationDataInfo {
     private List<String> _varList = new ArrayList<>();
     private List<String> _fieldList = new ArrayList<>();
     private List<List<String>> _dataList = new ArrayList<>();
+    private int stNum;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -78,6 +80,7 @@ public class MICAPS3DataInfo extends DataInfo implements IStationDataInfo {
             String[] dataArray;
             List<String> dataList = new ArrayList<>();
 
+            this.addAttribute(new Attribute("data_format", "MICAPS 3"));
             //Read file head
             String aLine = sr.readLine().trim();
             _description = aLine;
@@ -118,7 +121,7 @@ public class MICAPS3DataInfo extends DataInfo implements IStationDataInfo {
             idx += pNum * 2 + 1;
             int varNum = Integer.parseInt(dataList.get(idx));
             idx += 1;
-            int stationNum = Integer.parseInt(dataList.get(idx));
+            stNum = Integer.parseInt(dataList.get(idx));
             idx += 1;
             for (i = 0; i < varNum; i++) {
                 _varList.add("Var" + String.valueOf(i + 1));
@@ -137,9 +140,14 @@ public class MICAPS3DataInfo extends DataInfo implements IStationDataInfo {
                 _dataList.add(aData);
             }
 
-            stationNum = _dataList.size();
+            stNum = _dataList.size();
+            Dimension stdim = new Dimension(DimensionType.Other);
+            stdim.setShortName("stations");
+            double[] values = new double[stNum];
+            stdim.setValues(values);
+            this.addDimension(stdim);
             Dimension tdim = new Dimension(DimensionType.T);
-            double[] values = new double[1];
+            values = new double[1];
             values[0] = DateUtil.toOADate(time);
             tdim.setValues(values);
             this.setTimeDimension(tdim);
@@ -147,12 +155,15 @@ public class MICAPS3DataInfo extends DataInfo implements IStationDataInfo {
             zdim.setValues(new double[]{level});
             this.setZDimension(zdim);
             List<Variable> variables = new ArrayList<>();
-            for (String vName : _varList) {
+            for (String vName : this._fieldList) {
                 Variable var = new Variable();
                 var.setName(vName);
+                if (vName.equals("Stid"))
+                    var.setDataType(DataType.STRING);
                 var.setStation(true);
-                var.setDimension(tdim);
-                var.setDimension(zdim);
+                //var.setDimension(tdim);
+                //var.setDimension(zdim);
+                var.setDimension(stdim);
                 var.setFillValue(this.getMissingValue());
                 variables.add(var);
             }
@@ -184,15 +195,10 @@ public class MICAPS3DataInfo extends DataInfo implements IStationDataInfo {
     @Override
     public String generateInfoText() {
         String dataInfo;
-        dataInfo = "File Name: " + this.getFileName();
-        dataInfo += System.getProperty("line.separator") + "Description: " + _description;
+        dataInfo = "Description: " + _description;
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:00");
         dataInfo += System.getProperty("line.separator") + "Time: " + format.format(this.getTimes().get(0));
-        dataInfo += System.getProperty("line.separator") + "Station Number: " + _dataList.size();
-        dataInfo += System.getProperty("line.separator") + "Fields: ";
-        for (String aField : _fieldList) {
-            dataInfo += System.getProperty("line.separator") + "  " + aField;
-        }
+        dataInfo += System.getProperty("line.separator") + super.generateInfoText();
 
         return dataInfo;
     }
@@ -232,7 +238,23 @@ public class MICAPS3DataInfo extends DataInfo implements IStationDataInfo {
      */
     @Override
     public Array read(String varName, int[] origin, int[] size, int[] stride) {
-        return null;
+        int varIdx = this._fieldList.indexOf(varName);
+        if (varIdx < 0) {
+            return null;
+        }
+        int[] shape = new int[1];
+        shape[0] = this.stNum;
+        DataType dt = DataType.FLOAT;
+        if (varName.equals("Stid"))
+            dt = DataType.STRING;
+        Array r = Array.factory(dt, shape);
+        List<String> dataList;
+        for (int i = 0; i < _dataList.size(); i++) {
+            dataList = _dataList.get(i);
+            r.setFloat(i, Float.parseFloat(dataList.get(varIdx)));
+        }
+        
+        return r;
     }
 
     @Override

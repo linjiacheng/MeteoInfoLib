@@ -83,6 +83,14 @@ import org.meteoinfo.shape.PolylineZShape;
  * @author yaqiang
  */
 public class VectorLayer extends MapLayer {
+    
+    enum SelectType{
+        NEW,
+        ADD_TO_CURRENT,
+        REMOVE_FROM_CURRENT,
+        SELECT_FROM_CURRENT
+    }
+    
     // <editor-fold desc="Variables">
 
     //private final boolean _isEditing;
@@ -794,6 +802,73 @@ public class VectorLayer extends MapLayer {
         }
 
         return selIdxs;
+    }
+    
+    /**
+     * Select shapes by SQL expression
+     * @param expression The SQL expression
+     */
+    public void sqlSelect(String expression){
+        this.sqlSelect(expression, SelectType.NEW);
+    }
+    
+    /**
+     * Select shapes by SQL expression
+     * @param expression The SQL expression
+     * @param selType Selection type
+     */
+    public void sqlSelect(String expression, String selType){
+        SelectType st = SelectType.valueOf(selType.toUpperCase());
+        this.sqlSelect(expression, st);
+    }
+    
+    /**
+     * Select shapes by SQL expression
+     * @param expression The SQL expression
+     * @param selType Selection type
+     */
+    public void sqlSelect(String expression, SelectType selType){
+        List<DataRow> rows = this._attributeTable.getTable().select(expression);
+        List<Integer> rowIdxs = new ArrayList<>();
+        for (DataRow row : rows) {
+            rowIdxs.add(row.getRowIndex());
+        }
+        
+        int i;
+        switch(selType){
+            case NEW:    //Create a new selection
+                for (i = 0; i < this.getShapeNum(); i++) {
+                    if (rowIdxs.contains(i)) {
+                        this._shapeList.get(i).setSelected(true);
+                    } else {
+                        this._shapeList.get(i).setSelected(false);
+                    }
+                }
+                break;
+            case ADD_TO_CURRENT:    //Add to current selection
+                for (i = 0; i < this.getShapeNum(); i++) {
+                    if (rowIdxs.contains(i)) {
+                        this._shapeList.get(i).setSelected(true);
+                    }
+                }
+                break;
+            case REMOVE_FROM_CURRENT:    //Remove from current selection
+                for (i = 0; i < this.getShapeNum(); i++) {
+                    if (rowIdxs.contains(i)) {
+                        this._shapeList.get(i).setSelected(false);
+                    }
+                }
+                break;
+            case SELECT_FROM_CURRENT:    //Select from current selection
+                for (i = 0; i < this.getShapeNum(); i++) {
+                    if (this._shapeList.get(i).isSelected()) {
+                        if (!rowIdxs.contains(i)) {
+                            this._shapeList.get(i).setSelected(false);
+                        }
+                    }
+                }
+                break;
+        }
     }
 
     /**

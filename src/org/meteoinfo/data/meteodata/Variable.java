@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import org.meteoinfo.global.util.DateUtil; 
+import ucar.ma2.DataType;
 import ucar.nc2.Attribute;
 
 /**
@@ -57,6 +58,7 @@ public class Variable extends ucar.nc2.Variable{
      */
     public Variable() {
         this.setShortName("null");
+        this.setDataType(DataType.FLOAT);
         _levels = new ArrayList<>();
         _units = "null";
         _description = "null";
