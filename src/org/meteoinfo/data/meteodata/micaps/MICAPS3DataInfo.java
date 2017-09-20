@@ -275,7 +275,7 @@ public class MICAPS3DataInfo extends DataInfo implements IStationDataInfo {
         List<String> stations = new ArrayList<>();
 
         //Get real variable index
-        varIdx = _fieldList.indexOf(_varList.get(varIdx));
+        //varIdx = _fieldList.indexOf(_varList.get(varIdx));
 
         for (i = 0; i < _dataList.size(); i++) {
             dataList = _dataList.get(i);
