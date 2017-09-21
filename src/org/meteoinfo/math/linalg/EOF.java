@@ -5,6 +5,9 @@
  */
 package org.meteoinfo.math.linalg;
 
+import ucar.ma2.Array;
+import ucar.ma2.DataType;
+
 /**
  *
  * @author Yaqiang Wang
@@ -125,6 +128,89 @@ public class EOF {
     }
     
     /**
+     * EOF algorithm
+     *
+     * @param N Station or grid number
+     * @param LL Time dimension number
+     * @param f Origin data
+     * @param H Processed data
+     * @return Eigen vector, time factor, accumulated explained variance,
+     * ordered eigen value
+     */
+    public static Object[] SEOF(int N, int LL, Array f, Array H) {
+        double[][] A = new double[N][N];
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                A[i][j] = 0;
+                for (int k = 0; k < LL; k++) {
+                    A[i][j] += H.getDouble(k * N + i) * H.getDouble(k * N + j);
+                }
+                A[j][i] = A[i][j];
+            }
+        }
+
+        Object[] rr = jacobi(N, true, A, MAX_JACOBI_TIMES);
+        Array D = (Array) rr[0];    //eigen value
+        Array V = (Array) rr[1];    //eigen vector
+
+        int[] IX = new int[N];
+        for (int i = 0; i < N; i++) {
+            IX[i] = i;
+        }
+
+        for (int i = 0; i < N - 1; i++) //bubble sort
+        {
+            for (int j = i + 1; j < N; j++) {
+                if (Math.abs(D.getDouble(i)) >= Math.abs(D.getDouble(j))) {
+                    continue;
+                }
+
+                double W1 = D.getDouble(i);
+                D.setDouble(i, D.getDouble(j));
+                D.setDouble(j, W1);
+
+                int k = IX[i];
+                IX[i] = IX[j];
+                IX[j] = k;
+            }
+        }
+
+        Array V1 = Array.factory(DataType.DOUBLE, new int[]{N, N});    //eigen vector
+        for (int j = 0; j < N; j++) {
+            int ILW = IX[j];
+            for (int i = 0; i < N; i++) {
+                V1.setDouble(i * N + j, V.getDouble(i * N + ILW));
+            }
+        }
+
+        Array T = Array.factory(DataType.DOUBLE, new int[]{LL, N});    //Time factor
+        for (int L = 0; L < LL; L++) {
+            for (int j = 0; j < N; j++) {
+                T.setDouble(L * N + j, 0);
+                for (int i = 0; i < N; i++) {
+                    T.setDouble(L * N + j, T.getDouble(L * N + j) + f.getDouble(L * N + i) * V1.getDouble(i * N + j));
+                }
+            }
+        }
+
+        double AP = 0;
+        for (int i = 0; i < N; i++) {
+            AP += D.getDouble(i);
+        }
+
+        Array H1 = Array.factory(DataType.DOUBLE, new int[]{N});    //explained variance
+        for (int i = 0; i < N; i++) {
+            double AP1 = 0;
+            for (int j = 0; j <= i; j++) {
+                AP1 += D.getDouble(j);
+            }
+            H1.setDouble(i, 1.0 * AP1 / AP);
+        }
+
+        return new Object[]{V1, T, H1, D};
+    }
+    
+    /**
      * Calculate eigen value and eigen vector using Jacobi method
      *
      * @param N Time dimension number
@@ -133,6 +219,18 @@ public class EOF {
      * @return Eigen value and eigen vector
      */
     public static Object[] jacobi(int N, boolean EV, double[][] A) {
+        return jacobi(N, EV, A, MAX_JACOBI_TIMES);
+    }
+    
+    /**
+     * Calculate eigen value and eigen vector using Jacobi method
+     *
+     * @param N Time dimension number
+     * @param EV Always as true
+     * @param A Input matrix data
+     * @return Eigen value and eigen vector
+     */
+    public static Object[] jacobi(int N, boolean EV, Array A) {
         return jacobi(N, EV, A, MAX_JACOBI_TIMES);
     }
 
@@ -262,6 +360,140 @@ public class EOF {
                 for (int k = 0; k < N; k++) {
                     D[k] = B[k] + Z[k];
                     B[k] = D[k];
+                    Z[k] = 0;
+                }
+            }
+        }
+
+        return new Object[]{D, V};
+    }
+    
+    /**
+     * Calculate eigen value and eigen vector using Jacobi method
+     *
+     * @param N Time dimension number
+     * @param EV Always as true
+     * @param A Input matrix data
+     * @param MAXTIMES Maximum iteration times, default is 50
+     * @return Eigen value and eigen vector
+     */
+    public static Object[] jacobi(int N, boolean EV, Array A, int MAXTIMES) {
+        Array D = Array.factory(DataType.DOUBLE, new int[]{N});
+        Array V = Array.factory(DataType.DOUBLE, new int[]{N, N});
+        int IRT = 0;
+        double[] B = new double[N];
+        double[] Z = new double[N];
+        double t;
+
+        if (EV) {
+            for (int k = 0; k < N; k++) {
+                for (int L = 0; L < N; L++) {
+                    if (k - L == 0) {
+                        V.setDouble(k * N + k, 1);
+                    } else {
+                        V.setDouble(k * N + L, 0);
+                    }
+                }
+            }
+        }
+
+        for (int k = 0; k < N; k++) {
+            B[k] = A.getDouble(k * N + k);
+            D.setDouble(k, B[k]);
+            Z[k] = 0;
+        }
+
+        for (int i = 0; i < MAXTIMES; i++) {
+            double sm = 0;
+            int N1 = N - 1;
+            for (int k = 0; k < N1; k++) {
+                int k1 = k + 1;
+                for (int L = k1; L < N; L++) {
+                    sm = sm + Math.abs(A.getDouble(k * N + L));
+                }
+            }
+            if (sm == 0) {
+                return null;
+            } else {
+                double tresh = 0;
+                if (i - 4 > 0) {
+                    tresh = 0.2 * sm / (N * N);
+                }
+                for (int k = 0; k < N1; k++) {
+                    int k1 = k + 1;
+                    for (int L = k1; L < N; L++) {
+                        double G = 100.0 * Math.abs(A.getDouble(k * N + L));
+                        if (i > 4 && Math.abs(G) == 0) {
+                            A.setDouble(k * N + L, 0);
+                            continue;
+                        }
+                        if (Math.abs(A.getDouble(k * N + L)) <= tresh) {
+                            continue;
+                        }
+                        double H = D.getDouble(L) - D.getDouble(k);
+                        if (G == 0) {
+                            t = A.getDouble(k * N + L) / H;
+                        } else {
+                            double theta = 0.5 * H / A.getDouble(k * N + L);
+                            t = 1.0 / (Math.abs(theta) + Math.sqrt(1.0 + theta * theta));
+                            if (theta < 0) {
+                                t = -1 * t;
+                            }
+                        }
+                        double c = 1.0 / Math.sqrt(1.0 + t * t);
+                        double s = t * c;
+                        H = t * A.getDouble(k * N + L);
+                        Z[k] = Z[k] - H;
+                        Z[L] = Z[L] + H;
+                        D.setDouble(k, D.getDouble(k) - H);
+                        D.setDouble(L, D.getDouble(L) + H);
+                        A.setDouble(k * N + L, 0);
+                        int KM1 = k - 1;
+
+                        if (KM1 < 0) {
+                            for (int j = 0; j < KM1; j++) {
+                                G = A.getDouble(j * N + k);
+                                H = A.getDouble(j * N + L);
+                                A.setDouble(j * N + k, c * G - s * H);
+                                A.setDouble(j * N + L, s * G + c * H);
+                            }
+                        }
+
+                        int L1 = L - 1;
+                        if (L1 - k1 <= 0) {
+                            for (int j = k1; j < L1; j++) {
+                                G = A.getDouble(k * N + L);
+                                H = A.getDouble(j * N + L);
+                                A.setDouble(k * N + j, c * G - s * H);
+                                A.setDouble(j * N + L, s * G + c * H);
+                            }
+                        }
+
+                        L1 = L + 1;
+                        if (L1 < N) {
+                            for (int j = L1; j < N; j++) {
+                                G = A.getDouble(k * N + j);
+                                H = A.getDouble(L * N + j);
+                                A.setDouble(k * N + j, c * G - s * H);
+                                A.setDouble(L * N + j, s * G + c * H);
+                            }
+                        }
+
+                        if (EV) {
+                            for (int j = 0; j < N; j++) {
+                                G = V.getDouble(j * N + k);
+                                H = V.getDouble(j * N + L);
+                                V.setDouble(j * N + k, c * G - s * H);
+                                V.setDouble(j * N + L, s * G + c * H);
+                            }
+                        }
+
+                        IRT = IRT + 1;
+                    }
+                }
+                for (int k = 0; k < N; k++) {
+                    D.setDouble(k, B[k] + Z[k]);
+                    B[k] = D.getDouble(k);
                     Z[k] = 0;
                 }
             }
