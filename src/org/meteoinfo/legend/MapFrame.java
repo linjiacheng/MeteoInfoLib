@@ -125,7 +125,7 @@ public class MapFrame extends ItemNode {
     // <editor-fold desc="Variables">
     private EventListenerList _listeners = new EventListenerList();
     private MapView _mapView = new MapView();
-    private List<ItemNode> _nodes = new ArrayList<ItemNode>();
+    private List<ItemNode> _nodes = new ArrayList<>();
     private int _selectedLayerHandle;
     private LayersLegend _legend;
     private boolean _active = false;

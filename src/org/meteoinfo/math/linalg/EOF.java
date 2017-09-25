@@ -133,6 +133,34 @@ public class EOF {
      * @param N Station or grid number
      * @param LL Time dimension number
      * @param f Origin data
+     * @param method Method
+     * @return Eigen vector, time factor, accumulated explained variance,
+     * ordered eigen value
+     */
+    public static Object[] SEOF(int N, int LL, Array f, DataProMethod method) {
+        Array H = Array.factory(DataType.DOUBLE, f.getShape());
+        switch (method) {
+            case NONE:
+                for (int i = 0; i < H.getSize(); i++) {
+                    H.setDouble(i, f.getDouble(i));
+                }
+                break;
+            case DEPARTURE:
+                H = dep(N, LL, f);
+                break;
+            default:
+                H = nor(N, LL, f);
+                break;
+        }
+        return SEOF(N, LL, f, H);
+    }
+    
+    /**
+     * EOF algorithm
+     *
+     * @param N Station or grid number
+     * @param LL Time dimension number
+     * @param f Origin data
      * @param H Processed data
      * @return Eigen vector, time factor, accumulated explained variance,
      * ordered eigen value
@@ -502,7 +530,7 @@ public class EOF {
         return new Object[]{D, V};
     }
 
-    enum DataProMethod {
+    public enum DataProMethod {
         NONE,
         DEPARTURE,
         NORMALIZED
@@ -519,6 +547,18 @@ public class EOF {
         }
         return Aver;
     }
+    
+    static double[] average(int N, int LL, Array f) {
+        double[] Aver = new double[N];
+        for (int j = 0; j < N; j++) {
+            Aver[j] = 0;
+            for (int i = 0; i < LL; i++) {
+                Aver[j] += f.getDouble(i * N + j);
+            }
+            Aver[j] /= LL;
+        }
+        return Aver;
+    }
 
     static double[][] dep(int N, int LL, double[][] f)///距平，N：格点；LL：时间；f原始值；H：距平；W：平均值
     {
@@ -529,6 +569,19 @@ public class EOF {
         for (int j = 0; j < N; j++) {
             for (int i = 0; i < LL; i++) {
                 H[i][j] = f[i][j] - Aver[j];
+            }
+        }
+        return H;
+    }
+    
+    static Array dep(int N, int LL, Array f)///距平，N：格点；LL：时间；f原始值；H：距平；W：平均值
+    {
+        Array H = Array.factory(DataType.DOUBLE, f.getShape());
+        double[] Aver = average(N, LL, f);
+
+        for (int j = 0; j < N; j++) {
+            for (int i = 0; i < LL; i++) {
+                H.setDouble(i * N + j, f.getDouble(i * N + j) - Aver[j]);
             }
         }
         return H;
@@ -551,6 +604,29 @@ public class EOF {
         for (int j = 0; j < N; j++) {
             for (int i = 0; i < LL; i++) {
                 H[i][j] = (f[i][j] - Aver[j]) / Std[j];
+            }
+        }
+
+        return H;
+    }
+    
+    static Array nor(int N, int LL, Array f) {
+        Array H = Array.factory(DataType.DOUBLE, f.getShape());
+        double[] Std = new double[N];
+
+        double[] Aver = average(N, LL, f);
+        for (int j = 0; j < N; j++) {
+            Std[j] = 0;
+
+            for (int i = 0; i < LL; i++) {
+                Std[j] += (f.getDouble(i * N + j) - Aver[j]) * (f.getDouble(i * N + j) - Aver[j]);
+            }
+            Std[j] = Math.sqrt(Std[j] / LL);
+        }
+
+        for (int j = 0; j < N; j++) {
+            for (int i = 0; i < LL; i++) {
+                H.setDouble(i * N + j, (f.getDouble(i * N + j) - Aver[j]) / Std[j]);
             }
         }
 

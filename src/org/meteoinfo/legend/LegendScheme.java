@@ -907,7 +907,7 @@ public class LegendScheme {
                             aPLB.setColor(ColorUtil.parseToColor(brk.getAttributes().getNamedItem("Color").getNodeValue()));
                             aPLB.setDrawPolyline(Boolean.parseBoolean(brk.getAttributes().getNamedItem("DrawShape").getNodeValue()));
                             aPLB.setSize(Float.parseFloat(brk.getAttributes().getNamedItem("Size").getNodeValue()));
-                            aPLB.setStyle(LineStyles.valueOf(brk.getAttributes().getNamedItem("Style").getNodeValue()));
+                            aPLB.setStyle(LineStyles.valueOf(brk.getAttributes().getNamedItem("Style").getNodeValue().toUpperCase()));
                             aPLB.setDrawSymbol(Boolean.parseBoolean(brk.getAttributes().getNamedItem("DrawSymbol").getNodeValue()));
                             aPLB.setSymbolSize(Float.parseFloat(brk.getAttributes().getNamedItem("SymbolSize").getNodeValue()));
                             aPLB.setSymbolStyle(PointStyle.valueOf(brk.getAttributes().getNamedItem("SymbolStyle").getNodeValue()));

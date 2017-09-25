@@ -786,7 +786,12 @@ public class ChartLegend {
         rowNums[0] = aLS.getVisibleBreakNum() - num;
 
         //Draw legend                        
-        //Font lFont = new Font(this.labelFont.getFontName(), this.labelFont.getStyle(), (int) (this.labelFont.getSize()));
+        Color labelColor = Color.black;
+        Font labelFont = new Font("Arial", Font.PLAIN, 14);
+        if (this.label != null){
+            labelColor = this.label.getColor();
+            labelFont = this.label.getFont();
+        }
         float x, y;
         i = 0;
         for (int col = 0; col < rowColNum; col++) {
@@ -845,8 +850,8 @@ public class ChartLegend {
                 sP.Y = y;
                 //FontMetrics metrics = g.getFontMetrics(lFont);
                 //aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());                
-                g.setColor(this.label.getColor());
-                g.setFont(this.label.getFont());
+                g.setColor(labelColor);
+                g.setFont(labelFont);
                 aSF = Draw.getStringDimension(caption, g);
                 //g.drawString(caption, sP.X + 5, sP.Y + aSF.height / 3);
                 //g.drawString(caption, sP.X + 5, sP.Y + aSF.height / 4);
@@ -862,8 +867,7 @@ public class ChartLegend {
         String caption;
         float breakHeight = this.getBreakHeight(g);
         float symbolHeight = this.symbolDimension.height;
-        float symbolWidth = this.symbolDimension.width;
-        FontMetrics metrics = g.getFontMetrics(this.label.getFont());
+        float symbolWidth = this.symbolDimension.width;        
 
         //Set columns
         int[] colNums = new int[rowColNum];
@@ -879,7 +883,14 @@ public class ChartLegend {
         }
         colNums[rowColNum - 1] = aLS.getVisibleBreakNum() - num;
 
-        //Draw legend                        
+        //Draw legend    
+        Color labelColor = Color.black;
+        Font labelFont = new Font("Arial", Font.PLAIN, 14);
+        if (this.label != null){
+            labelColor = this.label.getColor();
+            labelFont = this.label.getFont();
+        }
+        FontMetrics metrics = g.getFontMetrics(labelFont);
         float x, y;
         y = this._breakSpace + breakHeight / 2;
         i = 0;
@@ -928,8 +939,8 @@ public class ChartLegend {
                 PointF sP = new PointF(0, 0);
                 sP.X = x + symbolWidth / 2;
                 sP.Y = y;
-                g.setColor(this.label.getColor());
-                g.setFont(this.label.getFont());
+                g.setColor(labelColor);
+                g.setFont(labelFont);
                 //g.drawString(caption, sP.X + 5, sP.Y + aSF.height / 3);
                 //g.drawString(caption, sP.X + 5, sP.Y + metrics.getHeight() / 4);
                 Draw.drawString(g, caption, sP.X + 5, sP.Y + metrics.getHeight() / 4);
@@ -1383,11 +1394,14 @@ public class ChartLegend {
         //FontMetrics metrics = g.getFontMetrics(tickFont);
         //aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());
         int labWidth = 0;
+        Font labFont = new Font("Arial", Font.PLAIN, 14);
+        if (this.label != null)
+            labFont = this.label.getFont();
         for (int i = 0; i < bNum; i++) {
             caption = legendScheme.getLegendBreaks().get(i).getCaption();
             boolean isValid = true;
             if (isValid) {
-                g.setFont(this.label.getFont());
+                g.setFont(labFont);
                 aSF = Draw.getStringDimension(caption, g);
                 int labwidth = aSF.width;
                 if (labWidth < labwidth) {
