@@ -1817,6 +1817,7 @@ public class NetCDFDataInfo extends DataInfo implements IGridDataInfo, IStationD
                             dimType = DimensionType.T;
                             break;
                         case "level":
+                        case "pressure":
                         case "pressure_level":
                         case "isobaric surface":
                             dimType = DimensionType.Z;
