@@ -188,7 +188,8 @@ public class ChartPanel extends JPanel {
         popupMenu.add(saveFigure);
 
         this.chart = null;
-        this.setMouseMode(mouseMode.ZOOM_IN);
+        this.mouseMode = MouseMode.DEFAULT;
+        //this.setMouseMode(mouseMode.ZOOM_IN);
     }
 
     /**
