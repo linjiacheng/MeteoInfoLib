@@ -130,6 +130,35 @@ public class EOF {
     /**
      * EOF algorithm
      *
+     * @param f Origin data
+     * @param method Method
+     * @return Eigen vector, time factor, accumulated explained variance,
+     * ordered eigen value
+     */
+    public static Object[] SEOF(Array f, DataProMethod method) {
+        int[] shape = f.getShape();
+        int LL = shape[0];
+        int N = shape[1];
+        Array H = Array.factory(DataType.DOUBLE, shape);
+        switch (method) {
+            case NONE:
+                for (int i = 0; i < H.getSize(); i++) {
+                    H.setDouble(i, f.getDouble(i));
+                }
+                break;
+            case DEPARTURE:
+                H = dep(N, LL, f);
+                break;
+            default:
+                H = nor(N, LL, f);
+                break;
+        }
+        return SEOF(N, LL, f, H);
+    }
+    
+    /**
+     * EOF algorithm
+     *
      * @param N Station or grid number
      * @param LL Time dimension number
      * @param f Origin data
@@ -166,14 +195,14 @@ public class EOF {
      * ordered eigen value
      */
     public static Object[] SEOF(int N, int LL, Array f, Array H) {
-        double[][] A = new double[N][N];
+        Array A = Array.factory(DataType.DOUBLE, new int[]{N, N});
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
-                A[i][j] = 0;
+                A.setDouble(i * N + j, 0);
                 for (int k = 0; k < LL; k++) {
-                    A[i][j] += H.getDouble(k * N + i) * H.getDouble(k * N + j);
+                    A.setDouble(i * N + j, A.getDouble(i * N + j) + H.getDouble(k * N + i) * H.getDouble(k * N + j));
                 }
-                A[j][i] = A[i][j];
+                A.setDouble(j * N + i, A.getDouble(i * N + j));
             }
         }
 
@@ -441,7 +470,7 @@ public class EOF {
                 }
             }
             if (sm == 0) {
-                return null;
+                break;
             } else {
                 double tresh = 0;
                 if (i - 4 > 0) {
