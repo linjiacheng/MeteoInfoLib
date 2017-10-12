@@ -5242,8 +5242,8 @@ public class ArrayMath {
         double Tb = (bhat - b0) / seb;
         double a0 = 0;
         double Ta = (ahat - a0) / sea;
-        //double p = studpval(t, df);
-        double p = studpval(Ta, n);
+        double p = studpval(t, df);
+        //double p = studpval(Ta, n);
 
         return new double[]{slope, intercept, r, p, n};
     }
