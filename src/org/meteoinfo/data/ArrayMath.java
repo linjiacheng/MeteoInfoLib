@@ -5192,8 +5192,8 @@ public class ArrayMath {
         double sy_sum = 0.0;
         double xy_sum = 0.0;
         int n = 0;
-        List<Double> xi = new ArrayList<>();
-        List<Double> yi = new ArrayList<>();
+        //List<Double> xi = new ArrayList<>();
+        //List<Double> yi = new ArrayList<>();
         for (int i = 0; i < xData.getSize(); i++) {
             if (Double.isNaN(xData.getDouble(i))) {
                 continue;
@@ -5201,8 +5201,8 @@ public class ArrayMath {
             if (Double.isNaN(yData.getDouble(i))) {
                 continue;
             }
-            xi.add(xData.getDouble(i));
-            yi.add(yData.getDouble(i));
+            //xi.add(xData.getDouble(i));
+            //yi.add(yData.getDouble(i));
             x_sum += xData.getDouble(i);
             y_sum += yData.getDouble(i);
             sx_sum += xData.getDouble(i) * xData.getDouble(i);
@@ -5217,33 +5217,33 @@ public class ArrayMath {
         int df = n - 2;
         double TINY = 1.0e-20;
         double t = r * Math.sqrt(df / ((1.0 - r + TINY) * (1.0 + r + TINY)));
-
-        double xbar = x_sum / n;
-        double ybar = y_sum / n;
-        double bhat = 0.0;
-        double ssqx = 0.0;
-        for (int i = 0; i < n; i++) {
-            bhat = bhat + (yi.get(i) - ybar) * (xi.get(i) - xbar);
-            ssqx = ssqx + (xi.get(i) - xbar) * (xi.get(i) - xbar);
-        }
-        bhat = bhat / ssqx;
-        double ahat = ybar - bhat * xbar;
-        double sigmahat2 = 0.0;
-        double[] ri = new double[n];
-        for (int i = 0; i < n; i++) {
-            ri[i] = yi.get(i) - (ahat + bhat * xi.get(i));
-            sigmahat2 = sigmahat2 + ri[i] * ri[i];
-        }
-        sigmahat2 = sigmahat2 / (n * 1.0 - 2.0);
-        double seb = Math.sqrt(sigmahat2 / ssqx);
-        double sigmahat = Math.sqrt((seb * seb) * ssqx);
-        double sea = Math.sqrt(sigmahat * sigmahat * (1 / (n * 1.0) + xbar * xbar / ssqx));
-        double b0 = 0;
-        double Tb = (bhat - b0) / seb;
-        double a0 = 0;
-        double Ta = (ahat - a0) / sea;
         double p = studpval(t, df);
-        //double p = studpval(Ta, n);
+
+//        double xbar = x_sum / n;
+//        double ybar = y_sum / n;
+//        double bhat = 0.0;
+//        double ssqx = 0.0;
+//        for (int i = 0; i < n; i++) {
+//            bhat = bhat + (yi.get(i) - ybar) * (xi.get(i) - xbar);
+//            ssqx = ssqx + (xi.get(i) - xbar) * (xi.get(i) - xbar);
+//        }
+//        bhat = bhat / ssqx;
+//        double ahat = ybar - bhat * xbar;
+//        double sigmahat2 = 0.0;
+//        double[] ri = new double[n];
+//        for (int i = 0; i < n; i++) {
+//            ri[i] = yi.get(i) - (ahat + bhat * xi.get(i));
+//            sigmahat2 = sigmahat2 + ri[i] * ri[i];
+//        }
+//        sigmahat2 = sigmahat2 / (n * 1.0 - 2.0);
+//        double seb = Math.sqrt(sigmahat2 / ssqx);
+//        double sigmahat = Math.sqrt((seb * seb) * ssqx);
+//        double sea = Math.sqrt(sigmahat * sigmahat * (1 / (n * 1.0) + xbar * xbar / ssqx));
+//        double b0 = 0;
+//        double Tb = (bhat - b0) / seb;
+//        double a0 = 0;
+//        double Ta = (ahat - a0) / sea;        
+//        p = studpval(Ta, n);
 
         return new double[]{slope, intercept, r, p, n};
     }
