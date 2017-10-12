@@ -200,8 +200,8 @@ public class LinalgUtil {
         } else {
             Wa = Array.factory(DataType.DOUBLE, new int[]{m});
             for (int i = 0; i < m; i++){
-                Wa.setDouble(i, rev[i]);
-                RealVector v = decomposition.getEigenvector(i);
+                Wa.setDouble(i, rev[m - i - 1]);
+                RealVector v = decomposition.getEigenvector(m - i - 1);
                 for (int j = 0; j < v.getDimension(); j++){
                     Va.setDouble(i * m + j, v.getEntry(j));
                 }
