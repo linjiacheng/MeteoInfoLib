@@ -695,29 +695,35 @@ public class Draw {
 
         switch (aPB.getStyle()) {
             case Circle:
-                aP.X = aP.X - aSize / 2;
-                aP.Y = aP.Y - aSize / 2;
+                aP.X = aP.X - aSize / 2.f;
+                aP.Y = aP.Y - aSize / 2.f;
+                Ellipse2D ellipse = new Ellipse2D.Float(aP.X, aP.Y, aSize, aSize);
                 if (drawFill) {
-                    g.setColor(color);
-                    g.fillOval((int) aP.X, (int) aP.Y, (int) aSize, (int) aSize);
+                    g.setColor(color);                    
+                    g.fill(ellipse);
+                    //g.fillOval((int) aP.X, (int) aP.Y, (int) aSize, (int) aSize);
                 }
                 if (drawOutline) {
                     g.setColor(outlineColor);
                     g.setStroke(new BasicStroke(outlineSize));
-                    g.drawOval((int) aP.X, (int) aP.Y, (int) aSize, (int) aSize);
+                    g.draw(ellipse);
+                    //g.drawOval((int) aP.X, (int) aP.Y, (int) aSize, (int) aSize);
                 }
                 break;
             case Square:
-                aP.X = aP.X - aSize / 2;
-                aP.Y = aP.Y - aSize / 2;
+                aP.X = aP.X - aSize / 2.f;
+                aP.Y = aP.Y - aSize / 2.f;
+                Rectangle2D rect = new Rectangle2D.Float(aP.X, aP.Y, aSize, aSize);
                 if (drawFill) {
                     g.setColor(color);
-                    g.fillRect((int) aP.X, (int) aP.Y, (int) aSize, (int) aSize);
+                    g.fill(rect);
+                    //g.fillRect((int) aP.X, (int) aP.Y, (int) aSize, (int) aSize);
                 }
                 if (drawOutline) {
                     g.setColor(outlineColor);
                     g.setStroke(new BasicStroke(outlineSize));
-                    g.drawRect((int) aP.X, (int) aP.Y, (int) aSize, (int) aSize);
+                    g.draw(rect);
+                    //g.drawRect((int) aP.X, (int) aP.Y, (int) aSize, (int) aSize);
                 }
                 break;
             case Diamond:
