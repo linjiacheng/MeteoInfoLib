@@ -194,7 +194,7 @@ public class LinalgUtil {
                 Wa.setObject(i, new Complex(rev[i], iev[i]));
                 RealVector v = decomposition.getEigenvector(i);
                 for (int j = 0; j < v.getDimension(); j++){
-                    Va.setDouble(i * m + j, v.getEntry(j));
+                    Va.setDouble(j * m + i, v.getEntry(j));
                 }
             }
         } else {
@@ -203,7 +203,7 @@ public class LinalgUtil {
                 Wa.setDouble(i, rev[m - i - 1]);
                 RealVector v = decomposition.getEigenvector(m - i - 1);
                 for (int j = 0; j < v.getDimension(); j++){
-                    Va.setDouble(i * m + j, v.getEntry(j));
+                    Va.setDouble(j * m + i, v.getEntry(j));
                 }
             }
         }
