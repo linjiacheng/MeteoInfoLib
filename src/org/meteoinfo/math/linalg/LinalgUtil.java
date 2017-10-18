@@ -179,6 +179,47 @@ public class LinalgUtil {
      * @param a Given matrix.
      * @return Result W/V arrays.
      */
+    public static Array[] eigen_bak(Array a){
+        int m = a.getShape()[0];        
+        Array Wa;
+        Array Va = Array.factory(DataType.DOUBLE, new int[]{m, m});
+        double[][] aa = (double[][])ArrayUtil.copyToNDJavaArray(a);
+        RealMatrix matrix = new Array2DRowRealMatrix(aa, false);
+        EigenDecomposition decomposition = new EigenDecomposition(matrix);        
+        if (decomposition.hasComplexEigenvalues()){
+            Wa = Array.factory(DataType.OBJECT, new int[]{m});
+            double[] rev = decomposition.getRealEigenvalues();
+            double[] iev = decomposition.getImagEigenvalues();
+            for (int i = 0; i < m; i++){
+                Wa.setObject(i, new Complex(rev[i], iev[i]));
+                RealVector v = decomposition.getEigenvector(i);
+                for (int j = 0; j < v.getDimension(); j++){
+                    Va.setDouble(j * m + i, v.getEntry(j));
+                }
+            }
+        } else {
+            RealMatrix V = decomposition.getV();
+            RealMatrix D = decomposition.getD();            
+            Wa = Array.factory(DataType.DOUBLE, new int[]{m});
+            for (int i = 0; i < m; i++){
+                for (int j = 0; j < m; j++){
+                    Va.setDouble(i * m + (m - j - 1), V.getEntry(i, j));
+                    if (i == j)
+                        Wa.setDouble(m - i - 1, D.getEntry(i, j));
+                }
+            }
+        }
+
+        return new Array[]{Wa, Va};
+    }
+    
+    /**
+     * Calculates the eigen decomposition of a real matrix.
+     * The eigen decomposition of matrix A is a set of two matrices: V and D such that 
+     * A = V × D × VT. A, V and D are all m × m matrices.
+     * @param a Given matrix.
+     * @return Result W/V arrays.
+     */
     public static Array[] eigen(Array a){
         int m = a.getShape()[0];        
         Array Wa;
