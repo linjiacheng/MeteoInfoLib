@@ -208,7 +208,11 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
             //Record #5
             aLine = sr.readLine().trim();
             dataArray = aLine.split("\\s+");
-            varNums.add(Integer.parseInt(dataArray[0]));
+            int nvar = Integer.parseInt(dataArray[0]);
+            if (nvar > dataArray.length - 1){
+                nvar = dataArray.length - 1;
+            }
+            varNums.add(nvar);
             List<String> varNameList = new ArrayList<>();
             for (i = 0; i < varNums.get(t); i++) {
                 varNameList.add(dataArray[i + 1]);
@@ -367,11 +371,15 @@ public class HYSPLITTrajDataInfo extends DataInfo implements TrajDataInfo {
                     aPoint = new PointZ();
                     aPoint.X = Double.parseDouble(dataArray[10]);
                     aPoint.Y = Double.parseDouble(dataArray[9]);
-                    if (zPres){
-                        aPoint.M = Double.parseDouble(dataArray[11]);
-                        aPoint.Z = Double.parseDouble(dataArray[12]);
+                    if (dataArray.length >= 13){
+                        if (zPres){
+                            aPoint.M = Double.parseDouble(dataArray[11]);
+                            aPoint.Z = Double.parseDouble(dataArray[12]);
+                        } else {
+                            aPoint.M = Double.parseDouble(dataArray[12]);
+                            aPoint.Z = Double.parseDouble(dataArray[11]);
+                        }
                     } else {
-                        aPoint.M = Double.parseDouble(dataArray[12]);
                         aPoint.Z = Double.parseDouble(dataArray[11]);
                     }
 
