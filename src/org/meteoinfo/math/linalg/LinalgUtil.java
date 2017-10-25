@@ -11,6 +11,7 @@ import org.apache.commons.math3.linear.CholeskyDecomposition;
 import org.apache.commons.math3.linear.DecompositionSolver;
 import org.apache.commons.math3.linear.EigenDecomposition;
 import org.apache.commons.math3.linear.LUDecomposition;
+import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.QRDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
@@ -250,5 +251,29 @@ public class LinalgUtil {
         }
 
         return new Array[]{Wa, Va};
+    }
+    
+    /**
+     * Calculate inverse matrix
+     * @param a The matrix
+     * @return Inverse matrix array
+     */
+    public static Array inv(Array a){
+        double[][] aa = (double[][])ArrayUtil.copyToNDJavaArray(a);
+        RealMatrix matrix = new Array2DRowRealMatrix(aa, false);
+        RealMatrix invm = MatrixUtils.inverse(matrix);
+        if (invm == null)
+            return null;
+        
+        int m = invm.getRowDimension();
+        int n = invm.getColumnDimension();
+        Array r = Array.factory(DataType.DOUBLE, new int[]{m, n});
+        for (int i = 0; i < m; i++){
+            for (int j = 0; j < n; j++) {
+                r.setDouble(i * n + j, invm.getEntry(i, j));
+            }
+        }
+        
+        return r;
     }
 }

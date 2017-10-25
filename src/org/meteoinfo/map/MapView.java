@@ -359,7 +359,7 @@ public class MapView extends JPanel implements IWebMapPanel {
         });
 
         //this.setBackground(Color.white);
-        this.setBackground(new Color(255,255,255,0));
+        this.setBackground(new Color(255, 255, 255, 0));
         _maskOut = new MaskOut(this);
         _mouseTool = MouseTools.None;
 
@@ -2617,7 +2617,7 @@ public class MapView extends JPanel implements IWebMapPanel {
                                 PolygonShape selShape = (PolygonShape) selObj[0];
                                 int polyIdx = (int) selObj[1];
                                 int holeIdx = (int) selObj[2];
-                                List<PointD> hole = (List<PointD>)selShape.getPolygons().get(polyIdx).getHoleLines().get(holeIdx);
+                                List<PointD> hole = (List<PointD>) selShape.getPolygons().get(polyIdx).getHoleLines().get(holeIdx);
                                 selShape.getPolygons().get(polyIdx).removeHole(holeIdx);
                                 UndoableEdit edit = (new MapViewUndoRedo()).new RemoveRingEdit(this, selShape,
                                         hole, polyIdx, holeIdx);
@@ -4162,7 +4162,7 @@ public class MapView extends JPanel implements IWebMapPanel {
         refreshXYScale(rect.width, rect.height);
 
         Color background = this.getBackground();
-        if (background.getAlpha() > 0){
+        if (background.getAlpha() > 0) {
             g.setColor(this.getBackground());
             g.fill(rect);
         }
@@ -5666,7 +5666,7 @@ public class MapView extends JPanel implements IWebMapPanel {
         List<PointD> newPList;
         if (aPG.hasHole()) {
             for (int h = 0; h < aPG.getHoleLines().size(); h++) {
-                newPList = (List<PointD>)aPG.getHoleLines().get(h);
+                newPList = (List<PointD>) aPG.getHoleLines().get(h);
                 for (int j = 0; j < newPList.size(); j++) {
                     wPoint = newPList.get(j);
                     sXY = projToScreen(wPoint.X, wPoint.Y, LonShift);
@@ -5760,8 +5760,9 @@ public class MapView extends JPanel implements IWebMapPanel {
         if (layer.isMaskout()) {
             java.awt.Shape oldRegion = g.getClip();
             setClipRegion(g);
-            if (oldRegion != null)
+            if (oldRegion != null) {
                 g.clip(oldRegion);
+            }
         }
 
         //layer.setZoom(zoom);
@@ -5921,6 +5922,17 @@ public class MapView extends JPanel implements IWebMapPanel {
             //Get screen points
             double[] sXY;
             List<PointD> points = (List<PointD>) aGraphic.getShape().getPoints();
+//            if (aGraphic.getShape().getShapeType().isPolygon()){
+//                this.drawPolygonShape(g, (PolygonShape)aGraphic.getShape(), 
+//                        (PolygonBreak)aGraphic.getLegend(), lonShift);
+//            } else {
+//                PointF[] screenPoints = new PointF[points.size()];
+//                for (int i = 0; i < points.size(); i++) {
+//                    sXY = projToScreen(points.get(i).X, points.get(i).Y, lonShift);
+//                    screenPoints[i] = new PointF((float) sXY[0], (float) sXY[1]);
+//                }
+//                Draw.drawGrahpic(screenPoints, aGraphic, g, _mouseTool == MouseTools.EditVertices);
+//            }
             PointF[] screenPoints = new PointF[points.size()];
             for (int i = 0; i < points.size(); i++) {
                 sXY = projToScreen(points.get(i).X, points.get(i).Y, lonShift);
@@ -6484,15 +6496,16 @@ public class MapView extends JPanel implements IWebMapPanel {
             String extension = aFile.substring(aFile.lastIndexOf('.') + 1);
             if (extension.equalsIgnoreCase("bmp") || extension.equalsIgnoreCase("jpg")) {
                 BufferedImage bi;
-                if (extension.equalsIgnoreCase("bmp"))
+                if (extension.equalsIgnoreCase("bmp")) {
                     bi = new BufferedImage(this.getWidth(), this.getHeight(), BufferedImage.TYPE_INT_RGB);
-                else
+                } else {
                     bi = new BufferedImage(this.getWidth(), this.getHeight(), BufferedImage.TYPE_INT_ARGB);
+                }
                 Graphics2D g = bi.createGraphics();
                 g.setColor(this.getBackground());
                 g.fillRect(0, 0, bi.getWidth(), bi.getHeight());
                 paintGraphics(g);
-                if (extension.equalsIgnoreCase("jpg")){
+                if (extension.equalsIgnoreCase("jpg")) {
                     BufferedImage newImage = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_INT_RGB);
                     newImage.createGraphics().drawImage(bi, 0, 0, Color.BLACK, null);
                     ImageIO.write(newImage, extension, new File(aFile));
@@ -8078,7 +8091,7 @@ public class MapView extends JPanel implements IWebMapPanel {
                     PolygonShape pShape = (PolygonShape) aShape;
                     for (Polygon polygon : pShape.getPolygons()) {
                         for (List<? extends PointD> points : polygon.getRings()) {
-                            Object sel = GeoComputation.selectPolyline(bPoint, (List<PointD>)points, aExtent.getWidth() / 2);
+                            Object sel = GeoComputation.selectPolyline(bPoint, (List<PointD>) points, aExtent.getWidth() / 2);
                             if (sel != null) {
                                 return (Integer) ((Object[]) sel)[0];
                             }

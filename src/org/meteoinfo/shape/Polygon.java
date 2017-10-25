@@ -72,11 +72,29 @@ public class Polygon {
      * @return hole lines
      */
     public List<List<? extends PointD>> getHoleLines() {
+        return this._holeLines;
+    }
+    
+    /**
+     * Get hole lines
+     *
+     * @return hole lines
+     */
+    public List<List<? extends PointD>> getHoleLines_bak() {
         List<List<? extends PointD>> hlines = new ArrayList<>();
         for (List<? extends PointD> hline : _holeLines){
             hlines.add((List<PointD>)hline);
         }
         return hlines;
+    }
+    
+    /**
+     * Get a hole line
+     * @param idx Index
+     * @return A hole line
+     */
+    public List<? extends PointD> getHoleLine(int idx) {
+        return this._holeLines.get(idx);
     }
 
     /**
@@ -86,6 +104,18 @@ public class Polygon {
      */
     public void setHoleLines(List<List<? extends PointD>> holeLines) {
         _holeLines = holeLines;
+    }
+    
+    /**
+     * Set a hole line
+     * @param idx Index
+     * @param holeLine The hole line
+     */
+    public void setHoleLine(int idx, List<? extends PointD> holeLine){
+        if (GeoComputation.isClockwise(holeLine)) {
+            Collections.reverse(holeLine);
+        }
+        _holeLines.set(idx, holeLine);
     }
 
     /**
@@ -119,6 +149,14 @@ public class Polygon {
      */
     public boolean hasHole() {
         return (_holeLines.size() > 0);
+    }
+    
+    /**
+     * Get hole line number
+     * @return Hole line number
+     */
+    public int getHoleLineNumber(){
+        return this._holeLines.size();
     }
 
     /**

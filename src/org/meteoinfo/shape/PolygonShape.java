@@ -189,6 +189,20 @@ public class PolygonShape extends Shape implements Cloneable {
     }
     
     /**
+     * Set points and keep the polygons
+     * @param points
+     */
+    public void setPoints_keep(PointF[] points){
+        List<PointD> ps = new ArrayList<>();
+        for (int i = 0; i < points.length; i++){
+            ps.add(new PointD(points[i].X, points[i].Y));
+        }
+        _points = ps;
+        this.setExtent(MIMath.getPointsExtent(_points));
+        updatePolygons_keep();
+    }
+    
+    /**
      *
      * @param points
      */
@@ -298,6 +312,26 @@ public class PolygonShape extends Shape implements Cloneable {
     // </editor-fold>
     // <editor-fold desc="Methods">
 
+    protected void updatePolygons_keep() {
+        if (_numParts == 1) {
+            _polygons.get(0).setOutLine(_points);
+        } else {
+            int sidx = 0, eidx = 0;
+            for (Polygon poly : _polygons){
+                eidx = sidx + poly.getOutLine().size();
+                poly.setOutLine(_points.subList(sidx, eidx));
+                sidx = eidx;
+                if (poly.hasHole()){
+                    for (int i = 0; i < poly.getHoleLineNumber(); i++){
+                        eidx = sidx + poly.getHoleLine(i).size();
+                        poly.setHoleLine(i, _points.subList(sidx, eidx));
+                        sidx = eidx;
+                    }
+                }
+            }            
+        }
+    }
+    
     protected void updatePolygons() {
         _polygons = new ArrayList<>();
         if (_numParts == 1) {
@@ -523,6 +557,22 @@ public class PolygonShape extends Shape implements Cloneable {
         this.setVisible(o.isVisible());
         this.setSelected(o.isSelected());
         this.setLegendIndex(o.getLegendIndex());
+    }
+    
+    /**
+     * Get difference shape
+     * @param b Other shape
+     * @return Difference shape
+     */
+    @Override
+    public Shape difference(Shape b){
+        if (this.contains(b)){
+            PolygonShape r = (PolygonShape)this.clone();
+            r.addHole(b.getPoints(), 0);
+            return r;
+        } else {
+            return super.difference(b);
+        }
     }
 
     // </editor-fold>

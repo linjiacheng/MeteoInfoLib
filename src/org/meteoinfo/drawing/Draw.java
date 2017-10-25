@@ -1577,7 +1577,7 @@ public class Draw {
                 break;
             case Polygon:
                 PolygonShape pgs = (PolygonShape)aGraphic.getShape().clone();
-                pgs.setPoints(points);
+                pgs.setPoints_keep(points);
                 drawPolygonShape(pgs, (PolygonBreak) aGraphic.getLegend(), g);
                 break;
             case Rectangle:
