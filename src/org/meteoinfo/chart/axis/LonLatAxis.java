@@ -54,7 +54,9 @@ public class LonLatAxis extends Axis implements Cloneable {
         this.setInsideTick(axis.isInsideTick());
         this.setInverse(axis.isInverse());
         this.setLabelColor(axis.getLabelColor());
-        this.setLineStroke(axis.getLineStroke());
+        this.setLineWidth(axis.getLineWidth());
+        this.setLineStyle(axis.getLineStyle());
+        //this.setLineStroke(axis.getLineStroke());
         this.setLocation(axis.getLocation());
         this.setMaxValue(axis.getMaxValue());
         this.setMinValue(axis.getMinValue());

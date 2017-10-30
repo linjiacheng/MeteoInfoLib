@@ -33,7 +33,6 @@ import org.meteoinfo.chart.axis.TimeAxis;
 import static org.meteoinfo.chart.plot.Plot.MINIMUM_HEIGHT_TO_DRAW;
 import static org.meteoinfo.chart.plot.Plot.MINIMUM_WIDTH_TO_DRAW;
 import org.meteoinfo.drawing.Draw;
-import static org.meteoinfo.drawing.Draw.getDashPattern;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.PointF;
 import org.meteoinfo.layer.VectorLayer;
@@ -668,8 +667,8 @@ public abstract class AbstractPlot2D extends Plot {
      * @param font Font
      */
     public void setAxisLabelFont(Font font) {
-        for (Axis axis : this.axis.values()) {
-            axis.setTickLabelFont(font);
+        for (Axis ax : this.axis.values()) {
+            ax.setTickLabelFont(font);
         }
     }
 
@@ -679,8 +678,8 @@ public abstract class AbstractPlot2D extends Plot {
      * @param value Boolean
      */
     public void setAxisOn(boolean value) {
-        for (Axis axis : this.axis.values()) {
-            axis.setVisible(value);
+        for (Axis ax : this.axis.values()) {
+            ax.setVisible(value);
         }
     }
 
@@ -1107,7 +1106,7 @@ public abstract class AbstractPlot2D extends Plot {
         double maxx = area.getX() + area.getWidth();
         double maxy = area.getY() + area.getHeight();
 
-        float[] dashPattern = getDashPattern(this.gridLine.getStyle());
+        float[] dashPattern = Draw.getDashPattern(this.gridLine.getStyle());
         g.setColor(this.gridLine.getColor());
         g.setStroke(new BasicStroke(this.gridLine.getSize(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER,
                 10.0f, dashPattern, 0.0f));

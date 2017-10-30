@@ -26,6 +26,7 @@ import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.util.BigDecimalUtil;
 import org.meteoinfo.global.util.DateUtil;
+import org.meteoinfo.legend.LineStyles;
 
 /**
  *
@@ -42,7 +43,9 @@ public class Axis implements Cloneable {
     private boolean drawTickLabel;
     private boolean drawLabel;
     private Color lineColor;
-    private Stroke lineStroke;
+    private float lineWidth;
+    private LineStyles lineStyle;
+    //private Stroke lineStroke;
     private Color tickColor;
     private Stroke tickStroke;
     private int tickLength;
@@ -81,7 +84,9 @@ public class Axis implements Cloneable {
         this.drawTickLabel = true;
         this.drawLabel = false;
         this.lineColor = Color.darkGray;
-        this.lineStroke = new BasicStroke(1.0f);
+        this.lineWidth = 1.0f;
+        this.lineStyle = LineStyles.SOLID;
+        //this.lineStroke = new BasicStroke(1.0f);
         this.tickColor = Color.darkGray;
         this.tickStroke = new BasicStroke(1.0f);
         this.tickLength = 5;
@@ -199,7 +204,9 @@ public class Axis implements Cloneable {
         this.setInsideTick(axis.isInsideTick());
         this.setInverse(axis.isInverse());
         this.setLabelColor(axis.getLabelColor());
-        this.setLineStroke(axis.getLineStroke());
+        this.setLineWidth(axis.getLineWidth());
+        this.setLineStyle(axis.getLineStyle());
+        //this.setLineStroke(axis.getLineStroke());
         this.setLocation(axis.getLocation());
         this.setMaxValue(axis.getMaxValue());
         this.setMinValue(axis.getMinValue());
@@ -365,12 +372,36 @@ public class Axis implements Cloneable {
     }
 
     /**
-     * Set line coloe
+     * Set line color
      *
      * @param value Line color
      */
     public void setLineColor(Color value) {
         lineColor = value;
+    }
+    
+    /**
+     * Get line width
+     * @return Line width
+     */
+    public float getLineWidth(){
+        return this.lineWidth;
+    }
+    
+    /**
+     * Set line width
+     * @param value Line width
+     */
+    public void setLineWidth(float value){
+        this.lineWidth = value;
+    }
+    
+    public LineStyles getLineStyle(){
+        return this.lineStyle;
+    }
+    
+    public void setLineStyle(LineStyles value){
+        this.lineStyle = value;
     }
 
     /**
@@ -379,17 +410,18 @@ public class Axis implements Cloneable {
      * @return Line stroke
      */
     public Stroke getLineStroke() {
-        return lineStroke;
+        return new BasicStroke(this.lineWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER,
+            10.0f, Draw.getDashPattern(lineStyle), 0.0f);
     }
 
-    /**
-     * Set line stroke
-     *
-     * @param value Line stroke
-     */
-    public void setLineStroke(Stroke value) {
-        lineStroke = value;
-    }
+//    /**
+//     * Set line stroke
+//     *
+//     * @param value Line stroke
+//     */
+//    public void setLineStroke(Stroke value) {
+//        lineStroke = value;
+//    }
 
     /**
      * Get tick color
@@ -1246,7 +1278,7 @@ public class Axis implements Cloneable {
         //Draw x axis
         //Draw axis line
         g.setColor(this.lineColor);
-        g.setStroke(this.lineStroke);
+        g.setStroke(this.getLineStroke());
         if (this.location == Location.BOTTOM) {
             g.draw(new Line2D.Double(minx, maxy, maxx, maxy));
         } else {
@@ -1453,7 +1485,7 @@ public class Axis implements Cloneable {
         //Draw x axis
         //Draw axis line
         g.setColor(this.lineColor);
-        g.setStroke(this.lineStroke);
+        g.setStroke(this.getLineStroke());
         if (this.location == Location.BOTTOM) {
             g.draw(new Line2D.Double(minx, maxy, maxx, maxy));
         } else {
