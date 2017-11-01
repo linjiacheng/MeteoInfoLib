@@ -57,6 +57,14 @@ public class GlobalUtil {
     // <editor-fold desc="Get Set Methods">
     // </editor-fold>
     // <editor-fold desc="Methods">
+    
+    /**
+     * Get software version
+     * @return Software version
+     */
+    public static String getVersion(){
+        return "1.4.7";
+    }
 
     /**
      * Get file extension

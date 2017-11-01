@@ -83,16 +83,15 @@ import org.meteoinfo.shape.PolylineZShape;
  * @author yaqiang
  */
 public class VectorLayer extends MapLayer {
-    
-    enum SelectType{
+
+    enum SelectType {
         NEW,
         ADD_TO_CURRENT,
         REMOVE_FROM_CURRENT,
         SELECT_FROM_CURRENT
     }
-    
-    // <editor-fold desc="Variables">
 
+    // <editor-fold desc="Variables">
     //private final boolean _isEditing;
     private boolean _avoidCollision;
     private List<Shape> _shapeList;
@@ -803,39 +802,42 @@ public class VectorLayer extends MapLayer {
 
         return selIdxs;
     }
-    
+
     /**
      * Select shapes by SQL expression
+     *
      * @param expression The SQL expression
      */
-    public void sqlSelect(String expression){
+    public void sqlSelect(String expression) {
         this.sqlSelect(expression, SelectType.NEW);
     }
-    
+
     /**
      * Select shapes by SQL expression
+     *
      * @param expression The SQL expression
      * @param selType Selection type
      */
-    public void sqlSelect(String expression, String selType){
+    public void sqlSelect(String expression, String selType) {
         SelectType st = SelectType.valueOf(selType.toUpperCase());
         this.sqlSelect(expression, st);
     }
-    
+
     /**
      * Select shapes by SQL expression
+     *
      * @param expression The SQL expression
      * @param selType Selection type
      */
-    public void sqlSelect(String expression, SelectType selType){
+    public void sqlSelect(String expression, SelectType selType) {
         List<DataRow> rows = this._attributeTable.getTable().select(expression);
         List<Integer> rowIdxs = new ArrayList<>();
         for (DataRow row : rows) {
             rowIdxs.add(row.getRowIndex());
         }
-        
+
         int i;
-        switch(selType){
+        switch (selType) {
             case NEW:    //Create a new selection
                 for (i = 0; i < this.getShapeNum(); i++) {
                     if (rowIdxs.contains(i)) {
@@ -913,6 +915,25 @@ public class VectorLayer extends MapLayer {
             }
         }
         return null;
+    }
+
+    /**
+     * Get seleted data rows
+     *
+     * @return Selected data rows
+     */
+    public List<DataRow> getSelectedDataRows() {
+        List<DataRow> rows = this.getDataRows();
+        List<DataRow> selRows = new ArrayList<>();
+        int i = 0;
+        for (Shape shape : _shapeList) {
+            if (shape.isSelected()) {
+                selRows.add(rows.get(i));
+            }
+            i++;
+        }
+
+        return selRows;
     }
 
     /**
@@ -1105,6 +1126,15 @@ public class VectorLayer extends MapLayer {
      */
     public Object getCellValue(String fieldName, int shapeIndex) {
         return _attributeTable.getTable().getValue(shapeIndex, fieldName);
+    }
+
+    /**
+     * Get all data rows
+     *
+     * @return All data rows
+     */
+    public List<DataRow> getDataRows() {
+        return this._attributeTable.getTable().getRows();
     }
 
     /**
@@ -1647,16 +1677,16 @@ public class VectorLayer extends MapLayer {
      */
     public VectorLayer intersection(VectorLayer ilayer, boolean onlySel, boolean onlySelOther) {
         List<PolygonShape> ishapes = new ArrayList<>();
-        if (onlySelOther){
-            for (Shape shape : ilayer.getSelectedShapes()){
-                ishapes.add((PolygonShape)shape);
+        if (onlySelOther) {
+            for (Shape shape : ilayer.getSelectedShapes()) {
+                ishapes.add((PolygonShape) shape);
             }
         } else {
-            for (Shape shape : ilayer.getShapes()){
-                ishapes.add((PolygonShape)shape);
+            for (Shape shape : ilayer.getShapes()) {
+                ishapes.add((PolygonShape) shape);
             }
         }
-        
+
         return intersection(ishapes, onlySel);
     }
 
@@ -1715,7 +1745,7 @@ public class VectorLayer extends MapLayer {
 
         return newLayer;
     }
-    
+
     /**
      * Difference the layer by polygons
      *
@@ -1730,48 +1760,61 @@ public class VectorLayer extends MapLayer {
             Field bDC = new Field(aDC.getColumnName(), aDC.getDataType());
             aTable.getColumns().add(bDC);
         }
+        List<Shape> shapes;
+        if (onlySel) {
+            shapes = (List<Shape>) this.getSelectedShapes();
+        } else {
+            shapes = this._shapeList;
+        }
+        List<DataRow> dataRows;
+        if (onlySel) {
+            dataRows = this.getSelectedDataRows();
+        } else {
+            dataRows = this.getDataRows();
+        }
 
         newLayer.setShapes(new ArrayList<Shape>());
-        for (int i = 0; i < this.getShapeNum(); i++) {
-            Shape bShape = this.getShapes().get(i);
-            if (onlySel) {
-                if (bShape.isSelected()) {
-                    DataRow aDR = this.getAttributeTable().getTable().getRows().get(i);
-                    for (PolygonShape aPGS : clipPolys) {
-                        Shape clipShape = bShape.difference(aPGS);
-                        if (clipShape != null) {
-                            newLayer.addShape(clipShape);
-                            try {
-                                aTable.addRow((DataRow) aDR.clone());
-                            } catch (Exception ex) {
-                                Logger.getLogger(VectorLayer.class.getName()).log(Level.SEVERE, null, ex);
-                            }
+        boolean isNull;
+        for (int i = 0; i < shapes.size(); i++) {
+            Shape bShape = shapes.get(i);
+            DataRow dataRow = dataRows.get(i);
+            Shape clipShape = bShape.difference(clipPolys.get(0));
+            isNull = clipShape == null;
+            if (!isNull) {
+                if (clipPolys.size() > 1) {
+                    for (int j = 1; j < clipPolys.size(); j++) {
+                        clipShape = clipShape.difference(clipPolys.get(j));
+                        if (clipShape == null) {
+                            isNull = true;
+                            break;
                         }
                     }
-                }
-            } else {
-                DataRow aDR = this.getAttributeTable().getTable().getRows().get(i);
-                for (PolygonShape aPGS : clipPolys) {
-                    Shape clipShape = bShape.difference(aPGS);
-                    if (clipShape != null) {
+                    if (!isNull){
                         newLayer.addShape(clipShape);
                         try {
-                            aTable.addRow((DataRow) aDR.clone());
+                            aTable.addRow((DataRow) dataRow.clone());
                         } catch (Exception ex) {
                             Logger.getLogger(VectorLayer.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }
+                } else {
+                    newLayer.addShape(clipShape);
+                    try {
+                        aTable.addRow((DataRow) dataRow.clone());
+                    } catch (Exception ex) {
+                        Logger.getLogger(VectorLayer.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             }
         }
-
+        
         newLayer.getAttributeTable().setTable(aTable);
         newLayer.setLegendScheme((LegendScheme) this.getLegendScheme().clone());
         newLayer.setTransparency(this.getTransparency());
 
         return newLayer;
     }
-    
+
     /**
      * Symmetrical difference the layer by polygons
      *
@@ -1786,42 +1829,85 @@ public class VectorLayer extends MapLayer {
             Field bDC = new Field(aDC.getColumnName(), aDC.getDataType());
             aTable.getColumns().add(bDC);
         }
+        List<Shape> shapes;
+        if (onlySel) {
+            shapes = (List<Shape>) this.getSelectedShapes();
+        } else {
+            shapes = this._shapeList;
+        }
+        List<DataRow> dataRows;
+        if (onlySel) {
+            dataRows = this.getSelectedDataRows();
+        } else {
+            dataRows = this.getDataRows();
+        }
 
         newLayer.setShapes(new ArrayList<Shape>());
-        for (int i = 0; i < this.getShapeNum(); i++) {
-            Shape bShape = this.getShapes().get(i);
-            if (onlySel) {
-                if (bShape.isSelected()) {
-                    DataRow aDR = this.getAttributeTable().getTable().getRows().get(i);
-                    for (PolygonShape aPGS : clipPolys) {
-                        Shape clipShape = bShape.difference(aPGS);
-                        if (clipShape != null) {
-                            newLayer.addShape(clipShape);
-                            try {
-                                aTable.addRow((DataRow) aDR.clone());
-                            } catch (Exception ex) {
-                                Logger.getLogger(VectorLayer.class.getName()).log(Level.SEVERE, null, ex);
-                            }
+        boolean isNull;
+        for (int i = 0; i < shapes.size(); i++) {
+            Shape bShape = shapes.get(i);
+            DataRow dataRow = dataRows.get(i);
+            Shape clipShape = bShape.difference(clipPolys.get(0));
+            isNull = clipShape == null;
+            if (!isNull) {
+                if (clipPolys.size() > 1) {
+                    for (int j = 1; j < clipPolys.size(); j++) {
+                        clipShape = clipShape.difference(clipPolys.get(j));
+                        if (clipShape == null) {
+                            isNull = true;
+                            break;
                         }
                     }
-                }
-            } else {
-                DataRow aDR = this.getAttributeTable().getTable().getRows().get(i);
-                for (PolygonShape aPGS : clipPolys) {
-                    Shape clipShape = bShape.difference(aPGS);
-                    if (clipShape != null) {
+                    if (!isNull){
                         newLayer.addShape(clipShape);
                         try {
-                            aTable.addRow((DataRow) aDR.clone());
+                            aTable.addRow((DataRow) dataRow.clone());
                         } catch (Exception ex) {
                             Logger.getLogger(VectorLayer.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }
+                } else {
+                    newLayer.addShape(clipShape);
+                    try {
+                        aTable.addRow((DataRow) dataRow.clone());
+                    } catch (Exception ex) {
+                        Logger.getLogger(VectorLayer.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             }
         }
-
+        
         newLayer.getAttributeTable().setTable(aTable);
+        for (int i = 0; i < clipPolys.size(); i++) {
+            Shape bShape = clipPolys.get(i);
+            Shape clipShape = bShape.difference(shapes.get(0));
+            isNull = clipShape == null;
+            if (!isNull) {
+                if (shapes.size() > 1) {
+                    for (int j = 1; j < shapes.size(); j++) {
+                        clipShape = clipShape.difference(shapes.get(j));
+                        if (clipShape == null) {
+                            isNull = true;
+                            break;
+                        }
+                    }
+                    if (!isNull){
+                        try {
+                            newLayer.editAddShape(clipShape);
+                        } catch (Exception ex) {
+                            Logger.getLogger(VectorLayer.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                } else {
+                    try {
+                            newLayer.editAddShape(clipShape);
+                        } catch (Exception ex) {
+                            Logger.getLogger(VectorLayer.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                }
+            }
+        }
+                
         newLayer.setLegendScheme((LegendScheme) this.getLegendScheme().clone());
         newLayer.setTransparency(this.getTransparency());
 
