@@ -162,4 +162,24 @@ public enum ShapeTypes {
         }
         return false;
     }
+    
+    /**
+     * Check if this shape type has same legend type with other shape type
+     * @param st Other shape type
+     * @return Boolean
+     */
+    public boolean isSameLegendType(ShapeTypes st){
+        if (this == st){
+            return true;
+        } else {
+            if (this.isLine() && st.isLine())
+                return true;
+            else if (this.isPoint() && st.isPoint())
+                return true;
+            else if (this.isPolygon() && st.isPolygon())
+                return true;
+            else
+                return false;
+        }
+    }
 }

@@ -667,8 +667,10 @@ public class LegendScheme {
                     Attr drawSymbol = doc.createAttribute("DrawSymbol");
                     Attr symbolSize = doc.createAttribute("SymbolSize");
                     Attr symbolStyle = doc.createAttribute("SymbolStyle");
-                    Attr symbolColor = doc.createAttribute("SymbolColor");
+                    Attr symbolColor = doc.createAttribute("SymbolColor");                    
                     Attr symbolInterval = doc.createAttribute("SymbolInterval");
+                    Attr fillSymbol = doc.createAttribute("FillSymbol");
+                    Attr symbolFillColor = doc.createAttribute("SymbolFillColor");
                     tagAttr = doc.createAttribute("Tag");
 
                     caption.setValue(aPLB.getCaption());
@@ -680,9 +682,11 @@ public class LegendScheme {
                     style.setValue(aPLB.getStyle().toString());
                     drawSymbol.setValue(String.valueOf(aPLB.getDrawSymbol()));
                     symbolSize.setValue(String.valueOf(aPLB.getSymbolSize()));
-                    symbolStyle.setValue(aPLB.getSymbolStyle().toString());
+                    symbolStyle.setValue(aPLB.getSymbolStyle().toString());                    
                     symbolColor.setValue(ColorUtil.toHexEncoding(aPLB.getSymbolColor()));
                     symbolInterval.setValue(String.valueOf(aPLB.getSymbolInterval()));
+                    fillSymbol.setValue(String.valueOf(aPLB.isFillSymbol()));
+                    symbolFillColor.setValue(ColorUtil.toHexEncoding(aPLB.getSymbolFillColor()));
                     tagAttr.setValue(aPLB.getTag());
 
                     brk.setAttributeNode(caption);
@@ -697,6 +701,8 @@ public class LegendScheme {
                     brk.setAttributeNode(symbolStyle);
                     brk.setAttributeNode(symbolColor);
                     brk.setAttributeNode(symbolInterval);
+                    brk.setAttributeNode(fillSymbol);
+                    brk.setAttributeNode(symbolFillColor);
                     brk.setAttributeNode(tagAttr);
 
                     breaks.appendChild(brk);
@@ -855,7 +861,7 @@ public class LegendScheme {
         if (!keepShape) {
             shapeType = aShapeType;
         }
-        boolean sameShapeType = (shapeType == aShapeType);
+        boolean sameShapeType = (shapeType.isSameLegendType(aShapeType));
         importBreaks(LSNode, sameShapeType);
     }
 
@@ -913,6 +919,8 @@ public class LegendScheme {
                             aPLB.setSymbolStyle(PointStyle.valueOf(brk.getAttributes().getNamedItem("SymbolStyle").getNodeValue()));
                             aPLB.setSymbolColor(ColorUtil.parseToColor(brk.getAttributes().getNamedItem("SymbolColor").getNodeValue()));
                             aPLB.setSymbolInterval(Integer.parseInt(brk.getAttributes().getNamedItem("SymbolInterval").getNodeValue()));
+                            aPLB.setFillSymbol(Boolean.parseBoolean(brk.getAttributes().getNamedItem("FillSymbol").getNodeValue()));
+                            aPLB.setSymbolFillColor(ColorUtil.parseToColor(brk.getAttributes().getNamedItem("SymbolFillColor").getNodeValue()));
                             if (brk.getAttributes().getNamedItem("Tag") != null)
                                 aPLB.setTag(brk.getAttributes().getNamedItem("Tag").getNodeValue());
                         } catch (Exception e) {

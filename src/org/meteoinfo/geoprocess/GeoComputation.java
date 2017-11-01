@@ -1152,7 +1152,7 @@ public class GeoComputation {
         List<Polygon> newPolygons = new ArrayList<>();
         for (int i = 0; i < polygons.size(); i++) {
             Polygon aPolygon = polygons.get(i);
-            if (clipObj.getClass() == Extent.class) {
+            if (clipObj instanceof Extent) {
                 newPolygons.addAll(clipPolygon_Extent(aPolygon, (Extent) clipObj));
             } else {
                 newPolygons.addAll(clipPolygon(aPolygon, clipObj));
@@ -1920,9 +1920,12 @@ public class GeoComputation {
         if (clipObj.getClass() == ClipLine.class) {
             return ((ClipLine) clipObj).isExtentCross(aExtent);
         }
-        if (clipObj.getClass() == Extent.class) {
+        if (clipObj instanceof Extent) {
             return MIMath.isExtentCross(aExtent, (Extent) clipObj);
         }
+//        if (clipObj.getClass() == Extent.class) {
+//            return MIMath.isExtentCross(aExtent, (Extent) clipObj);
+//        }
 
         return false;
     }
@@ -1934,7 +1937,7 @@ public class GeoComputation {
         if (clipObj.getClass() == ClipLine.class) {
             return ((ClipLine) clipObj).isInside(aPoint);
         }
-        if (clipObj.getClass() == Extent.class) {
+        if (clipObj instanceof Extent) {
             return MIMath.pointInExtent(aPoint, (Extent) clipObj);
         }
 
@@ -1958,7 +1961,7 @@ public class GeoComputation {
                 }
             }
         }
-        if (clipObj.getClass() == Extent.class) {
+        if (clipObj instanceof Extent) {
             Extent aExtent = (Extent) clipObj;
             clipPList.add(new PointD(aExtent.minX, aExtent.minY));
             clipPList.add(new PointD(aExtent.minX, aExtent.maxY));
