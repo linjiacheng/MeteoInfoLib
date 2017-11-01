@@ -248,12 +248,114 @@ public class GraphicFactory {
      *
      * @param xdata X data array
      * @param ydata Y data array
+     * @param xErrorLeft X error array - left
+     * @param xErrorRight X error array - right
+     * @param yErrorBottom Y error array - bottom
+     * @param yErrorUp Y error array - up
+     * @param cb Color break
+     * @param ecb Error bar color break
+     * @param capSize The length of the error bar caps.
+     * @return LineString graphics
+     */
+    public static GraphicCollection createErrorLineString(Array xdata, Array ydata, Array xErrorLeft, 
+            Array xErrorRight, Array yErrorBottom, Array yErrorUp, ColorBreak cb, ColorBreak ecb, Double capSize) {
+        GraphicCollection gc = new GraphicCollection();
+        PolylineShape pls, epls;
+        List<PointD> points = new ArrayList<>();
+        List<PointD> eps;
+        double x, y, xerrL, xerrR, yerrB, yerrU;
+        double width;
+        if (capSize == null)
+            width = (ArrayMath.getMaximum(xdata) - ArrayMath.getMinimum(xdata)) / xdata.getSize() * 0.1;
+        else
+            width = capSize * 0.5;
+        //Loop
+        for (int i = 0; i < xdata.getSize(); i++) {
+            x = xdata.getDouble(i);
+            y = ydata.getDouble(i);
+            if (Double.isNaN(y) || Double.isNaN(x)) {
+                if (points.isEmpty()) {
+                    continue;
+                }
+                if (points.size() == 1) {
+                    points.add((PointD) points.get(0).clone());
+                }
+                pls = new PolylineShape();
+                pls.setPoints(points);
+                gc.add(new Graphic(pls, cb));
+                points = new ArrayList<>();
+            } else {
+                points.add(new PointD(x, y));
+                if (yErrorBottom != null){
+                    yerrB = yErrorBottom.getDouble(i);
+                    yerrU = yErrorUp.getDouble(i);
+                    eps = new ArrayList<>();
+                    eps.add(new PointD(x, y + yerrU));
+                    eps.add(new PointD(x, y - yerrB));
+                    epls = new PolylineShape();
+                    epls.setPoints(eps);
+                    gc.add(new Graphic(epls, ecb));                    
+                    eps = new ArrayList<>();
+                    eps.add(new PointD(x - width, y + yerrU));
+                    eps.add(new PointD(x + width, y + yerrU));
+                    epls = new PolylineShape();
+                    epls.setPoints(eps);
+                    gc.add(new Graphic(epls, ecb));
+                    eps = new ArrayList<>();
+                    eps.add(new PointD(x - width, y - yerrB));
+                    eps.add(new PointD(x + width, y - yerrB));
+                    epls = new PolylineShape();
+                    epls.setPoints(eps);
+                    gc.add(new Graphic(epls, ecb));
+                }
+                if (xErrorLeft != null){
+                    xerrL = xErrorLeft.getDouble(i);
+                    xerrR = xErrorRight.getDouble(i);
+                    eps = new ArrayList<>();
+                    eps.add(new PointD(x - xerrL, y));
+                    eps.add(new PointD(x + xerrR, y));
+                    epls = new PolylineShape();
+                    epls.setPoints(eps);
+                    gc.add(new Graphic(epls, ecb));
+                    eps = new ArrayList<>();
+                    eps.add(new PointD(x - xerrL, y - width));
+                    eps.add(new PointD(x - xerrL, y + width));
+                    epls = new PolylineShape();
+                    epls.setPoints(eps);
+                    gc.add(new Graphic(epls, ecb));
+                    eps = new ArrayList<>();
+                    eps.add(new PointD(x + xerrR, y - width));
+                    eps.add(new PointD(x + xerrR, y + width));
+                    epls = new PolylineShape();
+                    epls.setPoints(eps);
+                    gc.add(new Graphic(epls, ecb));
+                }
+            }
+        }
+        if (!points.isEmpty()) {
+            if (points.size() == 1) {
+                points.add((PointD) points.get(0).clone());
+            }
+            pls = new PolylineShape();
+            pls.setPoints(points);
+            gc.add(new Graphic(pls, cb));
+        }
+        gc.setSingleLegend(false);
+        
+        return gc;
+    }
+    
+    /**
+     * Create error LineString graphic
+     *
+     * @param xdata X data array
+     * @param ydata Y data array
      * @param xError X error array
      * @param yError Y error array
      * @param cb Color break
      * @return LineString graphic
      */
-    public static GraphicCollection createErrorLineString(Array xdata, Array ydata, Array xError, Array yError, ColorBreak cb) {
+    public static GraphicCollection createErrorLineString_bak(Array xdata, Array ydata, Array xError, Array yError, ColorBreak cb) {
         GraphicCollection gc = new GraphicCollection();
         PolylineErrorShape pls;
         List<PointD> points = new ArrayList<>();

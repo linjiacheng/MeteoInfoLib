@@ -1328,7 +1328,7 @@ public class MapView extends JPanel implements IWebMapPanel {
                     break;
                 case Edit_Tool:
                     VectorLayer layer = (VectorLayer) this.getSelectedLayer();
-                    List<Shape> selShapes = layer.getSelectedShapes();
+                    List<Shape> selShapes = (List<Shape>)layer.getSelectedShapes();
                     if (selShapes.size() > 0) {
                         float burf = 2.5f;
                         Rectangle.Float selExtent = new Rectangle.Float(e.getX() - burf, e.getY() - burf, burf * 2, burf * 2);
@@ -1710,7 +1710,7 @@ public class MapView extends JPanel implements IWebMapPanel {
         switch (_mouseTool) {
             case Edit_Tool:
                 VectorLayer layer = (VectorLayer) this.getSelectedLayer();
-                List<Shape> selShapes = layer.getSelectedShapes();
+                List<Shape> selShapes = (List<Shape>)layer.getSelectedShapes();
                 boolean isMove = false;
                 if (selShapes.size() > 0) {
                     float burf = 2.5f;
@@ -2169,7 +2169,7 @@ public class MapView extends JPanel implements IWebMapPanel {
                 break;
             case Edit_MoveSelection:
                 VectorLayer slayer = (VectorLayer) this.getSelectedLayer();
-                List<Shape> selShapes = slayer.getSelectedShapes();
+                List<Shape> selShapes = (List<Shape>)slayer.getSelectedShapes();
                 if (selShapes.size() > 0) {
                     for (Shape shape : selShapes) {
                         moveShapeOnScreen(shape, _mouseDownPoint, new Point(e.getX(), e.getY()));
@@ -3311,7 +3311,7 @@ public class MapView extends JPanel implements IWebMapPanel {
                     break;
                 case Edit_Tool:
                     VectorLayer layer = (VectorLayer) this.getSelectedLayer();
-                    List<Shape> selShapes = layer.getSelectedShapes();
+                    List<Shape> selShapes = (List<Shape>)layer.getSelectedShapes();
                     if (selShapes.size() > 0) {
                         UndoableEdit edit = (new MapViewUndoRedo()).new RemoveFeaturesEdit(this, layer, selShapes);
                         layer.getUndoManager().addEdit(edit);

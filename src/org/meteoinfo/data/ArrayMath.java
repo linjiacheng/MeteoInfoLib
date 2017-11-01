@@ -5183,7 +5183,8 @@ public class ArrayMath {
      *
      * @param xData X data array
      * @param yData Y data array
-     * @return Result array - y intercept, slope and correlation coefficent
+     * @return Slope, intercept, correlation coefficent, two-sided p-value, 
+     *      the standard error of the estimate for the slope, valid data number
      */
     public static double[] lineRegress(Array xData, Array yData) {
         double x_sum = 0;
@@ -5192,8 +5193,8 @@ public class ArrayMath {
         double sy_sum = 0.0;
         double xy_sum = 0.0;
         int n = 0;
-        //List<Double> xi = new ArrayList<>();
-        //List<Double> yi = new ArrayList<>();
+        List<Double> xi = new ArrayList<>();
+        List<Double> yi = new ArrayList<>();
         for (int i = 0; i < xData.getSize(); i++) {
             if (Double.isNaN(xData.getDouble(i))) {
                 continue;
@@ -5201,8 +5202,8 @@ public class ArrayMath {
             if (Double.isNaN(yData.getDouble(i))) {
                 continue;
             }
-            //xi.add(xData.getDouble(i));
-            //yi.add(yData.getDouble(i));
+            xi.add(xData.getDouble(i));
+            yi.add(yData.getDouble(i));
             x_sum += xData.getDouble(i);
             y_sum += yData.getDouble(i);
             sx_sum += xData.getDouble(i) * xData.getDouble(i);
@@ -5214,10 +5215,30 @@ public class ArrayMath {
         double r = (n * xy_sum - x_sum * y_sum) / (Math.sqrt(n * sx_sum - x_sum * x_sum) * Math.sqrt(n * sy_sum - y_sum * y_sum));
         double intercept = (sx_sum * y_sum - x_sum * xy_sum) / (n * sx_sum - x_sum * x_sum);
         double slope = (n * xy_sum - x_sum * y_sum) / (n * sx_sum - x_sum * x_sum);
-        int df = n - 2;
+        int df = n - 2;    //degress of freedom
         double TINY = 1.0e-20;
         double t = r * Math.sqrt(df / ((1.0 - r + TINY) * (1.0 + r + TINY)));
+        //two-sided p-value for a hypothesis test whose null hypothesis is that the slope is zero
         double p = studpval(t, df);
+        
+        // more statistical analysis
+        double xbar = x_sum / n;
+        double ybar = y_sum / n;
+        double rss = 0.0;      // residual sum of squares
+        double ssr = 0.0;      // regression sum of squares
+        double fit;
+        double xxbar = 0.0;
+        for (int i = 0; i < n; i++) {
+            fit = slope * xi.get(i) + intercept;
+            rss += (fit - yi.get(i)) * (fit - yi.get(i));
+            ssr += (fit - ybar) * (fit - ybar);
+            xxbar += (xi.get(i) - xbar) * (xi.get(i) - xbar);
+        }
+        double svar  = rss / df;
+        double svar1 = svar / xxbar;
+        double svar0 = svar / n + xbar * xbar * svar1;
+        svar0 = Math.sqrt(svar0);    //the standard error of the estimate for the intercept
+        svar1 = Math.sqrt(svar1);    //the standard error of the estimate for the slope
 
 //        double xbar = x_sum / n;
 //        double ybar = y_sum / n;
@@ -5245,7 +5266,7 @@ public class ArrayMath {
 //        double Ta = (ahat - a0) / sea;        
 //        p = studpval(Ta, n);
 
-        return new double[]{slope, intercept, r, p, n};
+        return new double[]{slope, intercept, r, p, svar1, n};
     }
 
     private static double statcom(double mq, int mi, int mj, double mb) {
