@@ -1910,8 +1910,8 @@ public class GraphicFactory {
                     aPolygonShape.addHole(pList, 0);
                 }
             }
-            int valueIdx = Arrays.binarySearch(cValues, v);
-            //valueIdx = Arrays.asList(cValues).indexOf(aValue);            
+            //int valueIdx = Arrays.binarySearch(cValues, v);
+            int valueIdx = findIndex(cValues, v);            
             if (valueIdx == cValues.length - 1) {
                 aPolygonShape.highValue = maxData;
             } else {
@@ -2096,8 +2096,8 @@ public class GraphicFactory {
                         break;
                 }
             }
-            int valueIdx = Arrays.binarySearch(cValues, v);
-            //valueIdx = Arrays.asList(cValues).indexOf(aValue);            
+            //int valueIdx = Arrays.binarySearch(cValues, v);
+            int valueIdx = findIndex(cValues, v);           
             if (valueIdx == cValues.length - 1) {
                 aPolygonShape.highValue = maxData;
             } else {
@@ -2761,6 +2761,25 @@ public class GraphicFactory {
             }
         }
         graphics.updateExtent();
+    }
+    
+    private static int findIndex(double[] values, double v){
+        int idx = -1;
+        for (int i = 0; i < values.length; i++){
+            if (i == values.length - 1) {
+                if (v == values[i]) {
+                    idx = i;
+                    break;
+                }
+            } else {
+                if (v == values[i] || v < values[i + 1]){
+                    idx = i;
+                    break;
+                }
+            }
+        }
+        
+        return idx;
     }
 
 }

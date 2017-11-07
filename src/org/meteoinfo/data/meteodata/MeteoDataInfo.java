@@ -766,6 +766,18 @@ public class MeteoDataInfo {
         _dataInfo.readDataInfo(fileName);
         _infoText = _dataInfo.generateInfoText();
     }
+    
+    /**
+     * Open MM5 Output data
+     *
+     * @param fileName The MM5 output data file without big head
+     * @param bigHeadFile The MM5 output data file with big head
+     */
+    public void openMM5Data(String fileName, String bigHeadFile) {
+        _dataInfo = new MM5DataInfo();
+        ((MM5DataInfo)_dataInfo).readDataInfo(fileName, bigHeadFile);
+        _infoText = _dataInfo.generateInfoText();
+    }
 
     /**
      * Open MM5 Intermediate data
