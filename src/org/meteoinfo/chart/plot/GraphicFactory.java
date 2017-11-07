@@ -1910,8 +1910,10 @@ public class GraphicFactory {
                     aPolygonShape.addHole(pList, 0);
                 }
             }
-            //int valueIdx = Arrays.binarySearch(cValues, v);
-            int valueIdx = findIndex(cValues, v);            
+            int valueIdx = Arrays.binarySearch(cValues, v);
+            if (valueIdx < 0)
+                valueIdx = -valueIdx;
+            //int valueIdx = findIndex(cValues, v);            
             if (valueIdx == cValues.length - 1) {
                 aPolygonShape.highValue = maxData;
             } else {
@@ -2096,8 +2098,10 @@ public class GraphicFactory {
                         break;
                 }
             }
-            //int valueIdx = Arrays.binarySearch(cValues, v);
-            int valueIdx = findIndex(cValues, v);           
+            int valueIdx = Arrays.binarySearch(cValues, v);
+            if (valueIdx < 0)
+                valueIdx = -valueIdx;
+            //int valueIdx = findIndex(cValues, v);           
             if (valueIdx == cValues.length - 1) {
                 aPolygonShape.highValue = maxData;
             } else {
