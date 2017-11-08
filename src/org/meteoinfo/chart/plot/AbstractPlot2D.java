@@ -1041,6 +1041,12 @@ public abstract class AbstractPlot2D extends Plot {
             if (xAxis instanceof TimeAxis) {
                 height += dim.height + space;
             }
+            int tlln = xAxis.getMaxTickLableLines();
+            if (tlln > 1){
+                for (int i = 0; i < tlln; i++){
+                    height += dim.height + space;
+                }
+            }
         }
         if (!xAxis.isInsideTick()) {
             height += xAxis.getTickLength();

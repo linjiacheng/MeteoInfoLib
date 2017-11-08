@@ -1183,6 +1183,27 @@ public class Axis implements Cloneable {
 
         return rlab.getText();
     }
+    
+    /**
+     * Get maximum tick label line number
+     *
+     * @return Maximum tick label line number
+     */
+    public int getMaxTickLableLines() {
+        List<ChartText> tls = this.updateTickLabels();
+        if (tls.isEmpty()) {
+            return 1;
+        }
+
+        int ln = tls.get(0).getLineNum();
+        for (ChartText lab : tls) {
+            if (lab.getLineNum()> ln) {
+                ln = lab.getLineNum();
+            }
+        }
+
+        return ln;
+    }
 
     /**
      * Update lable gap
@@ -1457,6 +1478,11 @@ public class Axis implements Cloneable {
             Dimension dim = Draw.getStringDimension(maxLabel, g);
             y = maxy + space + dim.getHeight() + (dim.getWidth()
                     * Math.sin(this.tickLabelAngle * Math.PI / 180)) + 5;
+            int tlln = this.getMaxTickLableLines();
+            if (tlln > 1){
+                for (int i = 1; i < tlln; i++)
+                    y += dim.getHeight() + space;
+            }
             g.setFont(this.getLabelFont());
             g.setColor(this.getLabelColor());
             //metrics = g.getFontMetrics(this.xAxis.getLabelFont());
