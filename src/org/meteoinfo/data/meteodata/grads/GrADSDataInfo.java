@@ -149,7 +149,7 @@ public class GrADSDataInfo extends DataInfo implements IGridDataInfo, IStationDa
     /// <summary>
     /// Record length per time
     /// </summary>
-    public int RecLenPerTime;
+    public long RecLenPerTime;
     /// <summary>
     /// X coordinate
     /// </summary>
