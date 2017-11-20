@@ -194,20 +194,20 @@ public class ArrayUtil {
         try (DataOutputStream out = new DataOutputStream(new FileOutputStream(new File(fn), append))) {
             EndianDataOutputStream outs = new EndianDataOutputStream(out);
             ByteBuffer bb = a.getDataAsByteBuffer();
-            int n = (int)a.getSize();
+            int n = (int) a.getSize();
             ByteOrder bOrder = ByteOrder.LITTLE_ENDIAN;
             if (byteOrder.equalsIgnoreCase("big_endian")) {
                 bOrder = ByteOrder.BIG_ENDIAN;
-            }            
-            
-            if (sequential){
-                if (bOrder == ByteOrder.BIG_ENDIAN){
+            }
+
+            if (sequential) {
+                if (bOrder == ByteOrder.BIG_ENDIAN) {
                     outs.writeIntBE(n * 4);
                 } else {
                     outs.writeIntLE(n * 4);
                 }
             }
-            
+
             if (bOrder == ByteOrder.BIG_ENDIAN) {
                 outs.write(bb.array());
             } else if (a.getDataType() == DataType.BYTE) {
@@ -237,9 +237,9 @@ public class ArrayUtil {
                 }
                 outs.write(nbb.array());
             }
-            
-            if (sequential){
-                if (bOrder == ByteOrder.BIG_ENDIAN){
+
+            if (sequential) {
+                if (bOrder == ByteOrder.BIG_ENDIAN) {
                     outs.writeIntBE(n * 4);
                 } else {
                     outs.writeIntLE(n * 4);
@@ -253,7 +253,7 @@ public class ArrayUtil {
             Logger.getLogger(ArrayUtil.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     /**
      * Save an array data to a ASCII file
      *
@@ -264,19 +264,20 @@ public class ArrayUtil {
      * @param delimiter Delimiter
      * @throws java.io.IOException
      */
-    public static void saveASCIIFile(String fn, Array a, int colNum, 
+    public static void saveASCIIFile(String fn, Array a, int colNum,
             String format, String delimiter) throws IOException {
         BufferedWriter sw = new BufferedWriter(new FileWriter(new File(fn)));
         String line = "";
         int j = 0;
-        for (int i = 0; i < a.getSize(); i++){
+        for (int i = 0; i < a.getSize(); i++) {
             j += 1;
-            if (format == null)
+            if (format == null) {
                 line = line + a.getFloat(i);
-            else
+            } else {
                 line = line + String.format(format, a.getFloat(i));
-            if (j < colNum && i < a.getSize() - 1){
-                if (delimiter == null){
+            }
+            if (j < colNum && i < a.getSize() - 1) {
+                if (delimiter == null) {
                     line = line + " ";
                 } else {
                     line = line + delimiter;
@@ -286,7 +287,7 @@ public class ArrayUtil {
                 sw.newLine();
                 line = "";
                 j = 0;
-            }            
+            }
         }
         sw.flush();
         sw.close();
@@ -409,7 +410,7 @@ public class ArrayUtil {
         } else if (data instanceof Array) {
             return (Array) data;
         } else if (data instanceof ArrayList) {
-            return array((List<Object>)data);
+            return array((List<Object>) data);
         } else {
             return null;
         }
@@ -449,8 +450,8 @@ public class ArrayUtil {
         } else if (d0 instanceof PyComplex) {
             Array a = Array.factory(DataType.OBJECT, new int[]{data.size()});
             PyComplex d;
-            for (int i = 0; i < data.size(); i++){
-                d = (PyComplex)data.get(i);
+            for (int i = 0; i < data.size(); i++) {
+                d = (PyComplex) data.get(i);
                 a.setObject(i, new Complex(d.real, d.imag));
             }
             return a;
@@ -758,6 +759,201 @@ public class ArrayUtil {
     }
 
     /**
+     * Repeat a value n times
+     *
+     * @param v The value
+     * @param n N times
+     * @return Repeated array
+     */
+    public static Array repeat(Number v, int n) {
+        DataType dt = ArrayMath.getDataType(v);
+        Array r = Array.factory(dt, new int[]{n});
+        for (int i = 0; i < n; i++) {
+            r.setObject(i, v);
+        }
+
+        return r;
+    }
+
+    /**
+     * Repeat elements of an array.
+     *
+     * @param a The value
+     * @param repeats The number of repetitions for each element
+     * @return Repeated array
+     */
+    public static Array repeat(Array a, List<Integer> repeats) {
+        Array r;
+        if (repeats.size() == 1) {
+            int n = repeats.get(0);
+            r = Array.factory(a.getDataType(), new int[]{(int) a.getSize() * n});
+            for (int i = 0; i < a.getSize(); i++) {
+                for (int j = 0; j < n; j++) {
+                    r.setObject(i * n + j, a.getObject(i));
+                }
+            }
+        } else {
+            int n = 0;
+            for (int i = 0; i < repeats.size(); i++){
+                n += repeats.get(i);
+            }
+            r = Array.factory(a.getDataType(), new int[]{n});
+            int idx = 0;
+            for (int i = 0; i < a.getSize(); i++) {
+                for (int j = 0; j < repeats.get(i); j++) {
+                    r.setObject(idx, a.getObject(i));
+                    idx += 1;
+                }
+            }
+        }
+
+        return r;
+    }
+    
+    /**
+     * Repeat elements of an array.
+     *
+     * @param a The value
+     * @param repeats The number of repetitions for each element
+     * @param axis The axis
+     * @return Repeated array
+     */
+    public static Array repeat(Array a, List<Integer> repeats, int axis) {
+        Array r;
+        if (repeats.size() == 1) {
+            int n = repeats.get(0);
+            int[] shape = a.getShape();
+            shape[axis] = shape[axis] * n;
+            r = Array.factory(a.getDataType(), shape);
+            Index aindex = a.getIndex();
+            Index index = r.getIndex();
+            int[] current;
+            for (int i = 0; i < r.getSize(); i++){
+                current = index.getCurrentCounter();
+                current[axis] = current[axis] / n;
+                aindex.set(current);
+                r.setObject(index, a.getObject(aindex));
+                index.incr();
+            }            
+        } else {
+            int n = 0;
+            int[] rsum = new int[repeats.size()];
+            for (int i = 0; i < repeats.size(); i++){
+                rsum[i] = n;
+                n += repeats.get(i);                
+            }
+            int[] shape = a.getShape();
+            shape[axis] = n;
+            r = Array.factory(a.getDataType(), shape);
+            Index aindex = a.getIndex();
+            Index index = r.getIndex();
+            int[] current;
+            int idx;
+            for (int i = 0; i < a.getSize(); i++){
+                current = aindex.getCurrentCounter();
+                idx = current[axis];
+                for (int j = 0; j < repeats.get(idx); j++){
+                    current[axis] = rsum[idx] + j;
+                    index.set(current);
+                    r.setObject(index, a.getObject(aindex));
+                }                
+                aindex.incr();
+            }    
+        }
+
+        return r;
+    }
+    
+        /**
+     * Repeat a value n times
+     *
+     * @param v The value
+     * @param n N times
+     * @return Repeated array
+     */
+    public static Array tile(Number v, int n) {
+        DataType dt = ArrayMath.getDataType(v);
+        Array r = Array.factory(dt, new int[]{n});
+        for (int i = 0; i < n; i++) {
+            r.setObject(i, v);
+        }
+
+        return r;
+    }
+
+    /**
+     * Repeat a value n times
+     *
+     * @param v The value
+     * @param repeats The number of repetitions for each element
+     * @return Repeated array
+     */
+    public static Array tile(Number v, List<Integer> repeats) {
+        int[] shape = new int[repeats.size()];
+        for (int i = 0; i < repeats.size(); i++) {
+            shape[i] = repeats.get(i);
+        }
+        DataType dt = ArrayMath.getDataType(v);
+        Array r = Array.factory(dt, shape);
+        for (int i = 0; i < r.getSize(); i++) {
+            r.setObject(i, v);
+        }
+
+        return r;
+    }
+    
+    /**
+     * Repeat elements of an array.
+     *
+     * @param a The value
+     * @param repeats The number of repetitions for each element
+     * @return Repeated array
+     */
+    public static Array tile(Array a, List<Integer> repeats) {
+        if (a.getRank() > repeats.size()){
+            int n = a.getRank() - repeats.size();
+            for (int i = 0; i < n; i++){
+                repeats.add(0, 1);
+            }
+        } else if (a.getRank() < repeats.size()){
+            int[] shape = a.getShape();
+            int[] nshape = new int[repeats.size()];
+            int n = repeats.size() - shape.length;
+            for (int i = 0; i < nshape.length; i++){
+                if (i < n){
+                    nshape[i] = 1;
+                } else {
+                    nshape[i] = shape[i - n];
+                }
+            }
+            a = a.reshape(nshape);
+        }
+        int[] ashape = a.getShape();
+        int[] shape = a.getShape();
+        for (int i = 0; i < shape.length; i++){
+            shape[i] = shape[i] * repeats.get(i);
+        }
+        Array r = Array.factory(a.getDataType(), shape);
+        Index index = r.getIndex();
+        Index aindex = a.getIndex();
+        int[] current;
+        int idx;
+        for (int i = 0; i < r.getSize(); i++){
+            current = index.getCurrentCounter();
+            for (int j = 0; j < repeats.size(); j++){
+                idx = current[j];
+                idx = idx % ashape[j]; 
+                current[j] = idx;
+            }
+            aindex.set(current);
+            r.setObject(index, a.getObject(aindex));
+            index.incr();
+        }
+
+        return r;
+    }
+
+    /**
      * Get random value
      *
      * @return Random value
@@ -1034,7 +1230,7 @@ public class ArrayUtil {
      */
     public static Array toInteger(Array a) {
         Array r = Array.factory(DataType.INT, a.getShape());
-        if (a.getDataType().isNumeric()){
+        if (a.getDataType().isNumeric()) {
             for (int i = 0; i < r.getSize(); i++) {
                 r.setInt(i, a.getInt(i));
             }
@@ -1055,7 +1251,7 @@ public class ArrayUtil {
      */
     public static Array toFloat(Array a) {
         Array r = Array.factory(DataType.FLOAT, a.getShape());
-        if (a.getDataType().isNumeric()){
+        if (a.getDataType().isNumeric()) {
             for (int i = 0; i < r.getSize(); i++) {
                 r.setFloat(i, a.getFloat(i));
             }
@@ -1064,7 +1260,7 @@ public class ArrayUtil {
                 r.setFloat(i, Float.valueOf(a.getObject(i).toString()));
             }
         }
-        
+
         return r;
     }
 
@@ -1400,11 +1596,9 @@ public class ArrayUtil {
                         hist.setInt(j, hist.getInt(j) + 1);
                         break;
                     }
-                } else {
-                    if (v >= bins.getDouble(j) && v < bins.getDouble(j + 1)) {
-                        hist.setInt(j, hist.getInt(j) + 1);
-                        break;
-                    }
+                } else if (v >= bins.getDouble(j) && v < bins.getDouble(j + 1)) {
+                    hist.setInt(j, hist.getInt(j) + 1);
+                    break;
                 }
             }
         }
@@ -1475,15 +1669,15 @@ public class ArrayUtil {
      */
     public static Array broadcast(Array a, int[] shape) {
         int[] bshape = a.getShape();
-        if (bshape.length > shape.length){
+        if (bshape.length > shape.length) {
             return null;
         }
-        
-        if (bshape.length < shape.length){
+
+        if (bshape.length < shape.length) {
             int miss = shape.length - a.getRank();
             bshape = new int[shape.length];
-            for (int i = 0; i < shape.length; i++){
-                if (i < miss){
+            for (int i = 0; i < shape.length; i++) {
+                if (i < miss) {
                     bshape[i] = 1;
                 } else {
                     bshape[i] = a.getShape()[i - miss];
@@ -1491,19 +1685,19 @@ public class ArrayUtil {
             }
             a = a.reshape(bshape);
         }
-                
+
         //Check
         boolean pass = true;
-        for (int i = 0; i < shape.length; i++){
-            if (shape[i] != bshape[i] && bshape[i] != 1){
+        for (int i = 0; i < shape.length; i++) {
+            if (shape[i] != bshape[i] && bshape[i] != 1) {
                 pass = false;
                 break;
             }
         }
-        if (!pass){
+        if (!pass) {
             return null;
         }
-        
+
         //Broadcast
         Index aindex = a.getIndex();
         Array r = Array.factory(a.getDataType(), shape);
@@ -1511,11 +1705,12 @@ public class ArrayUtil {
         int[] current;
         for (int i = 0; i < r.getSize(); i++) {
             current = index.getCurrentCounter();
-            for (int j = 0; j < shape.length; j++){
-                if (bshape[j] == 1)
+            for (int j = 0; j < shape.length; j++) {
+                if (bshape[j] == 1) {
                     aindex.setDim(j, 0);
-                else
+                } else {
                     aindex.setDim(j, current[j]);
+                }
             }
             r.setObject(index, a.getObject(aindex));
             index.incr();
@@ -1622,7 +1817,7 @@ public class ArrayUtil {
 
         return layer;
     }
-    
+
     /**
      * Create mesh polygon layer
      *
@@ -2000,34 +2195,38 @@ public class ArrayUtil {
 
         return rdata;
     }
-    
+
     /**
-     * Extend the grid to half cell, so the grid points are the centers of the cells
+     * Extend the grid to half cell, so the grid points are the centers of the
+     * cells
+     *
      * @param x Input x coordinate
      * @param y Input y coordinate
      * @return Result x and y coordinates
      */
-    public static Array[] extendHalfCell(Array x, Array y){
+    public static Array[] extendHalfCell(Array x, Array y) {
         double dX = x.getDouble(1) - x.getDouble(0);
         double dY = y.getDouble(1) - y.getDouble(0);
-        int nx = (int)x.getSize() + 1;
-        int ny = (int)y.getSize() + 1;
+        int nx = (int) x.getSize() + 1;
+        int ny = (int) y.getSize() + 1;
         Array rx = Array.factory(DataType.DOUBLE, new int[]{nx});
         Array ry = Array.factory(DataType.DOUBLE, new int[]{ny});
-        for (int i = 0; i < rx.getSize(); i++){
-            if (i == rx.getSize() - 1)
+        for (int i = 0; i < rx.getSize(); i++) {
+            if (i == rx.getSize() - 1) {
                 rx.setDouble(i, x.getDouble(i - 1) + dX * 0.5);
-            else
-                rx.setDouble(i, x.getDouble(i) - dX * 0.5);            
+            } else {
+                rx.setDouble(i, x.getDouble(i) - dX * 0.5);
+            }
         }
-        
-        for (int i = 0; i < ry.getSize(); i++){
-            if (i == ry.getSize() - 1)
+
+        for (int i = 0; i < ry.getSize(); i++) {
+            if (i == ry.getSize() - 1) {
                 ry.setDouble(i, y.getDouble(i - 1) + dY * 0.5);
-            else
-                ry.setDouble(i, y.getDouble(i) - dY * 0.5);            
+            } else {
+                ry.setDouble(i, y.getDouble(i) - dY * 0.5);
+            }
         }
-        
+
         return new Array[]{rx, ry};
     }
 
@@ -2093,7 +2292,7 @@ public class ArrayUtil {
 
         return r;
     }
-    
+
     /**
      * Interpolate with inside method - The grid cell value is the average value
      * of the inside points or fill value if no inside point.
@@ -2108,25 +2307,25 @@ public class ArrayUtil {
      */
     public static Array interpolation_Inside(Array x_s, Array y_s, Array a, Array X, Array Y, boolean center) {
         int rowNum, colNum, pNum;
-        
-        if (center){
+
+        if (center) {
             Array[] xy = extendHalfCell(X, Y);
             X = xy[0];
             Y = xy[1];
         }
-        
-        colNum = (int)X.getSize();
-        rowNum = (int)Y.getSize();
-        if (center){
+
+        colNum = (int) X.getSize();
+        rowNum = (int) Y.getSize();
+        if (center) {
             colNum -= 1;
             rowNum -= 1;
         }
-        pNum = (int)x_s.getSize();
+        pNum = (int) x_s.getSize();
         Array r = Array.factory(DataType.DOUBLE, new int[]{rowNum, colNum});
         double dX = X.getDouble(1) - X.getDouble(0);
         double dY = Y.getDouble(1) - Y.getDouble(0);
         int[][] pNums = new int[rowNum][colNum];
-        double x, y, v;                
+        double x, y, v;
 
         for (int i = 0; i < rowNum; i++) {
             for (int j = 0; j < colNum; j++) {
@@ -2892,7 +3091,7 @@ public class ArrayUtil {
 
         return r;
     }
-    
+
     /**
      * Resample grid array with neighbor method
      *
@@ -3535,7 +3734,7 @@ public class ArrayUtil {
 
         return iValue;
     }
-    
+
     /**
      * Interpolate data to a station point
      *
@@ -3548,8 +3747,8 @@ public class ArrayUtil {
      */
     public static double toStation_Neighbor(Array data, Array xArray, Array yArray, double x, double y) {
         //ouble iValue = Double.NaN;
-        int nx = (int)xArray.getSize();
-        int ny = (int)yArray.getSize();
+        int nx = (int) xArray.getSize();
+        int ny = (int) yArray.getSize();
         if (x < xArray.getDouble(0) || x > xArray.getDouble(nx - 1)
                 || y < yArray.getDouble(0) || y > yArray.getDouble(ny - 1)) {
             return Double.NaN;
@@ -3677,7 +3876,7 @@ public class ArrayUtil {
 
         return new Object[]{r, rx, ry};
     }
-    
+
     /**
      * Project grid data
      *
@@ -3690,7 +3889,7 @@ public class ArrayUtil {
      * @return Porjected grid data
      * @throws ucar.ma2.InvalidRangeException
      */
-    public static Object[] reproject(Array data, List<Number> xx, List<Number> yy, ProjectionInfo fromProj, 
+    public static Object[] reproject(Array data, List<Number> xx, List<Number> yy, ProjectionInfo fromProj,
             ProjectionInfo toProj, ResampleMethods method) throws InvalidRangeException {
         Extent aExtent;
         int xnum = xx.size();
@@ -3698,8 +3897,8 @@ public class ArrayUtil {
         aExtent = ProjectionManage.getProjectionExtent(fromProj, toProj, xx, yy);
 
         double xDelt = (aExtent.maxX - aExtent.minX) / (xnum - 1);
-        double yDelt = (aExtent.maxY - aExtent.minY) / (ynum - 1);        
-        int i;   
+        double yDelt = (aExtent.maxY - aExtent.minY) / (ynum - 1);
+        int i;
         Array rx = Array.factory(DataType.DOUBLE, new int[]{xnum});
         Array ry = Array.factory(DataType.DOUBLE, new int[]{ynum});
         for (i = 0; i < xnum; i++) {
@@ -3709,14 +3908,14 @@ public class ArrayUtil {
         for (i = 0; i < ynum; i++) {
             ry.setDouble(i, aExtent.minY + i * yDelt);
         }
-        
-        Array[] rr = ArrayUtil.meshgrid(rx, ry);        
-                
+
+        Array[] rr = ArrayUtil.meshgrid(rx, ry);
+
         Array r = ArrayUtil.reproject(data, xx, yy, rr[0], rr[1], fromProj, toProj, method);
 
         return new Object[]{r, rx, ry};
     }
-    
+
     /**
      * Project grid data
      *
@@ -3728,7 +3927,7 @@ public class ArrayUtil {
      * @return Porjected grid data
      * @throws ucar.ma2.InvalidRangeException
      */
-    public static Object[] reproject(Array data, List<Number> xx, List<Number> yy, ProjectionInfo fromProj, 
+    public static Object[] reproject(Array data, List<Number> xx, List<Number> yy, ProjectionInfo fromProj,
             ProjectionInfo toProj) throws InvalidRangeException {
         return reproject(data, xx, yy, fromProj, toProj, ResampleMethods.NearestNeighbor);
     }
