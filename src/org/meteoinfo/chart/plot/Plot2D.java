@@ -51,6 +51,7 @@ import org.meteoinfo.legend.PolygonBreak;
 import org.meteoinfo.legend.PolylineBreak;
 import org.meteoinfo.shape.ArcShape;
 import org.meteoinfo.shape.BarShape;
+import org.meteoinfo.shape.CapPolylineShape;
 import org.meteoinfo.shape.CurveLineShape;
 import org.meteoinfo.shape.Graphic;
 import org.meteoinfo.shape.GraphicCollection;
@@ -309,10 +310,14 @@ public class Plot2D extends AbstractPlot2D {
                         break;
                     case Polyline:
                     case PolylineZ:
-                        if (cb instanceof PointBreak) {
-                            this.drawPolyline(g, (PolylineShape) shape, (PointBreak) cb, area);
+                        if (shape instanceof CapPolylineShape){
+                            this.drawCapPolyline(g, (CapPolylineShape) shape, (PolylineBreak) cb, area);
                         } else {
-                            this.drawPolyline(g, (PolylineShape) shape, (PolylineBreak) cb, area);
+                            if (cb instanceof PointBreak) {
+                                this.drawPolyline(g, (PolylineShape) shape, (PointBreak) cb, area);
+                            } else {
+                                this.drawPolyline(g, (PolylineShape) shape, (PolylineBreak) cb, area);
+                            }
                         }
                         break;
                     case CurveLine:
@@ -452,6 +457,40 @@ public class Plot2D extends AbstractPlot2D {
                 points[i] = new PointF((float) sXY[0], (float) sXY[1]);
             }
             Draw.drawPolyline(points, aPLB, g);
+        }
+    }
+    
+    private void drawCapPolyline(Graphics2D g, CapPolylineShape aPLS, PolylineBreak aPLB, Rectangle2D area) {
+        for (Polyline aline : aPLS.getPolylines()) {
+            double[] sXY;
+            PointF[] points = new PointF[aline.getPointList().size()];
+            for (int i = 0; i < aline.getPointList().size(); i++) {
+                PointD wPoint = aline.getPointList().get(i);
+                sXY = projToScreen(wPoint.X, wPoint.Y, area);
+                points[i] = new PointF((float) sXY[0], (float) sXY[1]);
+            }
+            Draw.drawPolyline(points, aPLB, g);
+            float capLen = aPLS.getCapLen();
+            int idx = points.length - 1;
+            if (aPLS.getCapAngle() == 0){
+                PointF[] ps = new PointF[2];
+                ps[0] = new PointF(points[0].X - capLen / 2, points[0].Y);
+                ps[1] = new PointF(points[0].X + capLen / 2, points[0].Y);
+                Draw.drawPolyline(ps, aPLB, g);
+                ps = new PointF[2];
+                ps[0] = new PointF(points[idx].X - capLen / 2, points[idx].Y);
+                ps[1] = new PointF(points[idx].X + capLen / 2, points[idx].Y);
+                Draw.drawPolyline(ps, aPLB, g);
+            } else {
+                PointF[] ps = new PointF[2];
+                ps[0] = new PointF(points[0].X, points[0].Y - capLen / 2);
+                ps[1] = new PointF(points[0].X, points[0].Y + capLen / 2);
+                Draw.drawPolyline(ps, aPLB, g);
+                ps = new PointF[2];
+                ps[0] = new PointF(points[idx].X, points[idx].Y - capLen / 2);
+                ps[1] = new PointF(points[idx].X, points[idx].Y + capLen / 2);
+                Draw.drawPolyline(ps, aPLB, g);
+            }
         }
     }
     

@@ -290,8 +290,10 @@ public class PolylineBreak extends ColorBreak {
             aCB.setStyle(_style);
             aCB.setDrawPolyline(_drawPolyline);
             aCB.setDrawSymbol( _drawSymbol);
+            aCB.setFillSymbol(fillSymbol);
             aCB.setSymbolSize(_symbolSize);
             aCB.setSymbolColor(_symbolColor);
+            aCB.setSymbolFillColor(symbolFillColor);
             aCB.setSymbolStyle(_symbolStyle);
             aCB.setSymbolInterval(_symbolInterval);
 
