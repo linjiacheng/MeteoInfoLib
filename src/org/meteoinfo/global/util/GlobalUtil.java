@@ -655,8 +655,9 @@ public class GlobalUtil {
             String[] strs = line.split(separator);
             List<String> r = new ArrayList<>();
             for (String s : strs){
-                if (!s.isEmpty())
-                    r.add(s);
+                if (!s.isEmpty()) {
+                    r.add(s.trim());
+                }
             }
             strs = r.toArray(new String[1]);
             return strs;
