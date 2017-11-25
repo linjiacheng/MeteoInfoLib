@@ -674,11 +674,13 @@ public class Plot3D extends Plot {
                 points.add(p);
                 break;
         }
-        for (Point pp : points) {
-            polygon.addPoint(pp.x, pp.y);
-        }
         java.awt.Shape oldRegion = g.getClip();
-        g.setClip(polygon);
+        if (points.size() > 3){
+            for (Point pp : points) {
+                polygon.addPoint(pp.x, pp.y);
+            }            
+            g.setClip(polygon);
+        }
 
         //Draw graphics
         for (int i = 0; i < graphic.getNumGraphics(); i++) {
@@ -692,7 +694,9 @@ public class Plot3D extends Plot {
         }
 
         //Set clip to orgin
-        g.setClip(oldRegion);
+        if (points.size() > 3){
+            g.setClip(oldRegion);
+        }
     }
 
     private void drawGrahpics(Graphics2D g, Graphic graphic) {
@@ -1149,6 +1153,31 @@ public class Plot3D extends Plot {
                 p2 = this.projector.project(maxx, zValue, maxz);
                 p3 = this.projector.project(maxx, zValue, minz);
                 p4 = this.projector.project(minx, zValue, minz);
+                xscale = (double) Math.abs(p2.x - p1.x) / image.getWidth();
+                yscale = (double) Math.abs(p1.y - p4.y) / image.getHeight();
+                xtran = p1.x;
+                ytran = p1.y;
+                if (p2.x > p1.x) {
+                    angle = MIMath.cartesianToPolar(p2.x - p1.x, p1.y - p2.y)[0];
+                } else {
+                    angle = MIMath.cartesianToPolar(p1.x - p2.x, p2.y - p1.y)[0];
+                    xscale = -xscale;
+                }
+                angle = -angle;
+                transform.setTransform(Math.cos(angle), Math.sin(angle), 0, 1, xtran, ytran);
+                transform.scale(xscale / Math.cos(angle), yscale);
+                break;
+            case "xy":
+                miny = ((float) ext.minY - ymin) * yfactor - 10;
+                maxy = ((float) ext.maxY - ymin) * yfactor - 10;
+                minx = ((float) ext.minX - xmin) * xfactor - 10;
+                maxx = ((float) ext.maxX - xmin) * xfactor - 10;
+                minz = ((float) ext.minZ - zmin) * zfactor - 10;
+                maxz = ((float) ext.maxZ - zmin) * zfactor - 10;
+                p1 = this.projector.project(minx, miny, maxz);
+                p2 = this.projector.project(maxx, maxy, maxz);
+                p3 = this.projector.project(maxx, maxy, minz);
+                p4 = this.projector.project(minx, miny, minz);
                 xscale = (double) Math.abs(p2.x - p1.x) / image.getWidth();
                 yscale = (double) Math.abs(p1.y - p4.y) / image.getHeight();
                 xtran = p1.x;

@@ -1729,10 +1729,11 @@ public class GraphicFactory {
      * @param ls Legend scheme
      * @param offset Offset of z axis
      * @param zdir Z direction - x, y or z
+     * @param sePoint Start and end points [xstart, ystart, xend, yend]
      * @return Graphics
      */
     public static GraphicCollection createImage(GridArray gdata, LegendScheme ls, double offset,
-            String zdir) {
+            String zdir, List<Number> sePoint) {
         Graphic gg = createImage(gdata, ls);
         Shape shape = gg.getShape();
         Extent extent = shape.getExtent();
@@ -1743,6 +1744,10 @@ public class GraphicFactory {
                 break;
             case "y":
                 ex3 = new Extent3D(extent.minX, extent.maxX, offset, offset, extent.minY, extent.maxY);
+                break;
+            case "xy":
+                ex3 = new Extent3D(sePoint.get(0).doubleValue(), sePoint.get(2).doubleValue(), 
+                     sePoint.get(1).doubleValue(), sePoint.get(3).doubleValue(), extent.minY, extent.maxY);
                 break;
             case "z":
                 ex3 = new Extent3D(extent.minX, extent.maxX, extent.minY, extent.maxY, offset, offset);
@@ -1899,6 +1904,108 @@ public class GraphicFactory {
                         aPoint.Y = offset;
                         aPoint.X = aLine.PointList.get(j).X;
                         aPoint.Z = aLine.PointList.get(j).Y;
+                        pList.add(aPoint);
+                    }
+                    break;
+                case "z":
+                    for (int j = 0; j < aLine.PointList.size(); j++) {
+                        aPoint = new PointZ();
+                        aPoint.X = aLine.PointList.get(j).X;
+                        aPoint.Y = aLine.PointList.get(j).Y;
+                        aPoint.Z = offset;
+                        pList.add(aPoint);
+                    }
+                    break;
+            }
+            aPolyline.setPoints(pList);
+            aPolyline.setValue(v);
+            aPolyline.setExtent(MIMath.getPointsExtent(pList));
+            cbb = ls.getLegenBreak(v);
+            graphics.add(new Graphic(aPolyline, cbb));
+        }
+        graphics.setSingleLegend(false);
+        graphics.setLegendScheme(ls);
+
+        return graphics;
+    }
+    
+    /**
+     * Create contour lines
+     *
+     * @param gridData Grid data
+     * @param offset Offset in z direction
+     * @param zdir Z direction - x, y or z
+     * @param ls Legend scheme
+     * @param isSmooth Is smooth or not
+     * @param sePoint Start and end points [xstart, ystart, xend, yend]
+     * @return Contour lines
+     */
+    public static GraphicCollection createContourLines(GridData gridData, double offset,
+            String zdir, LegendScheme ls, boolean isSmooth, List<Number> sePoint) {
+        ls = ls.convertTo(ShapeTypes.Polyline);
+        Object[] ccs = LegendManage.getContoursAndColors(ls);
+        double[] cValues = (double[]) ccs[0];
+
+        int[][] S1 = new int[gridData.data.length][gridData.data[0].length];
+        Object[] cbs = ContourDraw.tracingContourLines(gridData.data,
+                cValues, gridData.xArray, gridData.yArray, gridData.missingValue, S1);
+        List<wContour.Global.PolyLine> ContourLines = (List<wContour.Global.PolyLine>) cbs[0];
+
+        if (ContourLines.isEmpty()) {
+            return null;
+        }
+
+        if (isSmooth) {
+            ContourLines = wContour.Contour.smoothLines(ContourLines);
+        }
+
+        wContour.Global.PolyLine aLine;
+        double v;
+        ColorBreak cbb;
+        GraphicCollection3D graphics = new GraphicCollection3D();
+        graphics.setFixZ(true);
+        graphics.setZValue(offset);
+        zdir = zdir.toLowerCase();
+        graphics.setZDir(zdir);
+        double x, y, xs, xe, ys, ye;
+        xs = sePoint.get(0).doubleValue();
+        ys = sePoint.get(1).doubleValue();
+        xe = sePoint.get(2).doubleValue();
+        ye = sePoint.get(3).doubleValue();
+        for (int i = 0; i < ContourLines.size(); i++) {
+            aLine = ContourLines.get(i);
+            v = aLine.Value;
+
+            PolylineZShape aPolyline = new PolylineZShape();
+            PointZ aPoint;
+            List<PointZ> pList = new ArrayList<>();
+            switch (zdir) {
+                case "x":
+                    for (int j = 0; j < aLine.PointList.size(); j++) {
+                        aPoint = new PointZ();
+                        aPoint.X = offset;
+                        aPoint.Y = aLine.PointList.get(j).X;
+                        aPoint.Z = aLine.PointList.get(j).Y;
+                        pList.add(aPoint);
+                    }
+                    break;
+                case "y":
+                    for (int j = 0; j < aLine.PointList.size(); j++) {
+                        aPoint = new PointZ();
+                        aPoint.Y = offset;
+                        aPoint.X = aLine.PointList.get(j).X;
+                        aPoint.Z = aLine.PointList.get(j).Y;
+                        pList.add(aPoint);
+                    }
+                    break;
+                case "xy":
+                    for (int j = 0; j < aLine.PointList.size(); j++) {
+                        x = aLine.PointList.get(j).X;                        
+                        y = aLine.PointList.get(j).Y;
+                        aPoint = new PointZ();
+                        aPoint.X = x;
+                        aPoint.Y = ys + (ye - ys) * (x - xs) / (xe - xs);
+                        aPoint.Z = y;
                         pList.add(aPoint);
                     }
                     break;
@@ -2203,6 +2310,177 @@ public class GraphicFactory {
 
         return graphics;
     }
+    
+    /**
+     * Create 3D contour polygons
+     *
+     * @param gridData Grid data
+     * @param offset Offset of z axis
+     * @param zdir Z direction - x, y or z
+     * @param ls Legend scheme
+     * @param isSmooth Is smooth or not
+     * @param sePoint Start and end points [xstart, ystart, xend, yend]
+     * @return Contour polygons
+     */
+    public static GraphicCollection createContourPolygons(GridData gridData, double offset,
+            String zdir, LegendScheme ls, boolean isSmooth, List<Number> sePoint) {
+        ls = ls.convertTo(ShapeTypes.Polygon);
+        Object[] ccs = LegendManage.getContoursAndColors(ls);
+        double[] cValues = (double[]) ccs[0];
+
+        double minData;
+        double maxData;
+        double[] maxmin = new double[2];
+        gridData.getMaxMinValue(maxmin);
+        maxData = maxmin[0];
+        minData = maxmin[1];
+
+        int[][] S1 = new int[gridData.data.length][gridData.data[0].length];
+        Object[] cbs = ContourDraw.tracingContourLines(gridData.data,
+                cValues, gridData.xArray, gridData.yArray, gridData.missingValue, S1);
+        List<wContour.Global.PolyLine> contourLines = (List<wContour.Global.PolyLine>) cbs[0];
+        List<wContour.Global.Border> borders = (List<wContour.Global.Border>) cbs[1];
+
+        if (isSmooth) {
+            contourLines = wContour.Contour.smoothLines(contourLines);
+        }
+        List<wContour.Global.Polygon> contourPolygons = ContourDraw.tracingPolygons(gridData.data, contourLines, borders, cValues);
+
+        double v;
+        ColorBreak cbb;
+        GraphicCollection3D graphics = new GraphicCollection3D();
+        graphics.setFixZ(true);
+        graphics.setZValue(offset);
+        zdir = zdir.toLowerCase();
+        graphics.setZDir(zdir);
+        double x, y, xs, xe, ys, ye;
+        xs = sePoint.get(0).doubleValue();
+        ys = sePoint.get(1).doubleValue();
+        xe = sePoint.get(2).doubleValue();
+        ye = sePoint.get(3).doubleValue();
+        for (int i = 0; i < contourPolygons.size(); i++) {
+            wContour.Global.Polygon poly = contourPolygons.get(i);
+            v = poly.LowValue;
+            PointZ aPoint;
+            List<PointZ> pList = new ArrayList<>();
+            switch (zdir) {
+                case "x":
+                    for (wContour.Global.PointD pointList : poly.OutLine.PointList) {
+                        aPoint = new PointZ();
+                        aPoint.Y = pointList.X;
+                        aPoint.Z = pointList.Y;
+                        aPoint.X = offset;
+                        pList.add(aPoint);
+                    }
+                    break;
+                case "y":
+                    for (wContour.Global.PointD pointList : poly.OutLine.PointList) {
+                        aPoint = new PointZ();
+                        aPoint.X = pointList.X;
+                        aPoint.Z = pointList.Y;
+                        aPoint.Y = offset;
+                        pList.add(aPoint);
+                    }
+                    break;
+                case "xy":
+                    for (wContour.Global.PointD pointList : poly.OutLine.PointList) {
+                        x = pointList.X;
+                        y = pointList.Y;
+                        aPoint = new PointZ();
+                        aPoint.X = x;
+                        aPoint.Y = ys + (ye - ys) * (x - xs) / (xe - xs);
+                        aPoint.Z = y;                        
+                        pList.add(aPoint);
+                    }
+                    break;
+                case "z":
+                    for (wContour.Global.PointD pointList : poly.OutLine.PointList) {
+                        aPoint = new PointZ();
+                        aPoint.X = pointList.X;
+                        aPoint.Y = pointList.Y;
+                        aPoint.Z = offset;
+                        pList.add(aPoint);
+                    }
+                    break;
+            }
+
+            if (!GeoComputation.isClockwise(pList)) {
+                Collections.reverse(pList);
+            }
+            PolygonZShape aPolygonShape = new PolygonZShape();
+            aPolygonShape.setPoints(pList);
+            aPolygonShape.setExtent(MIMath.getPointsExtent(pList));
+            aPolygonShape.lowValue = v;
+            if (poly.HasHoles()) {
+                switch (zdir) {
+                    case "x":
+                        for (PolyLine holeLine : poly.HoleLines) {
+                            pList = new ArrayList<>();
+                            for (wContour.Global.PointD pointList : holeLine.PointList) {
+                                aPoint = new PointZ();
+                                aPoint.Y = pointList.X;
+                                aPoint.Z = pointList.Y;
+                                aPoint.X = offset;
+                                pList.add(aPoint);
+                            }
+                            aPolygonShape.addHole(pList, 0);
+                        }
+                        break;
+                    case "y":
+                        for (PolyLine holeLine : poly.HoleLines) {
+                            pList = new ArrayList<>();
+                            for (wContour.Global.PointD pointList : holeLine.PointList) {
+                                aPoint = new PointZ();
+                                aPoint.X = pointList.X;
+                                aPoint.Z = pointList.Y;
+                                aPoint.Y = offset;
+                                pList.add(aPoint);
+                            }
+                            aPolygonShape.addHole(pList, 0);
+                        }
+                        break;
+                    case "z":
+                        for (PolyLine holeLine : poly.HoleLines) {
+                            pList = new ArrayList<>();
+                            for (wContour.Global.PointD pointList : holeLine.PointList) {
+                                aPoint = new PointZ();
+                                aPoint.X = pointList.X;
+                                aPoint.Y = pointList.Y;
+                                aPoint.Z = offset;
+                                pList.add(aPoint);
+                            }
+                            aPolygonShape.addHole(pList, 0);
+                        }
+                        break;
+                }
+            }
+            int valueIdx = Arrays.binarySearch(cValues, v);
+            if (valueIdx < 0)
+                valueIdx = -valueIdx;
+            //int valueIdx = findIndex(cValues, v);           
+            if (valueIdx == cValues.length - 1) {
+                aPolygonShape.highValue = maxData;
+            } else {
+                aPolygonShape.highValue = cValues[valueIdx + 1];
+            }
+            if (!poly.IsHighCenter && poly.HighValue == poly.LowValue) {
+                aPolygonShape.highValue = v;
+                if (valueIdx == 0) {
+                    aPolygonShape.lowValue = minData;
+                } else {
+                    aPolygonShape.lowValue = cValues[valueIdx - 1];
+                }
+            }
+
+            v = aPolygonShape.lowValue;
+            cbb = ls.getLegenBreak(v);
+            graphics.add(new Graphic(aPolygonShape, cbb));
+        }
+        graphics.setSingleLegend(false);
+        graphics.setLegendScheme(ls);
+
+        return graphics;
+    }
 
     /**
      * Create fill between polygons
@@ -2360,6 +2638,139 @@ public class GraphicFactory {
                             for (int j = 0; j < nn; j++) {
                                 ii = index.get(nn - j - 1);
                                 points.add(new PointZ(xdata.getDouble(ii), offset, y2data.getDouble(ii)));
+                            }
+                            break;
+                        case "z":
+                            for (int j = 0; j < nn; j++) {
+                                ii = index.get(j);
+                                points.add(new PointZ(xdata.getDouble(ii), y1data.getDouble(ii), offset));
+                            }
+                            for (int j = 0; j < nn; j++) {
+                                ii = index.get(nn - j - 1);
+                                points.add(new PointZ(xdata.getDouble(ii), y2data.getDouble(ii), offset));
+                            }
+                            break;
+                    }
+                    pgs.setPoints(points);
+                    Graphic graphic = new Graphic(pgs, pb);
+                    gc.add(graphic);
+                }
+            }
+        }
+
+        return gc;
+    }
+    
+    /**
+     * Create fill between polygons
+     *
+     * @param xdata X data array
+     * @param ydata Y data array
+     * @param y1data Y1 data array
+     * @param y2data Y2 data array
+     * @param where Where data array
+     * @param pb Polygon break
+     * @param offset Offset
+     * @param zdir Zdir
+     * @return GraphicCollection
+     */
+    public static GraphicCollection createFillBetweenPolygons(Array xdata, Array ydata, Array y1data,
+            Array y2data, Array where, PolygonBreak pb, double offset, String zdir) {
+        GraphicCollection3D gc = new GraphicCollection3D();
+        gc.setFixZ(true);
+        gc.setZValue(offset);
+        gc.setZDir(zdir);
+        int len = (int) xdata.getSize();
+        if (where == null) {
+            PolygonZShape pgs = new PolygonZShape();
+            List<PointZ> points = new ArrayList<>();
+            switch (zdir) {
+                case "x":
+                    for (int i = 0; i < len; i++) {
+                        points.add(new PointZ(offset, xdata.getDouble(i), y1data.getDouble(i)));
+                    }
+                    for (int i = len - 1; i >= 0; i--) {
+                        points.add(new PointZ(offset, xdata.getDouble(i), y2data.getDouble(i)));
+                    }
+                    break;
+                case "y":
+                    for (int i = 0; i < len; i++) {
+                        points.add(new PointZ(xdata.getDouble(i), offset, y1data.getDouble(i)));
+                    }
+                    for (int i = len - 1; i >= 0; i--) {
+                        points.add(new PointZ(xdata.getDouble(i), offset, y2data.getDouble(i)));
+                    }
+                    break;
+                case "xy":
+                    for (int i = 0; i < len; i++) {
+                        points.add(new PointZ(xdata.getDouble(i), ydata.getDouble(i), y1data.getDouble(i)));
+                    }
+                    for (int i = len - 1; i >= 0; i--) {
+                        points.add(new PointZ(xdata.getDouble(i), ydata.getDouble(i), y2data.getDouble(i)));
+                    }
+                    break;
+                case "z":
+                    for (int i = 0; i < len; i++) {
+                        points.add(new PointZ(xdata.getDouble(i), y1data.getDouble(i), offset));
+                    }
+                    for (int i = len - 1; i >= 0; i--) {
+                        points.add(new PointZ(xdata.getDouble(i), y2data.getDouble(i), offset));
+                    }
+                    break;
+            }
+            pgs.setPoints(points);
+            Graphic graphic = new Graphic(pgs, pb);
+            gc.add(graphic);
+        } else {
+            boolean ob = false;
+            List<List<Integer>> idxs = new ArrayList<>();
+            List<Integer> idx = new ArrayList<>();
+            for (int j = 0; j < len; j++) {
+                if (where.getInt(j) == 1) {
+                    if (!ob) {
+                        idx = new ArrayList<>();
+                    }
+                    idx.add(j);
+                } else if (ob) {
+                    idxs.add(idx);
+                }
+                ob = where.getInt(j) == 1;
+            }
+            for (List<Integer> index : idxs) {
+                int nn = index.size();
+                if (nn >= 2) {
+                    PolygonZShape pgs = new PolygonZShape();
+                    List<PointZ> points = new ArrayList<>();
+                    int ii;
+                    switch (zdir) {
+                        case "x":
+                            for (int j = 0; j < nn; j++) {
+                                ii = index.get(j);
+                                points.add(new PointZ(offset, xdata.getDouble(ii), y1data.getDouble(ii)));
+                            }
+                            for (int j = 0; j < nn; j++) {
+                                ii = index.get(nn - j - 1);
+                                points.add(new PointZ(offset, xdata.getDouble(ii), y2data.getDouble(ii)));
+                            }
+                            break;
+                        case "y":
+                            for (int j = 0; j < nn; j++) {
+                                ii = index.get(j);
+                                points.add(new PointZ(xdata.getDouble(ii), offset, y1data.getDouble(ii)));
+                            }
+                            for (int j = 0; j < nn; j++) {
+                                ii = index.get(nn - j - 1);
+                                points.add(new PointZ(xdata.getDouble(ii), offset, y2data.getDouble(ii)));
+                            }
+                            break;
+                        case "xy":
+                            for (int j = 0; j < nn; j++) {
+                                ii = index.get(j);
+                                points.add(new PointZ(xdata.getDouble(ii), ydata.getDouble(ii), y1data.getDouble(ii)));
+                            }
+                            for (int j = 0; j < nn; j++) {
+                                ii = index.get(nn - j - 1);
+                                points.add(new PointZ(xdata.getDouble(ii), ydata.getDouble(ii), y2data.getDouble(ii)));
                             }
                             break;
                         case "z":
