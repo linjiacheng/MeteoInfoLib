@@ -1758,6 +1758,7 @@ public class GraphicFactory {
         graphics.setFixZ(true);
         graphics.setZDir(zdir);
         graphics.setZValue(offset);
+        graphics.setSEPoint(sePoint);
         graphics.add(gg);
         graphics.setLegendScheme(ls);
         graphics.setSingleLegend(false);
@@ -1965,6 +1966,7 @@ public class GraphicFactory {
         GraphicCollection3D graphics = new GraphicCollection3D();
         graphics.setFixZ(true);
         graphics.setZValue(offset);
+        graphics.setSEPoint(sePoint);
         zdir = zdir.toLowerCase();
         graphics.setZDir(zdir);
         double x, y, xs, xe, ys, ye;
@@ -2351,6 +2353,7 @@ public class GraphicFactory {
         GraphicCollection3D graphics = new GraphicCollection3D();
         graphics.setFixZ(true);
         graphics.setZValue(offset);
+        graphics.setSEPoint(sePoint);
         zdir = zdir.toLowerCase();
         graphics.setZDir(zdir);
         double x, y, xs, xe, ys, ye;

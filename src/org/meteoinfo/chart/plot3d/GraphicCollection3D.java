@@ -5,6 +5,7 @@
  */
 package org.meteoinfo.chart.plot3d;
 
+import java.util.List;
 import org.meteoinfo.shape.GraphicCollection;
 
 /**
@@ -16,6 +17,7 @@ public class GraphicCollection3D extends GraphicCollection{
     private boolean fixZ;
     private double zValue;
     private String zdir;
+    private List<Number> sePoint;
     
     /**
      * Constructor
@@ -24,6 +26,7 @@ public class GraphicCollection3D extends GraphicCollection{
         super();
         fixZ = false;
         zdir = "z";
+        sePoint = null;
     }
     
     /**
@@ -81,5 +84,21 @@ public class GraphicCollection3D extends GraphicCollection{
      */
     public void setZDir(String value){
         this.zdir = value;
+    }
+    
+    /**
+     * Get start & end points [xstart, ystart, xend, yend]
+     * @return Start & end points
+     */
+    public List<Number> getSEPoint(){
+        return this.sePoint;
+    }
+    
+    /**
+     * Set start & end points
+     * @param value Start & end points
+     */
+    public void setSEPoint(List<Number> value){
+        this.sePoint = value;
     }
 }

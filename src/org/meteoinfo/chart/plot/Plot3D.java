@@ -662,6 +662,27 @@ public class Plot3D extends Plot {
                 p = projector.project(10, zValue, -10);
                 points.add(p);
                 break;
+            case "xy":
+                List<Number> sePoint = ((GraphicCollection3D) graphic).getSEPoint();
+                if (sePoint != null && sePoint.size() > 3){
+                    float sx = sePoint.get(0).floatValue();
+                    float sy = sePoint.get(1).floatValue();
+                    float ex = sePoint.get(2).floatValue();
+                    float ey = sePoint.get(3).floatValue();
+                    sx = (sx - this.xmin) * xfactor - 10;
+                    ex = (ex - this.xmin) * xfactor - 10;
+                    sy = (sy - this.ymin) * yfactor - 10;
+                    ey = (ey - this.ymin) * yfactor - 10;
+                    p = projector.project(sx, sy, -10);
+                    points.add(p);
+                    p = projector.project(sx, sy, 10);
+                    points.add(p);
+                    p = projector.project(ex, ey, 10);
+                    points.add(p);
+                    p = projector.project(ex, ey, -10);
+                    points.add(p);
+                }
+                break;
             case "z":
                 zValue = (zValue - this.zmin) * zfactor - 10;
                 p = projector.project(-10, -10, zValue);
