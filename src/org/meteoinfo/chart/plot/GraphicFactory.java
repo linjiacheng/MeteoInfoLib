@@ -2974,6 +2974,10 @@ public class GraphicFactory {
         String label, pct = null;
         for (int i = 0; i < n; i++) {
             v = xdata.getDouble(i);
+            if (Double.isNaN(v)){
+                continue;
+            }
+            
             if (sum > 1) {
                 v = v / sum;
             }
