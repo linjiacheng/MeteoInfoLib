@@ -21,6 +21,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
+import org.meteoinfo.data.mapdata.webmap.BaiduMapInfo;
+import org.meteoinfo.data.mapdata.webmap.BaiduSatelliteMapInfo;
 import org.meteoinfo.data.mapdata.webmap.BingHybridMapInfo;
 import org.meteoinfo.data.mapdata.webmap.BingMapInfo;
 import org.meteoinfo.data.mapdata.webmap.BingSatelliteMapInfo;
@@ -454,9 +456,12 @@ public class WebMapLayer extends MapLayer {
             case GoogleHybridTerrainMap:
                 info = new GoogleHybridTerrainMapInfo();
                 break;
-//            case BaiduMap:
-//                info = new BaiduMapInfo();
-//                break;
+            case BaiduMap:
+                info = new BaiduMapInfo();
+                break;
+            case BaiduSatelliteMap:
+                info = new BaiduSatelliteMapInfo();
+                break;
         }
 
         if (info != null) {

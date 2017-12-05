@@ -19,7 +19,7 @@ public class GoogleMapInfo extends TileFactoryInfo {
     /**
      * Constructor
      */
-    public GoogleMapInfo() {
+    public GoogleMapInfo() {        
 //        super("GoogleMap", 1, 17, 19,
 //                256, true, true, // tile size is 256 and x/y orientation is normal
 //                "http://ecn.t%1$d.tiles.virtualearth.net/tiles/r%2$s?g=%3$s&mkt=%4$s&lbl=l1&stl=h&shading=hill&n=z%5$s",
@@ -27,7 +27,9 @@ public class GoogleMapInfo extends TileFactoryInfo {
         super("GoogleMap", 1, 17, 19,
                 256, true, true, // tile size is 256 and x/y orientation is normal
                 "http://mt2.google.cn/vt/lyrs=m&hl=%1$s&gl=cn&x=%2$d&y=%3$d&z=%4$d&s=Galil",
-                "x", "y", "z");
+                "x", "y", "z");        
+        String url = "http://mt1.google.com/vt/lyrs=m@129&hl=%1$s&x=%2$d&y=%3$d&z=%4$d&s=Galileo";
+        this.baseURL = url;
     }
 //    // </editor-fold>
 //    // <editor-fold desc="Get Set Methods">
@@ -38,6 +40,7 @@ public class GoogleMapInfo extends TileFactoryInfo {
     public String getTileUrl(int x, int y, int zoom) {
         zoom = this.getTotalMapZoom() - zoom;
         String url = String.format(this.baseURL, this.getLanguage(), x, y, zoom);
+        //String url = String.format(this.baseURL, x, y, zoom, this.getLanguage());
         return url;
     }
 

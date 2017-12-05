@@ -956,7 +956,7 @@ public class LayersLegend extends JPanel {
         ProjectionInfo proj = this._currentMapFrame.getMapView().getProjection().getProjInfo();
         if (proj.getProjectionName() != ProjectionNames.Mercator) {
             if (JOptionPane.showConfirmDialog(null, "Not mercator projection! If project?", "Conform", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                ProjectionInfo toProj = new ProjectionInfo("+proj=merc");
+                ProjectionInfo toProj = new ProjectionInfo("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0");
                 this._currentMapFrame.getMapView().projectLayers(toProj);
             }
         }
