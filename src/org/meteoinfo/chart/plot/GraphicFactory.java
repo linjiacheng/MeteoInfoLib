@@ -1362,6 +1362,19 @@ public class GraphicFactory {
 
         return graphics;
     }
+    
+    /**
+     * Create an image graphic
+     * @param image The image
+     * @return Image graphic
+     */
+    public static Graphic createImage(BufferedImage image){
+        ImageShape ishape = new ImageShape();
+        ishape.setPoint(new PointD(0, 0));
+        ishape.setImage(image);
+        ishape.setExtent(new Extent(0, image.getWidth(), 0, image.getHeight()));
+        return new Graphic(ishape, new ColorBreak());
+    }
 
     /**
      * Create image

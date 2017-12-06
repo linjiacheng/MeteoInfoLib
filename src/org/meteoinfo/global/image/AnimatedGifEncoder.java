@@ -171,8 +171,9 @@ public class AnimatedGifEncoder {
     }
 
     /**
-     * Flushes any pending data and closes output file. If writing to an
+     * Flushes any pending data and closes output file.If writing to an
      * OutputStream, the stream is not closed.
+     * @return 
      */
     public boolean finish() {
         if (!started) {
@@ -282,7 +283,7 @@ public class AnimatedGifEncoder {
      * @return false if open or initial write failed.
      */
     public boolean start(String file) {
-        boolean ok = true;
+        boolean ok;
         try {
             out = new BufferedOutputStream(new FileOutputStream(file));
             ok = start(out);
@@ -329,6 +330,8 @@ public class AnimatedGifEncoder {
     /**
      * Returns index of palette color closest to c
      *
+     * @param c Color
+     * @return Index of palette color closest to c
      */
     protected int findClosest(Color c) {
         if (colorTab == null) {
@@ -374,6 +377,7 @@ public class AnimatedGifEncoder {
 
     /**
      * Writes Graphic Control Extension
+     * @throws java.io.IOException
      */
     protected void writeGraphicCtrlExt() throws IOException {
         out.write(0x21); // extension introducer
@@ -405,6 +409,7 @@ public class AnimatedGifEncoder {
 
     /**
      * Writes Image Descriptor
+     * @throws java.io.IOException
      */
     protected void writeImageDesc() throws IOException {
         out.write(0x2c); // image separator
@@ -428,6 +433,7 @@ public class AnimatedGifEncoder {
 
     /**
      * Writes Logical Screen Descriptor
+     * @throws java.io.IOException
      */
     protected void writeLSD() throws IOException {
         // logical screen size
@@ -445,6 +451,7 @@ public class AnimatedGifEncoder {
 
     /**
      * Writes Netscape application extension to define repeat count.
+     * @throws java.io.IOException
      */
     protected void writeNetscapeExt() throws IOException {
         out.write(0x21); // extension introducer
@@ -459,6 +466,7 @@ public class AnimatedGifEncoder {
 
     /**
      * Writes color table
+     * @throws java.io.IOException
      */
     protected void writePalette() throws IOException {
         out.write(colorTab, 0, colorTab.length);
@@ -470,6 +478,7 @@ public class AnimatedGifEncoder {
 
     /**
      * Encodes and writes pixel data
+     * @throws java.io.IOException
      */
     protected void writePixels() throws IOException {
         LZWEncoder encoder = new LZWEncoder(width, height, indexedPixels, colorDepth);
@@ -478,6 +487,8 @@ public class AnimatedGifEncoder {
 
     /**
      * Write 16-bit value to output stream, LSB first
+     * @param value Value
+     * @throws java.io.IOException
      */
     protected void writeShort(int value) throws IOException {
         out.write(value & 0xff);

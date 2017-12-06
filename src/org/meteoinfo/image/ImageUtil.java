@@ -66,6 +66,24 @@ public class ImageUtil {
     }
     
     /**
+     * Load image from image file
+     * @param fileName Image file name
+     * @return Image
+     * @throws java.io.IOException
+     * @throws org.apache.sanselan.ImageReadException
+     */
+    public static BufferedImage imageLoad(String fileName) throws IOException, ImageReadException{
+        String extension = fileName.substring(fileName.lastIndexOf('.') + 1);
+        BufferedImage image;
+        if (extension.equalsIgnoreCase("jpg") || extension.equalsIgnoreCase("jpeg")){
+            image = ImageIO.read(new File(fileName));
+        } else {
+            image = Sanselan.getBufferedImage(new File(fileName));
+        }
+        return image;
+    }
+    
+    /**
      * Create image from RGB(A) data array
      * @param data RGB(A) data array
      * @return Image
@@ -160,6 +178,23 @@ public class ImageUtil {
     public static void imageSave(Array data, String fileName) throws IOException, ImageWriteException{
         String extension = fileName.substring(fileName.lastIndexOf('.') + 1);
         BufferedImage image = createImage(data);  
+        ImageFormat format = getImageFormat(extension);
+        if (format == ImageFormat.IMAGE_FORMAT_JPEG){
+            ImageIO.write(image, extension, new File(fileName));
+        } else {
+            Sanselan.writeImage(image, new File(fileName), format, null);       
+        }
+    }
+    
+    /**
+     * Save image into a file
+     * @param image Image
+     * @param fileName Output image file name
+     * @throws IOException 
+     * @throws org.apache.sanselan.ImageWriteException 
+     */
+    public static void imageSave(BufferedImage image, String fileName) throws IOException, ImageWriteException{
+        String extension = fileName.substring(fileName.lastIndexOf('.') + 1); 
         ImageFormat format = getImageFormat(extension);
         if (format == ImageFormat.IMAGE_FORMAT_JPEG){
             ImageIO.write(image, extension, new File(fileName));
