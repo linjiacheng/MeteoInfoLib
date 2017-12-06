@@ -244,19 +244,19 @@ public class LinalgUtil {
         double[][] aa = (double[][]) ArrayUtil.copyToNDJavaArray(a);
         SimpleMatrix M = new SimpleMatrix(aa);
         SimpleSVD svd = M.svd(false);
-        Array Ua = Array.factory(DataType.DOUBLE, new int[]{m, k});
+        Array Ua = Array.factory(DataType.DOUBLE, new int[]{m, m});
         Array Va = Array.factory(DataType.DOUBLE, new int[]{n, n});
         Array Sa = Array.factory(DataType.DOUBLE, new int[]{k});
         SimpleBase U = svd.getU();
         SimpleBase V = svd.getV();
         for (int i = 0; i < m; i++) {
-            for (int j = 0; j < k; j++) {
-                Ua.setDouble(i * k + j, U.get(i, j));
+            for (int j = 0; j < m; j++) {
+                Ua.setDouble(i * m + j, U.get(i, j));
             }
         }
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                Va.setDouble(i * n + j, V.get(i, j));
+                Va.setDouble(j * n + i, V.get(i, j));
             }
         }
         for (int i = 0; i < k; i++) {
