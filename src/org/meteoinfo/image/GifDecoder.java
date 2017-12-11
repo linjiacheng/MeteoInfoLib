@@ -3,12 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.meteoinfo.global.image;
+package org.meteoinfo.image;
 
 /**
  *
  * @author
  */
+import org.meteoinfo.global.image.*;
 import java.net.*;
 import java.io.*;
 import java.util.*;
