@@ -623,6 +623,19 @@ public class LegendManage {
 
         return legendScheme;
     }
+    
+    /**
+     * Create unique value legend scheme
+     *
+     * @param values Values
+     * @param colors Colors
+     * @param aST The shape type
+     * @return The legend scheme
+     */
+    public static LegendScheme createUniqValueLegendScheme(List<Number> values, List<Color> colors, ShapeTypes aST) {
+        Color[] cols = colors.toArray(new Color[0]);
+        return createUniqValueLegendScheme(values, cols, aST);
+    }
 
     /**
      * Create unique value legend scheme

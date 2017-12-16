@@ -9,7 +9,6 @@ package org.meteoinfo.image;
  *
  * @author
  */
-import org.meteoinfo.global.image.*;
 import java.net.*;
 import java.io.*;
 import java.util.*;

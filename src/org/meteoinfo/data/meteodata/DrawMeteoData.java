@@ -1467,6 +1467,53 @@ public class DrawMeteoData {
 
         return aLayer;
     }
+    
+    /**
+     * Create station point layer
+     *
+     * @param stationData Station data
+     * @param aLS Legend scheme
+     * @param lName Layer name
+     * @param fieldName Field name
+     * @return Vector layer
+     */
+    public static VectorLayer createSTPointLayer_Unique(StationData stationData, LegendScheme aLS, String lName, String fieldName) {
+        int i;
+        PointD aPoint;
+
+        VectorLayer aLayer = new VectorLayer(ShapeTypes.Point);
+        aLayer.editAddField("Stid", DataTypes.String);
+        aLayer.editAddField(fieldName, DataTypes.Double);
+
+        for (i = 0; i < stationData.data.length; i++) {
+            aPoint = new PointD();
+            aPoint.X = stationData.data[i][0];
+            aPoint.Y = stationData.data[i][1];
+            if (Double.isNaN(aPoint.X))
+                continue;
+            PointShape aPointShape = new PointShape();
+            aPointShape.setPoint(aPoint);
+            aPointShape.setValue(stationData.data[i][2]);
+
+            int shapeNum = aLayer.getShapeNum();
+            try {
+                if (aLayer.editInsertShape(aPointShape, shapeNum)) {
+                    aLayer.editCellValue("Stid", shapeNum, stationData.stations.get(i));
+                    aLayer.editCellValue(fieldName, shapeNum, stationData.data[i][2]);
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(DrawMeteoData.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        aLayer.setLayerName(lName);
+        aLS.setFieldName(fieldName);
+        aLayer.setLegendScheme(aLS.convertTo(ShapeTypes.Point));
+        //aLayer.setAvoidCollision(true);
+        aLayer.setLayerDrawType(LayerDrawType.StationPoint);
+
+        return aLayer;
+    }
 
     /**
      * Create station info layer

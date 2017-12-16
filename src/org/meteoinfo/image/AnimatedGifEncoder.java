@@ -13,7 +13,6 @@
  */
 package org.meteoinfo.image;
 
-import org.meteoinfo.global.image.*;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
