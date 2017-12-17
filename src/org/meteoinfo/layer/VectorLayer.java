@@ -2810,6 +2810,7 @@ public class VectorLayer extends MapLayer {
                             if (MIMath.doubleEquals(Double.parseDouble(ls.getLegendBreaks().get(i).getStartValue().toString()),
                                     Double.parseDouble(vStr))) {
                                 aShape.setLegendIndex(i);
+                                break;
                             }
                         }
                         shapeIdx += 1;
@@ -2821,6 +2822,7 @@ public class VectorLayer extends MapLayer {
                         for (int i = 0; i < ls.getBreakNum(); i++) {
                             if (vStr.equals(ls.getLegendBreaks().get(i).getStartValue().toString())) {
                                 aShape.setLegendIndex(i);
+                                break;
                             }
                         }
                         shapeIdx += 1;
@@ -2843,6 +2845,7 @@ public class VectorLayer extends MapLayer {
                                     && v < Double.parseDouble(cb.getEndValue().toString()))
                                     || (blNum == ls.getBreakNum() && v == Double.parseDouble(cb.getEndValue().toString()))) {
                                 aShape.setLegendIndex(i);
+                                break;
                             }
                         }
                         shapeIdx += 1;
