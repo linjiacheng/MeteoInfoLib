@@ -2612,11 +2612,11 @@ public class GraphicFactory {
                     int ii;
                     for (int j = 0; j < nn; j++) {
                         ii = index.get(j);
-                        points.add(new PointD(ydata.getDouble(ii), x1data.getDouble(ii)));
+                        points.add(new PointD(x1data.getDouble(ii), ydata.getDouble(ii)));
                     }
                     for (int j = 0; j < nn; j++) {
                         ii = index.get(nn - j - 1);
-                        points.add(new PointD(ydata.getDouble(ii), x2data.getDouble(ii)));
+                        points.add(new PointD(x2data.getDouble(ii), ydata.getDouble(ii)));
                     }
                     pgs.setPoints(points);
                     Graphic graphic = new Graphic(pgs, pb);
