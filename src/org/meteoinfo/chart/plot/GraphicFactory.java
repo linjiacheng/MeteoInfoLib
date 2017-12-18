@@ -2562,6 +2562,71 @@ public class GraphicFactory {
 
         return gc;
     }
+    
+    /**
+     * Create fill between polygons - X direction
+     *
+     * @param ydata Y data array
+     * @param x1data X1 data array
+     * @param x2data X2 data array
+     * @param where Where data array
+     * @param pb Polygon break
+     * @return GraphicCollection
+     */
+    public static GraphicCollection createFillBetweenPolygonsX(Array ydata, Array x1data,
+            Array x2data, Array where, PolygonBreak pb) {
+        GraphicCollection gc = new GraphicCollection();
+        int len = (int) ydata.getSize();
+        if (where == null) {
+            PolygonShape pgs = new PolygonShape();
+            List<PointD> points = new ArrayList<>();
+            for (int i = 0; i < len; i++) {
+                points.add(new PointD(x1data.getDouble(i), ydata.getDouble(i)));
+            }
+            for (int i = len - 1; i >= 0; i--) {
+                points.add(new PointD(x2data.getDouble(i), ydata.getDouble(i)));
+            }
+            pgs.setPoints(points);
+            Graphic graphic = new Graphic(pgs, pb);
+            gc.add(graphic);
+        } else {
+            boolean ob = false;
+            List<List<Integer>> idxs = new ArrayList<>();
+            List<Integer> idx = new ArrayList<>();
+            for (int j = 0; j < len; j++) {
+                if (where.getInt(j) == 1) {
+                    if (!ob) {
+                        idx = new ArrayList<>();
+                    }
+                    idx.add(j);
+                } else if (ob) {
+                    idxs.add(idx);
+                }
+                ob = where.getInt(j) == 1;
+            }
+            for (List<Integer> index : idxs) {
+                int nn = index.size();
+                if (nn >= 2) {
+                    PolygonShape pgs = new PolygonShape();
+                    List<PointD> points = new ArrayList<>();
+                    int ii;
+                    for (int j = 0; j < nn; j++) {
+                        ii = index.get(j);
+                        points.add(new PointD(ydata.getDouble(ii), x1data.getDouble(ii)));
+                    }
+                    for (int j = 0; j < nn; j++) {
+                        ii = index.get(nn - j - 1);
+                        points.add(new PointD(ydata.getDouble(ii), x2data.getDouble(ii)));
+                    }
+                    pgs.setPoints(points);
+                    Graphic graphic = new Graphic(pgs, pb);
+                    gc.add(graphic);
+                }
+            }
+        }
+
+        return gc;
+    }
 
     /**
      * Create fill between polygons
