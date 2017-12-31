@@ -492,6 +492,46 @@ public class ArrayUtil {
         double startv = start.doubleValue();
         double stopv = stop.doubleValue();
         double stepv = step.doubleValue();
+        List<Object> data = new ArrayList<>();        
+        if (dataType == DataType.FLOAT || dataType == DataType.DOUBLE) {
+            while (startv < stopv) {
+                data.add(startv);
+                startv = BigDecimalUtil.add(startv, stepv);
+            }
+        } else {
+            while (startv < stopv) {
+                data.add(startv);
+                startv += stepv;
+            }
+        }
+        int length = data.size();
+        Array a = Array.factory(dataType, new int[]{length});
+        for (int i = 0; i < length; i++){
+            a.setObject(i, data.get(i));
+        }
+        return a;
+    }
+    
+    /**
+     * Array range
+     *
+     * @param start Start value
+     * @param stop Stop value
+     * @param step Step value
+     * @return Array
+     */
+    public static Array arrayRange_bak(Number start, Number stop, final Number step) {
+        if (stop == null) {
+            stop = start;
+            start = 0;
+        }
+        DataType dataType = ArrayUtil.objectsToType(new Object[]{
+            start,
+            stop,
+            step});
+        double startv = start.doubleValue();
+        double stopv = stop.doubleValue();
+        double stepv = step.doubleValue();
         final int length = Math.max(0, (int) Math.ceil((stopv
                 - startv) / stepv));
         Array a = Array.factory(dataType, new int[]{length});

@@ -727,6 +727,34 @@ public class TimeTableData extends TableData {
 
         return rTable;
     }
+    
+    /**
+     * Summary month by month
+     *
+     * @param cols The data columns
+     * @return Result data table
+     * @throws Exception
+     */
+    public DataTable sum_Month(List<DataColumn> cols) throws Exception {
+        DataTable rTable = new DataTable();
+        rTable.addColumn("YearMonth", DataTypes.String);
+        for (DataColumn col : cols) {
+            rTable.addColumn(col.getColumnName(), DataTypes.Double);
+        }
+
+        List<String> yms = this.getYearMonths();
+        for (String ym : yms) {
+            DataRow nRow = rTable.addRow();
+            nRow.setValue(0, ym);
+            List<DataRow> rows = this.getDataByYearMonth(ym);
+            for (DataColumn col : cols) {
+                List<Double> values = this.getValidColumnValues(rows, col);
+                nRow.setValue(col.getColumnName(), Statistics.sum(values));
+            }
+        }
+
+        return rTable;
+    }
 
     /**
      * Average daily
@@ -759,6 +787,36 @@ public class TimeTableData extends TableData {
     }
     
     /**
+     * Summary daily
+     *
+     * @param cols The data columns
+     * @return Result data table
+     * @throws Exception
+     */
+    public DataTable sum_Day(List<DataColumn> cols) throws Exception {
+        DataTable rTable = new DataTable();
+        rTable.addColumn(new DataColumn("Date", DataTypes.Date, "yyyyMMdd"));
+        for (DataColumn col : cols) {
+            rTable.addColumn(col.getColumnName(), DataTypes.Double);
+        }
+
+        List<Date> days = this.getDates_Day();
+        List<DataRow> drs = new ArrayList<>(this.dataTable.getRows());
+        for (Date day : days) {
+            DataRow nRow = rTable.addRow();
+            nRow.setValue(0, day);
+            List<DataRow> rows = this.getDataByDate(day, drs);
+            drs.removeAll(rows);
+            for (DataColumn col : cols) {
+                List<Double> values = this.getValidColumnValues(rows, col);
+                nRow.setValue(col.getColumnName(), Statistics.sum(values));
+            }
+        }
+
+        return rTable;
+    }
+    
+    /**
      * Average Hourly
      *
      * @param cols The data columns
@@ -782,6 +840,36 @@ public class TimeTableData extends TableData {
             for (DataColumn col : cols) {
                 List<Double> values = this.getValidColumnValues(rows, col);
                 nRow.setValue(col.getColumnName(), Statistics.mean(values));
+            }
+        }
+
+        return rTable;
+    }
+    
+    /**
+     * Summary Hourly
+     *
+     * @param cols The data columns
+     * @return Result data table
+     * @throws Exception
+     */
+    public DataTable sum_Hour(List<DataColumn> cols) throws Exception {
+        DataTable rTable = new DataTable();
+        rTable.addColumn(new DataColumn("Date", DataTypes.Date, "yyyyMMddHH"));
+        for (DataColumn col : cols) {
+            rTable.addColumn(col.getColumnName(), DataTypes.Double);
+        }
+
+        List<Date> hours = this.getDates_Hour();
+        List<DataRow> drs = new ArrayList<>(this.dataTable.getRows());
+        for (Date hour : hours) {
+            DataRow nRow = rTable.addRow();
+            nRow.setValue(0, hour);
+            List<DataRow> rows = this.getDataByDate_Hour(hour, drs);
+            drs.removeAll(rows);
+            for (DataColumn col : cols) {
+                List<Double> values = this.getValidColumnValues(rows, col);
+                nRow.setValue(col.getColumnName(), Statistics.sum(values));
             }
         }
 
@@ -824,6 +912,43 @@ public class TimeTableData extends TableData {
 
         return rTable;
     }
+    
+    /**
+     * Summary month of year
+     *
+     * @param cols The data columns
+     * @return Result data table
+     * @throws Exception
+     */
+    public DataTable sum_MonthOfYear(List<DataColumn> cols) throws Exception {
+        DataTable rTable = new DataTable();
+        rTable.addColumn("Month", DataTypes.String);
+        for (DataColumn col : cols) {
+            rTable.addColumn(col.getColumnName(), DataTypes.Double);
+        }
+
+        List<String> monthNames = Arrays.asList(new String[]{"Jan", "Feb", "Mar", "Apr", "May",
+            "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"});
+        List<Integer> months = new ArrayList<>();
+        int i;
+        for (i = 1; i < 13; i++) {
+            months.add(i);
+        }
+
+        i = 0;
+        for (int month : months) {
+            DataRow nRow = rTable.addRow();
+            nRow.setValue(0, monthNames.get(i));
+            List<DataRow> rows = this.getDataByMonth(month);
+            for (DataColumn col : cols) {
+                List<Double> values = this.getValidColumnValues(rows, col);
+                nRow.setValue(col.getColumnName(), Statistics.sum(values));
+            }
+            i++;
+        }
+
+        return rTable;
+    }
 
     /**
      * Average seasonal
@@ -833,6 +958,34 @@ public class TimeTableData extends TableData {
      * @throws Exception
      */
     public DataTable ave_SeasonOfYear(List<DataColumn> cols) throws Exception {
+        DataTable rTable = new DataTable();
+        rTable.addColumn("Season", DataTypes.String);
+        for (DataColumn col : cols) {
+            rTable.addColumn(col.getColumnName(), DataTypes.Double);
+        }
+
+        List<String> seasons = Arrays.asList(new String[]{"Spring", "Summer", "Autumn", "Winter"});
+        for (String season : seasons) {
+            DataRow nRow = rTable.addRow();
+            nRow.setValue(0, season);
+            List<DataRow> rows = this.getDataBySeason(season);
+            for (DataColumn col : cols) {
+                List<Double> values = this.getValidColumnValues(rows, col);
+                nRow.setValue(col.getColumnName(), Statistics.mean(values));
+            }
+        }
+
+        return rTable;
+    }
+    
+    /**
+     * Summary seasonal
+     *
+     * @param cols The data columns
+     * @return Result data table
+     * @throws Exception
+     */
+    public DataTable sum_SeasonOfYear(List<DataColumn> cols) throws Exception {
         DataTable rTable = new DataTable();
         rTable.addColumn("Season", DataTypes.String);
         for (DataColumn col : cols) {
@@ -890,6 +1043,44 @@ public class TimeTableData extends TableData {
 
         return rTable;
     }
+    
+    /**
+     * Summary by day of week
+     *
+     * @param cols The data columns
+     * @return Result data table
+     * @throws Exception
+     */
+    public DataTable sum_DayOfWeek(List<DataColumn> cols) throws Exception {
+        DataTable rTable = new DataTable();
+        rTable.addColumn("Day", DataTypes.String);
+        for (DataColumn col : cols) {
+            rTable.addColumn(col.getColumnName(), DataTypes.Double);
+        }
+
+        List<String> dowNames = Arrays.asList(new String[]{"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday",
+            "Saturday"});
+        List<Integer> dows = new ArrayList<>();
+        dows.add(7);
+        int i;
+        for (i = 1; i < 7; i++) {
+            dows.add(i);
+        }
+
+        i = 0;
+        for (int dow : dows) {
+            DataRow nRow = rTable.addRow();
+            nRow.setValue(0, dowNames.get(i));
+            List<DataRow> rows = this.getDataByDayOfWeek(dow);
+            for (DataColumn col : cols) {
+                List<Double> values = this.getValidColumnValues(rows, col);
+                nRow.setValue(col.getColumnName(), Statistics.sum(values));
+            }
+            i++;
+        }
+
+        return rTable;
+    }
 
     /**
      * Average by hour of day
@@ -917,6 +1108,38 @@ public class TimeTableData extends TableData {
             for (DataColumn col : cols) {
                 List<Double> values = this.getValidColumnValues(rows, col);
                 nRow.setValue(col.getColumnName(), Statistics.mean(values));
+            }
+        }
+
+        return rTable;
+    }
+    
+    /**
+     * Summary by hour of day
+     *
+     * @param cols The data columns
+     * @return Result data table
+     * @throws Exception
+     */
+    public DataTable sum_HourOfDay(List<DataColumn> cols) throws Exception {
+        DataTable rTable = new DataTable();
+        rTable.addColumn("Hour", DataTypes.Integer);
+        for (DataColumn col : cols) {
+            rTable.addColumn(col.getColumnName(), DataTypes.Double);
+        }
+
+        List<Integer> hours = new ArrayList<>();
+        for (int i = 0; i < 24; i++) {
+            hours.add(i);
+        }
+
+        for (int hour : hours) {
+            DataRow nRow = rTable.addRow();
+            nRow.setValue(0, hour);
+            List<DataRow> rows = this.getDataByHour(hour);
+            for (DataColumn col : cols) {
+                List<Double> values = this.getValidColumnValues(rows, col);
+                nRow.setValue(col.getColumnName(), Statistics.sum(values));
             }
         }
 

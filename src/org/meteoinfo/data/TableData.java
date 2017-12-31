@@ -468,6 +468,29 @@ public class TableData {
 
         return rTable;
     }
+    
+    /**
+     * Summary data
+     *
+     * @param cols The data columns
+     * @return Result data table
+     * @throws Exception
+     */
+    public DataTable sum(List<DataColumn> cols) throws Exception {
+        DataTable rTable = new DataTable();
+        for (DataColumn col : cols) {
+            rTable.addColumn(col.getColumnName(), DataTypes.Double);
+        }
+        DataRow nRow = rTable.addRow();
+
+        for (DataColumn col : cols) {
+            List<Double> values = this.getValidColumnValues(col);
+            double mean = Statistics.sum(values);
+            nRow.setValue(col, mean);
+        }
+
+        return rTable;
+    }
 
     /**
      * Average data and calculate standard deviation
