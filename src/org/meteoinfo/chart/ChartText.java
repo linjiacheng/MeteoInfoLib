@@ -494,5 +494,25 @@ public class ChartText extends Shape {
         aExtent.maxY = y;
         this.setExtent(aExtent);
     }
+    
+    /**
+     * To string
+     * @return String
+     */
+    @Override
+    public String toString(){
+        if (this.text.size() == 1){
+            return this.text.get(0);
+        } else {
+            String r = "";
+            for (int i = 0; i < this.text.size(); i++){
+                if (i == 0)
+                    r = this.text.get(i);
+                else
+                    r = r + "\n" + this.text.get(i);
+            }
+            return r;
+        }
+    }
     // </editor-fold>
 }

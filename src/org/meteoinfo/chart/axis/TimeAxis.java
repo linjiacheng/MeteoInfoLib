@@ -136,10 +136,9 @@ public class TimeAxis extends Axis implements Cloneable {
     /**
      * Get tick labels
      *
-     * @return Tick labels
      */
     @Override
-    public List<ChartText> updateTickLabels() {
+    public void updateTickLabels() {
         //this.updateTimeTickValues();
         List<ChartText> tls = new ArrayList<>();
         String lab;
@@ -154,7 +153,7 @@ public class TimeAxis extends Axis implements Cloneable {
             }
         }
 
-        return tls;
+        this.setTickLabels(tls);
     }
 
     /**

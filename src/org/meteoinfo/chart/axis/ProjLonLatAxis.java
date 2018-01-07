@@ -122,10 +122,9 @@ public class ProjLonLatAxis extends LonLatAxis{
     /**
      * Get tick labels
      *
-     * @return Tick labels
      */
     @Override
-    public List<ChartText> updateTickLabels() {
+    public void updateTickLabels() {
         List<ChartText> tls = new ArrayList<>();
         String lab;
         for (double v : this.getTickValues()) {
@@ -164,7 +163,7 @@ public class ProjLonLatAxis extends LonLatAxis{
             tls.add(new ChartText(lab));
         }
 
-        return tls;
+        this.setTickLabels(tls);
     }
     
     @Override

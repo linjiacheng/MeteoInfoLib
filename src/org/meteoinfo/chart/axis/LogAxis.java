@@ -41,12 +41,12 @@ public class LogAxis extends Axis {
     }
     
     @Override
-    public List<ChartText> updateTickLabels(){
+    public void updateTickLabels(){
         List<ChartText> tls = new ArrayList<>();
         String lab;
         if (this.isAutoTick()) {
             if (this.getTickValues() == null) {
-                return tls;
+                return;
             }
             for (double value : this.getTickValues()) {
                 lab = String.valueOf(value);
@@ -76,7 +76,7 @@ public class LogAxis extends Axis {
             tls.add(new ChartText("$10^{" + String.valueOf(e) + "}$"));
         }
 
-        return tls;
+        this.setTickLabels(tls);
     }
     
     // </editor-fold>

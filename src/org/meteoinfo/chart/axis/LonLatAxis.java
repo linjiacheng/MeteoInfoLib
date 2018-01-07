@@ -106,10 +106,9 @@ public class LonLatAxis extends Axis implements Cloneable {
     /**
      * Get tick labels
      *
-     * @return Tick labels
      */
     @Override
-    public List<ChartText> updateTickLabels() {
+    public void updateTickLabels() {
         List<ChartText> tls = new ArrayList<>();
         String lab;
         for (double v : this.getTickValues()) {
@@ -148,7 +147,7 @@ public class LonLatAxis extends Axis implements Cloneable {
             tls.add(new ChartText(lab));
         }
 
-        return tls;
+        this.setTickLabels(tls);
     }
     
     @Override

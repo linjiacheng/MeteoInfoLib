@@ -1692,7 +1692,8 @@ public class Plot3D extends Plot {
                 }
             }
             g.setFont(this.xAxis.getTickLabelFont());
-            List<ChartText> tlabs = this.xAxis.updateTickLabels();            
+            this.xAxis.updateTickLabels();      
+            List<ChartText> tlabs = this.xAxis.getTickLabels();
             skip = getLabelGap(g, tlabs, Math.abs(xlen));
             int strWidth = 0, w;
             for (i = 0; i < this.xAxis.getTickValues().length; i += skip) {
@@ -1764,7 +1765,8 @@ public class Plot3D extends Plot {
                 }
             }
             g.setFont(this.yAxis.getTickLabelFont());
-            tlabs = this.yAxis.updateTickLabels();
+            this.yAxis.updateTickLabels();
+            tlabs = this.yAxis.getTickLabels();
             skip = getLabelGap(g, tlabs, Math.abs(ylen));
             strWidth = 0;
             for (i = 0; i < this.yAxis.getTickValues().length; i += skip) {
@@ -1835,7 +1837,8 @@ public class Plot3D extends Plot {
             g.setFont(this.zAxis.getTickLabelFont());
             g.setColor(this.zAxis.getLineColor());
             g.drawLine(x[0], y[0], projection.x, projection.y);
-            List<ChartText> tlabs = this.zAxis.updateTickLabels();
+            this.zAxis.updateTickLabels();
+            List<ChartText> tlabs = this.zAxis.getTickLabels();
             int len = Math.abs(y[0] - projection.y);
             skip = getLabelGap(g, tlabs, len);
             int strWidth = 0, w;
