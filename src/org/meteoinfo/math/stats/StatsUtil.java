@@ -11,6 +11,7 @@ import org.apache.commons.math3.stat.correlation.Covariance;
 import org.apache.commons.math3.stat.correlation.KendallsCorrelation;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.apache.commons.math3.stat.correlation.SpearmansCorrelation;
+import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 import org.meteoinfo.data.ArrayUtil;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
@@ -193,5 +194,33 @@ public class StatsUtil {
 
             return r;
         }
+    }
+    
+    /**
+     * Implements ordinary least squares (OLS) to estimate the parameters of a 
+     * multiple linear regression model.
+     * @param y Y sample data - one dimension array
+     * @param x X sample data - two dimension array
+     * @return Estimated regression parameters and residuals
+     */
+    public static Array[] mutipleLineRegress_OLS(Array y, Array x) {
+        OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
+        double[] yy = (double[])ArrayUtil.copyToNDJavaArray(y);
+        double[][] xx = (double[][])ArrayUtil.copyToNDJavaArray(x);
+        regression.newSampleData(yy, xx);
+        double[] para = regression.estimateRegressionParameters();
+        double[] residuals = regression.estimateResiduals();
+        int k = para.length;
+        int n = residuals.length;
+        Array aPara = Array.factory(DataType.DOUBLE, new int[]{k});
+        Array aResiduals = Array.factory(DataType.DOUBLE, new int[]{n});
+        for (int i = 0; i < k; i++){
+            aPara.setDouble(i, para[i]);
+        }
+        for (int i = 0; i < k; i++){
+            aResiduals.setDouble(i, residuals[i]);
+        }
+        
+        return new Array[]{aPara, aResiduals};
     }
 }
