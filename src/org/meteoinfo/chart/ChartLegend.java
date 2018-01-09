@@ -48,39 +48,39 @@ public class ChartLegend {
     // <editor-fold desc="Variables">
 
     //private final XY1DPlot plot;
-    private LegendScheme legendScheme;
+    protected LegendScheme legendScheme;
     private LegendPosition position;
-    private float shrink;
-    private int aspect;
+    protected float shrink;
+    protected int aspect;
     private boolean colorBar;
-    private float x;
-    private float y;
-    private PlotOrientation orientation;
-    private Color background;
-    private boolean drawBackground;
-    private int width;
-    private int height;
-    private ChartText label;
-    private String labelLocation;
-    private Font tickFont;
-    private Color tickColor;
-    private boolean _drawNeatLine;
-    private Color _neatLineColor;
-    private float _neatLineSize;
+    protected float x;
+    protected float y;
+    protected PlotOrientation orientation;
+    protected Color background;
+    protected boolean drawBackground;
+    protected int width;
+    protected int height;
+    protected ChartText label;
+    protected String labelLocation;
+    protected Font tickFont;
+    protected Color tickColor;
+    protected boolean drawNeatLine;
+    protected Color neatLineColor;
+    protected float neatLineSize;
     private float _breakSpace;
     private float _topSpace;
     private float _leftSpace;
-    private float _vBarWidth;
-    private float _hBarHeight;
+    protected float _vBarWidth;
+    protected float _hBarHeight;
     private int rowColNum = 1;
     private boolean autoRowColNum = true;
     private Dimension symbolDimension;
-    private boolean extendRect;
-    private boolean autoExtendFrac;
-    private boolean drawMinLabel;
-    private boolean drawMaxLabel;
-    private float xshift;
-    private float yshift;
+    protected boolean extendRect;
+    protected boolean autoExtendFrac;
+    protected boolean drawMinLabel;
+    protected boolean drawMaxLabel;
+    protected float xshift;
+    protected float yshift;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -99,9 +99,9 @@ public class ChartLegend {
         this.aspect = 20;
         this.background = Color.white;
         this.drawBackground = false;
-        _drawNeatLine = true;
-        _neatLineColor = Color.black;
-        _neatLineSize = 1;
+        drawNeatLine = true;
+        neatLineColor = Color.black;
+        neatLineSize = 1;
         _breakSpace = 3;
         _topSpace = 5;
         _leftSpace = 5;
@@ -345,7 +345,7 @@ public class ChartLegend {
      * @return If draw neat line
      */
     public boolean isDrawNeatLine() {
-        return _drawNeatLine;
+        return drawNeatLine;
     }
 
     /**
@@ -354,7 +354,7 @@ public class ChartLegend {
      * @param istrue If draw neat line
      */
     public void setDrawNeatLine(boolean istrue) {
-        _drawNeatLine = istrue;
+        drawNeatLine = istrue;
     }
 
     /**
@@ -363,7 +363,7 @@ public class ChartLegend {
      * @return Neat line color
      */
     public Color getNeatLineColor() {
-        return _neatLineColor;
+        return neatLineColor;
     }
 
     /**
@@ -372,7 +372,7 @@ public class ChartLegend {
      * @param color Neat line color
      */
     public void setNeatLineColor(Color color) {
-        _neatLineColor = color;
+        neatLineColor = color;
     }
 
     /**
@@ -381,7 +381,7 @@ public class ChartLegend {
      * @return Neat line size
      */
     public float getNeatLineSize() {
-        return _neatLineSize;
+        return neatLineSize;
     }
 
     /**
@@ -390,7 +390,7 @@ public class ChartLegend {
      * @param size Neat line size
      */
     public void setNeatLineSize(float size) {
-        _neatLineSize = size;
+        neatLineSize = size;
     }
 
     /**
@@ -627,7 +627,7 @@ public class ChartLegend {
      *
      * @param value Tick labels
      */
-    public void setTickLabels(List<String> value) {
+    public void setTickCaptions(List<String> value) {
         for (int i = 0; i < this.legendScheme.getBreakNum(); i++) {
             if (i < value.size()) {
                 this.legendScheme.getLegendBreaks().get(i).setCaption(value.get(i));
@@ -751,10 +751,10 @@ public class ChartLegend {
         }
 
         //Draw neatline
-        if (_drawNeatLine) {
+        if (drawNeatLine) {
             Rectangle.Float mapRect = new Rectangle.Float(0, 0, this.width, this.height);
-            g.setColor(_neatLineColor);
-            g.setStroke(new BasicStroke(_neatLineSize));
+            g.setColor(neatLineColor);
+            g.setStroke(new BasicStroke(neatLineSize));
             g.draw(mapRect);
         }
 
@@ -1642,8 +1642,9 @@ public class ChartLegend {
      * Update tick gap
      *
      * @param g Graphics2D
+     * @return Ticks gap
      */
-    private int getTickGap(Graphics2D g) {
+    protected int getTickGap(Graphics2D g) {
         double len;
         int n = this.legendScheme.getBreakNum();
         int nn;
@@ -1676,7 +1677,7 @@ public class ChartLegend {
          * @return If draw neat line
          */
         public boolean isDrawNeatLine() {
-            return _drawNeatLine;
+            return drawNeatLine;
         }
 
         /**
@@ -1685,7 +1686,7 @@ public class ChartLegend {
          * @param istrue If draw neat line
          */
         public void setDrawNeatLine(boolean istrue) {
-            _drawNeatLine = istrue;
+            drawNeatLine = istrue;
         }
 
         /**
@@ -1694,7 +1695,7 @@ public class ChartLegend {
          * @return Neat line color
          */
         public Color getNeatLineColor() {
-            return _neatLineColor;
+            return neatLineColor;
         }
 
         /**
@@ -1703,7 +1704,7 @@ public class ChartLegend {
          * @param color Neat line color
          */
         public void setNeatLineColor(Color color) {
-            _neatLineColor = color;
+            neatLineColor = color;
         }
 
         /**
@@ -1712,7 +1713,7 @@ public class ChartLegend {
          * @return Neat line size
          */
         public float getNeatLineSize() {
-            return _neatLineSize;
+            return neatLineSize;
         }
 
         /**
@@ -1721,7 +1722,7 @@ public class ChartLegend {
          * @param size Neat line size
          */
         public void setNeatLineSize(float size) {
-            _neatLineSize = size;
+            neatLineSize = size;
         }
 
         /**
