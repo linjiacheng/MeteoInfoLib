@@ -5,6 +5,8 @@
  */
 package org.meteoinfo.math.stats;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.stat.StatUtils;
@@ -13,9 +15,13 @@ import org.apache.commons.math3.stat.correlation.KendallsCorrelation;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.apache.commons.math3.stat.correlation.SpearmansCorrelation;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
+import org.meteoinfo.data.ArrayMath;
 import org.meteoinfo.data.ArrayUtil;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
+import ucar.ma2.Index;
+import ucar.ma2.InvalidRangeException;
+import ucar.ma2.Range;
 
 /**
  *
@@ -234,6 +240,54 @@ public class StatsUtil {
     public static double percentile(Array a, double p){
         double[] v = (double[])a.get1DJavaArray(Double.class);
         double r = StatUtils.percentile(v, p);
+        return r;
+    }
+    
+    /**
+     * Returns an estimate of the pth percentile of the values in the array along an axis.
+     * @param a Input array
+     * @param p The percentile value to compute
+     * @param axis The axis
+     * @return The pth percentile
+     * @throws InvalidRangeException 
+     */
+    public static Array percentile(Array a, double p, int axis) throws InvalidRangeException{
+        int[] dataShape = a.getShape();
+        int[] shape = new int[dataShape.length - 1];
+        int idx;
+        for (int i = 0; i < dataShape.length; i++) {
+            idx = i;
+            if (idx == axis) {
+                continue;
+            } else if (idx > axis) {
+                idx -= 1;
+            }
+            shape[idx] = dataShape[i];
+        }
+        Array r = Array.factory(DataType.DOUBLE, shape);
+        Index indexr = r.getIndex();
+        int[] current;
+        for (int i = 0; i < r.getSize(); i++) {
+            current = indexr.getCurrentCounter();
+            List<Range> ranges = new ArrayList<>();
+            for (int j = 0; j < dataShape.length; j++) {
+                if (j == axis) {
+                    ranges.add(new Range(0, dataShape[j] - 1, 1));
+                } else {
+                    idx = j;
+                    if (idx > axis) {
+                        idx -= 1;
+                    }
+                    ranges.add(new Range(current[idx], current[idx], 1));
+                }
+            }
+            Array aa = ArrayMath.section(a, ranges);
+            double[] v = (double[])aa.get1DJavaArray(Double.class);
+            double q = StatUtils.percentile(v, p);
+            r.setDouble(i, q);
+            indexr.incr();
+        }
+
         return r;
     }
 }
