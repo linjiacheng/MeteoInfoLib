@@ -7,6 +7,7 @@ package org.meteoinfo.math.stats;
 
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.stat.StatUtils;
 import org.apache.commons.math3.stat.correlation.Covariance;
 import org.apache.commons.math3.stat.correlation.KendallsCorrelation;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
@@ -222,5 +223,17 @@ public class StatsUtil {
         }
         
         return new Array[]{aPara, aResiduals};
+    }
+    
+    /**
+     * Returns an estimate of the pth percentile of the values in the array.
+     * @param a Input array
+     * @param p The percentile value to compute
+     * @return The pth percentile
+     */
+    public static double percentile(Array a, double p){
+        double[] v = (double[])a.get1DJavaArray(Double.class);
+        double r = StatUtils.percentile(v, p);
+        return r;
     }
 }
