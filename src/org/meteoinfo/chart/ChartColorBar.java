@@ -77,7 +77,7 @@ public class ChartColorBar extends ChartLegend {
         this.tickLabels.clear();
         for (Number v : value) {
             this.tickLocations.add(v.doubleValue());
-            this.tickLabels.add(new ChartText(String.valueOf(v)));
+            this.tickLabels.add(new ChartText(DataConvert.removeTailingZeros(String.valueOf(v))));
         }
         this.autoTick = false;
     }
@@ -89,10 +89,10 @@ public class ChartColorBar extends ChartLegend {
      */
     public void setTickLocations(double[] value) {
         this.tickLocations.clear();
-        //this.tickLabels.clear();
+        this.tickLabels.clear();
         for (double v : value) {
             this.tickLocations.add(v);
-            //this.tickLabels.add(new ChartText(String.valueOf(v)));
+            this.tickLabels.add(new ChartText(DataConvert.removeTailingZeros(String.valueOf(v))));
         }
         this.autoTick = false;
     }
@@ -550,6 +550,12 @@ public class ChartColorBar extends ChartLegend {
                 double v = Double.parseDouble(cb.getEndValue().toString());
                 if (this.tickLocations.contains(v)) {
                     labelIdxs.add(i);
+                } else {
+                    if (i == 0){
+                        v = Double.parseDouble(cb.getStartValue().toString());
+                        if (this.tickLocations.contains(v))
+                            labelIdxs.add(i);
+                    }
                 }
             }
         }
