@@ -1574,7 +1574,7 @@ public class ChartLegend {
         return new Dimension(this.width, this.height);
     }
 
-    private int getTickWidth(Graphics2D g) {
+    protected int getTickWidth(Graphics2D g) {
         float rwidth = 0;
         String caption = "";
         int bNum = this.legendScheme.getBreakNum();

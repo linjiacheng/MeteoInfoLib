@@ -36,6 +36,8 @@ public class ChartColorBar extends ChartLegend {
     private List<Double> tickLocations;
     private List<ChartText> tickLabels;
     private boolean autoTick;
+    private boolean insideTick;
+    private int tickLength;
 
     // </editor-fold>
     // <editor-fold desc="Constructor">
@@ -50,9 +52,12 @@ public class ChartColorBar extends ChartLegend {
         this.tickLocations = new ArrayList<>();
         this.tickLabels = new ArrayList<>();
         this.autoTick = true;
+        this.insideTick = true;
+        this.tickLength = 5;
     }
 
     // </editor-fold>
+    // <editor-fold desc="Get Set Methods">
     /**
      * Tick locations
      *
@@ -168,6 +173,43 @@ public class ChartColorBar extends ChartLegend {
         this.autoTick = value;
     }
 
+    /**
+     * Get tick length
+     *
+     * @return Tick length
+     */
+    public int getTickLength() {
+        return this.tickLength;
+    }
+
+    /**
+     * Set tick length
+     *
+     * @param value Tick length
+     */
+    public void setTickLength(int value) {
+        this.tickLength = value;
+    }
+
+    /**
+     * Get if is inside tick
+     *
+     * @return Boolean
+     */
+    public boolean isInsideTick() {
+        return this.insideTick;
+    }
+
+    /**
+     * Set if is inside tick
+     *
+     * @param value Boolean
+     */
+    public void setInsideTick(boolean value) {
+        this.insideTick = value;
+    }
+
+    // </editor-fold>
     // <editor-fold desc="Method">
     /**
      * Draw legend
@@ -207,6 +249,26 @@ public class ChartColorBar extends ChartLegend {
         }
 
         g.setTransform(oldMatrix);
+    }
+
+    private void drawTickLine(Graphics2D g, PointF sP, int tickLen, boolean vertical, float shift) {
+        if (vertical) {
+            if (this.insideTick) {
+                g.draw(new Line2D.Float(sP.X + shift, sP.Y, sP.X + shift, sP.Y - tickLen));
+            } else {
+                g.draw(new Line2D.Float(sP.X + shift, sP.Y, sP.X + shift, sP.Y + tickLen));
+                sP.Y += tickLen;
+            }
+            sP.Y += 5;
+        } else {
+            if (this.insideTick) {
+                g.draw(new Line2D.Float(sP.X - tickLen, sP.Y + shift, sP.X, sP.Y + shift));
+            } else {
+                g.draw(new Line2D.Float(sP.X, sP.Y + shift, sP.X + tickLen, sP.Y + shift));
+                sP.X += tickLen;
+            }
+            sP.X += 5;
+        }
     }
 
     private void drawHorizontalBarLegend(Graphics2D g, LegendScheme aLS) {
@@ -370,11 +432,10 @@ public class ChartColorBar extends ChartLegend {
         }
         //Draw tick and label
         aP.X = -_vBarWidth / 2;
-        int labLen = (int) (this._hBarHeight / 3);
-        if (labLen < 5) {
-            labLen = 5;
-            if (this._hBarHeight < 5) {
-                labLen = (int) this._hBarHeight;
+        int tickLen = this.tickLength;
+        if (this.insideTick) {
+            if (this._hBarHeight < tickLen) {
+                tickLen = (int) this._hBarHeight;
             }
         }
         g.setFont(tickFont);
@@ -390,7 +451,7 @@ public class ChartColorBar extends ChartLegend {
                 } else {
                     caption = DataConvert.removeTailingZeros(cb.getEndValue().toString());
                     if (!this.autoTick) {
-                        if (this.tickLabels.size() > idx){
+                        if (this.tickLabels.size() > idx) {
                             caption = this.tickLabels.get(idx).getText();
                         }
                     }
@@ -403,23 +464,27 @@ public class ChartColorBar extends ChartLegend {
                 } else {
                     sP.X = aP.X + _vBarWidth / 2;
                     sP.Y = aP.Y + _hBarHeight / 2;
-                    g.draw(new Line2D.Float(sP.X, sP.Y, sP.X, sP.Y - labLen));
-                    sP.Y = sP.Y + 5;
-                    if (this.autoTick){
+                    if (this.autoTick) {
                         if (i < bNum - 1) {
+                            this.drawTickLine(g, sP, tickLen, true, 0);
                             Draw.drawString(g, caption, sP.X - aSF.width / 2, sP.Y + aSF.height * 3 / 4);
                             if (this.drawMinLabel && i == 0) {
+                                this.drawTickLine(g, sP, tickLen, true, -this._vBarWidth);
                                 caption = DataConvert.removeTailingZeros(cb.getStartValue().toString());
                                 Draw.drawString(g, caption, sP.X - aSF.width / 2 - this._vBarWidth, sP.Y + aSF.height * 3 / 4);
                             }
                         } else if (this.drawMaxLabel) {
+                            this.drawTickLine(g, sP, tickLen, true, 0);
                             Draw.drawString(g, caption, sP.X - aSF.width / 2, sP.Y + aSF.height * 3 / 4);
                         }
                     } else {
-                        if (i == 0)
+                        if (i == 0 && this.tickLocations.get(idx) == Double.parseDouble(cb.getStartValue().toString())) {
+                            this.drawTickLine(g, sP, tickLen, true, -this._vBarWidth);
                             Draw.drawString(g, caption, sP.X - aSF.width / 2 - this._vBarWidth, sP.Y + aSF.height * 3 / 4);
-                        else
+                        } else {
+                            this.drawTickLine(g, sP, tickLen, true, 0);
                             Draw.drawString(g, caption, sP.X - aSF.width / 2, sP.Y + aSF.height * 3 / 4);
+                        }
                     }
                 }
                 idx += 1;
@@ -602,11 +667,10 @@ public class ChartColorBar extends ChartLegend {
         }
         //Draw ticks
         aP.Y = this.height + _hBarHeight / 2;
-        int labLen = (int) (this._vBarWidth / 3);
-        if (labLen < 5) {
-            labLen = 5;
-            if (this._vBarWidth < 5) {
-                labLen = (int) this._vBarWidth;
+        int tickLen = this.tickLength;
+        if (this.insideTick) {
+            if (this._vBarWidth < tickLen) {
+                tickLen = (int) this._vBarWidth;
             }
         }
         g.setFont(tickFont);
@@ -621,7 +685,7 @@ public class ChartColorBar extends ChartLegend {
                 } else {
                     caption = DataConvert.removeTailingZeros(cb.getEndValue().toString());
                     if (!this.autoTick) {
-                        if (this.tickLabels.size() > idx){
+                        if (this.tickLabels.size() > idx) {
                             caption = this.tickLabels.get(idx).getText();
                         }
                     }
@@ -635,23 +699,27 @@ public class ChartColorBar extends ChartLegend {
                 } else {
                     sP.X = aP.X + _vBarWidth / 2;
                     sP.Y = aP.Y - _hBarHeight / 2;
-                    g.draw(new Line2D.Float(sP.X - labLen, sP.Y, sP.X, sP.Y));
-                    sP.X = sP.X + 5;
-                    if (this.autoTick){
+                    if (this.autoTick) {
                         if (i < bNum - 1) {
+                            this.drawTickLine(g, sP, tickLen, false, 0);
                             Draw.drawString(g, caption, sP.X, sP.Y + aSF.height / 4);
                             if (this.drawMinLabel && i == 0) {
+                                this.drawTickLine(g, sP, tickLen, false, this._hBarHeight);
                                 caption = DataConvert.removeTailingZeros(cb.getStartValue().toString());
                                 Draw.drawString(g, caption, sP.X, sP.Y + aSF.height / 4 + this._hBarHeight);
                             }
                         } else if (this.drawMaxLabel) {
+                            this.drawTickLine(g, sP, tickLen, false, 0);
                             Draw.drawString(g, caption, sP.X, sP.Y + aSF.height / 4);
                         }
                     } else {
-                        if (i == 0)
+                        if (i == 0 && this.tickLocations.get(idx) == Double.parseDouble(cb.getStartValue().toString())) {
+                            this.drawTickLine(g, sP, tickLen, false, this._hBarHeight);
                             Draw.drawString(g, caption, sP.X, sP.Y + aSF.height / 4 + this._hBarHeight);
-                        else
+                        } else {
+                            this.drawTickLine(g, sP, tickLen, false, 0);
                             Draw.drawString(g, caption, sP.X, sP.Y + aSF.height / 4);
+                        }
                     }
                 }
                 idx += 1;
@@ -684,6 +752,52 @@ public class ChartColorBar extends ChartLegend {
                     break;
             }
         }
+    }
+
+    /**
+     * Get legend dimension
+     *
+     * @param g Graphics2D
+     * @param limitDim Limit dimension
+     * @return Legend dimension
+     */
+    @Override
+    public Dimension getLegendDimension(Graphics2D g, Dimension limitDim) {
+        if (legendScheme != null) {
+            switch (this.orientation) {
+                case VERTICAL:
+                    this.width = (int) (this.getTickWidth(g) + limitDim.height * this.shrink / this.aspect + 5);
+                    if (!this.insideTick){
+                        this.width += this.tickLength;
+                    }
+                    if (this.label != null) {
+                        g.setFont(this.label.getFont());
+                        this.width += (int) Draw.getStringDimension(label.getText(), g).height + 5;
+                    }
+                    break;
+                default:
+                    g.setFont(this.tickFont);
+                    this.height = (int) (Draw.getStringDimension("test", g).height + limitDim.width * this.shrink / this.aspect + 5);
+                    if (!this.insideTick){
+                        this.height += this.tickLength;
+                    }
+                    if (this.label != null) {
+                        g.setFont(this.label.getFont());
+                        Dimension dim = Draw.getStringDimension(label.getText(), g);
+                        switch (this.labelLocation) {
+                            case "top":
+                            case "right":
+                                this.width += dim.width + 10;
+                                break;
+                            default:
+                                this.height += (int) Draw.getStringDimension(label.getText(), g).height + 5;
+                                break;
+                        }
+                    }
+            }
+        }
+
+        return new Dimension(this.width, this.height);
     }
     // </editor-fold>
 }
