@@ -169,6 +169,14 @@ public class PolygonBreak extends ColorBreak {
     }
     
     /**
+     * Set hatch style by a string
+     * @param value Hatch style string
+     */
+    public void setStyle(String value){
+        this.style = HatchStyle.getStyle(value);
+    }
+    
+    /**
      * Get style size
      * @return Style size
      */
