@@ -305,6 +305,12 @@ public class ChartColorBar extends ChartLegend {
                 double v = Double.parseDouble(cb.getEndValue().toString());
                 if (this.tickLocations.contains(v)) {
                     labelIdxs.add(i);
+                } else {
+                    if (i == 0){
+                        v = Double.parseDouble(cb.getStartValue().toString());
+                        if (this.tickLocations.contains(v))
+                            labelIdxs.add(i);
+                    }
                 }
             }
         }
