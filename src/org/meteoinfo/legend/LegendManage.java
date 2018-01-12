@@ -781,8 +781,9 @@ public class LegendManage {
                 min = CValues[0] - (CValues[1] - CValues[0]);
             }
             if (max <= CValues[CValues.length - 1]) {
-                max = CValues[CValues.length - 1] + (CValues[1] - CValues[0]);
+                max = CValues[CValues.length - 1];
             }
+            max += CValues[1] - CValues[0];
         }
 
         LegendScheme legendScheme = new LegendScheme(aST);
@@ -790,7 +791,7 @@ public class LegendManage {
         legendScheme.setShapeType(aST);
         legendScheme.setMinValue(min);
         legendScheme.setMaxValue(max);
-        legendScheme.setUndefValue(unDef);
+        legendScheme.setUndefValue(unDef);        
         int i;
         switch (aST) {
             case Point:

@@ -438,8 +438,8 @@ public class Chart {
         }
 
         //Draw plot
-        //plotArea = this.getPlotArea(g, area);
-        plotArea = area;
+        plotArea = this.getPlotArea(g, area);
+        //plotArea = area;
         if (plotArea.getWidth() < 20 || plotArea.getHeight() < 20) {
             g.setTransform(oldMatrix);
             g.setClip(oldRegion);
@@ -524,8 +524,23 @@ public class Chart {
             Draw.drawString(g, text.getText(), x, y);
         }
     }
-
+    
     private Rectangle2D getPlotArea(Graphics2D g, Rectangle2D area) {
+        Rectangle2D pArea = new Rectangle2D.Double();
+        int edge = 0;
+        int top = edge;
+        int left = edge;
+        int right = edge;
+        int bottom = edge;
+        if (this.title != null) {
+            top += this.title.getHeight(g) + 12;
+        }        
+        pArea.setRect(left, top, area.getWidth() - left - right, area.getHeight() - top - bottom);
+
+        return pArea;
+    }
+
+    private Rectangle2D getPlotArea_bak(Graphics2D g, Rectangle2D area) {
         Rectangle2D pArea = new Rectangle2D.Double();
         int edge = 2;
         int top = edge;
