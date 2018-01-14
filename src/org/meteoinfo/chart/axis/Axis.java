@@ -1497,9 +1497,10 @@ public class Axis implements Cloneable {
             x = (maxx - minx) / 2 + minx;
             String maxLabel = this.getMaxLenLable();
             g.setFont(this.tickLabelFont);
-            Dimension dim = Draw.getStringDimension(maxLabel, g);
-            y = maxy + space + dim.getHeight() + (dim.getWidth()
-                    * Math.sin(this.tickLabelAngle * Math.PI / 180)) + 5;
+            Dimension dim = Draw.getStringDimension(maxLabel, this.tickLabelAngle, g);
+            y = maxy + space + dim.getHeight() + 5;
+//            y = maxy + space + dim.getHeight() + (dim.getWidth()
+//                    * Math.sin(this.tickLabelAngle * Math.PI / 180)) + 5;
             int tlln = this.getMaxTickLableLines();
             if (tlln > 1){
                 for (int i = 1; i < tlln; i++)
@@ -1511,7 +1512,7 @@ public class Axis implements Cloneable {
             //dim = new Dimension(metrics.stringWidth(this.xAxis.getLabel()), metrics.getHeight());
             dim = Draw.getStringDimension(this.label.getText(), g);
             labx = (float) (x - dim.width / 2);
-            laby = (float) (y + dim.height * 3 / 4);
+            laby = (float) (y + dim.height);
             if (!this.isInsideTick()) {
                 laby += len;
             }

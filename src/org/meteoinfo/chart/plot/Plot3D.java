@@ -1976,7 +1976,7 @@ public class Plot3D extends Plot {
 
     void drawLegendScheme(ChartLegend legend, Graphics2D g, Rectangle2D area, float y) {
         g.setStroke(new BasicStroke(1));
-        g.setFont(legend.getTickFont());
+        g.setFont(legend.getTickLabelFont());
         Dimension dim = legend.getLegendDimension(g, new Dimension((int) area.getWidth(), (int) area.getHeight()));
         float x = 0;
         //Rectangle2D graphArea = this.getPositionArea();

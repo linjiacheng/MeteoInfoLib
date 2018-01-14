@@ -88,6 +88,10 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
             nodata_value = Double.parseDouble(dataArray[11]);
 
             aLine = sr.readLine();
+            aLine = aLine.trim();
+            if (aLine.substring(0, 7).equalsIgnoreCase("version")){
+                aLine = sr.readLine();
+            }
             dataArray = aLine.split("\\s+");
             boolean isInt = true;
             for (String dd : dataArray) {
@@ -241,6 +245,7 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
 
             List<String> dataList = new ArrayList<>();
             int row = 0;
+            int nrow;
             int drow = 0;
             int idx, ii;
             do {
@@ -269,18 +274,17 @@ public class ASCIIGridDataInfo extends DataInfo implements IGridDataInfo {
                         break;
                     }
                 }
-                if (row >= yRange.first() && row <= yRange.last()) {
-                    if ((row - yRange.first()) % yRange.stride() == 0) {
-                        ii = 0;
+                nrow = yNum - row - 1;
+                if (nrow >= yRange.first() && nrow <= yRange.last()) {
+                    if ((nrow - yRange.first()) % yRange.stride() == 0) {
+                        idx = (yRange.length() - drow - 1) * xRange.length();
                         for (i = xRange.first(); i <= xRange.last(); i += xRange.stride()) {
-                            idx = yRange.length() - drow - 1;
-                            idx = idx * xRange.length() + ii;
                             if (this.dataType == DataType.INT) {
                                 data.setObject(idx, Integer.parseInt(dataList.get(i)));
                             } else {
                                 data.setObject(idx, Float.parseFloat(dataList.get(i)));
                             }
-                            ii += 1;
+                            idx += 1;
                         }
                         drow += 1;
                     }

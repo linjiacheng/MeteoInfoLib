@@ -1560,12 +1560,16 @@ public class LegendManage {
      */
     public static LegendScheme createImageLegend(GridData gdata, List<Number> levs, ColorMap cmap) {
         LegendScheme ls;
-        if (gdata.hasNaN()) {
-            ls = LegendManage.createLegendScheme(gdata.getMinValue(), gdata.getMaxValue(), levs, cmap, 
-                    LegendType.GraduatedColor, ShapeTypes.Image, true, Double.NaN);
+        if (cmap.getColorCount() == levs.size()){
+            ls = LegendManage.createUniqValueLegendScheme(levs, cmap, ShapeTypes.Image);
         } else {
-            ls = LegendManage.createLegendScheme(gdata.getMinValue(), gdata.getMaxValue(), levs, cmap, 
-                    LegendType.GraduatedColor, ShapeTypes.Image, false, Double.NaN);
+            if (gdata.hasNaN()) {
+                ls = LegendManage.createLegendScheme(gdata.getMinValue(), gdata.getMaxValue(), levs, cmap, 
+                        LegendType.GraduatedColor, ShapeTypes.Image, true, Double.NaN);
+            } else {
+                ls = LegendManage.createLegendScheme(gdata.getMinValue(), gdata.getMaxValue(), levs, cmap, 
+                        LegendType.GraduatedColor, ShapeTypes.Image, false, Double.NaN);
+            }
         }
 
         return ls;
@@ -1581,12 +1585,16 @@ public class LegendManage {
      */
     public static LegendScheme createImageLegend(GridArray gdata, List<Number> levs, ColorMap cmap) {
         LegendScheme ls;
-        if (gdata.hasNaN()) {
-            ls = LegendManage.createLegendScheme(gdata.min(), gdata.max(), levs, cmap, 
-                    LegendType.GraduatedColor, ShapeTypes.Image, true, Double.NaN);
+        if (cmap.getColorCount() == levs.size()){
+            ls = LegendManage.createUniqValueLegendScheme(levs, cmap, ShapeTypes.Image);
         } else {
-            ls = LegendManage.createLegendScheme(gdata.min(), gdata.max(), levs, cmap, 
-                    LegendType.GraduatedColor, ShapeTypes.Image, false, Double.NaN);
+            if (gdata.hasNaN()) {
+                ls = LegendManage.createLegendScheme(gdata.min(), gdata.max(), levs, cmap, 
+                        LegendType.GraduatedColor, ShapeTypes.Image, true, Double.NaN);
+            } else {
+                ls = LegendManage.createLegendScheme(gdata.min(), gdata.max(), levs, cmap, 
+                        LegendType.GraduatedColor, ShapeTypes.Image, false, Double.NaN);
+            }
         }
 
         return ls;

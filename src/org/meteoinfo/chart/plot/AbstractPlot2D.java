@@ -1031,13 +1031,14 @@ public abstract class AbstractPlot2D extends Plot {
         if (xAxis.isDrawTickLabel()) {
             g.setFont(xAxis.getTickLabelFont());
             String maxLabel = xAxis.getMaxLenLable();
-            Dimension dim = Draw.getStringDimension(maxLabel, g);
-            if (xAxis.getTickLabelAngle() == 0) {
-                height += dim.height + space;
-            } else {
-                height += dim.height + space + (int) (dim.getWidth()
-                        * Math.sin(xAxis.getTickLabelAngle() * Math.PI / 180));
-            }
+            Dimension dim = Draw.getStringDimension(maxLabel, xAxis.getTickLabelAngle(), g);
+            height += dim.height + space;
+//            if (xAxis.getTickLabelAngle() == 0) {
+//                height += dim.height + space;
+//            } else {
+//                height += dim.height + space + (int) (dim.getWidth()
+//                        * Math.sin(xAxis.getTickLabelAngle() * Math.PI / 180));
+//            }
             if (xAxis instanceof TimeAxis) {
                 height += dim.height + space;
             }
@@ -1054,7 +1055,7 @@ public abstract class AbstractPlot2D extends Plot {
         if (xAxis.isDrawLabel()) {
             g.setFont(xAxis.getLabelFont());
             Dimension dim = Draw.getStringDimension(xAxis.getLabel().getText(), g);
-            height += dim.height + space;
+            height += dim.height + space + 5;
         }
 
         return height;
@@ -1276,7 +1277,7 @@ public abstract class AbstractPlot2D extends Plot {
     }
 
     void drawLegendScheme(ChartLegend legend, Graphics2D g, Rectangle2D area, float y) {
-        g.setFont(legend.getTickFont());
+        g.setFont(legend.getTickLabelFont());
         Dimension dim = legend.getLegendDimension(g, new Dimension((int) area.getWidth(), (int) area.getHeight()));
         float x = 0;
         //Rectangle2D graphArea = this.getPositionArea();

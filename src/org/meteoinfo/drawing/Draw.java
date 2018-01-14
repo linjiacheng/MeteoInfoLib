@@ -55,6 +55,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import org.meteoinfo.chart.plot.XAlign;
+import org.meteoinfo.chart.plot.YAlign;
 import org.meteoinfo.legend.HatchStyle;
 import org.meteoinfo.shape.EllipseShape;
 import org.meteoinfo.shape.Polygon;
@@ -113,7 +115,8 @@ public class Draw {
             return new Dimension(width, height);
         } else {
             FontMetrics metrics = g.getFontMetrics();
-            return new Dimension(metrics.stringWidth(str), metrics.getHeight());
+            //return new Dimension(metrics.stringWidth(str), metrics.getHeight());
+            return new Dimension(metrics.stringWidth(str), metrics.getAscent());
         }
     }
 
@@ -121,29 +124,44 @@ public class Draw {
      * Get string dimension
      *
      * @param str String
-     * @param anlge Angle
+     * @param angle Angle
      * @param g Graphics2D
      * @return String dimension
      */
-    public static Dimension getStringDimension(String str, float anlge, Graphics2D g) {
-        if (isLaTeX(str)) {
-            float size = g.getFont().getSize2D();
-            // create a formula
-            TeXFormula formula = new TeXFormula(str);
-
-            // render the formla to an icon of the same size as the formula.
-            TeXIcon icon = formula.createTeXIcon(TeXConstants.STYLE_TEXT, size);
-
-            // insert a border 
-            //icon.setInsets(new Insets(5, 5, 5, 5));
-            //return new Dimension(icon.getIconWidth(), icon.getIconHeight());
-            int width = (int) icon.getTrueIconWidth() + 10;
-            //int height = (int)icon.getTrueIconHeight();
-            int height = icon.getIconHeight();
-            return new Dimension(width, height);
+    public static Dimension getStringDimension(String str, float angle, Graphics2D g) {
+        if (angle == 0) {
+            return getStringDimension(str, g);
         } else {
-            FontMetrics metrics = g.getFontMetrics();
-            return new Dimension(metrics.stringWidth(str), metrics.getHeight());
+            float width, height;
+            if (isLaTeX(str)) {
+                float size = g.getFont().getSize2D();
+                // create a formula
+                TeXFormula formula = new TeXFormula(str);
+
+                // render the formla to an icon of the same size as the formula.
+                TeXIcon icon = formula.createTeXIcon(TeXConstants.STYLE_TEXT, size);
+
+                // insert a border 
+                //icon.setInsets(new Insets(5, 5, 5, 5));
+                //return new Dimension(icon.getIconWidth(), icon.getIconHeight());
+                width = (int) icon.getTrueIconWidth() + 10;
+                //int height = (int)icon.getTrueIconHeight();
+                height = icon.getIconHeight();
+            } else {
+                FontMetrics metrics = g.getFontMetrics();
+                width = metrics.stringWidth(str);
+                height = metrics.getAscent();
+            }
+            float temp;
+            if (angle == 90 || angle == -90) {
+                temp = width;
+                width = height;
+                height = temp;
+            } else {
+                width = (float) (width * Math.cos(Math.toRadians(angle))) + (float) (height * Math.sin(Math.toRadians(angle)));
+                height = (float) (width * Math.sin(Math.toRadians(angle))) + (float) (height * Math.cos(Math.toRadians(angle)));
+            }
+            return new Dimension((int) width, (int) height);
         }
     }
 
@@ -156,13 +174,13 @@ public class Draw {
      * @param y Y
      */
     public static void drawString(Graphics2D g, String str, float x, float y) {
-        if (isLaTeX(str)) {            
+        if (isLaTeX(str)) {
             drawLaTeX(g, str, x, y, true);
         } else {
             g.drawString(str, x, y);
         }
     }
-    
+
     /**
      * Draw string
      *
@@ -173,7 +191,7 @@ public class Draw {
      * @param useExternalFont If use external font
      */
     public static void drawString(Graphics2D g, String str, float x, float y, boolean useExternalFont) {
-        if (isLaTeX(str)) {            
+        if (isLaTeX(str)) {
             drawLaTeX(g, str, x, y, useExternalFont);
         } else {
             g.drawString(str, x, y);
@@ -196,7 +214,6 @@ public class Draw {
 //            g.drawString(str, x, y);
 //        }
 //    }
-
     /**
      * Draw LaTeX string
      *
@@ -222,13 +239,13 @@ public class Draw {
      * @param useExternalFont If use external font
      */
     public static void drawLaTeX(Graphics2D g, String str, float size, float x, float y, boolean useExternalFont) {
-        if (useExternalFont){
+        if (useExternalFont) {
             //Set font
             TeXFormula.registerExternalFont(Character.UnicodeBlock.BASIC_LATIN, g.getFont().getName());
         } else {
             TeXFormula.registerExternalFont(Character.UnicodeBlock.BASIC_LATIN, null, null);
         }
-        
+
         // create a formula
         TeXFormula formula = new TeXFormula(str);
 
@@ -240,7 +257,7 @@ public class Draw {
         icon.setForeground(g.getColor());
         y = y - (icon.getIconHeight() * 2.0f / 3.f);
         icon.paintIcon(null, g, (int) x, (int) y);
-    }        
+    }
 
     // </editor-fold>
     // <editor-fold desc="Point">
@@ -699,7 +716,7 @@ public class Draw {
                 aP.Y = aP.Y - aSize / 2.f;
                 Ellipse2D ellipse = new Ellipse2D.Float(aP.X, aP.Y, aSize, aSize);
                 if (drawFill) {
-                    g.setColor(color);                    
+                    g.setColor(color);
                     g.fill(ellipse);
                     //g.fillOval((int) aP.X, (int) aP.Y, (int) aSize, (int) aSize);
                 }
@@ -1101,6 +1118,102 @@ public class Draw {
     }
 
     /**
+     * Draws string at the specified coordinates with the specified alignment.
+     *
+     * @param g graphics context to draw
+     * @param x the x coordinate
+     * @param y the y coordinate
+     * @param s the string to draw
+     * @param x_align the alignment in x direction
+     * @param y_align the alignment in y direction
+     */
+    public static void outString(Graphics2D g, float x, float y, String s, XAlign x_align, YAlign y_align) {
+        Dimension dim = Draw.getStringDimension(s, g);
+        switch (y_align) {
+            case TOP:
+                y += dim.getHeight();
+                break;
+            case CENTER:
+                y += dim.getHeight() / 2;
+                break;
+        }
+        switch (x_align) {
+            case LEFT:
+                drawString(g, s, x, y);
+                break;
+            case RIGHT:
+                drawString(g, s, x - (float) dim.getWidth(), y);
+                break;
+            case CENTER:
+                drawString(g, s, x - (float) dim.getWidth() / 2, y);
+                break;
+        }
+    }
+
+    /**
+     * Draw out string
+     *
+     * @param g Graphics2D
+     * @param x X location
+     * @param y Y location
+     * @param s String
+     * @param x_align X align
+     * @param y_align Y align
+     * @param angle Angle
+     */
+    public static void outString(Graphics2D g, float x, float y, String s, XAlign x_align, YAlign y_align, float angle) {
+        if (angle == 0) {
+            outString(g, x, y, s, x_align, y_align);
+        } else {
+            Dimension dim = getStringDimension(s, g);
+            AffineTransform tempTrans = g.getTransform();
+            AffineTransform myTrans = new AffineTransform();
+            switch (x_align) {
+                case LEFT:
+                    switch (y_align) {
+                        case CENTER:
+                            if (angle == 90) {
+                                x += (float) (dim.getHeight());
+                                y += (float) (dim.getWidth() * 0.5);
+                            } else if (angle == -90) {
+                                y -= (float) (dim.getWidth() * 0.5);
+                            } else if (angle > 0) {
+                                x += (float) (dim.getHeight() * Math.abs(Math.sin(Math.toRadians(angle))));
+                                y += (float) (dim.getHeight() * Math.cos(Math.toRadians(angle)) * 0.5);
+                            } else {
+                                y += (float) (dim.getHeight() * Math.cos(Math.toRadians(angle)) * 0.5);
+                            }
+                            break;
+                    }
+                    break;
+                case CENTER:
+                    switch(y_align){
+                        case TOP:
+                            if (angle == 90) {
+                                x += (float) (dim.getHeight() * 0.5);
+                                y += (float) (dim.getWidth());
+                            } else if (angle == -90) {
+                                x -= (float) (dim.getHeight() * 0.5);
+                            } else if (angle > 0) {
+                                x -= (float) (dim.getWidth()* Math.abs(Math.cos(Math.toRadians(angle))));
+                                y += (float) (dim.getWidth()* Math.sin(Math.toRadians(angle))) + dim.getHeight();
+                            } else {
+                                //y += (float) (dim.getHeight() * Math.cos(Math.toRadians(angle)) * 0.5);
+                                y += (float) (dim.getHeight() * Math.abs(Math.cos(Math.toRadians(angle))));
+                            }
+                            break;
+                    }
+                    break;
+            }
+            myTrans.translate(tempTrans.getTranslateX() + x, tempTrans.getTranslateY() + y);
+            myTrans.rotate(-angle * Math.PI / 180);
+            g.setTransform(myTrans);
+            Draw.drawString(g, s, 0, 0);
+            g.setTransform(tempTrans);
+        }
+    }
+
+    /**
      * Draw label point
      *
      * @param aPoint The screen point
@@ -1205,7 +1318,7 @@ public class Draw {
             }
         }
     }
-    
+
     /**
      * Draw label point
      *
@@ -1219,7 +1332,7 @@ public class Draw {
      * @param angle Angle
      * @param useExternalFont If use external font
      */
-    public static void drawLabelPoint(float x, float y, Font font, String text, Color color, float angle, 
+    public static void drawLabelPoint(float x, float y, Font font, String text, Color color, float angle,
             Graphics2D g, Rectangle rect, boolean useExternalFont) {
         g.setColor(color);
         g.setFont(font);
@@ -1283,7 +1396,7 @@ public class Draw {
         } else {
             AffineTransform tempTrans = g.getTransform();
             AffineTransform myTrans = new AffineTransform();
-            myTrans.translate(x, y);
+            myTrans.translate(tempTrans.getTranslateX() + x, tempTrans.getTranslateY() + y);
             myTrans.rotate(-angle * Math.PI / 180);
             g.setTransform(myTrans);
             if (angle == 90) {
@@ -1297,7 +1410,7 @@ public class Draw {
             g.setTransform(tempTrans);
         }
     }
-    
+
     /**
      * Draw label point
      *
@@ -1320,7 +1433,7 @@ public class Draw {
         } else {
             AffineTransform tempTrans = g.getTransform();
             AffineTransform myTrans = new AffineTransform();
-            myTrans.translate(x, y);
+            myTrans.translate(tempTrans.getTranslateX() + x, tempTrans.getTranslateY() + y);
             myTrans.rotate(-angle * Math.PI / 180);
             g.setTransform(myTrans);
             if (angle == 90) {
@@ -1331,6 +1444,46 @@ public class Draw {
                 y = 0;
             }
             Draw.drawString(g, text, x, y);
+            g.setTransform(tempTrans);
+        }
+    }
+
+    /**
+     * Draw label point
+     *
+     * @param x X
+     * @param y Y
+     * @param font Font
+     * @param text Text
+     * @param color Color
+     * @param g Graphics2D
+     * @param angle Angle
+     */
+    public static void drawTickLabel_YRight(float x, float y, Font font, String text, Color color, float angle, Graphics2D g) {
+        g.setColor(color);
+        g.setFont(font);
+        Dimension labSize = Draw.getStringDimension(text, g);
+        if (angle == 0) {
+            y += (float) labSize.getHeight() * 0.5f;
+            Draw.drawString(g, text, x, y);
+        } else {
+            AffineTransform tempTrans = g.getTransform();
+            AffineTransform myTrans = new AffineTransform();
+            if (angle == 90) {
+                x += (float) (labSize.getHeight());
+                y += (float) (labSize.getWidth() * 0.5);
+            } else if (angle == -90) {
+                y -= (float) (labSize.getWidth() * 0.5);
+            } else if (angle > 0) {
+                x += (float) (labSize.getHeight() * Math.abs(Math.sin(Math.toRadians(angle))));
+                y += (float) (labSize.getHeight() * Math.cos(Math.toRadians(angle)) * 0.5);
+            } else {
+                y += (float) (labSize.getHeight() * Math.cos(Math.toRadians(angle)) * 0.5);
+            }
+            myTrans.translate(tempTrans.getTranslateX() + x, tempTrans.getTranslateY() + y);
+            myTrans.rotate(-angle * Math.PI / 180);
+            g.setTransform(myTrans);
+            Draw.drawString(g, text, 0, 0);
             g.setTransform(tempTrans);
         }
     }
@@ -1384,7 +1537,7 @@ public class Draw {
             rect.y = (int) iny;
         }
     }
-    
+
     /**
      * Draw label point (270 degress)
      *
@@ -1397,7 +1550,7 @@ public class Draw {
      * @param rect The extent rectangle
      * @param useExternalFont If use external font
      */
-    public static void drawLabelPoint_270(float x, float y, Font font, String text, Color color, 
+    public static void drawLabelPoint_270(float x, float y, Font font, String text, Color color,
             Graphics2D g, Rectangle rect, boolean useExternalFont) {
         //FontMetrics metrics = g.getFontMetrics(font);
         //Dimension labSize = new Dimension(metrics.stringWidth(text), metrics.getHeight());
@@ -1576,7 +1729,7 @@ public class Draw {
                 drawPolyline(points, (PolylineBreak) aGraphic.getLegend(), g);
                 break;
             case Polygon:
-                PolygonShape pgs = (PolygonShape)aGraphic.getShape().clone();
+                PolygonShape pgs = (PolygonShape) aGraphic.getShape().clone();
                 pgs.setPoints_keep(points);
                 drawPolygonShape(pgs, (PolygonBreak) aGraphic.getLegend(), g);
                 break;
@@ -1726,21 +1879,23 @@ public class Draw {
             g.fill(path);
         }
     }
-    
+
     /**
      * Draw polygon shape with screen coordinates
+     *
      * @param pgs Polygon shape
      * @param pgb Polygon break
      * @param g Graphics2D
      */
-    public static void drawPolygonShape(PolygonShape pgs, PolygonBreak pgb, Graphics2D g){
-        for (Polygon polygon : pgs.getPolygons()){
+    public static void drawPolygonShape(PolygonShape pgs, PolygonBreak pgb, Graphics2D g) {
+        for (Polygon polygon : pgs.getPolygons()) {
             drawPolygon(polygon, pgb, g);
         }
     }
-    
+
     /**
      * Draw polygon with screen coordinate
+     *
      * @param aPG Polygon shape
      * @param aPGB Polygon break
      * @param g Graphics2D
@@ -1762,7 +1917,7 @@ public class Draw {
         List<PointD> newPList;
         if (aPG.hasHole()) {
             for (int h = 0; h < aPG.getHoleLines().size(); h++) {
-                newPList = (List<PointD>)aPG.getHoleLines().get(h);
+                newPList = (List<PointD>) aPG.getHoleLines().get(h);
                 for (int j = 0; j < newPList.size(); j++) {
                     wPoint = newPList.get(j);
                     if (j == 0) {
@@ -3330,6 +3485,7 @@ public class Draw {
 
     /**
      * Get pie wedge label point
+     *
      * @param sPoint Center point
      * @param r Radius
      * @param angle Angle
