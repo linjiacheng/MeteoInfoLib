@@ -347,7 +347,7 @@ public class MICAPS11DataInfo extends DataInfo implements IGridDataInfo {
                     theData[col][i] = Float.parseFloat(dataList.get(i));
                 }
                 if (dataList.size() > xNum) {
-                    dataList = dataList.subList(xNum, dataList.size() - 1);
+                    dataList = dataList.subList(xNum, dataList.size());
                 } else {
                     dataList = new ArrayList<>();
                 }
@@ -475,7 +475,7 @@ public class MICAPS11DataInfo extends DataInfo implements IGridDataInfo {
                     theData[col][i] = Double.parseDouble(dataList.get(i));
                 }
                 if (dataList.size() > xNum) {
-                    dataList = dataList.subList(xNum, dataList.size() - 1);
+                    dataList = dataList.subList(xNum, dataList.size());
                 } else {
                     dataList = new ArrayList<>();
                 }
