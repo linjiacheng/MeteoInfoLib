@@ -32,5 +32,7 @@ public enum PointStyle {
     StarLines,
     Pentagon,
     UpSemiCircle,
-    DownSemiCircle
+    DownSemiCircle,
+    DOUBLE_CIRCLE,
+    CIRCLE_STAR
 }

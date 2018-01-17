@@ -727,6 +727,25 @@ public class Draw {
                     //g.drawOval((int) aP.X, (int) aP.Y, (int) aSize, (int) aSize);
                 }
                 break;
+             case DOUBLE_CIRCLE:
+                float x, y;
+                x = aP.X - aSize / 2.f;
+                y = aP.Y - aSize / 2.f;
+                ellipse = new Ellipse2D.Float(x, y, aSize, aSize);
+                if (drawFill) {
+                    g.setColor(color);
+                    g.fill(ellipse);
+                }
+                if (drawOutline) {
+                    g.setColor(outlineColor);
+                    g.setStroke(new BasicStroke(outlineSize));
+                    g.draw(ellipse);
+                    x = aP.X - aSize * 0.3f;
+                    y = aP.Y - aSize * 0.3f;
+                    ellipse = new Ellipse2D.Float(x, y, aSize * 0.6f, aSize * 0.6f);
+                    g.draw(ellipse);
+                }
+                break;
             case Square:
                 aP.X = aP.X - aSize / 2.f;
                 aP.Y = aP.Y - aSize / 2.f;
@@ -887,6 +906,47 @@ public class Draw {
                     g.setColor(outlineColor);
                     g.setStroke(new BasicStroke(outlineSize));
                     g.drawPolygon(xPoints, yPoints, xPoints.length);
+                }
+                break;
+            case CIRCLE_STAR:
+                vRadius = aSize * 0.4f;
+                //Calculate 5 end points
+                vPoints = new PointF[5];
+                vAngle = 2.0 * Math.PI / 4 + Math.PI;
+                for (int i = 0; i < vPoints.length; i++) {
+                    vAngle += 2.0 * Math.PI / (double) vPoints.length;
+                    vPoints[i] = new PointF(
+                            (float) (Math.cos(vAngle) * vRadius) + aP.X,
+                            (float) (Math.sin(vAngle) * vRadius) + aP.Y);
+                }
+                //Calculate 5 cross points
+                cPoints = new PointF[5];
+                cPoints[0] = MIMath.getCrossPoint(vPoints[0], vPoints[2], vPoints[1], vPoints[4]);
+                cPoints[1] = MIMath.getCrossPoint(vPoints[1], vPoints[3], vPoints[0], vPoints[2]);
+                cPoints[2] = MIMath.getCrossPoint(vPoints[1], vPoints[3], vPoints[2], vPoints[4]);
+                cPoints[3] = MIMath.getCrossPoint(vPoints[0], vPoints[3], vPoints[2], vPoints[4]);
+                cPoints[4] = MIMath.getCrossPoint(vPoints[0], vPoints[3], vPoints[1], vPoints[4]);
+                //New points
+                xPoints = new int[10];
+                yPoints = new int[10];
+                for (int i = 0; i < 5; i++) {
+                    xPoints[i * 2] = (int) vPoints[i].X;
+                    yPoints[i * 2] = (int) vPoints[i].Y;
+                    xPoints[i * 2 + 1] = (int) cPoints[i].X;
+                    yPoints[i * 2 + 1] = (int) cPoints[i].Y;
+                }
+                if (drawFill) {
+                    g.setColor(color);
+                    g.fillPolygon(xPoints, yPoints, xPoints.length);
+                }
+                if (drawOutline) {
+                    g.setColor(outlineColor);
+                    g.setStroke(new BasicStroke(outlineSize));
+                    //g.drawPolygon(xPoints, yPoints, xPoints.length);
+                    x = aP.X - aSize * 0.5f;
+                    y = aP.Y - aSize * 0.5f;
+                    ellipse = new Ellipse2D.Float(x, y, aSize, aSize);
+                    g.draw(ellipse);
                 }
                 break;
             case Pentagon:

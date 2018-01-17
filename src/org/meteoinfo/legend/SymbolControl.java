@@ -380,8 +380,8 @@ public class SymbolControl extends JPanel {
                         break;
                     case Simple:
                         PointBreak aPB = new PointBreak();
-                        aPB.setColor(Color.black);
-                        aPB.setDrawOutline(false);
+                        aPB.setColor(Color.red);
+                        aPB.setDrawOutline(true);
                         aPB.setSize(_cellSize.width * 0.8f);
                         for (int i = 0; i < _symbolNumber; i++) {
 //                            if (i == PointStyle.values().length) {

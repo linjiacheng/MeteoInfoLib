@@ -1219,7 +1219,17 @@ public abstract class AbstractPlot2D extends Plot {
         }
     }
 
-    void drawText(ChartText text, Graphics2D g, float x, float y) {
+    void drawText(ChartText text, Graphics2D g, float x, float y) {        
+        float angle = text.getAngle();
+        AffineTransform tempTrans = g.getTransform();
+        if (angle != 0){            
+            AffineTransform myTrans = new AffineTransform();
+            myTrans.translate(tempTrans.getTranslateX() + x, tempTrans.getTranslateY() + y);
+            myTrans.rotate(-angle * Math.PI / 180);
+            g.setTransform(myTrans);
+            x = 0;
+            y = 0;
+        }
         g.setFont(text.getFont());
         Dimension dim = Draw.getStringDimension(text.getText(), g);
         float gap = text.getGap();
@@ -1239,6 +1249,9 @@ public abstract class AbstractPlot2D extends Plot {
         }
         g.setColor(text.getColor());
         Draw.drawString(g, text.getText(), x, y, text.isUseExternalFont());
+        if (angle != 0){   
+            g.setTransform(tempTrans);
+        }
     }
 
     void drawLegend(Graphics2D g, Rectangle2D area, Rectangle2D graphArea, float y) {
