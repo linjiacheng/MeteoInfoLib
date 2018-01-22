@@ -3484,6 +3484,31 @@ public class ArrayMath {
 
         return r;
     }
+    
+    /**
+     * Take elements from an array.
+     *
+     * @param a The array
+     * @param ranges The indices of the values to extract.
+     * @return The returned array has the same type as a.
+     */
+    public static Array takeValues(Array a, List<List<Integer>> ranges) {
+        int n = a.getRank();
+        int nn = ranges.get(0).size();
+        int[] shape = new int[]{nn};
+        Array r = Array.factory(a.getDataType(), shape);
+        Index index = a.getIndex();
+        int[] current = new int[n];
+        for (int i = 0; i < nn; i++){
+            for (int j = 0; j < n; j++){
+                current[j] = ranges.get(j).get(i);
+            }
+            index.set(current);
+            r.setObject(i, a.getObject(index));
+        }
+        
+        return r;
+    }
 
     /**
      * Set section
