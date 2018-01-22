@@ -834,46 +834,15 @@ public class ChartLegend {
                     PolylineBreak aPLB = (PolylineBreak) cb;
                     Draw.drawPolylineSymbol_S(new PointF(x, y), symbolWidth, symbolHeight, aPLB, g);
                 } else if (cb instanceof PolygonBreak) {
-//                    Draw.drawPolygonSymbol(new PointF(x, y), cb.getColor(), Color.black, symbolWidth,
-//                            symbolHeight, true, true, g);
                     Draw.drawPolygonSymbol(new PointF(x, y), symbolWidth, symbolHeight, (PolygonBreak) cb, g);
                 }
-//                switch (aLS.getShapeType()) {
-//                    case Point:
-//                        PointBreak aPB = (PointBreak) ((PointBreak) aLS.getLegendBreaks().get(i)).clone();
-//                        caption = aPB.getCaption();
-//                        aPB.setSize(aPB.getSize());
-//                        Draw.drawPoint(new PointF(x, y), aPB, g);
-//                        break;
-//                    case Polyline:
-//                    case PolylineZ:
-//                        PolylineBreak aPLB = (PolylineBreak) aLS.getLegendBreaks().get(i);
-//                        caption = aPLB.getCaption();
-//                        Draw.drawPolylineSymbol_S(new PointF(x, y), symbolWidth, symbolHeight, aPLB, g);
-//                        break;
-//                    case Polygon:
-//                        PolygonBreak aPGB = (PolygonBreak) aLS.getLegendBreaks().get(i);
-//                        caption = aPGB.getCaption();
-//                        Draw.drawPolygonSymbol(new PointF(x, y), symbolHeight * 8 / 10, symbolHeight * 8 / 10, aPGB, g);
-//                        break;
-//                    case Image:
-//                        ColorBreak aCB = aLS.getLegendBreaks().get(i);
-//                        caption = aCB.getCaption();
-//                        Draw.drawPolygonSymbol(new PointF(x, y), aCB.getColor(), Color.black, symbolWidth,
-//                                symbolHeight, true, true, g);
-//                        break;
-//                }
 
                 PointF sP = new PointF(0, 0);
                 sP.X = x + symbolWidth / 2;
-                sP.Y = y;
-                //FontMetrics metrics = g.getFontMetrics(lFont);
-                //aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());                
+                sP.Y = y;               
                 g.setColor(labelColor);
                 g.setFont(labelFont);
                 aSF = Draw.getStringDimension(caption, g);
-                //g.drawString(caption, sP.X + 5, sP.Y + aSF.height / 3);
-                //g.drawString(caption, sP.X + 5, sP.Y + aSF.height / 4);
                 Draw.drawString(g, caption, sP.X + 5, sP.Y + aSF.height / 4);
                 y += breakHeight + breakSpace;
 
@@ -932,36 +901,14 @@ public class ChartLegend {
                     PolylineBreak aPLB = (PolylineBreak) cb;
                     Draw.drawPolylineSymbol_S(new PointF(x, y), symbolWidth, symbolHeight, aPLB, g);
                 } else if (cb instanceof PolygonBreak) {
-                    Draw.drawPolygonSymbol(new PointF(x, y), cb.getColor(), Color.black, symbolWidth,
-                            symbolHeight, true, true, g);
+                    Draw.drawPolygonSymbol(new PointF(x, y), symbolWidth, symbolHeight, (PolygonBreak) cb, g);
                 }
-//                switch (aLS.getShapeType()) {
-//                    case Point:
-//                        PointBreak aPB = (PointBreak) cb;
-//                        Draw.drawPoint(new PointF(x, y), aPB, g);
-//                        break;
-//                    case Polyline:
-//                    case PolylineZ:
-//                        PolylineBreak aPLB = (PolylineBreak) cb;
-//                        Draw.drawPolylineSymbol_S(new PointF(x, y), symbolWidth, symbolHeight, aPLB, g);
-//                        break;
-//                    case Polygon:
-//                        PolygonBreak aPGB = (PolygonBreak) cb;
-//                        Draw.drawPolygonSymbol(new PointF(x, y), symbolHeight * 8 / 10, symbolHeight * 8 / 10, aPGB, g);
-//                        break;
-//                    case Image:
-//                        Draw.drawPolygonSymbol(new PointF(x, y), cb.getColor(), Color.black, symbolWidth,
-//                                symbolHeight, true, true, g);
-//                        break;
-//                }
 
                 PointF sP = new PointF(0, 0);
                 sP.X = x + symbolWidth / 2;
                 sP.Y = y;
                 g.setColor(labelColor);
                 g.setFont(labelFont);
-                //g.drawString(caption, sP.X + 5, sP.Y + aSF.height / 3);
-                //g.drawString(caption, sP.X + 5, sP.Y + metrics.getHeight() / 4);
                 Draw.drawString(g, caption, sP.X + 5, sP.Y + metrics.getHeight() / 4);
 
                 x += this.symbolDimension.width + metrics.stringWidth(caption) + 15;
