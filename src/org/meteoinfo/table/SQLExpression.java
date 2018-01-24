@@ -300,7 +300,8 @@ public class SQLExpression {
             return ((Date)field).equals(Convert.toDate(value));
         }
 
-        return Convert.toString(field).equals(value.substring(1, value.length() - 1));
+        //return Convert.toString(field).equals(value.substring(1, value.length() - 1));
+        return Convert.toString(field).equals(value);
     }
 
     private static boolean isNotEquals(Object field, String value) {
@@ -318,7 +319,8 @@ public class SQLExpression {
             return !((Date)field).equals(Convert.toDate(value));
         }
 
-        return !Convert.toString(field).equals(value.substring(1, value.length() - 1));
+        //return !Convert.toString(field).equals(value.substring(1, value.length() - 1));
+        return !Convert.toString(field).equals(value);
     }
 
     private static boolean isLessEquals(Object field, String value) {
