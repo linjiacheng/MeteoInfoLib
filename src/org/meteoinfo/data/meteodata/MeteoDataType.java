@@ -55,6 +55,7 @@ public enum MeteoDataType {
         /// </summary>
         MICAPS_13,
         MICAPS_120,
+        MICAPS_131,
         /// <summary>
         /// HYSPLIT concentration
         /// </summary>
@@ -138,6 +139,7 @@ public enum MeteoDataType {
                 case MICAPS_11:
                 case MICAPS_13:
                 case MICAPS_120:
+                case MICAPS_131:
                     return true;
                 default:
                     return false;

@@ -76,6 +76,9 @@ public class MICAPSDataInfo {
             if (dataType.equals("diamond 120")) {
                 mdType = MeteoDataType.MICAPS_120;
             }
+            if (dataType.equals("diamond 131")) {
+                mdType = MeteoDataType.MICAPS_131;
+            }
         } catch (FileNotFoundException ex) {
             Logger.getLogger(MICAPSDataInfo.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {

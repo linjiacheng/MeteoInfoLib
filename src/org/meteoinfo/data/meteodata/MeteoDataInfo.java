@@ -38,6 +38,7 @@ import java.util.logging.Logger;
 import org.meteoinfo.data.ArrayMath;
 import org.meteoinfo.data.meteodata.micaps.MICAPS11DataInfo;
 import org.meteoinfo.data.meteodata.micaps.MICAPS120DataInfo;
+import org.meteoinfo.data.meteodata.micaps.MICAPS131DataInfo;
 import org.meteoinfo.data.meteodata.micaps.MICAPS13DataInfo;
 import org.meteoinfo.data.meteodata.micaps.MICAPS7DataInfo;
 import org.meteoinfo.data.meteodata.mm5.MM5DataInfo;
@@ -837,6 +838,9 @@ public class MeteoDataInfo {
                 break;
             case MICAPS_120:
                 _dataInfo = new MICAPS120DataInfo();
+                break;
+            case MICAPS_131:
+                _dataInfo = new MICAPS131DataInfo();
                 break;
         }
         _dataInfo.readDataInfo(fileName);
