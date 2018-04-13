@@ -793,5 +793,45 @@ public abstract class Projection implements Cloneable {
         }
         return angle;
     }
+    
+    /**
+     * Check if this projection is equal with other projection
+     * @param proj The other projection
+     * @return Boolean
+     */
+    public boolean isEqual(Projection proj){
+        if (!this.proj4Name.equals(proj.proj4Name))
+            return false;
+        if (this.a != proj.a)
+            return false;        
+        if (this.e != proj.e)
+            return false;
+        if (!this.ellipsoid.isEqual(proj.ellipsoid, 0.0000001))
+            return false;
+        if (this.es != proj.es)
+            return false;
+        if (this.falseEasting != proj.falseEasting)
+            return false;
+        if (this.falseNorthing != proj.falseNorthing)
+            return false;
+        if (this.fromMetres != proj.fromMetres)
+            return false;
+        if (this.heightOfOrbit != proj.heightOfOrbit)
+            return false;
+        if (this.projectionLatitudeDegrees != proj.projectionLatitudeDegrees)
+            return false;
+        if (this.projectionLatitude1Degrees != proj.projectionLatitude1Degrees)
+            return false;
+        if (this.projectionLatitude2Degrees != proj.projectionLatitude2Degrees)
+            return false;
+        if (this.projectionLongitudeDegrees != proj.projectionLongitudeDegrees)
+            return false;
+        if (this.scaleFactor != proj.scaleFactor)
+            return false;
+        if (this.trueScaleLatitudeDegrees != proj.trueScaleLatitudeDegrees)
+            return false;
+        
+        return true;        
+    }
         
 }

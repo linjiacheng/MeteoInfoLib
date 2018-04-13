@@ -36,6 +36,7 @@ import org.meteoinfo.data.GridArray;
 import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.data.meteodata.arl.ARLDataInfo;
 import org.meteoinfo.global.DataConvert;
+import org.meteoinfo.global.util.BigDecimalUtil;
 import org.meteoinfo.global.util.DateUtil;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
@@ -200,15 +201,20 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
 
             double[] X = new double[lon_point_num];
             double[] Y = new double[lat_point_num];
+            double lonMin = BigDecimalUtil.toDouble(lon_LF);
+            double lonDelta = BigDecimalUtil.toDouble(lon_delta);
             for (i = 0; i < lon_point_num; i++) {
-                X[i] = lon_LF + i * lon_delta;
+                //X[i] = lon_LF + i * lon_delta;
+                X[i] = BigDecimalUtil.add(lonMin, BigDecimalUtil.mul(i, lonDelta));
             }
-            if (X[0] == 0 && X[X.length - 1]
-                    + lon_delta == 360) {
+            if (X[0] == 0 && BigDecimalUtil.add(X[X.length - 1], lon_delta) == 360) {
                 this.setGlobal(true);
             }
+            double latMin = BigDecimalUtil.toDouble(lat_LF);
+            double latDelta = BigDecimalUtil.toDouble(lat_delta);
             for (i = 0; i < lat_point_num; i++) {
-                Y[i] = lat_LF + i * lat_delta;
+                //Y[i] = lat_LF + i * lat_delta;
+                Y[i] = BigDecimalUtil.add(latMin, BigDecimalUtil.mul(i, latDelta));
             }
             
             this.addAttribute(new Attribute("data_format", "HYSPLIT Concentration"));
@@ -674,9 +680,9 @@ public class HYSPLITConcDataInfo extends DataInfo implements IGridDataInfo {
 
             br.close();
 
-            for (i = 0; i < xNum; i++) {
-                for (j = 0; j < yNum; j++) {
-                    data[i * yNum + j] = dataArray[j][i];
+            for (i = 0; i < yNum; i++) {
+                for (j = 0; j < xNum; j++) {
+                    data[i * xNum + j] = dataArray[j][i];
                 }
             }
             

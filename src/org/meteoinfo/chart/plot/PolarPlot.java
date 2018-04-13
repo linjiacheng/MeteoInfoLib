@@ -285,7 +285,7 @@ public class PolarPlot extends Plot2D {
         int left = 2, bottom = 2, right = 2, top = 5;        
 
         if (this.getTitle() != null) {
-            top += this.getTitle().getHeight(g) + 10;
+            top += this.getTitle().getTrueDimension(g).height + 15;
         }
 
         if (!this.getLegends().isEmpty()) {
@@ -333,7 +333,7 @@ public class PolarPlot extends Plot2D {
         int space = 10;
 
         if (this.getTitle() != null) {
-            top += this.getTitle().getHeight(g) + 10;
+            top += this.getTitle().getTrueDimension(g).height + 10;
         }
 
         if (!this.getLegends().isEmpty()) {
@@ -386,7 +386,7 @@ public class PolarPlot extends Plot2D {
         this.setGraphArea(graphArea);
 
         //Draw title
-        float y = this.drawTitle(g, graphArea);
+        this.drawTitle(g, graphArea);
 
         if (graphArea.getWidth() < 10 || graphArea.getHeight() < 10) {
             return;
@@ -418,8 +418,15 @@ public class PolarPlot extends Plot2D {
         this.drawText(g, graphArea);
 
         //Draw legend
-        this.drawLegend(g, area, graphArea, y);
+        this.drawLegend(g, area, graphArea);
 
+    }
+    
+    @Override
+    int getTopAxisHeight(Graphics2D g) {
+        g.setFont(xTickFont);
+        int height = Draw.getStringDimension("tick", g).height + 5;
+        return height;
     }
 
     @Override
@@ -468,7 +475,7 @@ public class PolarPlot extends Plot2D {
                 String label = this.xTickLabels.get(i);
                 Dimension dim = Draw.getStringDimension(label, g);
                 float w = dim.width;
-                float h = dim.height * 0.6f;
+                float h = dim.height;
                 if (angle == 0 || angle == 180){
                     y = y + h * 0.5;
                     if (angle == 0)

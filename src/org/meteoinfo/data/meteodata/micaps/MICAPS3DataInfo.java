@@ -39,6 +39,7 @@ import java.util.logging.Logger;
 import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.global.util.DateUtil;
 import ucar.ma2.Array;
+import ucar.ma2.ArrayString;
 import ucar.ma2.DataType;
 import ucar.nc2.Attribute;
 
@@ -142,8 +143,11 @@ public class MICAPS3DataInfo extends DataInfo implements IStationDataInfo {
 
             stNum = _dataList.size();
             Dimension stdim = new Dimension(DimensionType.Other);
-            stdim.setShortName("stations");
+            stdim.setShortName("station");
             double[] values = new double[stNum];
+            for (i = 0; i < stNum; i++){
+                values[i] = i;
+            }
             stdim.setValues(values);
             this.addDimension(stdim);
             Dimension tdim = new Dimension(DimensionType.T);
@@ -244,14 +248,25 @@ public class MICAPS3DataInfo extends DataInfo implements IStationDataInfo {
         }
         int[] shape = new int[1];
         shape[0] = this.stNum;
+        Array r;
         DataType dt = DataType.FLOAT;
-        if (varName.equals("Stid"))
+        if (varName.equals("Stid")){
             dt = DataType.STRING;
-        Array r = Array.factory(dt, shape);
+            r = new ArrayString(shape);            
+        } else {
+            r = Array.factory(dt, shape);
+        }
         List<String> dataList;
         for (int i = 0; i < _dataList.size(); i++) {
             dataList = _dataList.get(i);
-            r.setFloat(i, Float.parseFloat(dataList.get(varIdx)));
+            switch (dt) {
+                case STRING:
+                    r.setObject(i, dataList.get(varIdx));
+                    break;
+                default:
+                    r.setFloat(i, Float.parseFloat(dataList.get(varIdx)));
+                    break;
+            }
         }
         
         return r;

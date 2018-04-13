@@ -26,7 +26,9 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
@@ -66,6 +68,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.event.EventListenerList;
 import javax.swing.table.DefaultTableModel;
 import org.freehep.graphics2d.VectorGraphics;
@@ -116,6 +119,11 @@ public class ChartPanel extends JPanel {
     private MouseMode mouseMode;
     private List<int[]> selectedPoints;
     private final double INCH_2_CM = 2.54;
+    private int xShift = 0;
+    private int yShift = 0;
+    private double paintScale = 1.0;
+    private Date lastMouseWheelTime;
+    private Timer mouseWheelDetctionTimer;
     // </editor-fold>
 
     // <editor-fold desc="Constructor">
@@ -163,7 +171,21 @@ public class ChartPanel extends JPanel {
         this.addMouseWheelListener(new MouseWheelListener() {
             @Override
             public void mouseWheelMoved(MouseWheelEvent e) {
-                //onMouseWheelMoved(e);
+                onMouseWheelMoved(e);
+            }
+        });
+        
+        this.mouseWheelDetctionTimer = new Timer(100, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Date now = new Date();
+                if (now.getTime() - lastMouseWheelTime.getTime() > 200) {
+                    xShift = 0;
+                    yShift = 0;
+                    paintScale = 1.0;
+                    paintGraphics();
+                    mouseWheelDetctionTimer.stop();
+                }
             }
         });
 
@@ -333,34 +355,36 @@ public class ChartPanel extends JPanel {
     // <editor-fold desc="Method">
     /**
      * Get figure width
+     *
      * @return Figure width
      */
-    public int getFigureWidth(){
+    public int getFigureWidth() {
         int width;
         if (this.chartSize != null) {
-            width = this.chartSize.width;            
+            width = this.chartSize.width;
         } else {
             width = this.getWidth();
         }
-        
+
         return width;
     }
-    
+
     /**
      * Get Figure height
+     *
      * @return Figure height
      */
-    public int getFigureHeight(){
+    public int getFigureHeight() {
         int height;
         if (this.chartSize != null) {
-            height = this.chartSize.height;           
+            height = this.chartSize.height;
         } else {
             height = this.getHeight();
         }
-        
+
         return height;
     }
-    
+
     /**
      * Select a plot by point
      *
@@ -400,8 +424,6 @@ public class ChartPanel extends JPanel {
         //this.setBackground(Color.white);
         Graphics2D g2 = (Graphics2D) g;
         g2.drawImage(mapBitmap, null, 0, 0);
-        //g2.drawImage(mapBitmap, null, (int)this._pageLocation.X, (int)this._pageLocation.Y);
-        //g2.drawImage(this._layoutBitmap, _xShift, _yShift, this.getBackground(), this);
 
         //Draw dynamic graphics
         if (this.dragMode) {
@@ -448,16 +470,16 @@ public class ChartPanel extends JPanel {
         if (this.getWidth() < 5 || this.getHeight() < 5) {
             return;
         }
-        
+
         int width, height;
         if (this.chartSize != null) {
             height = this.chartSize.height;
-            width = this.chartSize.width;            
+            width = this.chartSize.width;
         } else {
             width = this.getWidth();
             height = this.getHeight();
         }
-        
+
         this.mapBitmap = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
         if (this.chart != null) {
@@ -494,7 +516,7 @@ public class ChartPanel extends JPanel {
     }
 
     void onComponentResized(ComponentEvent e) {
-        if (this.getWidth() > 0 && this.getHeight() > 0) {            
+        if (this.getWidth() > 0 && this.getHeight() > 0) {
             if (this.chart != null) {
                 this.paintGraphics();
             }
@@ -524,24 +546,35 @@ public class ChartPanel extends JPanel {
 
     void onMouseMoved(MouseEvent e) {
         this.dragMode = false;
+//        switch (this.mouseMode) {
+//            case PAN:
+//                Plot plot = selPlot(e.getX(), e.getY());
+//                if (plot != null) {
+//                    Rectangle2D mapRect = plot.getGraphArea();
+//                    tempImage = new BufferedImage((int) mapRect.getWidth() - 2,
+//                            (int) mapRect.getHeight() - 2, BufferedImage.TYPE_INT_ARGB);
+//                    Graphics2D tg = tempImage.createGraphics();
+//                    tg.setColor(Color.white);
+//                    tg.fill(mapRect);
+//                    tg.drawImage(this.mapBitmap, -(int) mapRect.getX() - 1, -(int) mapRect.getY() - 1, this);
+//                    tg.dispose();
+//                }
+//                break;
+//        }
     }
 
     void onMouseReleased(MouseEvent e) {
         this.dragMode = false;
         Plot plt = this.chart.findPlot(mouseDownPoint.x, mouseDownPoint.y);
-        if (!(plt instanceof AbstractPlot2D)){
+        if (!(plt instanceof AbstractPlot2D)) {
             return;
         }
-        
+
         AbstractPlot2D xyplot = (AbstractPlot2D) plt;
         this.currentPlot = xyplot;
         switch (this.mouseMode) {
             case ZOOM_IN:
                 if (Math.abs(mouseLastPos.x - mouseDownPoint.x) > 5) {
-                    if (xyplot == null) {
-                        return;
-                    }
-
                     if (xyplot instanceof MapPlot) {
                         MapPlot plot = (MapPlot) xyplot;
                         Rectangle2D graphArea = xyplot.getGraphArea();
@@ -585,31 +618,25 @@ public class ChartPanel extends JPanel {
                 }
                 break;
             case ZOOM_OUT:
-                if (xyplot != null) {
-                    if (e.getButton() == MouseEvent.BUTTON1) {
-                        double zoom = 1.5;
-                        Extent extent = xyplot.getDrawExtent();
-                        double owidth = extent.getWidth();
-                        double oheight = extent.getHeight();
-                        double width = owidth * zoom;
-                        double height = oheight * zoom;
-                        double xshift = (owidth - width) * 0.5;
-                        double yshift = (oheight - height) * 0.5;
-                        extent.minX += xshift;
-                        extent.maxX -= xshift;
-                        extent.minY += yshift;
-                        extent.maxY -= yshift;
-                        xyplot.setDrawExtent(extent);
-                        this.paintGraphics();
-                    }
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    double zoom = 1.5;
+                    Extent extent = xyplot.getDrawExtent();
+                    double owidth = extent.getWidth();
+                    double oheight = extent.getHeight();
+                    double width = owidth * zoom;
+                    double height = oheight * zoom;
+                    double xshift = (owidth - width) * 0.5;
+                    double yshift = (oheight - height) * 0.5;
+                    extent.minX += xshift;
+                    extent.maxX -= xshift;
+                    extent.minY += yshift;
+                    extent.maxY -= yshift;
+                    xyplot.setDrawExtent(extent);
+                    this.paintGraphics();
                 }
                 break;
             case SELECT:
                 if (Math.abs(mouseLastPos.x - mouseDownPoint.x) > 5) {
-                    if (xyplot == null) {
-                        return;
-                    }
-
                     if (xyplot instanceof XY1DPlot) {
                         XY1DPlot plot = (XY1DPlot) xyplot;
                         Rectangle2D graphArea = plot.getGraphArea();
@@ -629,10 +656,6 @@ public class ChartPanel extends JPanel {
                 }
                 break;
             case PAN:
-                if (xyplot == null) {
-                    return;
-                }
-
                 if (e.getButton() == MouseEvent.BUTTON1) {
                     int deltaX = e.getX() - mouseDownPoint.x;
                     int deltaY = e.getY() - mouseDownPoint.y;
@@ -650,7 +673,7 @@ public class ChartPanel extends JPanel {
     void onMouseDragged(MouseEvent e) {
         this.dragMode = true;
         int x = e.getX();
-        int y = e.getY();        
+        int y = e.getY();
         switch (this.mouseMode) {
             case ZOOM_IN:
             case SELECT:
@@ -697,7 +720,7 @@ public class ChartPanel extends JPanel {
             case ROTATE:
                 plot = selPlot(this.mouseDownPoint.x, this.mouseDownPoint.y);
                 if (plot != null && plot.getPlotType() == PlotType.XYZ) {
-                    Plot3D plot3d = (Plot3D)plot;
+                    Plot3D plot3d = (Plot3D) plot;
                     Projector projector = plot3d.getProjector();
                     float new_value = 0.0f;
                     // if (!thread.isAlive() || !data_available) {
@@ -863,6 +886,74 @@ public class ChartPanel extends JPanel {
             } else if (e.getButton() == MouseEvent.BUTTON3) {
                 popupMenu.show(this, e.getX(), e.getY());
             }
+        }
+    }
+
+    void onMouseWheelMoved(MouseWheelEvent e) {
+        Plot plt = selPlot(e.getX(), e.getY());
+        if (!(plt instanceof AbstractPlot2D)) {
+            return;
+        }
+
+        double minX, maxX, minY, maxY, lonRan, latRan, zoomF;
+        double mouseLon, mouseLat;
+        Extent drawExtent = ((AbstractPlot2D) plt).getDrawExtent();
+        lonRan = drawExtent.maxX - drawExtent.minX;
+        latRan = drawExtent.maxY - drawExtent.minY;
+        mouseLon = drawExtent.minX + lonRan / 2;
+        mouseLat = drawExtent.minY + latRan / 2;
+
+        zoomF = 1 + e.getWheelRotation() / 10.0f;
+
+        minX = mouseLon - (lonRan / 2 * zoomF);
+        maxX = mouseLon + (lonRan / 2 * zoomF);
+        minY = mouseLat - (latRan / 2 * zoomF);
+        maxY = mouseLat + (latRan / 2 * zoomF);
+        switch (this.mouseMode) {
+            case PAN:
+                if (plt instanceof MapPlot) {
+                    MapPlot mplt = (MapPlot) plt;
+                    Graphics2D g = (Graphics2D) this.getGraphics();
+                    Rectangle2D mapRect = mplt.getGraphArea();
+                    
+                    this.lastMouseWheelTime = new Date();
+                    if (!this.mouseWheelDetctionTimer.isRunning()) {
+                        this.mouseWheelDetctionTimer.start();
+                        tempImage = new BufferedImage((int) mapRect.getWidth() - 2,
+                            (int) mapRect.getHeight() - 2, BufferedImage.TYPE_INT_ARGB);
+                        Graphics2D tg = tempImage.createGraphics();
+                        tg.setColor(Color.white);
+                        tg.fill(mapRect);
+                        tg.drawImage(this.mapBitmap, -(int) mapRect.getX() - 1, -(int) mapRect.getY() - 1, this);
+                        tg.dispose();
+                    }
+                    
+                    g.setClip(mapRect);
+                    g.setColor(Color.white);
+                    //g.clearRect((int)mapRect.getX(), (int)mapRect.getY(), (int)mapRect.getWidth(), (int)mapRect.getHeight());
+                    paintScale = paintScale / zoomF;
+                    float nWidth = (float)mapRect.getWidth() * (float) paintScale;
+                    float nHeight = (float)mapRect.getHeight() * (float) paintScale;
+                    float nx = ((float)mapRect.getWidth() - nWidth) / 2;
+                    float ny = ((float)mapRect.getHeight() - nHeight) / 2;
+                    if (nx > 0) {
+                        g.fillRect((int) mapRect.getX(), (int) mapRect.getY(), (int)nx, (int) mapRect.getHeight());
+                        g.fillRect((int) (mapRect.getMaxX() - nx), (int) mapRect.getY(), (int)nx, (int) mapRect.getHeight());
+                    }
+                    if (ny > 0) {
+                        g.fillRect((int) mapRect.getX(), (int) mapRect.getY(), (int) mapRect.getWidth(), (int)ny);
+                        g.fillRect((int) mapRect.getX(), (int) (mapRect.getMaxY() - ny), (int) mapRect.getWidth(), (int)ny);
+                    } 
+                    g.drawImage(tempImage, (int)(mapRect.getX() + nx), (int)(mapRect.getY() + ny), 
+                            (int)nWidth, (int)nHeight, null);       
+                    g.setColor(this.getForeground());
+                    g.draw(mapRect);
+                    mplt.setDrawExtent(new Extent(minX, maxX, minY, maxY));
+                } else {
+                    ((AbstractPlot2D) plt).setDrawExtent(new Extent(minX, maxX, minY, maxY));
+                    this.paintGraphics();
+                }
+                break;
         }
     }
 
@@ -1245,7 +1336,6 @@ public class ChartPanel extends JPanel {
         File output = new File(fileName);
         output.delete();
 
-        BufferedImage image = this.mapBitmap;
         String formatName = fileName.substring(fileName.lastIndexOf('.') + 1);
         if (formatName.equals("jpg")) {
             formatName = "jpeg";
@@ -1253,6 +1343,8 @@ public class ChartPanel extends JPanel {
             return;
         }
 
+        this.paintGraphics();
+        BufferedImage image = this.mapBitmap;
         for (Iterator<ImageWriter> iw = ImageIO.getImageWritersByFormatName(formatName); iw.hasNext();) {
             ImageWriter writer = iw.next();
             ImageWriteParam writeParam = writer.getDefaultWriteParam();
@@ -1293,7 +1385,6 @@ public class ChartPanel extends JPanel {
         File output = new File(fileName);
         output.delete();
 
-        BufferedImage image = this.mapBitmap;
         String formatName = fileName.substring(fileName.lastIndexOf('.') + 1);
         if (formatName.equals("jpg")) {
             formatName = "jpeg";
@@ -1301,6 +1392,9 @@ public class ChartPanel extends JPanel {
             return;
         }
 
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = image.createGraphics();
+        paintGraphics(g, width, height);
         for (Iterator<ImageWriter> iw = ImageIO.getImageWritersByFormatName(formatName); iw.hasNext();) {
             ImageWriter writer = iw.next();
             ImageWriteParam writeParam = writer.getDefaultWriteParam();

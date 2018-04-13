@@ -167,7 +167,7 @@ public class ProjLonLatAxis extends LonLatAxis{
     }
     
     @Override
-    public Object clone() {
+    public Object clone() throws CloneNotSupportedException {
         return (ProjLonLatAxis)super.clone();
     }
     // </editor-fold>

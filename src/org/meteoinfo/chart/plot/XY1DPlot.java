@@ -13,6 +13,8 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.meteoinfo.chart.ChartLegend;
 import org.meteoinfo.chart.Location;
 import org.meteoinfo.chart.axis.TimeAxis;
@@ -95,7 +97,11 @@ public class XY1DPlot extends AbstractPlot2D {
     public XY1DPlot(boolean isTime, XYDataset dateset) {
         this();
         if (isTime) {
-            this.setXAxis(new TimeAxis("X", true));
+            try {
+                this.setXAxis(new TimeAxis("X", true));
+            } catch (CloneNotSupportedException ex) {
+                Logger.getLogger(XY1DPlot.class.getName()).log(Level.SEVERE, null, ex);
+            }
             this.getAxis(Location.TOP).setDrawTickLabel(false);
         }
         //this.getXAxis().setTimeAxis(isTime);
@@ -112,7 +118,11 @@ public class XY1DPlot extends AbstractPlot2D {
     public XY1DPlot(boolean isTime, ChartPlotMethod cpMethod, XYDataset dateset) {
         this();
         if (isTime) {
-            this.setXAxis(new TimeAxis("X", true));
+            try {
+                this.setXAxis(new TimeAxis("X", true));
+            } catch (CloneNotSupportedException ex) {
+                Logger.getLogger(XY1DPlot.class.getName()).log(Level.SEVERE, null, ex);
+            }
             this.getAxis(Location.TOP).setDrawTickLabel(false);
         }
         //this.getXAxis().setTimeAxis(isTime);
@@ -130,7 +140,11 @@ public class XY1DPlot extends AbstractPlot2D {
     public XY1DPlot(boolean isTime, PlotOrientation orientation, XYDataset dateset) {
         this();
         if (isTime) {
-            this.setXAxis(new TimeAxis("X", true));
+            try {
+                this.setXAxis(new TimeAxis("X", true));
+            } catch (CloneNotSupportedException ex) {
+                Logger.getLogger(XY1DPlot.class.getName()).log(Level.SEVERE, null, ex);
+            }
             this.getAxis(Location.TOP).setDrawTickLabel(false);
         }
         //this.getXAxis().setTimeAxis(isTime);
@@ -381,7 +395,7 @@ public class XY1DPlot extends AbstractPlot2D {
         g.translate(area.getX(), area.getY());
 
         //Draw background
-        if (this.isDrawBackground()) {
+        if (this.background != null) {
             g.setColor(this.getBackground());
             g.fill(new Rectangle2D.Double(0, 0, area.getWidth(), area.getHeight()));
         }

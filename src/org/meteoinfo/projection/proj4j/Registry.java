@@ -1,7 +1,10 @@
 package org.meteoinfo.projection.proj4j;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.meteoinfo.projection.proj4j.datum.Datum;
 import org.meteoinfo.projection.proj4j.datum.Ellipsoid;
@@ -112,15 +115,15 @@ public class Registry {
         Class cls = (Class) projRegistry.get(name);
         if (cls != null) {
             try {
-                Projection projection = (Projection) cls.newInstance();
+                Projection projection = (Projection) cls.getDeclaredConstructor().newInstance();
 //                if (projection != null) {
 //                    projection.setName(name);
 //                }
                 return projection;
-            } catch (IllegalAccessException e) {
+            } catch (IllegalAccessException | InstantiationException e) {
                 e.printStackTrace();
-            } catch (InstantiationException e) {
-                e.printStackTrace();
+            } catch (NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException ex) {
+                Logger.getLogger(Registry.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         return null;
@@ -132,15 +135,15 @@ public class Registry {
         Class cls = (Class) projRegistryEsri.get(name);
         if (cls != null) {
             try {
-                Projection projection = (Projection) cls.newInstance();
+                Projection projection = (Projection) cls.getDeclaredConstructor().newInstance();
                 if (projection != null) {
                     projection.setName(name);
                 }
                 return projection;
-            } catch (IllegalAccessException e) {
+            } catch (IllegalAccessException | InstantiationException e) {
                 e.printStackTrace();
-            } catch (InstantiationException e) {
-                e.printStackTrace();
+            } catch (NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException ex) {
+                Logger.getLogger(Registry.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         return null;
@@ -384,6 +387,7 @@ public class Registry {
         registerEsri("Sinusoidal", SinusoidalProjection.class, "Sinusoidal (Sanson-Flamsteed)");
         registerEsri("Swiss_Oblique_Mercator", SwissObliqueMercatorProjection.class, "Swiss Oblique Mercator");
         registerEsri("stere", StereographicAzimuthalProjection.class, "Stereographic");
+        registerEsri("Stereographic", StereographicAzimuthalProjection.class, "Stereographic");
         registerEsri("sterea", ObliqueStereographicAlternativeProjection.class, "Oblique Stereographic Alternative");
         registerEsri("Tranverse_Central_Cylindrical", TranverseCentralCylindricalProjection.class, "Transverse Central Cylindrical");
         registerEsri("Transverse_Cylindrical_Equal_Area", TransverseCylindricalEqualArea.class, "Transverse Cylindrical Equal Area");

@@ -25,6 +25,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.math.BigDecimal;
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -38,6 +40,7 @@ import java.util.logging.Logger;
 import org.meteoinfo.data.GridArray;
 import org.meteoinfo.data.meteodata.MeteoDataType;
 import org.meteoinfo.global.MIMath;
+import org.meteoinfo.global.util.BigDecimalUtil;
 import org.meteoinfo.global.util.DateUtil;
 import org.meteoinfo.projection.proj4j.proj.Projection;
 import org.meteoinfo.projection.KnownCoordinateSystems;
@@ -81,8 +84,8 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
     /// <summary>
     /// Record length
     /// </summary>
-    public int recLen;
-    private int indexLen;
+    public long recLen;
+    private long indexLen;
     /// <summary>
     /// Record number per time
     /// </summary>
@@ -385,14 +388,20 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                 isLatLon = true;
                 X = new double[aDH.NX];
                 Y = new double[aDH.NY];
-                for (i = 0; i < aDH.NX; i++) {
-                    X[i] = aDH.SYNC_LON + i * aDH.REF_LON;
+                double xmin = BigDecimalUtil.toDouble(aDH.SYNC_LON);
+                double xdelta = BigDecimalUtil.toDouble(aDH.REF_LON);
+                X[0] = xmin;
+                for (i = 1; i < aDH.NX; i++) {
+                    X[i] = BigDecimalUtil.add(X[i-1], xdelta);
                 }
                 if (X[aDH.NX - 1] + aDH.REF_LON - X[0] == 360) {
                     isGlobal = true;
                 }
-                for (i = 0; i < aDH.NY; i++) {
-                    Y[i] = aDH.SYNC_LAT + i * aDH.REF_LAT;
+                double ymin = BigDecimalUtil.toDouble(aDH.SYNC_LAT);
+                double ydelta = BigDecimalUtil.toDouble(aDH.REF_LAT);
+                Y[0] = ymin;
+                for (i = 1; i < aDH.NY; i++) {
+                    Y[i] = BigDecimalUtil.add(Y[i-1], ydelta);
                 }
             } else {
                 //Identify projection
@@ -838,7 +847,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             //Read label
             aDL = ARLDataInfo.readDataLabel(br);
             //Read Data
-            dataBytes = new byte[recLen - 50];
+            dataBytes = new byte[(int)recLen - 50];
             br.read(dataBytes);
             br.close();
             float[] data = unpackARLData(dataBytes, xNum, yNum, aDL);
@@ -898,7 +907,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             aDL = ARLDataInfo.readDataLabel(br);
 
             //Read Data
-            dataBytes = new byte[recLen - 50];
+            dataBytes = new byte[(int)recLen - 50];
             br.read(dataBytes);
 
             br.close();
@@ -951,7 +960,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                 aDL = ARLDataInfo.readDataLabel(br);
 
                 //Read Data
-                dataBytes = new byte[recLen - 50];
+                dataBytes = new byte[(int)recLen - 50];
                 br.read(dataBytes);
                 theData = unpackARLGridData(dataBytes, xNum, yNum, aDL);
                 for (int i = 0; i < yNum; i++) {
@@ -1010,7 +1019,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                 aDL = ARLDataInfo.readDataLabel(br);
 
                 //Read Data
-                dataBytes = new byte[recLen - 50];
+                dataBytes = new byte[(int)recLen - 50];
                 br.read(dataBytes);
                 theData = unpackARLGridData(dataBytes, xNum, yNum, aDL);
                 for (int j = 0; j < xNum; j++) {
@@ -1067,7 +1076,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                 aDL = ARLDataInfo.readDataLabel(br);
 
                 //Read Data
-                dataBytes = new byte[recLen - 50];
+                dataBytes = new byte[(int)recLen - 50];
                 br.read(dataBytes);
                 theData = unpackARLGridData(dataBytes, xNum, yNum, aDL);
                 for (int j = 0; j < yNum; j++) {
@@ -1124,7 +1133,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                 aDL = ARLDataInfo.readDataLabel(br);
 
                 //Read Data
-                dataBytes = new byte[recLen - 50];
+                dataBytes = new byte[(int)recLen - 50];
                 br.read(dataBytes);
                 theData = unpackARLGridData(dataBytes, xNum, yNum, aDL);
                 for (int j = 0; j < xNum; j++) {
@@ -1184,7 +1193,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                     aDL = ARLDataInfo.readDataLabel(br);
 
                     //Read Data
-                    dataBytes = new byte[recLen - 50];
+                    dataBytes = new byte[(int)recLen - 50];
                     br.read(dataBytes);
                     theData = unpackARLGridData(dataBytes, xNum, yNum, aDL);
 
@@ -1254,7 +1263,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                 aDL = ARLDataInfo.readDataLabel(br);
 
                 //Read Data
-                dataBytes = new byte[recLen - 50];
+                dataBytes = new byte[(int)recLen - 50];
                 br.read(dataBytes);
                 gridData = unpackARLGridData(dataBytes, xNum, yNum, aDL);
 
@@ -1309,7 +1318,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
                 aDL = ARLDataInfo.readDataLabel(br);
 
                 //Read Data
-                dataBytes = new byte[recLen - 50];
+                dataBytes = new byte[(int)recLen - 50];
                 br.read(dataBytes);
                 gridData = unpackARLGridData(dataBytes, xNum, yNum, aDL);
                 aValue = gridData[latIdx][lonIdx];
@@ -1364,7 +1373,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             aDL = ARLDataInfo.readDataLabel(br);
 
             //Read Data
-            dataBytes = new byte[recLen - 50];
+            dataBytes = new byte[(int)recLen - 50];
             br.read(dataBytes);
             gridData = unpackARLGridData(dataBytes, xNum, yNum, aDL);
 
@@ -1420,7 +1429,7 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             aDL = ARLDataInfo.readDataLabel(br);
 
             //Read Data
-            dataBytes = new byte[recLen - 50];
+            dataBytes = new byte[(int)recLen - 50];
             br.read(dataBytes);
             gridData = unpackARLGridData(dataBytes, xNum, yNum, aDL);
 
@@ -1706,19 +1715,12 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
             }
         }
     }
-
+    
     /**
-     * Write index record
-     *
+     * Write standard data label
      * @param time The time
-     * @param aDH The data header
-     * @param ksums Checksum list
-     * @throws java.io.IOException
      */
-    public void writeIndexRecord(Date time, DataHead aDH, List<List<Integer>> ksums) throws IOException {
-        _bw.seek(this.indexRecPos);
-        //write the standard label (50) plus the 
-        //fixed portion (108) of the extended header   
+    private void writeSDL(Date time) throws IOException {
         SimpleDateFormat format = new SimpleDateFormat("yyMMddHH");
         String dateStr = format.format(time);
         _bw.writeBytes(dateStr);
@@ -1734,7 +1736,23 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         _bw.writeBytes("   0");
         _bw.writeBytes(" 0.0000000E+00");
         _bw.writeBytes(" 0.0000000E+00");
+    }
 
+    /**
+     * Write index record
+     *
+     * @param time The time
+     * @param aDH The data header
+     * @param ksums Checksum list
+     * @throws java.io.IOException
+     */
+    public void writeIndexRecord(Date time, DataHead aDH, List<List<Integer>> ksums) throws IOException {
+        _bw.seek(this.indexRecPos);
+        
+        //write the standard label (50) plus the         
+        writeSDL(time);
+
+        //fixed portion (108) of the extended header   
         _bw.writeBytes(GlobalUtil.padRight(aDH.MODEL, 4, '1'));
         _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDH.ICX), 3, ' '));
         _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDH.MN), 2, ' '));
@@ -1765,24 +1783,52 @@ public class ARLDataInfo extends DataInfo implements IGridDataInfo {
         _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDH.NZ), 3, ' '));
         _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDH.K_FLAG), 2, ' '));
         _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(aDH.LENH), 4, ' '));
+        
+        //Write levels and variables
         String levStr, ksumStr;
+        ByteBuffer bb = ByteBuffer.allocate(aDH.LENH - 108);
         for (int i = 0; i < aDH.NZ; i++) {
             levStr = padNumStr(String.valueOf(levels.get(i)), 6);
-            _bw.writeBytes(levStr);
+            //_bw.writeBytes(levStr);
+            bb.put(levStr.getBytes());
             int vNum = LevelVarList.get(i).size();
-            _bw.writeBytes(GlobalUtil.padLeft(String.valueOf(vNum), 2, ' '));
+            //_bw.writeBytes(GlobalUtil.padLeft(String.valueOf(vNum), 2, ' '));
+            bb.put(GlobalUtil.padLeft(String.valueOf(vNum), 2, ' ').getBytes());
             for (int j = 0; j < vNum; j++) {
-                _bw.writeBytes(GlobalUtil.padRight(LevelVarList.get(i).get(j), 4, '1'));
+                //_bw.writeBytes(GlobalUtil.padRight(LevelVarList.get(i).get(j), 4, '1'));
+                bb.put(GlobalUtil.padRight(LevelVarList.get(i).get(j), 4, '1').getBytes());
                 if (ksums == null) {
-                    _bw.writeBytes("226");
+                    //_bw.writeBytes("226");
+                    bb.put("226".getBytes());
                 } else {
                     ksumStr = GlobalUtil.padLeft(ksums.get(i).get(j).toString(), 3, ' ');
-                    _bw.writeBytes(ksumStr);
+                    //_bw.writeBytes(ksumStr);
+                    bb.put(ksumStr.getBytes());
                 }
-                _bw.writeBytes(" ");
+                //_bw.writeBytes(" ");
+                bb.put(" ".getBytes());
             }
         }
-        _bw.write(new byte[aDH.NY * aDH.NX - aDH.LENH]);
+        
+        int nxy = aDH.NX * aDH.NY;
+        if (nxy >= aDH.LENH)
+            _bw.write(bb.array());
+        else {            
+            byte[] bytes = bb.array();
+            int idx = 0;
+            _bw.write(Arrays.copyOfRange(bytes, idx, idx + (nxy - 108)));
+            idx += (nxy - 108);            
+            while (idx < bytes.length) {
+                this.writeSDL(time);
+                _bw.write(Arrays.copyOfRange(bytes, idx, idx + nxy));
+                idx += nxy;
+            }
+        }
+        ((Buffer)bb).clear();
+        
+        if (nxy > aDH.LENH)
+            _bw.write(new byte[aDH.NY * aDH.NX - aDH.LENH]);
+        
         _bw.seek(_bw.length());
     }
 

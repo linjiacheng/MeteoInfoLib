@@ -213,6 +213,21 @@ public class MapDataManage {
 
         return aLayer;
     }
+    
+    /**
+     * Read shape file as map
+     *
+     * @param aFile File name
+     * @param encoding Encoding
+     * @return Vector layer
+     * @throws java.io.IOException
+     * @throws java.io.FileNotFoundException
+     */
+    public static VectorLayer readMapFile_ShapeFile(String aFile, String encoding) throws IOException, FileNotFoundException, Exception {
+        VectorLayer aLayer = ShapeFileManage.loadShapeFile(aFile, encoding);
+
+        return aLayer;
+    }
 
     /**
      * Read GrADS map file

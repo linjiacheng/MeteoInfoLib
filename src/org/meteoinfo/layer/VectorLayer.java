@@ -1433,19 +1433,24 @@ public class VectorLayer extends MapLayer {
      */
     @Override
     public void saveFile(String shpfilepath) {
-        this.setFileName(shpfilepath);
-        File aFile = new File(shpfilepath);
-        if (aFile.exists()) {
-            //String shxfilepath = shpfilepath.replace(shpfilepath.substring(shpfilepath.lastIndexOf(".")), ".shx");
-            //String dbffilepath = shpfilepath.replace(shpfilepath.substring(shpfilepath.lastIndexOf(".")), ".dbf");
-            //String projfilepath = shpfilepath.replace(shpfilepath.substring(shpfilepath.lastIndexOf(".")), ".prj");
-            //new File(shxfilepath).delete();
-            //new File(dbffilepath).delete();
-            //new File(projfilepath).delete();
-            //aFile.delete();
-        }
+        this.setFileName(shpfilepath);       
         try {
             ShapeFileManage.saveShapeFile(shpfilepath, this);
+        } catch (IOException ex) {
+            Logger.getLogger(VectorLayer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    /**
+     * Save layer as a shape file
+     *
+     * @param shpfilepath Shape file path
+     * @param encoding Encoding
+     */
+    public void saveFile(String shpfilepath, String encoding) {
+        this.setFileName(shpfilepath);       
+        try {
+            ShapeFileManage.saveShapeFile(shpfilepath, this, encoding);
         } catch (IOException ex) {
             Logger.getLogger(VectorLayer.class.getName()).log(Level.SEVERE, null, ex);
         }

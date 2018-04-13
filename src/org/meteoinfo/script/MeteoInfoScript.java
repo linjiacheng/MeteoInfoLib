@@ -22,7 +22,7 @@ import org.meteoinfo.data.meteodata.DrawMeteoData;
 import org.meteoinfo.data.meteodata.DrawType2D;
 import org.meteoinfo.data.meteodata.MeteoDataInfo;
 import org.meteoinfo.data.meteodata.PlotDimension;
-import org.meteoinfo.drawing.PointStyle;
+import org.meteoinfo.legend.PointStyle;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.layer.MapLayer;
 import org.meteoinfo.layout.MapLayout;

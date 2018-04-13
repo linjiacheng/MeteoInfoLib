@@ -1655,7 +1655,7 @@ public class LayoutLegend extends LayoutElement {
      * @return Layer names
      */
     public static List<String> getLayerNames() {
-        List<String> layerNames = new ArrayList<String>();
+        List<String> layerNames = new ArrayList<>();
         for (MapLayer aLayer : _layoutMap.getMapFrame().getMapView().getLayers()) {
             if (aLayer.getLayerType() == LayerTypes.VectorLayer || aLayer.getLayerType() == LayerTypes.RasterLayer) {
                 layerNames.add(aLayer.getLayerName());

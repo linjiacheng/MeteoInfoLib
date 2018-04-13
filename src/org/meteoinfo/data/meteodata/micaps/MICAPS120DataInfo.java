@@ -51,7 +51,7 @@ public class MICAPS120DataInfo extends DataInfo implements IStationDataInfo {
     // <editor-fold desc="Variables">
     private String _description;
     private List<String> _varList = new ArrayList<>();
-    private List<String> _fieldList = new ArrayList<>();
+    private final List<String> _fieldList = new ArrayList<>();
     private final List<List<String>> _dataList = new ArrayList<>();
     private int stNum;
     // </editor-fold>
@@ -79,7 +79,7 @@ public class MICAPS120DataInfo extends DataInfo implements IStationDataInfo {
         try {
 
             this.setFileName(fileName);
-            sr = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "gbk"));
+            sr = new BufferedReader(new InputStreamReader(new FileInputStream(fileName)));
 
             //Read file head
             String aLine = sr.readLine().trim();
@@ -103,7 +103,7 @@ public class MICAPS120DataInfo extends DataInfo implements IStationDataInfo {
             while((line = sr.readLine()) != null){
                 line = line.trim();
                 dataArray = line.split("\\s+");
-                if (dataArray.length < 10){
+                if (dataArray.length < 12){
                     continue;
                 }
                 aList = new ArrayList<>();
@@ -118,13 +118,22 @@ public class MICAPS120DataInfo extends DataInfo implements IStationDataInfo {
             }
             
             Dimension stdim = new Dimension(DimensionType.Other);
+            stdim.setShortName("station");
             values = new double[stNum];
+            for (int i = 0; i < stNum; i++){
+                values[i] = i;
+            }
             stdim.setValues(values);
             this.addDimension(stdim);
             List<Variable> variables = new ArrayList<>();
             for (String vName : this._fieldList) {
                 Variable var = new Variable();
                 var.setName(vName);
+                switch(vName){
+                    case "Stid":
+                        var.setDataType(DataType.STRING);
+                        break;
+                }
                 var.setStation(true);
                 var.setDimension(stdim);
                 var.setFillValue(this.getMissingValue());
@@ -133,15 +142,14 @@ public class MICAPS120DataInfo extends DataInfo implements IStationDataInfo {
             this.setVariables(variables);
         } catch (FileNotFoundException ex) {
             Logger.getLogger(MICAPS120DataInfo.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (UnsupportedEncodingException ex) {
+        } catch (UnsupportedEncodingException | ParseException ex) {
             Logger.getLogger(MICAPS120DataInfo.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(MICAPS120DataInfo.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ParseException ex) {
-            Logger.getLogger(MICAPS120DataInfo.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
-                sr.close();
+                if (sr != null)
+                    sr.close();
             } catch (IOException ex) {
                 Logger.getLogger(MICAPS120DataInfo.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -160,14 +168,10 @@ public class MICAPS120DataInfo extends DataInfo implements IStationDataInfo {
     @Override
     public String generateInfoText() {
         String dataInfo;
-        dataInfo = "File Name: " + this.getFileName();
-        dataInfo += System.getProperty("line.separator") + "Description: " + _description;
+        dataInfo = "Description: " + _description;
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:00");
         dataInfo += System.getProperty("line.separator") + "Time: " + format.format(this.getTimes().get(0));
-        dataInfo += System.getProperty("line.separator") + "Fields: ";
-        for (String aField : _fieldList) {
-            dataInfo += System.getProperty("line.separator") + "  " + aField;
-        }
+        dataInfo += System.getProperty("line.separator") + super.generateInfoText();
 
         return dataInfo;
     }
@@ -229,18 +233,32 @@ public class MICAPS120DataInfo extends DataInfo implements IStationDataInfo {
 
         for (i = 0; i < _dataList.size(); i++) {
             dataList = _dataList.get(i);
-            switch (dt) {
-                case STRING:
-                    r.setObject(i, dataList.get(varIdx));
-                    break;
-                case INT:
-                    int vi = Integer.parseInt(dataList.get(varIdx));
-                    r.setInt(i, vi);
-                    break;
-                case FLOAT:
-                    v = Float.parseFloat(dataList.get(varIdx));
-                    r.setFloat(i, v);
-                    break;
+            if (varIdx < dataList.size()){
+                switch (dt) {
+                    case STRING:
+                        r.setObject(i, dataList.get(varIdx));
+                        break;
+                    case INT:
+                        int vi = Integer.parseInt(dataList.get(varIdx));
+                        r.setInt(i, vi);
+                        break;
+                    case FLOAT:
+                        v = Float.parseFloat(dataList.get(varIdx));
+                        r.setFloat(i, v);
+                        break;
+                }
+            } else {
+                switch (dt) {
+                    case STRING:
+                        r.setObject(i, "Null");
+                        break;
+                    case INT:
+                        r.setInt(i, Integer.MIN_VALUE);
+                        break;
+                    case FLOAT:
+                        r.setFloat(i, Float.NaN);
+                        break;
+                }
             }
         }
         

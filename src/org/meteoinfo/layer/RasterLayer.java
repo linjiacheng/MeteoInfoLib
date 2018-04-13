@@ -14,11 +14,13 @@
 package org.meteoinfo.layer;
 
 import com.l2fprod.common.beans.BaseBeanInfo;
+import com.l2fprod.common.beans.ExtendedPropertyDescriptor;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.legend.LegendScheme;
 import org.meteoinfo.shape.ShapeTypes;
 import java.awt.Color;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -539,6 +541,40 @@ public class RasterLayer extends ImageLayer {
         public void setVisible(boolean value) {
             RasterLayer.this.setVisible(value);
         }
+        
+        /**
+         * Get interpolation
+         *
+         * @return Interpolation
+         */
+        public String getInterpolation() {
+            if (interp == RenderingHints.VALUE_INTERPOLATION_BILINEAR) {
+                return "bilinear";
+            } else if (interp == RenderingHints.VALUE_INTERPOLATION_BICUBIC) {
+                return "bicubic";
+            } else {
+                return "nearest";
+            }
+        }
+
+        /**
+         * Set interpolation
+         *
+         * @param value Interpolation
+         */
+        public void setInterpolation(String value) {
+            switch (value) {
+                case "nearest":
+                    interp = RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
+                    break;
+                case "bilinear":
+                    interp = RenderingHints.VALUE_INTERPOLATION_BILINEAR;
+                    break;
+                case "bicubic":
+                    interp = RenderingHints.VALUE_INTERPOLATION_BICUBIC;
+                    break;
+            }
+        }
         // </editor-fold>
     }
 
@@ -553,6 +589,9 @@ public class RasterLayer extends ImageLayer {
             addProperty("layerName").setCategory("Editable").setDisplayName("Layer name");
             addProperty("visible").setCategory("Editable").setDisplayName("Visible");
             addProperty("maskout").setCategory("Editable").setDisplayName("Is maskout");
+            ExtendedPropertyDescriptor e = addProperty("interpolation");
+            e.setCategory("Editable").setPropertyEditorClass(InterpolationEditor.class);
+            e.setDisplayName("Interpolation");
         }
     }
     // </editor-fold>

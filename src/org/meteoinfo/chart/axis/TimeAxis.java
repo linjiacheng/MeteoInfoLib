@@ -535,7 +535,7 @@ public class TimeAxis extends Axis implements Cloneable {
     }
 
     @Override
-    public Object clone() {
+    public Object clone() throws CloneNotSupportedException {
         return (TimeAxis) super.clone();
     }
 }

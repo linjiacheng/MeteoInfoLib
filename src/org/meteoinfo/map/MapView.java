@@ -16,7 +16,7 @@ package org.meteoinfo.map;
 import org.meteoinfo.data.mapdata.Field;
 import org.meteoinfo.data.mapdata.MapDataManage;
 import org.meteoinfo.drawing.Draw;
-import org.meteoinfo.drawing.PointStyle;
+import org.meteoinfo.legend.PointStyle;
 import org.meteoinfo.geoprocess.GeoComputation;
 import org.meteoinfo.global.colors.ColorUtil;
 import org.meteoinfo.global.Direction;
@@ -3832,9 +3832,9 @@ public class MapView extends JPanel implements IWebMapPanel {
 
         //this.setBackground(Color.white);
         Graphics2D g2 = (Graphics2D) g;
-        //g2.setColor(this.getBackground());
-        //g2.clearRect(0, 0, this.getWidth(), this.getHeight());
-        //g2.fillRect(0, 0, this.getWidth(), this.getHeight());
+        g2.setColor(this.getBackground());
+        g2.clearRect(0, 0, this.getWidth(), this.getHeight());
+        g2.fillRect(0, 0, this.getWidth(), this.getHeight());
         //g2.drawImage(_mapBitmap, _xShift, _yShift, this.getBackground(), this);
 
         AffineTransform mx = new AffineTransform();
@@ -4048,8 +4048,10 @@ public class MapView extends JPanel implements IWebMapPanel {
             this._mapBitmap = new BufferedImage(this.getWidth(), this.getHeight(), BufferedImage.TYPE_INT_ARGB);
             //this._mapBitmap = (BufferedImage)this.createImage(this.getWidth(), this.getHeight());
             Graphics2D g = this._mapBitmap.createGraphics();
-            g.setColor(this.getBackground());
-            g.fillRect(0, 0, this.getWidth(), this.getHeight());
+            if (this.getBackground() != null) {
+                g.setColor(this.getBackground());
+                g.fillRect(0, 0, this.getWidth(), this.getHeight());
+            }
             g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             if (_antiAlias) {
                 g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -4057,7 +4059,7 @@ public class MapView extends JPanel implements IWebMapPanel {
                 g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
                 g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
                 g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-                g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+                //g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
                 g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
             } else {
                 g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
@@ -4065,7 +4067,7 @@ public class MapView extends JPanel implements IWebMapPanel {
                 g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_DEFAULT);
                 g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_OFF);
                 g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_DEFAULT);
-                g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+                //g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
                 g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_DEFAULT);
             }
 
@@ -4106,7 +4108,7 @@ public class MapView extends JPanel implements IWebMapPanel {
             g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
             g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
             g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            //g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
             g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
         } else {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
@@ -4114,7 +4116,7 @@ public class MapView extends JPanel implements IWebMapPanel {
             g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_DEFAULT);
             g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_OFF);
             g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_DEFAULT);
-            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+            //g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
             g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_DEFAULT);
         }
 
@@ -4162,8 +4164,8 @@ public class MapView extends JPanel implements IWebMapPanel {
         refreshXYScale(rect.width, rect.height);
 
         Color background = this.getBackground();
-        if (background.getAlpha() > 0) {
-            g.setColor(this.getBackground());
+        if (background != null) {
+            g.setColor(background);
             g.fill(rect);
         }
 
@@ -4185,7 +4187,7 @@ public class MapView extends JPanel implements IWebMapPanel {
             g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
             g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
             g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            //g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
             g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
         } else {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
@@ -4193,7 +4195,7 @@ public class MapView extends JPanel implements IWebMapPanel {
             g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_DEFAULT);
             g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_OFF);
             g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_DEFAULT);
-            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+            //g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
             g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_DEFAULT);
         }
 
@@ -4413,6 +4415,7 @@ public class MapView extends JPanel implements IWebMapPanel {
     private void drawImage(Graphics2D g, ImageLayer aILayer, double LonShift, int width, int height) {
         Extent lExtent = MIMath.shiftExtentLon(aILayer.getExtent(), LonShift);
         if (MIMath.isExtentCross(lExtent, _drawExtent)) {
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, aILayer.getInterpolation());
             double XUL, YUL, XBR, YBR;
             XUL = aILayer.getExtent().minX;
             YUL = aILayer.getExtent().maxY;
@@ -4455,6 +4458,7 @@ public class MapView extends JPanel implements IWebMapPanel {
                 mx = new AffineTransform(cw, shy, shx, ch, sX, sY);
             }
             dg.setTransform(mx);
+            dg.setRenderingHint(RenderingHints.KEY_INTERPOLATION, aILayer.getInterpolation());
             dg.drawImage(vImage, 0, 0, null);
             dg.dispose();
 
@@ -4553,6 +4557,7 @@ public class MapView extends JPanel implements IWebMapPanel {
             //g.InterpolationMode = InterpolationMode.NearestNeighbor;
             //g.InterpolationMode = aRLayer.InterpMode;
             BufferedImage aImage = aRLayer.getImage();
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, aRLayer.getInterpolation());
             g.drawImage(aImage, (int) sX, (int) sY, (int) (sX + aWidth), (int) (sY + aHeigh),
                     0, 0, aImage.getWidth(), aImage.getHeight(), null);
         }
@@ -5019,12 +5024,6 @@ public class MapView extends JPanel implements IWebMapPanel {
         RenderingHints rend = g.getRenderingHints();
         if (this._pointAntiAlias) {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            //g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-            //g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
-            //g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-            //g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-            //g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-            //g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
         }
 
         PointF aPoint = new PointF();
@@ -5099,20 +5098,6 @@ public class MapView extends JPanel implements IWebMapPanel {
             }
         }
 
-//        //Draw identifer shape
-//        if (_drawIdentiferShape) {
-//            PointShape aPS = (PointShape) aLayer.getShapes().get(aLayer.getIdentiferShape());
-//            float[] screenXY = projToScreen(aPS.getPoint().X, aPS.getPoint().Y, LonShift);
-//            aPoint.X = screenXY[0];
-//            aPoint.Y = screenXY[1];
-//            PointBreak aPB = new PointBreak();
-//            aPB.setOutlineColor(Color.red);
-//            aPB.setSize(10);
-//            aPB.setStyle(PointStyle.Square);
-//            aPB.setDrawFill(false);
-//
-//            Draw.drawPoint(aPoint, aPB, g);
-//        }
         if (this._pointAntiAlias) {
             g.setRenderingHints(rend);
         }
@@ -5585,7 +5570,7 @@ public class MapView extends JPanel implements IWebMapPanel {
                     } else {
                         v = wPoint.M;
                     }
-                    PolylineBreak aPLB = (PolylineBreak) ls.getLegenBreak(v);
+                    PolylineBreak aPLB = (PolylineBreak) ls.findLegendBreak(v);
                     Color aColor = aPLB.getColor();
                     Float size = aPLB.getSize();
                     float[] dashPattern = getDashPattern(aPLB.getStyle());
@@ -6502,8 +6487,10 @@ public class MapView extends JPanel implements IWebMapPanel {
                     bi = new BufferedImage(this.getWidth(), this.getHeight(), BufferedImage.TYPE_INT_ARGB);
                 }
                 Graphics2D g = bi.createGraphics();
-                g.setColor(this.getBackground());
-                g.fillRect(0, 0, bi.getWidth(), bi.getHeight());
+                if (this.getBackground() != null) {
+                    g.setColor(this.getBackground());
+                    g.fillRect(0, 0, bi.getWidth(), bi.getHeight());
+                }
                 paintGraphics(g);
                 if (extension.equalsIgnoreCase("jpg")) {
                     BufferedImage newImage = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_INT_RGB);
@@ -8934,6 +8921,7 @@ public class MapView extends JPanel implements IWebMapPanel {
         Attr transparencyPerc = m_Doc.createAttribute("TransparencyPerc");
         Attr transparencyColor = m_Doc.createAttribute("TransparencyColor");
         Attr setTransColor = m_Doc.createAttribute("SetTransColor");
+        Attr attrInterpolation = m_Doc.createAttribute("Interpolation");
 
         Handle.setValue(String.valueOf(aILayer.getHandle()));
         LayerName.setValue(aILayer.getLayerName());
@@ -8949,6 +8937,7 @@ public class MapView extends JPanel implements IWebMapPanel {
         transparencyPerc.setValue(String.valueOf(aILayer.getTransparency()));
         transparencyColor.setValue(ColorUtil.toHexEncoding(aILayer.getTransparencyColor()));
         setTransColor.setValue(String.valueOf(aILayer.isUseTransColor()));
+        attrInterpolation.setValue(aILayer.getInterpolationStr());
 
         Layer.setAttributeNode(Handle);
         Layer.setAttributeNode(LayerName);
@@ -8960,6 +8949,7 @@ public class MapView extends JPanel implements IWebMapPanel {
         Layer.setAttributeNode(transparencyPerc);
         Layer.setAttributeNode(transparencyColor);
         Layer.setAttributeNode(setTransColor);
+        Layer.setAttributeNode(attrInterpolation);
 
         //Add visible scale
         exportVisibleScale(m_Doc, Layer, aILayer.getVisibleScale());
@@ -8987,6 +8977,7 @@ public class MapView extends JPanel implements IWebMapPanel {
         Attr transparencyPerc = m_Doc.createAttribute("TransparencyPerc");
         Attr transparencyColor = m_Doc.createAttribute("TransparencyColor");
         Attr setTransColor = m_Doc.createAttribute("SetTransColor");
+        Attr attrInterpolation = m_Doc.createAttribute("Interpolation");
 
         Handle.setValue(String.valueOf(aILayer.getHandle()));
         LayerName.setValue(aILayer.getLayerName());
@@ -9002,6 +8993,7 @@ public class MapView extends JPanel implements IWebMapPanel {
         transparencyPerc.setValue(String.valueOf(aILayer.getTransparency()));
         transparencyColor.setValue(ColorUtil.toHexEncoding(aILayer.getTransparencyColor()));
         setTransColor.setValue(String.valueOf(aILayer.isUseTransColor()));
+        attrInterpolation.setValue(aILayer.getInterpolationStr());
 
         Layer.setAttributeNode(Handle);
         Layer.setAttributeNode(LayerName);
@@ -9013,6 +9005,7 @@ public class MapView extends JPanel implements IWebMapPanel {
         Layer.setAttributeNode(transparencyPerc);
         Layer.setAttributeNode(transparencyColor);
         Layer.setAttributeNode(setTransColor);
+        Layer.setAttributeNode(attrInterpolation);
 
         //Add legend scheme            
         aILayer.getLegendScheme().exportToXML(m_Doc, Layer);
@@ -9108,7 +9101,7 @@ public class MapView extends JPanel implements IWebMapPanel {
         try {
             _gridLineColor = ColorUtil.parseToColor(GridLine.getAttributes().getNamedItem("GridLineColor").getNodeValue());
             _gridLineSize = Integer.parseInt(GridLine.getAttributes().getNamedItem("GridLineSize").getNodeValue());
-            _gridLineStyle = LineStyles.valueOf(GridLine.getAttributes().getNamedItem("GridLineStyle").getNodeValue());
+            _gridLineStyle = LineStyles.valueOf(GridLine.getAttributes().getNamedItem("GridLineStyle").getNodeValue().toUpperCase());
             _drawGridLine = Boolean.parseBoolean(GridLine.getAttributes().getNamedItem("DrawGridLine").getNodeValue());
             _drawGridTickLine = Boolean.parseBoolean(GridLine.getAttributes().getNamedItem("DrawGridTickLine").getNodeValue());
         } catch (DOMException | NumberFormatException e) {
@@ -9339,7 +9332,10 @@ public class MapView extends JPanel implements IWebMapPanel {
                 aLayer.setTransparency(Integer.parseInt(aILayer.getAttributes().getNamedItem("TransparencyPerc").getNodeValue()));
                 aLayer.setTransparencyColor(ColorUtil.parseToColor(aILayer.getAttributes().getNamedItem("TransparencyColor").getNodeValue()));
                 aLayer.setUseTransColor(Boolean.parseBoolean(aILayer.getAttributes().getNamedItem("SetTransColor").getNodeValue()));
-
+                Node attrInterp = aILayer.getAttributes().getNamedItem("Interpolation");
+                if (attrInterp != null)
+                    aLayer.setInterpolation(attrInterp.getNodeValue());
+                
                 //Load visible scale
                 NodeList visScaleNodes = ((Element) aILayer).getElementsByTagName("VisibleScale");
                 if (visScaleNodes.getLength() > 0) {
@@ -9387,7 +9383,10 @@ public class MapView extends JPanel implements IWebMapPanel {
                 aLayer.setTransparency(Integer.parseInt(aILayer.getAttributes().getNamedItem("TransparencyPerc").getNodeValue()));
                 aLayer.setTransparencyColor(ColorUtil.parseToColor(aILayer.getAttributes().getNamedItem("TransparencyColor").getNodeValue()));
                 aLayer.setUseTransColor(Boolean.parseBoolean(aILayer.getAttributes().getNamedItem("SetTransColor").getNodeValue()));
-
+                Node attrInterp = aILayer.getAttributes().getNamedItem("Interpolation");
+                if (attrInterp != null)
+                    aLayer.setInterpolation(attrInterp.getNodeValue());
+                
                 //Load legend scheme
                 Node LS = (Node) ((Element) aILayer).getElementsByTagName("LegendScheme").item(0);
                 LegendScheme ls = new LegendScheme(aLayer.getShapeType());

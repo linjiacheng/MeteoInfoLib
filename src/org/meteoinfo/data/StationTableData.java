@@ -130,7 +130,7 @@ public class StationTableData extends TableData{
     public void readASCIIFile(String fileName, int stIdx, int lonIdx, int latIdx) throws FileNotFoundException, IOException, Exception {
         this.lonIdx = lonIdx;
         this.latIdx = latIdx;
-        DataTable dTable = new DataTable();
+        //DataTable dTable = new DataTable();
 
         BufferedReader sr = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "utf-8"));
         String title = sr.readLine().trim();
@@ -147,9 +147,9 @@ public class StationTableData extends TableData{
             for (int i = 0; i < titleArray.length; i++) {
                 fieldName = titleArray[i];
                 if (i == lonIdx || i == latIdx)
-                    dTable.addColumn(fieldName, DataTypes.Float);
+                    this.addColumn(fieldName, DataTypes.Float);
                 else
-                    dTable.addColumn(fieldName, DataTypes.String);
+                    this.addColumn(fieldName, DataTypes.String);
                 dataIdxs.add(i);
             }
 
@@ -162,13 +162,13 @@ public class StationTableData extends TableData{
                     continue;
                 }
                 dataArray = GlobalUtil.split(line, separator);
-                dTable.addRow();
+                this.addRow();
                 int cn = 0;
                 for (int idx : dataIdxs) {
                     if (idx == lonIdx || idx == latIdx)
-                        dTable.setValue(rn, cn, Float.parseFloat(dataArray[idx]));
+                        this.setValue(rn, cn, Float.parseFloat(dataArray[idx]));
                     else
-                        dTable.setValue(rn, cn, dataArray[idx]);
+                        this.setValue(rn, cn, dataArray[idx]);
                     cn++;
                 }
 
@@ -176,7 +176,7 @@ public class StationTableData extends TableData{
                 line = sr.readLine();
             }
 
-            dataTable = dTable;
+            //dataTable = dTable;
             sr.close();
         }
     }      
@@ -188,7 +188,8 @@ public class StationTableData extends TableData{
     @Override
     public Object clone(){
         StationTableData std = new StationTableData();
-        std.dataTable = (DataTable)this.dataTable.clone();
+        std = (StationTableData)super.clone();
+        //std.dataTable = (DataTable)this.dataTable.clone();
         std.missingValue = this.missingValue;
         std.projInfo = this.projInfo;
         std.stIdx = this.stIdx;

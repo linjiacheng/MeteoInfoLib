@@ -37,7 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.meteoinfo.data.XYListDataset;
 import org.meteoinfo.data.meteodata.MeteoDataType;
-import org.meteoinfo.drawing.PointStyle;
+import org.meteoinfo.legend.PointStyle;
 import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.global.util.DateUtil;
 import org.meteoinfo.layer.LayerDrawType;

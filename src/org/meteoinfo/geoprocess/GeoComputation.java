@@ -783,7 +783,7 @@ public class GeoComputation {
         if (polyLines.isEmpty()) {
             return null;
         } else {
-            PolylineShape bPLS = aPLS.valueClone();
+            PolylineShape bPLS = (PolylineShape)aPLS.valueClone();
             bPLS.setPolylines(polyLines);
 
             return bPLS;
@@ -809,7 +809,7 @@ public class GeoComputation {
         clipLine.setLeftOrTop(false);
         polylines.addAll(clipPolylines(aPLS.getPolylines(), clipLine));
 
-        PolylineShape bPLS = aPLS.valueClone();
+        PolylineShape bPLS = (PolylineShape)aPLS.valueClone();
         bPLS.setPolylines(polylines);
 
         return bPLS;
@@ -834,7 +834,7 @@ public class GeoComputation {
         clipLine.setLeftOrTop(false);
         polylines.addAll(clipPolylines(aPLS.getPolylines(), clipLine));
 
-        PolylineShape bPLS = aPLS.valueClone();
+        PolylineShape bPLS = (PolylineShape)aPLS.valueClone();
         bPLS.setPolylines(polylines);
 
         return bPLS;
@@ -856,7 +856,7 @@ public class GeoComputation {
         clipLine.setLeftOrTop(isTop);
         polylines.addAll(clipPolylines(aPLS.getPolylines(), clipLine));
 
-        PolylineShape bPLS = aPLS.valueClone();
+        PolylineShape bPLS = (PolylineShape)aPLS.valueClone();
         bPLS.setPolylines(polylines);
 
         return bPLS;
@@ -878,7 +878,7 @@ public class GeoComputation {
         return newPolyLines;
     }
 
-    private static List<Polyline> clipPolyline(Polyline inPolyLine, Object clipObj) {
+    private static List<? extends Polyline> clipPolyline(Polyline inPolyLine, Object clipObj) {
         List<Polyline> newPolylines = new ArrayList<>();
         List<PointD> aPList = (List<PointD>) inPolyLine.getPointList();
 

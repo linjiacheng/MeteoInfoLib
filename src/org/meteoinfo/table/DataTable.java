@@ -32,15 +32,15 @@ import org.meteoinfo.global.MIMath;
  *
  * @author Yaqiang Wang
  */
-public final class DataTable {
+public class DataTable {
 
-    private DataRowCollection rows;
-    private DataColumnCollection columns;
-    private String tableName;
-    private boolean readOnly = false;
-    private int nextRowIndex = 0;
+    protected DataRowCollection rows;
+    protected DataColumnCollection columns;
+    protected String tableName;
+    protected boolean readOnly = false;
+    protected int nextRowIndex = 0;
 //private DataExpression dataExpression;
-    private Object tag;
+    protected Object tag;
 
     /**
      * Constructor
@@ -604,7 +604,7 @@ public final class DataTable {
 
         return result;
     }
-    
+
     /**
      * Select and form a new data table
      *
@@ -828,10 +828,11 @@ public final class DataTable {
                         break;
                     default:
                         v = row.getValue(col.getColumnName());
-                        if (v == null)
+                        if (v == null) {
                             sb.append("null");
-                        else
+                        } else {
                             sb.append(v.toString());
+                        }
                         break;
                 }
                 i += 1;
@@ -932,22 +933,31 @@ public final class DataTable {
      * @throws java.io.IOException
      */
     public void saveAsCSVFile(String fileName) throws IOException {
-        this.saveAsCSVFile(fileName, "yyyyMMddHH");
+        this.saveAsCSVFile(fileName, null);
     }
 
     /**
      * Save as csv file
      *
      * @param fileName File name
-     * @param dateFormat Date format string
+     * @param format Format string
      * @throws java.io.IOException
      */
-    public void saveAsCSVFile(String fileName, String dateFormat) throws IOException {
+    public void saveAsCSVFile(String fileName, String format) throws IOException {
+        List<String> formats = TableUtil.getFormats(format);
+        int n = this.getColumnCount();
+        if (formats != null) {
+            if (formats.size() < n) {
+                while (formats.size() < n) {
+                    formats.add(null);
+                }
+            }
+        }
+        
         if (!fileName.endsWith(".csv")) {
             fileName = fileName + ".csv";
         }
 
-        SimpleDateFormat format = new SimpleDateFormat(dateFormat);
         BufferedWriter sw = new BufferedWriter(new FileWriter(new File(fileName)));
         String str = "";
         for (DataColumn col : this.columns) {
@@ -956,22 +966,23 @@ public final class DataTable {
         str = str.substring(1);
         sw.write(str);
 
+        String line, vstr;
+        DataColumn col;
+        String formatStr;
         for (DataRow row : this.rows) {
-            String line = "";
-            for (DataColumn col : this.columns) {
-                if (col.getDataType() == DataTypes.Date) {
-                    line += "," + format.format((Date) row.getValue(col.getColumnName()));
+            line = "";
+            for (int i = 0; i < n; i++) {
+                col = this.columns.get(i);
+                if (formats == null){
+                    vstr = row.getValueStr(col.getColumnName());
                 } else {
-                    if (row.getValue(col.getColumnName()) == null) {
-                        line += ",";
-                    } else {
-                        str = row.getValue(col.getColumnName()).toString();
-                        if (str.equals("NaN")) {
-                            str = "";
-                        }
-                        line += "," + str;
-                    }
+                    formatStr = formats.get(i);
+                    vstr = row.getValueStr(col.getColumnName(), formatStr);
                 }
+                if (vstr.equalsIgnoreCase("NaN") || vstr.equalsIgnoreCase("null")){
+                    vstr = "";
+                }
+                line += "," + vstr;
             }
             line = line.substring(1);
             sw.newLine();
@@ -988,18 +999,77 @@ public final class DataTable {
      * @throws java.io.IOException
      */
     public void saveAsASCIIFile(String fileName) throws IOException {
-        this.saveAsASCIIFile(fileName, "yyyyMMddHH");
+        this.saveAsASCIIFile(fileName, ",", null, null);
+    }
+    
+    /**
+     * Save as ASCII file
+     *
+     * @param fileName File name
+     * @param delimiter Delimiter
+     * @param dateFormat Date format string
+     * @param floatFormat Float format string
+     * @throws java.io.IOException
+     */
+    public void saveAsASCIIFile(String fileName, String delimiter, String dateFormat, String floatFormat) throws IOException {        
+        BufferedWriter sw = new BufferedWriter(new FileWriter(new File(fileName)));
+        int n = this.getColumnCount();
+        String str = "";
+        for (int i = 0; i < n; i++){
+            if (i == 0)
+                str = this.columns.get(i).getColumnName();
+            else
+                str = str + delimiter + this.columns.get(i).getColumnName();
+        };
+        sw.write(str);
+
+        String line, vstr;
+        DataColumn col;        
+        for (DataRow row : this.rows) {
+            line = "";
+            for (int i = 0; i < n; i++) {
+                col = this.columns.get(i);
+                switch (col.getDataType()){
+                    case Date:
+                        vstr = row.getValueStr(col.getColumnName(), dateFormat);
+                        break;
+                    case Float:
+                    case Double:
+                        vstr = row.getValueStr(col.getColumnName(), floatFormat);
+                        break;
+                    default:
+                        vstr = row.getValueStr(col.getColumnName());
+                        break;
+                }
+                
+                line += delimiter + vstr;
+            }
+            line = line.substring(1);
+            sw.newLine();
+            sw.write(line);
+        }
+        sw.flush();
+        sw.close();
     }
 
     /**
      * Save as ASCII file
      *
      * @param fileName File name
-     * @param dateFormat Date format string
+     * @param format Format string
      * @throws java.io.IOException
      */
-    public void saveAsASCIIFile(String fileName, String dateFormat) throws IOException {
-        SimpleDateFormat format = new SimpleDateFormat(dateFormat);
+    public void saveAsASCIIFile_format(String fileName, String format) throws IOException {
+        List<String> formats = TableUtil.getFormats(format);
+        int n = this.getColumnCount();
+        if (formats != null) {
+            if (formats.size() < n) {
+                while (formats.size() < n) {
+                    formats.add(null);
+                }
+            }
+        }
+
         BufferedWriter sw = new BufferedWriter(new FileWriter(new File(fileName)));
         String str = "";
         for (DataColumn col : this.columns) {
@@ -1008,14 +1078,20 @@ public final class DataTable {
         str = str.substring(1);
         sw.write(str);
 
+        String line, vstr;
+        DataColumn col;
+        String formatStr;
         for (DataRow row : this.rows) {
-            String line = "";
-            for (DataColumn col : this.columns) {
-                if (col.getDataType() == DataTypes.Date) {
-                    line += " " + format.format((Date) row.getValue(col.getColumnName()));
-                } else {
-                    line += " " + row.getValue(col.getColumnName()).toString();
+            line = "";
+            for (int i = 0; i < n; i++) {
+                col = this.columns.get(i);
+                if (formats == null)
+                    vstr = row.getValueStr(col.getColumnName());
+                else {
+                    formatStr = formats.get(i);
+                    vstr = row.getValueStr(col.getColumnName(), formatStr);
                 }
+                line += " " + vstr;
             }
             line = line.substring(1);
             sw.newLine();

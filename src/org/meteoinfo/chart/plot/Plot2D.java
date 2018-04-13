@@ -20,6 +20,7 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.TexturePaint;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
@@ -205,7 +206,7 @@ public class Plot2D extends AbstractPlot2D {
         g.translate(area.getX(), area.getY());
 
         //Draw background
-        if (this.isDrawBackground()) {
+        if (this.background != null) {
             g.setColor(this.getBackground());
             g.fill(new Rectangle2D.Double(0, 0, area.getWidth(), area.getHeight()));
         }
@@ -277,7 +278,7 @@ public class Plot2D extends AbstractPlot2D {
         g.translate(area.getX(), area.getY());
 
         //Draw background
-        if (this.isDrawBackground()) {
+        if (this.background != null) {
             g.setColor(this.getBackground());
             g.fill(new Rectangle2D.Double(0, 0, area.getWidth(), area.getHeight()));
         }
@@ -369,7 +370,16 @@ public class Plot2D extends AbstractPlot2D {
         PointD p = aPS.getPoint();
         double[] sXY = projToScreen(p.X, p.Y, area);
         PointF pf = new PointF((float) sXY[0], (float) sXY[1]);
+        RenderingHints rend = g.getRenderingHints();
+        boolean rc = false;
+        if (this.symbolAntialias && rend.get(RenderingHints.KEY_ANTIALIASING) != RenderingHints.VALUE_ANTIALIAS_ON) {
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            rc = true;
+        }
         Draw.drawPoint(pf, aPB, g);
+        if (rc){
+            g.setRenderingHints(rend);
+        }
     }
     
     void drawText(ChartText text, Graphics2D g, Rectangle2D area) {
@@ -1112,6 +1122,7 @@ public class Plot2D extends AbstractPlot2D {
         int y = (int) xy1[1];
         int width = (int) (xy2[0] - xy1[0]);
         int height = (int) (xy2[1] - xy1[1]);
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, ishape.getInterpolation());
         g.drawImage(image, x, y, width, height, null);
     }
 

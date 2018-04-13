@@ -39,6 +39,11 @@ import org.meteoinfo.projection.KnownCoordinateSystems;
 import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.projection.Reproject;
 import ucar.ma2.Array;
+import ucar.ma2.DataType;
+import ucar.ma2.IndexIterator;
+import ucar.ma2.InvalidRangeException;
+import ucar.ma2.Range;
+import ucar.ma2.Section;
 import ucar.nc2.Attribute;
 
 /**
@@ -252,6 +257,7 @@ public class MICAPS13DataInfo extends DataInfo implements IGridDataInfo {
         dataInfo += System.getProperty("line.separator") + "Zoom factor: " + String.valueOf(_zoomFactor);
         dataInfo += System.getProperty("line.separator") + "Image type: " + getImageType(_imageType);
         dataInfo += System.getProperty("line.separator") + "Table name: " + _tableName;
+        dataInfo += System.getProperty("line.separator") + super.generateInfoText();
 
         return dataInfo;
     }
@@ -307,7 +313,20 @@ public class MICAPS13DataInfo extends DataInfo implements IGridDataInfo {
      */
     @Override
     public Array read(String varName){
-        return null;
+        Variable var = this.getVariable(varName);
+        int n = var.getDimNumber();
+        int[] origin = new int[n];
+        int[] size = new int[n];
+        int[] stride = new int[n];
+        for (int i = 0; i < n; i++){
+            origin[i] = 0;
+            size[i] = var.getDimLength(i);
+            stride[i] = 1;
+        }
+        
+        Array r = read(varName, origin, size, stride);
+        
+        return r;
     }
     
     /**
@@ -321,7 +340,29 @@ public class MICAPS13DataInfo extends DataInfo implements IGridDataInfo {
      */
     @Override
     public Array read(String varName, int[] origin, int[] size, int[] stride) {
-        return null;
+        try {
+            Section section = new Section(origin, size, stride);
+            Array dataArray = Array.factory(DataType.INT, section.getShape());
+            int rangeIdx = 1;
+            Range yRange = section.getRange(rangeIdx++);
+            Range xRange = section.getRange(rangeIdx);
+            IndexIterator ii = dataArray.getIndexIterator();
+            int xNum = this._xNum;
+            int index;
+            for (int y = yRange.first(); y <= yRange.last();
+                    y += yRange.stride()) {
+                for (int x = xRange.first(); x <= xRange.last();
+                        x += xRange.stride()) {
+                    index = y * xNum + x;
+                    ii.setIntNext(DataConvert.byte2Int(_imageBytes[index]));
+                }
+            }
+
+            return dataArray;
+        } catch (InvalidRangeException ex) {
+            Logger.getLogger(MICAPS4DataInfo.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }        
     }
     
     /**

@@ -14,6 +14,7 @@ import org.meteoinfo.geoprocess.GeoComputation;
 import org.meteoinfo.global.MIMath;
 import org.meteoinfo.global.PointD;
 import org.meteoinfo.layer.VectorLayer;
+import org.meteoinfo.ma.ArrayBoolean;
 import org.meteoinfo.math.Complex;
 import org.meteoinfo.shape.PolygonShape;
 import org.python.core.PyComplex;
@@ -30,7 +31,7 @@ import ucar.ma2.Range;
  * @author wyq
  */
 public class ArrayMath {
-
+    
     public static double fill_value = -9999.0;
 
     // <editor-fold desc="Data type">
@@ -47,20 +48,22 @@ public class ArrayMath {
             return DataType.FLOAT;
         } else if (o instanceof Double) {
             return DataType.DOUBLE;
+        } else if (o instanceof Boolean) {
+            return DataType.BOOLEAN;
         } else {
             return DataType.OBJECT;
         }
     }
-
+    
     private static DataType commonType(DataType aType, DataType bType) {
         if (aType == bType) {
             return aType;
         }
-
+        
         if (aType == DataType.OBJECT || bType == DataType.OBJECT) {
             return DataType.OBJECT;
         }
-
+        
         short anb = ArrayMath.typeToNBytes(aType);
         short bnb = ArrayMath.typeToNBytes(bType);
         if (anb == bnb) {
@@ -73,7 +76,7 @@ public class ArrayMath {
                     return aType;
             }
         }
-
+        
         return (anb > bnb) ? aType : bType;
     }
 
@@ -95,11 +98,8 @@ public class ArrayMath {
             case LONG:
             case DOUBLE:
                 return 8;
-            case OBJECT:
-                return 0;
             default:
-                System.out.println("internal error in typeToNBytes");
-                return -1;
+                return 0;
         }
     }
 
@@ -218,7 +218,7 @@ public class ArrayMath {
             return shape;
         }
     }
-
+    
     private static void setIndex(int broadcast, Index aindex, Index bindex, int[] current, int n, int na, int nb) {
         if (broadcast == 0) {
             aindex.set(current);
@@ -245,7 +245,7 @@ public class ArrayMath {
             }
         }
     }
-
+    
     private static void setIndex(Index aindex, Index bindex, int[] current, int n, int na, int nb) {
         int ia, ib;
         for (int j = 0; j < n; j++) {
@@ -280,6 +280,7 @@ public class ArrayMath {
         switch (type) {
             case SHORT:
             case INT:
+            case BOOLEAN:
                 return ArrayMath.addInt(a, b);
             case FLOAT:
                 return ArrayMath.addFloat(a, b);
@@ -307,6 +308,7 @@ public class ArrayMath {
         switch (type) {
             case SHORT:
             case INT:
+            case BOOLEAN:
                 return ArrayMath.addInt(a, b.intValue());
             case FLOAT:
                 return ArrayMath.addFloat(a, b.floatValue());
@@ -342,7 +344,7 @@ public class ArrayMath {
     public static Array add(Array a, PyComplex b) {
         return addComplex(a, new Complex(b.real, b.imag));
     }
-
+    
     private static Array addInt_bak(Array a, Array b) {
         int broadcast = broadcastCheck(a, b);
         if (broadcast != -1) {
@@ -375,7 +377,7 @@ public class ArrayMath {
             return null;
         }
     }
-
+    
     private static Array addInt(Array a, Array b) {
         int broadcast = broadcastCheck(a, b);
         switch (broadcast) {
@@ -414,7 +416,7 @@ public class ArrayMath {
                 return null;
         }
     }
-
+    
     private static Array addInt(Array a, int b) {
         Array r = Array.factory(DataType.INT, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
@@ -424,10 +426,10 @@ public class ArrayMath {
                 r.setInt(i, a.getInt(i) + b);
             }
         }
-
+        
         return r;
     }
-
+    
     private static Array addFloat(Array a, Array b) {
         int broadcast = broadcastCheck(a, b);
         switch (broadcast) {
@@ -466,7 +468,7 @@ public class ArrayMath {
                 return null;
         }
     }
-
+    
     private static Array addFloat(Array a, float b) {
         Array r = Array.factory(DataType.FLOAT, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
@@ -476,10 +478,10 @@ public class ArrayMath {
                 r.setFloat(i, a.getFloat(i) + b);
             }
         }
-
+        
         return r;
     }
-
+    
     private static Array addDouble(Array a, Array b) {
         int broadcast = broadcastCheck(a, b);
         switch (broadcast) {
@@ -516,9 +518,9 @@ public class ArrayMath {
                 return r;
             default:
                 return null;
-        }        
+        }
     }
-
+    
     private static Array addDouble(Array a, double b) {
         Array r = Array.factory(DataType.DOUBLE, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
@@ -528,10 +530,10 @@ public class ArrayMath {
                 r.setDouble(i, a.getDouble(i) + b);
             }
         }
-
+        
         return r;
     }
-
+    
     private static Array addComplex(Array a, Array b) {
         int broadcast = broadcastCheck(a, b);
         switch (broadcast) {
@@ -581,7 +583,7 @@ public class ArrayMath {
                 int n = r.getRank();
                 int na = a.getRank();
                 int nb = b.getRank();
-                int[] current;                
+                int[] current;
                 if (isComplex(a)) {
                     if (isComplex(b)) {
                         Complex v1, v2;
@@ -627,9 +629,9 @@ public class ArrayMath {
                 return r;
             default:
                 return null;
-        }                
+        }
     }
-
+    
     private static Array addComplex(Array a, double b) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
@@ -641,10 +643,10 @@ public class ArrayMath {
                 r.setObject(i, v.add(b));
             }
         }
-
+        
         return r;
     }
-
+    
     private static Array addComplex(Array a, Complex b) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
@@ -656,7 +658,7 @@ public class ArrayMath {
                 r.setObject(i, v.add(b));
             }
         }
-
+        
         return r;
     }
 
@@ -672,6 +674,7 @@ public class ArrayMath {
         switch (type) {
             case SHORT:
             case INT:
+            case BOOLEAN:
                 return ArrayMath.subInt(a, b);
             case FLOAT:
                 return ArrayMath.subFloat(a, b);
@@ -699,6 +702,7 @@ public class ArrayMath {
         switch (type) {
             case SHORT:
             case INT:
+            case BOOLEAN:
                 return ArrayMath.subInt(a, b.intValue());
             case FLOAT:
                 return ArrayMath.subFloat(a, b.floatValue());
@@ -748,6 +752,7 @@ public class ArrayMath {
         switch (type) {
             case SHORT:
             case INT:
+            case BOOLEAN:
                 return ArrayMath.subInt(b.intValue(), a);
             case FLOAT:
                 return ArrayMath.subFloat(b.floatValue(), a);
@@ -783,7 +788,7 @@ public class ArrayMath {
     public static Array sub(PyComplex b, Array a) {
         return subComplex(new Complex(b.real, b.imag), a);
     }
-
+    
     private static Array subInt(Array a, Array b) {
         int broadcast = broadcastCheck(a, b);
         switch (broadcast) {
@@ -812,27 +817,27 @@ public class ArrayMath {
                 return r;
             default:
                 return null;
-        }        
+        }
     }
-
+    
     private static Array subInt(Array a, int b) {
         Array r = Array.factory(DataType.INT, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             r.setInt(i, a.getInt(i) - b);
         }
-
+        
         return r;
     }
-
+    
     private static Array subInt(int b, Array a) {
         Array r = Array.factory(DataType.INT, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             r.setInt(i, b - a.getInt(i));
         }
-
+        
         return r;
     }
-
+    
     private static Array subFloat(Array a, Array b) {
         int broadcast = broadcastCheck(a, b);
         switch (broadcast) {
@@ -871,25 +876,25 @@ public class ArrayMath {
                 return null;
         }
     }
-
+    
     private static Array subFloat(Array a, float b) {
         Array r = Array.factory(DataType.FLOAT, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             r.setFloat(i, a.getFloat(i) - b);
         }
-
+        
         return r;
     }
-
+    
     private static Array subFloat(float b, Array a) {
         Array r = Array.factory(DataType.FLOAT, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             r.setFloat(i, b - a.getFloat(i));
         }
-
+        
         return r;
     }
-
+    
     private static Array subDouble(Array a, Array b) {
         int broadcast = broadcastCheck(a, b);
         switch (broadcast) {
@@ -926,27 +931,27 @@ public class ArrayMath {
                 return r;
             default:
                 return null;
-        }                
+        }
     }
-
+    
     private static Array subDouble(Array a, double b) {
         Array r = Array.factory(DataType.DOUBLE, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             r.setDouble(i, a.getDouble(i) - b);
         }
-
+        
         return r;
     }
-
+    
     private static Array subDouble(double b, Array a) {
         Array r = Array.factory(DataType.DOUBLE, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             r.setDouble(i, b - a.getDouble(i));
         }
-
+        
         return r;
     }
-
+    
     private static Array subComplex(Array a, Array b) {
         int broadcast = broadcastCheck(a, b);
         switch (broadcast) {
@@ -996,7 +1001,7 @@ public class ArrayMath {
                 int n = r.getRank();
                 int na = a.getRank();
                 int nb = b.getRank();
-                int[] current;                
+                int[] current;
                 if (isComplex(a)) {
                     if (isComplex(b)) {
                         Complex v1, v2;
@@ -1042,9 +1047,9 @@ public class ArrayMath {
                 return r;
             default:
                 return null;
-        }                   
+        }
     }
-
+    
     private static Array subComplex(Array a, double b) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
@@ -1056,10 +1061,10 @@ public class ArrayMath {
                 r.setObject(i, v.subtract(b));
             }
         }
-
+        
         return r;
     }
-
+    
     private static Array subComplex(Array a, Complex b) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
@@ -1071,10 +1076,10 @@ public class ArrayMath {
                 r.setObject(i, v.subtract(b));
             }
         }
-
+        
         return r;
     }
-
+    
     private static Array subComplex(double b, Array a) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
@@ -1086,10 +1091,10 @@ public class ArrayMath {
                 r.setObject(i, v.rSubtract(b));
             }
         }
-
+        
         return r;
     }
-
+    
     private static Array subComplex(Complex b, Array a) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
@@ -1101,7 +1106,7 @@ public class ArrayMath {
                 r.setObject(i, b.subtract(v));
             }
         }
-
+        
         return r;
     }
 
@@ -1117,6 +1122,7 @@ public class ArrayMath {
         switch (type) {
             case SHORT:
             case INT:
+            case BOOLEAN:
                 return ArrayMath.mulInt(a, b);
             case FLOAT:
                 return ArrayMath.mulFloat(a, b);
@@ -1144,6 +1150,7 @@ public class ArrayMath {
         switch (type) {
             case SHORT:
             case INT:
+            case BOOLEAN:
                 return ArrayMath.mulInt(a, b.intValue());
             case FLOAT:
                 return ArrayMath.mulFloat(a, b.floatValue());
@@ -1179,7 +1186,7 @@ public class ArrayMath {
     public static Array mul(Array a, PyComplex b) {
         return ArrayMath.mulComplex(a, new Complex(b.real, b.imag));
     }
-
+    
     private static Array mulInt(Array a, Array b) {
         int broadcast = broadcastCheck(a, b);
         switch (broadcast) {
@@ -1216,9 +1223,9 @@ public class ArrayMath {
                 return r;
             default:
                 return null;
-        }        
+        }
     }
-
+    
     private static Array mulInt(Array a, int b) {
         Array r = Array.factory(DataType.INT, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
@@ -1228,10 +1235,10 @@ public class ArrayMath {
                 r.setInt(i, a.getInt(i) * b);
             }
         }
-
+        
         return r;
     }
-
+    
     private static Array mulFloat(Array a, Array b) {
         int broadcast = broadcastCheck(a, b);
         switch (broadcast) {
@@ -1268,9 +1275,9 @@ public class ArrayMath {
                 return r;
             default:
                 return null;
-        }        
+        }
     }
-
+    
     private static Array mulFloat(Array a, float b) {
         Array r = Array.factory(DataType.FLOAT, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
@@ -1280,10 +1287,10 @@ public class ArrayMath {
                 r.setFloat(i, a.getFloat(i) * b);
             }
         }
-
+        
         return r;
     }
-
+    
     private static Array mulDouble(Array a, Array b) {
         int broadcast = broadcastCheck(a, b);
         switch (broadcast) {
@@ -1320,9 +1327,9 @@ public class ArrayMath {
                 return r;
             default:
                 return null;
-        }          
+        }
     }
-
+    
     private static Array mulDouble(Array a, double b) {
         Array r = Array.factory(DataType.DOUBLE, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
@@ -1332,10 +1339,10 @@ public class ArrayMath {
                 r.setDouble(i, a.getDouble(i) * b);
             }
         }
-
+        
         return r;
     }
-
+    
     private static Array mulComplex(Array a, Array b) {
         int broadcast = broadcastCheck(a, b);
         switch (broadcast) {
@@ -1385,7 +1392,7 @@ public class ArrayMath {
                 int n = r.getRank();
                 int na = a.getRank();
                 int nb = b.getRank();
-                int[] current;                
+                int[] current;
                 if (isComplex(a)) {
                     if (isComplex(b)) {
                         Complex v1, v2;
@@ -1431,9 +1438,9 @@ public class ArrayMath {
                 return r;
             default:
                 return null;
-        }               
+        }
     }
-
+    
     private static Array mulComplex(Array a, double b) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
@@ -1445,10 +1452,10 @@ public class ArrayMath {
                 r.setObject(i, v.multiply(b));
             }
         }
-
+        
         return r;
     }
-
+    
     private static Array mulComplex(Array a, Complex b) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
@@ -1460,7 +1467,7 @@ public class ArrayMath {
                 r.setObject(i, v.multiply(b));
             }
         }
-
+        
         return r;
     }
 
@@ -1476,6 +1483,7 @@ public class ArrayMath {
         switch (type) {
             case SHORT:
             case INT:
+            case BOOLEAN:
                 return ArrayMath.divInt(a, b);
             case FLOAT:
                 return ArrayMath.divFloat(a, b);
@@ -1503,6 +1511,7 @@ public class ArrayMath {
         switch (type) {
             case SHORT:
             case INT:
+            case BOOLEAN:
                 return ArrayMath.divInt(a, b.intValue());
             case FLOAT:
                 return ArrayMath.divFloat(a, b.floatValue());
@@ -1552,6 +1561,7 @@ public class ArrayMath {
         switch (type) {
             case SHORT:
             case INT:
+            case BOOLEAN:
                 return ArrayMath.divInt(b.intValue(), a);
             case FLOAT:
                 return ArrayMath.divFloat(b.floatValue(), a);
@@ -1587,7 +1597,7 @@ public class ArrayMath {
     public static Array div(PyComplex b, Array a) {
         return divComplex(new Complex(b.real, b.imag), a);
     }
-
+    
     private static Array divInt(Array a, Array b) {
         int broadcast = broadcastCheck(a, b);
         switch (broadcast) {
@@ -1626,25 +1636,25 @@ public class ArrayMath {
                 return null;
         }
     }
-
+    
     private static Array divInt(Array a, int b) {
         Array r = Array.factory(DataType.INT, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             r.setInt(i, a.getInt(i) / b);
         }
-
+        
         return r;
     }
-
+    
     private static Array divInt(int b, Array a) {
         Array r = Array.factory(DataType.INT, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             r.setInt(i, b / a.getInt(i));
         }
-
+        
         return r;
     }
-
+    
     private static Array divFloat(Array a, Array b) {
         int broadcast = broadcastCheck(a, b);
         switch (broadcast) {
@@ -1683,25 +1693,25 @@ public class ArrayMath {
                 return null;
         }
     }
-
+    
     private static Array divFloat(Array a, float b) {
         Array r = Array.factory(DataType.FLOAT, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             r.setFloat(i, a.getFloat(i) / b);
         }
-
+        
         return r;
     }
-
+    
     private static Array divFloat(float b, Array a) {
         Array r = Array.factory(DataType.FLOAT, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             r.setFloat(i, b / a.getFloat(i));
         }
-
+        
         return r;
     }
-
+    
     private static Array divDouble(Array a, Array b) {
         int broadcast = broadcastCheck(a, b);
         switch (broadcast) {
@@ -1738,27 +1748,27 @@ public class ArrayMath {
                 return r;
             default:
                 return null;
-        }             
+        }
     }
-
+    
     private static Array divDouble(Array a, double b) {
         Array r = Array.factory(DataType.DOUBLE, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             r.setDouble(i, a.getDouble(i) / b);
         }
-
+        
         return r;
     }
-
+    
     private static Array divDouble(double b, Array a) {
         Array r = Array.factory(DataType.DOUBLE, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             r.setDouble(i, b / a.getDouble(i));
         }
-
+        
         return r;
     }
-
+    
     private static Array divComplex(Array a, Array b) {
         int broadcast = broadcastCheck(a, b);
         switch (broadcast) {
@@ -1808,7 +1818,7 @@ public class ArrayMath {
                 int n = r.getRank();
                 int na = a.getRank();
                 int nb = b.getRank();
-                int[] current;                
+                int[] current;
                 if (isComplex(a)) {
                     if (isComplex(b)) {
                         Complex v1, v2;
@@ -1854,9 +1864,9 @@ public class ArrayMath {
                 return r;
             default:
                 return null;
-        }             
+        }
     }
-
+    
     private static Array divComplex(Array a, double b) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
@@ -1868,10 +1878,10 @@ public class ArrayMath {
                 r.setObject(i, v.divide(b));
             }
         }
-
+        
         return r;
     }
-
+    
     private static Array divComplex(Array a, Complex b) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
@@ -1883,10 +1893,10 @@ public class ArrayMath {
                 r.setObject(i, v.divide(b));
             }
         }
-
+        
         return r;
     }
-
+    
     private static Array divComplex(double b, Array a) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
@@ -1898,10 +1908,10 @@ public class ArrayMath {
                 r.setObject(i, v.rDivide(b));
             }
         }
-
+        
         return r;
     }
-
+    
     private static Array divComplex(Complex b, Array a) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
@@ -1913,7 +1923,7 @@ public class ArrayMath {
                 r.setObject(i, b.divide(v));
             }
         }
-
+        
         return r;
     }
 
@@ -1930,6 +1940,7 @@ public class ArrayMath {
         switch (type) {
             case SHORT:
             case INT:
+            case BOOLEAN:
                 return ArrayMath.powInt(a, b.intValue());
             case FLOAT:
             case DOUBLE:
@@ -1978,6 +1989,7 @@ public class ArrayMath {
         switch (type) {
             case SHORT:
             case INT:
+            case BOOLEAN:
                 return ArrayMath.powInt(a.intValue(), b);
             case FLOAT:
             case DOUBLE:
@@ -2037,25 +2049,25 @@ public class ArrayMath {
         }
         return null;
     }
-
+    
     private static Array powInt(Array a, int b) {
         Array r = Array.factory(DataType.INT, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             r.setInt(i, (int) Math.pow(a.getInt(i), b));
         }
-
+        
         return r;
     }
-
+    
     private static Array powInt(int a, Array b) {
         Array r = Array.factory(DataType.INT, b.getShape());
         for (int i = 0; i < b.getSize(); i++) {
             r.setInt(i, (int) Math.pow(a, b.getInt(i)));
         }
-
+        
         return r;
     }
-
+    
     private static Array powInt(Array a, Array b) {
         int broadcast = broadcastCheck(a, b);
         switch (broadcast) {
@@ -2086,25 +2098,25 @@ public class ArrayMath {
                 return null;
         }
     }
-
+    
     private static Array powDouble(Array a, double b) {
         Array r = Array.factory(DataType.DOUBLE, a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             r.setDouble(i, Math.pow(a.getDouble(i), b));
         }
-
+        
         return r;
     }
-
+    
     private static Array powDouble(double a, Array b) {
         Array r = Array.factory(DataType.DOUBLE, b.getShape());
         for (int i = 0; i < b.getSize(); i++) {
             r.setDouble(i, Math.pow(a, b.getDouble(i)));
         }
-
+        
         return r;
     }
-
+    
     private static Array powDouble(Array a, Array b) {
         int broadcast = broadcastCheck(a, b);
         switch (broadcast) {
@@ -2143,7 +2155,7 @@ public class ArrayMath {
                 return null;
         }
     }
-
+    
     private static Array powComplex(Array a, Array b) {
         int broadcast = broadcastCheck(a, b);
         switch (broadcast) {
@@ -2193,7 +2205,7 @@ public class ArrayMath {
                 int n = r.getRank();
                 int na = a.getRank();
                 int nb = b.getRank();
-                int[] current;                
+                int[] current;
                 if (isComplex(a)) {
                     if (isComplex(b)) {
                         Complex v1, v2;
@@ -2239,9 +2251,9 @@ public class ArrayMath {
                 return r;
             default:
                 return null;
-        }           
+        }
     }
-
+    
     private static Array powComplex(Array a, double b) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
@@ -2253,10 +2265,10 @@ public class ArrayMath {
                 r.setObject(i, v.pow(b));
             }
         }
-
+        
         return r;
     }
-
+    
     private static Array powComplex(Array a, Complex b) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
@@ -2268,10 +2280,10 @@ public class ArrayMath {
                 r.setObject(i, v.pow(b));
             }
         }
-
+        
         return r;
     }
-
+    
     private static Array powComplex(double b, Array a) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
@@ -2283,10 +2295,10 @@ public class ArrayMath {
                 r.setObject(i, v.rPow(b));
             }
         }
-
+        
         return r;
     }
-
+    
     private static Array powComplex(Complex b, Array a) {
         Array r = Array.factory(DataType.OBJECT, a.getShape());
         Complex v;
@@ -2298,7 +2310,7 @@ public class ArrayMath {
                 r.setObject(i, b.pow(v));
             }
         }
-
+        
         return r;
     }
 
@@ -2331,7 +2343,7 @@ public class ArrayMath {
                 r.setDouble(i, Math.exp(a.getDouble(i)));
             }
         }
-
+        
         return r;
     }
 
@@ -2354,7 +2366,7 @@ public class ArrayMath {
                 r.setDouble(i, Math.log(a.getDouble(i)));
             }
         }
-
+        
         return r;
     }
 
@@ -2369,7 +2381,7 @@ public class ArrayMath {
         for (int i = 0; i < a.getSize(); i++) {
             r.setDouble(i, Math.log10(a.getDouble(i)));
         }
-
+        
         return r;
     }
 
@@ -2392,7 +2404,7 @@ public class ArrayMath {
                 r.setDouble(i, Math.abs(a.getDouble(i)));
             }
         }
-
+        
         return r;
     }
 
@@ -2404,15 +2416,16 @@ public class ArrayMath {
      * @return Result array
      */
     public static Array equal(Array a, Array b) {
-        Array r = Array.factory(DataType.INT, a.getShape());
+        //Array r = Array.factory(DataType.BOOLEAN, a.getShape());
+        Array r = new ArrayBoolean(a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             if (a.getDouble(i) == b.getDouble(i)) {
-                r.setDouble(i, 1);
+                r.setBoolean(i, true);
             } else {
-                r.setDouble(i, 0);
+                r.setBoolean(i, false);
             }
         }
-
+        
         return r;
     }
 
@@ -2424,26 +2437,27 @@ public class ArrayMath {
      * @return Result array
      */
     public static Array equal(Array a, Number b) {
-        Array r = Array.factory(DataType.INT, a.getShape());
+        //Array r = Array.factory(DataType.BOOLEAN, a.getShape());
+        Array r = new ArrayBoolean(a.getShape());
         double v = b.doubleValue();
         if (Double.isNaN(v)) {
             for (int i = 0; i < a.getSize(); i++) {
                 if (Double.isNaN(a.getDouble(i))) {
-                    r.setDouble(i, 1);
+                    r.setBoolean(i, true);
                 } else {
-                    r.setDouble(i, 0);
+                    r.setBoolean(i, false);
                 }
             }
         } else {
             for (int i = 0; i < a.getSize(); i++) {
                 if (a.getDouble(i) == v) {
-                    r.setDouble(i, 1);
+                    r.setBoolean(i, true);
                 } else {
-                    r.setDouble(i, 0);
+                    r.setBoolean(i, false);
                 }
             }
         }
-
+        
         return r;
     }
 
@@ -2455,15 +2469,16 @@ public class ArrayMath {
      * @return Result array
      */
     public static Array lessThan(Array a, Array b) {
-        Array r = Array.factory(DataType.INT, a.getShape());
+        //Array r = Array.factory(DataType.BOOLEAN, a.getShape());
+        Array r = new ArrayBoolean(a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             if (a.getDouble(i) < b.getDouble(i)) {
-                r.setDouble(i, 1);
+                r.setBoolean(i, true);
             } else {
-                r.setDouble(i, 0);
+                r.setBoolean(i, false);
             }
         }
-
+        
         return r;
     }
 
@@ -2475,15 +2490,16 @@ public class ArrayMath {
      * @return Result array
      */
     public static Array lessThan(Array a, Number b) {
-        Array r = Array.factory(DataType.INT, a.getShape());
+        //Array r = Array.factory(DataType.BOOLEAN, a.getShape());
+        Array r = new ArrayBoolean(a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             if (a.getDouble(i) < b.doubleValue()) {
-                r.setDouble(i, 1);
+                r.setBoolean(i, true);
             } else {
-                r.setDouble(i, 0);
+                r.setBoolean(i, false);
             }
         }
-
+        
         return r;
     }
 
@@ -2495,15 +2511,16 @@ public class ArrayMath {
      * @return Result array
      */
     public static Array lessThanOrEqual(Array a, Array b) {
-        Array r = Array.factory(DataType.INT, a.getShape());
+        //Array r = Array.factory(DataType.BOOLEAN, a.getShape());
+        Array r = new ArrayBoolean(a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             if (a.getDouble(i) <= b.getDouble(i)) {
-                r.setDouble(i, 1);
+                r.setBoolean(i, true);
             } else {
-                r.setDouble(i, 0);
+                r.setBoolean(i, false);
             }
         }
-
+        
         return r;
     }
 
@@ -2515,15 +2532,16 @@ public class ArrayMath {
      * @return Result array
      */
     public static Array lessThanOrEqual(Array a, Number b) {
-        Array r = Array.factory(DataType.INT, a.getShape());
+        //Array r = Array.factory(DataType.BOOLEAN, a.getShape());
+        Array r = new ArrayBoolean(a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             if (a.getDouble(i) <= b.doubleValue()) {
-                r.setDouble(i, 1);
+                r.setBoolean(i, true);
             } else {
-                r.setDouble(i, 0);
+                r.setBoolean(i, false);
             }
         }
-
+        
         return r;
     }
 
@@ -2535,15 +2553,16 @@ public class ArrayMath {
      * @return Result array
      */
     public static Array greaterThan(Array a, Array b) {
-        Array r = Array.factory(DataType.INT, a.getShape());
+        //Array r = Array.factory(DataType.BOOLEAN, a.getShape());
+        Array r = new ArrayBoolean(a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             if (a.getDouble(i) > b.getDouble(i)) {
-                r.setDouble(i, 1);
+                r.setBoolean(i, true);
             } else {
-                r.setDouble(i, 0);
+                r.setBoolean(i, false);
             }
         }
-
+        
         return r;
     }
 
@@ -2555,15 +2574,16 @@ public class ArrayMath {
      * @return Result array
      */
     public static Array greaterThan(Array a, Number b) {
-        Array r = Array.factory(DataType.INT, a.getShape());
+        //Array r = Array.factory(DataType.BOOLEAN, a.getShape());
+        Array r = new ArrayBoolean(a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             if (a.getDouble(i) > b.doubleValue()) {
-                r.setDouble(i, 1);
+                r.setBoolean(i, true);
             } else {
-                r.setDouble(i, 0);
+                r.setBoolean(i, false);
             }
         }
-
+        
         return r;
     }
 
@@ -2575,15 +2595,16 @@ public class ArrayMath {
      * @return Result array
      */
     public static Array greaterThanOrEqual(Array a, Array b) {
-        Array r = Array.factory(DataType.INT, a.getShape());
+        //Array r = Array.factory(DataType.BOOLEAN, a.getShape());
+        Array r = new ArrayBoolean(a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             if (a.getDouble(i) >= b.getDouble(i)) {
-                r.setDouble(i, 1);
+                r.setBoolean(i, true);
             } else {
-                r.setDouble(i, 0);
+                r.setBoolean(i, false);
             }
         }
-
+        
         return r;
     }
 
@@ -2595,15 +2616,16 @@ public class ArrayMath {
      * @return Result array
      */
     public static Array greaterThanOrEqual(Array a, Number b) {
-        Array r = Array.factory(DataType.INT, a.getShape());
+        //Array r = Array.factory(DataType.BOOLEAN, a.getShape());
+        Array r = new ArrayBoolean(a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             if (a.getDouble(i) >= b.doubleValue()) {
-                r.setDouble(i, 1);
+                r.setBoolean(i, true);
             } else {
-                r.setDouble(i, 0);
+                r.setBoolean(i, false);
             }
         }
-
+        
         return r;
     }
 
@@ -2615,15 +2637,16 @@ public class ArrayMath {
      * @return Result array
      */
     public static Array notEqual(Array a, Array b) {
-        Array r = Array.factory(DataType.INT, a.getShape());
+        //Array r = Array.factory(DataType.BOOLEAN, a.getShape());
+        Array r = new ArrayBoolean(a.getShape());
         for (int i = 0; i < a.getSize(); i++) {
             if (a.getDouble(i) != b.getDouble(i)) {
-                r.setDouble(i, 1);
+                r.setBoolean(i, true);
             } else {
-                r.setDouble(i, 0);
+                r.setBoolean(i, false);
             }
         }
-
+        
         return r;
     }
 
@@ -2635,27 +2658,68 @@ public class ArrayMath {
      * @return Result array
      */
     public static Array notEqual(Array a, Number b) {
-        Array r = Array.factory(DataType.INT, a.getShape());
+        //Array r = Array.factory(DataType.BOOLEAN, a.getShape());
+        Array r = new ArrayBoolean(a.getShape());
         double v = b.doubleValue();
         if (Double.isNaN(v)) {
             for (int i = 0; i < a.getSize(); i++) {
                 if (Double.isNaN(a.getDouble(i))) {
-                    r.setDouble(i, 0);
+                    r.setBoolean(i, false);
                 } else {
-                    r.setDouble(i, 1);
+                    r.setBoolean(i, true);
                 }
             }
         } else {
             for (int i = 0; i < a.getSize(); i++) {
                 if (a.getDouble(i) != v) {
-                    r.setDouble(i, 1);
+                    r.setBoolean(i, true);
                 } else {
-                    r.setDouble(i, 0);
+                    r.setBoolean(i, false);
                 }
             }
         }
-
+        
         return r;
+    }
+
+    /**
+     * Return the array with the value of 1 when the input array element value
+     * in the list b, otherwise set value as 0.
+     *
+     * @param a Array a
+     * @param b List b
+     * @return Result array
+     */
+    public static Array inValues(Array a, List b) {
+        //Array r = Array.factory(DataType.BOOLEAN, a.getShape());
+        Array r = new ArrayBoolean(a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            if (b.contains(a.getObject(i))) {
+                r.setBoolean(i, true);
+            } else {
+                r.setBoolean(i, false);
+            }
+        }
+        
+        return r;
+    }
+
+    /**
+     * Check if the array contains NaN value
+     *
+     * @param a Input array
+     * @return Boolean
+     */
+    public static boolean containsNaN(Array a) {
+        boolean hasNaN = false;
+        for (int i = 0; i < a.getSize(); i++) {
+            if (Double.isNaN(a.getDouble(i))) {
+                hasNaN = true;
+                break;
+            }
+        }
+        
+        return hasNaN;
     }
 
     /**
@@ -2683,11 +2747,11 @@ public class ArrayMath {
             }
             index.incr();
         }
-
+        
         if (r.get(0).isEmpty()) {
             return null;
         }
-
+        
         List<Array> ra = new ArrayList<>();
         for (int i = 0; i < ndim; i++) {
             ra.add(ArrayUtil.array(r.get(i)));
@@ -2707,10 +2771,10 @@ public class ArrayMath {
         for (int i = 0; i < a.getSize(); i++) {
             r.setObject(i, a.getInt(i) & b.intValue());
         }
-
+        
         return r;
     }
-    
+
     /**
      * Bit and & operation
      *
@@ -2719,14 +2783,21 @@ public class ArrayMath {
      * @return Result array
      */
     public static Array bitAnd(Array a, Array b) {
-        Array r = Array.factory(a.getDataType(), a.getShape());
+        Array r;
+        DataType dt = a.getDataType();
+        if (dt == DataType.BOOLEAN) {
+            r = new ArrayBoolean(a.getShape());
+        } else {
+            r = Array.factory(a.getDataType(), a.getShape());
+        }
+        
         for (int i = 0; i < a.getSize(); i++) {
             r.setObject(i, a.getInt(i) & b.getInt(i));
         }
-
+        
         return r;
     }
-    
+
     /**
      * Bit or | operation
      *
@@ -2739,10 +2810,10 @@ public class ArrayMath {
         for (int i = 0; i < a.getSize(); i++) {
             r.setObject(i, a.getInt(i) | b.intValue());
         }
-
+        
         return r;
     }
-    
+
     /**
      * Bit or | operation
      *
@@ -2755,10 +2826,10 @@ public class ArrayMath {
         for (int i = 0; i < a.getSize(); i++) {
             r.setObject(i, a.getInt(i) | b.getInt(i));
         }
-
+        
         return r;
     }
-    
+
     /**
      * Bit exclusive or ^ operation
      *
@@ -2771,10 +2842,10 @@ public class ArrayMath {
         for (int i = 0; i < a.getSize(); i++) {
             r.setObject(i, a.getInt(i) ^ b.intValue());
         }
-
+        
         return r;
     }
-    
+
     /**
      * Bit exclusive or | operation
      *
@@ -2787,10 +2858,10 @@ public class ArrayMath {
         for (int i = 0; i < a.getSize(); i++) {
             r.setObject(i, a.getInt(i) ^ b.getInt(i));
         }
-
+        
         return r;
     }
-    
+
     /**
      * Bit inversion ~ operation
      *
@@ -2802,10 +2873,10 @@ public class ArrayMath {
         for (int i = 0; i < a.getSize(); i++) {
             r.setObject(i, ~a.getInt(i));
         }
-
+        
         return r;
-    }    
-    
+    }
+
     /**
      * Bit left shift << operation
      *
@@ -2818,10 +2889,10 @@ public class ArrayMath {
         for (int i = 0; i < a.getSize(); i++) {
             r.setObject(i, a.getInt(i) << b.intValue());
         }
-
+        
         return r;
     }
-    
+
     /**
      * Bit left shift << operation
      *
@@ -2834,10 +2905,10 @@ public class ArrayMath {
         for (int i = 0; i < a.getSize(); i++) {
             r.setObject(i, a.getInt(i) << b.getInt(i));
         }
-
+        
         return r;
     }
-    
+
     /**
      * Bit right shift >> operation
      *
@@ -2850,10 +2921,10 @@ public class ArrayMath {
         for (int i = 0; i < a.getSize(); i++) {
             r.setObject(i, a.getInt(i) >> b.intValue());
         }
-
+        
         return r;
     }
-    
+
     /**
      * Bit right shift >> operation
      *
@@ -2866,7 +2937,7 @@ public class ArrayMath {
         for (int i = 0; i < a.getSize(); i++) {
             r.setObject(i, a.getInt(i) >> b.getInt(i));
         }
-
+        
         return r;
     }
 
@@ -3015,7 +3086,7 @@ public class ArrayMath {
             r.setDouble(i, mean);
             indexr.incr();
         }
-
+        
         return r;
     }
 
@@ -3063,7 +3134,7 @@ public class ArrayMath {
             r.setDouble(i, mean);
             indexr.incr();
         }
-
+        
         return r;
     }
 
@@ -3101,7 +3172,7 @@ public class ArrayMath {
                     r.setDouble(rIndex.set(i, j), v);
                 }
             }
-
+            
             return r;
         } else {
             if (a.getShape()[0] != b.getShape()[0]) {
@@ -3136,7 +3207,7 @@ public class ArrayMath {
         for (int i = 0; i < a.getSize(); i++) {
             r += a.getDouble(i) * b.getDouble(i);
         }
-
+        
         return r;
     }
 
@@ -3153,7 +3224,7 @@ public class ArrayMath {
         for (int i = 0; i < a.getSize(); i++) {
             r.setDouble(i, Math.toDegrees(a.getDouble(i)));
         }
-
+        
         return r;
     }
 
@@ -3168,7 +3239,7 @@ public class ArrayMath {
         for (int i = 0; i < a.getSize(); i++) {
             r.setDouble(i, Math.toRadians(a.getDouble(i)));
         }
-
+        
         return r;
     }
 
@@ -3191,7 +3262,7 @@ public class ArrayMath {
                 r.setDouble(i, Math.sin(a.getDouble(i)));
             }
         }
-
+        
         return r;
     }
 
@@ -3214,7 +3285,7 @@ public class ArrayMath {
                 r.setDouble(i, Math.cos(a.getDouble(i)));
             }
         }
-
+        
         return r;
     }
 
@@ -3237,7 +3308,7 @@ public class ArrayMath {
                 r.setDouble(i, Math.tan(a.getDouble(i)));
             }
         }
-
+        
         return r;
     }
 
@@ -3260,7 +3331,7 @@ public class ArrayMath {
                 r.setDouble(i, Math.asin(a.getDouble(i)));
             }
         }
-
+        
         return r;
     }
 
@@ -3283,7 +3354,7 @@ public class ArrayMath {
                 r.setDouble(i, Math.acos(a.getDouble(i)));
             }
         }
-
+        
         return r;
     }
 
@@ -3306,7 +3377,7 @@ public class ArrayMath {
                 r.setDouble(i, Math.atan(a.getDouble(i)));
             }
         }
-
+        
         return r;
     }
 
@@ -3322,10 +3393,10 @@ public class ArrayMath {
         for (int i = 0; i < a.getSize(); i++) {
             r.setDouble(i, Math.atan2(a.getDouble(i), b.getDouble(i)));
         }
-
+        
         return r;
     }
-    
+
     /**
      * Convert cartesian to polar coordinate
      *
@@ -3337,7 +3408,7 @@ public class ArrayMath {
         Array r = Array.factory(DataType.DOUBLE, x.getShape());
         Array B = Array.factory(DataType.DOUBLE, x.getShape());
         double[] rr;
-        for (int i = 0; i < x.getSize(); i++){
+        for (int i = 0; i < x.getSize(); i++) {
             rr = cartesianToPolar(x.getDouble(i), y.getDouble(i));
             r.setDouble(i, rr[1]);
             B.setDouble(i, rr[0]);
@@ -3345,7 +3416,7 @@ public class ArrayMath {
         
         return new Array[]{B, r};
     }
-    
+
     /**
      * Convert poar to cartesian coordinate
      *
@@ -3357,15 +3428,15 @@ public class ArrayMath {
         Array x = Array.factory(DataType.DOUBLE, r.getShape());
         Array y = Array.factory(DataType.DOUBLE, r.getShape());
         double[] rr;
-        for (int i = 0; i < r.getSize(); i++){
+        for (int i = 0; i < r.getSize(); i++) {
             rr = polarToCartesian(B.getDouble(i), r.getDouble(i));
             x.setDouble(i, rr[0]);
             y.setDouble(i, rr[1]);
         }
-
+        
         return new Array[]{x, y};
     }
-    
+
     /**
      * Convert cartesian to polar coordinate
      *
@@ -3401,12 +3472,24 @@ public class ArrayMath {
     public static double[] polarToCartesian(double B, double r) {
         double x = Math.cos(B) * r;
         double y = Math.sin(B) * r;
-
+        
         return new double[]{x, y};
     }
 
     // </editor-fold>
     // <editor-fold desc="Section/Flip/Transpos...">
+    /**
+     * Copy array
+     *
+     * @param a Input array
+     * @return Copied array
+     */
+    public static Array copy(Array a) {
+        Array r = Array.factory(a.getDataType(), a.getShape());
+        MAMath.copy(r, a);
+        return r;
+    }
+
     /**
      * Section array
      *
@@ -3467,7 +3550,7 @@ public class ArrayMath {
                 indexlist.add(kl);
             }
         }
-
+        
         Array r = Array.factory(a.getDataType(), shape);
         IndexIterator ii = r.getIndexIterator();
         int[] current, acurrent = new int[n];
@@ -3481,10 +3564,10 @@ public class ArrayMath {
             index.set(acurrent);
             ii.setObjectCurrent(a.getObject(index));
         }
-
+        
         return r;
     }
-    
+
     /**
      * Take elements from an array.
      *
@@ -3499,8 +3582,8 @@ public class ArrayMath {
         Array r = Array.factory(a.getDataType(), shape);
         Index index = a.getIndex();
         int[] current = new int[n];
-        for (int i = 0; i < nn; i++){
-            for (int j = 0; j < n; j++){
+        for (int i = 0; i < nn; i++) {
+            for (int j = 0; j < n; j++) {
                 current[j] = ranges.get(j).get(i);
             }
             index.set(current);
@@ -3551,6 +3634,148 @@ public class ArrayMath {
             index.incr();
         }
         r = Array.factory(a.getDataType(), a.getShape(), r.getStorage());
+        return r;
+    }
+
+    /**
+     * Set section
+     *
+     * @param a Array a
+     * @param ranges Ranges
+     * @param v Number value
+     * @return Result array
+     */
+    public static Array setSection_Mix(Array a, List<Object> ranges, Number v) {
+        Array r = Array.factory(a.getDataType(), a.getShape());
+        int n = a.getRank();
+        IndexIterator iter = r.getIndexIterator();
+        Index aidx = a.getIndex();
+        int[] current;
+        boolean isIn;
+        while (iter.hasNext()) {
+            iter.next();
+            current = iter.getCurrentCounter();
+            isIn = true;
+            for (int i = 0; i < n; i++) {
+                Object k = ranges.get(i);
+                if (k instanceof Range) {
+                    if (!((Range) k).contains(current[i])) {
+                        isIn = false;
+                        break;
+                    }                    
+                } else {
+                    if (!((List<Integer>) k).contains(current[i])) {
+                        isIn = false;
+                        break;
+                    }
+                }
+            }
+            aidx.set(current);
+            if (isIn) {
+                iter.setObjectCurrent(v);
+            } else {
+                iter.setObjectCurrent(a.getObject(aidx));
+            }
+        }
+        
+        return r;
+    }
+
+    /**
+     * Set section
+     *
+     * @param a Array a
+     * @param ranges Ranges
+     * @param v Array value
+     * @return Result array
+     */
+    public static Array setSection_Mix(Array a, List<Object> ranges, Array v) {
+        Array r = Array.factory(a.getDataType(), a.getShape());
+        int n = a.getRank();
+        IndexIterator iter = r.getIndexIterator();
+        Index aidx = a.getIndex();
+        Index vidx = v.getIndex();
+        int[] current;
+        boolean isIn;
+        while (iter.hasNext()) {
+            iter.next();
+            current = iter.getCurrentCounter();
+            isIn = true;
+            for (int i = 0; i < n; i++) {
+                Object k = ranges.get(i);
+                if (k instanceof Range) {
+                    if (!((Range) k).contains(current[i])) {
+                        isIn = false;
+                        break;
+                    }                    
+                } else {
+                    if (!((List<Integer>) k).contains(current[i])) {
+                        isIn = false;
+                        break;
+                    }
+                }
+            }
+            aidx.set(current);
+            if (isIn) {
+                iter.setObjectCurrent(v.getObject(vidx));
+                vidx.incr();
+            } else {
+                iter.setObjectCurrent(a.getObject(aidx));
+            }
+        }
+        
+        return r;
+    }
+
+    /**
+     * Set section
+     *
+     * @param a Array a
+     * @param ranges Ranges
+     * @param v Number value
+     * @return Result array
+     */
+    public static Array setSection_List(Array a, List<List<Integer>> ranges, Number v) {
+        Array r = copy(a);
+        int n = r.getRank();
+        int[] count = new int[n];
+        Index index = Index.factory(count);
+        int m = ranges.get(0).size();
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                count[j] = ranges.get(j).get(i);
+            }
+            index.set(count);
+            r.setObject(index, v);
+        }
+        
+        return r;
+    }
+
+    /**
+     * Set section
+     *
+     * @param a Array a
+     * @param ranges Ranges
+     * @param v Array value
+     * @return Result array
+     */
+    public static Array setSection_List(Array a, List<List<Integer>> ranges, Array v) {
+        Array r = copy(a);
+        int n = r.getRank();
+        int[] count = new int[n];
+        Index index = Index.factory(count);
+        Index vIndex = v.getIndex();
+        int m = ranges.get(0).size();
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                count[j] = ranges.get(j).get(i);
+            }
+            index.set(count);
+            r.setObject(index, v.getObject(vIndex));
+            vIndex.incr();
+        }
+        
         return r;
     }
 
@@ -3665,7 +3890,7 @@ public class ArrayMath {
             default:
                 r = null;
         }
-
+        
         return r;
     }
 
@@ -3701,7 +3926,7 @@ public class ArrayMath {
             }
             i += 1;
         }
-
+        
         return r;
     }
 
@@ -3796,7 +4021,206 @@ public class ArrayMath {
         }
         return max;
     }
-    
+
+    /**
+     * Compute minimum value of an array
+     *
+     * @param a Array a
+     * @return Minimum value
+     * @throws ucar.ma2.InvalidRangeException
+     */
+    public static double min(Array a) throws InvalidRangeException {
+        double min = 1.7976931348623157E+308D;
+        double v;
+        IndexIterator ii = a.getIndexIterator();
+        while (ii.hasNext()) {
+            v = ii.getDoubleNext();
+            if (!Double.isNaN(v)) {
+                if (v < min) {
+                    min = v;
+                }
+            }
+        }
+        if (min == 1.7976931348623157E+308D) {
+            return Double.NaN;
+        } else {
+            return min;
+        }
+    }
+
+    /**
+     * Compute minimum value of an array along an axis (dimension)
+     *
+     * @param a Array a
+     * @param axis Axis
+     * @return Minimum value array
+     * @throws ucar.ma2.InvalidRangeException
+     */
+    public static Array min(Array a, int axis) throws InvalidRangeException {
+        int[] dataShape = a.getShape();
+        int[] shape = new int[dataShape.length - 1];
+        int idx;
+        for (int i = 0; i < dataShape.length; i++) {
+            idx = i;
+            if (idx == axis) {
+                continue;
+            } else if (idx > axis) {
+                idx -= 1;
+            }
+            shape[idx] = dataShape[i];
+        }
+        Array r = Array.factory(DataType.DOUBLE, shape);
+        double s;
+        Index indexr = r.getIndex();
+        int[] current;
+        for (int i = 0; i < r.getSize(); i++) {
+            current = indexr.getCurrentCounter();
+            List<Range> ranges = new ArrayList<>();
+            for (int j = 0; j < dataShape.length; j++) {
+                if (j == axis) {
+                    ranges.add(new Range(0, dataShape[j] - 1, 1));
+                } else {
+                    idx = j;
+                    if (idx > axis) {
+                        idx -= 1;
+                    }
+                    ranges.add(new Range(current[idx], current[idx], 1));
+                }
+            }
+            s = min(a, ranges);
+            r.setDouble(i, s);
+            indexr.incr();
+        }
+        
+        return r;
+    }
+
+    /**
+     * Compute minimum value of an array
+     *
+     * @param a Array a
+     * @param ranges Range list
+     * @return Minimum value
+     * @throws ucar.ma2.InvalidRangeException
+     */
+    public static double min(Array a, List<Range> ranges) throws InvalidRangeException {
+        double min = 1.7976931348623157E+308D;
+        double v;
+        IndexIterator ii = a.getRangeIterator(ranges);
+        while (ii.hasNext()) {
+            v = ii.getDoubleNext();
+            if (!Double.isNaN(v)) {
+                if (v < min) {
+                    min = v;
+                }
+            }
+        }
+        if (min == 1.7976931348623157E+308D) {
+            return Double.NaN;
+        } else {
+            return min;
+        }
+    }
+
+    /**
+     * Compute maximum value of an array
+     *
+     * @param a Array a
+     * @return Maximum value
+     */
+    public static double max(Array a) {
+        double max = -1.797693134862316E+307D;
+        double v;
+        IndexIterator ii = a.getIndexIterator();
+        while (ii.hasNext()) {
+            v = ii.getDoubleNext();
+            if (!Double.isNaN(v)) {
+                if (v > max) {
+                    max = v;
+                }
+            }
+        }
+        if (max == -1.797693134862316E+307D) {
+            return Double.NaN;
+        } else {
+            return max;
+        }
+    }
+
+    /**
+     * Compute maximum value of an array along an axis (dimension)
+     *
+     * @param a Array a
+     * @param axis Axis
+     * @return Maximum value array
+     * @throws ucar.ma2.InvalidRangeException
+     */
+    public static Array max(Array a, int axis) throws InvalidRangeException {
+        int[] dataShape = a.getShape();
+        int[] shape = new int[dataShape.length - 1];
+        int idx;
+        for (int i = 0; i < dataShape.length; i++) {
+            idx = i;
+            if (idx == axis) {
+                continue;
+            } else if (idx > axis) {
+                idx -= 1;
+            }
+            shape[idx] = dataShape[i];
+        }
+        Array r = Array.factory(DataType.DOUBLE, shape);
+        double s;
+        Index indexr = r.getIndex();
+        int[] current;
+        for (int i = 0; i < r.getSize(); i++) {
+            current = indexr.getCurrentCounter();
+            List<Range> ranges = new ArrayList<>();
+            for (int j = 0; j < dataShape.length; j++) {
+                if (j == axis) {
+                    ranges.add(new Range(0, dataShape[j] - 1, 1));
+                } else {
+                    idx = j;
+                    if (idx > axis) {
+                        idx -= 1;
+                    }
+                    ranges.add(new Range(current[idx], current[idx], 1));
+                }
+            }
+            s = max(a, ranges);
+            r.setDouble(i, s);
+            indexr.incr();
+        }
+        
+        return r;
+    }
+
+    /**
+     * Compute maximum value of an array
+     *
+     * @param a Array a
+     * @param ranges Range list
+     * @return Maximum value
+     * @throws ucar.ma2.InvalidRangeException
+     */
+    public static double max(Array a, List<Range> ranges) throws InvalidRangeException {
+        double max = -1.797693134862316E+307D;
+        double v;
+        IndexIterator ii = a.getRangeIterator(ranges);
+        while (ii.hasNext()) {
+            v = ii.getDoubleNext();
+            if (!Double.isNaN(v)) {
+                if (v > max) {
+                    max = v;
+                }
+            }
+        }
+        if (max == -1.797693134862316E+307D) {
+            return Double.NaN;
+        } else {
+            return max;
+        }
+    }
+
     /**
      * Compute sum value of an array along an axis (dimension)
      *
@@ -3840,10 +4264,10 @@ public class ArrayMath {
             r.setDouble(i, s);
             indexr.incr();
         }
-
+        
         return r;
     }
-    
+
     /**
      * Compute sum value of an array
      *
@@ -3863,12 +4287,12 @@ public class ArrayMath {
                 n += 1;
             }
         }
-        if (n == 0) {            
+        if (n == 0) {
             s = Double.NaN;
         }
         return s;
     }
-    
+
     /**
      * Compute the sum arry from a list of arrays
      *
@@ -3894,7 +4318,7 @@ public class ArrayMath {
             }
             r.setDouble(i, sum);
         }
-
+        
         return r;
     }
 
@@ -4000,7 +4424,7 @@ public class ArrayMath {
         }
         return sum / n;
     }
-    
+
     /**
      * Get the index of the minimum value into the flattened array.
      *
@@ -4013,10 +4437,10 @@ public class ArrayMath {
         int idx = 0;
         IndexIterator iterator = a.getIndexIterator();
         int i = 0;
-        while (iterator.hasNext()){
+        while (iterator.hasNext()) {
             v = iterator.getDoubleNext();
-            if (!Double.isNaN(v)){
-                if (min > v){
+            if (!Double.isNaN(v)) {
+                if (min > v) {
                     min = v;
                     idx = i;
                 }
@@ -4025,7 +4449,7 @@ public class ArrayMath {
         }
         return idx;
     }
-    
+
     /**
      * Get the indices of the minimum values along an axis.
      *
@@ -4034,7 +4458,7 @@ public class ArrayMath {
      * @return Indices
      * @throws ucar.ma2.InvalidRangeException
      */
-    public static Array argMin(Array a, int axis) throws InvalidRangeException {        
+    public static Array argMin(Array a, int axis) throws InvalidRangeException {
         int[] dataShape = a.getShape();
         int[] shape = new int[dataShape.length - 1];
         int idx;
@@ -4068,10 +4492,10 @@ public class ArrayMath {
             r.setInt(i, idx);
             indexr.incr();
         }
-
+        
         return r;
     }
-    
+
     /**
      * Get the index of the maximum value into the flattened array.
      *
@@ -4084,10 +4508,10 @@ public class ArrayMath {
         int idx = 0;
         IndexIterator iterator = a.getIndexIterator();
         int i = 0;
-        while (iterator.hasNext()){
+        while (iterator.hasNext()) {
             v = iterator.getDoubleNext();
-            if (!Double.isNaN(v)){
-                if (max < v){
+            if (!Double.isNaN(v)) {
+                if (max < v) {
                     max = v;
                     idx = i;
                 }
@@ -4096,7 +4520,7 @@ public class ArrayMath {
         }
         return idx;
     }
-    
+
     /**
      * Get the indices of the maximum values along an axis.
      *
@@ -4105,7 +4529,7 @@ public class ArrayMath {
      * @return Indices
      * @throws ucar.ma2.InvalidRangeException
      */
-    public static Array argMax(Array a, int axis) throws InvalidRangeException {        
+    public static Array argMax(Array a, int axis) throws InvalidRangeException {
         int[] dataShape = a.getShape();
         int[] shape = new int[dataShape.length - 1];
         int idx;
@@ -4139,7 +4563,7 @@ public class ArrayMath {
             r.setInt(i, idx);
             indexr.incr();
         }
-
+        
         return r;
     }
 
@@ -4186,7 +4610,7 @@ public class ArrayMath {
             r.setDouble(i, mean);
             indexr.incr();
         }
-
+        
         return r;
     }
 
@@ -4241,7 +4665,7 @@ public class ArrayMath {
             }
             r.setDouble(i, sum);
         }
-
+        
         return r;
     }
 
@@ -4271,7 +4695,7 @@ public class ArrayMath {
         }
         return mean;
     }
-    
+
     /**
      * Compute standard deviation value of an array along an axis (dimension)
      *
@@ -4315,10 +4739,10 @@ public class ArrayMath {
             r.setDouble(i, mean);
             indexr.incr();
         }
-
+        
         return r;
     }
-    
+
     /**
      * Compute standard deviation value of an array
      *
@@ -4344,8 +4768,9 @@ public class ArrayMath {
             mean = Double.NaN;
         }
         
-        if (Double.isNaN(mean))
+        if (Double.isNaN(mean)) {
             return Double.NaN;
+        }
         
         double sum = 0;
         ii = a.getRangeIterator(ranges);
@@ -4356,6 +4781,95 @@ public class ArrayMath {
             }
         }
         sum = Math.sqrt(sum / n);
+        
+        return sum;
+    }
+
+    /**
+     * Compute variance value of an array along an axis (dimension)
+     *
+     * @param a Array a
+     * @param axis Axis
+     * @return Variance value array
+     * @throws ucar.ma2.InvalidRangeException
+     */
+    public static Array var(Array a, int axis) throws InvalidRangeException {
+        int[] dataShape = a.getShape();
+        int[] shape = new int[dataShape.length - 1];
+        int idx;
+        for (int i = 0; i < dataShape.length; i++) {
+            idx = i;
+            if (idx == axis) {
+                continue;
+            } else if (idx > axis) {
+                idx -= 1;
+            }
+            shape[idx] = dataShape[i];
+        }
+        Array r = Array.factory(DataType.DOUBLE, shape);
+        double mean;
+        Index indexr = r.getIndex();
+        int[] current;
+        for (int i = 0; i < r.getSize(); i++) {
+            current = indexr.getCurrentCounter();
+            List<Range> ranges = new ArrayList<>();
+            for (int j = 0; j < dataShape.length; j++) {
+                if (j == axis) {
+                    ranges.add(new Range(0, dataShape[j] - 1, 1));
+                } else {
+                    idx = j;
+                    if (idx > axis) {
+                        idx -= 1;
+                    }
+                    ranges.add(new Range(current[idx], current[idx], 1));
+                }
+            }
+            mean = std(a, ranges);
+            r.setDouble(i, mean);
+            indexr.incr();
+        }
+        
+        return r;
+    }
+
+    /**
+     * Compute variance value of an array
+     *
+     * @param a Array a
+     * @param ranges Range list
+     * @return Variance value
+     * @throws ucar.ma2.InvalidRangeException
+     */
+    public static double var(Array a, List<Range> ranges) throws InvalidRangeException {
+        double mean = 0.0, v;
+        int n = 0;
+        IndexIterator ii = a.getRangeIterator(ranges);
+        while (ii.hasNext()) {
+            v = ii.getDoubleNext();
+            if (!Double.isNaN(v)) {
+                mean += v;
+                n += 1;
+            }
+        }
+        if (n > 0) {
+            mean = mean / n;
+        } else {
+            mean = Double.NaN;
+        }
+        
+        if (Double.isNaN(mean)) {
+            return Double.NaN;
+        }
+        
+        double sum = 0;
+        ii = a.getRangeIterator(ranges);
+        while (ii.hasNext()) {
+            v = ii.getDoubleNext();
+            if (!Double.isNaN(v)) {
+                sum += Math.pow((v - mean), 2);
+            }
+        }
+        sum = sum / n;
         
         return sum;
     }
@@ -4403,7 +4917,7 @@ public class ArrayMath {
             r.setDouble(i, mean);
             indexr.incr();
         }
-
+        
         return r;
     }
 
@@ -4444,7 +4958,7 @@ public class ArrayMath {
         for (int i = 0; i < r.getSize(); i++) {
             r.setObject(i, Math.max(x1.getDouble(i), x2.getDouble(i)));
         }
-
+        
         return r;
     }
 
@@ -4467,7 +4981,7 @@ public class ArrayMath {
                 r.setObject(i, Math.max(x1.getDouble(i), x2.getDouble(i)));
             }
         }
-
+        
         return r;
     }
 
@@ -4484,7 +4998,7 @@ public class ArrayMath {
         for (int i = 0; i < r.getSize(); i++) {
             r.setObject(i, Math.min(x1.getDouble(i), x2.getDouble(i)));
         }
-
+        
         return r;
     }
 
@@ -4507,7 +5021,7 @@ public class ArrayMath {
                 r.setObject(i, Math.min(x1.getDouble(i), x2.getDouble(i)));
             }
         }
-
+        
         return r;
     }
 
@@ -4576,7 +5090,7 @@ public class ArrayMath {
                 r.setDouble(i, v);
             }
         }
-
+        
         return r;
     }
 
@@ -4592,7 +5106,7 @@ public class ArrayMath {
         if (!a.getDataType().isNumeric()) {
             return;
         }
-
+        
         IndexIterator iterA = a.getIndexIterator();
         switch (a.getDataType()) {
             case INT:
@@ -4621,9 +5135,17 @@ public class ArrayMath {
      * @param value Value
      */
     public static void setValue(Array a, Array b, Number value) {
-        for (int i = 0; i < a.getSize(); i++) {
-            if (b.getInt(i) == 1) {
-                a.setObject(i, value);
+        if (b.getDataType() == DataType.BOOLEAN) {
+            for (int i = 0; i < a.getSize(); i++) {
+                if (b.getBoolean(i)) {
+                    a.setObject(i, value);
+                }
+            }
+        } else {
+            for (int i = 0; i < a.getSize(); i++) {
+                if (b.getInt(i) == 1) {
+                    a.setObject(i, value);
+                }
             }
         }
     }
@@ -4636,9 +5158,17 @@ public class ArrayMath {
      * @param value Value array
      */
     public static void setValue(Array a, Array b, Array value) {
-        for (int i = 0; i < a.getSize(); i++) {
-            if (b.getInt(i) == 1) {
-                a.setObject(i, value.getObject(i));
+        if (b.getDataType() == DataType.BOOLEAN) {
+            for (int i = 0; i < a.getSize(); i++) {
+                if (b.getBoolean(i)) {
+                    a.setObject(i, value.getObject(i));
+                }
+            }
+        } else {
+            for (int i = 0; i < a.getSize(); i++) {
+                if (b.getInt(i) == 1) {
+                    a.setObject(i, value.getObject(i));
+                }
             }
         }
     }
@@ -4667,6 +5197,11 @@ public class ArrayMath {
             case DOUBLE:
                 while (iterA.hasNext()) {
                     r.add(iterA.getDoubleNext());
+                }
+                break;
+            case BOOLEAN:
+                while (iterA.hasNext()) {
+                    r.add(iterA.getBooleanNext());
                 }
                 break;
             case OBJECT:
@@ -4715,7 +5250,7 @@ public class ArrayMath {
             }
             windDir.setDouble(i, wd);
         }
-
+        
         return new Array[]{windDir, windSpeed};
     }
 
@@ -4745,7 +5280,7 @@ public class ArrayMath {
                 wd -= 360;
             }
         }
-
+        
         return new double[]{wd, ws};
     }
 
@@ -4773,7 +5308,7 @@ public class ArrayMath {
             U.setDouble(i, windSpeed.getDouble(i) * Math.sin(dir));
             V.setDouble(i, windSpeed.getDouble(i) * Math.cos(dir));
         }
-
+        
         return new Array[]{U, V};
     }
 
@@ -4793,7 +5328,7 @@ public class ArrayMath {
         dir = dir * Math.PI / 180;
         double u = windSpeed * Math.sin(dir);
         double v = windSpeed * Math.cos(dir);
-
+        
         return new double[]{u, v};
     }
 
@@ -4844,7 +5379,7 @@ public class ArrayMath {
         if (a.getRank() == 2) {
             int xNum = x.size();
             int yNum = y.size();
-
+            
             Array r = Array.factory(DataType.INT, a.getShape());
             for (int i = 0; i < yNum; i++) {
                 for (int j = 0; j < xNum; j++) {
@@ -4855,7 +5390,7 @@ public class ArrayMath {
                     }
                 }
             }
-
+            
             return r;
         } else if (a.getRank() == 1) {
             int n = x.size();
@@ -4867,11 +5402,32 @@ public class ArrayMath {
                     r.setInt(i, -1);
                 }
             }
-
+            
             return r;
         }
-
+        
         return null;
+    }
+
+    /**
+     * In polygon function
+     *
+     * @param x X coordinates
+     * @param y Y coordinates
+     * @param polygons PolygonShape list
+     * @return Result boolean array
+     */
+    public static Array inPolygon(Array x, Array y, List<PolygonShape> polygons) {
+        Array r = Array.factory(DataType.BOOLEAN, x.getShape());
+        for (int i = 0; i < r.getSize(); i++) {
+            if (GeoComputation.pointInPolygons(polygons, new PointD(x.getDouble(i), y.getDouble(i)))) {
+                r.setBoolean(i, true);
+            } else {
+                r.setBoolean(i, false);
+            }
+        }
+        
+        return r;
     }
 
     /**
@@ -4894,8 +5450,30 @@ public class ArrayMath {
         ps.setPoints(points);
         List<PolygonShape> shapes = new ArrayList<>();
         shapes.add(ps);
-
+        
         return inPolygon(a, x, y, shapes);
+    }
+    
+    /**
+     * In polygon function
+     *
+     * @param x X coordinates
+     * @param y Y coordinates
+     * @param x_p X coordinate of the polygon
+     * @param y_p Y coordinate of the polygon
+     * @return Result boolean array
+     */
+    public static Array inPolygon(Array x, Array y, Array x_p, Array y_p) {
+        PolygonShape ps = new PolygonShape();
+        List<PointD> points = new ArrayList<>();
+        for (int i = 0; i < x_p.getSize(); i++) {
+            points.add(new PointD(x_p.getDouble(i), y_p.getDouble(i)));
+        }
+        ps.setPoints(points);
+        List<PolygonShape> shapes = new ArrayList<>();
+        shapes.add(ps);
+        
+        return inPolygon(x, y, shapes);
     }
 
     /**
@@ -4949,6 +5527,27 @@ public class ArrayMath {
         }
         return r;
     }
+    
+    /**
+     * Maskin function
+     *
+     * @param a Array a
+     * @param x X Array
+     * @param y Y Array
+     * @param polygons Polygons for maskin
+     * @return Result array with cell values of missing inside polygons
+     */
+    public static Array maskin(Array a, Array x, Array y, List<PolygonShape> polygons) {
+        Array r = Array.factory(a.getDataType(), a.getShape());
+        for (int i = 0; i < a.getSize(); i++) {
+            if (GeoComputation.pointInPolygons(polygons, new PointD(x.getDouble(i), y.getDouble(i)))) {
+                r.setObject(i, Double.NaN);
+            } else {
+                r.setObject(i, a.getObject(i));
+            }
+        }
+        return r;
+    }
 
     /**
      * Maskout function
@@ -4970,7 +5569,7 @@ public class ArrayMath {
                 rydata.add(y.getDouble(i));
             }
         }
-
+        
         int n = rdata.size();
         int[] shape = new int[1];
         shape[0] = n;
@@ -4982,7 +5581,43 @@ public class ArrayMath {
             rx.setDouble(i, rxdata.get(i));
             ry.setDouble(i, rydata.get(i));
         }
-
+        
+        return new Array[]{r, rx, ry};
+    }
+    
+    /**
+     * Maskin function
+     *
+     * @param a Array a
+     * @param x X Array
+     * @param y Y Array
+     * @param polygons Polygons for maskin
+     * @return Result arrays removing cells inside polygons
+     */
+    public static Array[] maskin_Remove(Array a, Array x, Array y, List<PolygonShape> polygons) {
+        List<Object> rdata = new ArrayList<>();
+        List<Double> rxdata = new ArrayList<>();
+        List<Double> rydata = new ArrayList<>();
+        for (int i = 0; i < a.getSize(); i++) {
+            if (!GeoComputation.pointInPolygons(polygons, new PointD(x.getDouble(i), y.getDouble(i)))) {
+                rdata.add(a.getObject(i));
+                rxdata.add(x.getDouble(i));
+                rydata.add(y.getDouble(i));
+            }
+        }
+        
+        int n = rdata.size();
+        int[] shape = new int[1];
+        shape[0] = n;
+        Array r = Array.factory(a.getDataType(), shape);
+        Array rx = Array.factory(x.getDataType(), shape);
+        Array ry = Array.factory(y.getDataType(), shape);
+        for (int i = 0; i < n; i++) {
+            r.setObject(i, rdata.get(i));
+            rx.setDouble(i, rxdata.get(i));
+            ry.setDouble(i, rydata.get(i));
+        }
+        
         return new Array[]{r, rx, ry};
     }
 
@@ -5012,7 +5647,7 @@ public class ArrayMath {
     public static Array maskout(Array a, List<Number> x, List<Number> y, List<PolygonShape> polygons, Number missingValue) {
         int xNum = x.size();
         int yNum = y.size();
-
+        
         Array r = Array.factory(a.getDataType(), a.getShape());
         if (a.getRank() == 1) {
             for (int i = 0; i < xNum; i++) {
@@ -5035,7 +5670,7 @@ public class ArrayMath {
                 }
             }
         }
-
+        
         return r;
     }
 
@@ -5057,7 +5692,7 @@ public class ArrayMath {
                 r.setObject(i, a.getObject(i));
             }
         }
-
+        
         return r;
     }
 
@@ -5078,7 +5713,28 @@ public class ArrayMath {
                 r.setObject(i, a.getObject(i));
             }
         }
-
+        
+        return r;
+    }
+    
+    /**
+     * Maskin function
+     *
+     * @param a Array a
+     * @param m Array mask
+     * @return Result array
+     */
+    public static Array maskin(Array a, Array m) {
+        Array r = Array.factory(a.getDataType(), a.getShape());
+        int n = (int) a.getSize();
+        for (int i = 0; i < n; i++) {
+            if (m.getDouble(i) < 0) {
+                r.setObject(i, a.getObject(i));
+            } else {
+                r.setObject(i, Double.NaN);
+            }
+        }
+        
         return r;
     }
 
@@ -5108,7 +5764,7 @@ public class ArrayMath {
             sy_sum += yData.get(i).doubleValue() * yData.get(i).doubleValue();
             xy_sum += xData.get(i).doubleValue() * yData.get(i).doubleValue();
         }
-
+        
         double r = (n * xy_sum - x_sum * y_sum) / (Math.sqrt(n * sx_sum - x_sum * x_sum) * Math.sqrt(n * sy_sum - y_sum * y_sum));
         return (float) r;
     }
@@ -5143,7 +5799,7 @@ public class ArrayMath {
             xy_sum += x * y;
             nn += 1;
         }
-
+        
         double r = (nn * xy_sum - x_sum * y_sum) / (Math.sqrt(nn * sx_sum - x_sum * x_sum) * Math.sqrt(nn * sy_sum - y_sum * y_sum));
         return (float) r;
     }
@@ -5167,10 +5823,10 @@ public class ArrayMath {
             sumSquareX += xData.get(i).doubleValue() * xData.get(i).doubleValue();
             sumXY += xData.get(i).doubleValue() * yData.get(i).doubleValue();
         }
-
+        
         double a = (sumSquareX * sumY - sumX * sumXY) / (n * sumSquareX - sumX * sumX);
         double b = (n * sumXY - sumX * sumY) / (n * sumSquareX - sumX * sumX);
-
+        
         return new double[]{a, b};
     }
 
@@ -5195,11 +5851,11 @@ public class ArrayMath {
             sy_sum += yData.get(i).doubleValue() * yData.get(i).doubleValue();
             xy_sum += xData.get(i).doubleValue() * yData.get(i).doubleValue();
         }
-
+        
         double r = (n * xy_sum - x_sum * y_sum) / (Math.sqrt(n * sx_sum - x_sum * x_sum) * Math.sqrt(n * sy_sum - y_sum * y_sum));
         double a = (sx_sum * y_sum - x_sum * xy_sum) / (n * sx_sum - x_sum * x_sum);
         double b = (n * xy_sum - x_sum * y_sum) / (n * sx_sum - x_sum * x_sum);
-
+        
         return new double[]{a, b, r};
     }
 
@@ -5208,8 +5864,8 @@ public class ArrayMath {
      *
      * @param xData X data array
      * @param yData Y data array
-     * @return Slope, intercept, correlation coefficent, two-sided p-value, 
-     *      the standard error of the estimate for the slope, valid data number
+     * @return Slope, intercept, correlation coefficent, two-sided p-value, the
+     * standard error of the estimate for the slope, valid data number
      */
     public static double[] lineRegress(Array xData, Array yData) {
         double x_sum = 0;
@@ -5236,7 +5892,7 @@ public class ArrayMath {
             xy_sum += xData.getDouble(i) * yData.getDouble(i);
             n += 1;
         }
-
+        
         double r = (n * xy_sum - x_sum * y_sum) / (Math.sqrt(n * sx_sum - x_sum * x_sum) * Math.sqrt(n * sy_sum - y_sum * y_sum));
         double intercept = (sx_sum * y_sum - x_sum * xy_sum) / (n * sx_sum - x_sum * x_sum);
         double slope = (n * xy_sum - x_sum * y_sum) / (n * sx_sum - x_sum * x_sum);
@@ -5245,7 +5901,7 @@ public class ArrayMath {
         double t = r * Math.sqrt(df / ((1.0 - r + TINY) * (1.0 + r + TINY)));
         //two-sided p-value for a hypothesis test whose null hypothesis is that the slope is zero
         double p = studpval(t, df);
-        
+
         // more statistical analysis
         double xbar = x_sum / n;
         double ybar = y_sum / n;
@@ -5259,7 +5915,7 @@ public class ArrayMath {
             ssr += (fit - ybar) * (fit - ybar);
             xxbar += (xi.get(i) - xbar) * (xi.get(i) - xbar);
         }
-        double svar  = rss / df;
+        double svar = rss / df;
         double svar1 = svar / xxbar;
         double svar0 = svar / n + xbar * xbar * svar1;
         svar0 = Math.sqrt(svar0);    //the standard error of the estimate for the intercept
@@ -5290,10 +5946,9 @@ public class ArrayMath {
 //        double a0 = 0;
 //        double Ta = (ahat - a0) / sea;        
 //        p = studpval(Ta, n);
-
         return new double[]{slope, intercept, r, p, svar1, n};
     }
-
+    
     private static double statcom(double mq, int mi, int mj, double mb) {
         double zz = 1;
         double mz = zz;
@@ -5305,7 +5960,7 @@ public class ArrayMath {
         }
         return mz;
     }
-
+    
     private static double studpval(double mt, int mn) {
         mt = Math.abs(mt);
         double mw = mt / Math.sqrt(mn);
@@ -5342,7 +5997,7 @@ public class ArrayMath {
             }
             r.setDouble(i, rval);
         }
-
+        
         return r;
     }
 
@@ -5383,7 +6038,7 @@ public class ArrayMath {
             }
             indexr.incr();
         }
-
+        
         return r;
     }
 
@@ -5421,7 +6076,7 @@ public class ArrayMath {
                     }
                 }
             }
-
+            
             return r;
         } else if (data.getRank() == 1) {
             int n = data.getShape()[0];
@@ -5440,7 +6095,7 @@ public class ArrayMath {
                     }
                 }
             }
-
+            
             return r;
         } else {
             System.out.println("Data dimension number must be 1 or 2!");
@@ -5470,13 +6125,13 @@ public class ArrayMath {
             latData.setDouble(index, yy.get(current[rank - 2]).doubleValue());
             index.incr();
         }
-
+        
         Array dv = cdiff(vData, rank - 1);
         Array dx = mul(cdiff(lonData, rank - 1), Math.PI / 180);
         Array du = cdiff(mul(uData, cos(mul(latData, Math.PI / 180))), rank - 2);
         Array dy = mul(cdiff(latData, rank - 2), Math.PI / 180);
         Array gData = div(sub(div(dv, dx), div(du, dy)), mul(cos(mul(latData, Math.PI / 180)), 6.37e6));
-
+        
         return gData;
     }
 
@@ -5502,13 +6157,13 @@ public class ArrayMath {
             latData.setDouble(index, yy.get(current[rank - 2]).doubleValue());
             index.incr();
         }
-
+        
         Array du = cdiff(uData, rank - 1);
         Array dx = mul(cdiff(lonData, rank - 1), Math.PI / 180);
         Array dv = cdiff(mul(vData, cos(mul(latData, Math.PI / 180))), rank - 2);
         Array dy = mul(cdiff(latData, rank - 2), Math.PI / 180);
         Array gData = div(add(div(du, dx), div(dv, dy)), mul(cos(mul(latData, Math.PI / 180)), 6.37e6));
-
+        
         return gData;
     }
 
@@ -5524,7 +6179,7 @@ public class ArrayMath {
         int xNum = shape[1];
         int yNum = shape[0];
         int idx;
-
+        
         Array r = Array.factory(DataType.DOUBLE, shape);
         for (int i = 0; i < yNum; i++) {
             for (int j = 0; j < xNum; j++) {
@@ -5536,7 +6191,7 @@ public class ArrayMath {
                 }
             }
         }
-
+        
         return r;
     }
 
@@ -5551,7 +6206,7 @@ public class ArrayMath {
         for (int i = 0; i < r.getSize(); i++) {
             r.setDouble(i, MeteoMath.tc2tf(tc.getDouble(i)));
         }
-
+        
         return r;
     }
 
@@ -5566,7 +6221,7 @@ public class ArrayMath {
         for (int i = 0; i < r.getSize(); i++) {
             r.setDouble(i, MeteoMath.tf2tc(tf.getDouble(i)));
         }
-
+        
         return r;
     }
 
@@ -5582,7 +6237,7 @@ public class ArrayMath {
         for (int i = 0; i < r.getSize(); i++) {
             r.setDouble(i, MeteoMath.dewpoint2rh(tc.getDouble(i), tdc.getDouble(i)));
         }
-
+        
         return r;
     }
 
@@ -5602,7 +6257,7 @@ public class ArrayMath {
             rh = MeteoMath.qair2rh(qair.getDouble(i), temp.getDouble(i), press);
             r.setDouble(i, rh);
         }
-
+        
         return r;
     }
 
@@ -5622,7 +6277,7 @@ public class ArrayMath {
             rh = MeteoMath.qair2rh(qair.getDouble(i), temp.getDouble(i), press.getDouble(i));
             r.setDouble(i, rh);
         }
-
+        
         return r;
     }
 
@@ -5639,7 +6294,7 @@ public class ArrayMath {
             rh = MeteoMath.press2Height(press.getDouble(i));
             r.setDouble(i, rh);
         }
-
+        
         return r;
     }
 
@@ -5656,7 +6311,7 @@ public class ArrayMath {
             rh = MeteoMath.height2Press(height.getDouble(i));
             r.setDouble(i, rh);
         }
-
+        
         return r;
     }
     // </editor-fold>

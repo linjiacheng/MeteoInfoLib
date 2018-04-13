@@ -163,18 +163,26 @@ public class MICAPS11DataInfo extends DataInfo implements IGridDataInfo {
             }
 
             Dimension tdim = new Dimension(DimensionType.T);
+            tdim.setShortName("time");
             double[] values = new double[1];
             values[0] = DateUtil.toOADate(time);
             tdim.setValues(values);
             this.setTimeDimension(tdim);
+            this.addDimension(tdim);
             Dimension zdim = new Dimension(DimensionType.Z);
+            zdim.setShortName("level");
             zdim.setValues(new double[]{_level});
-            Dimension xdim = new Dimension(DimensionType.X);
-            xdim.setValues(_xArray);
-            this.setXDimension(xdim);
+            this.addDimension(zdim);            
             Dimension ydim = new Dimension(DimensionType.Y);
+            ydim.setShortName("lat");
             ydim.setValues(_yArray);
             this.setYDimension(ydim);
+            this.addDimension(ydim);
+            Dimension xdim = new Dimension(DimensionType.X);
+            xdim.setShortName("lon");
+            xdim.setValues(_xArray);
+            this.setXDimension(xdim);
+            this.addDimension(xdim);
 
             List<Variable> variables = new ArrayList<>();
             List<String> varNames = new ArrayList<>();
@@ -209,14 +217,10 @@ public class MICAPS11DataInfo extends DataInfo implements IGridDataInfo {
     @Override
     public String generateInfoText() {
         String dataInfo;
-        dataInfo = "File Name: " + this.getFileName();
-        dataInfo += System.getProperty("line.separator") + "Description: " + _description;
+        dataInfo = "Description: " + _description;
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:00");
         dataInfo += System.getProperty("line.separator") + "Time: " + format.format(this.getTimes().get(0));
-        dataInfo += System.getProperty("line.separator") + "Forecast Hours = " + String.valueOf(_preHours)
-                + "  Level = " + String.valueOf(_level);
-        dataInfo += System.getProperty("line.separator") + "Xsize = " + String.valueOf(this.getXDimension().getLength())
-                + "  Ysize = " + String.valueOf(this.getYDimension().getLength());
+        dataInfo += System.getProperty("line.separator") + super.generateInfoText();
 
         return dataInfo;
     }

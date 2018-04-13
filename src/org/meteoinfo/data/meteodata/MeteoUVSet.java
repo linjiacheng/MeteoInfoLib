@@ -26,6 +26,8 @@ public class MeteoUVSet {
     private String _vStr;
     private boolean _isFixUVStr;
     private boolean _isUV;
+    private MeteoDataInfo uDataInfo;
+    private MeteoDataInfo vDataInfo;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -37,6 +39,27 @@ public class MeteoUVSet {
         _vStr = "V";
         _isFixUVStr = false;
         _isUV = true;
+    }
+    
+    /**
+     * Constructor
+     * @param mdi MeteoDataInfo
+     */
+    public MeteoUVSet(MeteoDataInfo mdi){
+        this();
+        this.uDataInfo = mdi;
+        this.vDataInfo = mdi;
+    }
+    
+    /**
+     * Constructor
+     * @param umdi U MeteoDataInfo
+     * @param vmdi V MeteoDataInfo
+     */
+    public MeteoUVSet(MeteoDataInfo umdi, MeteoDataInfo vmdi){
+        this();
+        this.uDataInfo = umdi;
+        this.vDataInfo = vmdi;
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -111,6 +134,38 @@ public class MeteoUVSet {
      */
     public void setUV(boolean istrue) {
         _isUV = istrue;
+    }
+    
+    /**
+     * Get U data info
+     * @return U data info
+     */
+    public MeteoDataInfo getUDataInfo(){
+        return this.uDataInfo;
+    }
+    
+    /**
+     * Set U data info
+     * @param value U data info
+     */
+    public void setUDataInfo(MeteoDataInfo value){
+        this.uDataInfo = value;
+    }
+    
+    /**
+     * Get V data info
+     * @return V data info
+     */
+    public MeteoDataInfo getVDataInfo(){
+        return this.vDataInfo;
+    }
+    
+    /**
+     * Set V data info
+     * @param value V data info
+     */
+    public void setVDataInfo(MeteoDataInfo value){
+        this.vDataInfo = value;
     }
     // </editor-fold>
     // <editor-fold desc="Methods">

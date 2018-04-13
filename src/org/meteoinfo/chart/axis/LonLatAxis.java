@@ -151,7 +151,7 @@ public class LonLatAxis extends Axis implements Cloneable {
     }
     
     @Override
-    public Object clone() {
+    public Object clone() throws CloneNotSupportedException {
         return (LonLatAxis)super.clone();
     }
 }

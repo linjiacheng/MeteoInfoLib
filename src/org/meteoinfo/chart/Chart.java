@@ -43,10 +43,11 @@ public class Chart {
     private List<ChartText> texts;
     private ChartLegend legend;
     private Color background;
-    private boolean drawBackground;
+    //private boolean drawBackground;
     private boolean drawLegend;
     private Rectangle2D plotArea;
     private boolean antiAlias;
+    private boolean symbolAntialias;
     private ChartPanel parent;
 
     // </editor-fold>
@@ -57,8 +58,9 @@ public class Chart {
     public Chart() {
         this.drawLegend = false;
         this.background = Color.white;
-        this.drawBackground = true;
+        //this.drawBackground = true;
         this.antiAlias = false;
+        this.symbolAntialias = true;
         this.rowNum = 1;
         this.columnNum = 1;
         this.plots = new ArrayList<>();
@@ -72,15 +74,7 @@ public class Chart {
      * @param parent ChartPanel parent
      */
     public Chart(ChartPanel parent) {
-        this.drawLegend = false;
-        this.background = Color.white;
-        this.drawBackground = true;
-        this.antiAlias = false;
-        this.rowNum = 1;
-        this.columnNum = 1;
-        this.plots = new ArrayList<>();
-        this.currentPlot = -1;
-        this.texts = new ArrayList<>();
+        this();
         this.parent = parent;
     }
 
@@ -302,23 +296,23 @@ public class Chart {
         this.background = value;
     }
 
-    /**
-     * Get if draw background
-     *
-     * @return Boolean
-     */
-    public boolean isDrawBackground() {
-        return this.drawBackground;
-    }
+//    /**
+//     * Get if draw background
+//     *
+//     * @return Boolean
+//     */
+//    public boolean isDrawBackground() {
+//        return this.drawBackground;
+//    }
 
-    /**
-     * Set if draw background
-     *
-     * @param value Boolean
-     */
-    public void setDrawBackground(boolean value) {
-        this.drawBackground = value;
-    }
+//    /**
+//     * Set if draw background
+//     *
+//     * @param value Boolean
+//     */
+//    public void setDrawBackground(boolean value) {
+//        this.drawBackground = value;
+//    }
 
     /**
      * Get chart legend
@@ -373,6 +367,22 @@ public class Chart {
     public void setAntiAlias(boolean value) {
         this.antiAlias = value;
     }
+    
+    /**
+     * Get symbol antialias
+     * @return Boolean
+     */
+    public boolean isSymbolAntialias() {
+        return this.symbolAntialias;
+    }
+    
+    /**
+     * Set symbol antialias
+     * @param value Boolean
+     */
+    public void setSymbolAntialias(boolean value) {
+        this.symbolAntialias = value;
+    }   
 
     // </editor-fold>
     // <editor-fold desc="Methods">
@@ -390,7 +400,7 @@ public class Chart {
             g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
             g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
             g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            //g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
             g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
         } else {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
@@ -398,7 +408,7 @@ public class Chart {
             g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_DEFAULT);
             g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_OFF);
             g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_DEFAULT);
-            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+            //g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
             g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_DEFAULT);
         }
 
@@ -408,7 +418,7 @@ public class Chart {
         g.translate(area.getX(), area.getY());
 
         //Draw background
-        if (this.drawBackground) {
+        if (this.background != null) {
             g.setColor(background);
             g.fill(new Rectangle2D.Double(0, 0, area.getWidth(), area.getHeight()));
         }
@@ -452,9 +462,7 @@ public class Chart {
             Margin shrink = this.getPlotsShrink(g, plotArea);
             for (int i = 0; i < this.plots.size(); i++) {
                 Plot plot = this.plots.get(i);
-                //plot.setPositionAreaZoom(zoom);
-                //plot.setTightInset(tightInset);
-                //plot.updatePositionArea();
+                plot.setSymbolAntialias(this.symbolAntialias);
                 if (plot.isOuterPosActive()){
                     if (plot.isSubPlot || plot.isSameShrink()) {
                         plot.setPlotShrink(shrink);
@@ -533,7 +541,7 @@ public class Chart {
         int right = edge;
         int bottom = edge;
         if (this.title != null) {
-            top += this.title.getHeight(g) + 12;
+            top += this.title.getTrueDimension(g).height + 12;
         }        
         pArea.setRect(left, top, area.getWidth() - left - right, area.getHeight() - top - bottom);
 
@@ -548,7 +556,7 @@ public class Chart {
         int right = edge;
         int bottom = edge;
         if (this.title != null) {
-            top += this.title.getHeight(g) + 10;
+            top += this.title.getTrueDimension(g).height + 10;
         }
         if (this.drawLegend) {
             Dimension dim = this.legend.getLegendDimension(g, new Dimension((int) area.getWidth(), (int) area.getHeight()));

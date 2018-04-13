@@ -15,7 +15,6 @@ package org.meteoinfo.legend;
 
 import org.meteoinfo.data.mapdata.MapDataManage;
 import org.meteoinfo.drawing.Draw;
-import org.meteoinfo.drawing.MarkerType;
 import org.meteoinfo.global.event.ActiveMapFrameChangedEvent;
 import org.meteoinfo.global.event.IActiveMapFrameChangedListener;
 import org.meteoinfo.global.event.ILayersUpdatedListener;

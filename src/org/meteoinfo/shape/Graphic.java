@@ -13,8 +13,8 @@
  */
 package org.meteoinfo.shape;
 
-import org.meteoinfo.drawing.MarkerType;
-import org.meteoinfo.drawing.PointStyle;
+import org.meteoinfo.legend.MarkerType;
+import org.meteoinfo.legend.PointStyle;
 import org.meteoinfo.global.colors.ColorUtil;
 import org.meteoinfo.global.PointD;
 import org.meteoinfo.layout.ResizeAbility;

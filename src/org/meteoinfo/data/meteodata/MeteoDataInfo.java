@@ -13,6 +13,7 @@
  */
 package org.meteoinfo.data.meteodata;
 
+import java.io.File;
 import org.meteoinfo.data.GridData;
 import org.meteoinfo.data.StationData;
 import org.meteoinfo.data.meteodata.arl.ARLDataInfo;
@@ -1417,6 +1418,12 @@ public class MeteoDataInfo {
 
         return ivalues;
     }
-    // </eidtor-fold>
+    // </editor-fold>
+    // <editor-fold desc="Others">
+    @Override
+    public String toString(){
+        return new File(this.getFileName()).getName();
+    }
+    // </editor-fold>
     // </editor-fold>
 }

@@ -63,7 +63,7 @@ public class GlobalUtil {
      * @return Software version
      */
     public static String getVersion(){
-        return "1.4.7";
+        return "1.4.8R8";
     }
 
     /**
@@ -651,17 +651,31 @@ public class GlobalUtil {
         if (separator == null || separator.equals(" ")) {
             return line.split("\\s+");
         } else {
-            //String[] strs = line.split(separator + "|\\s+");
             String[] strs = line.split(separator);
             List<String> r = new ArrayList<>();
             for (String s : strs){
-                if (!s.isEmpty()) {
-                    r.add(s.trim());
-                }
+                r.add(s.trim());
             }
             strs = r.toArray(new String[1]);
             return strs;
         }
+    }
+    
+    /**
+     * Capitalize the first character of a string
+     * @param str The string
+     * @return Capitalized string
+     */
+    public static String capitalize(String str){        
+        if(str == null || str.length() == 0)
+            return "";
+        
+        if(str.length() == 1)
+            return str.toUpperCase();
+        
+        char[] charArray = str.toCharArray();
+        charArray[0] = Character.toUpperCase(charArray[0]);            
+        return new String(charArray);    
     }
     // </editor-fold>
 }

@@ -16,6 +16,9 @@ import ucar.ma2.DataType;
  * @author Yaqiang Wang
  */
 public class RandomUtil {
+    public static long seed = 1;
+    public static boolean useSeed = false;
+    
     /**
      * Get random value
      *
@@ -23,6 +26,8 @@ public class RandomUtil {
      */
     public static double rand() {
         Random r = new Random();
+        if (useSeed)
+            r.setSeed(seed);
         return r.nextDouble();
     }
 
@@ -35,6 +40,8 @@ public class RandomUtil {
     public static Array rand(int n) {
         Array r = Array.factory(DataType.DOUBLE, new int[]{n});
         Random rd = new Random();
+        if (useSeed)
+            rd.setSeed(seed);
         for (int i = 0; i < r.getSize(); i++) {
             r.setDouble(i, rd.nextDouble());
         }
@@ -55,6 +62,8 @@ public class RandomUtil {
         }
         Array a = Array.factory(DataType.DOUBLE, ashape);
         Random rd = new Random();
+        if (useSeed)
+            rd.setSeed(seed);
         for (int i = 0; i < a.getSize(); i++) {
             a.setDouble(i, rd.nextDouble());
         }
@@ -69,6 +78,8 @@ public class RandomUtil {
      */
     public static double randn() {
         Random r = new Random();
+        if (useSeed)
+            r.setSeed(seed);
         return r.nextGaussian();
     }
 
@@ -81,6 +92,8 @@ public class RandomUtil {
     public static Array randn(int n) {
         Array r = Array.factory(DataType.DOUBLE, new int[]{n});
         Random rd = new Random();
+        if (useSeed)
+            rd.setSeed(seed);
         for (int i = 0; i < r.getSize(); i++) {
             r.setDouble(i, rd.nextGaussian());
         }
@@ -101,6 +114,8 @@ public class RandomUtil {
         }
         Array a = Array.factory(DataType.DOUBLE, ashape);
         Random rd = new Random();
+        if (useSeed)
+            rd.setSeed(seed);
         for (int i = 0; i < a.getSize(); i++) {
             a.setDouble(i, rd.nextGaussian());
         }
@@ -116,6 +131,8 @@ public class RandomUtil {
      */
     public static int randint(int bound) {
         Random r = new Random();
+        if (useSeed)
+            r.setSeed(seed);
         return r.nextInt(bound);
     }
     
@@ -129,6 +146,8 @@ public class RandomUtil {
     public static Array randint(int bound, int n) {
         Array a = Array.factory(DataType.INT, new int[]{n});
         Random rd = new Random();
+        if (useSeed)
+            rd.setSeed(seed);
         for (int i = 0; i < a.getSize(); i++) {
             a.setDouble(i, rd.nextInt(bound));
         }
@@ -150,6 +169,8 @@ public class RandomUtil {
         }
         Array a = Array.factory(DataType.INT, ashape);
         Random rd = new Random();
+        if (useSeed)
+            rd.setSeed(seed);
         for (int i = 0; i < a.getSize(); i++) {
             a.setDouble(i, rd.nextInt(bound));
         }
@@ -164,6 +185,8 @@ public class RandomUtil {
      */
     public static double poisson(double mean){
         RandomDataGenerator rdg = new RandomDataGenerator();
+        if (useSeed)
+            rdg.reSeed(seed);
         return rdg.nextPoisson(mean);
     }
     
@@ -177,6 +200,8 @@ public class RandomUtil {
     public static Array poisson(double mean, int n) {
         Array a = Array.factory(DataType.INT, new int[]{n});
         RandomDataGenerator rd = new RandomDataGenerator();
+        if (useSeed)
+            rd.reSeed(seed);
         for (int i = 0; i < a.getSize(); i++) {
             a.setDouble(i, rd.nextPoisson(mean));
         }
@@ -198,10 +223,13 @@ public class RandomUtil {
         }
         Array a = Array.factory(DataType.INT, ashape);
         RandomDataGenerator rd = new RandomDataGenerator();
+        if (useSeed)
+            rd.reSeed(seed);
         for (int i = 0; i < a.getSize(); i++) {
             a.setDouble(i, rd.nextPoisson(mean));
         }
 
         return a;
     }
+        
 }

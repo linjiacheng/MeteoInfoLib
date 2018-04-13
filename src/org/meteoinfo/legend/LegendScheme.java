@@ -14,8 +14,6 @@
 package org.meteoinfo.legend;
 
 import org.meteoinfo.data.meteodata.DrawType2D;
-import org.meteoinfo.drawing.MarkerType;
-import org.meteoinfo.drawing.PointStyle;
 import org.meteoinfo.global.colors.ColorUtil;
 import org.meteoinfo.shape.ShapeTypes;
 import java.awt.Color;
@@ -231,6 +229,15 @@ public class LegendScheme {
     public List<ColorBreak> getLegendBreaks() {
         return legendBreaks;
     }
+    
+    /**
+     * Get legend break by index
+     * @param i Index
+     * @return A legend break
+     */
+    public ColorBreak getLegendBreak(int i) {
+        return this.legendBreaks.get(i);
+    }
 
     /**
      * Set legend breaks
@@ -372,11 +379,11 @@ public class LegendScheme {
     }
     
     /**
-     * Get legend break by value
+     * Find legend break by value
      * @param v Value
      * @return Legend break
      */
-    public ColorBreak getLegenBreak(double v){
+    public ColorBreak findLegendBreak(double v){
         double sv, ev;
         for (ColorBreak cb : this.legendBreaks){
             sv = Double.parseDouble(cb.getStartValue().toString());

@@ -129,6 +129,7 @@ public class JConsole extends JScrollPane
     private Tip tip;
     private int dotWidth;
     private int textHeight;
+    private final int maxLength = 200000;
     private final Pattern FROM_PACKAGE_IMPORT = Pattern.compile("from\\s+(\\w+(?:\\.\\w+)*)\\.?(?:\\s*import\\s*)?");
 
     public JConsole() {
@@ -620,6 +621,10 @@ public class JConsole extends JScrollPane
 
     private void append(String string) {
         int slen = textLength();
+        if (slen > this.maxLength){
+            text.setText("");
+            slen = 0;
+        }
         text.select(slen, slen);
         text.replaceSelection(string);
     }

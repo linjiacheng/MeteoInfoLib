@@ -40,8 +40,9 @@ public class TimeTableData extends TableData {
      * Constructor
      */
     public TimeTableData() {
+        super();
         DataColumn col = new DataColumn("Time", DataTypes.Date);
-        dataTable.addColumn(col);
+        this.addColumn(col);
     }
 
     /**
@@ -85,8 +86,8 @@ public class TimeTableData extends TableData {
      * @throws java.io.FileNotFoundException
      */
     public void readASCIIFile(String fileName, int timeColIdx, String formatStr, List<DataColumn> dataColumns) throws FileNotFoundException, IOException, Exception {
-        DataTable dTable = new DataTable();
-        dTable.addColumn("Time", DataTypes.Date);
+        //DataTable dTable = new DataTable();
+        this.addColumn("Time", DataTypes.Date);
 
         BufferedReader sr = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "utf-8"));
         String title = sr.readLine().trim();
@@ -99,7 +100,7 @@ public class TimeTableData extends TableData {
         } else {
             //Get fields
             for (DataColumn col : dataColumns) {
-                dataTable.addColumn(col);
+                this.addColumn(col);
             }
             SimpleDateFormat format = new SimpleDateFormat(formatStr);
             List<Integer> dataIdxs = new ArrayList<>();
@@ -107,7 +108,7 @@ public class TimeTableData extends TableData {
             for (int i = 0; i < titleArray.length; i++) {
                 fieldName = titleArray[i];
                 if (i == timeColIdx) {
-                    dTable.getColumns().get(0).setColumnName(fieldName);
+                    this.getColumns().get(0).setColumnName(fieldName);
                     continue;
                 }
                 for (DataColumn col : dataColumns) {
@@ -128,11 +129,11 @@ public class TimeTableData extends TableData {
                     continue;
                 }
                 dataArray = GlobalUtil.split(line, separator);
-                dTable.addRow();
-                dTable.setValue(rn, 0, format.parse(dataArray[timeColIdx]));
+                this.addRow();
+                this.setValue(rn, 0, format.parse(dataArray[timeColIdx]));
                 int cn = 1;
                 for (int idx : dataIdxs) {
-                    dTable.setValue(rn, cn, dataArray[idx]);
+                    this.setValue(rn, cn, dataArray[idx]);
                     cn++;
                 }
 
@@ -140,7 +141,7 @@ public class TimeTableData extends TableData {
                 line = sr.readLine();
             }
 
-            dataTable = dTable;
+            //dataTable = dTable;
             sr.close();
         }
     }
@@ -154,8 +155,8 @@ public class TimeTableData extends TableData {
      * @throws java.io.FileNotFoundException
      */
     public void readASCIIFile(String fileName, int timeColIdx, String formatStr) throws FileNotFoundException, IOException, Exception {
-        DataTable dTable = new DataTable();
-        dTable.addColumn("Time", DataTypes.Date);
+        //DataTable dTable = new DataTable();
+        this.addColumn("Time", DataTypes.Date);
 
         BufferedReader sr = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "utf-8"));
         String title = sr.readLine().trim();
@@ -173,9 +174,9 @@ public class TimeTableData extends TableData {
             for (int i = 0; i < titleArray.length; i++) {
                 fieldName = titleArray[i];
                 if (i == timeColIdx) {
-                    dTable.getColumns().get(0).setColumnName(fieldName);
+                    this.getColumns().get(0).setColumnName(fieldName);
                 } else {
-                    dTable.addColumn(fieldName, DataTypes.String);
+                    this.addColumn(fieldName, DataTypes.String);
                     dataIdxs.add(i);
                 }
             }
@@ -189,14 +190,14 @@ public class TimeTableData extends TableData {
                     continue;
                 }
                 dataArray = GlobalUtil.split(line, separator);
-                dTable.addRow();
-                dTable.setValue(rn, 0, format.parse(dataArray[timeColIdx]));
+                this.addRow();
+                this.setValue(rn, 0, format.parse(dataArray[timeColIdx]));
                 int cn = 1;
                 for (int idx : dataIdxs) {
                     if (dataArray.length > idx) {
-                        dTable.setValue(rn, cn, dataArray[idx]);
+                        this.setValue(rn, cn, dataArray[idx]);
                     } else {
-                        dTable.setValue(rn, cn, "");
+                        this.setValue(rn, cn, "");
                     }
                     cn++;
                 }
@@ -205,7 +206,7 @@ public class TimeTableData extends TableData {
                 line = sr.readLine();
             }
 
-            dataTable = dTable;
+            //dataTable = dTable;
             sr.close();
         }
     }
@@ -219,7 +220,7 @@ public class TimeTableData extends TableData {
         List<Integer> years = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
         int year;
-        for (DataRow row : dataTable.getRows()) {
+        for (DataRow row : this.getRows()) {
             cal.setTime((Date) row.getValue(this.timeColName));
             year = cal.get(Calendar.YEAR);
             if (!years.contains(year)) {
@@ -240,7 +241,7 @@ public class TimeTableData extends TableData {
         SimpleDateFormat format = new SimpleDateFormat("yyyyMM");
         String ym;
         Date date;
-        for (DataRow row : dataTable.getRows()) {
+        for (DataRow row : this.getRows()) {
             date = (Date) row.getValue(this.timeColName);
             if (date == null) {
                 continue;
@@ -265,7 +266,7 @@ public class TimeTableData extends TableData {
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
         String day;
         Date date;
-        for (DataRow row : dataTable.getRows()) {
+        for (DataRow row : this.getRows()) {
             date = (Date) row.getValue(this.timeColName);
             if (date == null) {
                 continue;
@@ -291,7 +292,7 @@ public class TimeTableData extends TableData {
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHH");
         String hour;
         Date date;
-        for (DataRow row : dataTable.getRows()) {
+        for (DataRow row : this.getRows()) {
             date = (Date) row.getValue(this.timeColName);
             if (date == null) {
                 continue;
@@ -315,7 +316,7 @@ public class TimeTableData extends TableData {
     public List<DataRow> getDataByYear(int year) {
         List<DataRow> rows = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
-        for (DataRow row : dataTable.getRows()) {
+        for (DataRow row : this.getRows()) {
             cal.setTime((Date) row.getValue(this.timeColName));
             if (cal.get(Calendar.YEAR) == year) {
                 rows.add(row);
@@ -336,7 +337,7 @@ public class TimeTableData extends TableData {
         List<DataRow> rows = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
         int month;
-        for (DataRow row : dataTable.getRows()) {
+        for (DataRow row : this.getRows()) {
             cal.setTime((Date) row.getValue(this.timeColName));
             month = cal.get(Calendar.MONTH) + 1;
             if (months.contains(month)) {
@@ -392,7 +393,7 @@ public class TimeTableData extends TableData {
     public List<DataRow> getDataByYearMonth(int year, int month) {
         List<DataRow> rows = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
-        for (DataRow row : dataTable.getRows()) {
+        for (DataRow row : this.getRows()) {
             cal.setTime((Date) row.getValue(this.timeColName));
             if (cal.get(Calendar.YEAR) == year) {
                 if (cal.get(Calendar.MONTH) == month - 1) {
@@ -457,7 +458,7 @@ public class TimeTableData extends TableData {
     public List<DataRow> getDataByDate(int year, int month, int day) {
         List<DataRow> rows = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
-        for (DataRow row : dataTable.getRows()) {
+        for (DataRow row : this.getRows()) {
             cal.setTime((Date) row.getValue(this.timeColName));
             if (cal.get(Calendar.YEAR) == year) {
                 if (cal.get(Calendar.MONTH) == month - 1) {
@@ -483,7 +484,7 @@ public class TimeTableData extends TableData {
     public List<DataRow> getDataByDate(int year, int month, int day, int hour) {
         List<DataRow> rows = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
-        for (DataRow row : dataTable.getRows()) {
+        for (DataRow row : this.getRows()) {
             cal.setTime((Date) row.getValue(this.timeColName));
             if (cal.get(Calendar.YEAR) == year) {
                 if (cal.get(Calendar.MONTH) == month - 1) {
@@ -507,7 +508,7 @@ public class TimeTableData extends TableData {
     public List<DataRow> getDataByMonth(int month) {
         List<DataRow> rows = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
-        for (DataRow row : dataTable.getRows()) {
+        for (DataRow row : this.getRows()) {
             cal.setTime((Date) row.getValue(this.timeColName));
             if (cal.get(Calendar.MONTH) == month - 1) {
                 rows.add(row);
@@ -531,7 +532,7 @@ public class TimeTableData extends TableData {
 
         List<DataRow> rows = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
-        for (DataRow row : dataTable.getRows()) {
+        for (DataRow row : this.getRows()) {
             cal.setTime((Date) row.getValue(this.timeColName));
             if (cal.get(Calendar.DAY_OF_WEEK) == dow) {
                 rows.add(row);
@@ -550,7 +551,7 @@ public class TimeTableData extends TableData {
     public List<DataRow> getDataByHour(int hour) {
         List<DataRow> rows = new ArrayList<>();
         Calendar cal = Calendar.getInstance();
-        for (DataRow row : dataTable.getRows()) {
+        for (DataRow row : this.getRows()) {
             cal.setTime((Date) row.getValue(this.timeColName));
             if (cal.get(Calendar.HOUR_OF_DAY) == hour) {
                 rows.add(row);
@@ -771,7 +772,7 @@ public class TimeTableData extends TableData {
         }
 
         List<Date> days = this.getDates_Day();
-        List<DataRow> drs = new ArrayList<>(this.dataTable.getRows());
+        List<DataRow> drs = new ArrayList<>(this.getRows());
         for (Date day : days) {
             DataRow nRow = rTable.addRow();
             nRow.setValue(0, day);
@@ -801,7 +802,7 @@ public class TimeTableData extends TableData {
         }
 
         List<Date> days = this.getDates_Day();
-        List<DataRow> drs = new ArrayList<>(this.dataTable.getRows());
+        List<DataRow> drs = new ArrayList<>(this.getRows());
         for (Date day : days) {
             DataRow nRow = rTable.addRow();
             nRow.setValue(0, day);
@@ -831,7 +832,7 @@ public class TimeTableData extends TableData {
         }
 
         List<Date> hours = this.getDates_Hour();
-        List<DataRow> drs = new ArrayList<>(this.dataTable.getRows());
+        List<DataRow> drs = new ArrayList<>(this.getRows());
         for (Date hour : hours) {
             DataRow nRow = rTable.addRow();
             nRow.setValue(0, hour);
@@ -861,7 +862,7 @@ public class TimeTableData extends TableData {
         }
 
         List<Date> hours = this.getDates_Hour();
-        List<DataRow> drs = new ArrayList<>(this.dataTable.getRows());
+        List<DataRow> drs = new ArrayList<>(this.getRows());
         for (Date hour : hours) {
             DataRow nRow = rTable.addRow();
             nRow.setValue(0, hour);
@@ -1205,8 +1206,8 @@ public class TimeTableData extends TableData {
      */
     public TimeTableData timeOrder(Date stdate, Date enddate, String tdtype, int timeDelt) throws IOException, FileNotFoundException, ParseException, Exception{
         List<Date> dateList = getDateList(stdate, enddate, tdtype, timeDelt);
-        int lineNum = this.dataTable.getRowCount();
-        int colNum = this.dataTable.getColumnCount();
+        int lineNum = this.getRowCount();
+        int colNum = this.getColumnCount();
         DataTable outData = new DataTable();
         for (DataColumn col : this.getDataColumns()){
             outData.addColumn((DataColumn)col.clone());
@@ -1220,11 +1221,11 @@ public class TimeTableData extends TableData {
         int idx;
         Date date;
         for (int i = 0; i < lineNum; i++) {
-            date = (Date)this.dataTable.getValue(i, timeColName);
+            date = (Date)this.getValue(i, timeColName);
             idx = dateList.indexOf(date);
             if (idx >= 0) {                
                 for (int j = 0; j < colNum; j++){
-                    outData.setValue(idx, j, this.dataTable.getValue(i, j));
+                    outData.setValue(idx, j, this.getValue(i, j));
                 }
             }
         }

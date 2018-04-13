@@ -164,6 +164,17 @@ public class GridData {
         this.missingValue = missingValue;
         this.projInfo = projInfo;
     }
+    
+    /**
+     * Constructor
+     *
+     * @param array Data array
+     * @param xdata X data
+     * @param ydata Y data
+     */
+    public GridData(Array array, Array xdata, Array ydata) {
+        this(array, xdata, ydata, -9999.0);
+    }
 
     /**
      * Constructor
@@ -655,27 +666,31 @@ public class GridData {
      * @param stData Station table data
      */
     public void toStation(StationTableData stData) {
-        DataTable dataTable = stData.dataTable;
+        //DataTable dataTable = stData.dataTable;
         int lonIdx = stData.getLonIndex();
         int latIdx = stData.getLatIndex();
         double x, y;
-        stData.addColumn(this.fieldName, DataTypes.Float);
+        try {
+            stData.addColumn(this.fieldName, DataTypes.Float);
+        } catch (Exception ex) {
+            Logger.getLogger(GridData.class.getName()).log(Level.SEVERE, null, ex);
+        }
         if (this.projInfo.equals(stData.getProjectionInfo())) {
-            for (int i = 0; i < dataTable.getRowCount(); i++) {
-                x = java.lang.Double.parseDouble(dataTable.getValue(i, lonIdx).toString());
-                y = java.lang.Double.parseDouble(dataTable.getValue(i, latIdx).toString());
-                dataTable.setValue(i, fieldName, this.toStation(x, y));
+            for (int i = 0; i < stData.getRowCount(); i++) {
+                x = java.lang.Double.parseDouble(stData.getValue(i, lonIdx).toString());
+                y = java.lang.Double.parseDouble(stData.getValue(i, latIdx).toString());
+                stData.setValue(i, fieldName, this.toStation(x, y));
             }
         } else {
             StationData sdata = new StationData();
-            for (int i = 0; i < dataTable.getRowCount(); i++) {
-                x = java.lang.Double.parseDouble(dataTable.getValue(i, lonIdx).toString());
-                y = java.lang.Double.parseDouble(dataTable.getValue(i, latIdx).toString());
+            for (int i = 0; i < stData.getRowCount(); i++) {
+                x = java.lang.Double.parseDouble(stData.getValue(i, lonIdx).toString());
+                y = java.lang.Double.parseDouble(stData.getValue(i, latIdx).toString());
                 sdata.addData("S_" + String.valueOf(i), x, y, 0);
             }
             sdata = this.project(projInfo, sdata.projInfo, sdata, ResampleMethods.Bilinear);
-            for (int i = 0; i < dataTable.getRowCount(); i++) {
-                dataTable.setValue(i, fieldName, sdata.getValue(i));
+            for (int i = 0; i < stData.getRowCount(); i++) {
+                stData.setValue(i, fieldName, sdata.getValue(i));
             }
         }
     }
@@ -2019,7 +2034,7 @@ public class GridData {
             String aLine = "";
             int xn = this.getXNum();
             int yn = this.getYNum();
-            for (int i = 0; i < yn; i--) {
+            for (int i = 0; i < yn; i++) {
                 for (int j = 0; j < xn; j++) {
                     value = data[yn - i - 1][j];
                     if (j == 0) {
@@ -2050,7 +2065,7 @@ public class GridData {
             DataOutputStream outs = new DataOutputStream(new FileOutputStream(new File(fileName)));
             int xn = this.getXNum();
             int yn = this.getYNum();
-            for (int i = 0; i < yn; i--) {
+            for (int i = 0; i < yn; i++) {
                 for (int j = 0; j < xn; j++) {
                     outs.writeFloat((float) data[yn - i - 1][j]);
                 }

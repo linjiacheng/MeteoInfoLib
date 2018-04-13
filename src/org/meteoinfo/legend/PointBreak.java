@@ -13,8 +13,6 @@
  */
 package org.meteoinfo.legend;
 
-import org.meteoinfo.drawing.MarkerType;
-import org.meteoinfo.drawing.PointStyle;
 import org.meteoinfo.global.colors.ColorUtil;
 import java.awt.Color;
 import java.util.HashMap;

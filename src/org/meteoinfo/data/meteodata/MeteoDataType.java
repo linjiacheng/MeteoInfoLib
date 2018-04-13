@@ -139,7 +139,6 @@ public enum MeteoDataType {
                 case MICAPS_11:
                 case MICAPS_13:
                 case MICAPS_120:
-                case MICAPS_131:
                     return true;
                 default:
                     return false;

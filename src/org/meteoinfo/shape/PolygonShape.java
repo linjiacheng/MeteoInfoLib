@@ -208,8 +208,8 @@ public class PolygonShape extends Shape implements Cloneable {
      */
     public void setPoints(PointF[] points){
         List<PointD> ps = new ArrayList<>();
-        for (int i = 0; i < points.length; i++){
-            ps.add(new PointD(points[i].X, points[i].Y));
+        for (PointF point : points) {
+            ps.add(new PointD(point.X, point.Y));
         }
         setPoints(ps);
     }

@@ -40,7 +40,7 @@ public class TableUtil {
      * @throws java.io.FileNotFoundException
      */
     public static TableData readASCIIFile(String fileName, String delimiter, int headerLines, String formatSpec, String encoding) throws FileNotFoundException, IOException, Exception {
-        DataTable dTable = new DataTable();
+        TableData tableData = new TableData();
 
         BufferedReader sr = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), encoding));
         if (headerLines > 0) {
@@ -50,8 +50,8 @@ public class TableUtil {
         }
 
         String title = sr.readLine().trim();
-        if (encoding.equals("UTF8")){
-            if (title.startsWith("\uFEFF")){
+        if (encoding.equals("UTF8")) {
+            if (title.startsWith("\uFEFF")) {
                 title = title.substring(1);
             }
         }
@@ -99,29 +99,29 @@ public class TableUtil {
                     String colName = titleArray[idx].trim();
                     if (colFormat.equals("C") || colFormat.equals("s")) //String
                     {
-                        dTable.addColumn(colName, DataTypes.String);
+                        tableData.addColumn(colName, DataTypes.String);
                     } else if (colFormat.equals("i")) //Integer
                     {
-                        dTable.addColumn(colName, DataTypes.Integer);
+                        tableData.addColumn(colName, DataTypes.Integer);
                     } else if (colFormat.equals("f")) //Float
                     {
-                        dTable.addColumn(colName, DataTypes.Float);
+                        tableData.addColumn(colName, DataTypes.Float);
                     } else if (colFormat.equals("d")) //Double
                     {
-                        dTable.addColumn(colName, DataTypes.Double);
+                        tableData.addColumn(colName, DataTypes.Double);
                     } else if (colFormat.equals("B")) //Boolean
                     {
-                        dTable.addColumn(colName, DataTypes.Boolean);
+                        tableData.addColumn(colName, DataTypes.Boolean);
                     } else if (colFormat.substring(0, 1).equals("{")) {    //Date
                         int eidx = colFormat.indexOf("}");
                         String formatStr = colFormat.substring(1, eidx);
-                        dTable.addColumn(new DataColumn(colName, DataTypes.Date, formatStr));
+                        tableData.addColumn(new DataColumn(colName, DataTypes.Date, formatStr));
                         hasTimeCol = true;
                         if (tcolName == null) {
                             tcolName = titleArray[idx];
                         }
                     } else {
-                        dTable.addColumn(colName, DataTypes.String);
+                        tableData.addColumn(colName, DataTypes.String);
                     }
                     idx += 1;
                     if (idx == colNum) {
@@ -136,7 +136,7 @@ public class TableUtil {
 
             if (idx < colNum) {
                 for (int i = idx; i < colNum; i++) {
-                    dTable.addColumn(titleArray[i], DataTypes.String);
+                    tableData.addColumn(titleArray[i], DataTypes.String);
                 }
             }
 
@@ -159,11 +159,11 @@ public class TableUtil {
 //                    continue;
 //                }
 
-                dTable.addRow();
+                tableData.addRow();
                 int cn = 0;
                 for (int i = 0; i < dataArray.length; i++) {
                     if (cn < colNum) {
-                        dTable.setValue(rn, cn, dataArray[i]);
+                        tableData.setValue(rn, cn, dataArray[i]);
                         cn++;
                     } else {
                         break;
@@ -171,7 +171,7 @@ public class TableUtil {
                 }
                 if (cn < colNum) {
                     for (int i = cn; i < colNum; i++) {
-                        dTable.setValue(rn, i, "");
+                        tableData.setValue(rn, i, "");
                     }
                 }
 
@@ -183,15 +183,43 @@ public class TableUtil {
         }
 
         if (hasTimeCol) {
-            TimeTableData tableData = new TimeTableData();
-            tableData.dataTable = dTable;
-            tableData.setTimeColName(tcolName);
-            return tableData;
+            TimeTableData tTableData = new TimeTableData(tableData);
+            tTableData.setTimeColName(tcolName);
+            return tTableData;
         } else {
-            TableData tableData = new TableData();
-            tableData.dataTable = dTable;
             return tableData;
         }
+    }
+
+    /**
+     * Get format list
+     *
+     * @param formatSpec Input format specific string
+     * @return Format list
+     */
+    public static List<String> getFormats(String formatSpec) {
+        if (formatSpec == null) {
+            return null;
+        }
+
+        List<String> formats = new ArrayList<>();
+        String[] colFormats = formatSpec.split("%");
+
+        for (String colFormat : colFormats) {
+            if (colFormat.isEmpty()) {
+                continue;
+            }
+
+            if (colFormat.substring(0, 1).equals("{")) {    //Date
+                int eidx = colFormat.indexOf("}");
+                colFormat = colFormat.substring(1, eidx);
+            } else {
+                colFormat = "%" + colFormat;
+            }
+            formats.add(colFormat);
+        }
+
+        return formats;
     }
 
     /**
@@ -242,11 +270,12 @@ public class TableUtil {
 
     /**
      * Average month by month
+     *
      * @param data Data array list
      * @param colNames Column names
      * @param time Time list
      * @return Result data table
-     * @throws Exception 
+     * @throws Exception
      */
     public static DataTable ave_Month(List<Array> data, List<String> colNames, List<Date> time) throws Exception {
         DataTable rTable = new DataTable();
@@ -271,8 +300,9 @@ public class TableUtil {
                     if (cal.get(Calendar.YEAR) == year) {
                         if (cal.get(Calendar.MONTH) == month - 1) {
                             v = a.getDouble(i);
-                            if (!Double.isNaN(v)) 
+                            if (!Double.isNaN(v)) {
                                 values.add(v);
+                            }
                         }
                     }
                 }

@@ -380,7 +380,7 @@ public class PolylineShape extends Shape implements Cloneable {
      *
      * @return PolylineShape
      */
-    public PolylineShape valueClone() {
+    public Object valueClone() {
         PolylineShape aPLS = new PolylineShape();
         aPLS.setValue(this.getValue());
         aPLS.setVisible(this.isVisible());

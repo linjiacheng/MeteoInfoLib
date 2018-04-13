@@ -13,7 +13,6 @@
  */
 package org.meteoinfo.legend;
 
-import org.meteoinfo.drawing.PointStyle;
 import org.meteoinfo.global.event.ISelectedCellChangedListener;
 import org.meteoinfo.global.event.SelectedCellChangedEvent;
 import org.meteoinfo.layout.MapLayout;

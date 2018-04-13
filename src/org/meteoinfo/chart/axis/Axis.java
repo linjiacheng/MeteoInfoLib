@@ -72,6 +72,7 @@ public class Axis implements Cloneable {
     private boolean autoTick;
     private boolean minorTickVisible;
     private int minorTickNum;
+    private int tickSpace;
 
     // </editor-fold>
     // <editor-fold desc="Constructor">
@@ -110,6 +111,7 @@ public class Axis implements Cloneable {
         this.autoTick = true;
         this.minorTickVisible = false;
         this.minorTickNum = 5;
+        this.tickSpace = 5;
     }
 
     /**
@@ -221,6 +223,7 @@ public class Axis implements Cloneable {
         this.setTickLabelFont(axis.getTickLabelFont());
         this.setTickLength(axis.getTickLength());
         this.setVisible(axis.isVisible());
+        
     }
 
     // </editor-fold>
@@ -848,9 +851,12 @@ public class Axis implements Cloneable {
     public void setTickLocations(double[] value) {
         this.tickLocations.clear();
         this.tickLabels.clear();
+        String tick;
         for (double v : value) {
             this.tickLocations.add(v);
-            this.tickLabels.add(new ChartText(String.valueOf((int) v)));
+            tick = String.valueOf(v);
+            tick = DataConvert.removeTailingZeros(tick);
+            this.tickLabels.add(new ChartText(tick));
         }
         this.autoTick = false;
     }
@@ -965,6 +971,22 @@ public class Axis implements Cloneable {
      */
     public void setMinorTickNum(int value) {
         this.minorTickNum = value;
+    }
+    
+    /**
+     * Get tick space
+     * @return Tick space
+     */
+    public int getTickSpace(){
+        return this.tickSpace;
+    }
+    
+    /**
+     * Set tick space
+     * @param value Tick space
+     */
+    public void setTickSpace(int value){
+        this.tickSpace = value;
     }
     // </editor-fold>
     // <editor-fold desc="Methods">
@@ -1168,13 +1190,13 @@ public class Axis implements Cloneable {
      * @return Maximum lable string length
      */
     public int getMaxLabelLength(Graphics2D g) {
-        //FontMetrics metrics = g.getFontMetrics(this.tickLabelFont);
         this.updateTickLabels();
         int max = 0;
         Dimension dim;
         int width, height;
         g.setFont(this.tickLabelFont);
-        for (ChartText lab : this.tickLabels) {
+        for (int i = 0; i < this.tickLabels.size(); i++) {
+            ChartText lab = this.tickLabels.get(i);
             dim = Draw.getStringDimension(lab.getText(), g);
             width = dim.width;
             if (this.tickLabelAngle != 0) {
@@ -1209,6 +1231,27 @@ public class Axis implements Cloneable {
         }
 
         return rlab.getText();
+    }
+    
+    /**
+     * Get tick label text with maximum length
+     *
+     * @return Maximum length tick label text
+     */
+    public ChartText getMaxLenText() {
+        this.updateTickLabels();
+        if (this.tickLabels.isEmpty()) {
+            return new ChartText("1");
+        }
+
+        ChartText rlab = this.tickLabels.get(0);
+        for (ChartText lab : this.tickLabels) {
+            if (lab.getText().length() > rlab.getText().length()) {
+                rlab = lab;
+            }
+        }
+
+        return rlab;
     }
 
     /**
@@ -1320,8 +1363,7 @@ public class Axis implements Cloneable {
         double minx = area.getX();
         double maxx = area.getX() + area.getWidth();
         double maxy = area.getY() + area.getHeight();
-        float labx, laby;
-        int space = 2;
+        float labx, laby = (float)maxy;
 
         //Draw x axis
         //Draw axis line
@@ -1339,9 +1381,7 @@ public class Axis implements Cloneable {
             g.setColor(this.tickColor);
             g.setStroke(this.tickStroke);
             g.setFont(this.tickLabelFont);
-            FontMetrics metrics = g.getFontMetrics();
             String drawStr;
-            //this.updateLabelGap(g, area);
             len = this.tickLength;
             this.updateTickLabels();
             int n = 0;
@@ -1369,30 +1409,34 @@ public class Axis implements Cloneable {
 
                     //Draw tick label
                     if (this.drawTickLabel && n < this.tickLabels.size()) {
-                        ChartText chartText = this.tickLabels.get(n);                        
+                        ChartText chartText = this.tickLabels.get(n);
+                        g.setFont(tickLabelFont);
                         if (this.location == Location.BOTTOM) {
                             if (this.insideTick){
                                 laby = (float)maxy;
                             } else {
                                 laby = (float) (maxy + len);
                             }
+                            laby += this.tickSpace;
                         } else {
                             if (this.insideTick){
                                 laby = (float)miny;
                             } else {
                                 laby = (float) (miny - len);
                             }
+                            laby -= this.tickSpace;
                         }
-                        for (String dstr : chartText.getTexts()) {
-                            labx = (float) x;
+                        Dimension dim = Draw.getStringDimension(chartText.getText(), this.tickLabelAngle, g);
+                        labx = (float) x;
+                        for (String dstr : chartText.getTexts()) {                            
                             if (this.location == Location.BOTTOM) {
-                                laby = laby + space;
-                                Draw.outString(g, labx, laby, dstr, XAlign.CENTER, YAlign.TOP, this.tickLabelAngle);
+                                Draw.drawString(g, labx, laby, dstr, XAlign.CENTER, YAlign.TOP, this.tickLabelAngle, true);
+                                laby += dim.getHeight() + chartText.getLineSpace();                                
                             } else {
-                                laby = laby - space;
-                                Draw.outString(g, labx, laby, dstr, XAlign.CENTER, YAlign.BOTTOM, this.tickLabelAngle);
+                                Draw.drawString(g, labx, laby, dstr, XAlign.CENTER, YAlign.BOTTOM, this.tickLabelAngle, true);
+                                laby -= dim.getHeight() - chartText.getLineSpace();
                             }
-                        }
+                        }                        
                     }
                 }
                 n += this.getTickLabelGap();
@@ -1486,11 +1530,9 @@ public class Axis implements Cloneable {
                         }
                         if (drawStr != null) {
                             labx = (float) minx;
-                            laby = (float) (maxy + metrics.getHeight() * 2 + space);
-                            if (!this.isInsideTick()) {
-                                laby += len;
-                            }
-                            g.drawString(drawStr, labx, laby);
+                            laby = laby + this.tickSpace;
+                            Draw.drawString(g, labx, laby, drawStr, XAlign.LEFT, YAlign.TOP, true);
+                            laby += Draw.getStringDimension(drawStr, g).height;
                         }
                     }
                 }
@@ -1500,148 +1542,11 @@ public class Axis implements Cloneable {
         //Draw label
         if (this.isDrawLabel()) {
             x = (maxx - minx) / 2 + minx;
-            String maxLabel = this.getMaxLenLable();
-            g.setFont(this.tickLabelFont);
-            Dimension dim = Draw.getStringDimension(maxLabel, this.tickLabelAngle, g);
-            y = maxy + space + dim.getHeight() + 5;
-//            y = maxy + space + dim.getHeight() + (dim.getWidth()
-//                    * Math.sin(this.tickLabelAngle * Math.PI / 180)) + 5;
-            int tlln = this.getMaxTickLableLines();
-            if (tlln > 1) {
-                for (int i = 1; i < tlln; i++) {
-                    y += dim.getHeight() + space;
-                }
-            }
             g.setFont(this.getLabelFont());
             g.setColor(this.getLabelColor());
-            //metrics = g.getFontMetrics(this.xAxis.getLabelFont());
-            //dim = new Dimension(metrics.stringWidth(this.xAxis.getLabel()), metrics.getHeight());
-            dim = Draw.getStringDimension(this.label.getText(), g);
-            labx = (float) (x - dim.width / 2);
-            laby = (float) (y + dim.height);
-            if (!this.isInsideTick()) {
-                laby += len;
-            }
-            //g.drawString(this.xAxis.getLabel(), labx, laby);
-            Draw.drawString(g, this.label.getText(), labx, laby, this.label.isUseExternalFont());
-        }
-    }
-
-    private void drawXAxis_Bar(Graphics2D g, Rectangle2D area, AbstractPlot2D plot) {
-        double[] xy;
-        double x, y;
-        double miny = area.getY();
-        double minx = area.getX();
-        double maxx = area.getX() + area.getWidth();
-        double maxy = area.getY() + area.getHeight();
-        float labx, laby;
-        int space = 2;
-
-        //Draw x axis
-        //Draw axis line
-        g.setColor(this.lineColor);
-        g.setStroke(this.getLineStroke());
-        if (this.location == Location.BOTTOM) {
-            g.draw(new Line2D.Double(minx, maxy, maxx, maxy));
-        } else {
-            g.draw(new Line2D.Double(minx, miny, maxx, miny));
-        }
-
-        //Draw tick lines   
-        g.setColor(this.tickColor);
-        g.setStroke(this.tickStroke);
-        g.setFont(this.tickLabelFont);
-        FontMetrics metrics = g.getFontMetrics();
-        String drawStr;
-        Dimension dim;
-        //this.updateLabelGap(g, area);
-        int len = this.tickLength;
-        this.updateTickLabels();
-        int n = 0;
-        while (n < this.getTickValues().length) {
-            double value = this.getTickValues()[n];
-            xy = plot.projToScreen(value, plot.getDrawExtent().minY, area);
-            x = xy[0];
-//            if (this.inverse) {
-//                x = area.getWidth() - x;
-//            }
-            x += minx;
-            if (this.location == Location.BOTTOM) {
-                if (this.insideTick) {
-                    g.draw(new Line2D.Double(x, maxy, x, maxy - len));
-                } else {
-                    g.draw(new Line2D.Double(x, maxy, x, maxy + len));
-                }
-            } else if (this.insideTick) {
-                g.draw(new Line2D.Double(x, miny, x, miny + len));
-            } else {
-                g.draw(new Line2D.Double(x, miny, x, miny - len));
-            }
-            //Draw tick label
-            if (this.drawTickLabel) {
-                ChartText cText = this.tickLabels.get(n);
-                laby = (float) (maxy + len);
-                for (String dstr : cText.getTexts()) {
-                    //drawStr = xTickLabels.get(n);
-                    dim = new Dimension(metrics.stringWidth(dstr), metrics.getHeight());
-                    labx = (float) (x - dim.width / 2);
-                    laby = laby + dim.height * 3 / 4 + space;
-                    g.drawString(dstr, labx, laby);
-                    laby += dim.height;
-                }
-            }
-            n += this.getTickLabelGap();
-        }
-        //Time label - left
-        SimpleDateFormat format;
-        if (this instanceof TimeAxis) {
-            TimeAxis tAxis = (TimeAxis) this;
-            //if (this.xAxis.isTimeAxis()) {
-            drawStr = null;
-            switch (tAxis.getTimeUnit()) {
-                case MONTH:
-                    format = new SimpleDateFormat("yyyy");
-                    Date cdate = DateUtil.fromOADate(this.getTickValues()[0]);
-                    drawStr = format.format(cdate);
-                    break;
-                case DAY:
-                    format = new SimpleDateFormat("yyyy-MM");
-                    cdate = DateUtil.fromOADate(this.getTickValues()[0]);
-                    drawStr = format.format(cdate);
-                    break;
-                case HOUR:
-                case MINUTE:
-                case SECOND:
-                    format = new SimpleDateFormat("yyyy-MM-dd");
-                    cdate = DateUtil.fromOADate(this.getTickValues()[0]);
-                    drawStr = format.format(cdate);
-                    break;
-            }
-            if (drawStr != null) {
-                labx = (float) minx;
-                laby = (float) (maxy + metrics.getHeight() * 2 + space);
-                if (!this.isInsideTick()) {
-                    laby += len;
-                }
-                g.drawString(drawStr, labx, laby);
-            }
-        }
-        //Draw label
-        if (this.isDrawLabel()) {
-            x = (maxx - minx) / 2 + minx;
-            y = maxy + space + metrics.getHeight() + 5;
-            g.setFont(this.getLabelFont());
-            g.setColor(this.getLabelColor());
-            //metrics = g.getFontMetrics(this.xAxis.getLabelFont());
-            //dim = new Dimension(metrics.stringWidth(this.xAxis.getLabel()), metrics.getHeight());
-            dim = Draw.getStringDimension(this.label.getText(), g);
-            labx = (float) (x - dim.width / 2);
-            laby = (float) (y + dim.height * 3 / 4);
-            if (!this.isInsideTick()) {
-                laby += len;
-            }
-            //g.drawString(this.xAxis.getLabel(), labx, laby);
-            Draw.drawString(g, this.label.getText(), labx, laby, this.label.isUseExternalFont());
+            labx = (float)x;
+            laby += this.tickSpace;
+            this.label.draw(g, labx, laby);
         }
     }
 
@@ -1653,7 +1558,6 @@ public class Axis implements Cloneable {
         double maxx = area.getX() + area.getWidth();
         double maxy = area.getY() + area.getHeight();
         float labx, laby;
-        int space = 2;
 
         //Draw y axis
         //Draw axis line
@@ -1673,7 +1577,6 @@ public class Axis implements Cloneable {
             g.setColor(this.getTickColor());
             g.setStroke(this.getTickStroke());
             g.setFont(this.getTickLabelFont());
-            //FontMetrics metrics = g.getFontMetrics();
             this.updateLabelGap(g, area);
             len = this.getTickLength();
             this.updateTickLabels();
@@ -1684,9 +1587,6 @@ public class Axis implements Cloneable {
                 double value = this.getTickValues()[n];
                 xy = plot.projToScreen(plot.getDrawExtent().minX, value, area);
                 y = xy[1];
-//            if (this.isInverse()) {
-//                y = area.getHeight() - y;
-//            }
                 y += area.getY();
                 if (this.location == Location.LEFT) {
                     if (this.isInsideTick()) {
@@ -1702,26 +1602,22 @@ public class Axis implements Cloneable {
                 //Draw tick label
                 if (this.drawTickLabel && n < this.tickLabels.size()) {
                     drawStr = this.tickLabels.get(n).getText();
-                    //dim = new Dimension(metrics.stringWidth(drawStr), metrics.getHeight());
                     g.setFont(this.tickLabelFont);
-                    dim = Draw.getStringDimension(drawStr, g);
                     if (this.location == Location.LEFT) {
-                        labx = (float) (sx - dim.width - space - space);
+                        labx = (float) (sx - this.tickSpace);
                         if (!this.isInsideTick()) {
                             labx -= len;
                         }
-                        laby = (float) (y + dim.height / 3);
-                        //g.drawString(drawStr, labx, laby);
+                        laby = (float)y;
+                        Draw.drawString(g, labx, laby, drawStr, XAlign.RIGHT, YAlign.CENTER, this.tickLabelAngle, true);
                     } else {
-                        labx = (float) (sx + space + space);
+                        labx = (float) (sx + this.tickSpace);
                         if (!this.isInsideTick()) {
                             labx += len;
                         }
-                        laby = (float) (y + dim.height / 3);
-                        //g.drawString(drawStr, labx, laby);
-                    }
-                    Draw.drawTickLabel_Y(labx, laby, this.tickLabelFont, drawStr, this.tickLabelColor,
-                            this.tickLabelAngle, g);
+                        laby = (float)y;
+                        Draw.drawString(g, labx, laby, drawStr, XAlign.LEFT, YAlign.CENTER, this.tickLabelAngle, true);
+                    }                  
                 }
                 n += this.getTickLabelGap();
 
@@ -1747,9 +1643,6 @@ public class Axis implements Cloneable {
                                 }
                                 xy = plot.projToScreen(plot.getDrawExtent().minX, value1, area);
                                 y = xy[1];
-//                            if (this.inverse) {
-//                                y = area.getHeight() - y;
-//                            }
                                 y += miny;
                                 yy.add(y);
                             }
@@ -1764,9 +1657,6 @@ public class Axis implements Cloneable {
                         }
                         xy = plot.projToScreen(plot.getDrawExtent().minX, value, area);
                         y = xy[1];
-//                    if (this.inverse) {
-//                        y = area.getHeight() - y;
-//                    }
                         y += miny;
                         yy.add(y);
                     }
@@ -1789,40 +1679,90 @@ public class Axis implements Cloneable {
         }
 
         //Draw label
-        if (this.isDrawLabel()) {
-            g.setFont(this.getLabelFont());
-            Dimension dim = Draw.getStringDimension(this.label.getText(), g);
-            //metrics = g.getFontMetrics(this.yAxis.getLabelFont());
+        XAlign x_align = XAlign.RIGHT;
+        YAlign y_align = YAlign.CENTER;
+        if (this.isDrawLabel()) {            
             if (this.location == Location.LEFT) {
-                x = sx - space - this.getMaxLabelLength(g) - dim.height - 10;
+                x = sx - this.tickSpace - this.getMaxLabelLength(g);
                 if (!this.isInsideTick()) {
                     x -= len;
                 }
-                y = (maxy - miny) / 2 + miny;
-                //x = g.getTransform().getTranslateX() + x;
-                //y = g.getTransform().getTranslateY() + y;
-                //Draw.drawLabelPoint((float)x, (float)y, this.yAxis.getLabelFont(), this.yAxis.getLabel(), 
-                //        this.yAxis.getLabelColor(), -90, g, null);
-                Draw.drawLabelPoint_270((float) x, (float) y, this.getLabelFont(), this.label.getText(),
-                        this.getLabelColor(), g, null, this.label.isUseExternalFont());
+                y = (maxy - miny) / 2 + miny; 
             } else {
-                x = sx + space + this.getMaxLabelLength(g) + 10;
+                x = sx + this.tickSpace + this.getMaxLabelLength(g) + 5;
                 if (!this.isInsideTick()) {
                     x += len;
                 }
                 y = (maxy - miny) / 2 + miny;
-                //x = g.getTransform().getTranslateX() + x;
-                //y = g.getTransform().getTranslateY() + y;
-                //Draw.drawLabelPoint((float)x, (float)y, this.yAxis.getLabelFont(), this.yAxis.getLabel(), 
-                //        this.yAxis.getLabelColor(), -90, g, null);
-                Draw.drawLabelPoint_270((float) x, (float) y, this.getLabelFont(), this.label.getText(),
-                        this.getLabelColor(), g, null, this.label.isUseExternalFont());
+                x_align = XAlign.LEFT;                
+            }
+            g.setFont(this.getLabelFont());
+            Draw.drawString(g, (float)x, (float)y, this.label.getText(), x_align, 
+                y_align, 90, this.label.isUseExternalFont());
+        }
+    }
+    
+    /**
+     * Get x axis height
+     * @param g Graphics2D
+     * @return Axis height
+     */
+    public int getXAxisHeight(Graphics2D g) {
+        if (!this.isVisible()) {
+            return 0;
+        }
+
+        int height = 0;
+        if (!this.insideTick){
+            height += this.tickLength;
+        }
+        this.updateTickLabels();
+        if (this.isDrawTickLabel() && this.tickLabels.size() > 0) {
+            ChartText text = this.getMaxLenText();
+            text.setAngle(this.tickLabelAngle);
+            height += this.tickSpace + text.getTrueDimension(g).height;
+            Dimension dim = Draw.getStringDimension("Test", this.getTickLabelAngle(), g);
+            if (this instanceof TimeAxis) {
+                height += dim.height + this.tickSpace;
             }
         }
+        if (this.isDrawLabel()) {
+            g.setFont(this.getLabelFont());
+            Dimension dim = Draw.getStringDimension(this.getLabel().getText(), g);
+            height += dim.height + this.tickSpace * 2;
+        }
+
+        return height;
+    }
+
+    /**
+     * Get y axis width
+     * @param g Graphics2D
+     * @return Axis width
+     */
+    public int getYAxisWidth(Graphics2D g) {
+        if (!this.isVisible()) {
+            return 0;
+        }
+
+        int width = 0;
+        if (this.isDrawTickLabel()) {
+            width += this.getMaxLabelLength(g) + this.tickSpace + this.tickSpace;
+        }
+        if (!this.isInsideTick()) {
+            width += this.getTickLength();
+        }
+        if (this.isDrawLabel()) {
+            g.setFont(this.getLabelFont());
+            Dimension dim = Draw.getStringDimension(this.getLabel().getText(), g);
+            width += dim.height + 10 - this.tickSpace;
+        }
+
+        return width;
     }
 
     @Override
-    public Object clone() {
+    public Object clone() throws CloneNotSupportedException {
         Axis o = null;
         try {
             o = (Axis) super.clone();

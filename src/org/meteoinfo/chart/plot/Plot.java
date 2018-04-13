@@ -53,6 +53,11 @@ public abstract class Plot {
     public static final Shape DEFAULT_LEGEND_ITEM_CIRCLE
             = new Ellipse2D.Double(-4.0, -4.0, 8.0, 8.0);   
     
+    protected Rectangle2D position = new Rectangle2D.Double(0.13, 0.11, 0.775, 0.815);        
+    protected Rectangle2D outerPosition = new Rectangle2D.Double(0, 0, 1, 1);        
+    private Rectangle2D outerPositionArea;
+    private Margin tightInset = new Margin();
+    
     /** If is sub plot. */
     public boolean isSubPlot = false;
     
@@ -67,6 +72,8 @@ public abstract class Plot {
     
     //units - normalized or pixels
     protected AxesUnits units = AxesUnits.NORMALIZED;
+    
+    protected boolean symbolAntialias = true;
     
     /**
      * Get units
@@ -123,9 +130,7 @@ public abstract class Plot {
     public void setSameShrink(boolean value){
         this.sameShrink = value;
     }    
-    
-    protected Rectangle2D position = new Rectangle2D.Double(0.13, 0.11, 0.775, 0.815);
-    
+        
     /**
      * Get position
      * @return Position
@@ -185,9 +190,7 @@ public abstract class Plot {
         double w = this.positionArea.getWidth() / figureArea.getWidth();
         double h = this.positionArea.getHeight() / figureArea.getHeight();
         this.setPosition(x, y, w, h);
-    }
-    
-    private Margin tightInset = new Margin();
+    }    
     
     /**
      * Get tight inset
@@ -203,9 +206,7 @@ public abstract class Plot {
      */
     public void setTightInset(Margin value){
         this.tightInset = value;
-    }
-    
-    protected Rectangle2D outerPosition = new Rectangle2D.Double(0, 0, 1, 1);
+    }        
     
     /**
      * Get outer position
@@ -242,8 +243,6 @@ public abstract class Plot {
         this.position = new Rectangle2D.Double(pos.get(0).doubleValue(), pos.get(1).doubleValue(), 
             pos.get(2).doubleValue(), pos.get(3).doubleValue());
     }
-    
-    private Rectangle2D outerPositionArea;
     
     /**
      * Get outer position area
@@ -285,6 +284,22 @@ public abstract class Plot {
      * @return Plot type
      */
     public abstract PlotType getPlotType();
+    
+    /**
+     * Get symbol antialias
+     * @return Boolean
+     */
+    public boolean isSymbolAntialias() {
+        return this.symbolAntialias;
+    }
+    
+    /**
+     * Set symbol antialias
+     * @param value Boolean
+     */
+    public void setSymbolAntialias(boolean value) {
+        this.symbolAntialias = value;
+    }   
     
     /**
      * Draw graphics

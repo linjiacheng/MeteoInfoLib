@@ -150,7 +150,8 @@ public class PolylineZShape extends PolylineShape {
      *
      * @return PolylineZShape object
      */
-    public PolylineZShape ValueClone() {
+    @Override
+    public Object valueClone() {
         PolylineZShape aPLS = new PolylineZShape();
         aPLS.setValue(this.getValue());
         aPLS.setVisible(this.isVisible());

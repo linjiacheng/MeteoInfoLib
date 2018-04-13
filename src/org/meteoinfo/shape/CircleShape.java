@@ -13,6 +13,10 @@
  */
 package org.meteoinfo.shape;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.meteoinfo.global.PointD;
+
 /**
  * Circle shape class
  * 
@@ -29,12 +33,43 @@ public class CircleShape extends PolygonShape {
     public CircleShape() {
 
     }
+    
+    /**
+     * Constructor
+     * @param x Center x
+     * @param y Center y
+     * @param radius Radius
+     */
+    public CircleShape(double x, double y, double radius) {
+        List<PointD> points = new ArrayList<>();
+        points.add(new PointD(x - radius, y));
+        points.add(new PointD(x, y -radius));
+        points.add(new PointD(x + radius, y));
+        points.add(new PointD(x, y + radius));
+        super.setPoints(points);
+    }
     // </editor-fold>
     // <editor-fold desc="Methods">
     
     @Override
     public ShapeTypes getShapeType(){
         return ShapeTypes.Circle;
+    }
+    
+    /**
+     * Get circle center point
+     * @return Center point
+     */
+    public PointD getCenter() {
+        return this.getExtent().getCenterPoint();
+    }
+    
+    /**
+     * Get radius
+     * @return Radius
+     */
+    public double getRadius() {
+        return this.getExtent().getHeight() / 2;
     }
 
     /**

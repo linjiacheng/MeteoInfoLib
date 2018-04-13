@@ -1,17 +1,17 @@
 package org.meteoinfo.projection.proj4j.parser;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import org.meteoinfo.projection.proj4j.CoordinateReferenceSystem;
+import org.meteoinfo.projection.proj4j.InvalidValueException;
+import org.meteoinfo.projection.proj4j.Registry;
 
-import org.meteoinfo.projection.proj4j.*;
 import org.meteoinfo.projection.proj4j.datum.Datum;
 import org.meteoinfo.projection.proj4j.datum.Ellipsoid;
 import org.meteoinfo.projection.proj4j.proj.Projection;
 import org.meteoinfo.projection.proj4j.proj.TransverseMercatorProjection;
 import org.meteoinfo.projection.proj4j.units.Angle;
-import org.meteoinfo.projection.proj4j.units.AngleFormat;
 import org.meteoinfo.projection.proj4j.units.Unit;
 import org.meteoinfo.projection.proj4j.units.Units;
 import org.meteoinfo.projection.proj4j.util.ProjectionMath;
@@ -502,9 +502,9 @@ public class Proj4Parser {
         String[] args = new String[params.size()];
         int i = 0;
         Set<String> key = params.keySet();
-        for (Iterator it = key.iterator(); it.hasNext();) {
-            String s = (String) it.next();
+        for (String s : key) {
             args[i] = "+" + s + "=" + params.get(s);
+            i += 1;
         }
 
         return args;

@@ -14,6 +14,7 @@ import org.apache.commons.math3.stat.correlation.Covariance;
 import org.apache.commons.math3.stat.correlation.KendallsCorrelation;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.apache.commons.math3.stat.correlation.SpearmansCorrelation;
+import org.apache.commons.math3.stat.inference.TestUtils;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 import org.meteoinfo.data.ArrayMath;
 import org.meteoinfo.data.ArrayUtil;
@@ -29,6 +30,21 @@ import ucar.ma2.Range;
  */
 public class StatsUtil {
 
+    /**
+     * Computes covariance of two arrays.
+     *
+     * @param x X data
+     * @param y Y data
+     * @param bias If true, returned value will be bias-corrected
+     * @return The covariance
+     */
+    public static double covariance(Array x, Array y, boolean bias){
+        double[] xd = (double[]) ArrayUtil.copyToNDJavaArray(x);
+        double[] yd = (double[]) ArrayUtil.copyToNDJavaArray(y);
+        double r = new Covariance().covariance(xd, yd, bias);
+        return r;
+    }
+    
     /**
      * Computes covariances for pairs of arrays or columns of a matrix.
      *
@@ -289,5 +305,83 @@ public class StatsUtil {
         }
 
         return r;
+    }
+    
+    /**
+     * One sample t test
+     * @param a Input data
+     * @param mu Expected value in null hypothesis
+     * @return t_statistic and p_value
+     */
+    public static double[] tTest(Array a, double mu){
+        double[] ad = (double[]) ArrayUtil.copyToNDJavaArray(a);
+        double s = TestUtils.t(mu, ad);
+        double p = TestUtils.tTest(mu, ad);
+        
+        return new double[]{s, p};
+    }
+    
+    /**
+     * unpaired, two-sided, two-sample t-test.
+     * 
+     * @param a Sample a.
+     * @param b Sample b.
+     * @return t_statistic and p_value
+     */
+    public static double[] tTest(Array a, Array b) {
+        double[] ad = (double[]) ArrayUtil.copyToNDJavaArray(a);
+        double[] bd = (double[]) ArrayUtil.copyToNDJavaArray(b);
+        double s = TestUtils.t(ad, bd);
+        double p = TestUtils.tTest(ad, bd);
+        
+        return new double[]{s, p};
+    }
+    
+    /**
+     * Paired test evaluating the null hypothesis that the mean difference 
+     * between corresponding (paired) elements of the double[] arrays sample1 
+     * and sample2 is zero.
+     * 
+     * @param a Sample a.
+     * @param b Sample b.
+     * @return t_statistic and p_value
+     */
+    public static double[] pairedTTest(Array a, Array b) {
+        double[] ad = (double[]) ArrayUtil.copyToNDJavaArray(a);
+        double[] bd = (double[]) ArrayUtil.copyToNDJavaArray(b);
+        double s = TestUtils.pairedT(ad, bd);
+        double p = TestUtils.pairedTTest(ad, bd);
+        
+        return new double[]{s, p};
+    }
+    
+    /**
+     * Chi-square test
+     * 
+     * @param e Expected.
+     * @param o Observed.
+     * @return Chi-square_statistic and p_value
+     */
+    public static double[] chiSquareTest(Array e, Array o) {
+        double[] ed = (double[]) ArrayUtil.copyToNDJavaArray(e);
+        long[] od = (long[]) ArrayUtil.copyToNDJavaArray_Long(o);
+        double s = TestUtils.chiSquare(ed, od);
+        double p = TestUtils.chiSquareTest(ed, od);
+        
+        return new double[]{s, p};
+    }
+    
+    /**
+     * Chi-square test of independence
+     * 
+     * @param o Observed.
+     * @return Chi-square_statistic and p_value
+     */
+    public static double[] chiSquareTest(Array o) {
+        long[][] od = (long[][]) ArrayUtil.copyToNDJavaArray_Long(o);
+        double s = TestUtils.chiSquare(od);
+        double p = TestUtils.chiSquareTest(od);
+        
+        return new double[]{s, p};
     }
 }

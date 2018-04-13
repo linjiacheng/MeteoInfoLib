@@ -13,8 +13,11 @@
  */
 package org.meteoinfo.table;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.meteoinfo.data.DataTypes;
 
 /**
  *
@@ -59,12 +62,13 @@ public class DataRow {
     public DataTable getTable() {
         return this.table;
     }
-    
+
     /**
      * Set data table
+     *
      * @param value Data table
      */
-    public void setTable(DataTable value){
+    public void setTable(DataTable value) {
         this.table = value;
     }
 
@@ -74,7 +78,7 @@ public class DataRow {
      * @param columns Columns
      */
     public void setColumns(DataColumnCollection columns) {
-        this.columns = columns;        
+        this.columns = columns;
     }
 
     /**
@@ -182,8 +186,8 @@ public class DataRow {
      * @return The value
      */
     public Object getValue(int index) {
-        String colName = this.columns.get(index).getColumnName().toLowerCase();
-        return this.getItemMap().get(colName);
+        String colName = this.columns.get(index).getColumnName();
+        return this.getValue(colName);
     }
 
     /**
@@ -194,6 +198,47 @@ public class DataRow {
      */
     public Object getValue(String columnName) {
         return this.getItemMap().get(columnName.toLowerCase());
+    }
+
+    /**
+     * Get value string
+     *
+     * @param columnName Column name
+     * @return The value string
+     */
+    public String getValueStr(String columnName) {
+        DataColumn dc = this.columns.get(columnName);
+        if (dc.getFormat() == null) {
+            return this.getValue(columnName).toString();
+        } else {
+            if (dc.getDataType() == DataTypes.Date) {
+                SimpleDateFormat format = new SimpleDateFormat(dc.getFormat());
+                return format.format((Date) this.getValue(columnName));
+            } else {
+                return String.format(dc.getFormat(), this.getValue(columnName));
+            }
+        }
+    }
+
+    /**
+     * Get value string
+     *
+     * @param columnName Column name
+     * @param formatStr Format string
+     * @return The value string
+     */
+    public String getValueStr(String columnName, String formatStr) {
+        if (formatStr == null) {
+            return getValueStr(columnName);
+        }
+
+        DataColumn dc = this.columns.get(columnName);
+        if (dc.getDataType() == DataTypes.Date) {
+            SimpleDateFormat dformat = new SimpleDateFormat(formatStr);
+            return dformat.format((Date) this.getValue(columnName));
+        } else {
+            return String.format(formatStr, this.getValue(columnName));
+        }
     }
 
     /**
@@ -237,7 +282,7 @@ public class DataRow {
         row.setColumns(columns);
         for (Object c : this.columns) {
             row.itemMap.put(c.toString().toLowerCase(), this.getValue(c.toString()));
-            
+
         }
 
         return row;

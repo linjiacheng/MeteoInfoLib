@@ -18,68 +18,21 @@ package org.meteoinfo.projection;
  * @author Yaqiang Wang
  */
 public enum ProjectionNames {
-    /// <summary>
-        /// lon/lat
-        /// </summary>
-        LongLat,
-        /// <summary>
-        /// Lambert conformal conic
-        /// </summary>
-        Lambert_Conformal_Conic,
-        /// <summary>
-        /// Lambert azimuthal equal area
-        /// </summary>
-        Lambert_Azimuthal_Equal_Area,
-        //Lambert_Equal_Area_Conic,
-        /// <summary>
-        /// Albers conic equal area
-        /// </summary>
-        Albers_Equal_Area,
-        /// <summary>
-        /// Northe polar stereographic
-        /// </summary>
-        North_Polar_Stereographic_Azimuthal,
-        /// <summary>
-        /// South polar stereographic
-        /// </summary>
-        South_Polar_Stereographic_Azimuthal,
-        /// <summary>
-        /// Mercator
-        /// </summary>
-        Mercator,
-        /// <summary>
-        /// Robinson
-        /// </summary>
-        Robinson,
-        /// <summary>
-        /// Mollweide
-        /// </summary>
-        Molleweide,
-        /// <summary>
-        /// Orthographic
-        /// </summary>
-        Orthographic_Azimuthal,
-        /// <summary>
-        /// Geostationary
-        /// </summary>
-        Geostationary_Satellite,
-        /// <summary>
-        /// Oblique stereographic
-        /// </summary>        
-        Oblique_Stereographic_Alternative,
-        /// <summary>
-        /// Transverse mercator
-        /// </summary>
-        Transverse_Mercator,
-        /// <summary>
-        /// Hotine_Oblique_Mercator
-        /// </summary>
-        //Hotine_Oblique_Mercator,
-        /// <summary>
-        /// Universal transverse mercator
-        /// </summary>
-        //Universal_Transverse_Mercator
-        Sinusoidal,
-        Cylindrical_Equal_Area,
-        Hammer_Eckert;
+    LongLat,
+    Lambert_Conformal_Conic,
+    Lambert_Azimuthal_Equal_Area,
+    Albers_Equal_Area,
+    North_Polar_Stereographic_Azimuthal,
+    South_Polar_Stereographic_Azimuthal,
+    Mercator,
+    Robinson,
+    Molleweide,
+    Orthographic_Azimuthal,
+    Geostationary_Satellite,       
+    Oblique_Stereographic_Alternative,
+    Transverse_Mercator,
+    Sinusoidal,
+    Cylindrical_Equal_Area,
+    Hammer_Eckert,
+    Undefine;
 }

@@ -4,8 +4,6 @@
  */
 package org.meteoinfo.legend;
 
-import org.meteoinfo.drawing.MarkerType;
-import org.meteoinfo.drawing.PointStyle;
 import org.meteoinfo.global.util.GlobalUtil;
 import org.meteoinfo.global.event.ISelectedCellChangedListener;
 import org.meteoinfo.global.event.SelectedCellChangedEvent;

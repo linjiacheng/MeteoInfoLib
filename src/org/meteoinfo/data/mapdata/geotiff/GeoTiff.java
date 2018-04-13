@@ -18,6 +18,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.RandomAccessFile;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -296,7 +297,7 @@ public class GeoTiff {
                 System.out.println("position before writing nextIFD= " + this.channel.position() + " IFD is " + this.firstIFD);
             }
             buffer.putInt(this.firstIFD);
-            buffer.flip();
+            ((Buffer)buffer).flip();
             this.channel.write(buffer);
         }
         writeIFD(this.channel, this.firstIFD);
@@ -318,7 +319,7 @@ public class GeoTiff {
         buffer.putShort((short) 42);
         buffer.putInt(this.firstIFD);
 
-        buffer.flip();
+        ((Buffer)buffer).flip();
         channel.write(buffer);
 
         return this.firstIFD;
@@ -361,7 +362,7 @@ public class GeoTiff {
         ByteBuffer buffer = ByteBuffer.allocate(2);
         int n = this.tags.size();
         buffer.putShort((short) n);
-        buffer.flip();
+        ((Buffer)buffer).flip();
         channel.write(buffer);
 
         start += 2;
@@ -380,7 +381,7 @@ public class GeoTiff {
         }
         buffer = ByteBuffer.allocate(4);
         buffer.putInt(0);
-        buffer.flip();
+        ((Buffer)buffer).flip();
         channel.write(buffer);
     }
 
@@ -406,18 +407,18 @@ public class GeoTiff {
             for (int k = 0; k < 4 - done; k++) {
                 buffer.put((byte) 0);
             }
-            buffer.flip();
+            ((Buffer)buffer).flip();
             channel.write(buffer);
         } else {
             buffer.putInt(this.nextOverflowData);
-            buffer.flip();
+            ((Buffer)buffer).flip();
             channel.write(buffer);
 
             channel.position(this.nextOverflowData);
 
             ByteBuffer vbuffer = ByteBuffer.allocate(size);
             writeValues(vbuffer, ifd);
-            vbuffer.flip();
+            ((Buffer)vbuffer).flip();
             channel.write(vbuffer);
             this.nextOverflowData += size;
         }
@@ -770,9 +771,10 @@ public class GeoTiff {
                 double lat_1 = projStdParallel1.valueD(0);
                 GeoKey projStdParallel2 = geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjStdParallel2);
                 double lat_2 = projStdParallel2.valueD(0);
-                //GeoKey projCenterLong = geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjCenterLong);
-                //double lon_0 = projCenterLong == null ? 0 : projCenterLong.valueD(0);
                 GeoKey projCenterLong = geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjNatOriginLong);
+                if (projCenterLong == null){
+                    projCenterLong = geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjCenterLong);
+                }
                 double lon_0 = projCenterLong == null ? 0 : projCenterLong.valueD(0);
                 GeoKey projNatOriginLat = geoKeyDirectoryTag.findGeoKey(GeoKey.Tag.GeoKey_ProjNatOriginLat);
                 double lat_0 = projNatOriginLat == null ? 0 : projNatOriginLat.valueD(0);
@@ -1164,7 +1166,7 @@ public class GeoTiff {
         buffer.order(this.byteOrder);
 
         this.channel.read(buffer);
-        buffer.flip();
+        ((Buffer)buffer).flip();
 
 //        for (int i = 0; i < size / 4; i++) {
 //            System.out.println(i + ": " + buffer.getFloat());
@@ -1184,7 +1186,7 @@ public class GeoTiff {
 
         ByteBuffer buffer = ByteBuffer.allocate(8);
         channel.read(buffer);
-        buffer.flip();
+        ((Buffer)buffer).flip();
         if (this.showHeaderBytes) {
             printBytes(System.out, "header", buffer, 4);
             buffer.rewind();
@@ -1195,7 +1197,7 @@ public class GeoTiff {
             this.byteOrder = ByteOrder.LITTLE_ENDIAN;
         }
         buffer.order(this.byteOrder);
-        buffer.position(4);
+        ((Buffer)buffer).position(4);
         int firstIFD = buffer.getInt();
         if (this.debugRead) {
             System.out.println(" firstIFD == " + firstIFD);
@@ -1219,7 +1221,7 @@ public class GeoTiff {
         buffer.order(this.byteOrder);
 
         int n = channel.read(buffer);
-        buffer.flip();
+        ((Buffer)buffer).flip();
         if (this.showBytes) {
             printBytes(System.out, "IFD", buffer, 2);
             buffer.rewind();
@@ -1247,7 +1249,7 @@ public class GeoTiff {
         buffer = ByteBuffer.allocate(4);
         buffer.order(this.byteOrder);
         n = channel.read(buffer);
-        buffer.flip();
+        ((Buffer)buffer).flip();
         int nextIFD = buffer.getInt();
         if (this.debugRead) {
             System.out.println(" nextIFD == " + nextIFD);
@@ -1272,12 +1274,12 @@ public class GeoTiff {
         ByteBuffer buffer = ByteBuffer.allocate(12);
         buffer.order(this.byteOrder);
         channel.read(buffer);
-        buffer.flip();
+        ((Buffer)buffer).flip();
         if (this.showBytes) {
             printBytes(System.out, "IFDEntry bytes", buffer, 12);
         }
 
-        buffer.position(0);
+        ((Buffer)buffer).position(0);
         int code = readUShortValue(buffer);
         Tag tag = Tag.get(code);
         if (tag == null) {
@@ -1299,7 +1301,7 @@ public class GeoTiff {
             ByteBuffer vbuffer = ByteBuffer.allocate(ifd.count * ifd.type.size);
             vbuffer.order(this.byteOrder);
             channel.read(vbuffer);
-            vbuffer.flip();
+            ((Buffer)vbuffer).flip();
             readValues(vbuffer, ifd);
         }
 

@@ -35,6 +35,8 @@ public class StereographicAzimuthalProjection extends AzimuthalProjection {
 
 	public StereographicAzimuthalProjection(double projectionLatitude, double projectionLongitude) {
 		super(projectionLatitude, projectionLongitude);
+                proj4Name = "stere";
+                name = "Stereographic";
 		initialize();
 	}
 	

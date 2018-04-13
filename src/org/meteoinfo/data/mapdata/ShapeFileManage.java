@@ -39,6 +39,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -49,6 +50,7 @@ import org.meteoinfo.projection.ProjectionInfo;
 import org.meteoinfo.projection.proj4j.CRSFactory;
 import org.meteoinfo.projection.proj4j.CoordinateReferenceSystem;
 import org.meteoinfo.shape.PointM;
+import org.meteoinfo.shape.PointZShape;
 import org.meteoinfo.shape.PolygonMShape;
 import org.meteoinfo.shape.PolygonZShape;
 
@@ -58,6 +60,8 @@ import org.meteoinfo.shape.PolygonZShape;
  * @author yaqiang
  */
 public class ShapeFileManage {
+    
+    public static String encoding = "UTF-8";
 
     /**
      * Load shape file
@@ -68,9 +72,28 @@ public class ShapeFileManage {
      * @throws java.io.FileNotFoundException
      */
     public static VectorLayer loadShapeFile(String shpfilepath) throws IOException, FileNotFoundException, Exception {
-        //Set file names                       
-        //File dataDir = shpFile.getParentFile();;
-        //String shpfilename = shpFile.getName();
+        String cpgfilepath = shpfilepath.replaceFirst(shpfilepath.substring(shpfilepath.lastIndexOf(".")), ".cpg");
+        File cpgFile = new File(cpgfilepath);
+        if (cpgFile.exists()){
+            BufferedReader sr = new BufferedReader(new FileReader(cpgFile));
+            String ec = sr.readLine().trim();
+            sr.close();
+            encoding = ec;
+        }
+        return loadShapeFile(shpfilepath, encoding);
+    }
+    
+    /**
+     * Load shape file
+     *
+     * @param shpfilepath Shape file path
+     * @param encoding Encoding
+     * @return Vector layer
+     * @throws IOException
+     * @throws java.io.FileNotFoundException
+     */
+    public static VectorLayer loadShapeFile(String shpfilepath, String encoding) throws IOException, FileNotFoundException, Exception {
+        //Set file names
         String shxfilepath = shpfilepath.replace(shpfilepath.substring(shpfilepath.lastIndexOf(".")), ".shx");
         String dbffilepath = shpfilepath.replace(shpfilepath.substring(shpfilepath.lastIndexOf(".")), ".dbf");
         String projfilepath = shpfilepath.replace(shpfilepath.substring(shpfilepath.lastIndexOf(".")), ".prj");
@@ -109,7 +132,7 @@ public class ShapeFileManage {
         br.read(arr);
         ByteBuffer buffer = ByteBuffer.wrap(arr);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
-        buffer.position(32);
+        ((Buffer)buffer).position(32);
         //br.skipBytes(32);  //先读出36个字节,紧接着是Box边界合 
         int aShapeType = buffer.getInt();
         ShapeTypes aST = ShapeTypes.valueOf(aShapeType);
@@ -127,6 +150,9 @@ public class ShapeFileManage {
         switch (aST) {
             case Point://single point                                                              
                 aLayer = readPointShapes(br, shapeNum);
+                break;
+            case PointZ:
+                aLayer = readPointZShapes(br, shapeNum);
                 break;
             case Polyline:    //Polyline layer       
                 aLayer = readPolylineShapes(br, shapeNum);
@@ -159,11 +185,8 @@ public class ShapeFileManage {
             aLayer.setVisible(true);
 
             //read out the layer attribute information             
-            AttributeTable attrTable = new AttributeTable();
-            attrTable.open(shpfilepath);
-            attrTable.fill(attrTable.getNumRecords());
+            AttributeTable attrTable = loadDbfFile(shpfilepath, encoding);
             aLayer.setAttributeTable(attrTable);
-            //aLayer.setFieldNum(attrTable.getTable().getColumns().size());
 
             //Get projection information
             if (prjFile.exists()) {
@@ -220,6 +243,44 @@ public class ShapeFileManage {
             PointD aPoint = new PointD();
             aPoint.X = x;
             aPoint.Y = y;
+            aP.setPoint(aPoint);
+            aLayer.addShape(aP);
+        }
+
+        //Create legend scheme            
+        aLayer.setLegendScheme(LegendManage.createSingleSymbolLegendScheme(ShapeTypes.Point, Color.black, 5));
+        return aLayer;
+    }
+    
+    private static VectorLayer readPointZShapes(DataInputStream br, int shapeNum) throws IOException {
+        int RecordNum, ContentLength, aShapeType;
+        double x, y, z, m;
+        VectorLayer aLayer = new VectorLayer(ShapeTypes.PointZ);
+        byte[] bytes = new byte[44 * shapeNum];
+        br.read(bytes);
+        ByteBuffer buffer = ByteBuffer.wrap(bytes);
+        
+        for (int i = 0; i < shapeNum; i++) {
+
+            //br.ReadBytes(12); //记录头8个字节和一个int(4个字节)的shapetype 
+            buffer.order(ByteOrder.BIG_ENDIAN);
+            RecordNum = buffer.getInt();
+            ContentLength = buffer.getInt();
+            
+            buffer.order(ByteOrder.LITTLE_ENDIAN);
+            aShapeType = buffer.getInt();
+
+            x = buffer.getDouble();
+            y = buffer.getDouble();
+            z = buffer.getDouble();
+            m = buffer.getDouble();
+
+            PointZShape aP = new PointZShape();
+            PointZ aPoint = new PointZ();
+            aPoint.X = x;
+            aPoint.Y = y;
+            aPoint.Z = z;
+            aPoint.M = m;
             aP.setPoint(aPoint);
             aLayer.addShape(aP);
         }
@@ -605,6 +666,36 @@ public class ShapeFileManage {
         bridx.close();
     }
     
+//    /**
+//     * Load DBF data file
+//     * @param shpFileName Shape file name
+//     * @return Attribute table
+//     * @throws Exception 
+//     */
+//    public static AttributeTable loadDbfFile(String shpFileName) throws Exception{
+//        AttributeTable attrTable = new AttributeTable();
+//        attrTable.open(shpFileName);
+//        attrTable.fill(attrTable.getNumRecords());
+//        
+//        return attrTable;
+//    }
+    
+    /**
+     * Load DBF data file
+     * @param shpFileName Shape file name
+     * @param encoding Encoding
+     * @return Attribute table
+     * @throws Exception 
+     */
+    public static AttributeTable loadDbfFile(String shpFileName, String encoding) throws Exception{
+        AttributeTable attrTable = new AttributeTable();
+        attrTable.setEncoding(encoding);
+        attrTable.open(shpFileName);
+        attrTable.fill(attrTable.getNumRecords());
+        
+        return attrTable;
+    }
+    
     /**
      * Load projection file
      * @param projFile Projection file
@@ -650,6 +741,35 @@ public class ShapeFileManage {
                 writeShxFile(shxfilepath, aLayer);
                 writeShpFile(shpfilepath, aLayer);
                 writeDbfFile(dbffilepath, aLayer);
+                writeProjFile(projFilePath, aLayer);
+                return true;
+
+            default:
+                return false;
+        }
+    }
+    
+    /**
+     * Save shape file
+     * @param shpfilepath Shape file path
+     * @param aLayer Vector layer
+     * @param encoding Encoding
+     * @return Boolean
+     * @throws java.io.IOException*/
+    public static boolean saveShapeFile(String shpfilepath, VectorLayer aLayer, String encoding) throws IOException {
+        String shxfilepath = shpfilepath.replace(shpfilepath.substring(shpfilepath.lastIndexOf(".")), ".shx");
+        String dbffilepath = shpfilepath.replace(shpfilepath.substring(shpfilepath.lastIndexOf(".")), ".dbf");
+        String projFilePath = shpfilepath.replace(shpfilepath.substring(shpfilepath.lastIndexOf(".")), ".prj");        
+
+        switch (aLayer.getShapeType()) {
+            case Point:
+            case PointZ:
+            case Polyline:
+            case PolylineZ:
+            case Polygon:
+                writeShxFile(shxfilepath, aLayer);
+                writeShpFile(shpfilepath, aLayer);
+                writeDbfFile(dbffilepath, aLayer, encoding);
                 writeProjFile(projFilePath, aLayer);
                 return true;
 
@@ -844,6 +964,12 @@ public class ShapeFileManage {
 
     private static void writeDbfFile(String dbffilepath, VectorLayer aLayer) {
         aLayer.getAttributeTable().saveAs(dbffilepath, true);
+    }
+    
+    private static void writeDbfFile(String dbffilepath, VectorLayer aLayer, String encoding) {
+        AttributeTable attTable = aLayer.getAttributeTable();
+        attTable.setEncoding(encoding);
+        attTable.saveAs(dbffilepath, true);
     }
 
     private static void writeProjFile(String projFilePath, VectorLayer aLayer) {

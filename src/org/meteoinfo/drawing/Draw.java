@@ -13,6 +13,8 @@
  */
 package org.meteoinfo.drawing;
 
+import org.meteoinfo.legend.MarkerType;
+import org.meteoinfo.legend.PointStyle;
 import org.meteoinfo.geoprocess.Spline;
 import org.meteoinfo.global.colors.ColorUtil;
 import org.meteoinfo.global.Extent;
@@ -110,13 +112,14 @@ public class Draw {
             //icon.setInsets(new Insets(5, 5, 5, 5));
             //return new Dimension(icon.getIconWidth(), icon.getIconHeight());
             int width = (int) icon.getTrueIconWidth() + 10;
-            //int height = (int)icon.getTrueIconHeight();
-            int height = icon.getIconHeight();
+            int height = (int) icon.getTrueIconHeight();
+            //int height = icon.getIconHeight();
             return new Dimension(width, height);
         } else {
             FontMetrics metrics = g.getFontMetrics();
+            int height = (int) (metrics.getAscent() * 5.f / 6.f);
             //return new Dimension(metrics.stringWidth(str), metrics.getHeight());
-            return new Dimension(metrics.stringWidth(str), metrics.getAscent());
+            return new Dimension(metrics.stringWidth(str), height);
         }
     }
 
@@ -145,8 +148,8 @@ public class Draw {
                 //icon.setInsets(new Insets(5, 5, 5, 5));
                 //return new Dimension(icon.getIconWidth(), icon.getIconHeight());
                 width = (int) icon.getTrueIconWidth() + 10;
-                //int height = (int)icon.getTrueIconHeight();
-                height = icon.getIconHeight();
+                height = (int) icon.getTrueIconHeight();
+                //height = icon.getIconHeight();
             } else {
                 FontMetrics metrics = g.getFontMetrics();
                 width = metrics.stringWidth(str);
@@ -255,8 +258,12 @@ public class Draw {
         // insert a border 
         icon.setInsets(new Insets(5, 5, 5, 5));
         icon.setForeground(g.getColor());
-        y = y - (icon.getIconHeight() * 2.0f / 3.f);
+        y = y - icon.getIconHeight() + (icon.getIconHeight() - icon.getTrueIconHeight()) * 0.6f;
+        //y = y - icon.getIconHeight() + size * 0.7f;
+        //y = y - icon.getTrueIconHeight() * 1.f;
+        Font font = g.getFont();
         icon.paintIcon(null, g, (int) x, (int) y);
+        g.setFont(font);
     }
 
     // </editor-fold>
@@ -727,8 +734,9 @@ public class Draw {
                     //g.drawOval((int) aP.X, (int) aP.Y, (int) aSize, (int) aSize);
                 }
                 break;
-             case DOUBLE_CIRCLE:
-                float x, y;
+            case DOUBLE_CIRCLE:
+                float x,
+                 y;
                 x = aP.X - aSize / 2.f;
                 y = aP.Y - aSize / 2.f;
                 ellipse = new Ellipse2D.Float(x, y, aSize, aSize);
@@ -1186,8 +1194,9 @@ public class Draw {
      * @param s the string to draw
      * @param x_align the alignment in x direction
      * @param y_align the alignment in y direction
+     * @param useExternalFont Use external font or not
      */
-    public static void outString(Graphics2D g, float x, float y, String s, XAlign x_align, YAlign y_align) {
+    public static void drawString(Graphics2D g, float x, float y, String s, XAlign x_align, YAlign y_align, boolean useExternalFont) {
         Dimension dim = Draw.getStringDimension(s, g);
         switch (y_align) {
             case TOP:
@@ -1199,13 +1208,13 @@ public class Draw {
         }
         switch (x_align) {
             case LEFT:
-                drawString(g, s, x, y);
+                drawString(g, s, x, y, useExternalFont);
                 break;
             case RIGHT:
-                drawString(g, s, x - (float) dim.getWidth(), y);
+                drawString(g, s, x - (float) dim.getWidth(), y, useExternalFont);
                 break;
             case CENTER:
-                drawString(g, s, x - (float) dim.getWidth() / 2, y);
+                drawString(g, s, x - (float) dim.getWidth() / 2, y, useExternalFont);
                 break;
         }
     }
@@ -1220,57 +1229,95 @@ public class Draw {
      * @param x_align X align
      * @param y_align Y align
      * @param angle Angle
+     * @param useExternalFont Use external font or not
      */
-    public static void outString(Graphics2D g, float x, float y, String s, XAlign x_align, YAlign y_align, float angle) {
+    public static void drawString(Graphics2D g, float x, float y, String s, XAlign x_align, YAlign y_align, float angle, boolean useExternalFont) {
         if (angle == 0) {
-            outString(g, x, y, s, x_align, y_align);
+            drawString(g, x, y, s, x_align, y_align, useExternalFont);
         } else {
-            Dimension dim = getStringDimension(s, g);
             AffineTransform tempTrans = g.getTransform();
-            AffineTransform myTrans = new AffineTransform();
-            switch (x_align) {
-                case LEFT:
-                    switch (y_align) {
-                        case CENTER:
-                            if (angle == 90) {
-                                x += (float) (dim.getHeight());
-                                y += (float) (dim.getWidth() * 0.5);
-                            } else if (angle == -90) {
-                                y -= (float) (dim.getWidth() * 0.5);
-                            } else if (angle > 0) {
-                                x += (float) (dim.getHeight() * Math.abs(Math.sin(Math.toRadians(angle))));
-                                y += (float) (dim.getHeight() * Math.cos(Math.toRadians(angle)) * 0.5);
-                            } else {
-                                y += (float) (dim.getHeight() * Math.cos(Math.toRadians(angle)) * 0.5);
-                            }
-                            break;
-                    }
-                    break;
-                case CENTER:
-                    switch(y_align){
-                        case TOP:
-                            if (angle == 90) {
-                                x += (float) (dim.getHeight() * 0.5);
-                                y += (float) (dim.getWidth());
-                            } else if (angle == -90) {
-                                x -= (float) (dim.getHeight() * 0.5);
-                            } else if (angle > 0) {
-                                x -= (float) (dim.getWidth()* Math.abs(Math.cos(Math.toRadians(angle))));
-                                y += (float) (dim.getWidth()* Math.sin(Math.toRadians(angle))) + dim.getHeight();
-                            } else {
-                                //y += (float) (dim.getHeight() * Math.cos(Math.toRadians(angle)) * 0.5);
-                                y += (float) (dim.getHeight() * Math.abs(Math.cos(Math.toRadians(angle))));
-                            }
-                            break;
-                    }
-                    break;
-            }
-            myTrans.translate(tempTrans.getTranslateX() + x, tempTrans.getTranslateY() + y);
-            myTrans.rotate(-angle * Math.PI / 180);
+            AffineTransform myTrans = transform(g, x, y, s, x_align, y_align, angle);            
             g.setTransform(myTrans);
-            Draw.drawString(g, s, 0, 0);
+            Draw.drawString(g, s, 0, 0, useExternalFont);
             g.setTransform(tempTrans);
         }
+    }
+
+    /**
+     * Graphics transform
+     *
+     * @param g Graphics2D
+     * @param x X location
+     * @param y Y location
+     * @param s String
+     * @param x_align X align
+     * @param y_align Y align
+     * @param angle Angle
+     * @return AffineTransform
+     */
+    public static AffineTransform transform(Graphics2D g, float x, float y, String s, XAlign x_align, YAlign y_align, float angle) {
+        Dimension dim = getStringDimension(s, g);
+        AffineTransform tempTrans = g.getTransform();
+        AffineTransform myTrans = new AffineTransform();
+        switch (x_align) {
+            case LEFT:
+                switch (y_align) {
+                    case CENTER:
+                        if (angle == 90) {
+                            x += (float) (dim.getHeight());
+                            y += (float) (dim.getWidth() * 0.5);
+                        } else if (angle == -90) {
+                            y -= (float) (dim.getWidth() * 0.5);
+                        } else if (angle > 0) {
+                            x += (float) (dim.getHeight() * Math.abs(Math.sin(Math.toRadians(angle))));
+                            y += (float) (dim.getHeight() * Math.cos(Math.toRadians(angle)) * 0.5);
+                        } else {
+                            y += (float) (dim.getHeight() * Math.cos(Math.toRadians(angle)) * 0.5);
+                        }
+                        break;
+                }
+                break;
+            case CENTER:
+                switch (y_align) {
+                    case TOP:
+                        if (angle == 90) {
+                            x += (float) (dim.getHeight() * 0.5);
+                            y += (float) (dim.getWidth());
+                        } else if (angle == -90) {
+                            x -= (float) (dim.getHeight() * 0.5);
+                        } else if (angle > 0) {
+                            x -= (float) (dim.getWidth() * Math.abs(Math.cos(Math.toRadians(angle))));
+                            y += (float) (dim.getWidth() * Math.sin(Math.toRadians(angle))) + dim.getHeight();
+                        } else {
+                            //y += (float) (dim.getHeight() * Math.cos(Math.toRadians(angle)) * 0.5);
+                            y += (float) (dim.getHeight() * Math.abs(Math.cos(Math.toRadians(angle))));
+                        }
+                        break;
+                }
+                break;
+            case RIGHT:
+                switch (y_align) {
+                    case CENTER:
+                        if (angle == 90) {
+                            x -= (float) (dim.getHeight());
+                            y += (float) (dim.getWidth() * 0.5);
+                        } else if (angle == -90) {
+                            x -= (float) (dim.getHeight());
+                            y -= (float) (dim.getWidth() * 0.5);
+                        } else if (angle > 0) {
+                            x -= (float) (dim.getWidth() * Math.abs(Math.cos(Math.toRadians(angle))));
+                            y += (float) (dim.getHeight() * Math.cos(Math.toRadians(angle)) * 0.5);
+                        } else {
+                            y += (float) (dim.getHeight() * Math.cos(Math.toRadians(angle)) * 0.5);
+                        }
+                        break;
+                }
+                break;
+        }
+        myTrans.translate(tempTrans.getTranslateX() + x, tempTrans.getTranslateY() + y);
+        myTrans.rotate(-angle * Math.PI / 180);
+
+        return myTrans;
     }
 
     /**

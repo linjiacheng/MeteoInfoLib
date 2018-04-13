@@ -232,8 +232,20 @@ public class Plot3D extends Plot {
         return this.yAxis;
     }
 
+    /**
+     * Get z axis
+     * @return Z axis
+     */
     public Axis getZAxis() {
         return this.zAxis;
+    }
+    
+    /**
+     * Get x minimum
+     * @return X minimum
+     */
+    public float getXMin(){
+        return this.xmin;
     }
 
     /**
@@ -245,6 +257,14 @@ public class Plot3D extends Plot {
         this.xmin = value;
         updateExtent();
         this.xAxis.setMinMaxValue(xmin, xmax);
+    }
+    
+    /**
+     * Get x maximum
+     * @return X maximum
+     */
+    public float getXMax() {
+        return this.xmax;
     }
 
     /**
@@ -270,6 +290,14 @@ public class Plot3D extends Plot {
         updateExtent();
         this.xAxis.setMinMaxValue(min, max);
     }
+    
+    /**
+     * Get y minimum
+     * @return Y minimum
+     */
+    public float getYMin(){
+        return this.ymin;
+    }
 
     /**
      * Set minimum y
@@ -280,6 +308,14 @@ public class Plot3D extends Plot {
         this.ymin = value;
         updateExtent();
         this.yAxis.setMinMaxValue(ymin, ymax);
+    }
+    
+    /**
+     * Get y maximum
+     * @return Y maximum
+     */
+    public float getYMax() {
+        return this.ymax;
     }
 
     /**
@@ -305,6 +341,14 @@ public class Plot3D extends Plot {
         updateExtent();
         this.yAxis.setMinMaxValue(min, max);
     }
+    
+    /**
+     * Get z minimum
+     * @return Z minimum
+     */
+    public float getZMin(){
+        return this.zmin;
+    }
 
     /**
      * Set minimum z
@@ -315,6 +359,14 @@ public class Plot3D extends Plot {
         this.zmin = value;
         updateExtent();
         this.zAxis.setMinMaxValue(zmin, zmax);
+    }
+    
+    /**
+     * Get z maximum
+     * @return Z maximum
+     */
+    public float getZMax() {
+        return this.zmax;
     }
 
     /**
@@ -579,19 +631,11 @@ public class Plot3D extends Plot {
     }
 
     float drawTitle(Graphics2D g, Rectangle2D graphArea) {
-        float y = (float) graphArea.getY() - (float) this.getTightInset().getTop();
+        float y = (float) graphArea.getY();
         if (title != null) {
-            g.setColor(title.getColor());
-            g.setFont(title.getFont());
             float x = (float) (graphArea.getX() + graphArea.getWidth() / 2);
-            y += 5;
-            for (String text : title.getTexts()) {
-                Dimension dim = Draw.getStringDimension(text, g);
-                y += dim.height;
-                Draw.drawString(g, text, x - dim.width / 2, y);
-                g.setFont(title.getFont());
-                y += title.getLineSpace();
-            }
+            y -= 8;
+            title.draw(g, x, y);
             g.setFont(new Font("Arial", Font.PLAIN, 14));
         }
         return y;
@@ -1240,6 +1284,7 @@ public class Plot3D extends Plot {
                 transform.scale(xscale / Math.cos(angle), yscale / Math.cos(angle_y));
                 break;
         }
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, ishape.getInterpolation());
         g.drawImage(image, transform, null);
     }
 
@@ -1912,7 +1957,7 @@ public class Plot3D extends Plot {
         int space = 2;
 
         if (this.title != null) {
-            top += this.title.getHeight(g) + 10;
+            top += this.title.getTrueDimension(g).height + 10;
         }
 
         if (!this.legends.isEmpty()) {

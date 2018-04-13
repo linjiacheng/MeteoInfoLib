@@ -42,6 +42,7 @@ import org.meteoinfo.jts.geom.Geometry;
 import org.meteoinfo.jts.geom.GeometryFactory;
 import org.meteoinfo.layer.VectorLayer;
 import org.meteoinfo.legend.LegendScheme;
+import org.meteoinfo.ma.ArrayBoolean;
 import org.meteoinfo.math.Complex;
 import org.meteoinfo.math.ListIndexComparator;
 import org.meteoinfo.projection.KnownCoordinateSystems;
@@ -272,9 +273,9 @@ public class ArrayUtil {
         for (int i = 0; i < a.getSize(); i++) {
             j += 1;
             if (format == null) {
-                line = line + a.getFloat(i);
+                line = line + a.getObject(i).toString();
             } else {
-                line = line + String.format(format, a.getFloat(i));
+                line = line + String.format(format, a.getObject(i));
             }
             if (j < colNum && i < a.getSize() - 1) {
                 if (delimiter == null) {
@@ -447,6 +448,13 @@ public class ArrayUtil {
                 a.setObject(i, data.get(i));
             }
             return a;
+        } else if (d0 instanceof Boolean) {
+            //Array a = Array.factory(DataType.BOOLEAN, new int[]{data.size()});
+            Array a = new ArrayBoolean(new int[]{data.size()});
+            for (int i = 0; i < data.size(); i++) {
+                a.setObject(i, data.get(i));
+            }
+            return a;
         } else if (d0 instanceof PyComplex) {
             Array a = Array.factory(DataType.OBJECT, new int[]{data.size()});
             PyComplex d;
@@ -492,7 +500,7 @@ public class ArrayUtil {
         double startv = start.doubleValue();
         double stopv = stop.doubleValue();
         double stepv = step.doubleValue();
-        List<Object> data = new ArrayList<>();        
+        List<Object> data = new ArrayList<>();
         if (dataType == DataType.FLOAT || dataType == DataType.DOUBLE) {
             while (startv < stopv) {
                 data.add(startv);
@@ -506,12 +514,12 @@ public class ArrayUtil {
         }
         int length = data.size();
         Array a = Array.factory(dataType, new int[]{length});
-        for (int i = 0; i < length; i++){
+        for (int i = 0; i < length; i++) {
             a.setObject(i, data.get(i));
         }
         return a;
     }
-    
+
     /**
      * Array range
      *
@@ -648,9 +656,6 @@ public class ArrayUtil {
             ashape[i] = shape.get(i);
         }
         Array a = Array.factory(dtype, ashape);
-        for (int i = 0; i < a.getSize(); i++) {
-            a.setObject(i, 0);
-        }
 
         return a;
     }
@@ -834,7 +839,7 @@ public class ArrayUtil {
             }
         } else {
             int n = 0;
-            for (int i = 0; i < repeats.size(); i++){
+            for (int i = 0; i < repeats.size(); i++) {
                 n += repeats.get(i);
             }
             r = Array.factory(a.getDataType(), new int[]{n});
@@ -849,7 +854,7 @@ public class ArrayUtil {
 
         return r;
     }
-    
+
     /**
      * Repeat elements of an array.
      *
@@ -868,19 +873,19 @@ public class ArrayUtil {
             Index aindex = a.getIndex();
             Index index = r.getIndex();
             int[] current;
-            for (int i = 0; i < r.getSize(); i++){
+            for (int i = 0; i < r.getSize(); i++) {
                 current = index.getCurrentCounter();
                 current[axis] = current[axis] / n;
                 aindex.set(current);
                 r.setObject(index, a.getObject(aindex));
                 index.incr();
-            }            
+            }
         } else {
             int n = 0;
             int[] rsum = new int[repeats.size()];
-            for (int i = 0; i < repeats.size(); i++){
+            for (int i = 0; i < repeats.size(); i++) {
                 rsum[i] = n;
-                n += repeats.get(i);                
+                n += repeats.get(i);
             }
             int[] shape = a.getShape();
             shape[axis] = n;
@@ -889,22 +894,22 @@ public class ArrayUtil {
             Index index = r.getIndex();
             int[] current;
             int idx;
-            for (int i = 0; i < a.getSize(); i++){
+            for (int i = 0; i < a.getSize(); i++) {
                 current = aindex.getCurrentCounter();
                 idx = current[axis];
-                for (int j = 0; j < repeats.get(idx); j++){
+                for (int j = 0; j < repeats.get(idx); j++) {
                     current[axis] = rsum[idx] + j;
                     index.set(current);
                     r.setObject(index, a.getObject(aindex));
-                }                
+                }
                 aindex.incr();
-            }    
+            }
         }
 
         return r;
     }
-    
-        /**
+
+    /**
      * Repeat a value n times
      *
      * @param v The value
@@ -941,7 +946,7 @@ public class ArrayUtil {
 
         return r;
     }
-    
+
     /**
      * Repeat elements of an array.
      *
@@ -950,17 +955,17 @@ public class ArrayUtil {
      * @return Repeated array
      */
     public static Array tile(Array a, List<Integer> repeats) {
-        if (a.getRank() > repeats.size()){
+        if (a.getRank() > repeats.size()) {
             int n = a.getRank() - repeats.size();
-            for (int i = 0; i < n; i++){
+            for (int i = 0; i < n; i++) {
                 repeats.add(0, 1);
             }
-        } else if (a.getRank() < repeats.size()){
+        } else if (a.getRank() < repeats.size()) {
             int[] shape = a.getShape();
             int[] nshape = new int[repeats.size()];
             int n = repeats.size() - shape.length;
-            for (int i = 0; i < nshape.length; i++){
-                if (i < n){
+            for (int i = 0; i < nshape.length; i++) {
+                if (i < n) {
                     nshape[i] = 1;
                 } else {
                     nshape[i] = shape[i - n];
@@ -970,7 +975,7 @@ public class ArrayUtil {
         }
         int[] ashape = a.getShape();
         int[] shape = a.getShape();
-        for (int i = 0; i < shape.length; i++){
+        for (int i = 0; i < shape.length; i++) {
             shape[i] = shape[i] * repeats.get(i);
         }
         Array r = Array.factory(a.getDataType(), shape);
@@ -978,11 +983,11 @@ public class ArrayUtil {
         Index aindex = a.getIndex();
         int[] current;
         int idx;
-        for (int i = 0; i < r.getSize(); i++){
+        for (int i = 0; i < r.getSize(); i++) {
             current = index.getCurrentCounter();
-            for (int j = 0; j < repeats.size(); j++){
+            for (int j = 0; j < repeats.size(); j++) {
                 idx = current[j];
-                idx = idx % ashape[j]; 
+                idx = idx % ashape[j];
                 current[j] = idx;
             }
             aindex.set(current);
@@ -1098,6 +1103,8 @@ public class ArrayUtil {
         }
 
         int len = a.getShape()[shapeIdx];
+        Object data;
+        String dstr;
         while (ii.hasNext()) {
             if (i == 0) {
                 if (n > 0) {
@@ -1105,8 +1112,11 @@ public class ArrayUtil {
                 }
                 sbuff.append("[");
             }
-            Object data = ii.getObjectNext();
-            sbuff.append(data);
+            data = ii.getObjectNext();
+            dstr = data.toString();
+            if (a.getDataType() == DataType.BOOLEAN)
+                dstr = GlobalUtil.capitalize(dstr);
+            sbuff.append(dstr);
             i += 1;
             if (i == len) {
                 sbuff.append("]");
@@ -1257,6 +1267,9 @@ public class ArrayUtil {
             case "d":
             case "double":
                 return DataType.DOUBLE;
+            case "bool":
+            case "boolean":
+                return DataType.BOOLEAN;
             default:
                 return DataType.OBJECT;
         }
@@ -1275,8 +1288,14 @@ public class ArrayUtil {
                 r.setInt(i, a.getInt(i));
             }
         } else {
-            for (int i = 0; i < r.getSize(); i++) {
-                r.setInt(i, Integer.valueOf(a.getObject(i).toString()));
+            if (a.getDataType() == DataType.BOOLEAN) {
+                for (int i = 0; i < r.getSize(); i++) {
+                    r.setInt(i, a.getBoolean(i) ? 1 : 0);
+                }
+            } else {
+                for (int i = 0; i < r.getSize(); i++) {
+                    r.setInt(i, Integer.valueOf(a.getObject(i).toString()));
+                }
             }
         }
 
@@ -1284,7 +1303,7 @@ public class ArrayUtil {
     }
 
     /**
-     * Convert array to integer type
+     * Convert array to float type
      *
      * @param a Array a
      * @return Result array
@@ -1299,6 +1318,22 @@ public class ArrayUtil {
             for (int i = 0; i < r.getSize(); i++) {
                 r.setFloat(i, Float.valueOf(a.getObject(i).toString()));
             }
+        }
+
+        return r;
+    }
+
+    /**
+     * Convert array to boolean type
+     *
+     * @param a Array a
+     * @return Result array
+     */
+    public static Array toBoolean(Array a) {
+        //Array r = Array.factory(DataType.BOOLEAN, a.getShape());
+        Array r = new ArrayBoolean(a.getShape());
+        for (int i = 0; i < r.getSize(); i++) {
+            r.setBoolean(i, a.getDouble(i) != 0);
         }
 
         return r;
@@ -1581,12 +1616,35 @@ public class ArrayUtil {
 
         return javaArray;
     }
+    
+    /**
+     * Convert array to N-Dimension double Java array
+     *
+     * @param a Array a
+     * @return N-D Java array
+     */
+    public static Object copyToNDJavaArray_Long(Array a) {
+        Object javaArray;
+        try {
+            javaArray = java.lang.reflect.Array.newInstance(Long.TYPE, a.getShape());
+        } catch (IllegalArgumentException | NegativeArraySizeException e) {
+            throw new IllegalArgumentException(e);
+        }
+        IndexIterator iter = a.getIndexIterator();
+        reflectArrayCopyOut(javaArray, a, iter);
+
+        return javaArray;
+    }
 
     private static void reflectArrayCopyOut(Object jArray, Array aa, IndexIterator aaIter) {
         Class cType = jArray.getClass().getComponentType();
 
         if (!cType.isArray()) {
-            copyTo1DJavaArray(aaIter, jArray);
+            if (cType == long.class){
+                copyTo1DJavaArray_Long(aaIter, jArray);
+            } else {
+                copyTo1DJavaArray(aaIter, jArray);
+            }
         } else {
             for (int i = 0; i < java.lang.reflect.Array.getLength(jArray); i++) {
                 reflectArrayCopyOut(java.lang.reflect.Array.get(jArray, i), aa, aaIter);
@@ -1598,6 +1656,13 @@ public class ArrayUtil {
         double[] ja = (double[]) javaArray;
         for (int i = 0; i < ja.length; i++) {
             ja[i] = iter.getDoubleNext();
+        }
+    }
+    
+    protected static void copyTo1DJavaArray_Long(IndexIterator iter, Object javaArray) {
+        long[] ja = (long[]) javaArray;
+        for (int i = 0; i < ja.length; i++) {
+            ja[i] = iter.getLongNext();
         }
     }
 
@@ -1614,7 +1679,8 @@ public class ArrayUtil {
         double min = ArrayMath.getMinimum(a);
         double max = ArrayMath.getMaximum(a);
         double[] bins = MIMath.getIntervalValues(min, max, nbins);
-        return histogram(a, bins);
+        Array ba = Array.factory(DataType.DOUBLE, new int[]{bins.length}, bins);        
+        return histogram(a, ba);
     }
 
     /**

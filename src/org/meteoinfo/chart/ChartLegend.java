@@ -36,6 +36,8 @@ import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.List;
 import org.meteoinfo.chart.plot.PlotOrientation;
+import org.meteoinfo.chart.plot.XAlign;
+import org.meteoinfo.chart.plot.YAlign;
 import org.meteoinfo.global.DataConvert;
 import org.meteoinfo.legend.LegendType;
 import org.meteoinfo.shape.ShapeTypes;
@@ -60,6 +62,8 @@ public class ChartLegend {
     protected boolean drawBackground;
     protected int width;
     protected int height;
+    protected int legendWidth;
+    protected int legendHeight;
     protected ChartText label;
     protected String labelLocation;
     protected Font tickLabelFont;
@@ -285,6 +289,38 @@ public class ChartLegend {
      */
     public void setHeight(int value) {
         this.height = value;
+    }
+    
+    /**
+     * Get legend width
+     * @return Legend width
+     */
+    public int getLegendWidth(){
+        return this.legendWidth;
+    }
+    
+    /**
+     * Set legend width
+     * @param value Legend width
+     */
+    public void setLegendWidth(int value){
+        this.legendWidth = value;
+    }
+    
+    /**
+     * Get legend height
+     * @return Legend height
+     */
+    public int getLegendHeight(){
+        return this.legendHeight;
+    }
+    
+    /**
+     * Set legend height
+     * @param value Legend height
+     */
+    public void setLegendHeight(int value){
+        this.legendHeight = value;
     }
 
     /**
@@ -781,8 +817,7 @@ public class ChartLegend {
     }
 
     private void drawVerticalLegend(Graphics2D g, LegendScheme aLS) {
-        String caption = "";
-        Dimension aSF;
+        String caption;
         float leftSpace = _leftSpace;
         float breakSpace = _breakSpace;
         float breakHeight = this.getBreakHeight(g);
@@ -805,17 +840,11 @@ public class ChartLegend {
         rowNums[0] = aLS.getVisibleBreakNum() - num;
 
         //Draw legend                        
-        Color labelColor = Color.black;
-        Font labelFont = new Font("Arial", Font.PLAIN, 14);
-        if (this.label != null){
-            labelColor = this.label.getColor();
-            labelFont = this.label.getFont();
-        }
         float x, y;
         i = 0;
         for (int col = 0; col < rowColNum; col++) {
             x = symbolWidth / 2 + leftSpace + col * colWidth;
-            y = breakHeight / 2 + breakSpace;
+            y = breakHeight / 2 + breakSpace * 2;
             for (int row = 0; row < rowNums[col]; row++) {
                 if (!aLS.getLegendBreaks().get(i).isDrawShape()) {
                     continue;
@@ -835,15 +864,19 @@ public class ChartLegend {
                     Draw.drawPolylineSymbol_S(new PointF(x, y), symbolWidth, symbolHeight, aPLB, g);
                 } else if (cb instanceof PolygonBreak) {
                     Draw.drawPolygonSymbol(new PointF(x, y), symbolWidth, symbolHeight, (PolygonBreak) cb, g);
+                } else {
+                    PolygonBreak pgb = new PolygonBreak();
+                    pgb.setColor(cb.getColor());
+                    pgb.setOutlineColor(Color.black);                    
+                    Draw.drawPolygonSymbol(new PointF(x, y), symbolWidth, symbolHeight, pgb, g);
                 }
 
                 PointF sP = new PointF(0, 0);
                 sP.X = x + symbolWidth / 2;
                 sP.Y = y;               
-                g.setColor(labelColor);
-                g.setFont(labelFont);
-                aSF = Draw.getStringDimension(caption, g);
-                Draw.drawString(g, caption, sP.X + 5, sP.Y + aSF.height / 4);
+                g.setColor(this.tickLabelColor);
+                g.setFont(this.tickLabelFont);
+                Draw.drawString(g, sP.X + 5, sP.Y, caption, XAlign.LEFT, YAlign.CENTER, true);
                 y += breakHeight + breakSpace;
 
                 i += 1;
@@ -872,13 +905,6 @@ public class ChartLegend {
         colNums[rowColNum - 1] = aLS.getVisibleBreakNum() - num;
 
         //Draw legend    
-        Color labelColor = Color.black;
-        Font labelFont = new Font("Arial", Font.PLAIN, 14);
-        if (this.label != null){
-            labelColor = this.label.getColor();
-            labelFont = this.label.getFont();
-        }
-        FontMetrics metrics = g.getFontMetrics(labelFont);
         float x, y;
         y = this._breakSpace + breakHeight / 2;
         i = 0;
@@ -907,11 +933,11 @@ public class ChartLegend {
                 PointF sP = new PointF(0, 0);
                 sP.X = x + symbolWidth / 2;
                 sP.Y = y;
-                g.setColor(labelColor);
-                g.setFont(labelFont);
-                Draw.drawString(g, caption, sP.X + 5, sP.Y + metrics.getHeight() / 4);
-
-                x += this.symbolDimension.width + metrics.stringWidth(caption) + 15;
+                g.setColor(this.tickLabelColor);
+                g.setFont(this.tickLabelFont);
+                Draw.drawString(g, sP.X + 5, sP.Y, caption, XAlign.LEFT, YAlign.CENTER, true);
+                Dimension dim = Draw.getStringDimension(caption, g);
+                x += this.symbolDimension.width + dim.width + 15;
                 i += 1;
             }
             y += breakHeight + this._breakSpace * 2;
@@ -1357,17 +1383,12 @@ public class ChartLegend {
         String caption;
         Dimension aSF;
         int bNum = legendScheme.getBreakNum();
-        //FontMetrics metrics = g.getFontMetrics(tickFont);
-        //aSF = new Dimension(metrics.stringWidth(caption), metrics.getHeight());
         int labWidth = 0;
-        Font labFont = new Font("Arial", Font.PLAIN, 14);
-        if (this.label != null)
-            labFont = this.label.getFont();
+        g.setFont(this.tickLabelFont);
         for (int i = 0; i < bNum; i++) {
             caption = legendScheme.getLegendBreaks().get(i).getCaption();
             boolean isValid = true;
-            if (isValid) {
-                g.setFont(labFont);
+            if (isValid) {                
                 aSF = Draw.getStringDimension(caption, this.tickLabelAngle, g);
                 int labwidth = aSF.width;
                 if (labWidth < labwidth) {
@@ -1380,8 +1401,9 @@ public class ChartLegend {
     }
 
     private int getBreakHeight(Graphics2D g) {
-        FontMetrics metrics = g.getFontMetrics(tickLabelFont);
-        return Math.max(metrics.getHeight(), this.symbolDimension.height);
+        g.setFont(tickLabelFont);
+        Dimension dim = Draw.getStringDimension(this.legendScheme.getLegendBreak(0).getCaption(), g);
+        return Math.max(dim.height, this.symbolDimension.height);
     }
 
     /**
@@ -1469,7 +1491,7 @@ public class ChartLegend {
 //                        this.height = (int) (rowNums[0] * (breakHeight + _breakSpace)
 //                                + _breakSpace * 2 + breakHeight / 2 + 5);
                         this.height = (int) (rowNums[0] * (breakHeight + _breakSpace)
-                                + _breakSpace * 2);
+                                + _breakSpace * 3);
                         break;
                     case HORIZONTAL:
                         //Get row number

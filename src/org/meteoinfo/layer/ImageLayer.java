@@ -1,11 +1,11 @@
- /* Copyright 2012 Yaqiang Wang,
+/* Copyright 2012 Yaqiang Wang,
  * yaqiang.wang@gmail.com
- * 
+ *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation; either version 2.1 of the License, or (at
  * your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
@@ -14,11 +14,14 @@
 package org.meteoinfo.layer;
 
 import com.l2fprod.common.beans.BaseBeanInfo;
+import com.l2fprod.common.beans.ExtendedPropertyDescriptor;
+import com.l2fprod.common.beans.editor.ComboBoxPropertyEditor;
 import org.meteoinfo.global.Extent;
 import org.meteoinfo.global.util.GlobalUtil;
 import org.meteoinfo.shape.ShapeTypes;
 import java.awt.Color;
 import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.io.BufferedReader;
@@ -47,6 +50,7 @@ public class ImageLayer extends MapLayer {
     private String _worldFileName;
     private boolean _isSetTransColor;
     private Color _transparencyColor;
+    protected Object interp;
     // </editor-fold>
     // <editor-fold desc="Constructor">
 
@@ -59,6 +63,7 @@ public class ImageLayer extends MapLayer {
         this.setShapeType(ShapeTypes.Image);
         _isSetTransColor = false;
         _transparencyColor = Color.black;
+        this.interp = RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
     }
     // </editor-fold>
     // <editor-fold desc="Get Set Methods">
@@ -175,6 +180,7 @@ public class ImageLayer extends MapLayer {
      * Set upper-left x
      *
      * @param value The value
+     * @throws java.io.IOException
      */
     public void setXUL(double value) throws IOException {
         _worldFilePara.xUL = value;
@@ -200,6 +206,7 @@ public class ImageLayer extends MapLayer {
      * Set upper-left y
      *
      * @param value The value
+     * @throws java.io.IOException
      */
     public void setYUL(double value) throws IOException {
         _worldFilePara.yUL = value;
@@ -225,6 +232,7 @@ public class ImageLayer extends MapLayer {
      * Set x scale
      *
      * @param value The value
+     * @throws java.io.IOException
      */
     public void setXScale(double value) throws IOException {
         _worldFilePara.xScale = value;
@@ -306,6 +314,58 @@ public class ImageLayer extends MapLayer {
             writeImageWorldFile(_worldFileName, _worldFilePara);
         }
     }
+
+    /**
+     * Get interpolation
+     *
+     * @return Interpolation
+     */
+    public Object getInterpolation() {
+        return this.interp;
+    }
+
+    /**
+     * Get interpolation string
+     *
+     * @return Interpolation string
+     */
+    public String getInterpolationStr() {
+        if (interp == RenderingHints.VALUE_INTERPOLATION_BILINEAR) {
+            return "bilinear";
+        } else if (interp == RenderingHints.VALUE_INTERPOLATION_BICUBIC) {
+            return "bicubic";
+        } else {
+            return "nearest";
+        }
+    }
+
+    /**
+     * Set interpolation object
+     *
+     * @param value Interpolation object
+     */
+    public void setInterpolation(Object value) {
+        this.interp = value;
+    }
+
+    /**
+     * Set interpolation string
+     *
+     * @param value Interpolation string
+     */
+    public void setInterpolation(String value) {
+        switch (value) {
+            case "nearest":
+                this.interp = RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
+                break;
+            case "bilinear":
+                this.interp = RenderingHints.VALUE_INTERPOLATION_BILINEAR;
+                break;
+            case "bicubic":
+                this.interp = RenderingHints.VALUE_INTERPOLATION_BICUBIC;
+                break;
+        }
+    }
     // </editor-fold>
     // <editor-fold desc="Methods">
 
@@ -313,6 +373,7 @@ public class ImageLayer extends MapLayer {
      * Read image world file
      *
      * @param aIFile Image world file path
+     * @throws java.io.FileNotFoundException
      */
     public void readImageWorldFile(String aIFile) throws FileNotFoundException, IOException {
         BufferedReader sr = new BufferedReader(new FileReader(new File(aIFile)));
@@ -331,6 +392,7 @@ public class ImageLayer extends MapLayer {
      *
      * @param aFile File path
      * @param aWFP WorldFilePara
+     * @throws java.io.IOException
      */
     public void writeImageWorldFile(String aFile, WorldFilePara aWFP) throws IOException {
         BufferedWriter sw = new BufferedWriter(new FileWriter(new File(aFile)));
@@ -355,13 +417,13 @@ public class ImageLayer extends MapLayer {
      * @return Colors
      */
     public List<Color> getColorsFromPaletteFile(String pFile) {
-        BufferedReader sr = null;
+        BufferedReader sr;
         try {
             sr = new BufferedReader(new InputStreamReader(new FileInputStream(pFile)));
             sr.readLine();
             String aLine = sr.readLine();
             String[] dataArray;
-            List<Color> colors = new ArrayList<Color>();
+            List<Color> colors = new ArrayList<>();
             while (aLine != null) {
                 if (aLine.isEmpty()) {
                     aLine = sr.readLine();
@@ -622,6 +684,7 @@ public class ImageLayer extends MapLayer {
          * Set upper-left x
          *
          * @param value The value
+         * @throws java.io.IOException
          */
         public void setXUL(double value) throws IOException {
             _worldFilePara.xUL = value;
@@ -647,6 +710,7 @@ public class ImageLayer extends MapLayer {
          * Set upper-left y
          *
          * @param value The value
+         * @throws java.io.IOException
          */
         public void setYUL(double value) throws IOException {
             _worldFilePara.yUL = value;
@@ -672,6 +736,7 @@ public class ImageLayer extends MapLayer {
          * Set x scale
          *
          * @param value The value
+         * @throws java.io.IOException
          */
         public void setXScale(double value) throws IOException {
             _worldFilePara.xScale = value;
@@ -747,6 +812,40 @@ public class ImageLayer extends MapLayer {
                 writeImageWorldFile(_worldFileName, _worldFilePara);
             }
         }
+
+        /**
+         * Get interpolation
+         *
+         * @return Interpolation
+         */
+        public String getInterpolation() {
+            if (interp == RenderingHints.VALUE_INTERPOLATION_BILINEAR) {
+                return "bilinear";
+            } else if (interp == RenderingHints.VALUE_INTERPOLATION_BICUBIC) {
+                return "bicubic";
+            } else {
+                return "nearest";
+            }
+        }
+
+        /**
+         * Set interpolation
+         *
+         * @param value Interpolation
+         */
+        public void setInterpolation(String value) {
+            switch (value) {
+                case "nearest":
+                    interp = RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
+                    break;
+                case "bilinear":
+                    interp = RenderingHints.VALUE_INTERPOLATION_BILINEAR;
+                    break;
+                case "bicubic":
+                    interp = RenderingHints.VALUE_INTERPOLATION_BICUBIC;
+                    break;
+            }
+        }
         // </editor-fold>
     }
 
@@ -770,6 +869,21 @@ public class ImageLayer extends MapLayer {
             addProperty("yUL").setCategory("Editable").setDisplayName("Y upper left");
             addProperty("xRotate").setCategory("Editable").setDisplayName("X rotate");
             addProperty("yRotate").setCategory("Editable").setDisplayName("Y rotate");
+            ExtendedPropertyDescriptor e = addProperty("interpolation");
+            e.setCategory("Editable").setPropertyEditorClass(InterpolationEditor.class);
+            e.setDisplayName("Interpolation");
+        }
+    }
+
+    public static class InterpolationEditor extends ComboBoxPropertyEditor {
+
+        public InterpolationEditor() {
+            super();
+            String[] names = new String[3];
+            names[0] = "nearest";
+            names[1] = "bilinear";
+            names[2] = "bicubic";
+            setAvailableValues(names);
         }
     }
     // </editor-fold>

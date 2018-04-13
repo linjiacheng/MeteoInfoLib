@@ -131,7 +131,11 @@ public class MICAPS2DataInfo extends DataInfo implements IStationDataInfo{
             zdim.setValues(new double[]{level});
             this.setZDimension(zdim);
             Dimension stdim = new Dimension(DimensionType.Other);
+            stdim.setShortName("station");
             values = new double[stNum];
+            for (i = 0; i < stNum; i++){
+                values[i] = i;
+            }
             stdim.setValues(values);
             this.addDimension(stdim);
             List<Variable> variables = new ArrayList<>();
@@ -173,15 +177,10 @@ public class MICAPS2DataInfo extends DataInfo implements IStationDataInfo{
     @Override
     public String generateInfoText() {
         String dataInfo;
-        dataInfo = "File Name: " + this.getFileName();
-        dataInfo += System.getProperty("line.separator") + "Description: " + _description;
+        dataInfo = "Description: " + _description;
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:00");
         dataInfo += System.getProperty("line.separator") + "Time: " + format.format(this.getTimes().get(0));
-        dataInfo += System.getProperty("line.separator") + "Station Number: " + _dataList.size();
-        dataInfo += System.getProperty("line.separator") + "Fields: ";
-        for (String aField : _fieldList) {
-            dataInfo += System.getProperty("line.separator") + "  " + aField;
-        }
+        dataInfo += System.getProperty("line.separator") + super.generateInfoText();
 
         return dataInfo;
     }
